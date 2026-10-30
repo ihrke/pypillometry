@@ -1,0 +1,16 @@
+measure,group,n,P5,P25,P50,P75,P95
+pupil.missing_pct,lab and 3T (5 datasets),549,1.011,3.373,5.822,10.14,28.38
+pupil.missing_pct,7T fMRI,101,1.768,4.897,13.01,28.74,82.27
+pupil.dropout_rate,lab and 3T (5 datasets),549,5.943,17.37,28.89,53.08,173.9
+pupil.dropout_rate,7T fMRI,101,7.51,42.55,104.4,737,2276
+pupil.longest_dropout,lab and 3T (5 datasets),549,0.318,0.558,0.918,2.189,57.65
+pupil.longest_dropout,7T fMRI,101,0.282,0.475,1.104,4.054,18.2
+pupil.noise,lab and 3T (5 datasets),548,0.05602,0.09192,0.1435,0.2358,0.3829
+pupil.noise,7T fMRI,101,0.3224,0.4908,0.6483,0.9143,5.204
+pupil.jump_rate,lab and 3T (5 datasets),549,0,0.1101,0.2108,0.6077,70.58
+pupil.jump_rate,7T fMRI,101,0.4451,15.53,63.84,439.9,1051
+gaze.offscreen_pct,lab and 3T (5 datasets),548,0.01311,0.1927,0.6206,1.673,4.994
+gaze.offscreen_pct,7T fMRI,95,0,0.01062,0.1144,0.766,8.521
+calibration.mean_error,lab and 3T (5 datasets),545,0.2582,0.3356,0.4167,0.5289,0.7804
+calibration.max_error,lab and 3T (5 datasets),545,0.47,0.63,0.77,0.97,1.62
+binocular.pupil_correlation,lab and 3T (5 datasets),259,0.8758,0.9333,0.9699,0.9899,0.9974

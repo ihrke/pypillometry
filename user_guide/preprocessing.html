@@ -54,7 +54,7 @@
     <link rel="icon" href="../_static/pypillometry_logo_200x200.png"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Events, intervals and segments" href="events_intervals.html" />
+    <link rel="next" title="Data quality" href="quality.html" />
     <link rel="prev" title="Units" href="units.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
@@ -411,6 +411,7 @@
 <li class="toctree-l1"><a class="reference internal" href="loading_data.html">Loading and saving data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="units.html">Units</a></li>
 <li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">Preprocessing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quality.html">Data quality</a></li>
 <li class="toctree-l1"><a class="reference internal" href="events_intervals.html">Events, intervals and segments</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plotting.html">Plotting</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="interactive.html">Interactive tools</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -491,6 +492,16 @@ into a pipeline (see <a class="reference internal" href="data_model.html"><span 
 before and after each step (see <a class="reference internal" href="plotting.html"><span class="doc">Plotting</span></a>). To tune parameters, use
 <a class="reference internal" href="../api/generated/pypillometry.tweak.html#pypillometry.tweak" title="pypillometry.tweak"><code class="xref py py-func docutils literal notranslate"><span class="pre">tweak()</span></code></a> (see <a class="reference internal" href="interactive.html"><span class="doc">Interactive tools</span></a>): it shows the result while you
 change them.</p>
+<section id="data-quality">
+<h2>Data quality<a class="headerlink" href="#data-quality" title="Link to this heading">#</a></h2>
+<p>Before and after preprocessing, <a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.quality_report" title="pypillometry.GenericEyeData.quality_report"><code class="xref py py-meth docutils literal notranslate"><span class="pre">quality_report()</span></code></a>
+summarizes the quality of a dataset (missing data, noise, blinks, artifacts,
+calibration) and labels each measure “good”, “ok”, “poor” or “bad”. See
+<a class="reference internal" href="quality.html"><span class="doc">Data quality</span></a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">quality_report</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
 <section id="blinks">
 <h2>Blinks<a class="headerlink" href="#blinks" title="Link to this heading">#</a></h2>
 <p>During a blink, the eye tracker loses the pupil. Pupil size usually drops
@@ -650,6 +661,12 @@ eye from the other. The result is stored as <code class="docutils literal notran
 <tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.drop_data" title="pypillometry.GenericEyeData.drop_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GenericEyeData.drop_data</span></code></a></p></td>
 <td><p>Drop specified eyes and/or variables from the data and return a new object.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.to_pupildata" title="pypillometry.EyeData.to_pupildata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.to_pupildata</span></code></a></p></td>
+<td><p>Return a copy of the data as a PupilData object (without gaze data).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.to_gazedata" title="pypillometry.EyeData.to_gazedata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.to_gazedata</span></code></a></p></td>
+<td><p>Return a copy of the data as a GazeData object (without pupil data).</p></td>
+</tr>
 <tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.drop_original" title="pypillometry.GenericEyeData.drop_original"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GenericEyeData.drop_original</span></code></a></p></td>
 <td><p>Drop original dataset from record (e.g., to save space).</p></td>
 </tr>
@@ -665,7 +682,10 @@ eye from the other. The result is stored as <code class="docutils literal notran
 <p><a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.sub_slice" title="pypillometry.GenericEyeData.sub_slice"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sub_slice()</span></code></a> cuts out a time range, e.g., one block
 of the experiment: <code class="docutils literal notranslate"><span class="pre">d.sub_slice(3</span> <span class="pre">*</span> <span class="pre">u.min,</span> <span class="pre">5</span> <span class="pre">*</span> <span class="pre">u.min)</span></code>.
 <a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.reset_time" title="pypillometry.GenericEyeData.reset_time"><code class="xref py py-meth docutils literal notranslate"><span class="pre">reset_time()</span></code></a> makes the time vector start at zero
-(or at any other time).</p>
+(or at any other time).
+<a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.to_pupildata" title="pypillometry.EyeData.to_pupildata"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_pupildata()</span></code></a> and <a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.to_gazedata" title="pypillometry.EyeData.to_gazedata"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_gazedata()</span></code></a> turn
+<a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData" title="pypillometry.EyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">EyeData</span></code></a> into <a class="reference internal" href="../api/generated/pypillometry.PupilData.html#pypillometry.PupilData" title="pypillometry.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a> or <a class="reference internal" href="../api/generated/pypillometry.GazeData.html#pypillometry.GazeData" title="pypillometry.GazeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">GazeData</span></code></a> (optionally
+for some eyes only), keeping masks, blinks and all other data.</p>
 </section>
 <section id="references">
 <h2>References<a class="headerlink" href="#references" title="Link to this heading">#</a></h2>
@@ -699,11 +719,11 @@ blinks. figshare. <a class="reference external" href="https://figshare.com/artic
       </div>
     </a>
     <a class="right-next"
-       href="events_intervals.html"
+       href="quality.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Events, intervals and segments</p>
+        <p class="prev-next-title">Data quality</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -726,6 +746,7 @@ blinks. figshare. <a class="reference external" href="https://figshare.com/artic
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-quality">Data quality</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#blinks">Blinks</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#other-artifacts">Other artifacts</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#filtering-and-downsampling">Filtering and downsampling</a></li>

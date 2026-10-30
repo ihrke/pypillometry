@@ -415,6 +415,8 @@
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.EyeDataDict.html">EyeDataDict</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.FakeEyeData.html">FakeEyeData</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.keephistory.html">keephistory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.QualityReport.html">QualityReport</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.QualityMetric.html">QualityMetric</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../events_intervals.html">Events and intervals</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -715,34 +717,37 @@ initially True). The method-level <cite>inplace</cite> argument overrides this.<
 <tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.PupilData.pupil_smooth_window" title="pypillometry.PupilData.pupil_smooth_window"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_smooth_window</span></code></a></p></td>
 <td><p>Apply smoothing of the signal using a moving window.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.PupilData.reset_time" title="pypillometry.PupilData.reset_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_time</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.PupilData.quality_report" title="pypillometry.PupilData.quality_report"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quality_report</span></code></a></p></td>
+<td><p>Report the quality of the data.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.PupilData.reset_time" title="pypillometry.PupilData.reset_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_time</span></code></a></p></td>
 <td><p>Resets time so that time <cite>t0</cite> becomes time zero.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.PupilData.scale" title="pypillometry.PupilData.scale"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.PupilData.scale" title="pypillometry.PupilData.scale"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale</span></code></a></p></td>
 <td><p>Scale the signal by subtracting <cite>mean</cite> and dividing by <cite>sd</cite>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.PupilData.set_blinks" title="pypillometry.PupilData.set_blinks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_blinks</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.PupilData.set_blinks" title="pypillometry.PupilData.set_blinks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_blinks</span></code></a></p></td>
 <td><p>Set blinks for specified eyes and variables (in-place).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.PupilData.set_event_onsets" title="pypillometry.PupilData.set_event_onsets"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_event_onsets</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.PupilData.set_event_onsets" title="pypillometry.PupilData.set_event_onsets"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_event_onsets</span></code></a></p></td>
 <td><p>Set onsets of events in the data (in-place).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.PupilData.set_events" title="pypillometry.PupilData.set_events"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_events</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.PupilData.set_events" title="pypillometry.PupilData.set_events"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_events</span></code></a></p></td>
 <td><p>Replace event onsets and labels from an Events object.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.PupilData.stat_per_event" title="pypillometry.PupilData.stat_per_event"><code class="xref py py-obj docutils literal notranslate"><span class="pre">stat_per_event</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.PupilData.stat_per_event" title="pypillometry.PupilData.stat_per_event"><code class="xref py py-obj docutils literal notranslate"><span class="pre">stat_per_event</span></code></a></p></td>
 <td><p>Return result of applying a statistical function to data in a given interval relative to event-onsets.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.PupilData.sub_slice" title="pypillometry.PupilData.sub_slice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sub_slice</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.PupilData.sub_slice" title="pypillometry.PupilData.sub_slice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sub_slice</span></code></a></p></td>
 <td><p>Return a shortened version of the current object.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.PupilData.summary" title="pypillometry.PupilData.summary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">summary</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.PupilData.summary" title="pypillometry.PupilData.summary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">summary</span></code></a></p></td>
 <td><p>Return a summary of the dataset as a dictionary.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.PupilData.unscale" title="pypillometry.PupilData.unscale"><code class="xref py py-obj docutils literal notranslate"><span class="pre">unscale</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.PupilData.unscale" title="pypillometry.PupilData.unscale"><code class="xref py py-obj docutils literal notranslate"><span class="pre">unscale</span></code></a></p></td>
 <td><p>Scale back to original values using either values provided as arguments or the values stored in <cite>params[&quot;scale&quot;]</cite> by <a class="reference internal" href="#pypillometry.PupilData.scale" title="pypillometry.PupilData.scale"><code class="xref py py-meth docutils literal notranslate"><span class="pre">scale()</span></code></a>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.PupilData.write_file" title="pypillometry.PupilData.write_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_file</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.PupilData.write_file" title="pypillometry.PupilData.write_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_file</span></code></a></p></td>
 <td><p>Save to file (using <a class="reference internal" href="pypillometry.write_pickle.html#pypillometry.write_pickle" title="pypillometry.write_pickle"><code class="xref py py-func docutils literal notranslate"><span class="pre">write_pickle()</span></code></a>).</p></td>
 </tr>
 </tbody>
@@ -1902,6 +1907,56 @@ if <cite>None</cite>, use the object-level setting</p></li>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.PupilData.quality_report">
+<span class="sig-name descname"><span class="pre">quality_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">thresholds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.PupilData.quality_report" title="Link to this definition">#</a></dt>
+<dd><p>Report the quality of the data.</p>
+<p>Measures that need no preprocessing are always computed (on the
+stored values, where missing samples are NaN):</p>
+<ul class="simple">
+<li><p>pupil (if available): missing data, dropouts (periods of missing
+data) and high-frequency noise</p></li>
+<li><p>gaze (if available): missing data, off-screen samples (needs the
+screen resolution) and precision (in degrees if screen size and
+eye distance are set in the experimental setup, else in pixels)</p></li>
+<li><p>both eyes: correlation of the pupils and disparity of the gaze</p></li>
+</ul>
+<p>Further measures are added if available: blinks (after
+<a class="reference internal" href="#pypillometry.PupilData.pupil_blinks_detect" title="pypillometry.PupilData.pupil_blinks_detect"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pupil_blinks_detect()</span></code></a>), masked and
+interpolated data (after preprocessing) and calibration/validation
+errors (e.g., when read from an Eyelink file).</p>
+<p>Where it makes sense, each measure is labeled as “good”, “ok”,
+“poor” or “bad”. The overall label is the worst of all labels.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>thresholds</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>]</span>) – thresholds for the labels, overriding the defaults in
+<code class="xref py py-data docutils literal notranslate"><span class="pre">pypillometry.quality.DEFAULT_QUALITY_THRESHOLDS</span></code>.
+Keys are <code class="docutils literal notranslate"><span class="pre">&quot;&lt;section&gt;.&lt;metric&gt;&quot;</span></code> (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;pupil.missing_pct&quot;</span></code>),
+values are three bounds <code class="docutils literal notranslate"><span class="pre">(good,</span> <span class="pre">ok,</span> <span class="pre">poor)</span></code>. Increasing bounds
+mean that lower values are better, decreasing bounds that higher
+values are better. <cite>None</cite> turns the label off.</p></li>
+<li><p><strong>eyes</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a></span>) – eye(s) to report; if empty, all available eyes</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="pypillometry.QualityReport.html#pypillometry.QualityReport" title="pypillometry.QualityReport"><code class="xref py py-class docutils literal notranslate"><span class="pre">QualityReport</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the report; print it for a text version, display it in a
+notebook for an HTML version or use
+<a class="reference internal" href="pypillometry.QualityReport.html#pypillometry.QualityReport.to_dict" title="pypillometry.QualityReport.to_dict"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_dict()</span></code></a> to get a dict</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_rlmw_002_short</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">quality_report</span><span class="p">())</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">quality_report</span><span class="p">(</span><span class="n">thresholds</span><span class="o">=</span><span class="p">{</span><span class="s2">"pupil.missing_pct"</span><span class="p">:</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">)})</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.PupilData.reset_time">
 <span class="sig-name descname"><span class="pre">reset_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.PupilData.reset_time" title="Link to this definition">#</a></dt>
 <dd><p>Resets time so that time <cite>t0</cite> becomes time zero.</p>
@@ -2328,6 +2383,7 @@ if <cite>None</cite>, use the object-level setting (specified in the constructor
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.PupilData.pupil_lowpass_filter"><code class="docutils literal notranslate"><span class="pre">pupil_lowpass_filter()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.PupilData.pupil_merge_eyes"><code class="docutils literal notranslate"><span class="pre">pupil_merge_eyes()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.PupilData.pupil_smooth_window"><code class="docutils literal notranslate"><span class="pre">pupil_smooth_window()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.PupilData.quality_report"><code class="docutils literal notranslate"><span class="pre">quality_report()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.PupilData.reset_time"><code class="docutils literal notranslate"><span class="pre">reset_time()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.PupilData.scale"><code class="docutils literal notranslate"><span class="pre">scale()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.PupilData.set_blinks"><code class="docutils literal notranslate"><span class="pre">set_blinks()</span></code></a></li>

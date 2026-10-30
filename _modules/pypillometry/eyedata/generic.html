@@ -1753,6 +1753,60 @@ window.runMermaid = runMermaid;</script>
 
 
 
+<div class="viewcode-block" id="GenericEyeData.quality_report">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.quality_report">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">quality_report</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">thresholds</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">eyes</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span><span class="nb">list</span> <span class="o">=</span> <span class="p">[]):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Report the quality of the data.</span>
+
+<span class="sd">        Measures that need no preprocessing are always computed (on the</span>
+<span class="sd">        stored values, where missing samples are NaN):</span>
+
+<span class="sd">        - pupil (if available): missing data, dropouts (periods of missing</span>
+<span class="sd">          data) and high-frequency noise</span>
+<span class="sd">        - gaze (if available): missing data, off-screen samples (needs the</span>
+<span class="sd">          screen resolution) and precision (in degrees if screen size and</span>
+<span class="sd">          eye distance are set in the experimental setup, else in pixels)</span>
+<span class="sd">        - both eyes: correlation of the pupils and disparity of the gaze</span>
+
+<span class="sd">        Further measures are added if available: blinks (after</span>
+<span class="sd">        :meth:`~pypillometry.PupilData.pupil_blinks_detect`), masked and</span>
+<span class="sd">        interpolated data (after preprocessing) and calibration/validation</span>
+<span class="sd">        errors (e.g., when read from an Eyelink file).</span>
+
+<span class="sd">        Where it makes sense, each measure is labeled as "good", "ok",</span>
+<span class="sd">        "poor" or "bad". The overall label is the worst of all labels.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        thresholds : dict, optional</span>
+<span class="sd">            thresholds for the labels, overriding the defaults in</span>
+<span class="sd">            :data:`pypillometry.quality.DEFAULT_QUALITY_THRESHOLDS`.</span>
+<span class="sd">            Keys are ``"&lt;section&gt;.&lt;metric&gt;"`` (e.g., ``"pupil.missing_pct"``),</span>
+<span class="sd">            values are three bounds ``(good, ok, poor)``. Increasing bounds</span>
+<span class="sd">            mean that lower values are better, decreasing bounds that higher</span>
+<span class="sd">            values are better. `None` turns the label off.</span>
+<span class="sd">        eyes : str or list of str, optional</span>
+<span class="sd">            eye(s) to report; if empty, all available eyes</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        :class:`~pypillometry.QualityReport`</span>
+<span class="sd">            the report; print it for a text version, display it in a</span>
+<span class="sd">            notebook for an HTML version or use</span>
+<span class="sd">            :meth:`~pypillometry.QualityReport.to_dict` to get a dict</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; import pypillometry as pp</span>
+<span class="sd">        &gt;&gt;&gt; d = pp.get_rlmw_002_short()  # doctest: +SKIP</span>
+<span class="sd">        &gt;&gt;&gt; print(d.quality_report())  # doctest: +SKIP</span>
+<span class="sd">        &gt;&gt;&gt; d.quality_report(thresholds={"pupil.missing_pct": (2, 10, 20)})  # doctest: +SKIP</span>
+<span class="sd">        """</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">..quality</span><span class="w"> </span><span class="kn">import</span> <span class="n">_compute_quality_report</span>
+        <span class="k">return</span> <span class="n">_compute_quality_report</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">thresholds</span><span class="o">=</span><span class="n">thresholds</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="n">eyes</span><span class="p">)</span></div>
+
+
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">eyes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""</span>
@@ -2194,7 +2248,7 @@ window.runMermaid = runMermaid;</script>
     <span class="nd">@requires_package</span><span class="p">(</span><span class="s2">"jinja2"</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_repr_html_</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Rich HTML representation for notebooks using Jinja templates."""</span>
-        <span class="kn">from</span><span class="w"> </span><span class="nn">jinja2</span><span class="w"> </span><span class="kn">import</span> <span class="n">Template</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">jinja2</span><span class="w"> </span><span class="kn">import</span> <span class="n">Environment</span>
 
         <span class="n">summary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
         <span class="n">blink_stats_raw</span> <span class="o">=</span> <span class="n">summary</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"blinks"</span><span class="p">,</span> <span class="p">{})</span> <span class="ow">or</span> <span class="p">{}</span>
@@ -2285,7 +2339,8 @@ window.runMermaid = runMermaid;</script>
         <span class="p">}</span>
 
         <span class="n">template_source</span> <span class="o">=</span> <span class="n">resources</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="s2">"pypillometry.templates"</span><span class="p">,</span> <span class="s2">"eyedata_repr.html"</span><span class="p">)</span>
-        <span class="n">template</span> <span class="o">=</span> <span class="n">Template</span><span class="p">(</span><span class="n">template_source</span><span class="p">)</span>
+        <span class="c1"># autoescape, so that names, labels etc. with "&lt;" or "&amp;" are shown as text</span>
+        <span class="n">template</span> <span class="o">=</span> <span class="n">Environment</span><span class="p">(</span><span class="n">autoescape</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">from_string</span><span class="p">(</span><span class="n">template_source</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="o">**</span><span class="n">context</span><span class="p">)</span>
 
 <div class="viewcode-block" id="GenericEyeData.copy">
@@ -2361,9 +2416,6 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        &gt;&gt;&gt; # Drop right eye and pupil data</span>
 <span class="sd">        &gt;&gt;&gt; left_gaze = data.drop_data(eyes=['right'], variables=['pupil'])</span>
 <span class="sd">        """</span>
-        <span class="c1"># Import here to avoid circular imports</span>
-        <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">PupilData</span><span class="p">,</span> <span class="n">GazeData</span><span class="p">,</span> <span class="n">EyeData</span>
-        
         <span class="c1"># Normalize inputs to lists</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">eyes</span> <span class="o">=</span> <span class="p">[</span><span class="n">eyes</span><span class="p">]</span>
@@ -2422,10 +2474,24 @@ window.runMermaid = runMermaid;</script>
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">interp_to_remove</span><span class="p">:</span>
             <span class="k">del</span> <span class="n">result</span><span class="o">.</span><span class="n">_interpolated_blinks</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
         
-        <span class="c1"># Determine target class based on remaining variables</span>
-        <span class="n">has_pupil</span> <span class="o">=</span> <span class="s1">'pupil'</span> <span class="ow">in</span> <span class="n">remaining_vars</span>
-        <span class="n">has_gaze</span> <span class="o">=</span> <span class="s1">'x'</span> <span class="ow">in</span> <span class="n">remaining_vars</span> <span class="ow">or</span> <span class="s1">'y'</span> <span class="ow">in</span> <span class="n">remaining_vars</span>
-        
+        <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">_cast_to_data_class</span><span class="p">()</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_cast_to_data_class</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return the object cast to the class that matches its data.</span>
+
+<span class="sd">        Objects with pupil and gaze data become EyeData, objects with only</span>
+<span class="sd">        pupil data PupilData and objects with only gaze data GazeData. Objects</span>
+<span class="sd">        with neither keep their class. The attributes are shared with `self`</span>
+<span class="sd">        (not copied).</span>
+<span class="sd">        """</span>
+        <span class="c1"># Import here to avoid circular imports</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">PupilData</span><span class="p">,</span> <span class="n">GazeData</span><span class="p">,</span> <span class="n">EyeData</span>
+
+        <span class="n">variables</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get_available_variables</span><span class="p">()</span>
+        <span class="n">has_pupil</span> <span class="o">=</span> <span class="s1">'pupil'</span> <span class="ow">in</span> <span class="n">variables</span>
+        <span class="n">has_gaze</span> <span class="o">=</span> <span class="s1">'x'</span> <span class="ow">in</span> <span class="n">variables</span> <span class="ow">or</span> <span class="s1">'y'</span> <span class="ow">in</span> <span class="n">variables</span>
         <span class="k">if</span> <span class="n">has_pupil</span> <span class="ow">and</span> <span class="n">has_gaze</span><span class="p">:</span>
             <span class="n">target_class</span> <span class="o">=</span> <span class="n">EyeData</span>
         <span class="k">elif</span> <span class="n">has_pupil</span><span class="p">:</span>
@@ -2433,18 +2499,13 @@ window.runMermaid = runMermaid;</script>
         <span class="k">elif</span> <span class="n">has_gaze</span><span class="p">:</span>
             <span class="n">target_class</span> <span class="o">=</span> <span class="n">GazeData</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># Other variables only - keep current class</span>
             <span class="n">target_class</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span>
-        
-        <span class="c1"># Cast to target class if different</span>
-        <span class="k">if</span> <span class="n">target_class</span> <span class="o">!=</span> <span class="n">result</span><span class="o">.</span><span class="vm">__class__</span><span class="p">:</span>
-            <span class="n">new_result</span> <span class="o">=</span> <span class="n">target_class</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="n">target_class</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="nb">setattr</span><span class="p">(</span><span class="n">new_result</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">new_result</span>
-        
-        <span class="k">return</span> <span class="n">result</span></div>
 
+        <span class="k">if</span> <span class="n">target_class</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">target_class</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="n">target_class</span><span class="p">)</span>
+        <span class="n">result</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span>
 
 <div class="viewcode-block" id="GenericEyeData.set_event_onsets">
 <a class="viewcode-back" href="../../../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.set_event_onsets">[docs]</a>

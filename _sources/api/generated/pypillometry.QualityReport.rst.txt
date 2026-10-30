@@ -1,0 +1,29 @@
+﻿QualityReport
+=============
+
+.. currentmodule:: pypillometry
+
+.. autoclass:: QualityReport
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~QualityReport.issues
+      ~QualityReport.keys
+      ~QualityReport.labels
+      ~QualityReport.metrics
+      ~QualityReport.to_dict
+      ~QualityReport.to_text
+   
+   
+
+
+   .. rubric:: Details

@@ -539,6 +539,24 @@ EyeData(recording.edf, 124.5MiB):
 </div>
 <p>The calibration line shows the validation error (in degrees) for each
 eye, and the history lists all processing steps applied to the data so far.</p>
+<p>With <code class="docutils literal notranslate"><span class="pre">-Q</span></code>/<code class="docutils literal notranslate"><span class="pre">--quality</span></code>, <code class="docutils literal notranslate"><span class="pre">pypilinfo</span></code> prints a data-quality report
+instead of the summary (see <a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.quality_report" title="pypillometry.GenericEyeData.quality_report"><code class="xref py py-meth docutils literal notranslate"><span class="pre">quality_report()</span></code></a>):
+missing data, dropouts, noise, gaze precision, calibration errors etc.,
+each labeled “good”, “ok”, “poor” or “bad”. Add <code class="docutils literal notranslate"><span class="pre">-d</span></code>/<code class="docutils literal notranslate"><span class="pre">--descriptions</span></code>
+to explain each measure and its thresholds. For several files, a summary
+table (one row per file with the overall label and the worst label of each
+section) comes before the individual reports.</p>
+<p>With <code class="docutils literal notranslate"><span class="pre">--html</span></code>, the quality reports of all files are written to one HTML
+page, which is opened in the browser; hover over a measure to see its
+description. For several files, the page starts
+with the summary table, which links to the individual reports. Use <code class="docutils literal notranslate"><span class="pre">-o</span></code> to choose the file name
+(default: a temporary file) and <code class="docutils literal notranslate"><span class="pre">--no-open</span></code> to only write the file.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pypilinfo<span class="w"> </span>-Q<span class="w"> </span>recording.pkl
+pypilinfo<span class="w"> </span>-Q<span class="w"> </span>-d<span class="w"> </span>recording.pkl
+pypilinfo<span class="w"> </span>--html<span class="w"> </span>data/*.pkl
+pypilinfo<span class="w"> </span>--html<span class="w"> </span>-o<span class="w"> </span>quality.html<span class="w"> </span>--no-open<span class="w"> </span>data/*.pkl
+</pre></div>
+</div>
 </section>
 <section id="edf2pypil-convert-edf-files">
 <h2><code class="docutils literal notranslate"><span class="pre">edf2pypil</span></code>: convert EDF files<a class="headerlink" href="#edf2pypil-convert-edf-files" title="Link to this heading">#</a></h2>

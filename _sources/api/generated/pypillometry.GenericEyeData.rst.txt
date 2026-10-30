@@ -41,6 +41,7 @@
       ~GenericEyeData.nblinks
       ~GenericEyeData.nevents
       ~GenericEyeData.print_history
+      ~GenericEyeData.quality_report
       ~GenericEyeData.reset_time
       ~GenericEyeData.scale
       ~GenericEyeData.set_blinks

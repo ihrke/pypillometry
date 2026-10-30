@@ -35,3 +35,16 @@ Base class and containers
    :nosignatures:
 
    keephistory
+
+Quality report
+--------------
+
+See :meth:`GenericEyeData.quality_report`.
+
+.. autosummary::
+   :toctree: generated
+   :template: class.rst
+   :nosignatures:
+
+   QualityReport
+   QualityMetric

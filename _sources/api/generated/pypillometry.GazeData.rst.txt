@@ -43,6 +43,7 @@
       ~GazeData.nblinks
       ~GazeData.nevents
       ~GazeData.print_history
+      ~GazeData.quality_report
       ~GazeData.reset_time
       ~GazeData.scale
       ~GazeData.set_blinks

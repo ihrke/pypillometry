@@ -34,7 +34,6 @@
       ~FakeEyeData.get_generation_call
       ~FakeEyeData.get_interpolated_blinks
       ~FakeEyeData.get_intervals
-      ~FakeEyeData.get_pupildata
       ~FakeEyeData.get_segments
       ~FakeEyeData.get_size
       ~FakeEyeData.interpolate_intervals
@@ -54,6 +53,7 @@
       ~FakeEyeData.pupil_lowpass_filter
       ~FakeEyeData.pupil_merge_eyes
       ~FakeEyeData.pupil_smooth_window
+      ~FakeEyeData.quality_report
       ~FakeEyeData.regenerate
       ~FakeEyeData.reset_time
       ~FakeEyeData.scale
@@ -64,6 +64,8 @@
       ~FakeEyeData.stat_per_event
       ~FakeEyeData.sub_slice
       ~FakeEyeData.summary
+      ~FakeEyeData.to_gazedata
+      ~FakeEyeData.to_pupildata
       ~FakeEyeData.unscale
       ~FakeEyeData.write_file
    

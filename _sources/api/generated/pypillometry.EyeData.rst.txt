@@ -33,7 +33,6 @@
       ~EyeData.get_events
       ~EyeData.get_interpolated_blinks
       ~EyeData.get_intervals
-      ~EyeData.get_pupildata
       ~EyeData.get_segments
       ~EyeData.get_size
       ~EyeData.interpolate_intervals
@@ -53,6 +52,7 @@
       ~EyeData.pupil_lowpass_filter
       ~EyeData.pupil_merge_eyes
       ~EyeData.pupil_smooth_window
+      ~EyeData.quality_report
       ~EyeData.reset_time
       ~EyeData.scale
       ~EyeData.set_blinks
@@ -62,6 +62,8 @@
       ~EyeData.stat_per_event
       ~EyeData.sub_slice
       ~EyeData.summary
+      ~EyeData.to_gazedata
+      ~EyeData.to_pupildata
       ~EyeData.unscale
       ~EyeData.write_file
    

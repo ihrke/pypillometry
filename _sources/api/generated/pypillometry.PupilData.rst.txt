@@ -48,6 +48,7 @@
       ~PupilData.pupil_lowpass_filter
       ~PupilData.pupil_merge_eyes
       ~PupilData.pupil_smooth_window
+      ~PupilData.quality_report
       ~PupilData.reset_time
       ~PupilData.scale
       ~PupilData.set_blinks

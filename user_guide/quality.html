@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Data quality &#8212; pypillometry v2.0.0</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx_autodoc_typehints.css?v=057ac668" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=e89b0eda" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
+
+    <script src="../_static/documentation_options.js?v=aa039f9c"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user_guide/quality';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../_static/pypillometry_logo_200x200.png"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Events, intervals and segments" href="events_intervals.html" />
+    <link rel="prev" title="Preprocessing" href="preprocessing.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="v2.0.0" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="light">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+<aside class="bd-header-announcement" aria-label="Announcement">
+  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
+</aside>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="../_static/pypillometry_logo_200x200.png" class="logo__image only-light" alt=""/>
+    <img src="../_static/pypillometry_logo_200x200.png" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">pypillometry</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../experimental/index.html">
+    Experimental features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../development/index.html">
+    Development
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ihrke/pypillometry" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pypillometry/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../experimental/index.html">
+    Experimental features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../development/index.html">
+    Development
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ihrke/pypillometry" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pypillometry/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button type="button" id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="data_model.html">Data objects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="loading_data.html">Loading and saving data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="units.html">Units</a></li>
+<li class="toctree-l1"><a class="reference internal" href="preprocessing.html">Preprocessing</a></li>
+<li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">Data quality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="events_intervals.html">Events, intervals and segments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plotting.html">Plotting</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="interactive.html">Interactive tools</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="viewer.html">GPU-Accelerated Viewer (pp.view)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tweak.html">Interactive Parameter Tweaking (pp.tweak)</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="modeling.html">Modeling the pupil signal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="studies.html">Studies with many participants</a></li>
+<li class="toctree-l1"><a class="reference internal" href="settings.html">Settings and logging</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">User guide</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Data quality</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="data-quality">
+<h1>Data quality<a class="headerlink" href="#data-quality" title="Link to this heading">#</a></h1>
+<p><a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.quality_report" title="pypillometry.GenericEyeData.quality_report"><code class="xref py py-meth docutils literal notranslate"><span class="pre">quality_report()</span></code></a> summarizes the quality of a
+dataset: missing data, dropouts and noise of the pupil, missing and
+off-screen samples and precision of the gaze, and agreement between the
+eyes. These measures need no preprocessing. After preprocessing, blinks and
+masked/interpolated data are reported as well, and calibration errors if
+they are available (e.g., from an Eyelink file).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">report</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">quality_report</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">report</span><span class="p">)</span>               <span class="c1"># text, colored labels</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">report</span><span class="o">.</span><span class="n">to_text</span><span class="p">(</span><span class="n">descriptions</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+<span class="n">report</span>                      <span class="c1"># HTML table in a notebook</span>
+<span class="n">report</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>   <span class="c1"># e.g., for a DataFrame</span>
+<span class="n">report</span><span class="o">.</span><span class="n">issues</span><span class="p">()</span>             <span class="c1"># "poor" or "bad" measures</span>
+</pre></div>
+</div>
+<p>From the command line, <code class="docutils literal notranslate"><span class="pre">pypilinfo</span> <span class="pre">-Q</span></code> prints the report and
+<code class="docutils literal notranslate"><span class="pre">pypilinfo</span> <span class="pre">--html</span></code> opens it in a browser (see
+<a class="reference internal" href="../getting_started/cli.html"><span class="doc">Command-line tools</span></a>).</p>
+<section id="labels-and-thresholds">
+<h2>Labels and thresholds<a class="headerlink" href="#labels-and-thresholds" title="Link to this heading">#</a></h2>
+<p>Each measure is labeled “good”, “ok”, “poor” or “bad”, and the report has
+an overall label (the worst one). A label is assigned by comparing the value
+to three bounds <code class="docutils literal notranslate"><span class="pre">(good,</span> <span class="pre">ok,</span> <span class="pre">poor)</span></code>: with the bounds <code class="docutils literal notranslate"><span class="pre">(5,</span> <span class="pre">15,</span> <span class="pre">30)</span></code> for
+missing data, up to 5% is “good”, up to 15% “ok”, up to 30% “poor” and
+anything above “bad”. For measures where higher is better (e.g., the
+correlation between the eyes), the bounds are decreasing.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>The default thresholds are rules of thumb. They are based on published
+data (blink rate), on reference data from six of our own datasets
+(pupil, gaze, binocular and calibration measures, see
+<a class="reference internal" href="#reference-data">Reference data</a>) or on conventions (calibration), but where exactly a
+line is drawn is arbitrary. What counts as good data depends on the eye
+tracker, the population and the research question: a study of slow baseline changes tolerates more
+missing data than one of fast, small responses. Use the labels to find
+recordings that need a closer look, not to exclude data automatically,
+and change the thresholds if they do not fit your study.</p>
+</div>
+<p>The thresholds are changed with the <code class="docutils literal notranslate"><span class="pre">thresholds</span></code> argument; keys are
+<code class="docutils literal notranslate"><span class="pre">&quot;&lt;section&gt;.&lt;measure&gt;&quot;</span></code>, and <cite>None</cite> removes the label:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">quality_report</span><span class="p">(</span><span class="n">thresholds</span><span class="o">=</span><span class="p">{</span><span class="s2">"pupil.missing_pct"</span><span class="p">:</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span>
+                             <span class="s2">"blinks.rate"</span><span class="p">:</span> <span class="kc">None</span><span class="p">})</span>
+</pre></div>
+</div>
+<p>The defaults are in <code class="xref py py-data docutils literal notranslate"><span class="pre">pypillometry.quality.DEFAULT_QUALITY_THRESHOLDS</span></code>.
+The rest of this page explains how they were chosen.</p>
+<p>To check the thresholds against your own data, the script
+<a class="reference download internal" download="" href="../_downloads/cc4982ae12ba5382a57e436e0c5c437f/collect_quality_reference.py"><code class="xref download docutils literal notranslate"><span class="pre">collect_quality_reference.py</span></code></a>
+collects all measures of many EDF or pypillometry files in one CSV table
+(one row per measure, with the eye tracker and its settings and a note), so
+that you can look at their distributions:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">docs</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">collect_quality_reference</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">o</span> <span class="n">quality</span><span class="o">.</span><span class="n">csv</span> \
+    <span class="o">--</span><span class="n">note</span> <span class="s2">"lab A, EyeLink 1000, chin rest"</span> <span class="n">data</span><span class="o">/*.</span><span class="n">edf</span>
+</pre></div>
+</div>
+<p>By default, blinks are detected first so that the blink and artifact
+measures are included.</p>
+</section>
+<section id="reference-data">
+<h2>Reference data<a class="headerlink" href="#reference-data" title="Link to this heading">#</a></h2>
+<p>The thresholds for the raw pupil and gaze measures, the agreement between
+the eyes and the calibration were checked against the distributions of
+these measures in six datasets recorded with EyeLink eye trackers in
+different setups (650 eye-recordings from 390 files):</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>dataset</p></th>
+<th class="head"><p>eye tracker</p></th>
+<th class="head"><p>rate</p></th>
+<th class="head"><p>files</p></th>
+<th class="head"><p>eyes</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>RLMW</p></td>
+<td><p>EyeLink 1000 (stationary)</p></td>
+<td><p>500 Hz</p></td>
+<td><p>50</p></td>
+<td><p>both</p></td>
+</tr>
+<tr class="row-odd"><td><p>Ambient light</p></td>
+<td><p>EyeLink 1000 (stationary)</p></td>
+<td><p>1000 Hz</p></td>
+<td><p>83</p></td>
+<td><p>both</p></td>
+</tr>
+<tr class="row-even"><td><p>Pavlov</p></td>
+<td><p>portable EyeLink</p></td>
+<td><p>500 Hz</p></td>
+<td><p>86</p></td>
+<td><p>both</p></td>
+</tr>
+<tr class="row-odd"><td><p>Respiration</p></td>
+<td><p>portable EyeLink</p></td>
+<td><p>1000 Hz</p></td>
+<td><p>43</p></td>
+<td><p>both</p></td>
+</tr>
+<tr class="row-even"><td><p>3T fMRI</p></td>
+<td><p>EyeLink long-range, 3T MRI scanner</p></td>
+<td><p>1000 Hz</p></td>
+<td><p>27</p></td>
+<td><p>one</p></td>
+</tr>
+<tr class="row-odd"><td><p>7T fMRI</p></td>
+<td><p>EyeLink long-range, 7T MRI scanner</p></td>
+<td><p>1000 Hz</p></td>
+<td><p>101</p></td>
+<td><p>one</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>All datasets recorded pupil area. The only preprocessing was that the
+periods outside of the task were cut out of each recording: the time before
+the experiment started (e.g., instructions, practice, a resting-state or
+adaptation period), breaks between blocks and the time after the end. These
+periods were identified from the triggers of each study and removed 1–33%
+of the recording time (median per dataset); periods in which the
+participant is away or not looking at the screen otherwise dominate
+measures such as the longest dropout. No blinks were detected, so missing
+data and dropouts include the blinks.</p>
+<p>The table shows percentiles of each measure in the five datasets from the
+lab setups and the 3T scanner (549 eye-recordings, 259 for the binocular
+measures), the share of recordings that get each label with the default
+thresholds, and the median of the 7T dataset, whose data quality is clearly
+different (noisier and with more artifacts):</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>measure</p></th>
+<th class="head"><p>P5</p></th>
+<th class="head"><p>P25</p></th>
+<th class="head"><p>P50</p></th>
+<th class="head"><p>P75</p></th>
+<th class="head"><p>P95</p></th>
+<th class="head"><p>good / ok / poor / bad</p></th>
+<th class="head"><p>7T P50</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">pupil.missing_pct</span></code> (%)</p></td>
+<td><p>1.0</p></td>
+<td><p>3.4</p></td>
+<td><p>5.8</p></td>
+<td><p>10.1</p></td>
+<td><p>28.4</p></td>
+<td><p>74 / 16 / 7 / 2</p></td>
+<td><p>13.0</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">pupil.dropout_rate</span></code> (/min)</p></td>
+<td><p>5.9</p></td>
+<td><p>17.4</p></td>
+<td><p>28.9</p></td>
+<td><p>53.1</p></td>
+<td><p>174</p></td>
+<td><p>52 / 28 / 15 / 5</p></td>
+<td><p>104</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">pupil.longest_dropout</span></code> (s)</p></td>
+<td><p>0.32</p></td>
+<td><p>0.56</p></td>
+<td><p>0.92</p></td>
+<td><p>2.19</p></td>
+<td><p>57.6</p></td>
+<td><p>74 / 11 / 9 / 6</p></td>
+<td><p>1.10</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">pupil.noise</span></code> (%)</p></td>
+<td><p>0.056</p></td>
+<td><p>0.092</p></td>
+<td><p>0.143</p></td>
+<td><p>0.236</p></td>
+<td><p>0.383</p></td>
+<td><p>99 / 1 / 0 / 0</p></td>
+<td><p>0.65</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">pupil.jump_rate</span></code> (/min)</p></td>
+<td><p>0</p></td>
+<td><p>0.11</p></td>
+<td><p>0.21</p></td>
+<td><p>0.61</p></td>
+<td><p>70.6</p></td>
+<td><p>80 / 12 / 3 / 5</p></td>
+<td><p>64</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">gaze.offscreen_pct</span></code> (%)</p></td>
+<td><p>0.01</p></td>
+<td><p>0.19</p></td>
+<td><p>0.62</p></td>
+<td><p>1.67</p></td>
+<td><p>4.99</p></td>
+<td><p>95 / 4 / 1 / 0</p></td>
+<td><p>0.11</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">calibration.mean_error</span></code> (deg)</p></td>
+<td><p>0.26</p></td>
+<td><p>0.34</p></td>
+<td><p>0.42</p></td>
+<td><p>0.53</p></td>
+<td><p>0.78</p></td>
+<td><p>70 / 28 / 1 / 0</p></td>
+<td><p>–</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">calibration.max_error</span></code> (deg)</p></td>
+<td><p>0.47</p></td>
+<td><p>0.63</p></td>
+<td><p>0.77</p></td>
+<td><p>0.97</p></td>
+<td><p>1.62</p></td>
+<td><p>77 / 16 / 4 / 3</p></td>
+<td><p>–</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">binocular.pupil_correlation</span></code></p></td>
+<td><p>0.88</p></td>
+<td><p>0.93</p></td>
+<td><p>0.97</p></td>
+<td><p>0.99</p></td>
+<td><p>0.997</p></td>
+<td><p>91 / 8 / 1 / 0</p></td>
+<td><p>–</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The thresholds were chosen so that typical recordings from standard lab
+setups are “good” (usually about three quarters of them) and “bad” is left
+for the few recordings with clear problems. The percentiles of each dataset
+are in
+<a class="reference download internal" download="" href="../_downloads/0b2174f8d3f15dd6702d1c7309c83214/quality_reference_task_datasets.csv"><code class="xref download docutils literal notranslate"><span class="pre">quality_reference_task_datasets.csv</span></code></a>
+(pooled: <a class="reference download internal" download="" href="../_downloads/689fa529d877847bd43ddb3e889a8b90/quality_reference_task.csv"><code class="xref download docutils literal notranslate"><span class="pre">quality_reference_task.csv</span></code></a>).
+Six datasets from one manufacturer cannot cover all eye trackers, settings
+and populations, so check the distributions for your own setup (see
+above). Because periods without a task change several measures a lot, run
+the report on the task periods (e.g., after cutting out breaks) when you
+compare recordings.</p>
+</section>
+<section id="blink-rate">
+<h2>Blink rate<a class="headerlink" href="#blink-rate" title="Link to this heading">#</a></h2>
+<p>Blink rates differ a lot between people, and the between-person
+distribution is skewed: it is approximately log-normal. The figure shows
+log-normal distributions fitted to blink rates reported in several studies.
+The SD of the log rate is about 0.6–0.8 in most of them. The median is
+about 10 blinks/min during reading or a screen task and somewhat higher
+during silent rest; during conversation, people blink much more (about 30
+blinks/min), but that does not apply to a typical pupillometry experiment.</p>
+<img alt="Between-person distributions of blink rates from several studies, with the log-normal priors for screen tasks (median 10/min) and silent rest (median 13/min)." src="../_images/blink_rates.png" />
+<p>For a screen task with a chin rest, a log-normal distribution with median
+10 blinks/min and SD 0.65 (of the log rate) describes these data well. The
+thresholds for <code class="docutils literal notranslate"><span class="pre">blinks.rate</span></code> are 1, 2 and 3 SD above the median, rounded:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>label</p></th>
+<th class="head"><p>blink rate</p></th>
+<th class="head"><p>share of people below</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>good</p></td>
+<td><p>up to 20/min</p></td>
+<td><p>~84% (median + 1 SD)</p></td>
+</tr>
+<tr class="row-odd"><td><p>ok</p></td>
+<td><p>up to 35/min</p></td>
+<td><p>~98% (median + 2 SD)</p></td>
+</tr>
+<tr class="row-even"><td><p>poor</p></td>
+<td><p>up to 70/min</p></td>
+<td><p>~99.9% (median + 3 SD)</p></td>
+</tr>
+<tr class="row-odd"><td><p>bad</p></td>
+<td><p>above 70/min</p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>A high blink rate is not a problem in itself, but it means more missing
+data, and very high rates often mean that something other than blinks (lost
+tracking, a drooping eyelid, glasses) is detected as blinks. A low blink rate
+gets no label: some people rarely blink, especially while concentrating.</p>
+<p><code class="docutils literal notranslate"><span class="pre">blinks.time_pct</span></code> (time in blinks) follows from the rate: a blink,
+including the margins that blink detection masks around it, takes roughly
+300 ms, so 20 blinks/min take about 10% of the time, 35 blinks/min about 20%
+and 70 blinks/min about 35%. The bounds are therefore <code class="docutils literal notranslate"><span class="pre">(10,</span> <span class="pre">20,</span> <span class="pre">35)</span></code>.</p>
+<p>The figure is based on Doughty (2002) and Dang et al. (2017) for rest,
+Nagarajan et al. (2024) and Chidi-Egboka et al. (2023) for reading from a
+screen or print, and Chidi-Egboka et al. (2023) for conversation.</p>
+<p>Blinks also affect the pupil itself. Each blink is followed by a
+pulse-like pupil response, a constriction followed by a dilation, of
+substantial size and duration (Yoo, Ahn, &amp; Lee, 2021). Interpolating the missing samples during the blink does not
+remove this response. Because blinking depends on the task (people blink
+less while they concentrate and more after a response or at the end of a
+trial), the blink-locked response can differ between experimental
+conditions and be mistaken for an effect of the condition. A blink rate in
+the “good” range does not rule this out: if blinks are frequent or their
+timing differs between conditions, check the blink rate per condition, and
+consider modeling or removing the blink-locked response (Yoo et al., 2021).</p>
+</section>
+<section id="pupil">
+<h2>Pupil<a class="headerlink" href="#pupil" title="Link to this heading">#</a></h2>
+<dl>
+<dt><code class="docutils literal notranslate"><span class="pre">pupil.missing_pct</span></code> <code class="docutils literal notranslate"><span class="pre">(10,</span> <span class="pre">20,</span> <span class="pre">40)</span></code></dt><dd><p>Blinks alone make about 3–5% of the samples missing at a normal blink
+rate (10 blinks/min of ~300 ms each). In the reference data (see
+<a class="reference internal" href="#reference-data">Reference data</a>), the median is about 6% and three quarters of the
+recordings from lab setups have up to 10% missing data: this is the
+“good” range. Up to 20% is still common, also in good setups. Above 40%,
+a large part of the data has to be interpolated or is lost, and many
+studies would consider excluding the trial or participant.</p>
+<img alt="Missing pupil data per recording and eye in six datasets, with the label borders at 10, 20 and 40%." src="../_images/quality_ref_missing.png" />
+<figure class="align-default" id="id1">
+<img alt="Examples of missing pupil data for each label (60 s of the task; red = missing samples)." src="../_images/quality_example_missing.png" />
+<figcaption>
+<p><span class="caption-text">Examples of missing pupil data for each label (60 s of the task; red = missing samples).</span><a class="headerlink" href="#id1" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">pupil.dropout_rate</span></code> <code class="docutils literal notranslate"><span class="pre">(30,</span> <span class="pre">60,</span> <span class="pre">150)</span></code></dt><dd><p>In raw data, most dropouts are blinks. Up to 30 dropouts/min is within
+the range of normal blink rates (see <a class="reference internal" href="#blink-rate">Blink rate</a>) and the median of
+the reference data (29/min). Rates above 60/min (about the top 20% of
+the reference data) are more than blinks can explain and point to
+unstable tracking; above 150/min (the top 5%), the tracking is lost
+again and again.</p>
+<img alt="Dropouts per minute per recording and eye in six datasets, with the label borders at 30, 60 and 150 per minute." src="../_images/quality_ref_dropout_rate.png" />
+<figure class="align-default" id="id2">
+<img alt="Examples of dropout rates for each label (60 s; ticks = start of a dropout)." src="../_images/quality_example_dropout_rate.png" />
+<figcaption>
+<p><span class="caption-text">Examples of dropout rates for each label (60 s; ticks = start of a dropout).</span><a class="headerlink" href="#id2" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<p>The “bad” example consists of bursts of very short (single-sample) gaps, which
+are easy to interpolate: a high dropout rate means that the tracking should be
+checked, not necessarily that the data are unusable.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">pupil.longest_dropout</span></code> <code class="docutils literal notranslate"><span class="pre">(2,</span> <span class="pre">5,</span> <span class="pre">30)</span></code> seconds</dt><dd><p>Blinks rarely last longer than 0.5 s, and gaps of 1–2 s can still be
+interpolated. Dropouts of several seconds (eyes closed, looking away,
+head movement) cannot be interpolated sensibly and may take out whole
+trials; a dropout longer than 30 s means that the eye was lost for a
+substantial time. Three quarters of the recordings in the reference
+data have no dropout longer than 2 s. This measure depends strongly on
+what the recording contains: breaks in which the participant leaves the
+chin rest or closes the eyes give dropouts of minutes. Compute it on the
+task periods only.</p>
+<img alt="Longest dropout per recording and eye in six datasets, with the label borders at 2, 5 and 30 s." src="../_images/quality_ref_longest_dropout.png" />
+<figure class="align-default" id="id3">
+<img alt="Examples of the longest dropout for each label (window around the longest dropout, marked by the arrow)." src="../_images/quality_example_longest_dropout.png" />
+<figcaption>
+<p><span class="caption-text">Examples of the longest dropout for each label (window around the longest dropout, marked by the arrow).</span><a class="headerlink" href="#id3" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">pupil.noise</span></code> <code class="docutils literal notranslate"><span class="pre">(0.5,</span> <span class="pre">1,</span> <span class="pre">2)</span></code> % of the median pupil size</dt><dd><p>The bounds are based on the noise in the reference data (see
+<a class="reference internal" href="#reference-data">Reference data</a>): stationary EyeLink 1000 systems, portable EyeLink
+systems and long-range EyeLink systems in a 3T and a 7T MRI scanner.
+The noise was computed with the quality report from the raw data (pupil
+area) of the task periods of each recording and eye.</p>
+<img alt="Pupil noise per recording and eye in six datasets, on a log scale, with the label borders at 0.5, 1 and 2%." src="../_images/pupil_noise_datasets.png" />
+<figure class="align-default" id="id4">
+<img alt="Examples of pupil noise for each label (1 s of the task, centered, same scale in all panels)." src="../_images/quality_example_noise.png" />
+<figcaption>
+<p><span class="caption-text">Examples of pupil noise for each label (1 s of the task, centered, same scale in all panels).</span><a class="headerlink" href="#id4" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<p>The “ok”, “poor” and “bad” examples come from the 7T data (no other dataset
+exceeds 0.5%); there, the noise mostly consists of repeated drops of the pupil
+value from one sample to the next rather than of fine jitter.</p>
+<p>In the lab setups and the 3T scanner, the medians of the datasets are
+between about 0.05% and 0.3%, and almost all recordings (99%, maximum
+0.6%) are below 0.5%: this is the “good” range. In the 7T scanner, the
+median is about 0.65% and the spread is much larger, with about 10% of
+the recordings above 2%. The “ok” range (up to 1%) covers what a
+difficult setup typically gives; above 1% (“poor”) and especially above
+2% (“bad”), the noise is unusual even for such setups, and the recording
+should be checked.</p>
+<p>The noise also depends on the settings. In both pairs of datasets
+recorded with the same kind of tracker, the 1000 Hz data are noisier
+than the 500 Hz data (by about a factor of 2), and the tracker’s filter
+level matters as well. In the clean setups, the noise is often as small
+as the resolution of the pupil values allows (the tracker stores pupil
+area as whole numbers); there, smaller values mostly mean a larger pupil
+rather than less noise, so the measure separates noisy from clean
+recordings but does not rank clean recordings. All datasets recorded
+pupil area; in percent, the noise of the diameter is about half that of
+the area, so for diameter data, halving the bounds is a reasonable
+start. Six datasets cannot cover all eye trackers and settings, so treat
+the bounds as a starting point.</p>
+<p>To see what is typical for your own setup, collect the measures of
+many files with
+<a class="reference download internal" download="" href="../_downloads/cc4982ae12ba5382a57e436e0c5c437f/collect_quality_reference.py"><code class="xref download docutils literal notranslate"><span class="pre">collect_quality_reference.py</span></code></a>
+(see <a class="reference internal" href="#labels-and-thresholds">Labels and thresholds</a>) and look at the rows with
+<code class="docutils literal notranslate"><span class="pre">metric</span> <span class="pre">==</span> <span class="pre">&quot;noise&quot;</span></code>. The table includes the eye tracker, pupil units
+and filter levels of each file, which explain much of the differences
+between setups.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">pupil.jump_rate</span></code> <code class="docutils literal notranslate"><span class="pre">(1,</span> <span class="pre">10,</span> <span class="pre">100)</span></code> jumps per minute</dt><dd><p>The number of changes from one sample to the next that are larger than
+5% of the median pupil size. Physiological changes of the pupil are much
+slower, so such jumps are artifacts, e.g., distortions of the pupil
+image during saccades or a partly covered pupil. A jump away and back
+counts once. Changes within 50 ms of missing data are ignored, because
+the edges of every blink would otherwise count as jumps (the jump size
+and the margin are set by <code class="docutils literal notranslate"><span class="pre">pypillometry.quality.JUMP_PCT</span></code> and
+<code class="docutils literal notranslate"><span class="pre">JUMP_DROPOUT_MARGIN_MS</span></code>).</p>
+<p>In the reference data from lab setups, jumps are rare (median 0.2/min,
+69–99% of the recordings of each dataset at most 1/min). In both MRI
+scanners, they are frequent (median 64/min at 7T and about 200/min at
+3T), also in the 3T data whose noise is the lowest of all datasets: the
+jumps catch artifacts that the noise measure, which is robust to single
+outliers, does not see.</p>
+<img alt="Jumps per minute per recording and eye in six datasets, with the label borders at 1, 10 and 100 per minute." src="../_images/quality_ref_jump_rate.png" />
+<figure class="align-default" id="id5">
+<img alt="Examples of jump rates for each label (20 s; triangles = counted jumps). Changes at the edges of blinks are not counted." src="../_images/quality_example_jump_rate.png" />
+<figcaption>
+<p><span class="caption-text">Examples of jump rates for each label (20 s; triangles = counted jumps). Changes at the edges of blinks are not counted.</span><a class="headerlink" href="#id5" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+</dd>
+</dl>
+</section>
+<section id="gaze">
+<h2>Gaze<a class="headerlink" href="#gaze" title="Link to this heading">#</a></h2>
+<dl>
+<dt><code class="docutils literal notranslate"><span class="pre">gaze.missing_pct</span></code>, <code class="docutils literal notranslate"><span class="pre">gaze.dropout_rate</span></code>, <code class="docutils literal notranslate"><span class="pre">gaze.longest_dropout</span></code></dt><dd><p>Same bounds and reasoning as for the pupil.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">gaze.offscreen_pct</span></code> <code class="docutils literal notranslate"><span class="pre">(5,</span> <span class="pre">15,</span> <span class="pre">30)</span></code> % of valid samples</dt><dd><p>In a screen experiment, participants should look at the screen.
+Off-screen samples come from looking away or from a calibration that is
+off, and they are usually unusable. In the reference data, the median is
+0.6% and 95% of the recordings from lab setups are below 5%. This needs
+the screen size (see <a class="reference internal" href="../api/generated/pypillometry.GazeData.html#pypillometry.GazeData.set_experimental_setup" title="pypillometry.GazeData.set_experimental_setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_experimental_setup()</span></code></a>).</p>
+<img alt="Off-screen gaze per recording and eye in six datasets, with the label borders at 5, 15 and 30%." src="../_images/quality_ref_offscreen.png" />
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">gaze.precision_deg</span></code> <code class="docutils literal notranslate"><span class="pre">(0.05,</span> <span class="pre">0.1,</span> <span class="pre">0.2)</span></code> degrees</dt><dd><p>The median distance between consecutive samples (sample-to-sample
+precision). Tower-mounted and desktop video eye trackers typically
+achieve a few hundredths of a degree with a chin rest (Holmqvist,
+Nyström, &amp; Mulvey, 2012). Values of 0.1–0.2° or more suggest a poor
+pupil or corneal reflection image, or head movement. The value depends
+on the sampling rate and the tracker’s filters, so compare it between
+recordings of the same setup. Without screen size and eye distance the
+precision is reported in pixels without a label.</p>
+</dd>
+</dl>
+</section>
+<section id="both-eyes">
+<h2>Both eyes<a class="headerlink" href="#both-eyes" title="Link to this heading">#</a></h2>
+<dl>
+<dt><code class="docutils literal notranslate"><span class="pre">binocular.pupil_correlation</span></code> <code class="docutils literal notranslate"><span class="pre">(0.9,</span> <span class="pre">0.8,</span> <span class="pre">0.6)</span></code></dt><dd><p>The pupils of both eyes respond together (the light reflex is
+consensual), so their sizes should be very highly correlated. A lower
+correlation usually means that one eye was tracked poorly. In the
+reference data, the median is 0.97 and 91% of the binocular recordings
+are at or above 0.9. The correlation also depends on how much the pupil
+changes during a recording: with large, light-driven changes it is
+close to 1 (Ambient light), with small changes it is lower although
+both eyes are tracked well.</p>
+<img alt="Correlation of the left and right pupil per binocular recording in four datasets, with the label borders at 0.9, 0.8 and 0.6." src="../_images/quality_ref_pupil_correlation.png" />
+<figure class="align-default" id="id6">
+<img alt="Examples of the correlation between the eyes for each label (60 s; blue = left, orange = right eye). No recording in the reference data is below 0.6." src="../_images/quality_example_pupil_correlation.png" />
+<figcaption>
+<p><span class="caption-text">Examples of the correlation between the eyes for each label (60 s; blue = left, orange = right eye). No recording in the reference data is below 0.6.</span><a class="headerlink" href="#id6" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">binocular.gaze_disparity_deg</span></code> <code class="docutils literal notranslate"><span class="pre">(1,</span> <span class="pre">2,</span> <span class="pre">3)</span></code> degrees</dt><dd><p>Both eyes look at the same point, apart from small vergence differences.
+With a calibration accuracy of about 0.5° per eye, disparities up to 1°
+are expected. Larger disparities point to a calibration problem in one
+eye.</p>
+</dd>
+</dl>
+</section>
+<section id="preprocessing">
+<h2>Preprocessing<a class="headerlink" href="#preprocessing" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">artifacts.pupil_masked_pct</span></code>, <code class="docutils literal notranslate"><span class="pre">artifacts.gaze_masked_pct</span></code> <code class="docutils literal notranslate"><span class="pre">(10,</span> <span class="pre">20,</span> <span class="pre">35)</span></code></dt><dd><p>The share of samples that preprocessing masked (blinks with their
+margins and other artifacts). The bounds match those for the time in
+blinks: masking only the blinks of a typical recording gives about 5–10%.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">artifacts.interpolated_pct</span></code> <code class="docutils literal notranslate"><span class="pre">(10,</span> <span class="pre">20,</span> <span class="pre">30)</span></code></dt><dd><p>Interpolated data are an estimate, not a measurement. If more than
+20–30% of the data is interpolated, results depend heavily on the
+interpolation.</p>
+</dd>
+</dl>
+</section>
+<section id="calibration">
+<h2>Calibration<a class="headerlink" href="#calibration" title="Link to this heading">#</a></h2>
+<dl>
+<dt><code class="docutils literal notranslate"><span class="pre">calibration.mean_error</span></code> <code class="docutils literal notranslate"><span class="pre">(0.5,</span> <span class="pre">1.0,</span> <span class="pre">1.5)</span></code>, <code class="docutils literal notranslate"><span class="pre">calibration.max_error</span></code> <code class="docutils literal notranslate"><span class="pre">(1.0,</span> <span class="pre">1.5,</span> <span class="pre">2.0)</span></code> degrees</dt><dd><p>The first two bounds follow the Eyelink validation ratings: GOOD with a
+mean error up to 0.5° and a maximum error up to 1°, FAIR up to 1° and
+1.5°. The third bound (between “poor” and “bad”) is our choice. In the
+reference data (five datasets with calibration data), the median mean
+error is 0.42° and the median maximum error 0.77°; 70% and 77% of the
+validations are “good”, and 1% and 7% are “poor” or “bad”.</p>
+<img alt="Mean validation error per recording and eye in five datasets, with the label borders at 0.5, 1 and 1.5 degrees." src="../_images/quality_ref_calibration_mean.png" />
+<img alt="Maximum validation error per recording and eye in five datasets, with the label borders at 1, 1.5 and 2 degrees." src="../_images/quality_ref_calibration_max.png" />
+</dd>
+</dl>
+</section>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Link to this heading">#</a></h2>
+<p>Chidi-Egboka, N. C., Jalbert, I., Chen, J., Briggs, N. E., &amp; Golebiowski,
+B. (2023). Blink rate measured in situ decreases while reading from printed
+text or digital devices, regardless of task duration, difficulty, or viewing
+distance. <em>Investigative Ophthalmology &amp; Visual Science</em>, 64(2), 14.
+<a class="reference external" href="https://doi.org/10.1167/iovs.64.2.14">https://doi.org/10.1167/iovs.64.2.14</a></p>
+<p>Dang, L. C., Samanez-Larkin, G. R., Castrellon, J. J., Perkins, S. F.,
+Cowan, R. L., Newhouse, P. A., &amp; Zald, D. H. (2017). Spontaneous eye blink
+rate (EBR) is uncorrelated with dopamine D2 receptor availability and
+unmodulated by dopamine agonism in healthy adults. <em>eNeuro</em>, 4(5),
+ENEURO.0211-17.2017. <a class="reference external" href="https://doi.org/10.1523/ENEURO.0211-17.2017">https://doi.org/10.1523/ENEURO.0211-17.2017</a></p>
+<p>Doughty, M. J. (2002). Further assessment of gender- and blink
+pattern-related differences in the spontaneous eyeblink activity in primary
+gaze in young adult humans. <em>Optometry and Vision Science</em>, 79(7),
+439–447. <a class="reference external" href="https://doi.org/10.1097/00006324-200207000-00013">https://doi.org/10.1097/00006324-200207000-00013</a></p>
+<p>Holmqvist, K., Nyström, M., &amp; Mulvey, F. (2012). Eye tracker data quality:
+What it is and how to measure it. In <em>Proceedings of the Symposium on Eye
+Tracking Research and Applications (ETRA ‘12)</em> (pp. 45–52).
+<a class="reference external" href="https://doi.org/10.1145/2168556.2168563">https://doi.org/10.1145/2168556.2168563</a></p>
+<p>Nagarajan, K., Ravi, K., Periakaruppan, S. P., &amp; Satgunam, P. (2024). When
+noise becomes signal: A study of blink rate using an eye tracker. <em>The
+Ocular Surface</em>, 34, 516–520. <a class="reference external" href="https://doi.org/10.1016/j.jtos.2024.11.002">https://doi.org/10.1016/j.jtos.2024.11.002</a></p>
+<p>Yoo, K., Ahn, J., &amp; Lee, S.-H. (2021). The confounding effects of eye
+blinking on pupillometry, and their remedy. <em>PLOS ONE</em>, 16(12), e0261463.
+<a class="reference external" href="https://doi.org/10.1371/journal.pone.0261463">https://doi.org/10.1371/journal.pone.0261463</a></p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="preprocessing.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Preprocessing</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="events_intervals.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Events, intervals and segments</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#labels-and-thresholds">Labels and thresholds</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reference-data">Reference data</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#blink-rate">Blink rate</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pupil">Pupil</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gaze">Gaze</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#both-eyes">Both eyes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#preprocessing">Preprocessing</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#calibration">Calibration</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#references">References</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  
+  <div class="tocsection editthispage">
+    <a href="https://github.com/ihrke/pypillometry/edit/master/docs/user_guide/quality.rst">
+      <i class="fa-solid fa-pencil"></i>
+      
+      
+        
+          Edit on GitHub
+        
+      
+    </a>
+  </div>
+</div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/user_guide/quality.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2026, Matthias Mittner.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
+  </p>
+</div>
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

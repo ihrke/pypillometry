@@ -1,0 +1,25 @@
+﻿QualityMetric
+=============
+
+.. currentmodule:: pypillometry
+
+.. autoclass:: QualityMetric
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~QualityMetric.format_value
+      ~QualityMetric.to_dict
+   
+   
+
+
+   .. rubric:: Details

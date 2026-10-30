@@ -959,51 +959,86 @@ window.runMermaid = runMermaid;</script>
         <span class="k">return</span> <span class="n">ds</span></div>
 
 
-<div class="viewcode-block" id="EyeData.get_pupildata">
-<a class="viewcode-back" href="../../../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.get_pupildata">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_pupildata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eye</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_select_eyes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eyes</span><span class="p">,</span> <span class="n">variable</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Return the eyes to drop so that only `eyes` (with `variable`) remain."""</span>
+        <span class="n">available</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get_available_eyes</span><span class="p">(</span><span class="n">variable</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">eyes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">eyes</span> <span class="o">=</span> <span class="n">available</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">eyes</span> <span class="o">=</span> <span class="p">[</span><span class="n">eyes</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">eyes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"No eyes selected"</span><span class="p">)</span>
+        <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">eyes</span> <span class="k">if</span> <span class="n">e</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">available</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"No </span><span class="si">%s</span><span class="s2"> data for eye(s): </span><span class="si">%s</span><span class="s2">"</span> <span class="o">%</span> <span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">missing</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">eyes</span> <span class="k">if</span> <span class="n">e</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">eyes</span><span class="p">]</span>
+
+<div class="viewcode-block" id="EyeData.to_pupildata">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.to_pupildata">[docs]</a>
+    <span class="nd">@keephistory</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_pupildata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Return the pupil data as a PupilData object.</span>
+<span class="sd">        Return a copy of the data as a PupilData object (without gaze data).</span>
+
+<span class="sd">        All other data are kept (masks, blinks, events, parameters, history,</span>
+<span class="sd">        further variables), so the result can be processed further as if it</span>
+<span class="sd">        had been loaded as PupilData. This never works in place.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        eye : str, optional</span>
-<span class="sd">            Which eye to return data for. If `None`, the dataset must contain</span>
-<span class="sd">            only one eye, which is then used.</span>
+<span class="sd">        eyes : str or list of str, optional</span>
+<span class="sd">            Eyes to keep (e.g., ``"left"`` or ``["left", "right"]``); if</span>
+<span class="sd">            `None`, all eyes with pupil data are kept.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        PupilData</span>
-<span class="sd">            A PupilData object containing the pupil data of `eye` (as</span>
-<span class="sd">            ``"&lt;eye&gt;_pupil"``), the time vector and the events.</span>
+<span class="sd">            copy of the data without the x/y variables</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
 <span class="sd">        ValueError</span>
-<span class="sd">            if `eye` is `None` and there is more than one eye, or if there is</span>
-<span class="sd">            no data for `eye`</span>
-<span class="sd">        """</span>
-        <span class="k">if</span> <span class="n">eye</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eyes</span><span class="p">)</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
-                <span class="n">eye</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">eyes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"More than one eye in the dataset. Please specify which eye to use."</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">eye</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="n">k</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">()]:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"No pupil data for eye: </span><span class="si">%s</span><span class="s2">"</span> <span class="o">%</span> <span class="n">eye</span><span class="p">)</span>
-        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">"time"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span>
-            <span class="n">eye</span><span class="o">+</span><span class="s2">"_pupil"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="o">+</span><span class="s2">"_pupil"</span><span class="p">],</span>
-            <span class="s2">"sampling_rate"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
-            <span class="s2">"event_onsets"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_onsets</span><span class="p">,</span>
-            <span class="s2">"event_labels"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_labels</span><span class="p">,</span>
-            <span class="s2">"name"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="o">+</span><span class="s2">"_pd"</span><span class="p">,</span>
-            <span class="s2">"keep_orig"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
-            <span class="s2">"inplace"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">inplace</span>
-        <span class="p">}</span>
-        <span class="n">pobj</span> <span class="o">=</span> <span class="n">PupilData</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">pobj</span>        </div>
+<span class="sd">            if there is no pupil data for one of `eyes`</span>
 
-    
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; pd = d.to_pupildata()           # all eyes</span>
+<span class="sd">        &gt;&gt;&gt; pd_left = d.to_pupildata("left")</span>
+<span class="sd">        """</span>
+        <span class="n">drop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_select_eyes</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span> <span class="s2">"pupil"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">drop_data</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="n">drop</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s2">"x"</span><span class="p">,</span> <span class="s2">"y"</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="EyeData.to_gazedata">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.to_gazedata">[docs]</a>
+    <span class="nd">@keephistory</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_gazedata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return a copy of the data as a GazeData object (without pupil data).</span>
+
+<span class="sd">        All other data are kept (masks, blinks, events, parameters, history,</span>
+<span class="sd">        experimental setup, calibration, further variables). This never works</span>
+<span class="sd">        in place.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        eyes : str or list of str, optional</span>
+<span class="sd">            Eyes to keep (e.g., ``"left"`` or ``["left", "right"]``); if</span>
+<span class="sd">            `None`, all eyes with gaze data are kept.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        GazeData</span>
+<span class="sd">            copy of the data without the pupil variable</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            if there is no gaze data for one of `eyes`</span>
+<span class="sd">        """</span>
+        <span class="n">drop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_select_eyes</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span> <span class="s2">"x"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">drop_data</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="n">drop</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s2">"pupil"</span><span class="p">])</span></div>
+
 
 <div class="viewcode-block" id="EyeData.correct_pupil_foreshortening">
 <a class="viewcode-back" href="../../../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.correct_pupil_foreshortening">[docs]</a>
