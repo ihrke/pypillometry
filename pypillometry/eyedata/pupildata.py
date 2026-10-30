@@ -164,8 +164,10 @@ class PupilData(GenericEyeData):
             end_min=self.tx.max()/1000./60.,
             params=self._strfy_params()
         )
-        
-        return summary            
+        if len(self._excluded_ms()) > 0:
+            summary["excluded_minutes"] = self.excluded_duration("min")
+
+        return summary
 
     @keephistory
     def pupil_lowpass_filter(self,  cutoff: float, order: int=2, eyes=[], inplace=None):
@@ -649,6 +651,11 @@ class PupilData(GenericEyeData):
             # Filter by minimum duration and create Intervals object
             filtered_blinks = [(int(on), int(off)+1) for (on,off) in blinks
                                if off+1-on>=min_duration_ix]
+            # blinks in or next to excluded periods are not blinks
+            excl = obj._excluded_mask()
+            if excl.any():
+                filtered_blinks = [(on, off) for on, off in filtered_blinks
+                                   if not excl[max(on-1, 0):off+1].any()]
             logger.debug(f"Filtered {len(filtered_blinks)} blinks by minimum duration")
             intervals_obj = Intervals(
                 intervals=filtered_blinks,
