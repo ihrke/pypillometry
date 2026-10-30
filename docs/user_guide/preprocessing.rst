@@ -155,6 +155,8 @@ Selecting and cleaning up data
    GenericEyeData.sub_slice
    GenericEyeData.reset_time
    GenericEyeData.drop_data
+   EyeData.to_pupildata
+   EyeData.to_gazedata
    GenericEyeData.drop_original
    GenericEyeData.fill_time_discontinuities
    GenericEyeData.copy
@@ -163,6 +165,9 @@ Selecting and cleaning up data
 of the experiment: ``d.sub_slice(3 * u.min, 5 * u.min)``.
 :meth:`~GenericEyeData.reset_time` makes the time vector start at zero
 (or at any other time).
+:meth:`~EyeData.to_pupildata` and :meth:`~EyeData.to_gazedata` turn
+:class:`EyeData` into :class:`PupilData` or :class:`GazeData` (optionally
+for some eyes only), keeping masks, blinks and all other data.
 
 
 References
