@@ -1,7 +1,7 @@
 """
 Script that wrote the format-version-0 fixtures in this folder.
 
-It was run with pypillometry at commit ff0d643 (before the state was
+It was run with pypillometry at commit 2f95c6f (before the state was
 versioned), as ``python make_v0_fixtures.py tests/data/state``. With later
 versions it writes files in the current format instead.
 """
