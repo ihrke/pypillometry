@@ -4,7 +4,7 @@ import numpy as np
 
 import pypillometry as pp
 from pypillometry.quality import (DEFAULT_QUALITY_THRESHOLDS, _label, _run_lengths,
-                                  _diff_noise)
+                                  _diff_noise, _jumps)
 
 
 def _make_data(n=10000, fs=500, missing=None, seed=1):
@@ -51,6 +51,19 @@ class TestHelpers(unittest.TestCase):
         v = np.cumsum(rng.normal(0, 0.01, 20000)) + rng.normal(0, 2, 20000)
         self.assertAlmostEqual(_diff_noise(v), 2, delta=0.1)
 
+    def test_jumps(self):
+        v = np.full(1000, 100.0)
+        missing = np.zeros(1000, bool)
+        v[200] = 110       # spike (up and back): one jump
+        v[500:600] = 90    # step down and back up: two jumps
+        self.assertEqual(_jumps(v, missing, 5, 10), 3)
+        # changes next to missing data are ignored
+        v[800:820] = np.nan
+        missing = np.isnan(v)
+        v[825] = 120
+        self.assertEqual(_jumps(v, missing, 5, 10), 3)
+        self.assertEqual(_jumps(v, missing, 5, 0), 4)
+
 
 class TestQualityReport(unittest.TestCase):
     def test_raw_measures(self):
@@ -76,6 +89,17 @@ class TestQualityReport(unittest.TestCase):
         # gaze dropouts only reported for eyes without pupil
         self.assertNotIn("dropout_rate", r["gaze"]["left"])
         self.assertEqual(r.overall, "ok")
+        # smooth data with noise of ~0.1%: no jumps
+        self.assertEqual(r["pupil"]["left"]["jump_rate"].value, 0)
+        self.assertIsNone(r["pupil"]["left"]["jump_rate"].label)
+        self.assertNotIn("jump_rate", r["gaze"]["left"])
+
+    def test_jump_rate(self):
+        d = _make_data()
+        d.data["left_pupil"][[1000, 3000, 6000]] = 1200  # 3 spikes in 20 s
+        r = d.quality_report()
+        self.assertAlmostEqual(r["pupil"]["left"]["jump_rate"].value, 3 / (20 / 60))
+        self.assertEqual(r["pupil"]["right"]["jump_rate"].value, 0)
 
     def test_setup_measures(self):
         d = _make_data()
