@@ -9,7 +9,8 @@ and is a :class:`QualityReport`. It collects quality measures (each a
 :class:`QualityMetric`) in sections:
 
 - ``info``: duration, sampling rate etc. (no labels)
-- ``pupil``: missing data, dropouts and noise for each eye with pupil data
+- ``pupil``: missing data, dropouts, noise and jumps for each eye with pupil
+  data
 - ``gaze``: missing data, off-screen samples and precision for each eye with
   gaze data
 - ``binocular``: agreement between the eyes (if both eyes are present)
@@ -56,6 +57,7 @@ DEFAULT_QUALITY_THRESHOLDS = {
     "pupil.longest_dropout": (1, 3, 10),
     "pupil.noise": (0.5, 1, 2),
     "pupil.noise_sd": None,
+    "pupil.jump_rate": None,
     # gaze (raw data)
     "gaze.missing_pct": (5, 15, 30),
     "gaze.dropout_rate": (20, 35, 70),
@@ -88,6 +90,14 @@ DEFAULT_QUALITY_THRESHOLDS = {
 
 #: Blinks longer than this (in ms) are counted as "long blinks".
 LONG_BLINK_MS = 500
+
+#: A change from one sample to the next larger than this (in percent of the
+#: median pupil size) is counted as a jump.
+JUMP_PCT = 5
+
+#: Jumps within this time (in ms) of missing data are not counted (the edges
+#: of blinks).
+JUMP_DROPOUT_MARGIN_MS = 50
 
 SECTION_TITLES = {
     "info": "Recording",
@@ -612,6 +622,22 @@ def _diff_noise(v: np.ndarray) -> float:
     return float(sd)
 
 
+def _jumps(v: np.ndarray, missing: np.ndarray, size: float, margin: int) -> int:
+    """
+    Number of jumps in `v`: runs of sample-to-sample changes larger than
+    `size` between valid samples. Changes within `margin` samples of missing
+    data are ignored.
+    """
+    if v.size < 2 or not np.isfinite(size):
+        return 0
+    near = missing.astype(bool)
+    if margin > 0 and near.any():
+        near = np.convolve(near, np.ones(2 * margin + 1), mode="same") > 0
+    big = np.abs(np.diff(v)) > size
+    big &= ~(near[:-1] | near[1:])
+    return len(_run_lengths(big))
+
+
 def _pct(n, total) -> float:
     return 100.0 * n / total if total > 0 else np.nan
 
@@ -708,6 +734,14 @@ def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[]) -> 
               "and slow pupil changes)")
         b.add("pupil", eye, "noise_sd", "noise (SD)", sd, "",
               "high-frequency noise (SD) in the units of the pupil data")
+        margin = int(round(JUMP_DROPOUT_MARGIN_MS / 1000 * fs))
+        n_jumps = _jumps(v, missing, JUMP_PCT / 100 * abs(med), margin)
+        b.add("pupil", eye, "jump_rate", "jumps",
+              n_jumps / dur_min if dur_min > 0 else np.nan, "/min",
+              f"number of changes larger than {JUMP_PCT}% of the median pupil size "
+              f"from one sample to the next, per minute (ignoring "
+              f"{JUMP_DROPOUT_MARGIN_MS} ms around missing data); indicates "
+              "artifacts, e.g., during saccades")
 
     # --- gaze -----------------------------------------------------------
     setup = getattr(obj, "experimental_setup", None)
