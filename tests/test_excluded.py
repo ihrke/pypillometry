@@ -1,0 +1,125 @@
+import os
+import tempfile
+import unittest
+
+import numpy as np
+
+import pypillometry as pp
+from pypillometry import u
+
+
+def _make_data(n=10000, fs=500, t0=5000.0, seed=1):
+    """EyeData starting at `t0` ms with a few blinks (NaN periods)."""
+    rng = np.random.default_rng(seed)
+    t = t0 + np.arange(n) / fs * 1000
+    pupil = 1000 + 50 * np.sin(t / 1000) + rng.normal(0, 1, n)
+    for start in (1000, 3000, 6000, 8000):
+        pupil[start:start + 100] = np.nan
+    x = 500 + rng.normal(0, 0.5, n)
+    y = 400 + rng.normal(0, 0.5, n)
+    return pp.EyeData(time=t, left_x=x, left_y=y, left_pupil=pupil,
+                      sampling_rate=fs, name="test", inplace=False)
+
+
+class TestExcluded(unittest.TestCase):
+    def test_exclude_masks_and_stores(self):
+        d = _make_data()
+        self.assertEqual(len(d.get_excluded()), 0)
+        e = d.exclude_intervals([(5000, 7000)])  # first 2 s (1000 samples)
+        self.assertEqual(len(d.get_excluded()), 0)  # not in place
+        np.testing.assert_array_equal(e.get_excluded().intervals, [(5000, 7000)])
+        self.assertEqual(e.get_excluded(None).intervals, [(0, 1000)])
+        self.assertAlmostEqual(e.excluded_duration("sec"), 2.0)
+        for key in e.data.mask:
+            self.assertTrue(e.data.mask[key][:1000].all())
+            self.assertFalse(e.data.mask[key][1200:1250].any())
+        # the data themselves are not changed
+        np.testing.assert_array_equal(e.data["left_x"], d.data["left_x"])
+
+    def test_merge_and_units(self):
+        d = _make_data()
+        d = d.exclude_intervals([(5000, 6000), (5500, 7000)])
+        d = d.exclude_intervals([(10 * u.sec, 11 * u.sec)])
+        np.testing.assert_array_equal(d.get_excluded().intervals,
+                                      [(5000, 7000), (10000, 11000)])
+        np.testing.assert_array_equal(d.get_excluded("sec").intervals, [(5, 7), (10, 11)])
+        # Intervals in sample indices
+        d = _make_data().exclude_intervals(pp.Intervals([(500, 1000)], None))
+        np.testing.assert_array_equal(d.get_excluded().intervals, [(6000, 7000)])
+
+    def test_intervals_from_events(self):
+        d = _make_data()
+        d.set_event_onsets([7000, 12000], ["break", "break"])
+        iv = d.get_intervals("break", interval=(0, 1000), units="ms")
+        d = d.exclude_intervals(iv)
+        np.testing.assert_array_equal(d.get_excluded().intervals,
+                                      [(7000, 8000), (12000, 13000)])
+        # periods between two events
+        d = _make_data()
+        d.set_event_onsets([7000, 9000], ["break_start", "break_end"])
+        d = d.exclude_intervals(d.get_intervals(("break_start", "break_end"),
+                                                interval=(0, 0), units="ms"))
+        np.testing.assert_array_equal(d.get_excluded().intervals, [(7000, 9000)])
+
+    def test_blinks(self):
+        d = _make_data()
+        n_all = len(d.pupil_blinks_detect())
+        self.assertEqual(n_all, 4)
+        # blink at samples 3000-3100 (11000-11200 ms) is excluded
+        e = d.exclude_intervals([(10900, 11500)])
+        e = e.pupil_blinks_detect(apply_mask=True)
+        self.assertEqual(len(e.get_blinks("left", "pupil")), 3)
+        # excluding after detection removes the stored blink, also one that
+        # only touches the excluded period
+        f = d.pupil_blinks_detect(apply_mask=True)
+        on, off = f.get_blinks("left", "pupil").intervals[1]
+        f = f.exclude_intervals(pp.Intervals([(off, off + 50)], None))
+        self.assertEqual(len(f.get_blinks("left", "pupil")), 3)
+        self.assertEqual(f.nblinks()["left_pupil"], 3)
+
+    def test_interpolation_leaves_excluded(self):
+        d = _make_data().exclude_intervals([(10900, 11500)])
+        before = d.data["left_pupil"].copy()
+        d = d.pupil_blinks_detect(apply_mask=True).pupil_blinks_interpolate()
+        excl = d._excluded_mask()
+        np.testing.assert_array_equal(d.data["left_pupil"][excl], before[excl])
+        self.assertTrue(np.isnan(d.data["left_pupil"][3000:3100]).all())
+
+    def test_time_changes(self):
+        d = _make_data().exclude_intervals([(7000, 8000)])
+        r = d.reset_time()
+        np.testing.assert_array_equal(r.get_excluded().intervals, [(2000, 3000)])
+        self.assertEqual(r.get_excluded(None).intervals, d.get_excluded(None).intervals)
+        s = d.sub_slice(6000, 20000, units="ms")
+        np.testing.assert_array_equal(s.get_excluded().intervals, [(7000, 8000)])
+        self.assertEqual(s.get_excluded(None).intervals, [(500, 1000)])
+        self.assertTrue(s.data.mask["left_x"][500:1000].all())
+        ds = d.downsample(100)
+        self.assertEqual(ds._excluded_mask().sum(), 100)
+        c = d.copy()
+        np.testing.assert_array_equal(c.get_excluded().intervals, [(7000, 8000)])
+
+    def test_pickle_and_old_objects(self):
+        d = _make_data().exclude_intervals([(7000, 8000)])
+        with tempfile.TemporaryDirectory() as tmp:
+            fname = os.path.join(tmp, "d.pypil")
+            pp.write_pickle(d, fname)
+            r = pp.read_pickle(fname)
+        np.testing.assert_array_equal(r.get_excluded().intervals, [(7000, 8000)])
+        # objects saved before excluded periods existed
+        del r._excluded
+        self.assertEqual(len(r.get_excluded()), 0)
+        self.assertFalse(r._excluded_mask().any())
+
+    def test_get_pupildata_and_summary(self):
+        d = _make_data().exclude_intervals([(7000, 8000)])
+        p = d.get_pupildata("left")
+        np.testing.assert_array_equal(p.get_excluded().intervals, [(7000, 8000)])
+        self.assertTrue(p.data.mask["left_pupil"][1000:1500].all())
+        self.assertAlmostEqual(d.summary()["excluded_minutes"], 1 / 60)
+        self.assertNotIn("excluded_minutes", _make_data().summary())
+        self.assertIn("Excluded", d._repr_html_())
+
+
+if __name__ == "__main__":
+    unittest.main()
