@@ -56,6 +56,18 @@ The thresholds are changed with the ``thresholds`` argument; keys are
 The defaults are in :data:`pypillometry.quality.DEFAULT_QUALITY_THRESHOLDS`.
 The rest of this page explains how they were chosen.
 
+To check the thresholds against your own data, the script
+:download:`collect_quality_reference.py <../scripts/collect_quality_reference.py>`
+collects all measures of many EDF or pypillometry files in one CSV table
+(one row per measure, with the eye tracker and its settings and a note), so
+that you can look at their distributions::
+
+    python docs/scripts/collect_quality_reference.py -o quality.csv \
+        --note "lab A, EyeLink 1000, chin rest" data/*.edf
+
+By default, blinks are detected first so that the blink and artifact
+measures are included.
+
 
 Blink rate
 ----------
