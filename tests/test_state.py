@@ -1,5 +1,6 @@
 """Tests for the versioned state of eyedata and segmented objects (pickle)."""
 import copy
+import inspect
 import os
 import pickle
 import tempfile
@@ -133,6 +134,63 @@ class TestPickleRoundTrip(unittest.TestCase):
         self.assertEqual(st["original"]["class"], "EyeData")
         self.assertEqual(st["blinks"]["left_pupil"]["intervals"].shape[1], 2)
         self.assertIsNone(st["blinks"]["left_x"])
+
+
+class TestStateCoverage(unittest.TestCase):
+    """Every attribute is part of the state (or explicitly excluded)."""
+
+    def objects(self):
+        d = make_eyedata()
+        d = d.sub_slice(500, 5000, units="ms", inplace=False).reset_time()
+        seg = d.get_segments(d.get_intervals("F_", interval=(-200, 800), units="ms"),
+                             "left_pupil")
+        return [
+            d, d.to_pupildata(), d.to_gazedata(),
+            pp.PupilData(left_pupil=np.ones(10), sampling_rate=10),
+            pp.GazeData(left_x=np.ones(10), left_y=np.ones(10), sampling_rate=10),
+            generate_foreshortening_data(duration=1, fs=100, seed=1),
+            seg, pp.group_segments([seg, seg]),
+        ]
+
+    def stateful_objects(self, obj, seen):
+        """`obj` and all Stateful objects reachable from its attributes."""
+        if id(obj) in seen:
+            return
+        seen.add(id(obj))
+        if isinstance(obj, state.Stateful):
+            yield obj
+            children = vars(obj).values()
+        elif isinstance(obj, dict):
+            children = obj.values()
+        else:
+            return
+        for child in children:
+            yield from self.stateful_objects(child, seen)
+
+    def test_all_attributes_in_state(self):
+        classes = set()
+        seen = set()
+        for top in self.objects():
+            for obj in self.stateful_objects(top, seen):
+                cls = type(obj)
+                classes.add(cls)
+                fields = {f.attr for f in cls._state_fields()}
+                attrs = set(vars(obj)) - cls._state_exclude()
+                # PupilData made from EyeData keeps the gaze attributes
+                # (not saved, see CHANGELOG)
+                if cls is pp.PupilData:
+                    attrs -= {"experimental_setup", "calibration"}
+                with self.subTest(cls=cls.__name__):
+                    self.assertEqual(attrs - fields, set(), "attributes not in the state")
+                    self.assertEqual(fields - attrs, set(), "fields without attribute")
+        # every class with a state was checked
+        todo, defined = [state.Stateful], set()
+        while todo:
+            c = todo.pop()
+            todo.extend(c.__subclasses__())
+            if vars(c).get("_STATE_FIELDS") and not inspect.isabstract(c):
+                defined.add(c)
+        self.assertEqual({c.__name__ for c in defined - classes}, set())
 
 
 class TestFormatVersion0(unittest.TestCase):
