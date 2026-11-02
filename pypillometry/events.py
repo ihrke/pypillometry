@@ -10,7 +10,7 @@ from pypillometry.units import (UNSET, Quantity, _has_units, _time_values_and_un
                                 parse_time)
 
 __all__ = [
-    "Events",
+    "Events", "ClockSync", "sync_clocks",
 ]
 
 
@@ -28,7 +28,10 @@ class Events:
     :meth:`~pypillometry.GenericEyeData.get_events`. An (e.g., filtered)
     Events object can be passed as `event_select` to
     :meth:`~pypillometry.GenericEyeData.get_intervals` or stored in a dataset
-    with :meth:`~pypillometry.GenericEyeData.set_events`.
+    with :meth:`~pypillometry.GenericEyeData.set_events` or added with
+    :meth:`~pypillometry.GenericEyeData.add_events`. Events from a
+    behaviour log can be created with :meth:`from_table` and mapped to the
+    eye-tracker clock with :func:`~pypillometry.sync_clocks`.
 
     Parameters
     ----------
@@ -137,7 +140,69 @@ class Events:
         >>> onsets, labels = events.to_array()
         """
         return self.onsets.copy(), self.labels.copy()
-    
+
+    @classmethod
+    def from_table(cls, table, columns, units: Optional[str] = UNSET) -> 'Events':
+        """
+        Create Events from a table with one row per trial.
+
+        Behaviour logs usually have one row per trial and one column per
+        event time (e.g., stimulus onset, response). Each column becomes
+        one kind of event; the column (or dict key) is the label. Missing
+        times (NaN, e.g., no response) give no event. The events are
+        sorted by onset.
+
+        Parameters
+        ----------
+        table : pandas.DataFrame or dict
+            table with one column of times per kind of event
+        columns : list or dict
+            list of column names (labels are the column names), or dict
+            mapping labels to column names or to arrays of times (e.g.,
+            ``{"response": df.stim_on + df.rt}``)
+        units : str, Unit or None, optional
+            time units of the values ("ms", "sec", "min" or "h");
+            default "ms"
+
+        Returns
+        -------
+        Events
+            all events of all columns, sorted by onset
+
+        Raises
+        ------
+        ValueError
+            if the columns have different lengths
+
+        Examples
+        --------
+        >>> table = {"stim": [1.0, 3.0], "rt": [0.5, np.nan]}
+        >>> ev = Events.from_table(table, {"stim": "stim",
+        ...                                "response": np.add(table["stim"], table["rt"])},
+        ...                        units="sec")
+        >>> ev.labels
+        array(['stim', 'response', 'stim'], dtype='<U8')
+        """
+        if not isinstance(columns, dict):
+            columns = {name: name for name in columns}
+        onsets, labels = [], []
+        nrows = None
+        for label, col in columns.items():
+            times = table[col] if isinstance(col, str) else col
+            times = np.asarray(times, dtype=float)
+            if nrows is not None and len(times) != nrows:
+                raise ValueError(f"column for '{label}' has {len(times)} "
+                                 f"values, expected {nrows}")
+            nrows = len(times)
+            times = times[~np.isnan(times)]
+            onsets.append(times)
+            labels.append(np.full(len(times), label, dtype=object))
+        onsets = np.concatenate(onsets) if onsets else np.array([])
+        labels = np.concatenate(labels).astype(str) if labels else np.array([], dtype=str)
+        # stable sort, so events at the same time keep the column order
+        order = np.argsort(onsets, kind="stable")
+        return cls(onsets[order], labels[order], units=units)
+
     def to_units(self, target_units: Optional[str]) -> 'Events':
         """
         Convert event onsets to different time units.
@@ -499,3 +564,185 @@ class Events:
             data_time_range=self.data_time_range
         )
 
+
+
+class ClockSync:
+    """
+    Linear map between two clocks, fitted by :func:`sync_clocks`.
+
+    Maps times `t` on the source clock (e.g., a behaviour log) to the target
+    clock (e.g., the eye tracker): ``offset + slope * t``. The slope accounts
+    for the unit conversion and for the drift between the clocks.
+
+    Calling the object maps times: plain numbers are taken to be in
+    `src_units` and are returned as an array in `dst_units`; numbers with
+    units and :class:`Events` are converted first and returned in
+    `dst_units` (as :class:`Events` for :class:`Events`).
+
+    Attributes
+    ----------
+    offset : float
+        target time (in `dst_units`) of source time 0
+    slope : float
+        target units per source unit
+    drift : float
+        how much faster the target clock runs (e.g., 1e-5 is 36 ms per
+        hour); 0 if only the offset was fitted
+    residuals : np.ndarray
+        target times minus mapped source times (in `dst_units`); they are
+        small (around the timing precision) if the pairs are correct
+    src, dst : np.ndarray
+        the paired times (in `src_units` and `dst_units`)
+    src_units, dst_units : str
+        units of the source and target times
+
+    Examples
+    --------
+    >>> sync = sync_clocks([10, 70, 130], [5000, 65000.6, 125001.2],
+    ...                    src_units="sec", dst_units="ms")
+    >>> sync(100.0)
+    95000.9
+    """
+
+    def __init__(self, offset, slope, src, dst, src_units, dst_units):
+        self.offset = float(offset)
+        self.slope = float(slope)
+        self.src = np.asarray(src, dtype=float)
+        self.dst = np.asarray(dst, dtype=float)
+        self.src_units = src_units
+        self.dst_units = dst_units
+        self.residuals = self.dst - (self.offset + self.slope * self.src)
+
+    @property
+    def drift(self) -> float:
+        """Relative drift of the target clock against the source clock."""
+        return self.slope / parse_time(1, to=self.dst_units,
+                                       default=self.src_units) - 1
+
+    def __call__(self, times):
+        """Map times from the source clock to the target clock."""
+        if isinstance(times, Events):
+            ev = times.to_units(self.src_units)
+            return Events(self(ev.onsets), ev.labels.copy(),
+                          units=self.dst_units)
+        if _has_units(times):
+            times = parse_time(times, to=self.src_units, default=None)
+        mapped = self.offset + self.slope * np.asarray(times, dtype=float)
+        return float(mapped) if mapped.ndim == 0 else mapped
+
+    def summary(self) -> str:
+        """One-line summary of the fit."""
+        drift = self.drift * parse_time(1, to="ms", default="h")
+        return (f"offset={self.offset:.6g} {self.dst_units}, "
+                f"drift={drift:+.3g} ms/h, "
+                f"max |residual|={np.max(np.abs(self.residuals)):.3g} "
+                f"{self.dst_units} (n={len(self.src)})")
+
+    def __repr__(self) -> str:
+        lines = [f"ClockSync({self.src_units} -> {self.dst_units}): {self.summary()}",
+                 f"  {'src':>12} {'dst':>14} {'residual':>10}"]
+        rows = [f"  {s:12.6g} {d:14.8g} {r:10.3g}"
+                for s, d, r in zip(self.src, self.dst, self.residuals)]
+        if len(rows) > 10:  # first and last pairs only
+            rows = rows[:5] + [f"  ... ({len(rows) - 10} more)"] + rows[-5:]
+        return "\n".join(lines + rows)
+
+
+def sync_clocks(src, dst, src_units=UNSET, dst_units=UNSET,
+                slope: bool = True, tol=5) -> ClockSync:
+    """
+    Fit a linear map from one clock to another from paired times.
+
+    Behaviour logs (e.g., from Psychtoolbox, PsychoPy or Presentation)
+    and eye trackers use different clocks. They differ in their zero point
+    and drift apart slowly, so an offset alone can be off by several ms
+    within a session. Given the times of the same moments on both clocks
+    (e.g., the start of each block), this fits
+    ``dst = offset + slope * src`` by least squares.
+
+    The pairs are matched by order. A summary of the fit is logged; the
+    residuals show whether the pairing is right (large residuals mean that
+    a pair is shifted or missing).
+
+    Parameters
+    ----------
+    src : array-like, Quantity or Events
+        times on the source clock (e.g., from the behaviour log)
+    dst : array-like, Quantity or Events
+        times of the same moments on the target clock, in the same order
+        (e.g., ``d.get_events().filter("Start Block")``)
+    src_units, dst_units : str or Unit, optional
+        units of plain numbers in `src` and `dst` (e.g., "sec", "ms");
+        needed unless the times carry units or are :class:`Events`
+    slope : bool, optional
+        if True (default), fit offset and slope (drift); if False, only
+        the offset. With a single pair, only the offset is fitted.
+    tol : float, str or Quantity, optional
+        a warning is given if a residual is larger than this (plain
+        numbers in ms); default 5 ms
+
+    Returns
+    -------
+    ClockSync
+        the fitted map; call it on times or :class:`Events` to map them
+        to the target clock
+
+    Raises
+    ------
+    ValueError
+        if `src` and `dst` differ in length, are empty or contain NaN,
+        or if units are missing
+
+    Examples
+    --------
+    >>> starts = behav.groupby("block").trialstart.min()     # in sec
+    >>> sync = pp.sync_clocks(starts, d.get_events().filter("Start Block"),
+    ...                       src_units="sec")
+    >>> d.add_events(sync(pp.Events.from_table(behav, ["stim_on"], units="sec")))
+    """
+    def values(times, units, name):
+        if isinstance(times, Events):
+            return times.onsets, times.units
+        if not _has_units(times) and units is UNSET:
+            raise ValueError(f"{name} needs units, e.g. {name}_units='sec'")
+        times, units = _time_values_and_units(times, units)
+        if units == "samples":
+            raise ValueError(f"{name} must be times, not sample indices")
+        return np.asarray(times, dtype=float), units
+
+    src, src_units = values(src, src_units, "src")
+    dst, dst_units = values(dst, dst_units, "dst")
+    if len(src) != len(dst):
+        raise ValueError(f"src has {len(src)} times and dst has {len(dst)}; "
+                         "they must be paired one-to-one")
+    if len(src) == 0:
+        raise ValueError("need at least one pair of times")
+    if np.isnan(src).any() or np.isnan(dst).any():
+        raise ValueError("src and dst must not contain NaN")
+
+    # slope without drift (unit conversion)
+    unit_slope = parse_time(1, to=dst_units, default=src_units)
+    if slope and len(src) == 1:
+        logger.warning("sync_clocks(): one pair of times only gives the "
+                       "offset; drift is not corrected")
+        slope = False
+    if slope:
+        b, a = np.polyfit(src, dst, 1)
+    else:
+        b = unit_slope
+        a = np.mean(dst - b * src)
+    sync = ClockSync(a, b, src, dst, src_units, dst_units)
+
+    logger.info(f"sync_clocks(): {sync.summary()}")
+    if slope and len(src) == 2:
+        logger.warning("sync_clocks(): two pairs fit exactly; the residuals "
+                       "cannot check the pairing")
+    tol = parse_time(tol, to=dst_units, default="ms")
+    big = np.abs(sync.residuals) > tol
+    if big.any():
+        pairs = np.flatnonzero(big).tolist()
+        pairs = str(pairs) if len(pairs) <= 5 else f"{str(pairs[:5])[:-1]}, ...]"
+        logger.warning(f"sync_clocks(): {big.sum()} of {len(big)} residuals larger "
+                       f"than {tol:.3g} {dst_units} (pairs {pairs}); "
+                       "are the times paired correctly?")
+    return sync

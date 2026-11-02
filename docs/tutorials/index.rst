@@ -30,6 +30,13 @@ Reading data
 
       Read text files with pandas and build a data object from arrays.
 
+   .. grid-item-card:: Events from a behaviour log
+      :link: /notebooks/importdata_behaviour
+      :link-type: doc
+
+      Add events from the log of the experiment software and synchronize
+      its clock with the eye tracker.
+
    .. grid-item-card:: Example datasets
       :link: /notebooks/example_datasets
       :link-type: doc
@@ -136,6 +143,7 @@ More examples for the experimental features are in
 
    /notebooks/importdata_edf
    /notebooks/importdata_asc
+   /notebooks/importdata_behaviour
    /notebooks/example_datasets
 
 .. toctree::

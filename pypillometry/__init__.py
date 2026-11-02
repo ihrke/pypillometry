@@ -27,7 +27,7 @@ from .plot import EyePlotter, PupilPlotter, GazePlotter
 from .segmented import (
     SegmentedEyeData, GroupLevelSegmentedData, group_segments,
 )
-from .events import Events
+from .events import Events, ClockSync, sync_clocks
 from .intervals import Intervals, merge_intervals
 from .roi import ROI, CircularROI, RectangularROI
 from .quality import QualityReport, QualityMetric
@@ -85,7 +85,7 @@ __all__ = [
     "ForeshorteningCalibration", "keephistory",
     "EyePlotter", "PupilPlotter", "GazePlotter",
     "SegmentedEyeData", "GroupLevelSegmentedData", "group_segments",
-    "Events",
+    "Events", "ClockSync", "sync_clocks",
     "Intervals", "merge_intervals",
     "ROI", "CircularROI", "RectangularROI",
     "QualityReport", "QualityMetric",
