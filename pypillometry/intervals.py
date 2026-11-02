@@ -634,7 +634,7 @@ class Intervals(Stateful):
             
         Examples
         --------
-        >>> intervals = data.get_intervals("stim", units="ms")
+        >>> intervals = data.get_intervals("stim", (-200, 800), units="ms")
         >>> arr = np.array(intervals)
         """
         if copy is False:
@@ -681,7 +681,7 @@ class Intervals(Stateful):
         
         Examples
         --------
-        >>> intervals = data.get_intervals("stim", units="ms")
+        >>> intervals = data.get_intervals("stim", (-200, 800), units="ms")
         >>> intervals_sec = intervals.to_units("sec")
         >>> intervals_seconds = intervals.to_units("seconds")  # alias works too
         

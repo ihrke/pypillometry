@@ -1846,7 +1846,7 @@ class GenericEyeData(state.VersionedState, ABC):
     
     def get_intervals(self,
                     event_select,
-                    interval: tuple=(-200,200),
+                    window: tuple|None=None,
                     units: str=UNSET, label: str|None=None, exact: bool=False,
                     **kwargs):
         """
@@ -1871,9 +1871,10 @@ class GenericEyeData(state.VersionedState, ABC):
             - if function: apply function to all labels, use those where the
               function returns True
             - if tuple: use the intervals between the events selected by the
-              first and the second entry (each a str or function); `interval[0]`
-              is added to the first and `interval[1]` to the second event
-              (so ``interval=(0, 0)`` gives exactly the span between them).
+              first and the second entry (each a str or function); `window[0]`
+              is added to the first and `window[1]` to the second event
+              (so ``window=(0, 0)``, the default, gives exactly the span
+              between them).
               Each first event is paired with the next second event after it
               (a second event at the same time does not count). If several
               first events come before the same second event, the last of
@@ -1885,17 +1886,18 @@ class GenericEyeData(state.VersionedState, ABC):
               first block.
             - if Events: use the events from the
               :class:`~pypillometry.Events` object directly
-        interval : tuple (min,max) or Quantity, optional
+        window : tuple (min,max) or Quantity, optional
             time-window relative to event-onset (0 is event-onset); i.e., negative
             numbers are before the event, positive numbers after, e.g.
             ``(-200, 800) * u.ms`` or ``("-0.2 sec", "0.8 sec")``. Plain numbers
-            are in units given by the `units` parameter. Default ``(-200, 200)``.
+            are in units given by the `units` parameter. Required for single
+            events; for two events (tuple), the default is ``(0, 0)``.
         units : str, optional
             units of the returned intervals (one of "ms", "sec", "min", "h", or
             "samples" for sample indices, i.e., indices into the time-array);
-            plain numbers in `interval` are in these units, an `interval` with
-            units is converted to them. If not given, the units of `interval`
-            are used ("samples" if `interval` has no units). In samples, each
+            plain numbers in `window` are in these units, a `window` with
+            units is converted to them. If not given, the units of `window`
+            are used ("samples" if `window` has no units). In samples, each
             event is placed at the first sample at or after its onset.
         label : str or None, optional
             optional label for the Intervals object. If None, a label is automatically
@@ -1904,7 +1906,8 @@ class GenericEyeData(state.VersionedState, ABC):
             if True, string selectors match only labels that are equal to
             them; if False (default), labels that contain them
         **kwargs
-            passed onto the event_select function
+            passed onto the event_select function; an error is raised if no
+            selector is a function
 
         Returns
         -------
@@ -1916,21 +1919,33 @@ class GenericEyeData(state.VersionedState, ABC):
         from ..intervals import Intervals
         from ..events import Events
 
-        if not isinstance(interval, Iterable) or isinstance(interval, str):
-            raise ValueError("interval must be iterable")
-        if _has_units(interval):
-            interval, units = _time_values_and_units(interval, units, self.fs)
+        between = isinstance(event_select, tuple)
+        selectors = event_select if between else (event_select,)
+        if kwargs and not any(callable(sel) and not isinstance(sel, Events)
+                              for sel in selectors):
+            # kwargs are only passed to function selectors
+            raise TypeError("get_intervals() got unexpected keyword argument(s) "
+                            f"{', '.join(kwargs)} (only passed to function selectors)")
+        if window is None:
+            if not between:
+                raise ValueError("give a window around the events, e.g., "
+                                 "window=(-200, 1000) * u.ms")
+            window = (0, 0)
+        if not isinstance(window, Iterable) or isinstance(window, str):
+            raise ValueError("window must be iterable")
+        if _has_units(window):
+            window, units = _time_values_and_units(window, units, self.fs)
             if units == "samples":
-                interval = np.round(interval).astype(int)
-            interval = tuple(interval.tolist())
+                window = np.round(window).astype(int)
+            window = tuple(window.tolist())
         elif units is UNSET:
             units = "samples"
         units = normalize_unit(units)
 
-        # between two events, interval[0] and interval[1] shift different
+        # between two events, window[0] and window[1] shift different
         # events, so e.g. (0,0) is valid; the resulting intervals are checked below
-        if not isinstance(event_select, tuple) and interval[1]<=interval[0]:
-            raise ValueError("interval must be (min,max) with min<max, got {}".format(interval))
+        if not between and window[1]<=window[0]:
+            raise ValueError("window must be (min,max) with min<max, got {}".format(window))
 
         n = len(self.tx)
         # start and end of the recording as (onset in ms, sample); the end is
@@ -1997,7 +2012,7 @@ class GenericEyeData(state.VersionedState, ABC):
             selected_labels = [f"{l_a[i]}_to_{l_b[j]}" for i, j in pairs]
             selected_indices = None if i_a is None else i_a[pa]
         else:
-            # one event with padding interval
+            # one event with a window around it
             on1, eix1, selected_indices, selected_labels = select(event_select)
             on2, eix2 = on1, eix1
             if label is None:
@@ -2005,20 +2020,20 @@ class GenericEyeData(state.VersionedState, ABC):
 
         if units == "samples":
             # sample of each event, the window in samples around it
-            sti = np.maximum(eix1+interval[0], 0)
-            ste = np.minimum(eix2+interval[1], n)
+            sti = np.maximum(eix1+window[0], 0)
+            ste = np.minimum(eix2+window[1], n)
             event_onsets_list = np.atleast_1d(eix1).tolist()
             data_time_range = (0, n)
         else:
             fac = self._unit_fac(units)
-            sti = on1*fac+interval[0]
-            ste = on2*fac+interval[1]
+            sti = on1*fac+window[0]
+            ste = on2*fac+window[1]
             event_onsets_list = (on1*fac).tolist()
             data_time_range = (self.tx[0]*fac, self.tx[-1]*fac)
         bad=np.where(ste<=sti)[0]
         if len(bad)>0:
-            raise ValueError("interval {} gives empty intervals for pair(s) {}"
-                             .format(interval, bad.tolist()))
+            raise ValueError("window {} gives empty intervals for pair(s) {}"
+                             .format(window, bad.tolist()))
         return Intervals(
             intervals=list(zip(np.atleast_1d(sti).tolist(), np.atleast_1d(ste).tolist())),
             units=units,
@@ -2027,7 +2042,7 @@ class GenericEyeData(state.VersionedState, ABC):
             event_indices=selected_indices,
             data_time_range=data_time_range,
             event_onsets=event_onsets_list,
-            interval_window=interval
+            interval_window=window
         )
 
     def get_segments(self, intervals, variable: str, name: str = None):
@@ -2054,7 +2069,7 @@ class GenericEyeData(state.VersionedState, ABC):
         Examples
         --------
         >>> # Extract pupil segments around stimulus events
-        >>> intervals = data.get_intervals("stimulus", interval=(-200, 800), units="ms")
+        >>> intervals = data.get_intervals("stimulus", window=(-200, 800), units="ms")
         >>> segments = data.get_segments(intervals, "left_pupil")
         >>> segments.plot()
         
@@ -2953,7 +2968,7 @@ class GenericEyeData(state.VersionedState, ABC):
 
         Examples
         --------
-        >>> breaks = d.get_intervals(("break_start", "break_end"), interval=(0, 0),
+        >>> breaks = d.get_intervals(("break_start", "break_end"), window=(0, 0),
         ...                          units="ms")  # doctest: +SKIP
         >>> d = d.exclude_intervals(breaks)  # doctest: +SKIP
         >>> d = d.exclude_intervals([(0, 2 * u.min)])  # doctest: +SKIP
@@ -3007,7 +3022,7 @@ class GenericEyeData(state.VersionedState, ABC):
 
         Examples
         --------
-        >>> run = d.get_intervals(("rsfMRI_ONSET", "rsfMRI_END"), interval=(0, 0),
+        >>> run = d.get_intervals(("rsfMRI_ONSET", "rsfMRI_END"), window=(0, 0),
         ...                       units="ms")  # doctest: +SKIP
         >>> d = d.keep_intervals(run)  # doctest: +SKIP
         """

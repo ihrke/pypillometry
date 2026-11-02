@@ -50,7 +50,7 @@ class TestExcluded(unittest.TestCase):
     def test_intervals_from_events(self):
         d = _make_data()
         d.set_event_onsets([7000, 12000], ["break", "break"])
-        iv = d.get_intervals("break", interval=(0, 1000), units="ms")
+        iv = d.get_intervals("break", window=(0, 1000), units="ms")
         d = d.exclude_intervals(iv)
         np.testing.assert_array_equal(d.get_excluded().intervals,
                                       [(7000, 8000), (12000, 13000)])
@@ -58,7 +58,7 @@ class TestExcluded(unittest.TestCase):
         d = _make_data()
         d.set_event_onsets([7000, 9000], ["break_start", "break_end"])
         d = d.exclude_intervals(d.get_intervals(("break_start", "break_end"),
-                                                interval=(0, 0), units="ms"))
+                                                window=(0, 0), units="ms"))
         np.testing.assert_array_equal(d.get_excluded().intervals, [(7000, 9000)])
 
     def test_blinks(self):
@@ -234,7 +234,7 @@ class TestKeepIntervals(unittest.TestCase):
         d = _make_data()
         d.set_event_onsets([7000, 9000, 12000, 15000],
                            ["Start Block", "End Block"] * 2)
-        blocks = d.get_intervals(("Start Block", "End Block"), interval=(0, 0))
+        blocks = d.get_intervals(("Start Block", "End Block"), window=(0, 0))
         d = d.keep_intervals(blocks)  # in sample indices
         np.testing.assert_array_equal(d.get_included().intervals,
                                       [(7000, 9000), (12000, 15000)])

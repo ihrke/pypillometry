@@ -103,7 +103,7 @@ class TestPickleRoundTrip(unittest.TestCase):
 
     def test_segmented(self):
         d = make_eyedata(keep_orig=False)
-        iv = d.get_intervals("F_", interval=(-200, 800), units="ms")
+        iv = d.get_intervals("F_", window=(-200, 800), units="ms")
         seg = d.get_segments(iv, "left_pupil")
         seg2 = self.roundtrip(seg)
         np.testing.assert_array_equal(seg2.data.mask, seg.data.mask)
@@ -142,7 +142,7 @@ class TestStateCoverage(unittest.TestCase):
     def objects(self):
         d = make_eyedata()
         d = d.crop(500, 5000, units="ms", inplace=False).reset_time()
-        seg = d.get_segments(d.get_intervals("F_", interval=(-200, 800), units="ms"),
+        seg = d.get_segments(d.get_intervals("F_", window=(-200, 800), units="ms"),
                              "left_pupil")
         return [
             d, d.to_pupildata(), d.to_gazedata(),

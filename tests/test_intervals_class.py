@@ -616,7 +616,7 @@ class TestIntervalsWithGetIntervals(unittest.TestCase):
     
     def test_get_intervals_returns_intervals_object(self):
         """Test that get_intervals returns Intervals object"""
-        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
         
         self.assertIsInstance(intervals, Intervals)
         self.assertEqual(intervals.units, "ms")
@@ -624,7 +624,7 @@ class TestIntervalsWithGetIntervals(unittest.TestCase):
     
     def test_get_intervals_has_metadata(self):
         """Test that Intervals from get_intervals has proper metadata"""
-        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
         
         self.assertIsNotNone(intervals.event_labels)
         self.assertIsNotNone(intervals.event_indices)
@@ -633,18 +633,18 @@ class TestIntervalsWithGetIntervals(unittest.TestCase):
     def test_get_intervals_different_units(self):
         """Test get_intervals with different units"""
         for units in ["ms", "sec", "min", "samples"]:
-            intervals = self.data.get_intervals("F", interval=(-200, 200), units=units)
+            intervals = self.data.get_intervals("F", window=(-200, 200), units=units)
             self.assertIsInstance(intervals, Intervals)
             self.assertEqual(intervals.units, units)
     
     def test_intervals_label_from_string(self):
         """Test that label is set from string event_select"""
-        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
         self.assertEqual(intervals.label, "F")
     
     def test_intervals_can_be_iterated(self):
         """Test that Intervals from get_intervals can be iterated"""
-        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
         
         count = 0
         for start, end in intervals:
@@ -658,13 +658,13 @@ class TestIntervalsWithGetIntervals(unittest.TestCase):
     def test_intervals_custom_label(self):
         """Test that custom label parameter overrides automatic label"""
         custom_label = "my_custom_label"
-        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms", label=custom_label)
+        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms", label=custom_label)
         
         self.assertEqual(intervals.label, custom_label)
     
     def test_intervals_automatic_label_when_none(self):
         """Test that automatic label is used when label parameter is None"""
-        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms", label=None)
+        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms", label=None)
         
         # Should use the automatic label from event_select
         self.assertEqual(intervals.label, "F")
@@ -684,7 +684,7 @@ class TestIntervalsPlotMethod(unittest.TestCase):
     
     def test_plot_runs_without_error(self):
         """Test that plot() completes without error"""
-        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
         
         fig = plt.figure()
         intervals.plot()
@@ -696,7 +696,7 @@ class TestIntervalsPlotMethod(unittest.TestCase):
     
     def test_plot_with_labels(self):
         """Test that plot shows labels when requested"""
-        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
         
         fig = plt.figure()
         intervals.plot(show_labels=True)
@@ -708,7 +708,7 @@ class TestIntervalsPlotMethod(unittest.TestCase):
     
     def test_plot_without_labels(self):
         """Test that plot hides labels when requested"""
-        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
         
         fig = plt.figure()
         intervals.plot(show_labels=False)
@@ -720,7 +720,7 @@ class TestIntervalsPlotMethod(unittest.TestCase):
     
     def test_plot_uses_current_axes(self):
         """Test that plot uses the current axes"""
-        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
         
         fig, (ax1, ax2) = plt.subplots(1, 2)
         
@@ -734,7 +734,7 @@ class TestIntervalsPlotMethod(unittest.TestCase):
     
     def test_plot_sets_title_from_label(self):
         """Test that plot uses intervals label as title"""
-        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms", label="test_label")
+        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms", label="test_label")
         
         fig = plt.figure()
         intervals.plot()
@@ -745,7 +745,7 @@ class TestIntervalsPlotMethod(unittest.TestCase):
     def test_plot_sets_xlabel_from_units(self):
         """Test that plot sets x-axis label based on units"""
         # Test with ms
-        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
         fig = plt.figure()
         intervals.plot()
         ax = plt.gca()
@@ -753,7 +753,7 @@ class TestIntervalsPlotMethod(unittest.TestCase):
         plt.close('all')
         
         # Test with sample indices
-        intervals = self.data.get_intervals("F", interval=(-200, 200), units="samples")
+        intervals = self.data.get_intervals("F", window=(-200, 200), units="samples")
         fig = plt.figure()
         intervals.plot()
         ax = plt.gca()
@@ -776,7 +776,7 @@ class TestIntervalsPlotMethod(unittest.TestCase):
     def test_plot_with_different_units(self):
         """Test that plot works with different units"""
         for units in ["ms", "sec", "min", "samples"]:
-            intervals = self.data.get_intervals("F", interval=(-200, 200), units=units)
+            intervals = self.data.get_intervals("F", window=(-200, 200), units=units)
             
             fig = plt.figure()
             intervals.plot()
@@ -789,7 +789,7 @@ class TestIntervalsPlotMethod(unittest.TestCase):
     
     def test_plot_accepts_color_kwarg(self):
         """Test that interval lines can be colored via kwargs"""
-        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
         
         fig = plt.figure()
         intervals.plot(color='red')
@@ -919,7 +919,7 @@ class TestIntervalsConversionMethods(unittest.TestCase):
     
     def test_array_conversion_with_units_none(self):
         """Test __array__() with index units"""
-        intervals = self.data.get_intervals("F", interval=(-200, 200), units="samples")
+        intervals = self.data.get_intervals("F", window=(-200, 200), units="samples")
         arr = np.array(intervals)
         
         self.assertIsInstance(arr, np.ndarray)
@@ -928,7 +928,7 @@ class TestIntervalsConversionMethods(unittest.TestCase):
     
     def test_array_conversion_with_units_ms(self):
         """Test __array__() with time units"""
-        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
         arr = np.array(intervals)
         
         self.assertIsInstance(arr, np.ndarray)
@@ -937,7 +937,7 @@ class TestIntervalsConversionMethods(unittest.TestCase):
     
     def test_to_indices_with_units_none(self):
         """Test to_units('indices') when intervals already in indices"""
-        intervals = self.data.get_intervals("F", interval=(-200, 200), units="samples")
+        intervals = self.data.get_intervals("F", window=(-200, 200), units="samples")
         indices_intervals = intervals.to_units("indices")
         indices = np.array(indices_intervals).astype(int)
         
@@ -948,7 +948,7 @@ class TestIntervalsConversionMethods(unittest.TestCase):
     
     def test_to_indices_with_units_ms(self):
         """Test to_units('indices') with millisecond units"""
-        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
         indices_intervals = intervals.to_units("indices", self.data)
         indices = np.array(indices_intervals).astype(int)
         
@@ -963,10 +963,10 @@ class TestIntervalsConversionMethods(unittest.TestCase):
 
     def test_to_indices_with_units_sec(self):
         """Test to_units('indices') with second units"""
-        intervals = self.data.get_intervals("F", interval=(-0.2, 0.2), units="sec")
+        intervals = self.data.get_intervals("F", window=(-0.2, 0.2), units="sec")
         indices = np.array(intervals.to_units("indices", self.data)).astype(int)
         np.testing.assert_array_equal(
-            indices, np.array(self.data.get_intervals("F", interval=(-0.2, 0.2), units="sec")
+            indices, np.array(self.data.get_intervals("F", window=(-0.2, 0.2), units="sec")
                               .to_units("ms").to_units("indices", self.data)))
         for start, end in indices:
             self.assertGreaterEqual(start, 0)
@@ -974,7 +974,7 @@ class TestIntervalsConversionMethods(unittest.TestCase):
 
     def test_to_units_ms_to_sec(self):
         """Test converting from milliseconds to seconds"""
-        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
         intervals_sec = intervals.to_units("sec")
         
         self.assertEqual(intervals_sec.units, "sec")
@@ -987,7 +987,7 @@ class TestIntervalsConversionMethods(unittest.TestCase):
     
     def test_to_units_sec_to_ms(self):
         """Test converting from seconds to milliseconds"""
-        intervals = self.data.get_intervals("F", interval=(-0.2, 0.2), units="sec")
+        intervals = self.data.get_intervals("F", window=(-0.2, 0.2), units="sec")
         intervals_ms = intervals.to_units("ms")
         
         self.assertEqual(intervals_ms.units, "ms")
@@ -999,7 +999,7 @@ class TestIntervalsConversionMethods(unittest.TestCase):
     
     def test_to_units_ms_to_min(self):
         """Test converting from milliseconds to minutes"""
-        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
         intervals_min = intervals.to_units("min")
         
         self.assertEqual(intervals_min.units, "min")
@@ -1011,7 +1011,7 @@ class TestIntervalsConversionMethods(unittest.TestCase):
     
     def test_to_units_same_units(self):
         """Test converting to same units returns self"""
-        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
         intervals_same = intervals.to_units("ms")
         
         # Should return the same object
@@ -1019,7 +1019,7 @@ class TestIntervalsConversionMethods(unittest.TestCase):
     
     def test_to_units_with_aliases(self):
         """Test converting to units using aliases"""
-        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
         
         # Test various aliases
         intervals_seconds = intervals.to_units("seconds")
@@ -1043,7 +1043,7 @@ class TestIntervalsConversionMethods(unittest.TestCase):
     
     def test_to_units_from_indices_uses_time_vector(self):
         """converting from indices uses the time vector of the data object"""
-        intervals = self.data.get_intervals("F", interval=(-200, 200), units="samples")
+        intervals = self.data.get_intervals("F", window=(-200, 200), units="samples")
         intervals_ms = intervals.to_units("ms", self.data)
         self.assertEqual(intervals_ms.units, "ms")
         start, end = intervals.intervals[0]
@@ -1091,7 +1091,7 @@ class TestIntervalsConversionMethods(unittest.TestCase):
     
     def test_to_units_unknown_target_raises_error(self):
         """Test that unknown target units raise error"""
-        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
         
         with self.assertRaises(ValueError) as cm:
             intervals.to_units("unknown")
@@ -1100,7 +1100,7 @@ class TestIntervalsConversionMethods(unittest.TestCase):
     
     def test_to_units_preserves_metadata(self):
         """Test that to_units preserves metadata"""
-        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
         intervals_sec = intervals.to_units("sec")
         
         # Check that metadata is preserved

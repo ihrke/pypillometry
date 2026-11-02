@@ -33,7 +33,7 @@ class TestPlottingEdgeCases(unittest.TestCase):
     
     def test_plot_intervals_many_intervals(self):
         """Test plot_intervals with Intervals object containing many intervals"""
-        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
         figs = self.data.plot.plot_intervals(intervals, nrow=5, ncol=3)
         self.assertIsNotNone(figs)
     
