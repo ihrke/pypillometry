@@ -68,6 +68,11 @@ def make_eyedata(keep_orig=True):
         info={"subject": "s1", "nested": {"a": [1, 2], "b": (1.5, "x")}})
     d = d.pupil_blinks_detect(apply_mask=True, inplace=False)
     d = d.pupil_blinks_interpolate().scale()
+    # event metadata with int, float (missing), string and bool columns
+    d.set_events(d.get_events().parse_labels(r"_(?P<trial>\d+)")
+                 .set_meta("rt", [450.5, np.nan], select="F_")
+                 .set_meta("kind", ["fix", "fix", "stim"])
+                 .set_meta("ok", [True, False, True]))
     return d
 
 
@@ -273,7 +278,24 @@ class TestMigrate(unittest.TestCase):
                             "blinks": {"left_pupil": {"units": None, "sampling_rate": 10.,
                                                       "time_offset": 0., "label": "b"}},
                             "interpolated_blinks": {"left_pupil": None}}, "PupilData")
-        self.assertEqual(st["blinks"]["left_pupil"], {"units": "samples", "label": "b"})
+        self.assertEqual(st["blinks"]["left_pupil"],
+                         {"units": "samples", "label": "b", "event_meta": None})
+
+    def test_v2_event_meta(self):
+        """version 2 -> 3: no metadata for events and Intervals"""
+        d = make_eyedata(keep_orig=False)
+        st = state.to_state(d)
+        st["format_version"] = 2
+        del st["event_meta"]
+        for key in ("blinks", "interpolated_blinks"):
+            for iv in st[key].values():
+                if iv is not None:
+                    del iv["event_meta"]
+        del st["excluded"]["event_meta"]
+        d2 = state.from_state(st)
+        self.assertEqual(d2.event_meta, {})
+        self.assertIsNone(d2._excluded.event_meta)
+        self.assertEqual(len(d2.get_events()), 3)
 
     def test_current_version_unchanged(self):
         st = state.to_state(make_eyedata(keep_orig=False))

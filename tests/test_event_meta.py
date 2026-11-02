@@ -5,7 +5,9 @@ filter() by metadata, set_meta(), fill_meta() and add_latency().
 import unittest
 import numpy as np
 import pandas as pd
+import pypillometry as pp
 from pypillometry.events import Events, sync_clocks
+from pypillometry.intervals import Intervals, merge_intervals
 
 
 def trigger_events():
@@ -39,7 +41,7 @@ class TestMetaColumns(unittest.TestCase):
             Events([1, 2], ["a", "b"], meta={"x": [1]})
 
     def test_reserved_names_raise(self):
-        for name in ("onset", "label", ""):
+        for name in ("onset", "label", "", "a/b", "__x"):
             with self.assertRaises(ValueError):
                 Events([1], ["a"], meta={name: [1]})
 
@@ -235,6 +237,103 @@ class TestSetFillLatency(unittest.TestCase):
                     meta={"trial": [1, 2, 2, 1]})
         ev = ev.add_latency("S_", "C_", "rt", by="trial", units="sec")
         np.testing.assert_array_almost_equal(ev.meta["rt"], [0.45, 0.1, np.nan, np.nan])
+
+
+def data_with_meta():
+    """Short recording (0-10 s) with the trigger events and their metadata."""
+    tx = np.arange(0, 10000, 2.0)
+    ev = (trigger_events().parse_labels(r"^[FSCR]_(?P<trial>\d+)")
+          .parse_labels(r"^R_\d+_(?P<reward>\d+)").fill_meta("reward"))
+    d = pp.PupilData(time=tx, left_pupil=np.ones_like(tx), sampling_rate=500,
+                     inplace=False)
+    return d.set_events(ev)
+
+
+class TestEyedataMeta(unittest.TestCase):
+
+    def test_set_and_get(self):
+        d = data_with_meta()
+        np.testing.assert_array_equal(d.event_meta["trial"], [1, 1, 1, 1, 2, 2, 2])
+        np.testing.assert_array_equal(d.get_events().meta["reward"], [15] * 4 + [0] * 3)
+        np.testing.assert_array_equal(d.get_events("sec").meta["trial"],
+                                      d.event_meta["trial"])
+
+    def test_set_event_onsets_without_meta(self):
+        d = data_with_meta()
+        d.set_event_onsets([100], ["x"])
+        self.assertEqual(d.event_meta, {})
+
+    def test_add_events(self):
+        d = data_with_meta().add_events(Events([0.25], ["probe"], units="sec",
+                                               meta={"answer": ["yes"]}))
+        np.testing.assert_array_equal(d.event_labels[:3], ["F_1", "probe", "S_1_3_5"])
+        np.testing.assert_array_equal(d.event_meta["trial"][:3], [1, np.nan, 1])
+        np.testing.assert_array_equal(d.event_meta["answer"][:3], ["", "yes", ""])
+
+    def test_crop(self):
+        d = data_with_meta().crop(1000, 3500)
+        np.testing.assert_array_equal(d.event_labels, ["C_1_5_2", "R_1_15", "F_2", "S_2_6_2"])
+        np.testing.assert_array_equal(d.event_meta["trial"], [1, 1, 2, 2])
+
+    def test_remove_intervals(self):
+        d = data_with_meta().remove_intervals(Intervals([(1300, 1700)], units="ms"))
+        np.testing.assert_array_equal(d.event_meta["trial"], [1, 1, 2, 2, 2])
+        self.assertEqual(len(d.event_onsets), 5)
+
+    def test_get_intervals_carries_meta(self):
+        d = data_with_meta()
+        iv = d.get_intervals("S_", window=(-100, 500), units="ms")
+        np.testing.assert_array_equal(iv.event_meta["trial"], [1, 2])
+        np.testing.assert_array_equal(iv.event_meta["reward"], [15, 0])
+        iv = d.get_intervals(d.get_events().filter("S_", reward=0), window=(-100, 500),
+                             units="ms")
+        np.testing.assert_array_equal(iv.event_meta["trial"], [2])
+        iv = d.get_intervals(("F_", "S_"))
+        np.testing.assert_array_equal(iv.event_meta["trial"], [1, 2])
+        iv = d.get_intervals(("<start>", "S_"))
+        np.testing.assert_array_equal(iv.event_meta["trial"], [1])
+
+    def test_get_intervals_without_meta(self):
+        d = data_with_meta()
+        d.set_event_onsets(d.event_onsets, d.event_labels)
+        self.assertIsNone(d.get_intervals("S_", window=(-100, 500), units="ms").event_meta)
+
+    def test_segments_keep_meta(self):
+        d = data_with_meta()
+        seg = d.get_segments(d.get_intervals("S_", window=(-100, 500), units="ms"),
+                             "left_pupil")
+        np.testing.assert_array_equal(seg.intervals.event_meta["reward"], [15, 0])
+
+
+class TestIntervalsMeta(unittest.TestCase):
+
+    def setUp(self):
+        self.iv = Intervals([(0, 100), (50, 150), (400, 500)], units="ms",
+                            event_labels=["a", "b", "c"],
+                            event_meta={"trial": [1, 2, 3], "cond": ["x", "y", "x"]})
+
+    def test_wrong_length(self):
+        with self.assertRaises(ValueError):
+            Intervals([(0, 1)], units="ms", event_meta={"x": [1, 2]})
+
+    def test_operations_keep_meta(self):
+        np.testing.assert_array_equal(self.iv.to_units("sec").event_meta["trial"], [1, 2, 3])
+        np.testing.assert_array_equal(self.iv.pad(10).event_meta["trial"], [1, 2, 3])
+        np.testing.assert_array_equal(
+            self.iv.filter(time_range=(300, 600)).event_meta["cond"], ["x"])
+        np.testing.assert_array_equal(self.iv.merge().event_meta["trial"], [1, 3])
+
+    def test_add_and_merge_intervals(self):
+        other = Intervals([(600, 700)], units="ms")
+        for combined in (self.iv + other, merge_intervals(self.iv, other)):
+            np.testing.assert_array_equal(combined.event_meta["trial"], [1, 2, 3, np.nan])
+            np.testing.assert_array_equal(combined.event_meta["cond"], ["x", "y", "x", ""])
+        self.assertIsNone((other + other).event_meta)
+
+    def test_as_pandas(self):
+        df = self.iv.as_pandas()
+        self.assertEqual(df["cond"].tolist(), ["x", "y", "x"])
+        self.assertEqual(df["trial"].tolist(), [1, 2, 3])
 
 
 if __name__ == "__main__":
