@@ -641,9 +641,11 @@ class ClockSync:
     def __repr__(self) -> str:
         lines = [f"ClockSync({self.src_units} -> {self.dst_units}): {self.summary()}",
                  f"  {'src':>12} {'dst':>14} {'residual':>10}"]
-        for s, d, r in zip(self.src, self.dst, self.residuals):
-            lines.append(f"  {s:12.6g} {d:14.8g} {r:10.3g}")
-        return "\n".join(lines)
+        rows = [f"  {s:12.6g} {d:14.8g} {r:10.3g}"
+                for s, d, r in zip(self.src, self.dst, self.residuals)]
+        if len(rows) > 10:  # first and last pairs only
+            rows = rows[:5] + [f"  ... ({len(rows) - 10} more)"] + rows[-5:]
+        return "\n".join(lines + rows)
 
 
 def sync_clocks(src, dst, src_units=UNSET, dst_units=UNSET,
@@ -738,7 +740,9 @@ def sync_clocks(src, dst, src_units=UNSET, dst_units=UNSET,
     tol = parse_time(tol, to=dst_units, default="ms")
     big = np.abs(sync.residuals) > tol
     if big.any():
-        logger.warning(f"sync_clocks(): {big.sum()} residual(s) larger than "
-                       f"{tol:.3g} {dst_units} (pairs {np.flatnonzero(big).tolist()}); "
+        pairs = np.flatnonzero(big).tolist()
+        pairs = str(pairs) if len(pairs) <= 5 else f"{str(pairs[:5])[:-1]}, ...]"
+        logger.warning(f"sync_clocks(): {big.sum()} of {len(big)} residuals larger "
+                       f"than {tol:.3g} {dst_units} (pairs {pairs}); "
                        "are the times paired correctly?")
     return sync

@@ -143,9 +143,15 @@ maps times or events to the eye-tracker clock:
 
 :func:`sync_clocks` logs a summary of the fit. Check the *residuals*
 (``sync.residuals``, or ``print(sync)`` for a table): with correct pairs,
-they are around the timing precision (about 1 ms); if a pair is shifted or a
-block is missing in one of the logs, they are much larger and a warning is
-given. With a single shared moment, only the offset is fitted.
+they show only the timing jitter between the two logs (1–2 ms for times
+taken at the screen flip, up to about one frame otherwise); if a pair is
+missing in one of the logs, they are much larger and a warning is given
+(``tol=`` sets the limit, 5 ms by default). A shift of all pairs by the same
+number of trials does not show in the residuals if the trials are evenly
+spaced, so check the pairs directly where possible (e.g., trial numbers in
+the labels). With a single shared moment, only the offset is fitted.
+
+Tutorial: :doc:`/notebooks/importdata_behaviour`.
 
 
 Intervals
