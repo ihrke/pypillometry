@@ -56,14 +56,76 @@ Events from a behaviour log
 Often, not all events are sent to the eye tracker. The times of stimuli and
 responses are then in a behaviour log of the experiment (e.g., from
 Psychtoolbox, PsychoPy or Presentation), usually a table with one row per
-trial. :meth:`Events.from_table` turns the columns of such a table into
-events; missing times (NaN, e.g., no response) give no event:
+trial, with times in seconds on the clock of the experiment computer:
+
+.. list-table:: ``behav`` (a :class:`pandas.DataFrame`)
+   :header-rows: 1
+   :widths: 15 15 20 20 15
+
+   * - block
+     - trial
+     - trialstart
+     - stim_on
+     - rt
+   * - 1
+     - 1
+     - 12.031
+     - 12.531
+     - 0.412
+   * - 1
+     - 2
+     - 15.204
+     - 15.704
+     - NaN
+   * - 1
+     - 3
+     - 18.377
+     - 18.877
+     - 0.538
+   * - 2
+     - 1
+     - 95.880
+     - 96.380
+     - 0.611
+   * - ...
+     - ...
+     - ...
+     - ...
+     - ...
+
+:meth:`Events.from_table` turns the columns of such a table into
+events. The keys of the dict are the labels, the values are column names or
+arrays of times; missing times (NaN, e.g., no response) give no event:
 
 .. code-block:: python
 
     ev = pp.Events.from_table(behav, {"stim_on": "stim_on",
                                       "response": behav.stim_on + behav.rt},
                               units="sec")
+
+This gives one event per stimulus and per response, sorted by onset (still
+on the clock of the behaviour log):
+
+.. list-table:: ``ev``
+   :header-rows: 1
+   :widths: 20 20
+
+   * - onset (sec)
+     - label
+   * - 12.531
+     - stim_on
+   * - 12.943
+     - response
+   * - 15.704
+     - stim_on
+   * - 18.877
+     - stim_on
+   * - 19.415
+     - response
+   * - 96.380
+     - stim_on
+   * - ...
+     - ...
 
 The behaviour log and the eye tracker have different clocks. They have
 different zero points and drift apart slowly (a few ms in a typical
