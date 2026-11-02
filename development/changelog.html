@@ -475,6 +475,7 @@
 <h3>Breaking changes<a class="headerlink" href="#breaking-changes" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">EyeData.get_pupildata()</span></code> was removed, use <code class="docutils literal notranslate"><span class="pre">to_pupildata()</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Events</span></code> need time units; <code class="docutils literal notranslate"><span class="pre">units=None</span></code> (sample indices) raises an error</p></li>
 </ul>
 </section>
 <section id="added">
@@ -497,6 +498,7 @@
 <h3>Fixed<a class="headerlink" href="#fixed" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>HTML representation of eyedata objects escapes names, labels and history</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">set_events()</span></code> stored onsets of <code class="docutils literal notranslate"><span class="pre">Events</span></code> with <code class="docutils literal notranslate"><span class="pre">units=None</span></code> as ms</p></li>
 </ul>
 </section>
 </section>

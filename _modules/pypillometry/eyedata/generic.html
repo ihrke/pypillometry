@@ -2679,13 +2679,8 @@ window.runMermaid = runMermaid;</script>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">events</span><span class="p">,</span> <span class="n">Events</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"events must be an Events object, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">events</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         
-        <span class="c1"># Normalize units (handles aliases) and convert to ms if needed</span>
-        <span class="c1"># (internal storage is always in ms)</span>
-        <span class="n">event_units</span> <span class="o">=</span> <span class="n">normalize_unit</span><span class="p">(</span><span class="n">events</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">event_units</span> <span class="o">!=</span> <span class="s2">"ms"</span> <span class="ow">and</span> <span class="n">event_units</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">events</span> <span class="o">=</span> <span class="n">events</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="s2">"ms"</span><span class="p">)</span>
-        
-        <span class="c1"># Use the existing set_event_onsets method</span>
+        <span class="c1"># internal storage is always in ms</span>
+        <span class="n">events</span> <span class="o">=</span> <span class="n">events</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="s2">"ms"</span><span class="p">)</span>
         <span class="n">obj</span><span class="o">.</span><span class="n">set_event_onsets</span><span class="p">(</span><span class="n">events</span><span class="o">.</span><span class="n">onsets</span><span class="p">,</span> <span class="n">events</span><span class="o">.</span><span class="n">labels</span><span class="p">)</span>
         
         <span class="k">return</span> <span class="n">obj</span></div>

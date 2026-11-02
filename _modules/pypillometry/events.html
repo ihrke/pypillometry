@@ -827,6 +827,9 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    This class wraps arrays of event onsets and labels and provides additional</span>
 <span class="sd">    functionality such as unit conversion, filtering, and display capabilities.</span>
 
+<span class="sd">    Onsets are always times (not sample indices), so they stay valid when</span>
+<span class="sd">    the data are sliced or resampled.</span>
+
 <span class="sd">    The events of a dataset are obtained with</span>
 <span class="sd">    :meth:`~pypillometry.GenericEyeData.get_events`. An (e.g., filtered)</span>
 <span class="sd">    Events object can be passed as `event_select` to</span>
@@ -841,7 +844,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    labels : np.ndarray or list</span>
 <span class="sd">        Event labels (stored as array of strings), same length as `onsets`</span>
 <span class="sd">    units : str, Unit or None, optional</span>
-<span class="sd">        Units of the onsets ("ms", "sec", "min", "h", or None for indices).</span>
+<span class="sd">        Time units of the onsets ("ms", "sec", "min" or "h").</span>
 <span class="sd">        Default is "ms", or the units of `onsets` if they carry units</span>
 <span class="sd">        (otherwise, onsets with units are converted to `units`).</span>
 <span class="sd">    data_time_range : tuple or None, optional</span>
@@ -850,7 +853,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    ValueError</span>
-<span class="sd">        If `onsets` and `labels` differ in length.</span>
+<span class="sd">        If `onsets` and `labels` differ in length, or if the units are not</span>
+<span class="sd">        time units (e.g., None or samples).</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -871,7 +875,13 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="n">UNSET</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_has_units</span><span class="p">(</span><span class="n">onsets</span><span class="p">):</span>
             <span class="n">units</span> <span class="o">=</span> <span class="s2">"ms"</span>
+        <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Events need time units (e.g., units='ms'), "</span>
+                             <span class="s2">"not sample indices"</span><span class="p">)</span>
         <span class="n">onsets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="n">_time_values_and_units</span><span class="p">(</span><span class="n">onsets</span><span class="p">,</span> <span class="n">units</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Events need time units (e.g., units='ms'), "</span>
+                             <span class="s2">"not sample indices"</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">onsets</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">onsets</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
         
@@ -948,8 +958,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        target_units : str or None</span>
-<span class="sd">            Target units: "ms", "sec", "min", "h", or None for indices</span>
+<span class="sd">        target_units : str</span>
+<span class="sd">            Target units: "ms", "sec", "min" or "h"</span>
 <span class="sd">            </span>
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -959,7 +969,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
 <span class="sd">        ValueError</span>
-<span class="sd">            If current units are None (indices) or conversion is not possible</span>
+<span class="sd">            If `target_units` is not a time unit</span>
 <span class="sd">        </span>
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
@@ -968,20 +978,12 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        &gt;&gt;&gt; events_sec.onsets</span>
 <span class="sd">        array([1., 2.])</span>
 <span class="sd">        """</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">"Cannot convert from indices (units=None). "</span>
-                <span class="s2">"Events with units=None represent indices, not time values."</span>
-            <span class="p">)</span>
-        
         <span class="c1"># Normalize target units (source units already normalized in __init__)</span>
         <span class="n">target_units</span> <span class="o">=</span> <span class="n">normalize_unit</span><span class="p">(</span><span class="n">target_units</span><span class="p">)</span>
         
         <span class="k">if</span> <span class="n">target_units</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">"Cannot convert to indices (units=None). "</span>
-                <span class="s2">"Use appropriate methods on the eyedata object instead."</span>
-            <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Events need time units (e.g., 'ms'), not sample "</span>
+                             <span class="s2">"indices; use the data object to find samples"</span><span class="p">)</span>
         
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span> <span class="o">==</span> <span class="n">target_units</span><span class="p">:</span>
             <span class="c1"># No conversion needed, return self</span>
@@ -1037,11 +1039,7 @@ window.runMermaid = runMermaid;</script>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Events: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="si">}</span><span class="s2"> events"</span><span class="p">)</span>
         
-        <span class="c1"># Add units info</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"units=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"units=None (indices)"</span><span class="p">)</span>
+        <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"units=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         
         <span class="c1"># Add time range if available</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_time_range</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1072,7 +1070,7 @@ window.runMermaid = runMermaid;</script>
             <span class="k">return</span> <span class="sa">f</span><span class="s2">"&lt;p&gt;&lt;i&gt;Events: 0 events (units=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="si">}</span><span class="s2">)&lt;/i&gt;&lt;/p&gt;"</span>
         
         <span class="c1"># Determine unit display</span>
-        <span class="n">unit_str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">"indices"</span>
+        <span class="n">unit_str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span>
         
         <span class="c1"># Create DataFrame</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
@@ -1158,13 +1156,13 @@ window.runMermaid = runMermaid;</script>
         <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
 
         <span class="n">target_units</span> <span class="o">=</span> <span class="n">units</span> <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span>
-        <span class="k">if</span> <span class="n">target_units</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">target_units</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">target_units</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">:</span>
             <span class="n">converted</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="n">target_units</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">converted</span> <span class="o">=</span> <span class="bp">self</span>
 
         <span class="c1"># Always label axes even if no events so the plot remains informative.</span>
-        <span class="n">x_label</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Time (</span><span class="si">{</span><span class="n">converted</span><span class="o">.</span><span class="n">units</span><span class="si">}</span><span class="s2">)"</span> <span class="k">if</span> <span class="n">converted</span><span class="o">.</span><span class="n">units</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">"Time (indices)"</span>
+        <span class="n">x_label</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Time (</span><span class="si">{</span><span class="n">converted</span><span class="o">.</span><span class="n">units</span><span class="si">}</span><span class="s2">)"</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">x_label</span><span class="p">)</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"Event #"</span><span class="p">)</span>
 
@@ -1292,9 +1290,6 @@ window.runMermaid = runMermaid;</script>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">selector</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Time range selector must be a tuple of (min_time, max_time)"</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">_has_units</span><span class="p">(</span><span class="n">selector</span><span class="p">):</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"cannot filter Events in index units by a time "</span>
-                                     <span class="s2">"range with units; give the range in indices"</span><span class="p">)</span>
                 <span class="n">selector</span> <span class="o">=</span> <span class="n">parse_time</span><span class="p">(</span><span class="n">selector</span><span class="p">,</span> <span class="n">to</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 
             <span class="n">min_time</span><span class="p">,</span> <span class="n">max_time</span> <span class="o">=</span> <span class="n">selector</span>
