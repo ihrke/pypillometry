@@ -1249,7 +1249,8 @@ class GenericEyeData(state.VersionedState, ABC):
         if all(field in avail_data_fields for field in monocular_fields):
             # Determine which eye was tracked (usually stored in edf["info"]["eye"])
             # Map to 'left' by default, but check if eye info is available
-            tracked_eye = edf["info"].get("eye", "left").lower()
+            # eyelinkio gives e.g. "RIGHT_EYE"
+            tracked_eye = str(edf["info"].get("eye", "left")).lower().removesuffix("_eye")
             if tracked_eye not in ['left', 'right']:
                 tracked_eye = 'left'  # Default to left if unclear
             
