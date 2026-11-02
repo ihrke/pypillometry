@@ -129,6 +129,7 @@ data/test_samples.asc
 archive/notebooks/baseline.stan
 *.swp
 *.pkl
+!tests/data/state/*.pkl
 src/*
 archive/notebooks/symp_talk_uit2019.pdf
 data/002_rlmw_events.asc
