@@ -236,6 +236,20 @@ class TestNNLSGram(unittest.TestCase):
         x[5] = 0
         self.compare(x, self.y)
 
+    def test_zero_row_rounding(self):
+        """rounding noise in the eigenvectors (as with some BLAS builds)"""
+        from unittest import mock
+        eigh = np.linalg.eigh
+        rng = np.random.default_rng(0)
+        def noisy(g):
+            s, v = eigh(g)
+            return s, v + rng.normal(scale=1e-16, size=v.shape)
+        x = self.x.copy()
+        x[5] = 0
+        with mock.patch("numpy.linalg.eigh", noisy):
+            for _ in range(20):
+                self.compare(x, self.y)
+
     def test_pupil_responses(self):
         """overlapping responses with known amplitudes"""
         from pypillometry.signal.pupil import _nnls_gram
