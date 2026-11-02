@@ -26,7 +26,9 @@
 - Excluded periods (e.g., breaks, calibration): `exclude_intervals()`,
   `get_excluded()`, `excluded_duration()`; all variables are masked there,
   blink detection ignores them, and they are saved with the object;
-  `quality_report()` only uses the included time
+  `quality_report()` only uses the included time; `get_included()`,
+  `split_excluded()` (one object per included period) and
+  `remove_excluded()` (delete them and join the rest)
 
 ### Changed
 
