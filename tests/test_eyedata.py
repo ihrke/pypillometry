@@ -10,6 +10,7 @@ import pypillometry as pp
 from pypillometry.example_data import get_rlmw_002_short
 from pypillometry.plot import EyePlotter
 import pytest
+from loguru import logger
 
 class TestEyeData(unittest.TestCase):
     def setUp(self):
@@ -2272,11 +2273,97 @@ class TestGetIntervalsBetweenEvents(unittest.TestCase):
         iv = d.get_intervals(("start", "resp"), interval=(0, 0))
         self.assertEqual([tuple(map(int, i)) for i in iv.intervals], [(100, 200)])
 
-    def test_reversed_pair_raises(self):
-        # second "resp" missing, an extra one at the start -> pairs shifted
+    def warnings_of(self, f):
+        """Result of f() and the warnings logged during it."""
+        messages = []
+        hid = logger.add(lambda m: messages.append(m.record["message"]), level="WARNING")
+        try:
+            result = f()
+        finally:
+            logger.remove(hid)
+        return result, messages
+
+    def test_unpaired_events_skipped_with_warning(self):
+        # "resp" before the first "start", a "start" after the last "resp"
         d = self.make([500, 1000, 2000, 5000], ["resp", "start", "resp", "start"])
-        with self.assertRaisesRegex(ValueError, "paired by order"):
-            d.get_intervals(("start", "resp"), interval=(0, 0))
+        iv, msgs = self.warnings_of(
+            lambda: d.get_intervals(("start", "resp"), interval=(0, 0), units="ms"))
+        self.assertEqual(iv.intervals, [(1000.0, 2000.0)])
+        self.assertEqual(len(msgs), 2)
+        self.assertIn("1 'start' event(s) with no 'resp' event after them", msgs[0])
+        self.assertIn("[5000.0]", msgs[0])
+        self.assertIn("1 'resp' event(s) with no 'start' event before them", msgs[1])
+        self.assertIn("[500.0]", msgs[1])
+
+    def test_no_warning_without_skipped_events(self):
+        d = self.make([1000, 2000, 5000, 6000], ["start", "resp"] * 2)
+        _, msgs = self.warnings_of(lambda: d.get_intervals(("start", "resp"), (0, 0)))
+        self.assertEqual(msgs, [])
+
+    def test_breaks_between_blocks(self):
+        d = self.make([1000, 2000, 3000, 4000, 5000, 6000],
+                      ["Start Block", "End Block"] * 3)
+        iv = d.get_intervals(("End Block", "Start Block"), (0, 0), units="ms")
+        self.assertEqual(iv.intervals, [(2000.0, 3000.0), (4000.0, 5000.0)])
+        self.assertEqual(iv.event_labels, ["End Block_to_Start Block"] * 2)
+        self.assertEqual(list(iv.event_indices), [1, 3])
+
+    def test_closest_first_event_used(self):
+        # missing "resp" after the first "start": the second "start" is used
+        d = self.make([1000, 2000, 2500], ["start", "start", "resp"])
+        iv, msgs = self.warnings_of(
+            lambda: d.get_intervals(("start", "resp"), (0, 0), units="ms"))
+        self.assertEqual(iv.intervals, [(2000.0, 2500.0)])
+        self.assertIn("[1000.0]", msgs[0])
+
+    def test_second_event_used_once(self):
+        d = self.make([1000, 2000, 3000], ["start", "resp", "resp"])
+        iv, msgs = self.warnings_of(
+            lambda: d.get_intervals(("start", "resp"), (0, 0), units="ms"))
+        self.assertEqual(iv.intervals, [(1000.0, 2000.0)])
+        self.assertIn("[3000.0]", msgs[0])
+
+    def test_same_time_not_paired(self):
+        d = self.make([1000, 1000, 2000], ["start", "resp", "resp"])
+        iv, _ = self.warnings_of(
+            lambda: d.get_intervals(("start", "resp"), (0, 0), units="ms"))
+        self.assertEqual(iv.intervals, [(1000.0, 2000.0)])
+
+    def test_no_pairs_raises(self):
+        d = self.make([1000, 2000], ["resp", "start"])
+        with self.assertRaisesRegex(ValueError, "is followed by"):
+            self.warnings_of(lambda: d.get_intervals(("start", "resp"), (0, 0)))
+
+    def test_recording_start(self):
+        d = self.make([1000, 2000, 3000], ["Start Block", "End Block", "Start Block"])
+        iv, msgs = self.warnings_of(
+            lambda: d.get_intervals(("<start>", "Start Block"), (0, 0), units="ms"))
+        self.assertEqual(iv.intervals, [(0.0, 1000.0)])
+        self.assertIsNone(iv.event_indices)
+        self.assertEqual(iv.event_labels, ["<start>_to_Start Block"])
+        self.assertEqual(msgs, [])
+
+    def test_recording_end(self):
+        # the end is one sample past the last one (end-exclusive)
+        d = self.make([1000, 2000, 3000], ["End Block", "Start Block", "End Block"])
+        iv, msgs = self.warnings_of(
+            lambda: d.get_intervals(("End Block", "<end>"), (0, 0)))
+        self.assertEqual([tuple(map(int, i)) for i in iv.intervals], [(300, 1000)])
+        ms = d.get_intervals(("End Block", "<end>"), (0, 0), units="ms")
+        self.assertEqual(ms.intervals, [(3000.0, 10000.0)])
+        self.assertEqual(msgs, [])
+        self.assertEqual(iv.to_mask(d)[300:].sum(), 700)
+
+    def test_recording_start_alone(self):
+        d = self.make([1000], ["x"])
+        iv = d.get_intervals("<start>", (0, 50))
+        self.assertEqual([tuple(map(int, i)) for i in iv.intervals], [(0, 50)])
+
+    def test_exact(self):
+        d = self.make([1000, 2000, 3000], ["Start", "Start Block", "End"])
+        iv = d.get_intervals("Start", (0, 10), exact=True, units="ms")
+        self.assertEqual(iv.intervals, [(1000.0, 1010.0)])
+        self.assertEqual(len(d.get_intervals("Start", (0, 10))), 2)
 
     def test_empty_interval_raises(self):
         d = self.make([1000, 2000], ["start", "resp"])

@@ -9,7 +9,7 @@ All other eyedata classes should inherit from this class.
 from collections.abc import Iterable
 from .. import io
 from ..convenience import sizeof_fmt, ByteSize, _round_values, requires_package, is_url, suppress_all_output, normalize_unit, _warn_if_ignores_mask
-from ..units import UNSET, _has_units, _time_values_and_units, parse_time, _ms_to_samples
+from ..units import UNSET, _has_units, _time_values_and_units, parse_time, _ms_to_samples, _samples_to_ms
 from ..io import download
 from .eyedatadict import EyeDataDict
 from .experimental_setup import ExperimentalSetup
@@ -60,6 +60,44 @@ def _history_arg(v):
         return f"{type(v).__name__}({len(v)})"  # e.g. Intervals(13)
     except TypeError:
         return type(v).__name__
+
+
+def _pair_with_next(on1, on2):
+    """Pair each first event with the next second event after it.
+
+    `on1` and `on2` are the onsets of the first and the second events. Each
+    event is used at most once. If several first events come before the
+    same second event, the last of them (the closest one) is used. A second
+    event at the same time as a first event is not paired with it.
+
+    Returns
+    -------
+    pairs : list of (int, int)
+        indices into `on1` and `on2` of the pairs, in time order
+    unpaired1, unpaired2 : list of int
+        indices of the first events without a second event (before the next
+        first event or the end) and of the second events without a first
+        event before them
+    """
+    # at the same time, second events come first, so they are not paired
+    # with a first event at that time
+    order = sorted([(t, 0, k) for k, t in enumerate(on2)] +
+                   [(t, 1, k) for k, t in enumerate(on1)])
+    pairs, unpaired1, unpaired2 = [], [], []
+    pending = None  # last first event without a partner
+    for _, role, k in order:
+        if role == 1:
+            if pending is not None:
+                unpaired1.append(pending)
+            pending = k
+        elif pending is not None:
+            pairs.append((pending, k))
+            pending = None
+        else:
+            unpaired2.append(k)
+    if pending is not None:
+        unpaired1.append(pending)
+    return pairs, sorted(unpaired1), sorted(unpaired2)
 
 
 # number of decorated methods currently running; only the outermost call
@@ -1806,15 +1844,16 @@ class GenericEyeData(state.VersionedState, ABC):
                                            data_time_range=(0, len(ntx)))
         return self
     
-    def get_intervals(self, 
+    def get_intervals(self,
                     event_select,
                     interval: tuple=(-200,200),
-                    units: str=UNSET, label: str|None=None, **kwargs):
+                    units: str=UNSET, label: str|None=None, exact: bool=False,
+                    **kwargs):
         """
         Return an Intervals object containing intervals relative to event-onsets.
         For example, extract the interval before and after a stimulus has been presented.
         It is possible to select based on the event label, e.g. only select
-        events matching "stimulus" or "response". It is also 
+        events matching "stimulus" or "response". It is also
         possible to select the intervals situated between two different events,
         e.g., trial start and response by specifying `event_select` as a tuple
         with two entries.
@@ -1824,17 +1863,26 @@ class GenericEyeData(state.VersionedState, ABC):
         event_select : str, tuple, function, or Events
             variable describing which events to select and align to
 
-            - if str: use all events whose label contains the string
+            - if str: use all events whose label contains the string (or
+              is equal to it, if `exact` is True); ``"<start>"`` and
+              ``"<end>"`` stand for the start and the end of the recording
+              (the first sample and one sample past the last one, as
+              intervals are end-exclusive)
             - if function: apply function to all labels, use those where the
               function returns True
             - if tuple: use the intervals between the events selected by the
               first and the second entry (each a str or function); `interval[0]`
               is added to the first and `interval[1]` to the second event
               (so ``interval=(0, 0)`` gives exactly the span between them).
-              Both selectors must result in identical number of events;
-              events are paired by order (n-th first with n-th second event)
-              and a ValueError is raised if a second event comes before
-              its first event.
+              Each first event is paired with the next second event after it
+              (a second event at the same time does not count). If several
+              first events come before the same second event, the last of
+              them is used. Events without a partner are skipped with a
+              warning that lists them (not for ``"<start>"`` and ``"<end>"``,
+              which are paired with the first or last event only). For example,
+              ``("End Block", "Start Block")`` gives the breaks between
+              blocks and ``("<start>", "Start Block")`` the time before the
+              first block.
             - if Events: use the events from the
               :class:`~pypillometry.Events` object directly
         interval : tuple (min,max) or Quantity, optional
@@ -1852,6 +1900,9 @@ class GenericEyeData(state.VersionedState, ABC):
         label : str or None, optional
             optional label for the Intervals object. If None, a label is automatically
             generated from the event_select parameter
+        exact : bool, optional
+            if True, string selectors match only labels that are equal to
+            them; if False (default), labels that contain them
         **kwargs
             passed onto the event_select function
 
@@ -1859,11 +1910,12 @@ class GenericEyeData(state.VersionedState, ABC):
         -------
         :class:`~pypillometry.Intervals`
             Intervals object containing interval on- and offsets for each match,
-            with associated metadata (event labels, indices, units)
+            with associated metadata (event labels, indices, units). For
+            ``"<start>"`` as first event, the event indices are None.
         """
         from ..intervals import Intervals
         from ..events import Events
-        
+
         if not isinstance(interval, Iterable) or isinstance(interval, str):
             raise ValueError("interval must be iterable")
         if _has_units(interval):
@@ -1879,23 +1931,36 @@ class GenericEyeData(state.VersionedState, ABC):
         # events, so e.g. (0,0) is valid; the resulting intervals are checked below
         if not isinstance(event_select, tuple) and interval[1]<=interval[0]:
             raise ValueError("interval must be (min,max) with min<max, got {}".format(interval))
-        
+
+        n = len(self.tx)
+        # start and end of the recording as (onset in ms, sample); the end is
+        # one sample past the last one, as intervals are end-exclusive
+        virtual = {"<start>": (float(self.tx[0]), 0),
+                   "<end>": (float(_samples_to_ms(self, n)), n)}
+
         def select(evsel):
-            """Boolean index of the events matching `evsel` (str or function)."""
+            """Onsets (ms), samples, indices and labels of the events matching `evsel`."""
+            if isinstance(evsel, str) and evsel in virtual:
+                t, s = virtual[evsel]
+                return np.array([t]), np.array([s]), None, [evsel]
             if callable(evsel):
                 ix = np.array([bool(evsel(evlab, **kwargs)) for evlab in self.event_labels],
                               dtype=bool)
             elif isinstance(evsel, str):
-                ix = np.array([evsel in evlab for evlab in self.event_labels], dtype=bool)
+                ix = np.array([evlab == evsel if exact else evsel in evlab
+                               for evlab in self.event_labels], dtype=bool)
             else:
                 raise ValueError("event_select must be string or function")
             if np.sum(ix)==0:
-                raise ValueError("no events found matching event_select")
-            return ix
+                raise ValueError(f"no events found matching {_history_arg(evsel)}")
+            on = self.event_onsets[ix]
+            return (on, np.clip(_ms_to_samples(self, on), 0, n-1), np.where(ix)[0],
+                    [self.event_labels[i] for i in np.where(ix)[0]])
 
         if isinstance(event_select, Events):
             # events given directly
             on1 = on2 = event_select.to_units("ms").onsets
+            eix1 = eix2 = np.clip(_ms_to_samples(self, on1), 0, n-1)
             selected_labels = event_select.labels.tolist()
             selected_indices = None
             if label is None:
@@ -1904,42 +1969,42 @@ class GenericEyeData(state.VersionedState, ABC):
             # two events and interval in between
             if len(event_select)!=2:
                 raise ValueError("event_select must be tuple with two entries")
-            ix1, ix2 = select(event_select[0]), select(event_select[1])
-            if np.sum(ix1)!=np.sum(ix2):
-                raise ValueError("event_select must result in same number of events for both "
-                "selectors, got {} and {}".format(np.sum(ix1), np.sum(ix2)))
-            # pairs are matched by order: the n-th second event must not
-            # come before the n-th first event (catches missing/extra events)
-            on1=self.event_onsets[ix1]
-            on2=self.event_onsets[ix2]
-            bad=np.where(on2<on1)[0]
-            if len(bad)>0:
-                raise ValueError("second event before first event in pair(s) {} "
-                    "(onsets {} and {}); events are paired by order, check for "
-                    "missing or extra events".format(bad.tolist(), on1[bad].tolist(),
-                                                     on2[bad].tolist()))
+            on_a, s_a, i_a, l_a = select(event_select[0])
+            on_b, s_b, i_b, l_b = select(event_select[1])
+            pairs, skip_a, skip_b = _pair_with_next(on_a, on_b)
+            name_a, name_b = (_history_arg(e) for e in event_select)
+            # "<start>"/"<end>" pair with one event only; the others are not reported
+            if skip_a and i_b is not None:
+                logger.warning(
+                    f"get_intervals(): skipped {len(skip_a)} {name_a} event(s) with no "
+                    f"{name_b} event after them (before the next {name_a} event or "
+                    f"the end), at {on_a[skip_a].tolist()} ms")
+            if skip_b and i_a is not None:
+                logger.warning(
+                    f"get_intervals(): skipped {len(skip_b)} {name_b} event(s) with no "
+                    f"{name_a} event before them, at {on_b[skip_b].tolist()} ms")
+            if not pairs:
+                raise ValueError(f"no {name_a} event is followed by a {name_b} event")
+            pa = np.array([p[0] for p in pairs])
+            pb = np.array([p[1] for p in pairs])
+            on1, on2 = on_a[pa], on_b[pb]
+            eix1, eix2 = s_a[pa], s_b[pb]
             if label is None:
                 if isinstance(event_select[0], str) and isinstance(event_select[1], str):
                     label = f"{event_select[0]}_to_{event_select[1]}"
                 else:
                     label = "between_events"
-            selected_labels = [f"{self.event_labels[i]}_to_{self.event_labels[j]}"
-                               for i, j in zip(np.where(ix1)[0], np.where(ix2)[0])]
-            selected_indices = np.where(ix1)[0]
+            selected_labels = [f"{l_a[i]}_to_{l_b[j]}" for i, j in pairs]
+            selected_indices = None if i_a is None else i_a[pa]
         else:
             # one event with padding interval
-            ix = select(event_select)
-            on1 = on2 = self.event_onsets[ix]
+            on1, eix1, selected_indices, selected_labels = select(event_select)
+            on2, eix2 = on1, eix1
             if label is None:
                 label = event_select if isinstance(event_select, str) else "custom_events"
-            selected_indices = np.where(ix)[0]
-            selected_labels = [self.event_labels[i] for i in selected_indices]
 
-        n = len(self.tx)
         if units == "samples":
             # sample of each event, the window in samples around it
-            eix1 = np.clip(_ms_to_samples(self, on1), 0, n-1)
-            eix2 = np.clip(_ms_to_samples(self, on2), 0, n-1)
             sti = np.maximum(eix1+interval[0], 0)
             ste = np.minimum(eix2+interval[1], n)
             event_onsets_list = np.atleast_1d(eix1).tolist()
@@ -1954,7 +2019,6 @@ class GenericEyeData(state.VersionedState, ABC):
         if len(bad)>0:
             raise ValueError("interval {} gives empty intervals for pair(s) {}"
                              .format(interval, bad.tolist()))
-
         return Intervals(
             intervals=list(zip(np.atleast_1d(sti).tolist(), np.atleast_1d(ste).tolist())),
             units=units,
