@@ -382,7 +382,14 @@ class TestEventsFiltering(unittest.TestCase):
         self.assertEqual(len(resp_events), 2)
         np.testing.assert_array_equal(resp_events.onsets, [500, 1500])
         np.testing.assert_array_equal(resp_events.labels, ["resp", "resp"])
-    
+
+    def test_filter_exact(self):
+        """exact=True matches only labels equal to the string"""
+        self.assertEqual(len(self.events.filter("stim", exact=True)), 0)
+        stim1 = self.events.filter("stim1", exact=True)
+        np.testing.assert_array_equal(stim1.onsets, [100])
+        np.testing.assert_array_equal(stim1.labels, ["stim1"])
+
     def test_filter_string_no_match(self):
         """Test filtering with no matches returns empty Events"""
         empty_events = self.events.filter("nonexistent")

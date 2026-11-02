@@ -10,6 +10,7 @@ import pypillometry as pp
 from pypillometry.example_data import get_rlmw_002_short
 from pypillometry.plot import EyePlotter
 import pytest
+from loguru import logger
 
 class TestEyeData(unittest.TestCase):
     def setUp(self):
@@ -878,7 +879,7 @@ class TestEyeData(unittest.TestCase):
         
         # Test mean pupil size in interval around events
         stats = self.eyedata.stat_per_event(
-            interval=(-100, 100),
+            window=(-100, 100),
             event_select='stim',
             eyes=['left'],
             variables=['pupil'],
@@ -896,10 +897,10 @@ class TestEyeData(unittest.TestCase):
                          event_onsets=np.array([7000., 12000.]), event_labels=np.array(["a", "a"]))
         expected = [6895., 11895.]
         calls = [
-            dict(interval=(-200, 0), event_select="a", units="ms"),
-            dict(interval=(-.2, 0), event_select="a", units="sec"),
-            dict(intervals=d.get_intervals("a", interval=(-20, 0))),  # sample indices
-            dict(intervals=d.get_intervals("a", interval=(-.2, 0), units="sec")),
+            dict(window=(-200, 0), event_select="a", units="ms"),
+            dict(window=(-.2, 0), event_select="a", units="sec"),
+            dict(intervals=d.get_intervals("a", window=(-20, 0))),  # sample indices
+            dict(intervals=d.get_intervals("a", window=(-.2, 0), units="sec")),
         ]
         for kw in calls:
             with self.subTest(**{k: str(v) for k, v in kw.items()}):
@@ -918,7 +919,7 @@ class TestEyeData(unittest.TestCase):
         d.mask_intervals(Intervals([(310, 315)], units="samples"), inplace=True)
         for f in (np.mean, np.nanmean, np.ma.median):
             with self.subTest(statfct=f.__name__):
-                res = d.stat_per_event(interval=(-200, 0), event_select="a", statfct=f)["left_pupil"]
+                res = d.stat_per_event(window=(-200, 0), event_select="a", statfct=f)["left_pupil"]
                 np.testing.assert_array_equal(res, [10., 10., np.nan])
 
     def test_get_duration(self):
@@ -1921,7 +1922,7 @@ class TestEventsWithGetIntervals(unittest.TestCase):
         from pypillometry.intervals import Intervals
         
         events = self.data.get_events()
-        intervals = self.data.get_intervals(events, interval=(-200, 200), units="ms")
+        intervals = self.data.get_intervals(events, window=(-200, 200), units="ms")
         
         self.assertIsInstance(intervals, Intervals)
         self.assertEqual(len(intervals), len(events))
@@ -1932,13 +1933,13 @@ class TestEventsWithGetIntervals(unittest.TestCase):
         events = self.data.get_events()
         filtered = events.filter("F")
         
-        intervals = self.data.get_intervals(filtered, interval=(-200, 200), units="ms")
+        intervals = self.data.get_intervals(filtered, window=(-200, 200), units="ms")
         
         # Should have same number of intervals as filtered events
         self.assertEqual(len(intervals), len(filtered))
         
         # Compare with string selector
-        intervals_str = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        intervals_str = self.data.get_intervals("F", window=(-200, 200), units="ms")
         self.assertEqual(len(intervals), len(intervals_str))
     
     def test_get_intervals_events_vs_string(self):
@@ -1946,8 +1947,8 @@ class TestEventsWithGetIntervals(unittest.TestCase):
         events = self.data.get_events()
         filtered = events.filter("F")
         
-        intervals_events = self.data.get_intervals(filtered, interval=(-200, 200), units="ms")
-        intervals_str = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        intervals_events = self.data.get_intervals(filtered, window=(-200, 200), units="ms")
+        intervals_str = self.data.get_intervals("F", window=(-200, 200), units="ms")
         
         # Should have same number of intervals
         self.assertEqual(len(intervals_events), len(intervals_str))
@@ -1960,7 +1961,7 @@ class TestEventsWithGetIntervals(unittest.TestCase):
         events = self.data.get_events()
         events_sec = events.to_units("sec")
         
-        intervals = self.data.get_intervals(events_sec, interval=(-0.2, 0.2), units="sec")
+        intervals = self.data.get_intervals(events_sec, window=(-0.2, 0.2), units="sec")
         
         self.assertEqual(len(intervals), len(events))
         self.assertEqual(intervals.units, "sec")
@@ -1968,7 +1969,7 @@ class TestEventsWithGetIntervals(unittest.TestCase):
     def test_get_intervals_with_events_custom_label(self):
         """Test that custom label works with Events object"""
         events = self.data.get_events()
-        intervals = self.data.get_intervals(events, interval=(-200, 200), units="ms", label="custom_label")
+        intervals = self.data.get_intervals(events, window=(-200, 200), units="ms", label="custom_label")
         
         self.assertEqual(intervals.label, "custom_label")
     
@@ -1977,7 +1978,7 @@ class TestEventsWithGetIntervals(unittest.TestCase):
         events = self.data.get_events()
         filtered = events.filter("F")
         
-        intervals = self.data.get_intervals(filtered, interval=(-200, 200), units="ms")
+        intervals = self.data.get_intervals(filtered, window=(-200, 200), units="ms")
         
         # Should have automatic label
         self.assertIsNotNone(intervals.label)
@@ -1987,7 +1988,7 @@ class TestEventsWithGetIntervals(unittest.TestCase):
         """Test that units are consistent between Events and resulting Intervals"""
         events = self.data.get_events(units="sec")
         
-        intervals = self.data.get_intervals(events, interval=(-0.2, 0.2), units="sec")
+        intervals = self.data.get_intervals(events, window=(-0.2, 0.2), units="sec")
         
         self.assertEqual(intervals.units, "sec")
         self.assertEqual(events.units, "sec")
@@ -1996,7 +1997,7 @@ class TestEventsWithGetIntervals(unittest.TestCase):
         """Test get_intervals with Events using index units"""
         events = self.data.get_events()
         
-        intervals = self.data.get_intervals(events, interval=(-10, 10), units="samples")
+        intervals = self.data.get_intervals(events, window=(-10, 10), units="samples")
         
         self.assertEqual(intervals.units, "samples")
         self.assertEqual(len(intervals), len(events))
@@ -2007,7 +2008,7 @@ class TestEventsWithGetIntervals(unittest.TestCase):
         
         empty_events = Events([], [], units="ms")
         
-        intervals = self.data.get_intervals(empty_events, interval=(-200, 200), units="ms")
+        intervals = self.data.get_intervals(empty_events, window=(-200, 200), units="ms")
         
         self.assertEqual(len(intervals), 0)
     
@@ -2016,7 +2017,7 @@ class TestEventsWithGetIntervals(unittest.TestCase):
         events = self.data.get_events()
         filtered = events.filter("F")
         
-        intervals = self.data.get_intervals(filtered, interval=(-200, 200), units="ms")
+        intervals = self.data.get_intervals(filtered, window=(-200, 200), units="ms")
         
         # Should have event labels
         self.assertIsNotNone(intervals.event_labels)
@@ -2029,11 +2030,11 @@ class TestEventsWithGetIntervals(unittest.TestCase):
     def test_get_intervals_backward_compatibility(self):
         """Test that existing string/function selectors still work"""
         # String selector
-        intervals_str = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        intervals_str = self.data.get_intervals("F", window=(-200, 200), units="ms")
         self.assertIsNotNone(intervals_str)
         
         # Function selector
-        intervals_func = self.data.get_intervals(lambda label: "F" in label, interval=(-200, 200), units="ms")
+        intervals_func = self.data.get_intervals(lambda label: "F" in label, window=(-200, 200), units="ms")
         self.assertIsNotNone(intervals_func)
         
         # Should have same number of intervals
@@ -2244,49 +2245,152 @@ class TestGetIntervalsBetweenEvents(unittest.TestCase):
 
     def test_indices_one_pair(self):
         d = self.make([1000, 2000], ["start", "resp"])
-        iv = d.get_intervals(("start", "resp"), interval=(-5, 5))
+        iv = d.get_intervals(("start", "resp"), window=(-5, 5))
         self.assertEqual([tuple(map(int, i)) for i in iv.intervals], [(95, 205)])
 
     def test_indices_several_pairs(self):
         d = self.make([1000, 2000, 5000, 6000, 7000, 8000],
                       ["start", "resp"] * 3)
-        iv = d.get_intervals(("start", "resp"), interval=(-5, 5))
+        iv = d.get_intervals(("start", "resp"), window=(-5, 5))
         self.assertEqual([tuple(map(int, i)) for i in iv.intervals],
                          [(95, 205), (495, 605), (695, 805)])
         self.assertEqual(iv.event_onsets, [100, 500, 700])
 
     def test_indices_match_ms(self):
         d = self.make([1000, 2000, 5000, 6000], ["start", "resp"] * 2)
-        ix = d.get_intervals(("start", "resp"), interval=(-5, 5))
-        ms = d.get_intervals(("start", "resp"), interval=(-50, 50), units="ms")
+        ix = d.get_intervals(("start", "resp"), window=(-5, 5))
+        ms = d.get_intervals(("start", "resp"), window=(-50, 50), units="ms")
         for (a, b), (c, e) in zip(ix.intervals, ms.intervals):
             self.assertEqual((a * 10, b * 10), (c, e))
 
     def test_indices_clipped(self):
         d = self.make([20, 9980], ["start", "resp"])
-        iv = d.get_intervals(("start", "resp"), interval=(-10, 10))
+        iv = d.get_intervals(("start", "resp"), window=(-10, 10))
         self.assertEqual([tuple(map(int, i)) for i in iv.intervals], [(0, 1000)])
 
     def test_zero_window(self):
         d = self.make([1000, 2000], ["start", "resp"])
-        iv = d.get_intervals(("start", "resp"), interval=(0, 0))
+        iv = d.get_intervals(("start", "resp"), window=(0, 0))
         self.assertEqual([tuple(map(int, i)) for i in iv.intervals], [(100, 200)])
 
-    def test_reversed_pair_raises(self):
-        # second "resp" missing, an extra one at the start -> pairs shifted
+    def warnings_of(self, f):
+        """Result of f() and the warnings logged during it."""
+        messages = []
+        hid = logger.add(lambda m: messages.append(m.record["message"]), level="WARNING")
+        try:
+            result = f()
+        finally:
+            logger.remove(hid)
+        return result, messages
+
+    def test_unpaired_events_skipped_with_warning(self):
+        # "resp" before the first "start", a "start" after the last "resp"
         d = self.make([500, 1000, 2000, 5000], ["resp", "start", "resp", "start"])
-        with self.assertRaisesRegex(ValueError, "paired by order"):
-            d.get_intervals(("start", "resp"), interval=(0, 0))
+        iv, msgs = self.warnings_of(
+            lambda: d.get_intervals(("start", "resp"), window=(0, 0), units="ms"))
+        self.assertEqual(iv.intervals, [(1000.0, 2000.0)])
+        self.assertEqual(len(msgs), 2)
+        self.assertIn("1 'start' event(s) with no 'resp' event after them", msgs[0])
+        self.assertIn("[5000.0]", msgs[0])
+        self.assertIn("1 'resp' event(s) with no 'start' event before them", msgs[1])
+        self.assertIn("[500.0]", msgs[1])
+
+    def test_no_warning_without_skipped_events(self):
+        d = self.make([1000, 2000, 5000, 6000], ["start", "resp"] * 2)
+        _, msgs = self.warnings_of(lambda: d.get_intervals(("start", "resp"), (0, 0)))
+        self.assertEqual(msgs, [])
+
+    def test_breaks_between_blocks(self):
+        d = self.make([1000, 2000, 3000, 4000, 5000, 6000],
+                      ["Start Block", "End Block"] * 3)
+        iv = d.get_intervals(("End Block", "Start Block"), (0, 0), units="ms")
+        self.assertEqual(iv.intervals, [(2000.0, 3000.0), (4000.0, 5000.0)])
+        self.assertEqual(iv.event_labels, ["End Block_to_Start Block"] * 2)
+        self.assertEqual(list(iv.event_indices), [1, 3])
+
+    def test_closest_first_event_used(self):
+        # missing "resp" after the first "start": the second "start" is used
+        d = self.make([1000, 2000, 2500], ["start", "start", "resp"])
+        iv, msgs = self.warnings_of(
+            lambda: d.get_intervals(("start", "resp"), (0, 0), units="ms"))
+        self.assertEqual(iv.intervals, [(2000.0, 2500.0)])
+        self.assertIn("[1000.0]", msgs[0])
+
+    def test_second_event_used_once(self):
+        d = self.make([1000, 2000, 3000], ["start", "resp", "resp"])
+        iv, msgs = self.warnings_of(
+            lambda: d.get_intervals(("start", "resp"), (0, 0), units="ms"))
+        self.assertEqual(iv.intervals, [(1000.0, 2000.0)])
+        self.assertIn("[3000.0]", msgs[0])
+
+    def test_same_time_not_paired(self):
+        d = self.make([1000, 1000, 2000], ["start", "resp", "resp"])
+        iv, _ = self.warnings_of(
+            lambda: d.get_intervals(("start", "resp"), (0, 0), units="ms"))
+        self.assertEqual(iv.intervals, [(1000.0, 2000.0)])
+
+    def test_no_pairs_raises(self):
+        d = self.make([1000, 2000], ["resp", "start"])
+        with self.assertRaisesRegex(ValueError, "is followed by"):
+            self.warnings_of(lambda: d.get_intervals(("start", "resp"), (0, 0)))
+
+    def test_recording_start(self):
+        d = self.make([1000, 2000, 3000], ["Start Block", "End Block", "Start Block"])
+        iv, msgs = self.warnings_of(
+            lambda: d.get_intervals(("<start>", "Start Block"), (0, 0), units="ms"))
+        self.assertEqual(iv.intervals, [(0.0, 1000.0)])
+        self.assertIsNone(iv.event_indices)
+        self.assertEqual(iv.event_labels, ["<start>_to_Start Block"])
+        self.assertEqual(msgs, [])
+
+    def test_recording_end(self):
+        # the end is one sample past the last one (end-exclusive)
+        d = self.make([1000, 2000, 3000], ["End Block", "Start Block", "End Block"])
+        iv, msgs = self.warnings_of(
+            lambda: d.get_intervals(("End Block", "<end>"), (0, 0)))
+        self.assertEqual([tuple(map(int, i)) for i in iv.intervals], [(300, 1000)])
+        ms = d.get_intervals(("End Block", "<end>"), (0, 0), units="ms")
+        self.assertEqual(ms.intervals, [(3000.0, 10000.0)])
+        self.assertEqual(msgs, [])
+        self.assertEqual(iv.to_mask(d)[300:].sum(), 700)
+
+    def test_recording_start_alone(self):
+        d = self.make([1000], ["x"])
+        iv = d.get_intervals("<start>", (0, 50))
+        self.assertEqual([tuple(map(int, i)) for i in iv.intervals], [(0, 50)])
+
+    def test_exact(self):
+        d = self.make([1000, 2000, 3000], ["Start", "Start Block", "End"])
+        iv = d.get_intervals("Start", (0, 10), exact=True, units="ms")
+        self.assertEqual(iv.intervals, [(1000.0, 1010.0)])
+        self.assertEqual(len(d.get_intervals("Start", (0, 10))), 2)
 
     def test_empty_interval_raises(self):
         d = self.make([1000, 2000], ["start", "resp"])
         with self.assertRaisesRegex(ValueError, "empty intervals"):
-            d.get_intervals(("start", "resp"), interval=(0, -2000), units="ms")
+            d.get_intervals(("start", "resp"), window=(0, -2000), units="ms")
+
+    def test_default_window_between_events(self):
+        d = self.make([1000, 2000], ["start", "resp"])
+        iv = d.get_intervals(("start", "resp"), units="ms")
+        self.assertEqual(iv.intervals, [(1000.0, 2000.0)])
+
+    def test_single_event_needs_window(self):
+        d = self.make([1000, 2000], ["start", "resp"])
+        with self.assertRaisesRegex(ValueError, "give a window"):
+            d.get_intervals("start")
+        with self.assertRaisesRegex(ValueError, "give a window"):
+            d.get_intervals(d.get_events())
+        # unknown keyword arguments are only allowed for function selectors
+        with self.assertRaisesRegex(TypeError, "interval"):
+            d.get_intervals(("start", "resp"), interval=(0, 10))
+        iv = d.get_intervals(lambda lab, x: lab == x, (0, 10), x="resp")
+        self.assertEqual(len(iv), 1)
 
     def test_single_event_window_still_checked(self):
         d = self.make([1000, 2000], ["start", "resp"])
         with self.assertRaises(ValueError):
-            d.get_intervals("start", interval=(0, 0))
+            d.get_intervals("start", window=(0, 0))
 
 
 class TestPupilBlinksDetectZero(unittest.TestCase):

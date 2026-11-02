@@ -31,7 +31,7 @@ class SegmentedEyeData(state.VersionedState):
     Usually created with :meth:`~pypillometry.GenericEyeData.get_segments`
     from the Intervals returned by
     :meth:`~pypillometry.GenericEyeData.get_intervals`, e.g.
-    ``d.get_segments(d.get_intervals("F", interval=(-200, 800), units="ms"),
+    ``d.get_segments(d.get_intervals("F", window=(-200, 800), units="ms"),
     "left_pupil")``. Segments of several subjects can be combined with
     :func:`~pypillometry.group_segments`.
 

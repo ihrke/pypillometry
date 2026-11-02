@@ -83,7 +83,7 @@ class TestSegmentedEyeDataCreation(unittest.TestCase):
         )
         
         # Get intervals and segments
-        intervals = data.get_intervals("stim", interval=(-100, 200), units="ms")
+        intervals = data.get_intervals("stim", window=(-100, 200), units="ms")
         segments = data.get_segments(intervals, "left_pupil")
         
         self.assertIsInstance(segments, SegmentedEyeData)
@@ -112,7 +112,7 @@ class TestSegmentedEyeDataCreation(unittest.TestCase):
             event_labels=["test"]
         )
         
-        intervals = data.get_intervals("test", interval=(-50, 100), units="ms")
+        intervals = data.get_intervals("test", window=(-50, 100), units="ms")
         
         with self.assertRaises(KeyError):
             data.get_segments(intervals, "right_pupil")  # Only left exists
@@ -306,7 +306,7 @@ class TestSegmentedEyeDataMasking(unittest.TestCase):
             event_labels=["stim"] * 3
         )
         
-        intervals = data.get_intervals("stim", interval=(-50, 150), units="ms")
+        intervals = data.get_intervals("stim", window=(-50, 150), units="ms")
         segments = data.get_segments(intervals, "left_pupil")
         
         # Check that mask exists
@@ -515,7 +515,7 @@ class TestSegmentedEyeDataFromIntervals(unittest.TestCase):
             event_labels=["cue"] * 3
         )
         
-        intervals = data.get_intervals("cue", interval=(-100, 200), units="ms")
+        intervals = data.get_intervals("cue", window=(-100, 200), units="ms")
         segments = data.get_segments(intervals, "left_pupil")
         
         # Name should come from intervals label which was set by get_intervals
@@ -542,7 +542,7 @@ class TestSegmentedEyeDataTimeAxis(unittest.TestCase):
         )
         
         # Get intervals with window (-200, 800)
-        intervals = data.get_intervals("stim", interval=(-200, 800), units="ms")
+        intervals = data.get_intervals("stim", window=(-200, 800), units="ms")
         
         # Verify interval_window is set
         self.assertEqual(intervals.interval_window, (-200, 800))
@@ -882,6 +882,6 @@ class TestSegmentedEyeDataLength(unittest.TestCase):
                             event_onsets=onsets, event_labels=labels)
         lengths = set()
         for lab in labels:
-            iv = data.get_intervals(lab, interval=(-500, 2000), units="ms")
+            iv = data.get_intervals(lab, window=(-500, 2000), units="ms")
             lengths.add(data.get_segments(iv, "left_pupil").n_timepoints)
         self.assertEqual(lengths, {1250})

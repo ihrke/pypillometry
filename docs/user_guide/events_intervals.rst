@@ -28,6 +28,7 @@ Events
     events = d.get_events()              # onsets in ms
     events = d.get_events(units="sec")   # onsets in seconds
     events.filter("stim")                # labels containing "stim"
+    events.filter("stim", exact=True)    # labels equal to "stim"
     events.filter(lambda lab: lab.endswith("_1"))
     events.filter((60, 120))             # onsets between 60 and 120 s
     events[:10]                          # the first ten events
@@ -55,7 +56,7 @@ come from several places:
    * - windows around events
      - ``d.get_intervals("stim", (-200, 1000) * u.ms)``
    * - spans between two events
-     - ``d.get_intervals(("trial_start", "response"), (0, 0))``
+     - ``d.get_intervals(("trial_start", "response"))``
    * - detected blinks
      - ``d.get_blinks("left", "pupil")``
    * - other detection methods
@@ -70,7 +71,28 @@ filtered (:meth:`~Intervals.filter`), padded (:meth:`~Intervals.pad`),
 merged when they overlap (:meth:`~Intervals.merge`), combined (``+``,
 :func:`merge_intervals`), subtracted (``-``), summarized
 (:meth:`~Intervals.stats`, :meth:`~Intervals.as_pandas`) and plotted
-(:meth:`~Intervals.plot`).
+(:meth:`~Intervals.plot`). :meth:`~Intervals.complement` returns the
+periods that are not covered (e.g., ``blocks.complement(d)`` gives the time
+before, between and after the blocks).
+
+Between two events
+~~~~~~~~~~~~~~~~~~
+
+With a tuple of two selectors, :meth:`~GenericEyeData.get_intervals`
+pairs each first event with the next second event after it. If several
+first events come before the same second event (e.g., a missing
+"End Block"), the last of them is used. Events without a partner are
+skipped, and a warning lists them. ``"<start>"`` and ``"<end>"`` stand for
+the start and the end of the recording:
+
+.. code-block:: python
+
+    blocks = d.get_intervals(("Start Block", "End Block"), units="ms")
+    breaks = d.get_intervals(("End Block", "Start Block"), units="ms")
+    before = d.get_intervals(("<start>", "Start Block"), units="ms")
+
+String selectors match labels that contain them; with ``exact=True``,
+only labels that are equal to them.
 
 Sample indices and time
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -140,7 +162,7 @@ function (by default the mean) to each interval:
 
 .. code-block:: python
 
-    peak = d.stat_per_event(interval=(500, 1500) * u.ms, event_select="stim",
+    peak = d.stat_per_event(window=(500, 1500) * u.ms, event_select="stim",
                             variables="pupil", statfct=np.max)
 
 Tutorial: :doc:`/notebooks/erpds`.

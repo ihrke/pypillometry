@@ -443,8 +443,8 @@ def test_get_intervals_with_units(eyedata):
 
 
 def test_stat_per_event_with_units(eyedata):
-    ref = eyedata.stat_per_event(interval=(-200, 0), event_select="F")
-    res = eyedata.stat_per_event(interval=(-200, 0) * u.ms, event_select="F")
+    ref = eyedata.stat_per_event(window=(-200, 0), event_select="F")
+    res = eyedata.stat_per_event(window=(-200, 0) * u.ms, event_select="F")
     for k in ref:
         np.testing.assert_allclose(res[k], ref[k])
 

@@ -415,12 +415,13 @@ class Events:
                     last_label_x = onset
         return
     
-    def filter(self, selector) -> 'Events':
+    def filter(self, selector, exact: bool = False) -> 'Events':
         """
         Filter events and return a new Events object.
         
         This method supports multiple types of selectors for flexible filtering:
-        - String: matches labels containing the substring
+        - String: matches labels containing the substring (or equal to
+          it, if `exact` is True)
         - Callable: applies function to each label, keeps events where it returns True
         - Tuple: filters by time range (min_time, max_time)
         
@@ -434,6 +435,9 @@ class Events:
             - tuple: (min_time, max_time) to filter by onset time range
               (inclusive, in the units of the Events object unless it
               carries units, e.g. ``(10, 30) * u.sec``)
+        exact : bool, optional
+            if True, a string selector matches only labels that are equal
+            to it; if False (default), labels that contain it
 
         Returns
         -------
@@ -447,6 +451,9 @@ class Events:
         >>> len(stim_events)
         2
         
+        >>> events.filter("stim", exact=True).onsets  # label equal to "stim"
+        array([ 100., 1000.])
+
         >>> # Filter by custom function
         >>> events = Events([100, 200], ["A1", "B2"], units="ms")
         >>> numeric = events.filter(lambda label: label[-1].isdigit())
@@ -459,7 +466,8 @@ class Events:
         """
         if isinstance(selector, str):
             # String selector: substring matching
-            mask = np.array([selector in label for label in self.labels], dtype=bool)
+            mask = np.array([label == selector if exact else selector in label
+                             for label in self.labels], dtype=bool)
         
         elif callable(selector):
             # Function selector: apply to each label

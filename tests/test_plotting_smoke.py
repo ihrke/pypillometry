@@ -44,7 +44,7 @@ class TestPlottingSmokeGeneric(unittest.TestCase):
     
     def test_plot_intervals_runs(self):
         """Test that plot_intervals completes without error using Intervals object"""
-        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
         figs = self.data.plot.plot_intervals(intervals)
         self.assertIsNotNone(figs)
     

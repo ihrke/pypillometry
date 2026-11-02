@@ -50,7 +50,7 @@ class TestExcluded(unittest.TestCase):
     def test_intervals_from_events(self):
         d = _make_data()
         d.set_event_onsets([7000, 12000], ["break", "break"])
-        iv = d.get_intervals("break", interval=(0, 1000), units="ms")
+        iv = d.get_intervals("break", window=(0, 1000), units="ms")
         d = d.exclude_intervals(iv)
         np.testing.assert_array_equal(d.get_excluded().intervals,
                                       [(7000, 8000), (12000, 13000)])
@@ -58,7 +58,7 @@ class TestExcluded(unittest.TestCase):
         d = _make_data()
         d.set_event_onsets([7000, 9000], ["break_start", "break_end"])
         d = d.exclude_intervals(d.get_intervals(("break_start", "break_end"),
-                                                interval=(0, 0), units="ms"))
+                                                window=(0, 0), units="ms"))
         np.testing.assert_array_equal(d.get_excluded().intervals, [(7000, 9000)])
 
     def test_blinks(self):
@@ -215,3 +215,49 @@ class TestIncludedSplitRemove(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestKeepIntervals(unittest.TestCase):
+    # _make_data(): samples at 5000, 5002, ..., 24998 ms (end 25000)
+
+    def test_keep_one_period(self):
+        d = _make_data().keep_intervals([(7000, 9000)])
+        np.testing.assert_array_equal(d.get_excluded().intervals,
+                                      [(5000, 7000), (9000, 25000)])
+        np.testing.assert_array_equal(d.get_included().intervals, [(7000, 9000)])
+        self.assertEqual(d.get_included("samples").intervals, [(1000, 2000)])
+        for key in d.data.mask:
+            self.assertTrue(d.data.mask[key][:1000].all())
+            self.assertTrue(d.data.mask[key][2000:].all())
+
+    def test_keep_blocks_from_events(self):
+        d = _make_data()
+        d.set_event_onsets([7000, 9000, 12000, 15000],
+                           ["Start Block", "End Block"] * 2)
+        blocks = d.get_intervals(("Start Block", "End Block"), window=(0, 0))
+        d = d.keep_intervals(blocks)  # in sample indices
+        np.testing.assert_array_equal(d.get_included().intervals,
+                                      [(7000, 9000), (12000, 15000)])
+
+    def test_same_as_exclude_complement(self):
+        d = _make_data()
+        iv = pp.Intervals([(6 * u.sec, 8 * u.sec)])
+        a = d.keep_intervals(iv)
+        b = d.exclude_intervals(iv.complement(d))
+        np.testing.assert_array_equal(a.get_excluded().intervals, b.get_excluded().intervals)
+
+    def test_keeps_existing_exclusions(self):
+        d = _make_data().exclude_intervals([(7500, 8000)])
+        d = d.keep_intervals([(7000, 9000)])
+        np.testing.assert_array_equal(d.get_included().intervals,
+                                      [(7000, 7500), (8000, 9000)])
+
+    def test_keep_everything(self):
+        d = _make_data().keep_intervals([(0, 30000)])
+        self.assertEqual(len(d.get_excluded()), 0)
+
+    def test_history(self):
+        d = _make_data().keep_intervals([(7000, 9000)])
+        names = [h["funcname"] for h in d.history]
+        self.assertEqual(names[-1], "keep_intervals")
+        self.assertNotIn("exclude_intervals", names)
