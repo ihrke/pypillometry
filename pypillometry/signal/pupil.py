@@ -537,10 +537,12 @@ def pupil_response(tx, sy, event_onsets, fs, npar="free", tmax="free", verbose=1
 
 def pupil_response_coverage(x1, valid):
     """
-    Share of each event's response window that is valid.
+    Share of each event's response that falls on valid samples.
 
-    The response window of an event is where its PRF (its row in the
-    design matrix) is non-zero.
+    The share is weighted by the response (the event's row in the design
+    matrix), so samples near the peak of the response count more than
+    samples in its tail: an event whose peak is missing gets a low share
+    even if most of its (long) tail is valid.
 
     Parameters
     ----------
@@ -552,13 +554,12 @@ def pupil_response_coverage(x1, valid):
     Returns
     -------
     np.ndarray
-        share (0-1) for each event; NaN for events whose window is empty
-        (e.g., at the very end of the data)
+        share (0-1) for each event; NaN for events without response in
+        the data (e.g., at the very end)
     """
-    support = x1 > 0
-    n = support.sum(axis=1)
+    total = x1.sum(axis=1)
     with np.errstate(invalid="ignore", divide="ignore"):
-        return np.where(n > 0, (support & np.asarray(valid, dtype=bool)).sum(axis=1) / n,
+        return np.where(total > 0, np.dot(x1, np.asarray(valid, dtype=float)) / total,
                         np.nan)
 
         
