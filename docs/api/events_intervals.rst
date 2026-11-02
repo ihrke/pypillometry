@@ -13,6 +13,7 @@ tutorials :doc:`/notebooks/events` and :doc:`/notebooks/intervals`.
 
    Events
    Intervals
+   ClockSync
 
 .. autosummary::
    :toctree: generated
@@ -20,3 +21,4 @@ tutorials :doc:`/notebooks/events` and :doc:`/notebooks/intervals`.
    :nosignatures:
 
    merge_intervals
+   sync_clocks

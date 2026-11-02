@@ -39,6 +39,10 @@
 - `get_intervals()`: `"<start>"` and `"<end>"` select the start and end of
   the recording; `exact=True` (also `Events.filter()`) matches labels
   equal to the string
+- Events from behaviour logs: `Events.from_table()` (one column per kind of
+  event), `sync_clocks()` (fits offset and drift between the clocks from
+  paired times, shows the residuals), `add_events()`; `event_onset()`
+  returns the onset of the one event with a label
 
 ### Changed
 

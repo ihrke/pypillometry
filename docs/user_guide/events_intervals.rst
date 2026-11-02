@@ -36,8 +36,54 @@ Events
 :meth:`~Events.filter` and indexing return new :class:`Events`. You can
 store changed events in the dataset with :meth:`~GenericEyeData.set_events`,
 e.g., to remove test trials or to rename labels.
+:meth:`~GenericEyeData.add_events` adds events to the existing ones, and
+:meth:`~GenericEyeData.event_onset` returns the onset of the one event with
+a given label (it raises an error unless exactly one event has it):
+
+.. code-block:: python
+
+    d.add_events(pp.Events([1500, 2500], ["cue", "cue"], units="ms"))
+    t = d.event_onset("Start Block 2", units="sec")
 
 Tutorial: :doc:`/notebooks/events`.
+
+
+.. _behaviour-log-events:
+
+Events from a behaviour log
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Often, not all events are sent to the eye tracker. The times of stimuli and
+responses are then in a behaviour log of the experiment (e.g., from
+Psychtoolbox, PsychoPy or Presentation), usually a table with one row per
+trial. :meth:`Events.from_table` turns the columns of such a table into
+events; missing times (NaN, e.g., no response) give no event:
+
+.. code-block:: python
+
+    ev = pp.Events.from_table(behav, {"stim_on": "stim_on",
+                                      "response": behav.stim_on + behav.rt},
+                              units="sec")
+
+The behaviour log and the eye tracker have different clocks. They have
+different zero points and drift apart slowly (a few ms in a typical
+session), so a single offset is not exact. :func:`sync_clocks` fits a
+linear map (offset and drift) from moments that are in both logs, e.g., the
+block starts, paired by order. It returns a :class:`ClockSync` object that
+maps times or events to the eye-tracker clock:
+
+.. code-block:: python
+
+    starts = behav.groupby("block").trialstart.min()             # in sec
+    sync = pp.sync_clocks(starts, d.get_events().filter("Start Block"),
+                          src_units="sec")
+    d.add_events(sync(ev))
+
+:func:`sync_clocks` logs a summary of the fit. Check the *residuals*
+(``sync.residuals``, or ``print(sync)`` for a table): with correct pairs,
+they are around the timing precision (about 1 ms); if a pair is shifted or a
+block is missing in one of the logs, they are much larger and a warning is
+given. With a single shared moment, only the offset is fitted.
 
 
 Intervals

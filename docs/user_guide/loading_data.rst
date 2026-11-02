@@ -62,6 +62,10 @@ samples, so the samples are evenly spaced.
 
 See :doc:`/notebooks/importdata_asc` for a complete example.
 
+Events that are only in the behaviour log of the experiment (on its own
+clock) can be added after loading; see
+:ref:`behaviour-log-events`.
+
 
 Example datasets
 ----------------
