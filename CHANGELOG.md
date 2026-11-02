@@ -43,6 +43,15 @@
   event), `sync_clocks()` (fits offset and drift between the clocks from
   paired times, shows the residuals), `add_events()`; `event_onset()`
   returns the onset of the one event with a label
+- Event metadata (e.g., trial, condition, reaction time): `Events.meta`
+  (one numpy array per column), stored in the data (`event_meta`) and in
+  saved files; from trigger labels (`Events.parse_labels()`) or from a
+  behaviour log (`Events.from_table(meta=...)`); `filter()` selects by
+  metadata (e.g., `filter("S_", cond="easy", rt=lambda rt: rt < 800)`);
+  `set_meta()`, `fill_meta()` (copy to all events of a trial),
+  `add_latency()` (e.g., reaction times), `row()`, `to_table()`, `+`
+- `get_intervals()` passes the metadata of the events on to the intervals
+  (`Intervals.event_meta`, also in `as_pandas()`)
 
 ### Changed
 
@@ -51,6 +60,7 @@
   events without a partner are skipped with a warning (before: pairs by
   order, error if the numbers differ)
 - Saved files (pickle and HDF5) contain a versioned state of the object.
+  Files from earlier versions are upgraded when they are read.
 - Conversions between sample indices and time use the time vector of the
   data (a time maps to the first sample at or after it), so recordings that
   do not start at 0 or have gaps are handled correctly
