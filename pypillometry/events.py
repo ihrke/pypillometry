@@ -1,6 +1,8 @@
 """Functions to handle events in eyetracking data.
 """
 
+import re
+
 import numpy as np
 from typing import Optional, List, Tuple
 
@@ -12,6 +14,137 @@ from pypillometry.units import (UNSET, Quantity, _has_units, _time_values_and_un
 __all__ = [
     "Events", "ClockSync", "sync_clocks",
 ]
+
+
+# names that cannot be used for metadata columns
+_RESERVED = ("onset", "label")
+
+
+def _is_missing(v) -> bool:
+    """True for None and NaN (missing metadata values)."""
+    return v is None or (isinstance(v, (float, np.floating)) and np.isnan(v))
+
+
+def _is_int(v) -> bool:
+    return isinstance(v, (int, np.integer)) and not isinstance(v, (bool, np.bool_))
+
+
+def _column_from_values(values) -> np.ndarray:
+    """
+    Metadata column from a list of values; None and NaN are missing.
+
+    Without missing values, bools give a bool column and integers an int
+    column. Otherwise, numbers give a float column (missing: NaN) and
+    anything else a string column (missing: "").
+    """
+    present = [v for v in values if not _is_missing(v)]
+    complete = len(present) == len(values)
+    if all(isinstance(v, (bool, np.bool_)) for v in present) and complete and present:
+        return np.array(values, dtype=bool)
+    if all(_is_int(v) for v in present) and complete and present:
+        return np.array(values, dtype=int)
+    if all(isinstance(v, (bool, np.bool_)) or _is_int(v) or isinstance(v, (float, np.floating))
+           for v in present):
+        return np.array([np.nan if _is_missing(v) else float(v) for v in values], dtype=float)
+    return np.array(["" if _is_missing(v) else str(v) for v in values], dtype=str)
+
+
+def _as_column(values, n: int, name: str) -> np.ndarray:
+    """Metadata column `name` (n values) from an array-like."""
+    if not isinstance(name, str) or not name:
+        raise ValueError(f"metadata column names must be non-empty strings, got {name!r}")
+    if name in _RESERVED:
+        raise ValueError(f"'{name}' cannot be a metadata column (reserved)")
+    arr = np.asarray(values)
+    if arr.ndim == 0:
+        arr = np.full(n, arr.item())
+    if arr.ndim != 1 or len(arr) != n:
+        raise ValueError(f"metadata column '{name}' has {arr.size} values, expected {n}")
+    if arr.dtype.kind in "biufU":
+        return arr.copy()
+    return _column_from_values(arr.tolist())
+
+
+def _meta_dict(meta, n: int) -> dict:
+    """Metadata dict (column name -> array of n values) from `meta` (or None)."""
+    if meta is None:
+        return {}
+    return {name: _as_column(values, n, name) for name, values in meta.items()}
+
+
+def _concat_meta(metas, lengths) -> dict:
+    """
+    Concatenate metadata dicts with `lengths` rows each.
+
+    Columns that are missing in some of them are filled with NaN (or "" for
+    string columns); numbers and strings in one column give strings.
+    """
+    names = list(dict.fromkeys(name for m in metas for name in m))
+    out = {}
+    for name in names:
+        parts = [(m.get(name), k) for m, k in zip(metas, lengths)]
+        text = any(col is not None and col.dtype.kind == "U" for col, _ in parts)
+        cols = []
+        for col, k in parts:
+            if col is None:
+                if k > 0:
+                    cols.append(np.full(k, "") if text else np.full(k, np.nan))
+            else:
+                cols.append(col.astype(str) if text else col)
+        out[name] = np.concatenate(cols)
+    return out
+
+
+def _numbers_if_possible(values):
+    """Strings converted to int or float if all of them can be (None kept)."""
+    present = [v for v in values if v is not None]
+    for conv in (int, float):
+        try:
+            converted = [conv(v) for v in present]
+        except ValueError:
+            continue
+        it = iter(converted)
+        return [None if v is None else next(it) for v in values]
+    return values
+
+
+def _pair_with_next(on1, on2):
+    """Pair each first event with the next second event after it.
+
+    `on1` and `on2` are the onsets of the first and the second events. Each
+    event is used at most once. If several first events come before the
+    same second event, the last of them (the closest one) is used. A second
+    event at the same time as a first event is not paired with it.
+
+    Returns
+    -------
+    pairs : list of (int, int)
+        indices into `on1` and `on2` of the pairs, in time order
+    unpaired1, unpaired2 : list of int
+        indices of the first events without a second event (before the next
+        first event or the end) and of the second events without a first
+        event before them
+    """
+    # at the same time, second events come first, so they are not paired
+    # with a first event at that time
+    order = sorted([(t, 0, k) for k, t in enumerate(on2)] +
+                   [(t, 1, k) for k, t in enumerate(on1)])
+    pairs, unpaired1, unpaired2 = [], [], []
+    pending = None  # last first event without a partner
+    for _, role, k in order:
+        if role == 1:
+            if pending is not None:
+                unpaired1.append(pending)
+            pending = k
+        elif pending is not None:
+            pairs.append((pending, k))
+            pending = None
+        else:
+            unpaired2.append(k)
+    if pending is not None:
+        unpaired1.append(pending)
+    return pairs, sorted(unpaired1), sorted(unpaired2)
+
 
 
 class Events:
@@ -33,6 +166,15 @@ class Events:
     behaviour log can be created with :meth:`from_table` and mapped to the
     eye-tracker clock with :func:`~pypillometry.sync_clocks`.
 
+    Each event can have metadata (e.g., trial, condition, reaction time),
+    stored in `meta`: a dict that maps column names to numpy arrays with one
+    value per event. Missing values are NaN in numeric columns and "" in
+    string columns. Metadata come from a behaviour log (see
+    :meth:`from_table`), from the labels of the events (see
+    :meth:`parse_labels`) or are added with :meth:`set_meta` and
+    :meth:`add_latency`; events are selected by their metadata with
+    :meth:`filter`.
+
     Parameters
     ----------
     onsets : np.ndarray, list or Quantity
@@ -46,12 +188,16 @@ class Events:
         (otherwise, onsets with units are converted to `units`).
     data_time_range : tuple or None, optional
         Time range (min, max) of the original dataset (in same units as onsets)
+    meta : dict or None, optional
+        metadata: column name -> values (one per event); "onset" and
+        "label" cannot be used as names
 
     Raises
     ------
     ValueError
-        If `onsets` and `labels` differ in length, or if the units are not
-        time units (e.g., None or samples).
+        If `onsets` and `labels` differ in length, if a metadata column
+        has the wrong length, or if the units are not time units (e.g.,
+        None or samples).
 
     Examples
     --------
@@ -60,13 +206,18 @@ class Events:
     3
     >>> for onset, label in events:
     ...     print(f"{label} at {onset}")
+    >>> events = Events([100, 500], ["stim", "resp"],
+    ...                 meta={"trial": [1, 1], "cond": ["easy", "easy"]})
+    >>> events.meta["cond"]
+    array(['easy', 'easy'], dtype='<U4')
     """
-    
-    def __init__(self, 
+
+    def __init__(self,
                  onsets: np.ndarray | List,
                  labels: np.ndarray | List,
                  units: Optional[str] = UNSET,
-                 data_time_range: Optional[Tuple[float, float]] = None):
+                 data_time_range: Optional[Tuple[float, float]] = None,
+                 meta: Optional[dict] = None):
         """
         Initialize an Events object (see class docstring for parameters).
         """
@@ -78,13 +229,24 @@ class Events:
                              "not sample indices")
         self.onsets = np.array(onsets, dtype=float)
         self.labels = np.array(labels, dtype=str)
-        
+
         self.data_time_range = data_time_range
-        
+
         # Validate that onsets and labels have same length
         if len(self.onsets) != len(self.labels):
             raise ValueError(f"onsets and labels must have same length, got {len(self.onsets)} and {len(self.labels)}")
-    
+        self.meta = _meta_dict(meta, len(self.onsets))
+
+    def _take(self, idx) -> 'Events':
+        """New Events with the events `idx` (index array, mask or slice)."""
+        return Events(
+            onsets=self.onsets[idx],
+            labels=self.labels[idx],
+            units=self.units,
+            data_time_range=self.data_time_range,
+            meta={name: col[idx] for name, col in self.meta.items()}
+        )
+
     def __len__(self) -> int:
         """Return number of events."""
         return len(self.onsets)
@@ -109,19 +271,9 @@ class Events:
         """
         if isinstance(idx, (int, np.integer)):
             # Wrap single index in a list to get 1-element arrays
-            return Events(
-                onsets=self.onsets[[idx]],
-                labels=self.labels[[idx]],
-                units=self.units,
-                data_time_range=self.data_time_range
-            )
+            return self._take([idx])
         elif isinstance(idx, (slice, np.ndarray, list)):
-            return Events(
-                onsets=self.onsets[idx],
-                labels=self.labels[idx],
-                units=self.units,
-                data_time_range=self.data_time_range
-            )
+            return self._take(idx)
         else:
             raise TypeError(f"indices must be integers, slices, or array-like, not {type(idx)}")
     
@@ -141,8 +293,55 @@ class Events:
         """
         return self.onsets.copy(), self.labels.copy()
 
+    def row(self, i: int) -> dict:
+        """
+        One event as a dict with its onset, label and metadata.
+
+        Parameters
+        ----------
+        i : int
+            index of the event
+
+        Returns
+        -------
+        dict
+            ``{"onset": ..., "label": ..., <metadata columns>}``
+
+        Examples
+        --------
+        >>> ev = Events([100, 500], ["stim", "resp"], meta={"trial": [1, 1]})
+        >>> ev.row(0)
+        {'onset': 100.0, 'label': 'stim', 'trial': 1}
+        """
+        return {"onset": self.onsets[i].item(), "label": str(self.labels[i]),
+                **{name: col[i].item() for name, col in self.meta.items()}}
+
+    def to_table(self) -> dict:
+        """
+        Events as a table: a dict of columns (copies).
+
+        The columns are "onset", "label" and the metadata columns. The
+        result can be passed to ``pandas.DataFrame()``.
+
+        Returns
+        -------
+        dict
+            column name -> numpy array
+
+        Examples
+        --------
+        >>> ev = Events([100, 500], ["stim", "resp"], meta={"trial": [1, 1]})
+        >>> sorted(ev.to_table())
+        ['label', 'onset', 'trial']
+        >>> import pandas as pd
+        >>> df = pd.DataFrame(ev.to_table())
+        """
+        return {"onset": self.onsets.copy(), "label": self.labels.copy(),
+                **{name: col.copy() for name, col in self.meta.items()}}
+
     @classmethod
-    def from_table(cls, table, columns, units: Optional[str] = UNSET) -> 'Events':
+    def from_table(cls, table, columns, units: Optional[str] = UNSET,
+                   meta=None, row: Optional[str] = "row") -> 'Events':
         """
         Create Events from a table with one row per trial.
 
@@ -151,6 +350,10 @@ class Events:
         one kind of event; the column (or dict key) is the label. Missing
         times (NaN, e.g., no response) give no event. The events are
         sorted by onset.
+
+        Other columns of the table (e.g., condition, reaction time) can be
+        given as `meta`; every event of a row gets the values of that row
+        as metadata.
 
         Parameters
         ----------
@@ -163,6 +366,14 @@ class Events:
         units : str, Unit or None, optional
             time units of the values ("ms", "sec", "min" or "h");
             default "ms"
+        meta : list or dict, optional
+            columns with metadata: list of column names, or dict mapping
+            metadata names to column names or to arrays of values (one per
+            row)
+        row : str or None, optional
+            name of a metadata column with the position of the row in the
+            table (0, 1, ...), which links the events of the same row;
+            default "row"; None for no such column
 
         Returns
         -------
@@ -176,16 +387,22 @@ class Events:
 
         Examples
         --------
-        >>> table = {"stim": [1.0, 3.0], "rt": [0.5, np.nan]}
+        >>> table = {"stim": [1.0, 3.0], "rt": [0.5, np.nan], "cond": ["a", "b"]}
         >>> ev = Events.from_table(table, {"stim": "stim",
         ...                                "response": np.add(table["stim"], table["rt"])},
-        ...                        units="sec")
+        ...                        units="sec", meta=["cond", "rt"])
         >>> ev.labels
         array(['stim', 'response', 'stim'], dtype='<U8')
+        >>> ev.meta["cond"]
+        array(['a', 'a', 'b'], dtype='<U1')
         """
         if not isinstance(columns, dict):
             columns = {name: name for name in columns}
-        onsets, labels = [], []
+        if meta is None:
+            meta = {}
+        elif not isinstance(meta, dict):
+            meta = {name: name for name in meta}
+        onsets, labels, rows = [], [], []
         nrows = None
         for label, col in columns.items():
             times = table[col] if isinstance(col, str) else col
@@ -194,14 +411,346 @@ class Events:
                 raise ValueError(f"column for '{label}' has {len(times)} "
                                  f"values, expected {nrows}")
             nrows = len(times)
-            times = times[~np.isnan(times)]
-            onsets.append(times)
-            labels.append(np.full(len(times), label, dtype=object))
+            keep = ~np.isnan(times)
+            onsets.append(times[keep])
+            labels.append(np.full(keep.sum(), label, dtype=object))
+            rows.append(np.flatnonzero(keep))
         onsets = np.concatenate(onsets) if onsets else np.array([])
         labels = np.concatenate(labels).astype(str) if labels else np.array([], dtype=str)
+        rows = np.concatenate(rows) if rows else np.array([], dtype=int)
+        # metadata of each row -> metadata of each event
+        columns_meta = {}
+        for name, col in meta.items():
+            values = table[col] if isinstance(col, str) else col
+            if nrows is None:
+                nrows = len(values)
+            columns_meta[name] = _as_column(values, nrows, name)[rows]
+        if row is not None:
+            if row in columns_meta:
+                raise ValueError(f"'{row}' is a metadata column; give another "
+                                 "name for the row column (or row=None)")
+            columns_meta[row] = rows
         # stable sort, so events at the same time keep the column order
         order = np.argsort(onsets, kind="stable")
-        return cls(onsets[order], labels[order], units=units)
+        return cls(onsets[order], labels[order], units=units,
+                   meta={name: col[order] for name, col in columns_meta.items()})
+
+    def __add__(self, other: 'Events') -> 'Events':
+        """
+        All events of both objects, sorted by onset.
+
+        The onsets of `other` are converted to the units of this object.
+        Events at the same time keep their order (those of this object
+        first). Metadata columns that only one of them has are filled with
+        missing values (NaN or "") for the events of the other.
+        """
+        if not isinstance(other, Events):
+            return NotImplemented
+        other = other.to_units(self.units)
+        onsets = np.concatenate([self.onsets, other.onsets])
+        labels = np.concatenate([self.labels, other.labels])
+        meta = _concat_meta([self.meta, other.meta], [len(self), len(other)])
+        order = np.argsort(onsets, kind="stable")
+        return Events(onsets[order], labels[order], units=self.units,
+                      data_time_range=self.data_time_range,
+                      meta={name: col[order] for name, col in meta.items()})
+
+    def _with_columns(self, values: dict) -> 'Events':
+        """
+        New Events with columns set from `values` (name -> list with one value
+        per event, None where no value is given); events without a new value
+        keep the value of an existing column.
+        """
+        meta = dict(self.meta)
+        for name, vals in values.items():
+            if name in meta:
+                old = meta[name].tolist()
+                vals = [o if v is None else v for v, o in zip(vals, old)]
+            meta[name] = _column_from_values(vals)
+        return Events(self.onsets, self.labels, units=self.units,
+                      data_time_range=self.data_time_range, meta=meta)
+
+    def parse_labels(self, parser) -> 'Events':
+        r"""
+        Metadata from the labels of the events.
+
+        Triggers often code information about the trial in their label,
+        e.g., ``"S_12_3_1"`` for the stimulus of trial 12 with options 3
+        and 1. `parser` decomposes the labels into metadata.
+
+        Parameters
+        ----------
+        parser : str or callable
+            - str: regular expression with named groups, e.g.
+              ``r"S_(?P<trial>\d+)_(?P<left>\d+)_(?P<right>\d+)"``; the
+              groups become columns (found with :func:`re.search`, so it
+              can match a part of the label). Columns whose values are
+              all numbers are converted to int or float.
+            - callable: function that takes a label and returns a dict
+              (column name -> value) or None (no metadata for this event)
+
+        Returns
+        -------
+        Events
+            new Events object with the columns added; events without a
+            value get a missing value (NaN or ""), unless the column exists
+            already: then they keep their value (so several calls can fill
+            one column, e.g., "trial", from different kinds of events)
+
+        Examples
+        --------
+        >>> ev = Events([0, 100, 400], ["F_1", "S_1_3_5", "C_1_5_2"])
+        >>> ev = ev.parse_labels(r"^[FSC]_(?P<trial>\d+)")
+        >>> ev.meta["trial"]
+        array([1, 1, 1])
+        >>> ev = ev.parse_labels(lambda lab: {"chosen": int(lab.split("_")[2])}
+        ...                      if lab.startswith("C_") else None)
+        >>> ev.meta["chosen"]
+        array([nan, nan,  5.])
+        """
+        if isinstance(parser, str):
+            regex = re.compile(parser)
+            if not regex.groupindex:
+                raise ValueError("the regular expression needs named groups, "
+                                 "e.g. (?P<trial>\\d+)")
+
+            def parse(label):
+                m = regex.search(label)
+                return None if m is None else m.groupdict()
+        elif callable(parser):
+            parse = parser
+        else:
+            raise TypeError(f"parser must be a str or callable, got {type(parser)}")
+
+        parsed = [parse(str(label)) for label in self.labels]
+        names = list(dict.fromkeys(k for d in parsed if d for k in d))
+        values = {name: [None if d is None else d.get(name) for d in parsed]
+                  for name in names}
+        for name in names:
+            _as_column([], 0, name)  # check the name
+            if isinstance(parser, str):
+                values[name] = _numbers_if_possible(values[name])
+        return self._with_columns(values)
+
+    def _mask(self, selector, exact: bool = False) -> np.ndarray:
+        """Boolean mask of the events selected by `selector` (see :meth:`filter`)."""
+        if isinstance(selector, str):
+            # String selector: substring matching
+            return np.array([label == selector if exact else selector in label
+                             for label in self.labels], dtype=bool)
+        if callable(selector):
+            # Function selector: apply to each label
+            return np.array([bool(selector(label)) for label in self.labels], dtype=bool)
+        if isinstance(selector, np.ndarray) and selector.dtype == bool:
+            if len(selector) != len(self):
+                raise ValueError(f"mask has {len(selector)} values, expected {len(self)}")
+            return selector.copy()
+        if isinstance(selector, (tuple, Quantity)):
+            # Time range selector
+            if len(selector) != 2:
+                raise ValueError("Time range selector must be a tuple of (min_time, max_time)")
+            if _has_units(selector):
+                selector = parse_time(selector, to=self.units, default=None)
+
+            min_time, max_time = selector
+            if min_time >= max_time:
+                raise ValueError(f"min_time must be < max_time, got {min_time} >= {max_time}")
+            
+            return np.logical_and(self.onsets >= min_time, self.onsets <= max_time)
+        raise TypeError(
+            f"selector must be str, callable, or tuple (or a boolean array), got {type(selector)}"
+        )
+
+    def set_meta(self, name: str, values, select=None, exact: bool = False) -> 'Events':
+        """
+        Set a metadata column.
+
+        Parameters
+        ----------
+        name : str
+            name of the column (a new or an existing one)
+        values : scalar or array-like
+            one value for all (selected) events, or one value per event
+            (or per selected event, if `select` is given); None or NaN for
+            missing values
+        select : str, callable, tuple or boolean array, optional
+            only set the values of these events (see :meth:`filter`); the
+            other events keep their value (or get a missing value, for a
+            new column)
+        exact : bool, optional
+            if True, a string `select` matches only labels equal to it
+
+        Returns
+        -------
+        Events
+            new Events object with the column set
+
+        Examples
+        --------
+        >>> ev = Events([0, 100, 400], ["F_1", "S_1", "C_1"])
+        >>> ev.set_meta("block", 1).meta["block"]
+        array([1, 1, 1])
+        >>> ev.set_meta("kind", "stimulus", select="S_").meta["kind"]
+        array(['', 'stimulus', ''], dtype='<U8')
+        """
+        _as_column([], 0, name)  # check the name
+        mask = np.ones(len(self), dtype=bool) if select is None \
+            else self._mask(select, exact)
+        if np.ndim(values) == 0:
+            values = [values] * int(mask.sum())
+        values = np.asarray(values).tolist()
+        if len(values) == len(self) and select is not None and mask.sum() != len(self):
+            values = [v for v, m in zip(values, mask) if m]
+        if len(values) != mask.sum():
+            raise ValueError(f"got {len(values)} values for {mask.sum()} events")
+        # unselected events keep their value
+        new = self.meta[name].tolist() if name in self.meta else [None] * len(self)
+        for i, v in zip(np.flatnonzero(mask), values):
+            new[i] = v
+        return self._replace_column(name, new)
+
+    def _replace_column(self, name, values) -> 'Events':
+        """New Events with column `name` set to `values` (list; None, NaN or "" = missing)."""
+        values = [None if _is_missing(v) or (isinstance(v, str) and v == "") else v
+                  for v in values]
+        meta = dict(self.meta)
+        meta[name] = _column_from_values(values)
+        return Events(self.onsets, self.labels, units=self.units,
+                      data_time_range=self.data_time_range, meta=meta)
+
+    def drop_meta(self, *names: str) -> 'Events':
+        """
+        New Events without the metadata columns `names` (all, if none given).
+
+        Examples
+        --------
+        >>> ev = Events([0], ["A"], meta={"a": [1], "b": [2]})
+        >>> list(ev.drop_meta("a").meta)
+        ['b']
+        """
+        for name in names:
+            if name not in self.meta:
+                raise KeyError(f"no metadata column '{name}'")
+        meta = {} if not names else {k: v for k, v in self.meta.items() if k not in names}
+        return Events(self.onsets, self.labels, units=self.units,
+                      data_time_range=self.data_time_range, meta=meta)
+
+    def fill_meta(self, columns, by: str = "trial") -> 'Events':
+        """
+        Copy metadata to all events with the same value in column `by`.
+
+        Information coded in one event (e.g., the reward in the feedback
+        trigger) is often needed at another event of the same trial
+        (e.g., to select the stimuli by the reward that followed). For
+        each value of `by`, the missing values of each column are set to
+        the value that the other events of this group have.
+
+        Parameters
+        ----------
+        columns : str or list of str
+            metadata columns to fill
+        by : str, optional
+            column that defines the groups; default "trial"
+
+        Returns
+        -------
+        Events
+            new Events object with the columns filled
+
+        Raises
+        ------
+        ValueError
+            if the events of a group have different values in a column
+
+        Examples
+        --------
+        >>> ev = Events([0, 100, 400], ["S_1", "C_1", "R_1"],
+        ...             meta={"trial": [1, 1, 1], "reward": [np.nan, np.nan, 15]})
+        >>> ev.fill_meta("reward").meta["reward"]
+        array([15., 15., 15.])
+        """
+        if isinstance(columns, str):
+            columns = [columns]
+        if by not in self.meta:
+            raise KeyError(f"no metadata column '{by}'")
+        group = self.meta[by]
+        values = {}
+        for name in columns:
+            if name not in self.meta:
+                raise KeyError(f"no metadata column '{name}'")
+            vals = [None if _is_missing(v) or v == "" else v
+                    for v in self.meta[name].tolist()]
+            for g in np.unique(group):
+                if _is_missing(g) or g == "":  # events without a group
+                    continue
+                ix = np.flatnonzero(group == g)
+                present = {vals[i] for i in ix if vals[i] is not None}
+                if len(present) > 1:
+                    raise ValueError(f"events with {by}={g} have different values "
+                                     f"in '{name}': {sorted(present, key=str)}")
+                if present:
+                    value = present.pop()
+                    for i in ix:
+                        vals[i] = value
+            values[name] = vals
+        return self._with_columns(values)
+
+    def add_latency(self, first, second, name: str, by: Optional[str] = None,
+                    exact: bool = False, units: Optional[str] = None) -> 'Events':
+        """
+        Time from each `first` event to its `second` event, as metadata.
+
+        For example, the reaction time is the time from a stimulus to the
+        response. It is stored in column `name` of the first events; first
+        events without a second event (e.g., no response) get NaN, and
+        the other events keep their value (or get NaN, for a new column).
+
+        Parameters
+        ----------
+        first, second : str, callable or boolean array
+            the first and the second events (see :meth:`filter`)
+        name : str
+            name of the column, e.g. "rt"
+        by : str or None, optional
+            if None (default), each first event is paired with the next
+            second event after it (as in
+            :meth:`~pypillometry.GenericEyeData.get_intervals`); if the
+            name of a metadata column (e.g., "trial"), with the next second
+            event with the same value in this column
+        exact : bool, optional
+            if True, string selectors match only labels equal to them
+        units : str, optional
+            units of the latencies; default: the units of the events
+
+        Returns
+        -------
+        Events
+            new Events object with the column set
+
+        Examples
+        --------
+        >>> ev = Events([0, 450, 1000, 3000], ["S_1", "C_1", "S_2", "S_3"])
+        >>> ev.add_latency("S_", "C_", "rt").meta["rt"]
+        array([450.,  nan,  nan,  nan])
+        """
+        m1, m2 = self._mask(first, exact), self._mask(second, exact)
+        i1, i2 = np.flatnonzero(m1), np.flatnonzero(m2)
+        if by is None:
+            groups = [(i1, i2)]
+        else:
+            if by not in self.meta:
+                raise KeyError(f"no metadata column '{by}'")
+            col = self.meta[by]
+            groups = [(i1[col[i1] == v], i2[col[i2] == v])
+                      for v in np.unique(col[i1]) if not (_is_missing(v) or v == "")]
+        latency = np.full(len(self), np.nan)
+        for g1, g2 in groups:
+            pairs, _, _ = _pair_with_next(self.onsets[g1], self.onsets[g2])
+            for a, b in pairs:
+                latency[g1[a]] = self.onsets[g2[b]] - self.onsets[g1[a]]
+        if units is not None:
+            latency = latency * parse_time(1, to=normalize_unit(units), default=self.units)
+        return self.set_meta(name, latency[m1], select=m1)
 
     def to_units(self, target_units: Optional[str]) -> 'Events':
         """
@@ -267,7 +816,8 @@ class Events:
             onsets=converted_onsets,
             labels=self.labels.copy(),
             units=target_units,
-            data_time_range=converted_range
+            data_time_range=converted_range,
+            meta=self.meta
         )
     
     def __repr__(self) -> str:
@@ -295,6 +845,9 @@ class Events:
         if self.data_time_range is not None:
             range_str = f"[{self.data_time_range[0]:.1f}, {self.data_time_range[1]:.1f}]"
             parts.append(f"range={range_str}")
+
+        if self.meta:
+            parts.append(f"meta=[{', '.join(self.meta)}]")
         
         return " | ".join(parts)
     
@@ -325,7 +878,8 @@ class Events:
         # Create DataFrame
         df = pd.DataFrame({
             f'Onset ({unit_str})': self.onsets,
-            'Label': self.labels
+            'Label': self.labels,
+            **self.meta
         })
 
         # Convert to HTML respecting current pandas display options
@@ -480,7 +1034,7 @@ class Events:
                     last_label_x = onset
         return
     
-    def filter(self, selector, exact: bool = False) -> 'Events':
+    def filter(self, selector=None, exact: bool = False, **conditions) -> 'Events':
         """
         Filter events and return a new Events object.
         
@@ -489,10 +1043,14 @@ class Events:
           it, if `exact` is True)
         - Callable: applies function to each label, keeps events where it returns True
         - Tuple: filters by time range (min_time, max_time)
+        - Boolean array: keeps events where it is True
+
+        Events can also be selected by their metadata (see `conditions`).
+        All criteria must be met.
         
         Parameters
         ----------
-        selector : str, callable, or tuple
+        selector : str, callable, tuple or boolean array, optional
             Filtering criterion:
 
             - str: substring to search for in labels
@@ -500,14 +1058,30 @@ class Events:
             - tuple: (min_time, max_time) to filter by onset time range
               (inclusive, in the units of the Events object unless it
               carries units, e.g. ``(10, 30) * u.sec``)
+            - boolean array: one value per event, e.g.
+              ``events.meta["rt"] < 800``
         exact : bool, optional
             if True, a string selector matches only labels that are equal
             to it; if False (default), labels that contain it
+        **conditions
+            criteria for metadata columns (column name = criterion):
+
+            - a value: the column is equal to it, e.g. ``cond="easy"``
+            - a list or set: the column is one of the values, e.g.
+              ``trial=[1, 2, 3]``
+            - a callable: function that takes the whole column (numpy
+              array) and returns a boolean array, e.g.
+              ``rt=lambda rt: rt < 800``
 
         Returns
         -------
         Events
             New Events object containing only the filtered events
+
+        Raises
+        ------
+        KeyError
+            if a metadata column in `conditions` does not exist
             
         Examples
         --------
@@ -528,41 +1102,31 @@ class Events:
         >>> middle = events.filter((200, 800))
         >>> len(middle)
         1
-        """
-        if isinstance(selector, str):
-            # String selector: substring matching
-            mask = np.array([label == selector if exact else selector in label
-                             for label in self.labels], dtype=bool)
-        
-        elif callable(selector):
-            # Function selector: apply to each label
-            mask = np.array([bool(selector(label)) for label in self.labels], dtype=bool)
-        
-        elif isinstance(selector, (tuple, Quantity)):
-            # Time range selector
-            if len(selector) != 2:
-                raise ValueError("Time range selector must be a tuple of (min_time, max_time)")
-            if _has_units(selector):
-                selector = parse_time(selector, to=self.units, default=None)
 
-            min_time, max_time = selector
-            if min_time >= max_time:
-                raise ValueError(f"min_time must be < max_time, got {min_time} >= {max_time}")
-            
-            mask = np.logical_and(self.onsets >= min_time, self.onsets <= max_time)
-        
-        else:
-            raise TypeError(
-                f"selector must be str, callable, or tuple, got {type(selector)}"
-            )
-        
-        # Create new Events with filtered data
-        return Events(
-            onsets=self.onsets[mask],
-            labels=self.labels[mask],
-            units=self.units,
-            data_time_range=self.data_time_range
-        )
+        >>> # Filter by metadata
+        >>> events = Events([100, 500, 1000], ["stim", "stim", "stim"],
+        ...                 meta={"cond": ["a", "b", "a"], "rt": [450, 900, 600]})
+        >>> events.filter(cond="a", rt=lambda rt: rt < 500).onsets
+        array([100.])
+        """
+        mask = np.ones(len(self), dtype=bool) if selector is None \
+            else self._mask(selector, exact)
+        for name, crit in conditions.items():
+            if name not in self.meta:
+                raise KeyError(f"no metadata column '{name}' (columns: "
+                               f"{', '.join(self.meta) or 'none'})")
+            col = self.meta[name]
+            if callable(crit):
+                m = np.asarray(crit(col), dtype=bool)
+                if m.shape != col.shape:
+                    raise ValueError(f"the function for '{name}' must return one "
+                                     f"bool per event, got shape {m.shape}")
+            elif isinstance(crit, (list, set, tuple, np.ndarray)):
+                m = np.isin(col, list(crit))
+            else:
+                m = col == crit
+            mask &= m
+        return self._take(mask)
 
 
 
@@ -624,7 +1188,7 @@ class ClockSync:
         if isinstance(times, Events):
             ev = times.to_units(self.src_units)
             return Events(self(ev.onsets), ev.labels.copy(),
-                          units=self.dst_units)
+                          units=self.dst_units, meta=ev.meta)
         if _has_units(times):
             times = parse_time(times, to=self.src_units, default=None)
         mapped = self.offset + self.slope * np.asarray(times, dtype=float)
