@@ -56,7 +56,8 @@ from .signal import (
     # pupil response
     lowpass_filter_iterative, pupil_signal_quality, pupil_kernel,
     pupil_kernel_t, pupil_get_max_duration, plot_prf,
-    pupil_build_design_matrix, pupil_response, pupilresponse_nnls,
+    pupil_build_design_matrix, pupil_response, pupil_response_coverage,
+    pupilresponse_nnls,
     pupil_eye_offset,
     # synthetic data
     fake_pupil_baseline, fake_gaze_fixations, add_measurement_noise,
@@ -103,7 +104,8 @@ __all__ = [
     "detect_blinks_zero", "blink_onsets_mahot",
     "lowpass_filter_iterative", "pupil_signal_quality", "pupil_kernel",
     "pupil_kernel_t", "pupil_get_max_duration", "plot_prf",
-    "pupil_build_design_matrix", "pupil_response", "pupilresponse_nnls",
+    "pupil_build_design_matrix", "pupil_response", "pupil_response_coverage",
+    "pupilresponse_nnls",
     "pupil_eye_offset",
     "fake_pupil_baseline", "fake_gaze_fixations", "add_measurement_noise",
     "generate_foreshortening_data",

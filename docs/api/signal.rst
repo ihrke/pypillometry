@@ -54,6 +54,7 @@ Pupil response
    plot_prf
    pupil_build_design_matrix
    pupil_response
+   pupil_response_coverage
    pupilresponse_nnls
    pupil_signal_quality
    pupil_eye_offset
