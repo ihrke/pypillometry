@@ -437,6 +437,42 @@ def pupil_build_design_matrix(tx,event_onsets,fs,npar,tmax,max_duration="estimat
     # x1[ np.logical_and(X>=evon_ix_M1, X<evon_ix_M2) ]=np.tile(h, evon_ix.size)
     return x1
 
+def _nnls_gram(x, y):
+    """
+    Non-negative least squares ``min ||x.T @ c - y||`` with ``c >= 0``.
+
+    `x` has one row per regressor (event) and one column per sample. The
+    solution depends only on ``x @ x.T`` (regressors x regressors) and
+    ``x @ y``, so the NNLS is solved on this small form instead of the tall
+    matrix with all samples (much faster for long recordings). The small
+    form is factorized with an eigendecomposition, which also works if
+    ``x @ x.T`` is singular (e.g., events without data).
+
+    Returns
+    -------
+    coef : np.ndarray
+        non-negative coefficients (one per row of `x`)
+    sse : float
+        sum of squared residuals
+    """
+    gram = np.dot(x, x.T)
+    b = np.dot(x, y)
+    yy = float(np.dot(y, y))
+    coef = np.zeros(x.shape[0])
+    if x.shape[0] == 0:
+        return coef, yy
+    s, v = np.linalg.eigh(gram)
+    keep = s > max(s.max(), 0) * 1e-12
+    if not keep.any():
+        return coef, yy
+    sq = np.sqrt(s[keep])
+    a = sq[:, None] * v[:, keep].T            # a.T @ a = gram (on its range)
+    c = np.dot(v[:, keep].T, b) / sq          # a.T @ c = b
+    coef = scipy.optimize.nnls(a, c)[0]
+    sse = yy - 2 * np.dot(b, coef) + np.dot(coef, np.dot(gram, coef))
+    return coef, max(float(sse), 0.)
+
+
 def pupil_response(tx, sy, event_onsets, fs, npar="free", tmax="free", verbose=10, 
                    bounds={"npar":(1,20), "tmax":(100,2000)}, display_progress=True,
                    valid=None, min_valid=0):
@@ -516,11 +552,8 @@ def pupil_response(tx, sy, event_onsets, fs, npar="free", tmax="free", verbose=1
         coef=np.full(x1.shape[0], np.nan)
         use = np.ones(x1.shape[0], dtype=bool) if min_valid <= 0 \
             else pupil_response_coverage(x1, valid) >= min_valid
-        xv = x1[use][:, valid]
-        if use.any():
-            coef[use]=scipy.optimize.nnls(xv.T, syv)[0]
-        resid=syv-np.dot(xv.T, coef[use])
-        return x1, coef, np.sum(resid**2)
+        coef[use], sse = _nnls_gram(x1[use][:, valid], syv)
+        return x1, coef, sse
 
     if npar=="free" and tmax=="free":
         logger.info("optimizing both npar and tmax, might take a while...")
@@ -609,7 +642,7 @@ def pupilresponse_nnls(tx, sy, event_onsets, fs, npar=10.1, tmax=930):
     x1=pupil_build_design_matrix(tx, event_onsets, fs, npar, tmax, "estimate")
     
     ## we use a non-negative least squares solver to force the PRF-coefficients to be positive
-    coef=scipy.optimize.nnls(x1.T, sy)[0]    
+    coef=_nnls_gram(x1, sy)[0]
     pred=np.dot(x1.T, coef)  ## predicted signal
     resid=sy-pred         ## residual
 
