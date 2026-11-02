@@ -7,6 +7,7 @@ from pypillometry.convenience import requires_package, normalize_unit
 from pypillometry.units import (UNSET, _has_units, _time_values_and_units, parse_time,
                                 _ms_to_samples, _samples_to_ms)
 from pypillometry.state import Stateful
+from pypillometry.events import _meta_dict, _concat_meta
 
 __all__ = [
     "Intervals", "merge_intervals",
@@ -112,6 +113,7 @@ def merge_intervals(*args, label: str = 'merged'):
     all_event_labels = []
     all_event_indices = []
     all_event_onsets = []
+    metas = []
     has_labels = False
     has_indices = False
     has_onsets = False
@@ -138,6 +140,8 @@ def merge_intervals(*args, label: str = 'merged'):
             all_event_onsets.extend(obj.event_onsets)
         else:
             all_event_onsets.extend([None] * len(obj.intervals))
+
+        metas.append(obj.event_meta or {})
     
     if not all_intervals:
         # All were empty
@@ -163,7 +167,8 @@ def merge_intervals(*args, label: str = 'merged'):
         event_indices=all_event_indices if has_indices else None,
         event_onsets=all_event_onsets if has_onsets else None,
         data_time_range=data_time_range,
-        interval_window=combined_window
+        interval_window=combined_window,
+        event_meta=_concat_meta(metas, [len(obj) for obj in intervals_list]) or None
     )
 
 def stat_event_interval(tx,sy,intervals,statfct=np.mean):
@@ -265,6 +270,10 @@ class Intervals(Stateful):
         (e.g., (-200, 800) for 200ms before to 800ms after). When set, indicates that intervals are event-locked and
         zero corresponds to event onset. Used by
         :class:`~pypillometry.SegmentedEyeData` to create the appropriate time axis.
+    event_meta : dict, optional
+        Metadata of the event corresponding to each interval (column name
+        -> array with one value per interval; see
+        :class:`~pypillometry.Events`)
 
     Examples
     --------
@@ -279,11 +288,11 @@ class Intervals(Stateful):
     # state (see pypillometry.state); intervals as (n, 2) array
     _STATE_FIELDS = (("intervals", "pairs"), "units", "label", "event_labels",
                      "event_indices", "event_onsets", "data_time_range",
-                     "interval_window")
+                     "interval_window", "event_meta")
 
     def __init__(self, intervals, units=UNSET, label=None, event_labels=None,
                  event_indices=None, data_time_range=None, event_onsets=None,
-                 interval_window=None):
+                 interval_window=None, event_meta=None):
         """
         Initialize an Intervals object (see class docstring for parameters).
         """
@@ -308,6 +317,8 @@ class Intervals(Stateful):
         self.data_time_range = data_time_range
         self.event_onsets = event_onsets
         self.interval_window = interval_window
+        self.event_meta = None if event_meta is None \
+            else _meta_dict(event_meta, len(self.intervals))
 
     def _copy_with(self, **changes):
         """New Intervals with the attributes of this one, except `changes`."""
@@ -315,7 +326,8 @@ class Intervals(Stateful):
                       event_labels=self.event_labels, event_indices=self.event_indices,
                       data_time_range=self.data_time_range,
                       event_onsets=self.event_onsets,
-                      interval_window=self.interval_window)
+                      interval_window=self.interval_window,
+                      event_meta=self.event_meta)
         kwargs.update(changes)
         return Intervals(**kwargs)
 
@@ -598,6 +610,9 @@ class Intervals(Stateful):
         else:
             combined_range = None
         
+        combined_meta = _concat_meta([self.event_meta or {}, other.event_meta or {}],
+                                     [len(self), len(other)]) or None
+
         # Only preserve interval_window if both have the same value
         combined_interval_window = None
         if self.interval_window is not None and other_converted.interval_window is not None:
@@ -612,7 +627,8 @@ class Intervals(Stateful):
             event_indices=combined_event_indices,
             data_time_range=combined_range,
             event_onsets=combined_event_onsets,
-            interval_window=combined_interval_window
+            interval_window=combined_interval_window,
+            event_meta=combined_meta
         )
     
     def __array__(self, dtype=None, copy=None) -> np.ndarray:
@@ -751,6 +767,7 @@ class Intervals(Stateful):
         - event_labels: Labels of merged intervals are joined with merge_sep
         - event_indices: First index of merged group is kept
         - event_onsets: First onset of merged group is kept
+        - event_meta: Metadata of the first interval of merged group is kept
         
         Parameters
         ----------
@@ -824,13 +841,19 @@ class Intervals(Stateful):
             # Keep the first onset from each merge group
             merged_onsets = [self.event_onsets[group[0]] for group in merged_groups]
         
+        merged_meta = None
+        if self.event_meta is not None:
+            first = [group[0] for group in merged_groups]
+            merged_meta = {name: col[first] for name, col in self.event_meta.items()}
+
         # interval_window is not preserved after merge (merged intervals aren't event-locked)
         return Intervals(merged, self.units, self.label, 
                         event_labels=merged_labels,
                         event_indices=merged_indices,
                         data_time_range=self.data_time_range,
                         event_onsets=merged_onsets,
-                        interval_window=None)
+                        interval_window=None,
+                        event_meta=merged_meta)
 
     def complement(self, data=None) -> 'Intervals':
         """
@@ -962,7 +985,8 @@ class Intervals(Stateful):
             event_indices=self.event_indices,
             data_time_range=self.data_time_range,
             event_onsets=self.event_onsets,
-            interval_window=padded_window
+            interval_window=padded_window,
+            event_meta=self.event_meta
         )
     
     def stats(self):
@@ -1120,6 +1144,10 @@ class Intervals(Stateful):
         filtered_event_onsets = None
         if self.event_onsets is not None:
             filtered_event_onsets = np.array([self.event_onsets[i] for i in indices])
+
+        filtered_meta = None
+        if self.event_meta is not None:
+            filtered_meta = {name: col[indices] for name, col in self.event_meta.items()}
         
         return Intervals(
             filtered_intervals,
@@ -1129,7 +1157,8 @@ class Intervals(Stateful):
             event_indices=filtered_event_indices,
             data_time_range=self.data_time_range,
             event_onsets=filtered_event_onsets,
-            interval_window=self.interval_window
+            interval_window=self.interval_window,
+            event_meta=filtered_meta
         )
 
     @requires_package("pandas")
@@ -1142,7 +1171,8 @@ class Intervals(Stateful):
         pandas.DataFrame
             DataFrame with columns ``start``, ``end``, and ``duration``. When metadata
             is available, columns ``event_label``, ``event_index``, and ``event_onset``
-            are included, and the column ``units`` gives the units.
+            are included, and the column ``units`` gives the units. The
+            metadata of the events (`event_meta`) are added as columns.
 
         Raises
         ------
@@ -1165,6 +1195,8 @@ class Intervals(Stateful):
                 record["event_index"] = self.event_indices[idx]
             if self.event_onsets is not None and idx < len(self.event_onsets):
                 record["event_onset"] = self.event_onsets[idx]
+            for name, col in (self.event_meta or {}).items():
+                record[name] = col[idx].item()
             records.append(record)
 
         return pd.DataFrame(records)
