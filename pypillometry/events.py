@@ -55,6 +55,10 @@ def _as_column(values, n: int, name: str) -> np.ndarray:
         raise ValueError(f"metadata column names must be non-empty strings, got {name!r}")
     if name in _RESERVED:
         raise ValueError(f"'{name}' cannot be a metadata column (reserved)")
+    if "/" in name or name.startswith("__"):
+        # names are keys in HDF5 files
+        raise ValueError(f"metadata column names cannot contain '/' or start "
+                         f"with '__', got {name!r}")
     arr = np.asarray(values)
     if arr.ndim == 0:
         arr = np.full(n, arr.item())
