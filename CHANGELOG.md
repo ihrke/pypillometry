@@ -75,6 +75,9 @@
 
 ### Fixed
 
+- `downsample()` set windows in which all samples are masked to NaN, so
+  interpolated blinks were lost; they now hold the mean of the stored values
+  (and stay masked)
 - Baseline estimation: the weights of the troughs were given to the sample
   before each trough (0-based indices passed to Stan)
 - HTML representation of eyedata objects escapes names, labels and history
