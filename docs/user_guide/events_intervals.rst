@@ -11,7 +11,7 @@ step:
 .. mermaid::
 
    flowchart LR
-     E["<b>Events</b><br/>onsets + labels"] -- "get_intervals()" --> I["<b>Intervals</b><br/>(start, end) pairs"]
+     E["<b>Events</b><br/>onsets + labels + metadata"] -- "get_intervals()" --> I["<b>Intervals</b><br/>(start, end) pairs"]
      I -- "get_segments()" --> S["<b>SegmentedEyeData</b><br/>segments x time"]
      S -- "group_segments()" --> G["<b>GroupLevelSegmentedData</b><br/>participants x time"]
      I -- "stat_per_event()" --> N["one value<br/>per event"]
@@ -46,6 +46,57 @@ a given label (it raises an error unless exactly one event has it):
     t = d.event_onset("Start Block 2", units="sec")
 
 Tutorial: :doc:`/notebooks/events`.
+
+
+.. _event-metadata:
+
+Event metadata
+~~~~~~~~~~~~~~
+
+Each event can have *metadata*, e.g., the trial, the condition, the choice
+or the reaction time. They are stored in ``events.meta``, a dict with one
+numpy array per column (one value per event). Missing values are NaN in
+numeric columns and ``""`` in text columns. There are two common sources:
+
+- **Trigger labels** that code information, e.g., ``S_12_3_5`` for the
+  stimulus of trial 12 with the symbols 3 and 5.
+  :meth:`~Events.parse_labels` decomposes them with a regular expression
+  with named groups (or a function that returns a dict):
+
+  .. code-block:: python
+
+      ev = d.get_events()
+      ev = ev.parse_labels(r"^[FSCR]_(?P<trial>\d+)")
+      ev = ev.parse_labels(r"^S_\d+_(?P<left>\d+)_(?P<right>\d+)")
+      ev = ev.parse_labels(r"^R_\d+_(?P<reward>\d+)")
+
+- **A behaviour log**: :meth:`Events.from_table` takes the columns with
+  metadata as ``meta`` (see :ref:`below <behaviour-log-events>`); each
+  event of a row gets the values of that row.
+
+Information that is coded at one event (e.g., the reward at the feedback)
+is copied to the other events of the same trial with
+:meth:`~Events.fill_meta`, and :meth:`~Events.add_latency` adds the time
+between two events (e.g., the reaction time). :meth:`~Events.filter`
+selects events by their metadata:
+
+.. code-block:: python
+
+    ev = ev.fill_meta("reward", by="trial")
+    ev = ev.add_latency("S_", "C_", "rt", by="trial")
+    ev.filter("S_", reward=20)                     # equal to a value
+    ev.filter("S_", trial=[1, 2, 3])               # one of the values
+    ev.filter("S_", rt=lambda rt: rt < 1000)       # function of the column
+    ev.filter(ev.meta["left"] < ev.meta["right"])  # boolean array
+
+:meth:`~GenericEyeData.set_events` stores the metadata in the dataset
+(they are saved with it), and :meth:`~GenericEyeData.get_intervals` passes
+the metadata of the selected events on to the intervals
+(``intervals.event_meta``, also in :meth:`~Intervals.as_pandas`).
+:meth:`~Events.to_table` returns the events with their metadata as a dict
+of columns, e.g., for ``pandas.DataFrame()``.
+
+Tutorial: :doc:`/notebooks/event_metadata`.
 
 
 .. _behaviour-log-events:
@@ -140,6 +191,11 @@ maps times or events to the eye-tracker clock:
     sync = pp.sync_clocks(starts, d.get_events().filter("Start Block"),
                           src_units="sec")
     d.add_events(sync(ev))
+
+Other columns of the log become :ref:`metadata <event-metadata>` of the
+events with ``meta``, e.g.,
+``pp.Events.from_table(behav, ..., units="sec", meta=["block", "trial", "rt"])``.
+They are kept by ``sync`` and :meth:`~GenericEyeData.add_events`.
 
 :func:`sync_clocks` logs a summary of the fit. Check the *residuals*
 (``sync.residuals``, or ``print(sync)`` for a table): with correct pairs,
