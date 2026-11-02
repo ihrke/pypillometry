@@ -130,6 +130,7 @@ class GenericEyeData(state.VersionedState, ABC):
         "name", "fs", "tx", ("data", "EyeDataDict"), "event_onsets",
         "event_labels", ("blinks", "dict:Intervals", "_blinks"),
         ("interpolated_blinks", "dict:Intervals", "_interpolated_blinks"),
+        ("excluded", "Intervals", "_excluded"),
         "params", "history", "inplace", "info", ("original", "versioned"))
 
     @abstractmethod
@@ -179,6 +180,7 @@ class GenericEyeData(state.VersionedState, ABC):
         self.set_event_onsets(event_onsets, event_labels)
 
         self._init_blinks()
+        self._excluded = Intervals([], units="ms", label="excluded")
 
         ## empty parameter dict
         self.params = dict()
@@ -828,6 +830,10 @@ class GenericEyeData(state.VersionedState, ABC):
         Where it makes sense, each measure is labeled as "good", "ok",
         "poor" or "bad". The overall label is the worst of all labels.
 
+        Excluded periods (see :meth:`exclude_intervals`) are left out: all
+        measures refer to the included time, and dropouts and
+        sample-to-sample differences end at their boundaries.
+
         Parameters
         ----------
         thresholds : dict, optional
@@ -977,19 +983,60 @@ class GenericEyeData(state.VersionedState, ABC):
             t0 = self.tx[0]
         obj.tx=self.tx-t0
         obj.event_onsets=self.event_onsets-t0
+        obj._excluded = Intervals([(s - t0, e - t0) for s, e in self._excluded.intervals],
+                                  units="ms", label="excluded")
         return obj
 
-    @keephistory
-    def sub_slice(self,
-                start: float=-np.inf, 
-                end: float=np.inf, 
-                units: str="ms", inplace=None):
+    def _keep_samples(self, keep, shift=None):
         """
-        Return a shortened version of the current object.
+        Keep only the samples where `keep` is True (in place).
+
+        Cuts all variables and masks and moves stored blinks in sample
+        indices to the new sample positions. With `shift` (ms per sample,
+        subtracted from the time vector to close gaps), blinks in time units
+        and excluded periods are moved as well; without it, they stay valid.
+        Events are left to the caller.
+        """
+        keep = np.asarray(keep, dtype=bool)
+        n = len(self.tx)
+        m = int(keep.sum())
+        kept_before = np.concatenate([[0], np.cumsum(keep)])
+
+        def move(iv):
+            """Intervals -> (start, end) at the new sample positions."""
+            pairs = [(int(kept_before[min(max(a, 0), n)]), int(kept_before[min(max(b, 0), n)]))
+                     for a, b in iv.to_units("samples", self).intervals]
+            return [(a, b) for a, b in pairs if b > a]
+
+        for store in (self._blinks, self._interpolated_blinks):
+            for key, iv in store.items():
+                if iv is None or (iv.units != "samples" and shift is None):
+                    continue
+                store[key] = Intervals(move(iv), "samples", label=iv.label,
+                                       data_time_range=(0, m))
+        excluded = move(self._excluded) if shift is not None else None
+
+        ndata = EyeDataDict()
+        for k, v in self.data.items():
+            ndata.set_with_mask(k, v[keep], mask=self.data.mask[k][keep])
+        self.data = ndata
+        self.tx = (self.tx if shift is None else self.tx - shift)[keep]
+        if excluded is not None:
+            self._excluded = Intervals(Intervals(excluded, "samples").to_units("ms", self).intervals,
+                                       "ms", label="excluded")
+        return self
+
+    @keephistory
+    def crop(self,
+             start: float=-np.inf,
+             end: float=np.inf,
+             units: str="ms", inplace=None):
+        """
+        Crop the data to the time range from `start` to `end`.
 
         The result contains all data (and events) between `start` and `end`
-        (inclusive), e.g. ``d.sub_slice(3*u.min, 5*u.min)`` or
-        ``d.sub_slice("3 min", "5 min")``.
+        (inclusive), e.g. ``d.crop(3*u.min, 5*u.min)`` or
+        ``d.crop("3 min", "5 min")``.
         `start` and `end` refer to the values of the time-vector (not to
         the time since the start of the recording). Masks are kept; stored
         blinks (in sample indices) are shifted and cut to the new range.
@@ -1013,40 +1060,32 @@ class GenericEyeData(state.VersionedState, ABC):
         -------
         :class:`~pypillometry.GenericEyeData`
             the shortened object (`self` or a copy, depending on `inplace`)
+
+        See Also
+        --------
+        remove_intervals : remove periods (e.g., breaks) and join the rest
         """
         obj = self._get_inplace(inplace)
-
         default = normalize_unit(units)
         start = parse_time(start, default=default)
         end = parse_time(end, default=default)
-        tx = self.tx.copy()
-        evon=obj.event_onsets.copy()
-        keepix=np.where(np.logical_and(tx>=start, tx<=end))
-
-        keepix=keepix[0]
-        ndata=EyeDataDict()
-        for k,v in obj.data.items():
-            ndata.set_with_mask(k, v[keepix], mask=obj.data.mask[k][keepix])
-        obj.data=ndata
-        obj.tx=obj.tx[keepix]
-
-        # shift stored blinks in sample indices and cut them to the new range
-        # (blinks in time units stay valid)
-        first = int(keepix[0]) if keepix.size>0 else 0
-        n = len(obj.tx)
-        for store in (obj._blinks, obj._interpolated_blinks):
-            for key, iv in store.items():
-                if iv is None or iv.units != "samples":
-                    continue
-                shifted = [(max(int(on)-first, 0), min(int(off)-first, n)) for on, off in iv.intervals]
-                store[key] = Intervals([(on, off) for on, off in shifted if off > on], "samples",
-                                       label=iv.label, data_time_range=(0, n))
-
-        keepev=np.logical_and(evon>=start, evon<=end)
-        obj.event_onsets=obj.event_onsets[keepev]
-        obj.event_labels=obj.event_labels[keepev]
-        
+        obj._keep_samples((obj.tx >= start) & (obj.tx <= end))
+        keepev = (obj.event_onsets >= start) & (obj.event_onsets <= end)
+        obj.event_onsets = obj.event_onsets[keepev]
+        obj.event_labels = obj.event_labels[keepev]
         return obj
+
+    def sub_slice(self, start: float=-np.inf, end: float=np.inf,
+                  units: str="ms", inplace=None):
+        """
+        Deprecated alias of :meth:`crop`.
+
+        .. deprecated:: 2.1
+           Use :meth:`crop` instead; `sub_slice` will be removed.
+        """
+        warnings.warn("sub_slice() is deprecated, use crop() instead",
+                      DeprecationWarning, stacklevel=2)
+        return self.crop(start, end, units=units, inplace=inplace)
     
     def write_file(self, fname:str, compress:bool=True):
         """
@@ -1292,6 +1331,9 @@ class GenericEyeData(state.VersionedState, ABC):
             ("Events", summary["nevents"]),
             ("Size", size_str),
         ]
+        if "excluded_minutes" in summary:
+            overview.insert(3, ("Excluded", f"{summary['excluded_minutes']:.2f} min "
+                                f"({len(self._excluded)} periods)"))
 
         if blink_stats_raw:
             counts = ", ".join(
@@ -2785,3 +2827,264 @@ class GenericEyeData(state.VersionedState, ABC):
                     interpolate_single_key(key, intervals)
         
         return obj
+
+    # --- excluded periods ------------------------------------------------
+
+    def _excluded_mask(self) -> np.ndarray:
+        """Boolean array that is True for the samples in an excluded period."""
+        return self._excluded.to_mask(self).astype(bool)
+
+    def _drop_excluded_blinks(self):
+        """Remove stored blinks that overlap or touch an excluded period."""
+        excl = self._excluded_mask()
+        if not excl.any():
+            return
+        n = len(excl)
+        for key, iv in self._blinks.items():
+            if iv is None or len(iv) == 0:
+                continue
+            ix = iv.to_units("samples", self)
+            keep = [k for k, (on, off) in enumerate(ix.intervals)
+                    if not excl[min(max(int(on) - 1, 0), n):min(max(int(off) + 1, 0), n)].any()]
+            if len(keep) < len(iv):
+                self._blinks[key] = Intervals([iv.intervals[k] for k in keep], iv.units,
+                                              label=iv.label, data_time_range=iv.data_time_range)
+
+    @keephistory
+    def exclude_intervals(self, intervals, inplace=None):
+        """
+        Exclude periods that are not part of the analysis (e.g., breaks or
+        the calibration at the start).
+
+        The periods are stored with the object (see :meth:`get_excluded`)
+        and all variables are masked during them, so that functions that
+        ignore masked data (e.g., :meth:`scale`, :meth:`get_segments`) also
+        ignore the excluded periods. Unlike other masked data (blinks,
+        artifacts), excluded periods are not treated as missing data: blinks
+        that overlap or touch an excluded period are removed, and blink
+        detection ignores them as well.
+
+        The periods are stored as times, so they stay valid after
+        :meth:`crop`, :meth:`downsample` and :meth:`reset_time`. Calling
+        the method again adds to the excluded periods. Variables that are
+        added later are not masked automatically.
+
+        Parameters
+        ----------
+        intervals : Intervals or list of tuple
+            the periods to exclude: an :class:`~pypillometry.Intervals`
+            object (e.g., from :meth:`get_intervals`; in time units or sample
+            indices) or a list of ``(start, end)`` tuples (in ms, or with
+            units, e.g., ``[(0, 2 * u.min)]``); ends are exclusive
+        inplace : bool or None, optional
+            if `True`, make change in-place and return the object;
+            if `False`, make and return copy before making changes;
+            if `None`, use the object-level setting (specified in the constructor)
+
+        Returns
+        -------
+        :class:`~pypillometry.GenericEyeData`
+            the object with the excluded periods (`self` or a copy,
+            depending on `inplace`)
+
+        Examples
+        --------
+        >>> breaks = d.get_intervals(("break_start", "break_end"), interval=(0, 0),
+        ...                          units="ms")  # doctest: +SKIP
+        >>> d = d.exclude_intervals(breaks)  # doctest: +SKIP
+        >>> d = d.exclude_intervals([(0, 2 * u.min)])  # doctest: +SKIP
+        """
+        obj = self._get_inplace(inplace)
+        if not isinstance(intervals, Intervals):
+            # plain numbers are ms; values with units are converted
+            intervals = Intervals(list(intervals), units="ms")
+        new = intervals.to_units("ms", obj)
+        new = [(float(s), float(e)) for s, e in new.intervals if e > s]
+        merged = Intervals(list(obj._excluded.intervals) + new, units="ms").merge()
+        obj._excluded = Intervals(merged.intervals, units="ms", label="excluded")
+        excl = obj._excluded_mask()
+        for key in obj.data.mask:
+            obj.data.mask[key][excl] = 1
+        obj._drop_excluded_blinks()
+        return obj
+
+    def get_excluded(self, units: str = "ms") -> Intervals:
+        """
+        Return the excluded periods (see :meth:`exclude_intervals`).
+
+        Parameters
+        ----------
+        units : str, optional
+            units of the returned intervals ("ms" (default), "sec", "min",
+            "h", or "samples" for sample indices; in samples, only the
+            periods within the data are returned)
+
+        Returns
+        -------
+        :class:`~pypillometry.Intervals`
+            the excluded periods (empty if there are none)
+        """
+        iv = self._excluded.to_units(units, self)
+        if iv.units == "samples":
+            # clip to the data and drop periods outside of it
+            n = len(self.tx)
+            pairs = [(max(s, 0), min(e, n)) for s, e in iv.intervals]
+            iv = Intervals([(s, e) for s, e in pairs if e > s], "samples",
+                           label="excluded", data_time_range=(0, n))
+        return iv
+
+    def get_included(self, units: str = "ms") -> Intervals:
+        """
+        Return the periods that are not excluded (see :meth:`exclude_intervals`).
+
+        These are the contiguous runs of samples outside the excluded
+        periods (the whole recording if nothing is excluded).
+
+        Parameters
+        ----------
+        units : str, optional
+            units of the returned intervals ("ms" (default), "sec", "min",
+            "h", or "samples" for sample indices)
+
+        Returns
+        -------
+        :class:`~pypillometry.Intervals`
+            the included periods (end-exclusive)
+        """
+        return Intervals.from_mask(~self._excluded_mask(), self, units, label="included")
+
+    def split_excluded(self) -> list:
+        """
+        Split the data at the excluded periods (see :meth:`exclude_intervals`).
+
+        Returns one object per included period (see :meth:`get_included`),
+        each with the samples, masks, blinks and events of that period and
+        the original time vector. The objects are copies; `self` is not
+        changed.
+
+        Returns
+        -------
+        list of :class:`~pypillometry.GenericEyeData`
+            the parts of the recording between the excluded periods
+
+        See Also
+        --------
+        remove_intervals : remove periods and join the rest, e.g.,
+            ``d.remove_intervals(d.get_excluded())``
+        """
+        parts = []
+        for start, end in self.get_included("samples").intervals:
+            # crop includes both ends: from the first to the last sample
+            parts.append(self.crop(self.tx[start], self.tx[end - 1], units="ms",
+                                   inplace=False))
+        return parts
+
+    @keephistory
+    def remove_intervals(self, intervals, inplace=None):
+        """
+        Remove the data in the given periods (e.g., breaks) and join the rest.
+
+        The samples in the periods are deleted. Gaps between the remaining
+        data are closed: the data after a removed period are shifted back in
+        time, so that they continue where the removed period started (the
+        time vector has no gap). Removing data at the beginning or end does
+        not change the times, so removing everything before `start` and
+        after `end` is the same as :meth:`crop`. Event onsets are shifted
+        with the data; events within removed periods are deleted. Stored
+        blinks and excluded periods are moved to the new positions. The
+        removed periods (in the original time, within the data) are added
+        to ``params["removed_intervals"]``.
+
+        To remove the periods marked with :meth:`exclude_intervals`, use
+        ``d.remove_intervals(d.get_excluded())``.
+
+        Filters or interpolation applied after joining treat the data on
+        both sides of a removed period as neighbors; apply them before, or
+        use :meth:`split_excluded` to process the parts separately.
+
+        Parameters
+        ----------
+        intervals : Intervals or list of tuple
+            the periods to remove: an :class:`~pypillometry.Intervals`
+            object (in time units or sample indices) or a list of
+            ``(start, end)`` tuples (in ms, or with units, e.g.,
+            ``[(10 * u.min, 12 * u.min)]``); ends are exclusive
+        inplace : bool or None, optional
+            if `True`, make change in-place and return the object;
+            if `False`, make and return copy before making changes;
+            if `None`, use the object-level setting (specified in the constructor)
+
+        Returns
+        -------
+        :class:`~pypillometry.GenericEyeData`
+            the object without the removed periods (`self` or a copy,
+            depending on `inplace`)
+
+        Raises
+        ------
+        ValueError
+            if all samples would be removed
+
+        See Also
+        --------
+        crop : keep only the data between two times
+        split_excluded : split the data at the excluded periods
+
+        Examples
+        --------
+        >>> breaks = d.get_intervals(("break_start", "break_end"), (0, 0) * u.ms)  # doctest: +SKIP
+        >>> d = d.remove_intervals(breaks)  # doctest: +SKIP
+        >>> d = d.remove_intervals(d.get_excluded())  # doctest: +SKIP
+        """
+        obj = self._get_inplace(inplace)
+        if not isinstance(intervals, Intervals):
+            # plain numbers are ms; values with units are converted
+            intervals = Intervals(list(intervals), units="ms")
+        n = len(obj.tx)
+        tx = obj.tx
+        tend = tx[-1] + 1000.0 / obj.fs
+        # the periods in ms, within the data (also handles infinite bounds)
+        periods = [(max(float(a), tx[0]), min(float(b), tend))
+                   for a, b in intervals.to_units("ms", obj).intervals]
+        periods = Intervals([p for p in periods if p[1] > p[0]], "ms").merge()
+        removed = periods.to_mask(obj).astype(bool)
+        if removed.all():
+            raise ValueError("all samples would be removed")
+        if not removed.any():
+            return obj
+
+        # close the gaps between kept data: the samples after a removed run
+        # of samples (s, e) are shifted back by tx[e] - tx[s]
+        runs = Intervals.from_mask(removed).intervals
+        gaps = [(s, e) for s, e in runs if s > 0 and e < n]
+        shift = np.zeros(n)
+        on = np.asarray(obj.event_onsets, dtype=float)
+        ev_shift = np.zeros(len(on))
+        for s, e in gaps:
+            shift[e:] += tx[e] - tx[s]
+            ev_shift[on >= tx[s]] += tx[e] - tx[s]
+        in_removed = np.zeros(len(on), dtype=bool)
+        for a, b in periods.intervals:
+            in_removed |= (on >= a) & (on < b)
+        obj._keep_samples(~removed, shift=shift)
+        obj.event_onsets = (on - ev_shift)[~in_removed]
+        obj.event_labels = np.asarray(obj.event_labels)[~in_removed]
+        obj.params["removed_intervals"] = obj.params.get("removed_intervals", []) + \
+            [(float(a), float(b)) for a, b in periods.intervals]
+        return obj
+
+    def excluded_duration(self, units: str = "min") -> float:
+        """
+        Total duration of the excluded periods within the data.
+
+        Parameters
+        ----------
+        units : str, optional
+            units of the result ("ms", "sec", "min" (default), "h")
+
+        Returns
+        -------
+        float
+            the excluded time (number of excluded samples / sampling rate)
+        """
+        return self._excluded_mask().sum() / self.fs * 1000 * self._unit_fac(units)

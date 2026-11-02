@@ -82,7 +82,7 @@ end-exclusive: ``(start, end)`` covers the samples with
 ``start <= t < end``.
 
 Intervals in sample indices are only valid for the data object they came
-from: after :meth:`~GenericEyeData.sub_slice`,
+from: after :meth:`~GenericEyeData.crop`,
 :meth:`~GenericEyeData.downsample` or for another recording, the same
 indices point to other samples (blinks stored in the object are adjusted
 automatically). Therefore, every conversion between sample indices and

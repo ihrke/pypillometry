@@ -141,7 +141,7 @@ class TestStateCoverage(unittest.TestCase):
 
     def objects(self):
         d = make_eyedata()
-        d = d.sub_slice(500, 5000, units="ms", inplace=False).reset_time()
+        d = d.crop(500, 5000, units="ms", inplace=False).reset_time()
         seg = d.get_segments(d.get_intervals("F_", interval=(-200, 800), units="ms"),
                              "left_pupil")
         return [

@@ -677,11 +677,22 @@ def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[]) -> 
     """
     thresholds = _merge_thresholds(thresholds)
     b = _Builder(thresholds)
-    n = len(obj)
+    n_total = len(obj)
     fs = float(obj.fs)
+    # only the included samples count (excluded periods, e.g., breaks, are
+    # left out): rates and percentages are over the included time, and
+    # excluded samples are NaN so that dropouts end and sample-to-sample
+    # differences stop at their boundaries
+    excluded = obj._excluded_mask()
+    inc = ~excluded
+    n = int(inc.sum())
     dur_min = n / fs / 60.0
-    raw = obj.data.data
-    masks = obj.data.mask
+
+    def included(v):
+        return np.where(inc, v, np.nan)
+
+    raw = {k: included(v) for k, v in obj.data.data.items()}
+    masks = {k: obj.data.mask[k].astype(bool) & inc for k in obj.data.mask}
 
     if isinstance(eyes, str):
         eyes = [eyes]
@@ -692,21 +703,26 @@ def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[]) -> 
         gaze_eyes = [e for e in gaze_eyes if e in eyes]
 
     # --- recording info -------------------------------------------------
-    b.add("info", "all", "duration", "duration", dur_min, "min",
+    b.add("info", "all", "duration", "duration", n_total / fs / 60.0, "min",
           "length of the recording")
+    if excluded.any():
+        b.add("info", "all", "included_duration", "included", dur_min, "min",
+              "length of the recording without the excluded periods (e.g., breaks); "
+              "all other measures refer to this part")
     b.add("info", "all", "sampling_rate", "sampling rate", fs, "Hz",
           "number of samples per second")
-    b.add("info", "all", "n_samples", "samples", int(n),
+    b.add("info", "all", "n_samples", "samples", int(n_total),
           description="number of samples in the recording")
     b.add("info", "all", "n_events", "events", int(obj.nevents()),
           description="number of events (e.g., triggers) in the recording")
-    if n > 1:
+    if n_total > 1:
         gaps = int(np.sum(np.diff(obj.tx) > 1.5 * 1000.0 / fs))
         b.add("info", "all", "time_gaps", "time gaps", gaps, "",
               "number of gaps in the time vector, where the eye tracker stored no "
               "samples (filled with missing data when the data were read)")
 
     def dropouts(section, eye, missing):
+        # `missing` is False in excluded periods, so dropouts end there
         runs = _run_lengths(missing)
         b.add(section, eye, "dropout_rate", "dropouts",
               len(runs) / dur_min if dur_min > 0 else np.nan, "/min",
@@ -720,13 +736,13 @@ def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[]) -> 
     # --- pupil ----------------------------------------------------------
     for eye in pupil_eyes:
         v = raw[f"{eye}_pupil"]
-        missing = ~np.isfinite(v)
+        missing = ~np.isfinite(v) & inc
         b.add("pupil", eye, "missing_pct", "missing data", _pct(missing.sum(), n), "%",
               "percentage of samples without valid pupil data (e.g., blinks, "
               "lost tracking)")
         dropouts("pupil", eye, missing)
         sd = _diff_noise(v)
-        med = np.nanmedian(v) if (~missing).any() else np.nan
+        med = np.nanmedian(v) if np.isfinite(v).any() else np.nan
         rel = 100 * sd / abs(med) if np.isfinite(sd) and np.isfinite(med) and med != 0 else np.nan
         b.add("pupil", eye, "noise", "noise", rel, "%",
               "high-frequency noise in percent of the median pupil size, estimated "
@@ -747,12 +763,12 @@ def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[]) -> 
     setup = getattr(obj, "experimental_setup", None)
     for eye in gaze_eyes:
         x, y = raw[f"{eye}_x"], raw[f"{eye}_y"]
-        missing = ~(np.isfinite(x) & np.isfinite(y))
+        missing = ~(np.isfinite(x) & np.isfinite(y)) & inc
         b.add("gaze", eye, "missing_pct", "missing data", _pct(missing.sum(), n), "%",
               "percentage of samples without valid gaze data (x or y missing)")
         if eye not in pupil_eyes:
             dropouts("gaze", eye, missing)
-        valid = ~missing
+        valid = ~missing & inc
         if setup is not None and setup.screen_resolution is not None and valid.any():
             w, h = setup.screen_resolution
             off = valid & ((x < 0) | (x > w) | (y < 0) | (y > h))
@@ -808,7 +824,7 @@ def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[]) -> 
         if obj._blinks.get(f"{eye}_{var}") is None:
             continue
         bl = obj.get_blinks(eye, var)
-        blinks_mask[eye] = bl.to_mask(obj).astype(bool)
+        blinks_mask[eye] = bl.to_mask(obj).astype(bool) & inc
         dur_ms = np.array([(e - s) for s, e in bl.intervals], dtype=float) / fs * 1000
         b.add("blinks", eye, "n", "number", int(len(bl)), "", "number of detected blinks")
         b.add("blinks", eye, "rate", "blink rate",
@@ -832,27 +848,28 @@ def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[]) -> 
         processed = eye in blinks_mask
         if eye in pupil_eyes:
             key = f"{eye}_pupil"
-            m = masks[key].astype(bool)
-            nan = ~np.isfinite(raw[key])
+            m = masks[key]
+            nan = ~np.isfinite(raw[key]) & inc
             processed |= bool(np.any(m != nan))
             metrics.append(("pupil_masked_pct", "pupil masked", _pct(m.sum(), n),
                             "percentage of masked pupil samples (missing data, blinks and "
                             "other artifacts)"))
-            other = m & ~nan & ~blinks_mask.get(eye, np.zeros(n, bool))
+            other = m & ~nan & ~blinks_mask.get(eye, np.zeros(n_total, bool))
             if obj._interpolated_blinks.get(key) is not None:
                 processed = True
-                interp = obj.get_interpolated_blinks(eye, "pupil").to_mask(obj).sum()
+                interp = (obj.get_interpolated_blinks(eye, "pupil").to_mask(obj).astype(bool)
+                          & inc).sum()
                 metrics.append(("interpolated_pct", "interpolated", _pct(interp, n),
                                 "percentage of pupil samples that were interpolated (e.g., blinks)"))
         if eye in gaze_eyes:
-            m = masks[f"{eye}_x"].astype(bool) | masks[f"{eye}_y"].astype(bool)
-            nan = ~(np.isfinite(raw[f"{eye}_x"]) & np.isfinite(raw[f"{eye}_y"]))
+            m = masks[f"{eye}_x"] | masks[f"{eye}_y"]
+            nan = ~(np.isfinite(raw[f"{eye}_x"]) & np.isfinite(raw[f"{eye}_y"])) & inc
             processed |= bool(np.any(m != nan))
             metrics.append(("gaze_masked_pct", "gaze masked", _pct(m.sum(), n),
                             "percentage of masked gaze samples (missing data, blinks and other "
                             "artifacts)"))
             if eye not in pupil_eyes:
-                other = m & ~nan & ~blinks_mask.get(eye, np.zeros(n, bool))
+                other = m & ~nan & ~blinks_mask.get(eye, np.zeros(n_total, bool))
         if not processed:
             continue
         for name, title, value, desc in metrics:

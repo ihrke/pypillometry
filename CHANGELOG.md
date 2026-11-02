@@ -15,6 +15,7 @@
   intervals (were ms)
 - `plot_timeseries()`, `plot_scanpath()`, `sub_slice()`: default `units="ms"`
   (was None)
+- `sub_slice()` was renamed to `crop()`; `sub_slice()` is a deprecated alias
 
 ### Added
 
@@ -23,6 +24,13 @@
 - Default quality thresholds based on reference data from six datasets
 - `pypilinfo --quality/--html/--descriptions`: quality reports
 - HDF5 files: `write_file()`/`write_pickle()` write HDF5 if filename ends `.h5`
+- Excluded periods (e.g., breaks, calibration): `exclude_intervals()`,
+  `get_excluded()`, `excluded_duration()`; all variables are masked there,
+  blink detection ignores them, and they are saved with the object;
+  `quality_report()` only uses the included time; `get_included()`,
+  `split_excluded()` (one object per included period)
+- `remove_intervals()`: remove periods (e.g., breaks) and join the rest
+  (time and events after them are shifted back)
 
 ### Changed
 
