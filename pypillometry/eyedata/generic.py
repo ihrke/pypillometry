@@ -2970,8 +2970,7 @@ class GenericEyeData(state.VersionedState, ABC):
 
         Examples
         --------
-        >>> breaks = d.get_intervals(("break_start", "break_end"), window=(0, 0),
-        ...                          units="ms")  # doctest: +SKIP
+        >>> breaks = d.get_intervals(("break_start", "break_end"), units="ms")  # doctest: +SKIP
         >>> d = d.exclude_intervals(breaks)  # doctest: +SKIP
         >>> d = d.exclude_intervals([(0, 2 * u.min)])  # doctest: +SKIP
 
@@ -3024,8 +3023,7 @@ class GenericEyeData(state.VersionedState, ABC):
 
         Examples
         --------
-        >>> run = d.get_intervals(("rsfMRI_ONSET", "rsfMRI_END"), window=(0, 0),
-        ...                       units="ms")  # doctest: +SKIP
+        >>> run = d.get_intervals(("rsfMRI_ONSET", "rsfMRI_END"), units="ms")  # doctest: +SKIP
         >>> d = d.keep_intervals(run)  # doctest: +SKIP
         """
         if not isinstance(intervals, Intervals):
@@ -3157,7 +3155,7 @@ class GenericEyeData(state.VersionedState, ABC):
 
         Examples
         --------
-        >>> breaks = d.get_intervals(("break_start", "break_end"), (0, 0) * u.ms)  # doctest: +SKIP
+        >>> breaks = d.get_intervals(("break_start", "break_end"), units="ms")  # doctest: +SKIP
         >>> d = d.remove_intervals(breaks)  # doctest: +SKIP
         >>> d = d.remove_intervals(d.get_excluded())  # doctest: +SKIP
         """

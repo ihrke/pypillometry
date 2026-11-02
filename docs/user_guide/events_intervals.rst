@@ -56,7 +56,7 @@ come from several places:
    * - windows around events
      - ``d.get_intervals("stim", (-200, 1000) * u.ms)``
    * - spans between two events
-     - ``d.get_intervals(("trial_start", "response"), (0, 0))``
+     - ``d.get_intervals(("trial_start", "response"))``
    * - detected blinks
      - ``d.get_blinks("left", "pupil")``
    * - other detection methods
@@ -87,9 +87,9 @@ the start and the end of the recording:
 
 .. code-block:: python
 
-    blocks = d.get_intervals(("Start Block", "End Block"), (0, 0), units="ms")
-    breaks = d.get_intervals(("End Block", "Start Block"), (0, 0), units="ms")
-    before = d.get_intervals(("<start>", "Start Block"), (0, 0), units="ms")
+    blocks = d.get_intervals(("Start Block", "End Block"), units="ms")
+    breaks = d.get_intervals(("End Block", "Start Block"), units="ms")
+    before = d.get_intervals(("<start>", "Start Block"), units="ms")
 
 String selectors match labels that contain them; with ``exact=True``,
 only labels that are equal to them.
