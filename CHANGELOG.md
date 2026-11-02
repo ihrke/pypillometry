@@ -25,7 +25,8 @@
 - HDF5 files: `write_file()`/`write_pickle()` write HDF5 if filename ends `.h5`
 - Excluded periods (e.g., breaks, calibration): `exclude_intervals()`,
   `get_excluded()`, `excluded_duration()`; all variables are masked there,
-  blink detection ignores them, and they are saved with the object
+  blink detection ignores them, and they are saved with the object;
+  `quality_report()` only uses the included time
 
 ### Changed
 

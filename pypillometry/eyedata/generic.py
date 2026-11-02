@@ -830,6 +830,10 @@ class GenericEyeData(state.VersionedState, ABC):
         Where it makes sense, each measure is labeled as "good", "ok",
         "poor" or "bad". The overall label is the worst of all labels.
 
+        Excluded periods (see :meth:`exclude_intervals`) are left out: all
+        measures refer to the included time, and dropouts and
+        sample-to-sample differences end at their boundaries.
+
         Parameters
         ----------
         thresholds : dict, optional
