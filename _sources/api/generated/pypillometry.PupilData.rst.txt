@@ -16,24 +16,32 @@
    .. autosummary::
       :nosignatures:
    
+      ~PupilData.add_events
       ~PupilData.add_to_history
       ~PupilData.blink_stats
       ~PupilData.blinks_merge_close
       ~PupilData.copy
+      ~PupilData.crop
       ~PupilData.downsample
       ~PupilData.drop_data
       ~PupilData.drop_original
+      ~PupilData.event_onset
+      ~PupilData.exclude_intervals
+      ~PupilData.excluded_duration
       ~PupilData.fill_time_discontinuities
       ~PupilData.from_eyelink
       ~PupilData.from_file
       ~PupilData.get_blinks
       ~PupilData.get_duration
       ~PupilData.get_events
+      ~PupilData.get_excluded
+      ~PupilData.get_included
       ~PupilData.get_interpolated_blinks
       ~PupilData.get_intervals
       ~PupilData.get_segments
       ~PupilData.get_size
       ~PupilData.interpolate_intervals
+      ~PupilData.keep_intervals
       ~PupilData.mask_as_intervals
       ~PupilData.mask_intervals
       ~PupilData.merge_eyes
@@ -49,11 +57,13 @@
       ~PupilData.pupil_merge_eyes
       ~PupilData.pupil_smooth_window
       ~PupilData.quality_report
+      ~PupilData.remove_intervals
       ~PupilData.reset_time
       ~PupilData.scale
       ~PupilData.set_blinks
       ~PupilData.set_event_onsets
       ~PupilData.set_events
+      ~PupilData.split_excluded
       ~PupilData.stat_per_event
       ~PupilData.sub_slice
       ~PupilData.summary

@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pypillometry.eyedata.pupildata &#8212; pypillometry v2.0.0</title>
+    <title>pypillometry.eyedata.pupildata &#8212; pypillometry v2.1.0</title>
   
   
   
@@ -25,8 +25,8 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
-<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+  <link href="../../../_static/styles/theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
@@ -36,12 +36,12 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=e89b0eda" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../../../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=75c7c72ae941e8b558d8"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
-<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../../_static/documentation_options.js?v=aa039f9c"></script>
+    <script src="../../../_static/documentation_options.js?v=dbd6d5c5"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -414,7 +414,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.0.0" />
+  <meta name="docsearch:version" content="v2.1.0" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -465,7 +465,7 @@ window.runMermaid = runMermaid;</script>
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
-  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation" aria-expanded="false" aria-controls="pst-primary-sidebar-modal">
     <span class="fa-solid fa-bars"></span>
   </button>
   
@@ -569,14 +569,14 @@ window.runMermaid = runMermaid;</script>
 
 <div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
   <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
-    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
-    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
-    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
   </button>
   <ul class="dropdown-menu dropdown-menu-end">
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
   </ul>
 </div></div>
       
@@ -634,7 +634,7 @@ window.runMermaid = runMermaid;</script>
       
         
       
-      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <dialog id="pst-primary-sidebar-modal" tabindex="-1"></dialog>
       <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
         
 
@@ -705,14 +705,14 @@ window.runMermaid = runMermaid;</script>
 
 <div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
   <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
-    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
-    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
-    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
   </button>
   <ul class="dropdown-menu dropdown-menu-end">
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
   </ul>
 </div></div>
         
@@ -778,7 +778,7 @@ window.runMermaid = runMermaid;</script>
     
     <li class="breadcrumb-item breadcrumb-home">
       <a href="../../../index.html" class="nav-link" aria-label="Home">
-        <i class="fa-solid fa-home"></i>
+        <i class="fa-solid fa-house"></i>
       </a>
     </li>
     
@@ -820,7 +820,6 @@ window.runMermaid = runMermaid;</script>
 <span class="c1">#from .. import io</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..plot</span><span class="w"> </span><span class="kn">import</span> <span class="n">PupilPlotter</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..intervals</span><span class="w"> </span><span class="kn">import</span> <span class="n">Intervals</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">..units</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_time</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
@@ -973,8 +972,10 @@ window.runMermaid = runMermaid;</script>
             <span class="n">end_min</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">/</span><span class="mf">1000.</span><span class="o">/</span><span class="mf">60.</span><span class="p">,</span>
             <span class="n">params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_strfy_params</span><span class="p">()</span>
         <span class="p">)</span>
-        
-        <span class="k">return</span> <span class="n">summary</span>            </div>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_excluded</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">summary</span><span class="p">[</span><span class="s2">"excluded_minutes"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">excluded_duration</span><span class="p">(</span><span class="s2">"min"</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">summary</span></div>
 
 
 <div class="viewcode-block" id="PupilData.pupil_lowpass_filter">
@@ -1051,7 +1052,7 @@ window.runMermaid = runMermaid;</script>
         <span class="n">eyes</span><span class="p">,</span><span class="n">_</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,[])</span>
 
         <span class="c1"># convert winsize to index based on sampling rate</span>
-        <span class="n">winsize_ix</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">parse_time</span><span class="p">(</span><span class="n">winsize</span><span class="p">)</span><span class="o">/</span><span class="mf">1000.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span>
+        <span class="n">winsize_ix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_samples</span><span class="p">(</span><span class="n">winsize</span><span class="p">,</span> <span class="n">rounding</span><span class="o">=</span><span class="s2">"up"</span><span class="p">)</span>
 
         <span class="c1"># process requested eyes</span>
         <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes</span><span class="p">:</span>
@@ -1411,14 +1412,14 @@ window.runMermaid = runMermaid;</script>
         <span class="n">eyes</span><span class="p">,</span><span class="n">_</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,[])</span>
 
         <span class="c1"># Convert ms to samples</span>
-        <span class="n">winsize_ix</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">parse_time</span><span class="p">(</span><span class="n">winsize</span><span class="p">)</span><span class="o">/</span><span class="mf">1000.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
+        <span class="n">winsize_ix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_samples</span><span class="p">(</span><span class="n">winsize</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">winsize_ix</span> <span class="o">%</span> <span class="mi">2</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
             <span class="n">winsize_ix</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="n">min_duration_ix</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">parse_time</span><span class="p">(</span><span class="n">min_duration</span><span class="p">)</span><span class="o">/</span><span class="mf">1000.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
-        <span class="n">vel_onset_min_samples</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">parse_time</span><span class="p">(</span><span class="n">vel_onset_min_duration</span><span class="p">)</span><span class="o">/</span><span class="mf">1000.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span>
-        <span class="n">vel_offset_min_samples</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">parse_time</span><span class="p">(</span><span class="n">vel_offset_min_duration</span><span class="p">)</span><span class="o">/</span><span class="mf">1000.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span>
+        <span class="n">min_duration_ix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_samples</span><span class="p">(</span><span class="n">min_duration</span><span class="p">)</span>
+        <span class="n">vel_onset_min_samples</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_samples</span><span class="p">(</span><span class="n">vel_onset_min_duration</span><span class="p">))</span>
+        <span class="n">vel_offset_min_samples</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_samples</span><span class="p">(</span><span class="n">vel_offset_min_duration</span><span class="p">))</span>
         <span class="n">max_duration_ix</span> <span class="o">=</span> <span class="p">(</span><span class="kc">None</span> <span class="k">if</span> <span class="n">max_duration</span> <span class="ow">is</span> <span class="kc">None</span>
-                           <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">parse_time</span><span class="p">(</span><span class="n">max_duration</span><span class="p">)</span><span class="o">/</span><span class="mf">1000.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span>
+                           <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_samples</span><span class="p">(</span><span class="n">max_duration</span><span class="p">))</span>
 
         
         <span class="c1"># check for unknown strategies</span>
@@ -1470,15 +1471,17 @@ window.runMermaid = runMermaid;</script>
             <span class="c1"># Filter by minimum duration and create Intervals object</span>
             <span class="n">filtered_blinks</span> <span class="o">=</span> <span class="p">[(</span><span class="nb">int</span><span class="p">(</span><span class="n">on</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">off</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">on</span><span class="p">,</span><span class="n">off</span><span class="p">)</span> <span class="ow">in</span> <span class="n">blinks</span>
                                <span class="k">if</span> <span class="n">off</span><span class="o">+</span><span class="mi">1</span><span class="o">-</span><span class="n">on</span><span class="o">&gt;=</span><span class="n">min_duration_ix</span><span class="p">]</span>
+            <span class="c1"># blinks in or next to excluded periods are not blinks</span>
+            <span class="n">excl</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">_excluded_mask</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">excl</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+                <span class="n">filtered_blinks</span> <span class="o">=</span> <span class="p">[(</span><span class="n">on</span><span class="p">,</span> <span class="n">off</span><span class="p">)</span> <span class="k">for</span> <span class="n">on</span><span class="p">,</span> <span class="n">off</span> <span class="ow">in</span> <span class="n">filtered_blinks</span>
+                                   <span class="k">if</span> <span class="ow">not</span> <span class="n">excl</span><span class="p">[</span><span class="nb">max</span><span class="p">(</span><span class="n">on</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span><span class="n">off</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">any</span><span class="p">()]</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Filtered </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">filtered_blinks</span><span class="p">)</span><span class="si">}</span><span class="s2"> blinks by minimum duration"</span><span class="p">)</span>
             <span class="n">intervals_obj</span> <span class="o">=</span> <span class="n">Intervals</span><span class="p">(</span>
                 <span class="n">intervals</span><span class="o">=</span><span class="n">filtered_blinks</span><span class="p">,</span>
-                <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># Using index units</span>
+                <span class="n">units</span><span class="o">=</span><span class="s2">"samples"</span><span class="p">,</span>
                 <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_pupil_blinks"</span><span class="p">,</span>
-                <span class="n">data_time_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">)),</span>
-                <span class="n">sampling_rate</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
-                <span class="n">time_offset</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># Store starting time for correct unit conversion</span>
-            <span class="p">)</span>
+                <span class="n">data_time_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">)))</span>
             
             <span class="c1"># Store detected blinks internally (always)</span>
             <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_pupil"</span>
@@ -1573,9 +1576,9 @@ window.runMermaid = runMermaid;</script>
         <span class="n">eyes</span><span class="p">,</span><span class="n">_</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,[])</span>
 
         <span class="c1"># parameters in sampling units (from ms)</span>
-        <span class="n">winsize_ix</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">parse_time</span><span class="p">(</span><span class="n">winsize</span><span class="p">)</span><span class="o">/</span><span class="mf">1000.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span>
-        <span class="n">margin_ix</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">m</span><span class="o">/</span><span class="mf">1000.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">parse_time</span><span class="p">(</span><span class="n">margin</span><span class="p">))</span>
-        <span class="n">blinkwindow_ix</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">parse_time</span><span class="p">(</span><span class="n">blinkwindow</span><span class="p">)</span><span class="o">/</span><span class="mf">1000.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
+        <span class="n">winsize_ix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_samples</span><span class="p">(</span><span class="n">winsize</span><span class="p">,</span> <span class="n">rounding</span><span class="o">=</span><span class="s2">"up"</span><span class="p">)</span>
+        <span class="n">margin_ix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_samples</span><span class="p">(</span><span class="n">margin</span><span class="p">,</span> <span class="n">rounding</span><span class="o">=</span><span class="s2">"up"</span><span class="p">)</span>
+        <span class="n">blinkwindow_ix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_samples</span><span class="p">(</span><span class="n">blinkwindow</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">winsize_ix</span> <span class="o">%</span> <span class="mi">2</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span> <span class="c1">## ensure smoothing window is odd</span>
             <span class="n">winsize_ix</span><span class="o">+=</span><span class="mi">1</span> 
 
@@ -1637,12 +1640,9 @@ window.runMermaid = runMermaid;</script>
             <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_pupil"</span>
             <span class="n">obj</span><span class="o">.</span><span class="n">_interpolated_blinks</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">Intervals</span><span class="p">(</span>
                 <span class="n">intervals</span><span class="o">=</span><span class="n">interpolated_intervals</span><span class="p">,</span>
-                <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># Using index units</span>
+                <span class="n">units</span><span class="o">=</span><span class="s2">"samples"</span><span class="p">,</span>
                 <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">_interpolated_blinks"</span><span class="p">,</span>
-                <span class="n">data_time_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">)),</span>
-                <span class="n">sampling_rate</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
-                <span class="n">time_offset</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="p">)</span>
+                <span class="n">data_time_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">)))</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Stored </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">interpolated_intervals</span><span class="p">)</span><span class="si">}</span><span class="s2"> interpolated blinks for </span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">obj</span></div>
@@ -1657,6 +1657,12 @@ window.runMermaid = runMermaid;</script>
                                 <span class="n">method</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">"envelope_iter_bspline_2"</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Apply one of the baseline-estimation methods.</span>
+
+<span class="sd">        The data must not contain NaN: interpolate blinks first (see</span>
+<span class="sd">        :meth:`pupil_blinks_interpolate`) and bridge longer gaps, e.g., the</span>
+<span class="sd">        excluded periods (breaks), by linear interpolation:</span>
+<span class="sd">        ``d.interpolate_intervals(d.get_excluded(), variables="pupil")``.</span>
+<span class="sd">        Interpolated samples are used for the fit like other samples.</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1709,7 +1715,8 @@ window.runMermaid = runMermaid;</script>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">variable</span><span class="si">}</span><span class="s2">' contains NaN (e.g., blinks that were "</span>
                     <span class="s2">"not interpolated); the baseline cannot be estimated. "</span>
-                    <span class="s2">"Interpolate them first, e.g., with pupil_blinks_interpolate()."</span><span class="p">)</span>
+                    <span class="s2">"Interpolate them first, e.g., with pupil_blinks_interpolate() "</span>
+                    <span class="s2">"(blinks) or interpolate_intervals(d.get_excluded()) (breaks)."</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">method</span><span class="o">==</span><span class="s2">"envelope_iter_bspline_2"</span><span class="p">:</span>
                 <span class="n">txd</span><span class="p">,</span><span class="n">syd</span><span class="p">,</span><span class="n">base2</span><span class="p">,</span><span class="n">base1</span><span class="o">=</span><span class="n">baseline</span><span class="o">.</span><span class="n">baseline_envelope_iter_bspline</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="n">variable</span><span class="p">],</span>
@@ -1735,6 +1742,7 @@ window.runMermaid = runMermaid;</script>
                           <span class="n">npar</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span><span class="nb">float</span><span class="o">=</span><span class="s2">"free"</span><span class="p">,</span> <span class="n">tmax</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span><span class="nb">float</span><span class="o">=</span><span class="s2">"free"</span><span class="p">,</span> 
                           <span class="n">verbose</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
                           <span class="n">bounds</span><span class="p">:</span> <span class="nb">dict</span><span class="o">=</span><span class="p">{</span><span class="s2">"npar"</span><span class="p">:(</span><span class="mi">1</span><span class="p">,</span><span class="mi">20</span><span class="p">),</span> <span class="s2">"tmax"</span><span class="p">:(</span><span class="mi">100</span><span class="p">,</span><span class="mi">2000</span><span class="p">)},</span>
+                          <span class="n">min_valid</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
                           <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Estimate pupil-response based on event-onsets, see</span>
@@ -1743,6 +1751,17 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        If a baseline has been estimated (see :meth:`pupil_estimate_baseline`),</span>
 <span class="sd">        it is subtracted from the pupil signal before estimating the response;</span>
 <span class="sd">        otherwise, a baseline of zero is used.</span>
+
+<span class="sd">        The excluded periods (see</span>
+<span class="sd">        :meth:`~pypillometry.GenericEyeData.exclude_intervals`, e.g., breaks)</span>
+<span class="sd">        and missing (NaN) samples are not used for the fit; interpolated</span>
+<span class="sd">        samples (e.g., blinks) are. For each event, the share of its</span>
+<span class="sd">        response that falls outside these periods (`valid`) and the share</span>
+<span class="sd">        that falls on real, not masked data (`observed`) are stored with the</span>
+<span class="sd">        parameters (weighted by the response, see</span>
+<span class="sd">        :func:`~pypillometry.signal.pupil.pupil_response_coverage`). Events</span>
+<span class="sd">        with a `valid` share below `min_valid` are left out of the fit;</span>
+<span class="sd">        their coefficient is NaN.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1760,6 +1779,10 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        bounds : dict</span>
 <span class="sd">            in case that one or both parameters are estimated, give the lower</span>
 <span class="sd">            and upper bounds for the parameters        </span>
+<span class="sd">        min_valid : float</span>
+<span class="sd">            events whose share `valid` is below this are left out of the</span>
+<span class="sd">            fit (coefficient NaN), as their amplitude cannot be estimated</span>
+<span class="sd">            reliably; default 0.5; 0 uses all events</span>
 <span class="sd">        inplace : bool or None</span>
 <span class="sd">            if `True`, make change in-place and return the object</span>
 <span class="sd">            if `False`, make and return copy before making changes                                        </span>
@@ -1774,7 +1797,9 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        -----</span>
 <span class="sd">        The predicted response is stored in ``data[eye, "response"]``; the</span>
 <span class="sd">        estimated parameters (`npar`, `tmax`, the coefficients `coef` and the</span>
-<span class="sd">        `bounds`) are stored in ``params["response"][eye]``.</span>
+<span class="sd">        `bounds`) are stored in ``params["response"][eye]``, together with</span>
+<span class="sd">        the shares `valid` and `observed` (0-1, one per event; NaN for</span>
+<span class="sd">        events without response in the data, e.g., at the very end).</span>
 
 <span class="sd">        References</span>
 <span class="sd">        ----------</span>
@@ -1795,10 +1820,20 @@ window.runMermaid = runMermaid;</script>
                 <span class="n">base</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">"baseline"</span><span class="p">]</span>
         
             <span class="n">syd</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">"pupil"</span><span class="p">]</span><span class="o">-</span><span class="n">base</span>
+            <span class="n">valid</span> <span class="o">=</span> <span class="o">~</span><span class="n">obj</span><span class="o">.</span><span class="n">_excluded_mask</span><span class="p">()</span> <span class="o">&amp;</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">syd</span><span class="p">)</span>
             <span class="n">pred</span><span class="p">,</span> <span class="n">coef</span><span class="p">,</span> <span class="n">npar_est</span><span class="p">,</span> <span class="n">tmax_est</span><span class="p">,</span> <span class="n">x1</span><span class="o">=</span><span class="n">pupil</span><span class="o">.</span><span class="n">pupil_response</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="n">syd</span><span class="p">,</span> 
                                                             <span class="n">obj</span><span class="o">.</span><span class="n">event_onsets</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span> 
                                                             <span class="n">npar</span><span class="o">=</span><span class="n">npar</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
-                                                            <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">)</span>
+                                                            <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span> <span class="n">valid</span><span class="o">=</span><span class="n">valid</span><span class="p">,</span>
+                                                            <span class="n">min_valid</span><span class="o">=</span><span class="n">min_valid</span><span class="p">)</span>
+            <span class="n">share_valid</span> <span class="o">=</span> <span class="n">pupil</span><span class="o">.</span><span class="n">pupil_response_coverage</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">valid</span><span class="p">)</span>
+            <span class="n">nout</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">coef</span><span class="p">)))</span>
+            <span class="k">if</span> <span class="n">nout</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Eye </span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">nout</span><span class="si">}</span><span class="s2"> of </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">coef</span><span class="p">)</span><span class="si">}</span><span class="s2"> events left out of the "</span>
+                            <span class="sa">f</span><span class="s2">"response fit (less than </span><span class="si">{</span><span class="n">min_valid</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> of their response "</span>
+                            <span class="s2">"outside excluded/missing data); their coefficient is NaN"</span><span class="p">)</span>
+            <span class="n">share_observed</span> <span class="o">=</span> <span class="n">pupil</span><span class="o">.</span><span class="n">pupil_response_coverage</span><span class="p">(</span>
+                <span class="n">x1</span><span class="p">,</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_pupil"</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">))</span>
             
             <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="o">+</span><span class="s2">"_response"</span><span class="p">]</span><span class="o">=</span><span class="n">pred</span>
 
@@ -1807,7 +1842,10 @@ window.runMermaid = runMermaid;</script>
                                 <span class="s2">"tmax"</span><span class="p">:</span><span class="n">tmax_est</span><span class="p">,</span>
                                 <span class="s2">"tmax_free"</span><span class="p">:</span><span class="kc">True</span> <span class="k">if</span> <span class="n">tmax</span><span class="o">==</span><span class="s2">"free"</span> <span class="k">else</span> <span class="kc">False</span><span class="p">,</span>
                                 <span class="s2">"coef"</span><span class="p">:</span><span class="n">coef</span><span class="p">,</span>
-                                <span class="s2">"bounds"</span><span class="p">:</span><span class="n">bounds</span>
+                                <span class="s2">"bounds"</span><span class="p">:</span><span class="n">bounds</span><span class="p">,</span>
+                                <span class="s2">"valid"</span><span class="p">:</span><span class="n">share_valid</span><span class="p">,</span>
+                                <span class="s2">"observed"</span><span class="p">:</span><span class="n">share_observed</span><span class="p">,</span>
+                                <span class="s2">"min_valid"</span><span class="p">:</span><span class="n">min_valid</span>
                             <span class="p">}</span>
         
         <span class="k">return</span> <span class="n">obj</span></div>
@@ -1843,8 +1881,8 @@ window.runMermaid = runMermaid;</script>
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
-<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -1877,7 +1915,7 @@ window.runMermaid = runMermaid;</script>
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.24.0.
 </p></div>
       
     </div>

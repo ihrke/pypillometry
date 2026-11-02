@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Events, intervals and segments &#8212; pypillometry v2.0.0</title>
+    <title>Events, intervals and segments &#8212; pypillometry v2.1.0</title>
   
   
   
@@ -26,8 +26,8 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
@@ -37,12 +37,12 @@
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=e89b0eda" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
+  <script defer src="../_static/scripts/fontawesome.js?digest=75c7c72ae941e8b558d8"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=aa039f9c"></script>
+    <script src="../_static/documentation_options.js?v=dbd6d5c5"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -417,7 +417,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.0.0" />
+  <meta name="docsearch:version" content="v2.1.0" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -468,7 +468,7 @@ window.runMermaid = runMermaid;</script>
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
-  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation" aria-expanded="false" aria-controls="pst-primary-sidebar-modal">
     <span class="fa-solid fa-bars"></span>
   </button>
   
@@ -572,14 +572,14 @@ window.runMermaid = runMermaid;</script>
 
 <div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
   <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
-    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
-    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
-    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
   </button>
   <ul class="dropdown-menu dropdown-menu-end">
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
   </ul>
 </div></div>
       
@@ -625,7 +625,7 @@ window.runMermaid = runMermaid;</script>
   
 
   
-    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page" aria-expanded="false" aria-controls="pst-secondary-sidebar-modal">
       <span class="fa-solid fa-outdent"></span>
     </button>
   
@@ -639,7 +639,7 @@ window.runMermaid = runMermaid;</script>
       
       
       
-      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <dialog id="pst-primary-sidebar-modal" tabindex="-1"></dialog>
       <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
         
 
@@ -710,14 +710,14 @@ window.runMermaid = runMermaid;</script>
 
 <div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
   <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
-    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
-    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
-    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
   </button>
   <ul class="dropdown-menu dropdown-menu-end">
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
   </ul>
 </div></div>
         
@@ -817,7 +817,7 @@ window.runMermaid = runMermaid;</script>
     
     <li class="breadcrumb-item breadcrumb-home">
       <a href="../index.html" class="nav-link" aria-label="Home">
-        <i class="fa-solid fa-home"></i>
+        <i class="fa-solid fa-house"></i>
       </a>
     </li>
     
@@ -848,7 +848,7 @@ stimulus appears or a response is given. Analyses then look at the data in
 step:</p>
 <pre  class="mermaid">
         flowchart LR
-  E[&quot;&lt;b&gt;Events&lt;/b&gt;&lt;br/&gt;onsets + labels&quot;] -- &quot;get_intervals()&quot; --&gt; I[&quot;&lt;b&gt;Intervals&lt;/b&gt;&lt;br/&gt;(start, end) pairs&quot;]
+  E[&quot;&lt;b&gt;Events&lt;/b&gt;&lt;br/&gt;onsets + labels + metadata&quot;] -- &quot;get_intervals()&quot; --&gt; I[&quot;&lt;b&gt;Intervals&lt;/b&gt;&lt;br/&gt;(start, end) pairs&quot;]
   I -- &quot;get_segments()&quot; --&gt; S[&quot;&lt;b&gt;SegmentedEyeData&lt;/b&gt;&lt;br/&gt;segments x time&quot;]
   S -- &quot;group_segments()&quot; --&gt; G[&quot;&lt;b&gt;GroupLevelSegmentedData&lt;/b&gt;&lt;br/&gt;participants x time&quot;]
   I -- &quot;stat_per_event()&quot; --&gt; N[&quot;one value&lt;br/&gt;per event&quot;]
@@ -859,6 +859,7 @@ step:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">events</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_events</span><span class="p">()</span>              <span class="c1"># onsets in ms</span>
 <span class="n">events</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_events</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">)</span>   <span class="c1"># onsets in seconds</span>
 <span class="n">events</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s2">"stim"</span><span class="p">)</span>                <span class="c1"># labels containing "stim"</span>
+<span class="n">events</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s2">"stim"</span><span class="p">,</span> <span class="n">exact</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>    <span class="c1"># labels equal to "stim"</span>
 <span class="n">events</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">lab</span><span class="p">:</span> <span class="n">lab</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"_1"</span><span class="p">))</span>
 <span class="n">events</span><span class="o">.</span><span class="n">filter</span><span class="p">((</span><span class="mi">60</span><span class="p">,</span> <span class="mi">120</span><span class="p">))</span>             <span class="c1"># onsets between 60 and 120 s</span>
 <span class="n">events</span><span class="p">[:</span><span class="mi">10</span><span class="p">]</span>                          <span class="c1"># the first ten events</span>
@@ -866,8 +867,188 @@ step:</p>
 </div>
 <p><a class="reference internal" href="../api/generated/pypillometry.Events.html#pypillometry.Events.filter" title="pypillometry.Events.filter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">filter()</span></code></a> and indexing return new <a class="reference internal" href="../api/generated/pypillometry.Events.html#pypillometry.Events" title="pypillometry.Events"><code class="xref py py-class docutils literal notranslate"><span class="pre">Events</span></code></a>. You can
 store changed events in the dataset with <a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.set_events" title="pypillometry.GenericEyeData.set_events"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_events()</span></code></a>,
-e.g., to remove test trials or to rename labels.</p>
+e.g., to remove test trials or to rename labels.
+<a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.add_events" title="pypillometry.GenericEyeData.add_events"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_events()</span></code></a> adds events to the existing ones, and
+<a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.event_onset" title="pypillometry.GenericEyeData.event_onset"><code class="xref py py-meth docutils literal notranslate"><span class="pre">event_onset()</span></code></a> returns the onset of the one event with
+a given label (it raises an error unless exactly one event has it):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">add_events</span><span class="p">(</span><span class="n">pp</span><span class="o">.</span><span class="n">Events</span><span class="p">([</span><span class="mi">1500</span><span class="p">,</span> <span class="mi">2500</span><span class="p">],</span> <span class="p">[</span><span class="s2">"cue"</span><span class="p">,</span> <span class="s2">"cue"</span><span class="p">],</span> <span class="n">units</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">))</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">event_onset</span><span class="p">(</span><span class="s2">"Start Block 2"</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>Tutorial: <a class="reference internal" href="../notebooks/events.html"><span class="doc">Events</span></a>.</p>
+<section id="event-metadata">
+<span id="id1"></span><h3>Event metadata<a class="headerlink" href="#event-metadata" title="Link to this heading">#</a></h3>
+<p>Each event can have <em>metadata</em>, e.g., the trial, the condition, the choice
+or the reaction time. They are stored in <code class="docutils literal notranslate"><span class="pre">events.meta</span></code>, a dict with one
+numpy array per column (one value per event). Missing values are NaN in
+numeric columns and <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code> in text columns. There are two common sources:</p>
+<ul>
+<li><p><strong>Trigger labels</strong> that code information, e.g., <code class="docutils literal notranslate"><span class="pre">S_12_3_5</span></code> for the
+stimulus of trial 12 with the symbols 3 and 5.
+<a class="reference internal" href="../api/generated/pypillometry.Events.html#pypillometry.Events.parse_labels" title="pypillometry.Events.parse_labels"><code class="xref py py-meth docutils literal notranslate"><span class="pre">parse_labels()</span></code></a> decomposes them with a regular expression
+with named groups (or a function that returns a dict):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ev</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_events</span><span class="p">()</span>
+<span class="n">ev</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">parse_labels</span><span class="p">(</span><span class="sa">r</span><span class="s2">"^[FSCR]_(?P&lt;trial&gt;\d+)"</span><span class="p">)</span>
+<span class="n">ev</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">parse_labels</span><span class="p">(</span><span class="sa">r</span><span class="s2">"^S_\d+_(?P&lt;left&gt;\d+)_(?P&lt;right&gt;\d+)"</span><span class="p">)</span>
+<span class="n">ev</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">parse_labels</span><span class="p">(</span><span class="sa">r</span><span class="s2">"^R_\d+_(?P&lt;reward&gt;\d+)"</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>A behaviour log</strong>: <a class="reference internal" href="../api/generated/pypillometry.Events.html#pypillometry.Events.from_table" title="pypillometry.Events.from_table"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Events.from_table()</span></code></a> takes the columns with
+metadata as <code class="docutils literal notranslate"><span class="pre">meta</span></code> (see <a class="reference internal" href="#behaviour-log-events"><span class="std std-ref">below</span></a>); each
+event of a row gets the values of that row.</p></li>
+</ul>
+<p>Information that is coded at one event (e.g., the reward at the feedback)
+is copied to the other events of the same trial with
+<a class="reference internal" href="../api/generated/pypillometry.Events.html#pypillometry.Events.fill_meta" title="pypillometry.Events.fill_meta"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fill_meta()</span></code></a>, and <a class="reference internal" href="../api/generated/pypillometry.Events.html#pypillometry.Events.add_latency" title="pypillometry.Events.add_latency"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_latency()</span></code></a> adds the time
+between two events (e.g., the reaction time). <a class="reference internal" href="../api/generated/pypillometry.Events.html#pypillometry.Events.filter" title="pypillometry.Events.filter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">filter()</span></code></a>
+selects events by their metadata:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ev</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">fill_meta</span><span class="p">(</span><span class="s2">"reward"</span><span class="p">,</span> <span class="n">by</span><span class="o">=</span><span class="s2">"trial"</span><span class="p">)</span>
+<span class="n">ev</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">add_latency</span><span class="p">(</span><span class="s2">"S_"</span><span class="p">,</span> <span class="s2">"C_"</span><span class="p">,</span> <span class="s2">"rt"</span><span class="p">,</span> <span class="n">by</span><span class="o">=</span><span class="s2">"trial"</span><span class="p">)</span>
+<span class="n">ev</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s2">"S_"</span><span class="p">,</span> <span class="n">reward</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>                     <span class="c1"># equal to a value</span>
+<span class="n">ev</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s2">"S_"</span><span class="p">,</span> <span class="n">trial</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>               <span class="c1"># one of the values</span>
+<span class="n">ev</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s2">"S_"</span><span class="p">,</span> <span class="n">rt</span><span class="o">=</span><span class="k">lambda</span> <span class="n">rt</span><span class="p">:</span> <span class="n">rt</span> <span class="o">&lt;</span> <span class="mi">1000</span><span class="p">)</span>       <span class="c1"># function of the column</span>
+<span class="n">ev</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">ev</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">"left"</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">ev</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">"right"</span><span class="p">])</span>  <span class="c1"># boolean array</span>
+</pre></div>
+</div>
+<p><a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.set_events" title="pypillometry.GenericEyeData.set_events"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_events()</span></code></a> stores the metadata in the dataset
+(they are saved with it), and <a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.get_intervals" title="pypillometry.GenericEyeData.get_intervals"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_intervals()</span></code></a> passes
+the metadata of the selected events on to the intervals
+(<code class="docutils literal notranslate"><span class="pre">intervals.event_meta</span></code>, also in <a class="reference internal" href="../api/generated/pypillometry.Intervals.html#pypillometry.Intervals.as_pandas" title="pypillometry.Intervals.as_pandas"><code class="xref py py-meth docutils literal notranslate"><span class="pre">as_pandas()</span></code></a>).
+<a class="reference internal" href="../api/generated/pypillometry.Events.html#pypillometry.Events.to_table" title="pypillometry.Events.to_table"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_table()</span></code></a> returns the events with their metadata as a dict
+of columns, e.g., for <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame()</span></code>.</p>
+<p>Tutorial: <a class="reference internal" href="../notebooks/event_metadata.html"><span class="doc">Event metadata</span></a>.</p>
+</section>
+<section id="events-from-a-behaviour-log">
+<span id="behaviour-log-events"></span><h3>Events from a behaviour log<a class="headerlink" href="#events-from-a-behaviour-log" title="Link to this heading">#</a></h3>
+<p>Often, not all events are sent to the eye tracker. The times of stimuli and
+responses are then in a behaviour log of the experiment (e.g., from
+Psychtoolbox, PsychoPy or Presentation), usually a table with one row per
+trial, with times in seconds on the clock of the experiment computer:</p>
+<div class="pst-scrollable-table-container"><table class="table" id="id2">
+<caption><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">behav</span></code> (a <a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code></a>)</span><a class="headerlink" href="#id2" title="Link to this table">#</a></caption>
+<colgroup>
+<col style="width: 17.6%" />
+<col style="width: 17.6%" />
+<col style="width: 23.5%" />
+<col style="width: 23.5%" />
+<col style="width: 17.6%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>block</p></th>
+<th class="head"><p>trial</p></th>
+<th class="head"><p>trialstart</p></th>
+<th class="head"><p>stim_on</p></th>
+<th class="head"><p>rt</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>12.031</p></td>
+<td><p>12.531</p></td>
+<td><p>0.412</p></td>
+</tr>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>2</p></td>
+<td><p>15.204</p></td>
+<td><p>15.704</p></td>
+<td><p>NaN</p></td>
+</tr>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>3</p></td>
+<td><p>18.377</p></td>
+<td><p>18.877</p></td>
+<td><p>0.538</p></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p>1</p></td>
+<td><p>95.880</p></td>
+<td><p>96.380</p></td>
+<td><p>0.611</p></td>
+</tr>
+<tr class="row-even"><td><p>…</p></td>
+<td><p>…</p></td>
+<td><p>…</p></td>
+<td><p>…</p></td>
+<td><p>…</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><a class="reference internal" href="../api/generated/pypillometry.Events.html#pypillometry.Events.from_table" title="pypillometry.Events.from_table"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Events.from_table()</span></code></a> turns the columns of such a table into
+events. The keys of the dict are the labels, the values are column names or
+arrays of times; missing times (NaN, e.g., no response) give no event:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ev</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">Events</span><span class="o">.</span><span class="n">from_table</span><span class="p">(</span><span class="n">behav</span><span class="p">,</span> <span class="p">{</span><span class="s2">"stim_on"</span><span class="p">:</span> <span class="s2">"stim_on"</span><span class="p">,</span>
+                                  <span class="s2">"response"</span><span class="p">:</span> <span class="n">behav</span><span class="o">.</span><span class="n">stim_on</span> <span class="o">+</span> <span class="n">behav</span><span class="o">.</span><span class="n">rt</span><span class="p">},</span>
+                          <span class="n">units</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This gives one event per stimulus and per response, sorted by onset (still
+on the clock of the behaviour log):</p>
+<div class="pst-scrollable-table-container"><table class="table" id="id3">
+<caption><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">ev</span></code></span><a class="headerlink" href="#id3" title="Link to this table">#</a></caption>
+<colgroup>
+<col style="width: 50.0%" />
+<col style="width: 50.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>onset (sec)</p></th>
+<th class="head"><p>label</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>12.531</p></td>
+<td><p>stim_on</p></td>
+</tr>
+<tr class="row-odd"><td><p>12.943</p></td>
+<td><p>response</p></td>
+</tr>
+<tr class="row-even"><td><p>15.704</p></td>
+<td><p>stim_on</p></td>
+</tr>
+<tr class="row-odd"><td><p>18.877</p></td>
+<td><p>stim_on</p></td>
+</tr>
+<tr class="row-even"><td><p>19.415</p></td>
+<td><p>response</p></td>
+</tr>
+<tr class="row-odd"><td><p>96.380</p></td>
+<td><p>stim_on</p></td>
+</tr>
+<tr class="row-even"><td><p>…</p></td>
+<td><p>…</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The behaviour log and the eye tracker have different clocks. They have
+different zero points and drift apart slowly (a few ms in a typical
+session), so a single offset is not exact. <a class="reference internal" href="../api/generated/pypillometry.sync_clocks.html#pypillometry.sync_clocks" title="pypillometry.sync_clocks"><code class="xref py py-func docutils literal notranslate"><span class="pre">sync_clocks()</span></code></a> fits a
+linear map (offset and drift) from moments that are in both logs, e.g., the
+block starts, paired by order. It returns a <a class="reference internal" href="../api/generated/pypillometry.ClockSync.html#pypillometry.ClockSync" title="pypillometry.ClockSync"><code class="xref py py-class docutils literal notranslate"><span class="pre">ClockSync</span></code></a> object that
+maps times or events to the eye-tracker clock:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">starts</span> <span class="o">=</span> <span class="n">behav</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">"block"</span><span class="p">)</span><span class="o">.</span><span class="n">trialstart</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>             <span class="c1"># in sec</span>
+<span class="n">sync</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">sync_clocks</span><span class="p">(</span><span class="n">starts</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">get_events</span><span class="p">()</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s2">"Start Block"</span><span class="p">),</span>
+                      <span class="n">src_units</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">add_events</span><span class="p">(</span><span class="n">sync</span><span class="p">(</span><span class="n">ev</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Other columns of the log become <a class="reference internal" href="#event-metadata"><span class="std std-ref">metadata</span></a> of the
+events with <code class="docutils literal notranslate"><span class="pre">meta</span></code>, e.g.,
+<code class="docutils literal notranslate"><span class="pre">pp.Events.from_table(behav,</span> <span class="pre">...,</span> <span class="pre">units=&quot;sec&quot;,</span> <span class="pre">meta=[&quot;block&quot;,</span> <span class="pre">&quot;trial&quot;,</span> <span class="pre">&quot;rt&quot;])</span></code>.
+They are kept by <code class="docutils literal notranslate"><span class="pre">sync</span></code> and <a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.add_events" title="pypillometry.GenericEyeData.add_events"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_events()</span></code></a>.</p>
+<p><a class="reference internal" href="../api/generated/pypillometry.sync_clocks.html#pypillometry.sync_clocks" title="pypillometry.sync_clocks"><code class="xref py py-func docutils literal notranslate"><span class="pre">sync_clocks()</span></code></a> logs a summary of the fit. Check the <em>residuals</em>
+(<code class="docutils literal notranslate"><span class="pre">sync.residuals</span></code>, or <code class="docutils literal notranslate"><span class="pre">print(sync)</span></code> for a table): with correct pairs,
+they show only the timing jitter between the two logs (1–2 ms for times
+taken at the screen flip, up to about one frame otherwise); if a pair is
+missing in one of the logs, they are much larger and a warning is given
+(<code class="docutils literal notranslate"><span class="pre">tol=</span></code> sets the limit, 5 ms by default). A shift of all pairs by the same
+number of trials does not show in the residuals if the trials are evenly
+spaced, so check the pairs directly where possible (e.g., trial numbers in
+the labels). With a single shared moment, only the offset is fitted.</p>
+<p>Tutorial: <a class="reference internal" href="../notebooks/importdata_behaviour.html"><span class="doc">Events from a behaviour log</span></a>.</p>
+</section>
 </section>
 <section id="intervals">
 <h2>Intervals<a class="headerlink" href="#intervals" title="Link to this heading">#</a></h2>
@@ -889,7 +1070,7 @@ come from several places:</p>
 <td><p><code class="docutils literal notranslate"><span class="pre">d.get_intervals(&quot;stim&quot;,</span> <span class="pre">(-200,</span> <span class="pre">1000)</span> <span class="pre">*</span> <span class="pre">u.ms)</span></code></p></td>
 </tr>
 <tr class="row-odd"><td><p>spans between two events</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">d.get_intervals((&quot;trial_start&quot;,</span> <span class="pre">&quot;response&quot;),</span> <span class="pre">(0,</span> <span class="pre">0))</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">d.get_intervals((&quot;trial_start&quot;,</span> <span class="pre">&quot;response&quot;))</span></code></p></td>
 </tr>
 <tr class="row-even"><td><p>detected blinks</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">d.get_blinks(&quot;left&quot;,</span> <span class="pre">&quot;pupil&quot;)</span></code></p></td>
@@ -911,7 +1092,49 @@ filtered (<a class="reference internal" href="../api/generated/pypillometry.Inte
 merged when they overlap (<a class="reference internal" href="../api/generated/pypillometry.Intervals.html#pypillometry.Intervals.merge" title="pypillometry.Intervals.merge"><code class="xref py py-meth docutils literal notranslate"><span class="pre">merge()</span></code></a>), combined (<code class="docutils literal notranslate"><span class="pre">+</span></code>,
 <a class="reference internal" href="../api/generated/pypillometry.merge_intervals.html#pypillometry.merge_intervals" title="pypillometry.merge_intervals"><code class="xref py py-func docutils literal notranslate"><span class="pre">merge_intervals()</span></code></a>), subtracted (<code class="docutils literal notranslate"><span class="pre">-</span></code>), summarized
 (<a class="reference internal" href="../api/generated/pypillometry.Intervals.html#pypillometry.Intervals.stats" title="pypillometry.Intervals.stats"><code class="xref py py-meth docutils literal notranslate"><span class="pre">stats()</span></code></a>, <a class="reference internal" href="../api/generated/pypillometry.Intervals.html#pypillometry.Intervals.as_pandas" title="pypillometry.Intervals.as_pandas"><code class="xref py py-meth docutils literal notranslate"><span class="pre">as_pandas()</span></code></a>) and plotted
-(<a class="reference internal" href="../api/generated/pypillometry.Intervals.html#pypillometry.Intervals.plot" title="pypillometry.Intervals.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot()</span></code></a>).</p>
+(<a class="reference internal" href="../api/generated/pypillometry.Intervals.html#pypillometry.Intervals.plot" title="pypillometry.Intervals.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot()</span></code></a>). <a class="reference internal" href="../api/generated/pypillometry.Intervals.html#pypillometry.Intervals.complement" title="pypillometry.Intervals.complement"><code class="xref py py-meth docutils literal notranslate"><span class="pre">complement()</span></code></a> returns the
+periods that are not covered (e.g., <code class="docutils literal notranslate"><span class="pre">blocks.complement(d)</span></code> gives the time
+before, between and after the blocks).</p>
+<section id="between-two-events">
+<h3>Between two events<a class="headerlink" href="#between-two-events" title="Link to this heading">#</a></h3>
+<p>With a tuple of two selectors, <a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.get_intervals" title="pypillometry.GenericEyeData.get_intervals"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_intervals()</span></code></a>
+pairs each first event with the next second event after it. If several
+first events come before the same second event (e.g., a missing
+“End Block”), the last of them is used. Events without a partner are
+skipped, and a warning lists them. <code class="docutils literal notranslate"><span class="pre">&quot;&lt;start&gt;&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">&quot;&lt;end&gt;&quot;</span></code> stand for
+the start and the end of the recording:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">blocks</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">((</span><span class="s2">"Start Block"</span><span class="p">,</span> <span class="s2">"End Block"</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">)</span>
+<span class="n">breaks</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">((</span><span class="s2">"End Block"</span><span class="p">,</span> <span class="s2">"Start Block"</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">)</span>
+<span class="n">before</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">((</span><span class="s2">"&lt;start&gt;"</span><span class="p">,</span> <span class="s2">"Start Block"</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>String selectors match labels that contain them; with <code class="docutils literal notranslate"><span class="pre">exact=True</span></code>,
+only labels that are equal to them.</p>
+</section>
+<section id="sample-indices-and-time">
+<h3>Sample indices and time<a class="headerlink" href="#sample-indices-and-time" title="Link to this heading">#</a></h3>
+<p>Intervals are either in time units (“ms”, “sec”, “min”, “h”) or in sample
+indices (<code class="docutils literal notranslate"><span class="pre">units=&quot;samples&quot;</span></code>, e.g., blinks; also the default of
+<a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.get_intervals" title="pypillometry.GenericEyeData.get_intervals"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_intervals()</span></code></a> for plain numbers). Intervals are
+end-exclusive: <code class="docutils literal notranslate"><span class="pre">(start,</span> <span class="pre">end)</span></code> covers the samples with
+<code class="docutils literal notranslate"><span class="pre">start</span> <span class="pre">&lt;=</span> <span class="pre">t</span> <span class="pre">&lt;</span> <span class="pre">end</span></code>.</p>
+<p>Intervals in sample indices are only valid for the data object they came
+from: after <a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.crop" title="pypillometry.GenericEyeData.crop"><code class="xref py py-meth docutils literal notranslate"><span class="pre">crop()</span></code></a>,
+<a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.downsample" title="pypillometry.GenericEyeData.downsample"><code class="xref py py-meth docutils literal notranslate"><span class="pre">downsample()</span></code></a> or for another recording, the same
+indices point to other samples (blinks stored in the object are adjusted
+automatically). Therefore, every conversion between sample indices and
+time takes the data object and uses its time vector:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">blinks</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_blinks</span><span class="p">(</span><span class="s2">"left"</span><span class="p">,</span> <span class="s2">"pupil"</span><span class="p">)</span>      <span class="c1"># sample indices</span>
+<span class="n">blinks</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="s2">"ms"</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>                    <span class="c1"># times of these samples</span>
+<span class="n">trials</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="s2">"samples"</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>               <span class="c1"># first sample at or after each time</span>
+<span class="n">mask</span> <span class="o">=</span> <span class="n">trials</span><span class="o">.</span><span class="n">to_mask</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>                    <span class="c1"># one entry per sample of d</span>
+<span class="n">pp</span><span class="o">.</span><span class="n">Intervals</span><span class="o">.</span><span class="n">from_mask</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Conversions between time units work without the data object, e.g.,
+<code class="docutils literal notranslate"><span class="pre">trials.to_units(&quot;sec&quot;)</span></code>. Times are converted to the first sample at or
+after them, so recordings that do not start at 0 or have gaps are handled
+correctly.</p>
 <p>Many methods of the data objects take intervals as input:</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
@@ -935,6 +1158,7 @@ merged when they overlap (<a class="reference internal" href="../api/generated/p
 </div>
 <p>Tutorial: <a class="reference internal" href="../notebooks/intervals.html"><span class="doc">Intervals</span></a>.</p>
 </section>
+</section>
 <section id="segments-and-event-related-pupil-dilation">
 <h2>Segments and event-related pupil dilation<a class="headerlink" href="#segments-and-event-related-pupil-dilation" title="Link to this heading">#</a></h2>
 <p><a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.get_segments" title="pypillometry.GenericEyeData.get_segments"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_segments()</span></code></a> cuts the data of one variable in each
@@ -953,7 +1177,7 @@ Both can be saved with <code class="docutils literal notranslate"><span class="p
 <p>For statistical models of trial-by-trial data, it is often easier to work
 with one number per trial. <a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.stat_per_event" title="pypillometry.GenericEyeData.stat_per_event"><code class="xref py py-meth docutils literal notranslate"><span class="pre">stat_per_event()</span></code></a> applies a
 function (by default the mean) to each interval:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">peak</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">stat_per_event</span><span class="p">(</span><span class="n">interval</span><span class="o">=</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">1500</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">,</span> <span class="n">event_select</span><span class="o">=</span><span class="s2">"stim"</span><span class="p">,</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">peak</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">stat_per_event</span><span class="p">(</span><span class="n">window</span><span class="o">=</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">1500</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">,</span> <span class="n">event_select</span><span class="o">=</span><span class="s2">"stim"</span><span class="p">,</span>
                         <span class="n">variables</span><span class="o">=</span><span class="s2">"pupil"</span><span class="p">,</span> <span class="n">statfct</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -996,7 +1220,7 @@ function (by default the mean) to each interval:</p>
             
             
               
-                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <dialog id="pst-secondary-sidebar-modal" tabindex="-1"></dialog>
                 <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
 
@@ -1008,8 +1232,16 @@ function (by default the mean) to each interval:</p>
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#events">Events</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#intervals">Intervals</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#events">Events</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#event-metadata">Event metadata</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#events-from-a-behaviour-log">Events from a behaviour log</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#intervals">Intervals</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#between-two-events">Between two events</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sample-indices-and-time">Sample indices and time</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#segments-and-event-related-pupil-dilation">Segments and event-related pupil dilation</a></li>
 </ul>
   </nav></div>
@@ -1052,8 +1284,8 @@ function (by default the mean) to each interval:</p>
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -1086,7 +1318,7 @@ function (by default the mean) to each interval:</p>
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.24.0.
 </p></div>
       
     </div>

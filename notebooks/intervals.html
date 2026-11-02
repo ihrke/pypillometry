@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Intervals &#8212; pypillometry v2.0.0</title>
+    <title>Intervals &#8212; pypillometry v2.1.0</title>
   
   
   
@@ -26,8 +26,8 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
@@ -38,12 +38,12 @@
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=e89b0eda" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
+  <script defer src="../_static/scripts/fontawesome.js?digest=75c7c72ae941e8b558d8"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=aa039f9c"></script>
+    <script src="../_static/documentation_options.js?v=dbd6d5c5"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,11 +58,11 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Event-related pupil dilations" href="erpds.html" />
-    <link rel="prev" title="Events" href="events.html" />
+    <link rel="prev" title="Event metadata" href="event_metadata.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.0.0" />
+  <meta name="docsearch:version" content="v2.1.0" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -113,7 +113,7 @@
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
-  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation" aria-expanded="false" aria-controls="pst-primary-sidebar-modal">
     <span class="fa-solid fa-bars"></span>
   </button>
   
@@ -217,14 +217,14 @@
 
 <div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
   <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
-    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
-    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
-    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
   </button>
   <ul class="dropdown-menu dropdown-menu-end">
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
   </ul>
 </div></div>
       
@@ -270,7 +270,7 @@
   
 
   
-    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page" aria-expanded="false" aria-controls="pst-secondary-sidebar-modal">
       <span class="fa-solid fa-outdent"></span>
     </button>
   
@@ -284,7 +284,7 @@
       
       
       
-      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <dialog id="pst-primary-sidebar-modal" tabindex="-1"></dialog>
       <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
         
 
@@ -355,14 +355,14 @@
 
 <div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
   <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
-    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
-    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
-    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
   </button>
   <ul class="dropdown-menu dropdown-menu-end">
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
   </ul>
 </div></div>
         
@@ -413,6 +413,7 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="importdata_edf.html">Importing data from Eyelink EDF files</a></li>
 <li class="toctree-l1"><a class="reference internal" href="importdata_asc.html">Importing data from Eyelink ASC files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="importdata_behaviour.html">Events from a behaviour log</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example_datasets.html">Example datasets included in <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code></a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Working with data objects</span></p>
@@ -429,6 +430,7 @@
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Events and event-related analyses</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="events.html">Events</a></li>
+<li class="toctree-l1"><a class="reference internal" href="event_metadata.html">Event metadata</a></li>
 <li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">Intervals</a></li>
 <li class="toctree-l1"><a class="reference internal" href="erpds.html">Event-related pupil dilations</a></li>
 </ul>
@@ -473,7 +475,7 @@
     
     <li class="breadcrumb-item breadcrumb-home">
       <a href="../index.html" class="nav-link" aria-label="Home">
-        <i class="fa-solid fa-home"></i>
+        <i class="fa-solid fa-house"></i>
       </a>
     </li>
     
@@ -540,7 +542,7 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Intervals &#39;S_&#39; | 10 intervals (total duration: 12000.00 ms), 1200.00 ms +/- 0.00 ms, [1200.00 ms, 1200.00 ms] | fs=500.0Hz
+Intervals &#39;S_&#39; | 10 intervals (total duration: 12000.00 ms), 1200.00 ms +/- 0.00 ms, [1200.00 ms, 1200.00 ms]
 </pre></div></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">as_pandas()</span></code> shows the intervals as a table, together with the events they belong to:</p>
@@ -640,7 +642,7 @@ Intervals &#39;S_&#39; | 10 intervals (total duration: 12000.00 ms), 1200.00 ms 
 </div></div>
 </div>
 <div class="admonition warning">
-<p><strong>Warning:</strong> Give the window with units, e.g. <code class="docutils literal notranslate"><span class="pre">(-200,</span> <span class="pre">1000)</span> <span class="pre">*</span> <span class="pre">u.ms</span></code>, or pass <code class="docutils literal notranslate"><span class="pre">units=&quot;ms&quot;</span></code>. Plain numbers without units are taken as <strong>sample indices</strong>. At 500 Hz, <code class="docutils literal notranslate"><span class="pre">(-200,</span> <span class="pre">1000)</span></code> means 400 ms before until 2000 ms after the event.</p>
+<p><strong>Warning:</strong> Give the window with units, e.g. <code class="docutils literal notranslate"><span class="pre">(-200,</span> <span class="pre">1000)</span> <span class="pre">*</span> <span class="pre">u.ms</span></code>, or pass <code class="docutils literal notranslate"><span class="pre">units=&quot;ms&quot;</span></code>. Plain numbers without units are taken as <strong>sample indices</strong> (<code class="docutils literal notranslate"><span class="pre">units=&quot;samples&quot;</span></code>). At 500 Hz, <code class="docutils literal notranslate"><span class="pre">(-200,</span> <span class="pre">1000)</span></code> means 400 ms before until 2000 ms after the event.</p>
 </div>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
@@ -656,18 +658,18 @@ Intervals &#39;S_&#39; | 10 intervals (total duration: 12000.00 ms), 1200.00 ms 
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Intervals &#39;S_&#39; | 10 intervals (total duration: 12000.00 indices), 1200.00 indices +/- 0.00 indices, [1200.00 indices, 1200.00 indices] | fs=500.0Hz
+Intervals &#39;S_&#39; | 10 intervals (total duration: 12000.00 samples), 1200.00 samples +/- 0.00 samples, [1200.00 samples, 1200.00 samples]
 </pre></div></div>
 </div>
 </section>
 <section id="Intervals-between-two-events">
 <h2>Intervals between two events<a class="headerlink" href="#Intervals-between-two-events" title="Link to this heading">#</a></h2>
-<p>With a tuple of two selectors, each interval spans from one event to the next matching event. Here, from the start of each trial (<code class="docutils literal notranslate"><span class="pre">F</span></code> events) to the feedback (<code class="docutils literal notranslate"><span class="pre">R</span></code> events). The window <code class="docutils literal notranslate"><span class="pre">(0,</span> <span class="pre">0)</span></code> means “exactly from the first to the second event”; other values extend or shorten the span:</p>
+<p>With a tuple of two selectors, each interval spans from one event to the next matching event. Here, from the start of each trial (<code class="docutils literal notranslate"><span class="pre">F</span></code> events) to the feedback (<code class="docutils literal notranslate"><span class="pre">R</span></code> events). By default, an interval spans exactly from the first to the second event; a <code class="docutils literal notranslate"><span class="pre">window</span></code> extends or shortens it (e.g., <code class="docutils literal notranslate"><span class="pre">window=(-200,</span> <span class="pre">500)</span> <span class="pre">*</span> <span class="pre">u.ms</span></code> starts 200 ms earlier and ends 500 ms later):</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">trials</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">((</span><span class="s2">"F_"</span><span class="p">,</span> <span class="s2">"R_"</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">trials</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">((</span><span class="s2">"F_"</span><span class="p">,</span> <span class="s2">"R_"</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">)</span>
 <span class="n">trials</span><span class="o">.</span><span class="n">as_pandas</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -782,7 +784,7 @@ Intervals &#39;S_&#39; | 10 intervals (total duration: 12000.00 indices), 1200.0
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Intervals &#39;left_pupil_blinks&#39; | 14 intervals (total duration: 1520.00 indices), 108.57 indices +/- 118.24 indices, [24.00 indices, 492.00 indices] | fs=500.0Hz
+Intervals &#39;left_pupil_blinks&#39; | 14 intervals (total duration: 1520.00 samples), 108.57 samples +/- 118.24 samples, [24.00 samples, 492.00 samples]
 </pre></div></div>
 </div>
 <p>Blinks stored in the object can be retrieved with <code class="docutils literal notranslate"><span class="pre">get_blinks()</span></code>, and masked samples with <code class="docutils literal notranslate"><span class="pre">mask_as_intervals()</span></code>. You can also create intervals directly:</p>
@@ -806,7 +808,7 @@ Intervals &#39;bad data&#39; | 2 intervals (total duration: 3.50 sec), 1.75 sec 
 </section>
 <section id="Units">
 <h2>Units<a class="headerlink" href="#Units" title="Link to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">to_units()</span></code> converts intervals to other time units. Intervals in sample indices (<code class="docutils literal notranslate"><span class="pre">units=None</span></code>) can be converted as well, because they know the sampling rate:</p>
+<p><code class="docutils literal notranslate"><span class="pre">to_units()</span></code> converts intervals to other time units:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
@@ -882,13 +884,77 @@ Intervals &#39;bad data&#39; | 2 intervals (total duration: 3.50 sec), 1.75 sec 
 </table>
 </div></div>
 </div>
+<p>Intervals in sample indices (<code class="docutils literal notranslate"><span class="pre">units=&quot;samples&quot;</span></code>, e.g., blinks) are only valid for the data object they came from: after slicing or downsampling, or in another recording, the same indices point to other samples. Converting between sample indices and time therefore needs the data object, whose time vector gives the time of each sample (a time is converted to the first sample at or after it):</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">blinks</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">]</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="s2">"ms"</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span><span class="o">.</span><span class="n">as_pandas</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>start</th>
+      <th>end</th>
+      <th>duration</th>
+      <th>units</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>5408.0</td>
+      <td>5496.0</td>
+      <td>88.0</td>
+      <td>ms</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>7562.0</td>
+      <td>7664.0</td>
+      <td>102.0</td>
+      <td>ms</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>7864.0</td>
+      <td>7912.0</td>
+      <td>48.0</td>
+      <td>ms</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
 </section>
 <section id="Changing-intervals">
 <h2>Changing intervals<a class="headerlink" href="#Changing-intervals" title="Link to this heading">#</a></h2>
 <p>The following methods return new <code class="docutils literal notranslate"><span class="pre">Intervals</span></code> and leave the original unchanged.</p>
 <p><code class="docutils literal notranslate"><span class="pre">filter()</span></code> keeps intervals by duration, time range or a function of <code class="docutils literal notranslate"><span class="pre">(start,</span> <span class="pre">end)</span></code>. Here, the trials that took longer than 1.8 seconds:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">trials</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">min_duration</span><span class="o">=</span><span class="mf">1.8</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">sec</span><span class="p">)</span>
@@ -896,26 +962,26 @@ Intervals &#39;bad data&#39; | 2 intervals (total duration: 3.50 sec), 1.75 sec 
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Intervals &#39;F__to_R_&#39; | 7 intervals (total duration: 13445.00 ms), 1920.71 ms +/- 88.30 ms, [1800.00 ms, 2033.00 ms] | fs=500.0Hz
+Intervals &#39;F__to_R_&#39; | 7 intervals (total duration: 13445.00 ms), 1920.71 ms +/- 88.30 ms, [1800.00 ms, 2033.00 ms]
 </pre></div></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">pad()</span></code> extends each interval. For blinks, this is useful because the samples just before and after a blink are often distorted:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">left</span> <span class="o">=</span> <span class="n">blinks</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">]</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="s2">"ms"</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">left</span> <span class="o">=</span> <span class="n">blinks</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">]</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="s2">"ms"</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
 <span class="n">left</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="mi">50</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">,</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span><span class="o">.</span><span class="n">as_pandas</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -971,7 +1037,7 @@ Intervals &#39;F__to_R_&#39; | 7 intervals (total duration: 13445.00 ms), 1920.7
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">merge()</span></code> combines intervals that overlap (or are closer than <code class="docutils literal notranslate"><span class="pre">distance</span></code>):</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">left</span><span class="p">),</span> <span class="s2">"-&gt;"</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">left</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">distance</span><span class="o">=</span><span class="mi">200</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)))</span>
@@ -991,27 +1057,27 @@ Intervals &#39;F__to_R_&#39; | 7 intervals (total duration: 13445.00 ms), 1920.7
 <h2>Combining intervals<a class="headerlink" href="#Combining-intervals" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">+</span></code> (or <code class="docutils literal notranslate"><span class="pre">pp.merge_intervals()</span></code> for many at once) puts the intervals of two objects together. For instance, the blinks of both eyes. Overlapping intervals are kept separate until you call <code class="docutils literal notranslate"><span class="pre">merge()</span></code>:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">both_eyes</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">merge_intervals</span><span class="p">(</span><span class="n">blinks</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">],</span> <span class="n">blinks</span><span class="p">[</span><span class="s2">"right_pupil"</span><span class="p">])</span>
-<span class="n">both_eyes</span> <span class="o">=</span> <span class="n">both_eyes</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="s2">"ms"</span><span class="p">)</span><span class="o">.</span><span class="n">merge</span><span class="p">()</span>
+<span class="n">both_eyes</span> <span class="o">=</span> <span class="n">both_eyes</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="s2">"ms"</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span><span class="o">.</span><span class="n">merge</span><span class="p">()</span>
 <span class="n">both_eyes</span>
 </pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Intervals &#39;merged&#39; | 15 intervals (total duration: 3480.00 ms), 232.00 ms +/- 232.02 ms, [48.00 ms, 984.00 ms] | fs=500.0Hz
+Intervals &#39;merged&#39; | 15 intervals (total duration: 3480.00 ms), 232.00 ms +/- 232.02 ms, [48.00 ms, 984.00 ms]
 </pre></div></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">-</span></code> removes the parts of one set of intervals that overlap with another. Here, the parts of each trial without blinks in either eye:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">clean_trials</span> <span class="o">=</span> <span class="n">trials</span> <span class="o">-</span> <span class="n">both_eyes</span>
@@ -1020,7 +1086,7 @@ Intervals &#39;merged&#39; | 15 intervals (total duration: 3480.00 ms), 232.00 m
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -1051,9 +1117,9 @@ Intervals &#39;merged&#39; | 15 intervals (total duration: 3480.00 ms), 232.00 m
   <tbody>
     <tr>
       <th>0</th>
-      <td>5176.0</td>
+      <td>5177.0</td>
       <td>5408.0</td>
-      <td>232.0</td>
+      <td>231.0</td>
       <td>ms</td>
     </tr>
     <tr>
@@ -1073,15 +1139,15 @@ Intervals &#39;merged&#39; | 15 intervals (total duration: 3480.00 ms), 232.00 m
     <tr>
       <th>3</th>
       <td>12374.0</td>
-      <td>13956.0</td>
-      <td>1582.0</td>
+      <td>13957.0</td>
+      <td>1583.0</td>
       <td>ms</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>15972.0</td>
+      <td>15973.0</td>
       <td>17822.0</td>
-      <td>1850.0</td>
+      <td>1849.0</td>
       <td>ms</td>
     </tr>
   </tbody>
@@ -1094,7 +1160,7 @@ Intervals &#39;merged&#39; | 15 intervals (total duration: 3480.00 ms), 232.00 m
 <h2>Plotting intervals<a class="headerlink" href="#Plotting-intervals" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">plot()</span></code> draws the intervals on a time line, and <code class="docutils literal notranslate"><span class="pre">plot_highlight()</span></code> shades them in an existing plot. Make sure the intervals are in the same units as the plot. Here, trials are green and blinks red:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
@@ -1110,12 +1176,12 @@ Intervals &#39;merged&#39; | 15 intervals (total duration: 3480.00 ms), 232.00 m
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_intervals_29_0.png" src="../_images/notebooks_intervals_29_0.png" />
+<img alt="../_images/notebooks_intervals_31_0.png" src="../_images/notebooks_intervals_31_0.png" />
 </div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">d.plot.plot_intervals()</span></code> shows the data in each interval in a small plot of its own, e.g., to check every blink (for blinks, <code class="docutils literal notranslate"><span class="pre">plot_blinks()</span></code> does the same):</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_intervals</span><span class="p">(</span><span class="n">stim</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="s2">"left"</span><span class="p">,</span>
@@ -1127,7 +1193,7 @@ Intervals &#39;merged&#39; | 15 intervals (total duration: 3480.00 ms), 232.00 m
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_intervals_31_0.png" src="../_images/notebooks_intervals_31_0.png" />
+<img alt="../_images/notebooks_intervals_33_0.png" src="../_images/notebooks_intervals_33_0.png" />
 </div>
 </div>
 </section>
@@ -1136,7 +1202,7 @@ Intervals &#39;merged&#39; | 15 intervals (total duration: 3480.00 ms), 232.00 m
 <p>Intervals are the input for many methods of the data objects.</p>
 <p><strong>Masking and interpolating</strong>: <code class="docutils literal notranslate"><span class="pre">mask_intervals()</span></code> marks the samples in the intervals as invalid, <code class="docutils literal notranslate"><span class="pre">interpolate_intervals()</span></code> replaces them by interpolated values. Here we mask the padded blinks in the pupil data:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d2</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">mask_intervals</span><span class="p">(</span><span class="n">both_eyes</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="mi">50</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">,</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">),</span>
@@ -1146,7 +1212,7 @@ Intervals &#39;merged&#39; | 15 intervals (total duration: 3480.00 ms), 232.00 m
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
 </pre></div>
 </div>
 <div class="output_area docutils container">
@@ -1156,7 +1222,7 @@ Intervals &#39;merged&#39; | 15 intervals (total duration: 3480.00 ms), 232.00 m
 </div>
 <p><strong>One value per interval</strong>: <code class="docutils literal notranslate"><span class="pre">stat_per_event()</span></code> applies a function to the data in each interval, e.g., the mean pupil size after each stimulus:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d2</span><span class="o">.</span><span class="n">stat_per_event</span><span class="p">(</span><span class="n">intervals</span><span class="o">=</span><span class="n">stim</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="s2">"pupil"</span><span class="p">)</span>
@@ -1164,22 +1230,22 @@ Intervals &#39;merged&#39; | 15 intervals (total duration: 3480.00 ms), 232.00 m
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
 </pre></div>
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-{&#39;left_pupil&#39;: array([1002.94259259, 1188.40377358, 1281.70833333, 1160.47666667,
-        1100.505     , 1095.75166667,  993.23      , 1113.16718266,
-         963.95833333, 1065.60833333]),
- &#39;right_pupil&#39;: array([ 830.77222222,  977.68490566, 1095.90166667,  969.76      ,
-         916.80833333,  920.42333333,  843.105     ,  932.6996904 ,
-         808.225     ,  889.535     ])}
+{&#39;left_pupil&#39;: array([1003.03142329, 1188.35538752, 1281.70833333, 1160.34333333,
+        1100.505     , 1095.62833333,  993.23      , 1113.09907121,
+         963.89      , 1065.74666667]),
+ &#39;right_pupil&#39;: array([ 830.89833641,  977.61625709, 1095.90166667,  969.57833333,
+         916.80833333,  920.22833333,  843.105     ,  932.53560372,
+         808.16333333,  889.60166667])}
 </pre></div></div>
 </div>
 <p><strong>Segments</strong>: <code class="docutils literal notranslate"><span class="pre">get_segments()</span></code> cuts the data in each interval into a <code class="docutils literal notranslate"><span class="pre">SegmentedEyeData</span></code> object, the basis for event-related pupil dilations (see the <a class="reference internal" href="erpds.html"><span class="doc">ERPD tutorial</span></a>):</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d2</span><span class="o">.</span><span class="n">get_segments</span><span class="p">(</span><span class="n">stim</span><span class="p">,</span> <span class="s2">"left_pupil"</span><span class="p">)</span>
@@ -1187,7 +1253,7 @@ Intervals &#39;merged&#39; | 15 intervals (total duration: 3480.00 ms), 232.00 m
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -1220,7 +1286,7 @@ Intervals &#39;merged&#39; | 15 intervals (total duration: 3480.00 ms), 232.00 m
 
     <div style="margin-top:10px;">
       <div style="font-size:0.85em; color:#666; margin-bottom:4px;">Mean signal (red line = event onset)</div>
-      <img src="data:image/png;base64,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" alt="Mean signal" style="width:100%; max-width:300px; border-radius:4px;">
+      <img src="data:image/png;base64,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" alt="Mean signal" style="width:100%; max-width:300px; border-radius:4px;">
     </div>
 
 </div></div>
@@ -1228,15 +1294,15 @@ Intervals &#39;merged&#39; | 15 intervals (total duration: 3480.00 ms), 232.00 m
 </section>
 <section id="Masks-and-intervals">
 <h2>Masks and intervals<a class="headerlink" href="#Masks-and-intervals" title="Link to this heading">#</a></h2>
-<p>Intervals can be converted to a boolean mask with one entry per sample, and back. Use <code class="docutils literal notranslate"><span class="pre">units=None</span></code> (sample indices) for this:</p>
+<p>Intervals can be converted to a boolean mask with one entry per sample of a data object, and back:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mask</span> <span class="o">=</span> <span class="n">both_eyes</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">to_mask</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">))</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mask</span> <span class="o">=</span> <span class="n">both_eyes</span><span class="o">.</span><span class="n">to_mask</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">mask</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="s2">"samples in blinks"</span><span class="p">)</span>
 
-<span class="n">pp</span><span class="o">.</span><span class="n">Intervals</span><span class="o">.</span><span class="n">from_mask</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
+<span class="n">pp</span><span class="o">.</span><span class="n">Intervals</span><span class="o">.</span><span class="n">from_mask</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1249,12 +1315,12 @@ Intervals &#39;merged&#39; | 15 intervals (total duration: 3480.00 ms), 232.00 m
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
 </pre></div>
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Intervals | 15 intervals (total duration: 3480.00 ms), 232.00 ms +/- 232.02 ms, [48.00 ms, 984.00 ms] | fs=500.0Hz
+Intervals | 15 intervals (total duration: 3480.00 ms), 232.00 ms +/- 232.02 ms, [48.00 ms, 984.00 ms]
 </pre></div></div>
 </div>
 </section>
@@ -1271,12 +1337,12 @@ Intervals | 15 intervals (total duration: 3480.00 ms), 232.00 ms +/- 232.02 ms, 
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="events.html"
+       href="event_metadata.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Events</p>
+        <p class="prev-next-title">Event metadata</p>
       </div>
     </a>
     <a class="right-next"
@@ -1295,7 +1361,7 @@ Intervals | 15 intervals (total duration: 3480.00 ms), 232.00 ms +/- 232.02 ms, 
             
             
               
-                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <dialog id="pst-secondary-sidebar-modal" tabindex="-1"></dialog>
                 <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
 
@@ -1357,8 +1423,8 @@ Intervals | 15 intervals (total duration: 3480.00 ms), 232.00 ms +/- 232.02 ms, 
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -1391,7 +1457,7 @@ Intervals | 15 intervals (total duration: 3480.00 ms), 232.00 ms +/- 232.02 ms, 
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.24.0.
 </p></div>
       
     </div>

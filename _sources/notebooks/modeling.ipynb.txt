@@ -201,8 +201,8 @@
     }
    ],
    "source": [
-    "baseline = faked.stat_per_event(event_select=\"event\", interval=(-200, 0) * u.ms)\n",
-    "response = faked.stat_per_event(event_select=\"event\", interval=(800, 1200) * u.ms)\n",
+    "baseline = faked.stat_per_event(event_select=\"event\", window=(-200, 0) * u.ms)\n",
+    "response = faked.stat_per_event(event_select=\"event\", window=(800, 1200) * u.ms)\n",
     "baseline"
    ]
   },
@@ -289,7 +289,7 @@
     }
    ],
    "source": [
-    "faked.stat_per_event(event_select=\"event\", interval=(-200, 0) * u.ms, statfct=np.ma.median)"
+    "faked.stat_per_event(event_select=\"event\", window=(-200, 0) * u.ms, statfct=np.ma.median)"
    ]
   },
   {
@@ -561,8 +561,8 @@
     "d.data[\"left_realbaseline\"] = real_baseline\n",
     "\n",
     "at_onset = (0, 1000/fs) * u.ms   # one sample at the event onset\n",
-    "real_baseline_ev = d.stat_per_event(event_select=\"event\", interval=at_onset)[\"left_realbaseline\"]\n",
-    "novel_baseline = d.stat_per_event(event_select=\"event\", interval=at_onset)[\"left_baseline\"]\n",
+    "real_baseline_ev = d.stat_per_event(event_select=\"event\", window=at_onset)[\"left_realbaseline\"]\n",
+    "novel_baseline = d.stat_per_event(event_select=\"event\", window=at_onset)[\"left_baseline\"]\n",
     "novel_response = d.params[\"response\"][\"left\"][\"coef\"]\n",
     "\n",
     "traditional_baseline = baseline\n",

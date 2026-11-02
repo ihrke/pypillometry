@@ -17,6 +17,7 @@
       :nosignatures:
    
       ~Intervals.as_pandas
+      ~Intervals.complement
       ~Intervals.filter
       ~Intervals.from_mask
       ~Intervals.merge

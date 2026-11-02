@@ -1,0 +1,1690 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Events from a behaviour log &#8212; pypillometry v2.1.0</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx_autodoc_typehints.css?v=057ac668" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=e89b0eda" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=75c7c72ae941e8b558d8"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
+
+    <script src="../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'notebooks/importdata_behaviour';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../_static/pypillometry_logo_200x200.png"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Example datasets included in pypillometry" href="example_datasets.html" />
+    <link rel="prev" title="Importing data from Eyelink ASC files" href="importdata_asc.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="v2.1.0" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="light">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+<aside class="bd-header-announcement" aria-label="Announcement">
+  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
+</aside>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation" aria-expanded="false" aria-controls="pst-primary-sidebar-modal">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="../_static/pypillometry_logo_200x200.png" class="logo__image only-light" alt=""/>
+    <img src="../_static/pypillometry_logo_200x200.png" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">pypillometry</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../experimental/index.html">
+    Experimental features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../development/index.html">
+    Development
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ihrke/pypillometry" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pypillometry/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page" aria-expanded="false" aria-controls="pst-secondary-sidebar-modal">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal" tabindex="-1"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../experimental/index.html">
+    Experimental features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../development/index.html">
+    Development
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ihrke/pypillometry" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pypillometry/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button type="button" id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">Reading data</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="importdata_edf.html">Importing data from Eyelink EDF files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="importdata_asc.html">Importing data from Eyelink ASC files</a></li>
+<li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">Events from a behaviour log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example_datasets.html">Example datasets included in <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code></a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Working with data objects</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="pipes.html">Pipeline-based processing in pypillometry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eyes_and_variables.html">Processing monocular and binocular data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="summary.html">Summarizing pupillometric data</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Preprocessing and plotting</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="blinks.html">Blink preprocessing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plotting.html">Plotting pupillometric data for exploration</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Events and event-related analyses</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="events.html">Events</a></li>
+<li class="toctree-l1"><a class="reference internal" href="event_metadata.html">Event metadata</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intervals.html">Intervals</a></li>
+<li class="toctree-l1"><a class="reference internal" href="erpds.html">Event-related pupil dilations</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Modeling and complete analyses</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="modeling.html">Modeling the pupillometric signal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="preproc_example_pavlov.html">Example: Preprocessing of a full dataset with multiple subjects</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-house"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../tutorials/index.html" class="nav-link">Tutorials</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Events from a behaviour log</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <div class="pp-notebook-banner">
+  <span>This page was generated from a Jupyter notebook.</span>
+  <a href="https://github.com/ihrke/pypillometry/blob/master/docs/notebooks/importdata_behaviour.ipynb">View on GitHub</a>
+  <a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath=docs/notebooks/importdata_behaviour.ipynb">
+    <img alt="Binder badge" src="https://mybinder.org/badge_logo.svg"
+         style="vertical-align:text-bottom">
+  </a>
+</div><section id="Events-from-a-behaviour-log">
+<h1>Events from a behaviour log<a class="headerlink" href="#Events-from-a-behaviour-log" title="Link to this heading">#</a></h1>
+<p>Often, the eye tracker gets only some of the events of an experiment, for example a trigger at the start of each trial. The times of stimuli and responses, and everything else about the trials (conditions, choices, reaction times), are then in the log file of the experiment software (e.g., PsychoPy, Psychtoolbox or Presentation).</p>
+<p>This notebook shows how to get these events into the eye-tracking data:</p>
+<ol class="arabic simple">
+<li><p>read the behaviour log and turn its columns into events (<code class="docutils literal notranslate"><span class="pre">Events.from_table()</span></code>),</p></li>
+<li><p>map the times from the clock of the experiment computer to the clock of the eye tracker (<code class="docutils literal notranslate"><span class="pre">pp.sync_clocks()</span></code>), using moments that are in both logs,</p></li>
+<li><p>add the events to the data (<code class="docutils literal notranslate"><span class="pre">add_events()</span></code>) and check the result.</p></li>
+</ol>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">u</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+</pre></div>
+</div>
+</div>
+<section id="The-data">
+<h2>The data<a class="headerlink" href="#The-data" title="Link to this heading">#</a></h2>
+<p>We use one participant of the RLMW study (a reinforcement-learning task with mind-wandering probes), the same EDF file as in the <a class="reference internal" href="importdata_edf.html"><span class="doc">notebook on reading EDF files</span></a>. The behaviour log of this participant is in the <a class="reference external" href="https://osf.io/ca95r/">OSF project of the study</a>. We download both into the folder <code class="docutils literal notranslate"><span class="pre">example_data</span></code> (only the first time):</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">from_eyelink</span><span class="p">(</span><span class="s2">"https://osf.io/trsuq/download"</span><span class="p">,</span>
+                            <span class="n">cache_file</span><span class="o">=</span><span class="s2">"example_data/test.edf"</span><span class="p">)</span>
+<span class="n">fname</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">fetch_url</span><span class="p">(</span><span class="s2">"https://osf.io/download/658189c19513840728238876/"</span><span class="p">,</span>
+                     <span class="n">cache_file</span><span class="o">=</span><span class="s2">"example_data/010_rlmw_behaviour.csv"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+<span class="ansi-green-fg">pp: 16:01:45</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fetch_url</span>:<span class="ansi-cyan-fg">451</span> | <span class="ansi-bold">Using cached copy of &#39;https://osf.io/trsuq/download&#39;: example_data/test.edf</span>
+<span class="ansi-green-fg">pp: 16:01:45</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">_read_edf</span>:<span class="ansi-cyan-fg">720</span> | <span class="ansi-bold">Loading EDF file: example_data/test.edf (current log level: INFO, set to DEBUG to see eyelinkio output)</span>
+<span class="ansi-green-fg">pp: 16:02:09</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">from_eyelink</span>:<span class="ansi-cyan-fg">1280</span> | <span class="ansi-bold">Filtering out Eyelink triggers</span>
+<span class="ansi-green-fg">pp: 16:02:10</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fetch_url</span>:<span class="ansi-cyan-fg">451</span> | <span class="ansi-bold">Using cached copy of &#39;https://osf.io/download/658189c19513840728238876/&#39;: example_data/010_rlmw_behaviour.csv</span>
+</pre></div></div>
+</div>
+<p>The behaviour log was written by PsychoPy. It is a table with one row per trial (the first line is a comment with information about the session):</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">behav</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s2">"#"</span><span class="p">)</span>
+<span class="n">behav</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>subj</th>
+      <th>tasktime</th>
+      <th>trialtime</th>
+      <th>trial</th>
+      <th>probetrial</th>
+      <th>fixcross_duration</th>
+      <th>left</th>
+      <th>right</th>
+      <th>choice</th>
+      <th>rt</th>
+      <th>lreward</th>
+      <th>rreward</th>
+      <th>reward</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>10</td>
+      <td>0.000038</td>
+      <td>3.600173</td>
+      <td>1</td>
+      <td>0</td>
+      <td>200</td>
+      <td>1</td>
+      <td>5</td>
+      <td>0</td>
+      <td>-1.000000</td>
+      <td>4</td>
+      <td>6</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>10</td>
+      <td>3.604168</td>
+      <td>3.600156</td>
+      <td>2</td>
+      <td>0</td>
+      <td>200</td>
+      <td>6</td>
+      <td>4</td>
+      <td>6</td>
+      <td>0.388822</td>
+      <td>18</td>
+      <td>18</td>
+      <td>18</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>10</td>
+      <td>7.208135</td>
+      <td>3.600159</td>
+      <td>3</td>
+      <td>0</td>
+      <td>200</td>
+      <td>2</td>
+      <td>3</td>
+      <td>3</td>
+      <td>0.966059</td>
+      <td>1</td>
+      <td>8</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>10</td>
+      <td>10.811549</td>
+      <td>3.600154</td>
+      <td>4</td>
+      <td>0</td>
+      <td>800</td>
+      <td>6</td>
+      <td>5</td>
+      <td>6</td>
+      <td>0.607932</td>
+      <td>18</td>
+      <td>4</td>
+      <td>18</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>10</td>
+      <td>14.414900</td>
+      <td>3.600182</td>
+      <td>5</td>
+      <td>0</td>
+      <td>200</td>
+      <td>6</td>
+      <td>2</td>
+      <td>6</td>
+      <td>0.648074</td>
+      <td>18</td>
+      <td>7</td>
+      <td>18</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>The columns we need are:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">tasktime</span></code>: start of the trial (onset of the fixation cross), in seconds since the start of the task, on the clock of the experiment computer</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fixcross_duration</span></code>: how long the fixation cross was shown before the stimulus (in ms)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rt</span></code>: reaction time from stimulus onset (in seconds; <code class="docutils literal notranslate"><span class="pre">-1</span></code> if there was no response)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">probetrial</span></code>: 0 for choice trials; for mind-wandering probes, the number of the probe</p></li>
+</ul>
+<p>There are 300 choice trials and 30 probes:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">len</span><span class="p">(</span><span class="n">behav</span><span class="p">),</span> <span class="p">(</span><span class="n">behav</span><span class="o">.</span><span class="n">probetrial</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+(330, np.int64(300))
+</pre></div></div>
+</div>
+</section>
+<section id="The-events-in-the-recording">
+<h2>The events in the recording<a class="headerlink" href="#The-events-in-the-recording" title="Link to this heading">#</a></h2>
+<p>In this experiment, many events were sent to the eye tracker: the fixation cross (<code class="docutils literal notranslate"><span class="pre">F_&lt;trial&gt;</span></code>), the stimulus (<code class="docutils literal notranslate"><span class="pre">S_...</span></code>), the choice (<code class="docutils literal notranslate"><span class="pre">C_...</span></code>), the reward (<code class="docutils literal notranslate"><span class="pre">R_...</span></code>) and the probes (<code class="docutils literal notranslate"><span class="pre">P_...</span></code>, <code class="docutils literal notranslate"><span class="pre">CP_...</span></code>, <code class="docutils literal notranslate"><span class="pre">RP_...</span></code>):</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">events</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_events</span><span class="p">()</span>
+<span class="n">events</span><span class="p">[:</span><span class="mi">10</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Onset (ms)</th>
+      <th>Label</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0.0</td>
+      <td>DISPLAY_COORDS = 0 0 1279 1023</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>8340.0</td>
+      <td>experiment_start</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>8360.0</td>
+      <td>F_1</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>8560.0</td>
+      <td>S_1_1_5</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>10560.0</td>
+      <td>C_1_0_0</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>10576.0</td>
+      <td>R_1_0</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>11959.0</td>
+      <td>F_2</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>12159.0</td>
+      <td>S_2_6_4</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>12548.0</td>
+      <td>C_2_6_1</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>12775.0</td>
+      <td>R_2_18</td>
+    </tr>
+  </tbody>
+</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 10 events | Data range: [0.0, 1197768.0] ms</p></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">event_onset()</span></code> gives the time of a single event, e.g., the start of the experiment. It raises an error unless exactly one event has the label:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">event_onset</span><span class="p">(</span><span class="s2">"experiment_start"</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+8.34
+</pre></div></div>
+</div>
+<p>To show the more common case, we keep only the fixation-cross events, as if only a trigger at the start of each trial had been sent. We keep the original events to check our result at the end:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">orig</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_events</span><span class="p">()</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">set_events</span><span class="p">(</span><span class="n">orig</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s2">"F_"</span><span class="p">))</span>
+<span class="n">d</span><span class="o">.</span><span class="n">get_events</span><span class="p">()[:</span><span class="mi">5</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Onset (ms)</th>
+      <th>Label</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>8360.0</td>
+      <td>F_1</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>11959.0</td>
+      <td>F_2</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>15557.0</td>
+      <td>F_3</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>19156.0</td>
+      <td>F_4</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>22771.0</td>
+      <td>F_5</td>
+    </tr>
+  </tbody>
+</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 5 events | Data range: [0.0, 1197768.0] ms</p></div>
+</div>
+</section>
+<section id="Events-from-the-behaviour-log">
+<h2>Events from the behaviour log<a class="headerlink" href="#Events-from-the-behaviour-log" title="Link to this heading">#</a></h2>
+<p>The stimulus appeared <code class="docutils literal notranslate"><span class="pre">fixcross_duration</span></code> ms after the start of the trial, and the response came <code class="docutils literal notranslate"><span class="pre">rt</span></code> seconds after the stimulus. We compute both times for the choice trials, with <code class="docutils literal notranslate"><span class="pre">NaN</span></code> for trials without a response:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">trials</span> <span class="o">=</span> <span class="n">behav</span><span class="p">[</span><span class="n">behav</span><span class="o">.</span><span class="n">probetrial</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">trials</span><span class="p">[</span><span class="s2">"rt"</span><span class="p">]</span> <span class="o">=</span> <span class="n">trials</span><span class="o">.</span><span class="n">rt</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">trials</span><span class="o">.</span><span class="n">rt</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>     <span class="c1"># -1 (no response) -&gt; NaN</span>
+<span class="n">stim_on</span> <span class="o">=</span> <span class="n">trials</span><span class="o">.</span><span class="n">tasktime</span> <span class="o">+</span> <span class="n">trials</span><span class="o">.</span><span class="n">fixcross_duration</span> <span class="o">/</span> <span class="mi">1000</span>
+</pre></div>
+</div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Events.from_table()</span></code> turns these columns into events. The keys of the dict are the labels; the values are column names of the table or arrays of times. Times that are <code class="docutils literal notranslate"><span class="pre">NaN</span></code> give no event, so there are two responses fewer than stimuli. Other columns of the table can be kept as metadata of the events with <code class="docutils literal notranslate"><span class="pre">meta</span></code> (see the <a class="reference internal" href="event_metadata.html"><span class="doc">event metadata tutorial</span></a>): every event of a row gets the values of that row, and the column <code class="docutils literal notranslate"><span class="pre">row</span></code> gives the row in the table:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ev</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">Events</span><span class="o">.</span><span class="n">from_table</span><span class="p">(</span><span class="n">trials</span><span class="p">,</span> <span class="p">{</span><span class="s2">"stim"</span><span class="p">:</span> <span class="n">stim_on</span><span class="p">,</span>
+                                   <span class="s2">"response"</span><span class="p">:</span> <span class="n">stim_on</span> <span class="o">+</span> <span class="n">trials</span><span class="o">.</span><span class="n">rt</span><span class="p">},</span>
+                          <span class="n">units</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">,</span> <span class="n">meta</span><span class="o">=</span><span class="p">[</span><span class="s2">"trial"</span><span class="p">,</span> <span class="s2">"choice"</span><span class="p">,</span> <span class="s2">"reward"</span><span class="p">,</span> <span class="s2">"rt"</span><span class="p">])</span>
+<span class="n">ev</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">10</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Onset (sec)</th>
+      <th>Label</th>
+      <th>trial</th>
+      <th>choice</th>
+      <th>reward</th>
+      <th>rt</th>
+      <th>row</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0.200038</td>
+      <td>stim</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>3.804168</td>
+      <td>stim</td>
+      <td>2</td>
+      <td>6</td>
+      <td>18</td>
+      <td>0.388822</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>4.192990</td>
+      <td>response</td>
+      <td>2</td>
+      <td>6</td>
+      <td>18</td>
+      <td>0.388822</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>7.408135</td>
+      <td>stim</td>
+      <td>3</td>
+      <td>3</td>
+      <td>8</td>
+      <td>0.966059</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>8.374194</td>
+      <td>response</td>
+      <td>3</td>
+      <td>3</td>
+      <td>8</td>
+      <td>0.966059</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>11.611549</td>
+      <td>stim</td>
+      <td>4</td>
+      <td>6</td>
+      <td>18</td>
+      <td>0.607932</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>12.219481</td>
+      <td>response</td>
+      <td>4</td>
+      <td>6</td>
+      <td>18</td>
+      <td>0.607932</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>14.614900</td>
+      <td>stim</td>
+      <td>5</td>
+      <td>6</td>
+      <td>18</td>
+      <td>0.648074</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>15.262974</td>
+      <td>response</td>
+      <td>5</td>
+      <td>6</td>
+      <td>18</td>
+      <td>0.648074</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>18.518260</td>
+      <td>stim</td>
+      <td>6</td>
+      <td>2</td>
+      <td>9</td>
+      <td>1.005230</td>
+      <td>5</td>
+    </tr>
+  </tbody>
+</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 10 events</p></div>
+</div>
+<p>These times are still on the clock of the experiment computer. Its zero is the start of the task, while the eye tracker has its own zero point. We cannot add the events yet.</p>
+</section>
+<section id="Synchronizing-the-clocks">
+<h2>Synchronizing the clocks<a class="headerlink" href="#Synchronizing-the-clocks" title="Link to this heading">#</a></h2>
+<p>To map one clock to the other, we need moments that are in both logs. Here, these are the trial starts: <code class="docutils literal notranslate"><span class="pre">tasktime</span></code> in the behaviour log and the <code class="docutils literal notranslate"><span class="pre">F_</span></code> events in the recording. There is one of each per trial (including the probes), in the same order:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fix</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_events</span><span class="p">()</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s2">"F_"</span><span class="p">)</span>
+<span class="nb">len</span><span class="p">(</span><span class="n">behav</span><span class="o">.</span><span class="n">tasktime</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">fix</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+(330, 330)
+</pre></div></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">pp.sync_clocks()</span></code> pairs them by order and fits a linear map: an offset (the different zero points) and a slope (the clocks run at slightly different speeds, so they drift apart). The units of the trial starts are given with <code class="docutils literal notranslate"><span class="pre">src_units</span></code>; the <code class="docutils literal notranslate"><span class="pre">F_</span></code> events have their own units (ms):</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sync</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">sync_clocks</span><span class="p">(</span><span class="n">behav</span><span class="o">.</span><span class="n">tasktime</span><span class="p">,</span> <span class="n">fix</span><span class="p">,</span> <span class="n">src_units</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">)</span>
+<span class="n">sync</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+<span class="ansi-green-fg">pp: 16:02:11</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">sync_clocks</span>:<span class="ansi-cyan-fg">1304</span> | <span class="ansi-bold">sync_clocks(): offset=8352.59 ms, drift=-72.1 ms/h, max |residual|=17.7 ms (n=330)</span>
+<span class="ansi-green-fg">pp: 16:02:11</span> | <span class="ansi-yellow-intense-fg ansi-bold">WARNING </span> | <span class="ansi-cyan-fg">sync_clocks</span>:<span class="ansi-cyan-fg">1313</span> | <span class="ansi-yellow-intense-fg ansi-bold">sync_clocks(): 127 of 330 residuals larger than 5 ms (pairs [0, 3, 8, 11, 12, ...]); are the times paired correctly?</span>
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ClockSync(sec -&gt; ms): offset=8352.59 ms, drift=-72.1 ms/h, max |residual|=17.7 ms (n=330)
+           src            dst   residual
+       3.8e-05           8360       7.38
+       3.60417          11959       2.32
+       7.20814          15557      -3.58
+       10.8115          19156      -7.92
+       14.4149          22771        3.8
+  ... (320 more)
+       1171.43        1179760       3.27
+       1175.03        1183358      -3.45
+       1178.64        1186974       7.76
+       1182.24        1190572      0.708
+       1185.85        1194171      -4.65
+</pre></div></div>
+</div>
+<p>The summary shows the offset, the drift (here, the eye-tracker clock loses about 72 ms per hour against the experiment computer) and the largest <em>residual</em>. The residuals are the differences between the times in the recording and the mapped times from the log. They are the check that the pairs are right.</p>
+<p>Here, <code class="docutils literal notranslate"><span class="pre">sync_clocks()</span></code> warns because some residuals are larger than the default tolerance of 5 ms. Plotting them shows why:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">sync</span><span class="o">.</span><span class="n">src</span> <span class="o">/</span> <span class="mi">60</span><span class="p">,</span> <span class="n">sync</span><span class="o">.</span><span class="n">residuals</span><span class="p">,</span> <span class="s2">"."</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"time in task (min)"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"residual (ms)"</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_importdata_behaviour_24_0.png" src="../_images/notebooks_importdata_behaviour_24_0.png" />
+</div>
+</div>
+<p>The residuals are spread evenly between about -10 and +10 ms, with no trend over time. This is not a problem with the pairing: PsychoPy logged <code class="docutils literal notranslate"><span class="pre">tasktime</span></code> at a slightly different moment than the trigger was sent, and the difference varies by up to about one screen frame (17 ms at 60 Hz). Each mapped time is therefore off by up to about 10 ms, but there is no systematic error. With a tolerance that allows for this, there is no warning:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sync</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">sync_clocks</span><span class="p">(</span><span class="n">behav</span><span class="o">.</span><span class="n">tasktime</span><span class="p">,</span> <span class="n">fix</span><span class="p">,</span> <span class="n">src_units</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mi">20</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+<span class="ansi-green-fg">pp: 16:02:12</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">sync_clocks</span>:<span class="ansi-cyan-fg">1304</span> | <span class="ansi-bold">sync_clocks(): offset=8352.59 ms, drift=-72.1 ms/h, max |residual|=17.7 ms (n=330)</span>
+</pre></div></div>
+</div>
+<p>How large the residuals are depends on how the times were logged. Times taken at the screen flip (e.g., the return value of <code class="docutils literal notranslate"><span class="pre">win.flip()</span></code> in PsychoPy or <code class="docutils literal notranslate"><span class="pre">Screen('Flip')</span></code> in Psychtoolbox) usually agree with the trigger within 1–2 ms.</p>
+<p>This shows why it is usually a good idea to send the triggers directly to the eye-tracker from within the stimulus-presentation script.</p>
+</section>
+<section id="Adding-the-events">
+<h2>Adding the events<a class="headerlink" href="#Adding-the-events" title="Link to this heading">#</a></h2>
+<p>Calling the fitted map on the events gives them on the clock of the eye tracker (with their metadata). <code class="docutils literal notranslate"><span class="pre">add_events()</span></code> adds them to the events of the recording and sorts all events by onset. The <code class="docutils literal notranslate"><span class="pre">F_</span></code> events have no metadata, so their values are missing:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sync</span><span class="p">(</span><span class="n">ev</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">10</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Onset (ms)</th>
+      <th>Label</th>
+      <th>trial</th>
+      <th>choice</th>
+      <th>reward</th>
+      <th>rt</th>
+      <th>row</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>8552.620039</td>
+      <td>stim</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>12156.677822</td>
+      <td>stim</td>
+      <td>2</td>
+      <td>6</td>
+      <td>18</td>
+      <td>0.388822</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>12545.492031</td>
+      <td>response</td>
+      <td>2</td>
+      <td>6</td>
+      <td>18</td>
+      <td>0.388822</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>15760.572609</td>
+      <td>stim</td>
+      <td>3</td>
+      <td>3</td>
+      <td>8</td>
+      <td>0.966059</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>16726.612251</td>
+      <td>response</td>
+      <td>3</td>
+      <td>3</td>
+      <td>8</td>
+      <td>0.966059</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>19963.902384</td>
+      <td>stim</td>
+      <td>4</td>
+      <td>6</td>
+      <td>18</td>
+      <td>0.607932</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>20571.822202</td>
+      <td>response</td>
+      <td>4</td>
+      <td>6</td>
+      <td>18</td>
+      <td>0.607932</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>22967.193205</td>
+      <td>stim</td>
+      <td>5</td>
+      <td>6</td>
+      <td>18</td>
+      <td>0.648074</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>23615.254219</td>
+      <td>response</td>
+      <td>5</td>
+      <td>6</td>
+      <td>18</td>
+      <td>0.648074</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>26870.474992</td>
+      <td>stim</td>
+      <td>6</td>
+      <td>2</td>
+      <td>9</td>
+      <td>1.005230</td>
+      <td>5</td>
+    </tr>
+  </tbody>
+</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 10 events</p></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">add_events</span><span class="p">(</span><span class="n">sync</span><span class="p">(</span><span class="n">ev</span><span class="p">))</span>
+<span class="n">d</span><span class="o">.</span><span class="n">get_events</span><span class="p">()[:</span><span class="mi">8</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Onset (ms)</th>
+      <th>Label</th>
+      <th>trial</th>
+      <th>choice</th>
+      <th>reward</th>
+      <th>rt</th>
+      <th>row</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>8360.000000</td>
+      <td>F_1</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>8552.620039</td>
+      <td>stim</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>11959.000000</td>
+      <td>F_2</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>12156.677822</td>
+      <td>stim</td>
+      <td>2.0</td>
+      <td>6.0</td>
+      <td>18.0</td>
+      <td>0.388822</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>12545.492031</td>
+      <td>response</td>
+      <td>2.0</td>
+      <td>6.0</td>
+      <td>18.0</td>
+      <td>0.388822</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>15557.000000</td>
+      <td>F_3</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>15760.572609</td>
+      <td>stim</td>
+      <td>3.0</td>
+      <td>3.0</td>
+      <td>8.0</td>
+      <td>0.966059</td>
+      <td>2.0</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>16726.612251</td>
+      <td>response</td>
+      <td>3.0</td>
+      <td>3.0</td>
+      <td>8.0</td>
+      <td>0.966059</td>
+      <td>2.0</td>
+    </tr>
+  </tbody>
+</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 8 events | Data range: [0.0, 1197768.0] ms</p></div>
+</div>
+<p>Because the eye tracker also got the stimulus triggers in this experiment, we can check the result: the stimulus onsets from the behaviour log agree with the <code class="docutils literal notranslate"><span class="pre">S_</span></code> events within about ±9 ms, a few within 18 ms (the jitter we saw in the residuals):</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">err</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_events</span><span class="p">()</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s2">"stim"</span><span class="p">,</span> <span class="n">exact</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">onsets</span> <span class="o">-</span> <span class="n">orig</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s2">"S_"</span><span class="p">)</span><span class="o">.</span><span class="n">onsets</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"stim onset (log) - S_ event (ms)"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"trials"</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_importdata_behaviour_32_0.png" src="../_images/notebooks_importdata_behaviour_32_0.png" />
+</div>
+</div>
+</section>
+<section id="Using-the-events">
+<h2>Using the events<a class="headerlink" href="#Using-the-events" title="Link to this heading">#</a></h2>
+<p>The new events work like all other events. For example, the pupil data from 2 to 2.5 minutes, with the fixation-cross, stimulus and response events:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">pupil_plot</span><span class="p">(</span><span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_importdata_behaviour_34_0.png" src="../_images/notebooks_importdata_behaviour_34_0.png" />
+</div>
+</div>
+<p>The events from the log carry the information about their trial, so they can be selected by it, and <code class="docutils literal notranslate"><span class="pre">get_intervals()</span></code> passes it on to the intervals. Here, the mean pupil size in the second after each stimulus, in a table with the metadata of the stimulus events:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">iv</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">get_events</span><span class="p">()</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s2">"stim"</span><span class="p">,</span> <span class="n">exact</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">window</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>
+<span class="n">pupil</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">stat_per_event</span><span class="p">(</span><span class="n">intervals</span><span class="o">=</span><span class="n">iv</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="s2">"left"</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="s2">"pupil"</span><span class="p">)</span>
+
+<span class="n">table</span> <span class="o">=</span> <span class="n">iv</span><span class="o">.</span><span class="n">as_pandas</span><span class="p">()</span>
+<span class="n">table</span><span class="p">[</span><span class="s2">"pupil"</span><span class="p">]</span> <span class="o">=</span> <span class="n">pupil</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">]</span>
+<span class="n">table</span><span class="p">[[</span><span class="s2">"trial"</span><span class="p">,</span> <span class="s2">"choice"</span><span class="p">,</span> <span class="s2">"rt"</span><span class="p">,</span> <span class="s2">"reward"</span><span class="p">,</span> <span class="s2">"pupil"</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>trial</th>
+      <th>choice</th>
+      <th>rt</th>
+      <th>reward</th>
+      <th>pupil</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>832.528000</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2.0</td>
+      <td>6.0</td>
+      <td>0.388822</td>
+      <td>18.0</td>
+      <td>1018.716157</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3.0</td>
+      <td>3.0</td>
+      <td>0.966059</td>
+      <td>8.0</td>
+      <td>887.991342</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4.0</td>
+      <td>6.0</td>
+      <td>0.607932</td>
+      <td>18.0</td>
+      <td>855.376000</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5.0</td>
+      <td>6.0</td>
+      <td>0.648074</td>
+      <td>18.0</td>
+      <td>963.724000</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Selections work in the same way, e.g., the stimuli of the trials with a fast response:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">get_events</span><span class="p">()</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s2">"stim"</span><span class="p">,</span> <span class="n">exact</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">rt</span><span class="o">=</span><span class="k">lambda</span> <span class="n">rt</span><span class="p">:</span> <span class="n">rt</span> <span class="o">&lt;</span> <span class="mf">0.5</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Onset (ms)</th>
+      <th>Label</th>
+      <th>trial</th>
+      <th>choice</th>
+      <th>reward</th>
+      <th>rt</th>
+      <th>row</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>12156.677822</td>
+      <td>stim</td>
+      <td>2.0</td>
+      <td>6.0</td>
+      <td>18.0</td>
+      <td>0.388822</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>88440.980264</td>
+      <td>stim</td>
+      <td>22.0</td>
+      <td>4.0</td>
+      <td>14.0</td>
+      <td>0.498977</td>
+      <td>21.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>105858.858250</td>
+      <td>stim</td>
+      <td>26.0</td>
+      <td>3.0</td>
+      <td>18.0</td>
+      <td>0.496314</td>
+      <td>25.0</td>
+    </tr>
+  </tbody>
+</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 3 events | Data range: [0.0, 1197768.0] ms</p></div>
+</div>
+<p>For event-related analyses, see the notebooks on <a class="reference internal" href="intervals.html"><span class="doc">intervals</span></a> and on <a class="reference internal" href="erpds.html"><span class="doc">event-related pupil dilation</span></a>.</p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="importdata_asc.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Importing data from Eyelink ASC files</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="example_datasets.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Example datasets included in <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code></p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal" tabindex="-1"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#The-data">The data</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#The-events-in-the-recording">The events in the recording</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Events-from-the-behaviour-log">Events from the behaviour log</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Synchronizing-the-clocks">Synchronizing the clocks</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Adding-the-events">Adding the events</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Using-the-events">Using the events</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  
+  <div class="tocsection editthispage">
+    <a href="https://github.com/ihrke/pypillometry/edit/master/docs/notebooks/importdata_behaviour.ipynb">
+      <i class="fa-solid fa-pencil"></i>
+      
+      
+        
+          Edit on GitHub
+        
+      
+    </a>
+  </div>
+</div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/notebooks/importdata_behaviour.ipynb.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2026, Matthias Mittner.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
+  </p>
+</div>
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.24.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

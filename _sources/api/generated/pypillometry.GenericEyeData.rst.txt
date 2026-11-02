@@ -16,24 +16,32 @@
    .. autosummary::
       :nosignatures:
    
+      ~GenericEyeData.add_events
       ~GenericEyeData.add_to_history
       ~GenericEyeData.blink_stats
       ~GenericEyeData.blinks_merge_close
       ~GenericEyeData.copy
+      ~GenericEyeData.crop
       ~GenericEyeData.downsample
       ~GenericEyeData.drop_data
       ~GenericEyeData.drop_original
+      ~GenericEyeData.event_onset
+      ~GenericEyeData.exclude_intervals
+      ~GenericEyeData.excluded_duration
       ~GenericEyeData.fill_time_discontinuities
       ~GenericEyeData.from_eyelink
       ~GenericEyeData.from_file
       ~GenericEyeData.get_blinks
       ~GenericEyeData.get_duration
       ~GenericEyeData.get_events
+      ~GenericEyeData.get_excluded
+      ~GenericEyeData.get_included
       ~GenericEyeData.get_interpolated_blinks
       ~GenericEyeData.get_intervals
       ~GenericEyeData.get_segments
       ~GenericEyeData.get_size
       ~GenericEyeData.interpolate_intervals
+      ~GenericEyeData.keep_intervals
       ~GenericEyeData.mask_as_intervals
       ~GenericEyeData.mask_intervals
       ~GenericEyeData.merge_eyes
@@ -42,11 +50,13 @@
       ~GenericEyeData.nevents
       ~GenericEyeData.print_history
       ~GenericEyeData.quality_report
+      ~GenericEyeData.remove_intervals
       ~GenericEyeData.reset_time
       ~GenericEyeData.scale
       ~GenericEyeData.set_blinks
       ~GenericEyeData.set_event_onsets
       ~GenericEyeData.set_events
+      ~GenericEyeData.split_excluded
       ~GenericEyeData.stat_per_event
       ~GenericEyeData.sub_slice
       ~GenericEyeData.summary

@@ -1,0 +1,6 @@
+﻿sync\_clocks
+============
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: sync_clocks

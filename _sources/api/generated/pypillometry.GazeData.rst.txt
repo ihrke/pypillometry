@@ -16,24 +16,32 @@
    .. autosummary::
       :nosignatures:
    
+      ~GazeData.add_events
       ~GazeData.add_to_history
       ~GazeData.blink_stats
       ~GazeData.blinks_merge_close
       ~GazeData.copy
+      ~GazeData.crop
       ~GazeData.downsample
       ~GazeData.drop_data
       ~GazeData.drop_original
+      ~GazeData.event_onset
+      ~GazeData.exclude_intervals
+      ~GazeData.excluded_duration
       ~GazeData.fill_time_discontinuities
       ~GazeData.from_eyelink
       ~GazeData.from_file
       ~GazeData.get_blinks
       ~GazeData.get_duration
       ~GazeData.get_events
+      ~GazeData.get_excluded
+      ~GazeData.get_included
       ~GazeData.get_interpolated_blinks
       ~GazeData.get_intervals
       ~GazeData.get_segments
       ~GazeData.get_size
       ~GazeData.interpolate_intervals
+      ~GazeData.keep_intervals
       ~GazeData.mask_as_intervals
       ~GazeData.mask_eye_divergences
       ~GazeData.mask_intervals
@@ -44,12 +52,14 @@
       ~GazeData.nevents
       ~GazeData.print_history
       ~GazeData.quality_report
+      ~GazeData.remove_intervals
       ~GazeData.reset_time
       ~GazeData.scale
       ~GazeData.set_blinks
       ~GazeData.set_event_onsets
       ~GazeData.set_events
       ~GazeData.set_experimental_setup
+      ~GazeData.split_excluded
       ~GazeData.stat_per_event
       ~GazeData.sub_slice
       ~GazeData.summary

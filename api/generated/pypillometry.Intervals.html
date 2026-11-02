@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Intervals &#8212; pypillometry v2.0.0</title>
+    <title>Intervals &#8212; pypillometry v2.1.0</title>
   
   
   
@@ -26,8 +26,8 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+  <link href="../../_static/styles/theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
@@ -37,12 +37,12 @@
     <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=e89b0eda" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
+  <script defer src="../../_static/scripts/fontawesome.js?digest=75c7c72ae941e8b558d8"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=aa039f9c"></script>
+    <script src="../../_static/documentation_options.js?v=dbd6d5c5"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,12 +54,12 @@
     <link rel="icon" href="../../_static/pypillometry_logo_200x200.png"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="merge_intervals" href="pypillometry.merge_intervals.html" />
+    <link rel="next" title="ClockSync" href="pypillometry.ClockSync.html" />
     <link rel="prev" title="Events" href="pypillometry.Events.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.0.0" />
+  <meta name="docsearch:version" content="v2.1.0" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -110,7 +110,7 @@
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
-  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation" aria-expanded="false" aria-controls="pst-primary-sidebar-modal">
     <span class="fa-solid fa-bars"></span>
   </button>
   
@@ -214,14 +214,14 @@
 
 <div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
   <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
-    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
-    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
-    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
   </button>
   <ul class="dropdown-menu dropdown-menu-end">
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
   </ul>
 </div></div>
       
@@ -267,7 +267,7 @@
   
 
   
-    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page" aria-expanded="false" aria-controls="pst-secondary-sidebar-modal">
       <span class="fa-solid fa-outdent"></span>
     </button>
   
@@ -281,7 +281,7 @@
       
       
       
-      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <dialog id="pst-primary-sidebar-modal" tabindex="-1"></dialog>
       <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
         
 
@@ -352,14 +352,14 @@
 
 <div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
   <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
-    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
-    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
-    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
   </button>
   <ul class="dropdown-menu dropdown-menu-end">
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
   </ul>
 </div></div>
         
@@ -422,7 +422,9 @@
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../events_intervals.html">Events and intervals</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.Events.html">Events</a></li>
 <li class="toctree-l2 current active"><a aria-current="page" class="current reference internal" href="#">Intervals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.ClockSync.html">ClockSync</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.merge_intervals.html">merge_intervals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.sync_clocks.html">sync_clocks</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../segments.html">Segmented data</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -476,6 +478,7 @@
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.plot_prf.html">plot_prf</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_build_design_matrix.html">pupil_build_design_matrix</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_response.html">pupil_response</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_response_coverage.html">pupil_response_coverage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.pupilresponse_nnls.html">pupilresponse_nnls</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_signal_quality.html">pupil_signal_quality</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_eye_offset.html">pupil_eye_offset</a></li>
@@ -553,7 +556,7 @@
     
     <li class="breadcrumb-item breadcrumb-home">
       <a href="../../index.html" class="nav-link" aria-label="Home">
-        <i class="fa-solid fa-home"></i>
+        <i class="fa-solid fa-house"></i>
       </a>
     </li>
     
@@ -583,11 +586,13 @@
 <h1>Intervals<a class="headerlink" href="#intervals" title="Link to this heading">#</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="pypillometry.Intervals">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pypillometry.</span></span><span class="sig-name descname"><span class="pre">Intervals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">intervals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">UNSET</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_indices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_time_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_onsets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampling_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interval_window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/intervals.html#Intervals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.Intervals" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pypillometry.</span></span><span class="sig-name descname"><span class="pre">Intervals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">intervals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">UNSET</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_indices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_time_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_onsets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interval_window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_meta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/intervals.html#Intervals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.Intervals" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Stateful</span></code></p>
 <p>Container for intervals with metadata.</p>
 <p>This class wraps a list of (start, end) intervals and provides additional
-metadata such as units, labels, and associated event information.</p>
+metadata such as units, labels, and associated event information.
+Intervals are end-exclusive: <code class="docutils literal notranslate"><span class="pre">(start,</span> <span class="pre">end)</span></code> covers the samples with
+<code class="docutils literal notranslate"><span class="pre">start</span> <span class="pre">&lt;=</span> <span class="pre">t</span> <span class="pre">&lt;</span> <span class="pre">end</span></code>.</p>
 <p>Usually, Intervals objects are not created directly but returned by
 methods of the eye-data classes, e.g.,
 <a class="reference internal" href="pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.get_intervals" title="pypillometry.GenericEyeData.get_intervals"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_intervals()</span></code></a> (event-locked
@@ -598,29 +603,34 @@ Detection methods such as
 <a class="reference internal" href="pypillometry.PupilData.html#pypillometry.PupilData.pupil_blinks_detect" title="pypillometry.PupilData.pupil_blinks_detect"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pupil_blinks_detect()</span></code></a> store their results
 as Intervals. Several Intervals can be combined with <code class="docutils literal notranslate"><span class="pre">+</span></code> or
 <a class="reference internal" href="pypillometry.merge_intervals.html#pypillometry.merge_intervals" title="pypillometry.merge_intervals"><code class="xref py py-func docutils literal notranslate"><span class="pre">merge_intervals()</span></code></a> and subtracted with <code class="docutils literal notranslate"><span class="pre">-</span></code>.</p>
+<p>Intervals in sample indices are only valid for the data object they
+came from. Converting between sample indices and time needs that data
+object (its time vector), e.g., <code class="docutils literal notranslate"><span class="pre">iv.to_units(&quot;ms&quot;,</span> <span class="pre">d)</span></code> or
+<code class="docutils literal notranslate"><span class="pre">iv.to_mask(d)</span></code>; conversions between time units work without it.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>intervals</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><em>tuples</em><em>, </em><em>np.ndarray</em><em> or </em><a class="reference internal" href="pypillometry.Quantity.html#pypillometry.Quantity" title="pypillometry.Quantity"><em>Quantity</em></a>) – Intervals as list of (start, end) tuples or 2D array; can carry
 units, e.g. <code class="docutils literal notranslate"><span class="pre">[(0,</span> <span class="pre">100),</span> <span class="pre">(200,</span> <span class="pre">300)]</span> <span class="pre">*</span> <span class="pre">u.ms</span></code> or
 <code class="docutils literal notranslate"><span class="pre">[(&quot;1</span> <span class="pre">min&quot;,</span> <span class="pre">&quot;2</span> <span class="pre">min&quot;)]</span></code></p></li>
-<li><p><strong>units</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><a class="reference internal" href="pypillometry.Unit.html#pypillometry.Unit" title="pypillometry.Unit"><em>Unit</em></a><em> or </em><em>None</em>) – Units of the intervals (“ms”, “sec”, “min”, “h”, or None for indices).
+<li><p><strong>units</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><a class="reference internal" href="pypillometry.Unit.html#pypillometry.Unit" title="pypillometry.Unit"><em>Unit</em></a>) – Units of the intervals (“ms”, “sec”, “min”, “h”, or “samples” for
+sample indices).
 Can be omitted if <cite>intervals</cite> carry units; otherwise, intervals with
 units are converted to <cite>units</cite>.</p></li>
 <li><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Descriptive label for the interval collection</p></li>
 <li><p><strong>event_labels</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em>, </em><em>optional</em>) – Event labels corresponding to each interval</p></li>
 <li><p><strong>event_indices</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Indices (into the dataset’s events) of the event corresponding to
 each interval</p></li>
-<li><p><strong>data_time_range</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a><em>, </em><em>optional</em>) – Time range (min, max) of the original dataset (in same units as intervals)</p></li>
+<li><p><strong>data_time_range</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a><em>, </em><em>optional</em>) – Range (min, max) of the original dataset (in same units as
+intervals); used for clipping in <a class="reference internal" href="#pypillometry.Intervals.pad" title="pypillometry.Intervals.pad"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pad()</span></code></a> and for plotting</p></li>
 <li><p><strong>event_onsets</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> or </em><em>np.ndarray</em><em>, </em><em>optional</em>) – Original event onset times (in same units as intervals)</p></li>
-<li><p><strong>sampling_rate</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Sampling rate in Hz. Required to convert index-based intervals to time units.</p></li>
-<li><p><strong>time_offset</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><em>optional</em>) – Time offset in milliseconds. When intervals are stored in indices (units=None),
-this offset is added when converting to time units. This is needed when the
-dataset’s time vector doesn’t start at 0. Default is 0.</p></li>
 <li><p><strong>interval_window</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a><em>, </em><em>optional</em>) – The relative time window around events, in same units as intervals
 (e.g., (-200, 800) for 200ms before to 800ms after). When set, indicates that intervals are event-locked and
 zero corresponds to event onset. Used by
 <a class="reference internal" href="pypillometry.SegmentedEyeData.html#pypillometry.SegmentedEyeData" title="pypillometry.SegmentedEyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">SegmentedEyeData</span></code></a> to create the appropriate time axis.</p></li>
+<li><p><strong>event_meta</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a><em>, </em><em>optional</em>) – Metadata of the event corresponding to each interval (column name
+-&gt; array with one value per interval; see
+<a class="reference internal" href="pypillometry.Events.html#pypillometry.Events" title="pypillometry.Events"><code class="xref py py-class docutils literal notranslate"><span class="pre">Events</span></code></a>)</p></li>
 </ul>
 </dd>
 </dl>
@@ -639,31 +649,34 @@ zero corresponds to event onset. Used by
 <tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.Intervals.as_pandas" title="pypillometry.Intervals.as_pandas"><code class="xref py py-obj docutils literal notranslate"><span class="pre">as_pandas</span></code></a></p></td>
 <td><p>Represent intervals as a <a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code></a>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.Intervals.filter" title="pypillometry.Intervals.filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filter</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.Intervals.complement" title="pypillometry.Intervals.complement"><code class="xref py py-obj docutils literal notranslate"><span class="pre">complement</span></code></a></p></td>
+<td><p>Return the periods not covered by the intervals.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.Intervals.filter" title="pypillometry.Intervals.filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filter</span></code></a></p></td>
 <td><p>Filter intervals and return a new Intervals object.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.Intervals.from_mask" title="pypillometry.Intervals.from_mask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_mask</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.Intervals.from_mask" title="pypillometry.Intervals.from_mask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_mask</span></code></a></p></td>
 <td><p>Create Intervals from a binary mask array.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.Intervals.merge" title="pypillometry.Intervals.merge"><code class="xref py py-obj docutils literal notranslate"><span class="pre">merge</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.Intervals.merge" title="pypillometry.Intervals.merge"><code class="xref py py-obj docutils literal notranslate"><span class="pre">merge</span></code></a></p></td>
 <td><p>Merge overlapping or close intervals.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.Intervals.pad" title="pypillometry.Intervals.pad"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pad</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.Intervals.pad" title="pypillometry.Intervals.pad"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pad</span></code></a></p></td>
 <td><p>Add padding to the left (start) and right (end) of each interval.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.Intervals.plot" title="pypillometry.Intervals.plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.Intervals.plot" title="pypillometry.Intervals.plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot</span></code></a></p></td>
 <td><p>Plot intervals as horizontal lines on a timeline.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.Intervals.plot_highlight" title="pypillometry.Intervals.plot_highlight"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_highlight</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.Intervals.plot_highlight" title="pypillometry.Intervals.plot_highlight"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_highlight</span></code></a></p></td>
 <td><p>Draw highlighted backgrounds for each interval on existing plot(s).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.Intervals.stats" title="pypillometry.Intervals.stats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">stats</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.Intervals.stats" title="pypillometry.Intervals.stats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">stats</span></code></a></p></td>
 <td><p>Get statistics about interval durations.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.Intervals.to_mask" title="pypillometry.Intervals.to_mask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_mask</span></code></a></p></td>
-<td><p>Convert intervals to a binary mask array.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.Intervals.to_mask" title="pypillometry.Intervals.to_mask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_mask</span></code></a></p></td>
+<td><p>Convert intervals to a binary mask array for the samples of <cite>data</cite>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.Intervals.to_units" title="pypillometry.Intervals.to_units"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_units</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.Intervals.to_units" title="pypillometry.Intervals.to_units"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_units</span></code></a></p></td>
 <td><p>Convert intervals to different time units or indices.</p></td>
 </tr>
 </tbody>
@@ -672,19 +685,18 @@ zero corresponds to event onset. Used by
 <p class="rubric">Details</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.Intervals.from_mask">
-<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampling_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/intervals.html#Intervals.from_mask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.Intervals.from_mask" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'samples'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/intervals.html#Intervals.from_mask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.Intervals.from_mask" title="Link to this definition">#</a></dt>
 <dd><p>Create Intervals from a binary mask array.</p>
+<p>Each contiguous run of non-zero values becomes one interval.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>mask</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – Binary array where non-zero values indicate interval membership.</p></li>
-<li><p><strong>units</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – Units for the intervals. Default is None (indices). Time units
-(“ms”, “sec”, …) require <cite>sampling_rate</cite>; the sample indices
-are converted with <a class="reference internal" href="#pypillometry.Intervals.to_units" title="pypillometry.Intervals.to_units"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_units()</span></code></a>.</p></li>
+<li><p><strong>mask</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – Binary array where non-zero values indicate interval membership,
+one entry per sample.</p></li>
+<li><p><strong>data</strong> (<a class="reference internal" href="pypillometry.GenericEyeData.html#pypillometry.GenericEyeData" title="pypillometry.GenericEyeData"><em>GenericEyeData</em></a><em>, </em><em>optional</em>) – data object the mask belongs to (anything with <cite>tx</cite> and <cite>fs</cite>);
+needed for time units.</p></li>
+<li><p><strong>units</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Units for the intervals. Default is “samples” (sample indices).</p></li>
 <li><p><strong>label</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Label for the intervals.</p></li>
-<li><p><strong>sampling_rate</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Sampling rate in Hz.</p></li>
-<li><p><strong>time_offset</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Time offset in milliseconds for index-to-time conversion
-(time of the first sample).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -714,12 +726,48 @@ are converted with <a class="reference internal" href="#pypillometry.Intervals.t
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>DataFrame with columns <code class="docutils literal notranslate"><span class="pre">start</span></code>, <code class="docutils literal notranslate"><span class="pre">end</span></code>, and <code class="docutils literal notranslate"><span class="pre">duration</span></code>. When metadata
 is available, columns <code class="docutils literal notranslate"><span class="pre">event_label</span></code>, <code class="docutils literal notranslate"><span class="pre">event_index</span></code>, and <code class="docutils literal notranslate"><span class="pre">event_onset</span></code>
-are included. If the intervals have units, the column <code class="docutils literal notranslate"><span class="pre">units</span></code> is added.</p>
+are included, and the column <code class="docutils literal notranslate"><span class="pre">units</span></code> gives the units. The
+metadata of the events (<cite>event_meta</cite>) are added as columns.</p>
 </dd>
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ImportError" title="(in Python v3.15)"><strong>ImportError</strong></a> – If pandas is not installed.</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.Intervals.complement">
+<span class="sig-name descname"><span class="pre">complement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/intervals.html#Intervals.complement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.Intervals.complement" title="Link to this definition">#</a></dt>
+<dd><p>Return the periods not covered by the intervals.</p>
+<p>These are the gaps between the intervals and before the first and
+after the last one, within the whole recording (if <cite>data</cite> is given)
+or within <cite>data_time_range</cite>. Overlapping intervals are merged first.
+Event information (labels, onsets) is not kept.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<a class="reference internal" href="pypillometry.GenericEyeData.html#pypillometry.GenericEyeData" title="pypillometry.GenericEyeData"><em>GenericEyeData</em></a><em>, </em><em>optional</em>) – data object the intervals belong to; the complement is taken
+within the whole recording, from the first sample to the end of
+the last one (one sample past it, as intervals are
+end-exclusive). If not given, <cite>data_time_range</cite> is used; in time
+units, its end is the time of the last sample, so the last
+sample is not covered.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#pypillometry.Intervals" title="pypillometry.intervals.Intervals"><code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code></a></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the periods not covered, in the units of this object</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – if <cite>data</cite> is not given and <cite>data_time_range</cite> is not set</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">iv</span> <span class="o">=</span> <span class="n">Intervals</span><span class="p">([(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span> <span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">60</span><span class="p">)],</span> <span class="n">units</span><span class="o">=</span><span class="s2">"samples"</span><span class="p">,</span> <span class="n">data_time_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">iv</span><span class="o">.</span><span class="n">complement</span><span class="p">()</span><span class="o">.</span><span class="n">intervals</span>
+<span class="go">[(0, 10), (20, 50), (60, 100)]</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -794,14 +842,17 @@ An interval overlaps if its end &gt; range_start AND its start &lt; range_end.</
 <p>When intervals are merged, metadata is handled as follows:
 - event_labels: Labels of merged intervals are joined with merge_sep
 - event_indices: First index of merged group is kept
-- event_onsets: First onset of merged group is kept</p>
+- event_onsets: First onset of merged group is kept
+- event_meta: Metadata of the first interval of merged group is kept</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>merge_sep</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – Separator to use when joining event labels of merged intervals.
 Default is ‘_’.</p></li>
-<li><p><strong>distance</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – <p>Maximum gap (in milliseconds, or with units such as
-<code class="docutils literal notranslate"><span class="pre">50</span> <span class="pre">*</span> <span class="pre">u.ms</span></code>) between intervals to still merge them.
+<li><p><strong>distance</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – <p>Maximum gap between intervals to still merge them, in the units
+of the Intervals object unless it carries units (e.g.,
+<code class="docutils literal notranslate"><span class="pre">50</span> <span class="pre">*</span> <span class="pre">u.ms</span></code>; for intervals in sample indices, convert them
+to time units first or give the distance in samples).
 If two intervals are separated by less than or equal to this distance,
 they will be merged. Default is 0 (only merge overlapping intervals).</p>
 <p>Example: If distance=2 and intervals are (10, 15) and (17, 22), they
@@ -816,7 +867,8 @@ will be merged into (10, 22) because the gap (17-15=2) is &lt;= distance.</p>
 <dd class="field-odd"><p>New Intervals object with merged intervals and updated metadata.</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If distance &gt; 0 and conversion requires sampling_rate but it is not set.</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If <cite>distance</cite> has time units and the intervals are in sample
+indices (or the other way round).</p>
 </dd>
 </dl>
 </dd></dl>
@@ -831,7 +883,7 @@ Padding is applied independently to each interval without merging.
 Use <cite>.merge()</cite> after padding if you want to merge overlapping intervals.</p>
 <p>Intervals are clipped to stay within valid bounds:
 - If data_time_range is set, intervals are clipped to that range
-- Otherwise, intervals are clipped to start at 0 (or time_offset for time units)</p>
+- Otherwise, intervals in sample indices are clipped to start at 0</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -977,14 +1029,13 @@ for empty Intervals, mean/sd/min/max are NaN and total_duration is 0</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.Intervals.to_mask">
-<span class="sig-name descname"><span class="pre">to_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/intervals.html#Intervals.to_mask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.Intervals.to_mask" title="Link to this definition">#</a></dt>
-<dd><p>Convert intervals to a binary mask array.</p>
-<p>If intervals have time units, they are automatically converted to indices
-using the sampling_rate.</p>
+<span class="sig-name descname"><span class="pre">to_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/intervals.html#Intervals.to_mask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.Intervals.to_mask" title="Link to this definition">#</a></dt>
+<dd><p>Convert intervals to a binary mask array for the samples of <cite>data</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>length</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – Length of the mask array. If None, uses data_time_range[1]
-(converted to indices if necessary).</p>
+<dd class="field-odd"><p><strong>data</strong> (<a class="reference internal" href="pypillometry.GenericEyeData.html#pypillometry.GenericEyeData" title="pypillometry.GenericEyeData"><em>GenericEyeData</em></a>) – data object the intervals belong to (anything with a time
+vector <cite>tx</cite> in ms and a sampling rate <cite>fs</cite>); the mask has one
+entry per sample of <cite>data</cite></p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span></p>
@@ -992,34 +1043,33 @@ using the sampling_rate.</p>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Binary array with 1s where intervals exist, 0s elsewhere.</p>
 </dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If length is not provided and data_time_range is not set.
-If intervals have time units but sampling_rate is not set.</p>
-</dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">intervals</span> <span class="o">=</span> <span class="n">Intervals</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">)],</span> <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">data_time_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">mask</span> <span class="o">=</span> <span class="n">intervals</span><span class="o">.</span><span class="n">to_mask</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">mask</span><span class="o">.</span><span class="n">shape</span>
-<span class="go">(50,)</span>
-</pre></div>
-</div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Time-based intervals are auto-converted</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">intervals</span> <span class="o">=</span> <span class="n">Intervals</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">300</span><span class="p">)],</span> <span class="n">units</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">,</span> 
-<span class="gp">... </span>                      <span class="n">data_time_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">500</span><span class="p">),</span> <span class="n">sampling_rate</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">mask</span> <span class="o">=</span> <span class="n">intervals</span><span class="o">.</span><span class="n">to_mask</span><span class="p">()</span>  <span class="c1"># Converts to indices automatically</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">blinks</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_blinks</span><span class="p">(</span><span class="s2">"left"</span><span class="p">,</span> <span class="s2">"pupil"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mask</span> <span class="o">=</span> <span class="n">blinks</span><span class="o">.</span><span class="n">to_mask</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.Intervals.to_units">
-<span class="sig-name descname"><span class="pre">to_units</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_units</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/intervals.html#Intervals.to_units"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.Intervals.to_units" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">to_units</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_units</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/intervals.html#Intervals.to_units"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.Intervals.to_units" title="Link to this definition">#</a></dt>
 <dd><p>Convert intervals to different time units or indices.</p>
+<p>Conversions between time units (“ms”, “sec”, “min”, “h”) only
+rescale the values. Conversions between sample indices and time
+use the time vector of <cite>data</cite>, the data object the intervals belong
+to: a sample index stands for the time of that sample, and a time
+is converted to the first sample at or after it (so <code class="docutils literal notranslate"><span class="pre">(start,</span> <span class="pre">end)</span></code>
+covers the samples with <code class="docutils literal notranslate"><span class="pre">start</span> <span class="pre">&lt;=</span> <span class="pre">t</span> <span class="pre">&lt;</span> <span class="pre">end</span></code>).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>target_units</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span></span>) – Target units: “ms”, “sec”, “min”, “h”, or “indices”/”index” for sample indices.
-Also accepts None for indices.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>target_units</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Target units: “ms”, “sec”, “min”, “h”, or “samples” for sample
+indices (aliases such as “seconds” or “indices” work, too).</p></li>
+<li><p><strong>data</strong> (<a class="reference internal" href="pypillometry.GenericEyeData.html#pypillometry.GenericEyeData" title="pypillometry.GenericEyeData"><em>GenericEyeData</em></a><em>, </em><em>optional</em>) – data object the intervals belong to (anything with a time vector
+<cite>tx</cite> in ms and a sampling rate <cite>fs</cite>); needed to convert between
+sample indices and time</p></li>
+</ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#pypillometry.Intervals" title="pypillometry.intervals.Intervals"><code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code></a></span></p>
@@ -1028,23 +1078,19 @@ Also accepts None for indices.</p>
 <dd class="field-odd"><p>New Intervals object with converted units</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If conversion requires sampling_rate but it is not set</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If the conversion involves sample indices and <cite>data</cite> is not given</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">intervals</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="s2">"stim"</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">intervals</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="s2">"stim"</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span> <span class="mi">800</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">intervals_sec</span> <span class="o">=</span> <span class="n">intervals</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="s2">"sec"</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">intervals_seconds</span> <span class="o">=</span> <span class="n">intervals</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="s2">"seconds"</span><span class="p">)</span>  <span class="c1"># alias works too</span>
 </pre></div>
 </div>
-<p>Convert from indices to time units (requires sampling_rate):</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">intervals_idx</span> <span class="o">=</span> <span class="n">Intervals</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">300</span><span class="p">)],</span> <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">intervals_ms</span> <span class="o">=</span> <span class="n">intervals_idx</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="s2">"ms"</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Convert from time units to indices (requires sampling_rate):</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">intervals_ms</span> <span class="o">=</span> <span class="n">Intervals</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1000</span><span class="p">),</span> <span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">3000</span><span class="p">)],</span> <span class="n">units</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">intervals_idx</span> <span class="o">=</span> <span class="n">intervals_ms</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="s2">"indices"</span><span class="p">)</span>
+<p>Convert between indices and time units (needs the data object):</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">blinks</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get_blinks</span><span class="p">(</span><span class="s2">"left"</span><span class="p">,</span> <span class="s2">"pupil"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">blinks_ms</span> <span class="o">=</span> <span class="n">blinks</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="s2">"ms"</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">blinks_idx</span> <span class="o">=</span> <span class="n">blinks_ms</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="s2">"samples"</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -1073,11 +1119,11 @@ Also accepts None for indices.</p>
       </div>
     </a>
     <a class="right-next"
-       href="pypillometry.merge_intervals.html"
+       href="pypillometry.ClockSync.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">merge_intervals</p>
+        <p class="prev-next-title">ClockSync</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -1088,7 +1134,7 @@ Also accepts None for indices.</p>
             
             
               
-                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <dialog id="pst-secondary-sidebar-modal" tabindex="-1"></dialog>
                 <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
 
@@ -1103,6 +1149,7 @@ Also accepts None for indices.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.Intervals"><code class="docutils literal notranslate"><span class="pre">Intervals</span></code></a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.Intervals.from_mask"><code class="docutils literal notranslate"><span class="pre">from_mask()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.Intervals.as_pandas"><code class="docutils literal notranslate"><span class="pre">as_pandas()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.Intervals.complement"><code class="docutils literal notranslate"><span class="pre">complement()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.Intervals.filter"><code class="docutils literal notranslate"><span class="pre">filter()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.Intervals.merge"><code class="docutils literal notranslate"><span class="pre">merge()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.Intervals.pad"><code class="docutils literal notranslate"><span class="pre">pad()</span></code></a></li>
@@ -1154,8 +1201,8 @@ Also accepts None for indices.</p>
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
-<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
+  <script defer src="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -1188,7 +1235,7 @@ Also accepts None for indices.</p>
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.24.0.
 </p></div>
       
     </div>

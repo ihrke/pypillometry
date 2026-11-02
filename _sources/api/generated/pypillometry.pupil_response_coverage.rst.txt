@@ -1,0 +1,6 @@
+﻿pupil\_response\_coverage
+=========================
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: pupil_response_coverage

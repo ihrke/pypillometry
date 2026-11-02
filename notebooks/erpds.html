@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Event-related pupil dilations &#8212; pypillometry v2.0.0</title>
+    <title>Event-related pupil dilations &#8212; pypillometry v2.1.0</title>
   
   
   
@@ -26,8 +26,8 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
@@ -38,12 +38,12 @@
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=e89b0eda" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
+  <script defer src="../_static/scripts/fontawesome.js?digest=75c7c72ae941e8b558d8"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=aa039f9c"></script>
+    <script src="../_static/documentation_options.js?v=dbd6d5c5"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -62,7 +62,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.0.0" />
+  <meta name="docsearch:version" content="v2.1.0" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -113,7 +113,7 @@
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
-  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation" aria-expanded="false" aria-controls="pst-primary-sidebar-modal">
     <span class="fa-solid fa-bars"></span>
   </button>
   
@@ -217,14 +217,14 @@
 
 <div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
   <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
-    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
-    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
-    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
   </button>
   <ul class="dropdown-menu dropdown-menu-end">
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
   </ul>
 </div></div>
       
@@ -270,7 +270,7 @@
   
 
   
-    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page" aria-expanded="false" aria-controls="pst-secondary-sidebar-modal">
       <span class="fa-solid fa-outdent"></span>
     </button>
   
@@ -284,7 +284,7 @@
       
       
       
-      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <dialog id="pst-primary-sidebar-modal" tabindex="-1"></dialog>
       <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
         
 
@@ -355,14 +355,14 @@
 
 <div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
   <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
-    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
-    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
-    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
   </button>
   <ul class="dropdown-menu dropdown-menu-end">
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
   </ul>
 </div></div>
         
@@ -413,6 +413,7 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="importdata_edf.html">Importing data from Eyelink EDF files</a></li>
 <li class="toctree-l1"><a class="reference internal" href="importdata_asc.html">Importing data from Eyelink ASC files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="importdata_behaviour.html">Events from a behaviour log</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example_datasets.html">Example datasets included in <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code></a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Working with data objects</span></p>
@@ -429,6 +430,7 @@
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Events and event-related analyses</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="events.html">Events</a></li>
+<li class="toctree-l1"><a class="reference internal" href="event_metadata.html">Event metadata</a></li>
 <li class="toctree-l1"><a class="reference internal" href="intervals.html">Intervals</a></li>
 <li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">Event-related pupil dilations</a></li>
 </ul>
@@ -473,7 +475,7 @@
     
     <li class="breadcrumb-item breadcrumb-home">
       <a href="../index.html" class="nav-link" aria-label="Home">
-        <i class="fa-solid fa-home"></i>
+        <i class="fa-solid fa-house"></i>
       </a>
     </li>
     
@@ -537,8 +539,8 @@
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-<span class="ansi-green-fg">pp: 22:13:17</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">_read_edf</span>:<span class="ansi-cyan-fg">688</span> | <span class="ansi-bold">Loading EDF file: ../../data/test.edf (current log level: INFO, set to DEBUG to see eyelinkio output)</span>
-<span class="ansi-green-fg">pp: 22:13:28</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">from_eyelink</span>:<span class="ansi-cyan-fg">1297</span> | <span class="ansi-bold">Filtering out Eyelink triggers</span>
+<span class="ansi-green-fg">pp: 16:01:24</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">_read_edf</span>:<span class="ansi-cyan-fg">720</span> | <span class="ansi-bold">Loading EDF file: ../../data/test.edf (current log level: INFO, set to DEBUG to see eyelinkio output)</span>
+<span class="ansi-green-fg">pp: 16:02:09</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">from_eyelink</span>:<span class="ansi-cyan-fg">1280</span> | <span class="ansi-bold">Filtering out Eyelink triggers</span>
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -710,7 +712,7 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cue_intervals</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="s2">"C_"</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">2000</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cue_intervals</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="s2">"C_"</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">2000</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>
 <span class="n">cue_intervals</span>
 </pre></div>
 </div>
@@ -721,7 +723,7 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Intervals &#39;C_&#39; | 400 intervals (total duration: 1000000.00 ms), 2500.00 ms +/- 0.00 ms, [2500.00 ms, 2500.00 ms] | fs=500.0Hz
+Intervals &#39;C_&#39; | 400 intervals (total duration: 1000000.00 ms), 2500.00 ms +/- 0.00 ms, [2500.00 ms, 2500.00 ms]
 </pre></div></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">get_segments()</span></code> extracts the data in these intervals for one variable (here, the pupil of the left eye). We then apply a baseline correction by subtracting the mean in the 200 ms before the cue (the baseline window is given in ms):</p>
@@ -740,7 +742,7 @@ Intervals &#39;C_&#39; | 400 intervals (total duration: 1000000.00 ms), 2500.00 
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-<span class="ansi-green-fg">pp: 22:13:31</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">451</span> | <span class="ansi-bold">Baseline correction applied using window [-200.    0.]</span>
+<span class="ansi-green-fg">pp: 16:02:19</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">412</span> | <span class="ansi-bold">Baseline correction applied using window [-200.    0.]</span>
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -777,7 +779,7 @@ Intervals &#39;C_&#39; | 400 intervals (total duration: 1000000.00 ms), 2500.00 
 
     <div style="margin-top:10px;">
       <div style="font-size:0.85em; color:#666; margin-bottom:4px;">Mean signal (red line = event onset)</div>
-      <img src="data:image/png;base64,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" alt="Mean signal" style="width:100%; max-width:300px; border-radius:4px;">
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAABkCAYAAAA8AQ3AAAAAOnRFWHRTb2Z0d2FyZQBNYXRwbG90bGliIHZlcnNpb24zLjExLjIsIGh0dHBzOi8vbWF0cGxvdGxpYi5vcmcvgI3uAAAAAAlwSFlzAAAPYQAAD2EBqD+naQAAFClJREFUeJztnQdUlGf2xh9gGHrvIr0qguIaFBUrUYJJjG42MWbTY4ya/adsNIkpm/LXtJNNz0k3RRNjTFtjiYkVRUUgKkqRpoD03oRhyp77IiOoa8AwTPnu7xzON983On6Mw8N97/vce800Go0GEkHV2IjWlH2wT5gMC2dnfd8OwzADxBwSQtXcjObNm8WRYRjjQ1KCxTCMccOCxTDMgKhr7cSmo+X45nAJFEq19npHlwr78muhUmtAmSZdZJtkkBBmlpaw9PMTR4ZhBs7BojrcuSYNHV3dQvXYd1niGOBmi9N17Rf9+VBPe7jZyRHoZofkGB9MCnGDzOLK4yQzKSXdGYa5ciiCmv9eKrIrrjwH7OlghSXTQnBLnD+sLS0G/PdZsBiGuSQZp+vRpeqOZyK9HbBi4zFsz66C3MIcWx6cjPVppfh4X7F4/snkEahp7cTvJQ2YEOyG3MoWJEV5w9vJGqfq2nCstAm/5lShvk0h/ry3ozUemBGK4to2WFua45GrI2BhboY/QlKCpSgtRdXLL8Prsccg9/PT9+0wjMGSW9mMpDdSLvncC3OjcFt8oPZcqVL3a5lH+a6NGWV4Z2c+yps6+jw31t8Z7946Fj5ONpd9DWkl3UmblaruI8Mw/5M1+05d8vqdEwP7iBXR35yUXGaOheP9sfPRaXj62pFwsjmfS84sacSct/YhJb/msq8hqaQ7wzD/m4LqVvyaXYWEMHd8k14qriWO8IKnoxW+OlSCxVOCsXx2BP4slLu6Z3IQbo8PwKnaNnQq1Vi+8RhyKppx+6dpeCQxXCwXzczMJL4kLClB1eoX4bXyCcj9/fV9OwxjMJTUtWPKq7v6XPNytMKhlYlDltB/blM2vk4rEecUgZGoSXtJyDDMJdlwLqLqzV/HDsdQQVHXi/OjsXRaiDh/ZVsufjlRKe0IS6NQQFlbC5m7O8zkcn3fDsMYDJNe2okzjWfF45vGDUdytA+mhHnAvB87d4PJWYUKt31yCOmnG8T5ooQgrEiKhOW5PJmkBIthmIupaDqL+Bd3CltB1rOzYCvXb2q7S6XGy1tztZaJebG++PdNo0VOS1JLQmVdHeq/+FIcGYbpZmtWpdZrpW+xIiiaeurakXhzwRhx/sPvZ4TFgmwRkhIsdVsb2lJTxZFhmG7ST9eL48wRXjAk5o7xxSs3xojHeVUtOFnVIi3BYhjmYkrru3NX0b5OMDRuGueHYA878fj9PYUsWAwjZbYdr0TWmSbxuEcYDI3HkiJBuf+fj1WwYDGMVHltex7uX5uhPaeOCobI7ChvLEoIFo/1n2EbQswdHOAwe7Y4MoyU0Wg0eHtngfacXOz9KT7WFw8mhiG/upVtDQwjZStDD0Wrk4fcczVQqDGgpJLu6o4OdOSdFEeGkSrtCqVoFdND/qprDF6sCIoAJSVYyupq1Lz+ujgyjBTJLGnAyGd+QUp+rTj/etEErYvcGDCeO2UY5k/zr59OaB/PjPREfIgbjAkWLIaRCFuyKrQWBmLp9FAYGyxYDCMBVGoNlq7L1J6/ND8afwlwgbEhLcEyt+ie+Gw+8Ob3DGOsNLV3IWTlFu35nBgfLIgzzn5w3K2BYUyc697ep10K2sktcOL5JBgr0oqwGEaCZPXKWxk7khIsRdkZlD/+hDgyjFRw6jXs4Y0FsTBmJFWaA7UKqsZGcWT6lmlQc7QT5U3Ye7JW9EWaEu5h0KUaTP8orW9H09ku0DyHI0/PgpOtcU89l5ZgMQK1WoPUwjr8dOSMmOJLQy9pF6k3gW62oko+IdwD9lb8MTFGWjuVmPnaHvF4Uoi70YsVwZ9ECUE9uz/bX4ydudUorLl8E8NTde1Ysi5T/GYOcrPDGH9nMZQgLsjVqJzRUub+LzOgUKnF4/ljfWEKsGBJhM3HKrB841G0K7qXww7WMswdMwyTQ91BwRV19h/t54ThLrYoa2jH67/m40BhrZjQW1TbJr6+zzwDZ1tLzIz0wuwoL7FspGknjGEu8/cVdJffEEmjvGEKSMrWQEXPitMlkAf4w9zaGlKAxoi/+ksePthbpL32fzNCsWhKMBys/3iJUN3SgbUHTmNzVgWqWzrR0qHUPmcrtxAdIWl+nJ+rrc6+B2bgtHR0IfrZ7eLxW7fE4vrRw0zibZSUYEmNQ0V1uPnDg9rzxVODsXxWRL9Hi19K/Gj8Es2L++V4pYi+CMrNUz/wO+IDMTnMfdDun7ly7v7ssFj6O1jJkPXcbJN5KyUlWMqGBrTu3gP7aVMhczG+soSBUN3cgbnv7kdFUwesZOb4901jhMN5sKCPzf6COnyYUoS9J2u015+aMwLzxw5HY7sCAW52vNOoB07XtWHqq7vF44cSw/BQYjhMBUkJllRG1de3KXDzBwdEh0Zi20MJiPR21Nm/l1PRjGveTLnouo+TNb5aNAFB7obZetcU+1yNX7UDLZ3dy3Z/V1vsXTEdpgRv95gYDW0KMTmXxMrL0QopK6brVKyIET6OOPbsLDxxTSTCvey11ym6W/jRQTHogLbYGd2yL79WK1bEtAgPk3vLeZfQxJYCN31wAFXNnXC1k2PdveOHLBnuaG2JxVNDcN+UYOHtWneoBF8dKhGiRYMOLC3McFWgK6ZHeGJ6pAdCPOyFWZUZPHIrW/qcTwo1vXwiC5YJeawWfnRIiBWVYnxxdxxCPYd+2AaJUNQwJ6y6YRTmRPtgR041duVVo7i2TZhV6WvVlhwMd7HRild8sDts5GyP+DMoVWp8nHJ+J/j+qSG42sAGow4Gksph0Yj65s1b4DgnGTI34+q0+EcJdoqsyOwZ7G6H9YsnwNPBsGwbJFi780i8anCwqE6MHe9BZt4dfS2I8xPGVB8nG73dZ2VTB3Irm4Xo3/dlBmpaOnHXpED867oocZ1GYenbe9alUsPczKzPhsamo+X4x9e/i8eHn0yEh4MVTBFJCZYpUtfaiQUfHhQ5K4pavr0/Xq8/8P1NDh8orBOR167cGhEd9oZqGe+cGIipER5D8r2QAOzKrca3GWXYkVMljLSXY8/yaWIHVF85yhvfTxX3uP3hKaLqgPKDo5/bLsqrKJ+49cEEmCqSEiyNQgFlbS1k7u4wk8thCo3ZbvnooMgZeTtaY8PiePi7GZeBkz5+J8qb8W16KQ4V11+Uh6Hvi3a7wr3tkTzKBxMHIS9Dy6cjpY3CT0a5th73/0BYmRyJuyYFDXmZ0pK1Gdh6vFI7QGJCsCtufP8AMk43iGsvzI3CbfGBMFUkJVimZGugJdbf3j+A2tZOuNvL8c3ieJHINnZ+y67CpmPl4vujPk4XfjpvHe+PW+L8McrXacCv3alUifIicv6T9aM37vZWot6OHOEUbXk5WYvaSboH2nXt7fDv4eHEcDHgc6j45UQlFn95flLzrJFewqj7TK/BEnuXTze6X1oDgQXLCGnu6MK8d/eLAmbKtXyzeILOrQv6Wv6kFNSioLoVe/KqcbTsfCO6pChv0ZM81NNe7IR62FvB0UbWZ+eRBOqdnQVitFVp/Vmx9OzdlYKmxrQplLh3crBYfl4uWqLcFi1lZ5zrfnDhANKeFj26gu496Y29fYQzIcwdeZUtomQqLtAVz14fhZHDTO9z0BveJTTC1jA0qqmn28LHd4wzSbEiXOzk2hq4exOCsOFwqYgyDp9qwLYTleKrN2SdcLGVC+FRazTCUnEhZPe4KtAFL82PEa/fX7ydujcxyGv22vaT2i4I27OrRM+pj1KK8P83jMKsKN0UGX+eekqIVcxwJxFhPvF9lna2ICXfP787ThI7rRxhGREUHTz+3TGRHKYNojV3xWFquOmZAy8HRTKUrD9S2oTCmlYUVreK6ONSSzaCgp4pYR5YNj0Ufq42Iif2ZyMh+qUR3GuoQ2/BzHth8KcokyH0jjVp4v//7VtiRaeNO9cc1j5PS1kqvZIC0oqw6IMqs+g+GhmUKH7026P48Ui5EKvXbx4jObEiSGxmRHqJr950dKlQ16YQy0ilWgOVWi3MrJTXG2wBodf79M5xuPuz9D7Xu1QaURxO1ozBoqimFUvXZQixmhfri2tjfNDRdd4SQpAgSwVJRVjGCm27P7T+iGjxQp6lNxfEDmohM3NlPPVjFtYeLOlzLcDNFpv+MVmI5WCw6It0/JpdJfJ16+4dr/WAUdvjWa/vgaudFX5aNglymTSq7FiwDBzqerBkbSYOFNWJJce7C8fqLE/CDJwnf8gS1ojxQa7CltHTseLehOBBKSpPfitF7JT+9sgUvVQuGBrSkOVzdFVUoHLVanE0Bmg5MO+9VCFWNE/uo9vHsVgZGOSA/37pROGJuiM+QFyjGsreTv4rgZaA932ZLsQqcYQni5UUBUvT1YWu0lJxNHRSC2qFWJEfydfZBt8tnYhpEZ76vi3mAmgpNtbfReS1eqIqaicd/tRWBD6+GduOV4iNgoFC7Y3JiiG3MMerN47m912KgmUM0IebBkXc/mmayFPE+jvjx2WTTNa6YEqQH2xFUkSfa/evzcRL23Ivu+NI5t8eUaPIimwSS9d2G0STo70HZL8wdaS1S2gEhlCyLWzJ6vYXkQfplRtj9F5sy/SfJVNDMHeML7ZmVWBjRpkoNfpgT5Ewp/YUJJM4kTDRrub41TvEtdF+zihvPCuKrXugQvYX58fw298LFiwDgYaYLluXKTouUHJ9ZfIIUQDMPaOMC/r/oiU8LQ9pOEfQE91+ratW/Yb0pxLFjEdKpBddMGbtaGnjRa81MdRNEmbQgSCpXUJ1Wxs6cnNhHRkJczvDadtLxsB7Pj+MTqVafNjfWRiLWH/T7jkvFSiP1QOJVX87r1LE9ckd40SNIyNRwTI0yOz4xm/5+HBvoWgXEh/shvduHcs5CxMi43S9MJhSPvJCaOe3TaES5TZLp4VqZwfS54IGh3B0LXHBUjU3oz0tDbZxcbBw1G8S+1hZI/654ah2UMT8WF88f8MoHgtvory4JQe782qEsZQ6LCyM8xc1gCxKA0NSgmUI7WVSC2vx3q5C7VReCvlXz9Nd0SzDmBKcdB8iKHdBv2XJFd3DdaOH4fnro3gJyDD9hAVrCEjJr8Hj32VpWwFTAevt8YGDWiTLMFKABUvHviqKqr5OKxXn1HP9lb/GDEqbX4aRIpISLDNra1jHRIujrqEJMdRkraeJHNWZrUiKhJ2VpN5yhhlUJJV0Hwpo+3rV5mxsSC8T5zRAgdzqE4JNZ6wYw+gLSf261yiVUJ89C3MbG5jJBv9b35lbhZXfH0dlc4foEUhO9eWzI2Arl9TbzDA6Q1I/SV3l5TqxNdC4red/zsZ3md1RVaAbRVWjOanOMIOMpARLV2OpVv6QJSaXUFR196QgPDorgmvAGEYHsGBdIT0jpN7eWaCtrH/1bzH4SwBbFRhGV7BgXQH7C2rx9E/HtRX3lKt6/JpIbgPDMDqGBWsA0DDN1Vty8J+j5dqymqevHSH6HzEMo3skZWvQqNXQdHbCzMoKZubmA0qqv7enAJ/tPyVawNDUKHKqP3x1uJi8zDDM0CApwRooZxUqrEktxvu7C9F8blAnTQ1+5tooRA930vftMYzkkNSSsKuqGo3frIfzzQtg6eV52TmA36aX4c0dJ1HV3N2yNsLLQfTrnhHpyS1BGEZPSEqwNJ0d6MjOEcdLPq/RiH7qr23PE5NPeur/Hrk6XOSpqH8RwzD6Q1KC9Udtil/elousM03i3M1OjgdmhGLheH9Y0Xh7hmH0juQFK6usSQhVT0M9alu7aEqwGCJAPbgZhjEcJPsTSVOVX9t+EpuzuqdA06Sav08IwLLpodz4n2EMFEntEqpaWlCyOxUfNzlifXaDmA1H5TTzYn3xcGK4GITJMIzhIpkIi4ZUvrPrFDYcVkGprhfXZkZ6YnlSBE9VZhgjweQjLBr7/XFKkej6adHRjrDGMniMG41lc0ZjLM/+YxijwmQjrMySBnySUoytxyvEzD/iGi8ZltZkIWLOPMhZrBjG6DApwVKrNdh2olJEVJkl50d/J4S5Y8nUEIyTt6Nq9Ta93iPDMBIXrIY2BX46ckYs+/KqWsQ1uYU55o4ZhnsSgrQ5KppLyDCM8SIz5t7p209U4udjFaLdi/Lcuo98VPdMDsLf4wPg6aD7YRMMwwwdMmPb6duRW40dOVVILaiDQqXWPhc1zBE3X+WHuaN94WR76Q4K1KVBHhQkjgzDGB8GvUvY0aXC7yWNOFBYi99yqpFd0dzn+TBPezE9mQaTBnvY6+0+GYaRYITV1qlExukGHCquQ1pxPY6WNvWJosjkSVaEmSM8cfUIL4R5Oej1fhmGkZBgUR4q/VQ9DhV3fx0/0yTc573xdLDC+GA3TA33wPQID7jZX/lyjpLuupiawzCMiQkWWQ6K69qQXd4soiiKoHIqm3HhgpTaucQFuWJCkJs4BrjZcv8phmF0J1iUe8qrbBE5JxKoE+VNyK1sQbtCddGfpWkzJEzjg10RF+QGX2cbXdwSwzAmgGwwBjP0CBKJVG5lMwpr2i5a2hHWlubCExUz3EmIFH2x9YBhmEETLDJkUpRU2tCOEA97kXeiXucEiVRPw7sLcbWTC6vBSB9HjBzmKB4Hudtz106GYQbX1kDO8bd25uPwKUqE97USXIogdztE+zohwtsBkd4OiBrmBC9HK4PLPWkUCigbGyFzdoaZXK7v22EYZoCYPbbxqIZGV9EkY4qcGs92Ce9Tb6iVuY+TjYiU/FxsoVSrRZM7f1dbcS2c7QUMwwwBsvWHSy/5BA1cWBjnj+RoH8SHuMEUUNbWouk/m+B0/XWQubvr+3YYhhkgskdnhYshC1aW5rCWWcDRxhIutpYYG+ACS4v+Dxs1BtTt7WhPS4ND4kx93wrDMFeA7IEZYVfy9xiGYYYc0wqhGIYxaViwGIaBsfBfavxRl2OXvgkAAAAASUVORK5CYII=" alt="Mean signal" style="width:100%; max-width:300px; border-radius:4px;">
     </div>
 
 </div></div>
@@ -924,9 +926,9 @@ array([&#39;C_NW_1_2_UD_UD&#39;, &#39;C_GA_1_4_UD_UD&#39;, &#39;C_GA_1_5_UD_UD&#
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">erpd_conf</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_segments</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="n">is_conflict_cue</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">2000</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">),</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">erpd_conf</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_segments</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="n">is_conflict_cue</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">2000</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">),</span>
                            <span class="s2">"left_pupil"</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"conflict"</span><span class="p">)</span><span class="o">.</span><span class="n">baseline_correct</span><span class="p">(</span><span class="n">window</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
-<span class="n">erpd_cong</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_segments</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="n">is_congruent_cue</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">2000</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">),</span>
+<span class="n">erpd_cong</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_segments</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="n">is_congruent_cue</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">2000</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">),</span>
                            <span class="s2">"left_pupil"</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"congruent"</span><span class="p">)</span><span class="o">.</span><span class="n">baseline_correct</span><span class="p">(</span><span class="n">window</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
 </pre></div>
 </div>
@@ -936,8 +938,8 @@ array([&#39;C_NW_1_2_UD_UD&#39;, &#39;C_GA_1_4_UD_UD&#39;, &#39;C_GA_1_5_UD_UD&#
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-<span class="ansi-green-fg">pp: 22:13:32</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">451</span> | <span class="ansi-bold">Baseline correction applied using window [-200.    0.]</span>
-<span class="ansi-green-fg">pp: 22:13:33</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">451</span> | <span class="ansi-bold">Baseline correction applied using window [-200.    0.]</span>
+<span class="ansi-green-fg">pp: 16:02:20</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">412</span> | <span class="ansi-bold">Baseline correction applied using window [-200.    0.]</span>
+<span class="ansi-green-fg">pp: 16:02:20</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">412</span> | <span class="ansi-bold">Baseline correction applied using window [-200.    0.]</span>
 </pre></div></div>
 </div>
 <p>Finally, we plot both into the same axes to compare them:</p>
@@ -958,11 +960,102 @@ array([&#39;C_NW_1_2_UD_UD&#39;, &#39;C_GA_1_4_UD_UD&#39;, &#39;C_GA_1_5_UD_UD&#
 <img alt="../_images/notebooks_erpds_23_0.png" src="../_images/notebooks_erpds_23_0.png" />
 </div>
 </div>
+<p>With many conditions, writing a function for each selection becomes tedious. Instead, the information in the labels can be stored as metadata of the events (see the <a class="reference internal" href="event_metadata.html"><span class="doc">event metadata tutorial</span></a>). The cue labels have the form <code class="docutils literal notranslate"><span class="pre">C_&lt;condition&gt;_&lt;block&gt;_&lt;trial&gt;_...</span></code>; <code class="docutils literal notranslate"><span class="pre">parse_labels()</span></code> turns the parts into columns:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ev</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_events</span><span class="p">()</span><span class="o">.</span><span class="n">parse_labels</span><span class="p">(</span><span class="sa">r</span><span class="s2">"^C_(?P&lt;cond&gt;[GN][WA])_(?P&lt;block&gt;\d+)_(?P&lt;trial&gt;\d+)"</span><span class="p">)</span>
+<span class="n">ev</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s2">"C_"</span><span class="p">)[:</span><span class="mi">5</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Onset (ms)</th>
+      <th>Label</th>
+      <th>cond</th>
+      <th>block</th>
+      <th>trial</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1345.0</td>
+      <td>C_GW_1_1_UD_UD</td>
+      <td>GW</td>
+      <td>1.0</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>6859.0</td>
+      <td>C_NW_1_2_UD_UD</td>
+      <td>NW</td>
+      <td>1.0</td>
+      <td>2.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>12074.0</td>
+      <td>C_NA_1_3_UD_UD</td>
+      <td>NA</td>
+      <td>1.0</td>
+      <td>3.0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>17306.0</td>
+      <td>C_GA_1_4_UD_UD</td>
+      <td>GA</td>
+      <td>1.0</td>
+      <td>4.0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>22487.0</td>
+      <td>C_GA_1_5_UD_UD</td>
+      <td>GA</td>
+      <td>1.0</td>
+      <td>5.0</td>
+    </tr>
+  </tbody>
+</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 5 events | Data range: [0.0, 2490724.0] ms</p></div>
+</div>
+<p>The conflict cues are then the cues with condition “NW” or “GA”. The selected events can be passed to <code class="docutils literal notranslate"><span class="pre">get_intervals()</span></code> directly and give the same intervals as the function <code class="docutils literal notranslate"><span class="pre">is_conflict_cue()</span></code>:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">conflict_cues</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">cond</span><span class="o">=</span><span class="p">[</span><span class="s2">"NW"</span><span class="p">,</span> <span class="s2">"GA"</span><span class="p">])</span>
+<span class="n">iv</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="n">conflict_cues</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">2000</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>
+<span class="n">iv</span><span class="o">.</span><span class="n">intervals</span> <span class="o">==</span> <span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="n">is_conflict_cue</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">2000</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span><span class="o">.</span><span class="n">intervals</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+True
+</pre></div></div>
+</div>
+<p>The intervals keep the metadata of the events, e.g., to look at the cues of the first block only (<code class="docutils literal notranslate"><span class="pre">iv.event_meta</span></code>), and the selection can be refined further, e.g., <code class="docutils literal notranslate"><span class="pre">ev.filter(cond=[&quot;NW&quot;,</span> <span class="pre">&quot;GA&quot;],</span> <span class="pre">block=1)</span></code>.</p>
 <section id="Group-level-ERPDs">
 <h2>Group-level ERPDs<a class="headerlink" href="#Group-level-ERPDs" title="Link to this heading">#</a></h2>
 <p>With data from several subjects, <code class="docutils literal notranslate"><span class="pre">pp.group_segments()</span></code> averages the ERPDs of each subject (here, we use the two conditions as a stand-in for two subjects). The result is a <code class="docutils literal notranslate"><span class="pre">GroupLevelSegmentedData</span></code> object which can be plotted in the same way:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">group</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">group_segments</span><span class="p">([</span><span class="n">erpd_conf</span><span class="p">,</span> <span class="n">erpd_cong</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s2">"all cues"</span><span class="p">)</span>
@@ -974,7 +1067,7 @@ array([&#39;C_NW_1_2_UD_UD&#39;, &#39;C_GA_1_4_UD_UD&#39;, &#39;C_GA_1_5_UD_UD&#
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_erpds_25_0.png" src="../_images/notebooks_erpds_25_0.png" />
+<img alt="../_images/notebooks_erpds_30_0.png" src="../_images/notebooks_erpds_30_0.png" />
 </div>
 </div>
 </section>
@@ -1015,7 +1108,7 @@ array([&#39;C_NW_1_2_UD_UD&#39;, &#39;C_GA_1_4_UD_UD&#39;, &#39;C_GA_1_5_UD_UD&#
             
             
               
-                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <dialog id="pst-secondary-sidebar-modal" tabindex="-1"></dialog>
                 <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
 
@@ -1069,8 +1162,8 @@ array([&#39;C_NW_1_2_UD_UD&#39;, &#39;C_GA_1_4_UD_UD&#39;, &#39;C_GA_1_5_UD_UD&#
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -1103,7 +1196,7 @@ array([&#39;C_NW_1_2_UD_UD&#39;, &#39;C_GA_1_4_UD_UD&#39;, &#39;C_GA_1_5_UD_UD&#
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.24.0.
 </p></div>
       
     </div>

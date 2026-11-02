@@ -23,6 +23,20 @@ From the command line, ``pypilinfo -Q`` prints the report and
 ``pypilinfo --html`` opens it in a browser (see
 :doc:`/getting_started/cli`).
 
+If parts of the recording are excluded from the analysis (e.g., breaks,
+see :meth:`~GenericEyeData.exclude_intervals`), the report only looks at
+the included time: the recording section shows the total and the included
+duration, and all rates and percentages refer to the included part.
+Dropouts end at the boundaries of an excluded period, and no
+sample-to-sample differences across a boundary are used (noise, jumps,
+gaze precision). Off-screen gaze during breaks, for example, does not count
+against the data:
+
+.. code-block:: python
+
+    d = d.exclude_intervals(d.get_intervals(("break_start", "break_end"), units="ms"))
+    d.quality_report()
+
 
 Labels and thresholds
 ---------------------
