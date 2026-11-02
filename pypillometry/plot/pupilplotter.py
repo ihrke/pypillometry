@@ -37,8 +37,8 @@ class PupilPlotter(GenericPlotter):
         self.obj = obj
     
     def pupil_plot(self, 
-                   eyes: str|list=[],
                    plot_range: Tuple[float,float]=(-np.inf, +np.inf),
+                   eyes: str|list=[],
                    show_events: bool=True,
                    show_blinks: bool=True,
                    units: str="sec",
@@ -52,11 +52,11 @@ class PupilPlotter(GenericPlotter):
 
         Parameters
         ----------
-        eyes : str or list
-            eye(s) to plot; if empty, all eyes with pupil data are plotted
         plot_range : tuple (start,end)
             plot from start to end (in units of `units`, or with units, e.g.
             ``(3, 5) * u.min``)
+        eyes : str or list
+            eye(s) to plot; if empty, all eyes with pupil data are plotted
         show_events : bool
             plot events as vertical lines with labels
         show_blinks : bool
