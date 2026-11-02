@@ -135,5 +135,60 @@ class TestExcluded(unittest.TestCase):
         self.assertIn("Excluded", d._repr_html_())
 
 
+class TestIncludedSplitRemove(unittest.TestCase):
+    def make(self):
+        # 20 s at 500 Hz from 5000 ms; excluded 7-8 s and 12-13 s
+        d = _make_data()
+        d.set_event_onsets([6000, 7500, 9000, 12500, 20000], ["a", "x", "b", "y", "c"])
+        d = d.pupil_blinks_detect(apply_mask=True)
+        return d.exclude_intervals([(7000, 8000), (12000, 13000)])
+
+    def test_get_included(self):
+        d = self.make()
+        self.assertEqual(d.get_included().intervals,
+                         [(5000., 7000.), (8000., 12000.), (13000., 25000.)])
+        self.assertEqual(d.get_included("samples").intervals,
+                         [(0, 1000), (1500, 3500), (4000, 10000)])
+        self.assertEqual(_make_data().get_included("samples").intervals, [(0, 10000)])
+
+    def test_split_excluded(self):
+        d = self.make()
+        parts = d.split_excluded()
+        self.assertEqual([len(p) for p in parts], [1000, 2000, 6000])
+        self.assertEqual([p.tx[0] for p in parts], [5000., 8000., 13000.])
+        self.assertEqual([list(p.event_labels) for p in parts], [["a"], ["b"], ["c"]])
+        self.assertEqual(sum(len(p.get_blinks("left", "pupil")) for p in parts),
+                         len(d.get_blinks("left", "pupil")))
+        for p in parts:
+            self.assertEqual(p.excluded_duration(), 0)
+        self.assertEqual(len(d), 10000)  # not changed
+
+    def test_remove_excluded(self):
+        d = self.make()
+        r = d.remove_excluded(inplace=False)
+        self.assertEqual(len(r), 9000)
+        # time re-aligned: no gaps, starts at the same time
+        self.assertEqual(r.tx[0], 5000.)
+        np.testing.assert_allclose(np.diff(r.tx), 2.)
+        # events shifted with the data, those in excluded periods removed
+        self.assertEqual(list(r.event_labels), ["a", "b", "c"])
+        np.testing.assert_allclose(r.event_onsets, [6000, 8000, 18000])
+        # data and blinks at their new positions
+        np.testing.assert_array_equal(r.data["left_x"][1000:3000], d.data["left_x"][1500:3500])
+        bl_d = d.get_blinks("left", "pupil").to_units("ms", d).intervals
+        bl_r = r.get_blinks("left", "pupil").to_units("ms", r).intervals
+        self.assertEqual(len(bl_r), len(bl_d))
+        self.assertEqual(bl_r[-1], (bl_d[-1][0] - 2000, bl_d[-1][1] - 2000))
+        # nothing excluded or masked for exclusion any more
+        self.assertEqual(len(r.get_excluded()), 0)
+        self.assertEqual(r.params["removed_excluded"], [(7000., 8000.), (12000., 13000.)])
+        self.assertFalse(r.data.mask["left_x"].any())
+        # without excluded periods, nothing changes
+        e = _make_data()
+        self.assertEqual(len(e.remove_excluded()), len(e))
+        with self.assertRaises(ValueError):
+            _make_data().exclude_intervals([(0, 1e6)]).remove_excluded()
+
+
 if __name__ == "__main__":
     unittest.main()
