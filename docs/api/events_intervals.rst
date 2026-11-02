@@ -4,7 +4,8 @@ Events and intervals
 ====================
 
 See :doc:`/user_guide/events_intervals` for an introduction and the
-tutorials :doc:`/notebooks/events` and :doc:`/notebooks/intervals`.
+tutorials :doc:`/notebooks/events`, :doc:`/notebooks/event_metadata` and
+:doc:`/notebooks/intervals`.
 
 .. autosummary::
    :toctree: generated
