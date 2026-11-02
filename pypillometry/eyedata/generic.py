@@ -2957,6 +2957,10 @@ class GenericEyeData(state.VersionedState, ABC):
         ...                          units="ms")  # doctest: +SKIP
         >>> d = d.exclude_intervals(breaks)  # doctest: +SKIP
         >>> d = d.exclude_intervals([(0, 2 * u.min)])  # doctest: +SKIP
+
+        See Also
+        --------
+        keep_intervals : exclude everything outside the given periods
         """
         obj = self._get_inplace(inplace)
         if not isinstance(intervals, Intervals):
@@ -2971,6 +2975,46 @@ class GenericEyeData(state.VersionedState, ABC):
             obj.data.mask[key][excl] = 1
         obj._drop_excluded_blinks()
         return obj
+
+    @keephistory
+    def keep_intervals(self, intervals, inplace=None):
+        """
+        Exclude everything outside the given periods (e.g., keep only the
+        task blocks or the fMRI run).
+
+        Same as ``exclude_intervals(intervals.complement(d))``: the time
+        before, between and after the periods is excluded (see
+        :meth:`exclude_intervals`). Periods that are already excluded stay
+        excluded, also if they are within `intervals`.
+
+        Parameters
+        ----------
+        intervals : Intervals or list of tuple
+            the periods to keep: an :class:`~pypillometry.Intervals`
+            object (e.g., from :meth:`get_intervals`; in time units or sample
+            indices) or a list of ``(start, end)`` tuples (in ms, or with
+            units); ends are exclusive
+        inplace : bool or None, optional
+            if `True`, make change in-place and return the object;
+            if `False`, make and return copy before making changes;
+            if `None`, use the object-level setting (specified in the constructor)
+
+        Returns
+        -------
+        :class:`~pypillometry.GenericEyeData`
+            the object with the excluded periods (`self` or a copy,
+            depending on `inplace`)
+
+        Examples
+        --------
+        >>> run = d.get_intervals(("rsfMRI_ONSET", "rsfMRI_END"), interval=(0, 0),
+        ...                       units="ms")  # doctest: +SKIP
+        >>> d = d.keep_intervals(run)  # doctest: +SKIP
+        """
+        if not isinstance(intervals, Intervals):
+            # plain numbers are ms; values with units are converted
+            intervals = Intervals(list(intervals), units="ms")
+        return self.exclude_intervals(intervals.complement(self), inplace=inplace)
 
     def get_excluded(self, units: str = "ms") -> Intervals:
         """
