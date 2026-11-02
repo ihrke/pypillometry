@@ -439,7 +439,7 @@ def pupil_build_design_matrix(tx,event_onsets,fs,npar,tmax,max_duration="estimat
 
 def pupil_response(tx, sy, event_onsets, fs, npar="free", tmax="free", verbose=10, 
                    bounds={"npar":(1,20), "tmax":(100,2000)}, display_progress=True,
-                   valid=None):
+                   valid=None, min_valid=0):
     """
     Estimate pupil-response based on event-onsets.
 
@@ -447,7 +447,9 @@ def pupil_response(tx, sy, event_onsets, fs, npar="free", tmax="free", verbose=1
     estimated with non-negative least-squares (NNLS). If `npar` and/or
     `tmax` are "free", they are optimized (minimizing the sum of squared
     residuals) within `bounds`. Only the valid samples (see `valid`) are
-    used for the fit; the prediction is computed for all samples.
+    used for the fit; the prediction is computed for all samples. Events
+    whose response falls mostly on invalid samples (see `min_valid`) are
+    left out of the fit; their coefficient is NaN.
 
     Parameters
     ----------
@@ -479,13 +481,19 @@ def pupil_response(tx, sy, event_onsets, fs, npar="free", tmax="free", verbose=1
         boolean array (same length as `sy`), True for the samples that are
         used for the fit (e.g., False in long gaps); None: all samples
         that are not NaN
+    min_valid : float
+        events whose share of the response on valid samples (see
+        :py:func:`pupil_response_coverage()`) is below this are left out
+        of the fit (their amplitude cannot be estimated reliably); default 0
+        (all events are used)
 
     Returns
     -------
     pred : np.ndarray
         predicted signal (same length as `sy`)
     coef : np.ndarray
-        non-negative amplitude of each event's PRF
+        non-negative amplitude of each event's PRF (NaN for events left
+        out, see `min_valid`)
     npar : float
         `npar` used (estimated if "free")
     tmax : float
@@ -505,8 +513,13 @@ def pupil_response(tx, sy, event_onsets, fs, npar="free", tmax="free", verbose=1
         maxdur=pupil_get_max_duration(npar,tmax)
         logger.debug("npar,tmax,maxdur=(%.2f,%.2f,%i)"%(npar,tmax,maxdur))
         x1=pupil_build_design_matrix(tx, event_onsets, fs, npar, tmax, maxdur)
-        coef=scipy.optimize.nnls(x1[:, valid].T, syv)[0]
-        resid=syv-np.dot(x1[:, valid].T, coef)
+        coef=np.full(x1.shape[0], np.nan)
+        use = np.ones(x1.shape[0], dtype=bool) if min_valid <= 0 \
+            else pupil_response_coverage(x1, valid) >= min_valid
+        xv = x1[use][:, valid]
+        if use.any():
+            coef[use]=scipy.optimize.nnls(xv.T, syv)[0]
+        resid=syv-np.dot(xv.T, coef[use])
         return x1, coef, np.sum(resid**2)
 
     if npar=="free" and tmax=="free":
@@ -530,7 +543,7 @@ def pupil_response(tx, sy, event_onsets, fs, npar="free", tmax="free", verbose=1
         tmax=r.x
   
     x1, coef, _ = fit(npar, tmax)
-    pred=np.dot(x1.T, coef)  ## predicted signal
+    pred=np.dot(x1.T, np.nan_to_num(coef))  ## predicted signal (events left out: 0)
     
     return pred, coef, npar, tmax, x1
 

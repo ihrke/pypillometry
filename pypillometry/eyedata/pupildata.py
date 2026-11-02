@@ -913,6 +913,7 @@ class PupilData(GenericEyeData):
                           npar: str|float="free", tmax: str|float="free", 
                           verbose: int=50,
                           bounds: dict={"npar":(1,20), "tmax":(100,2000)},
+                          min_valid: float=0.5,
                           inplace=None):
         """
         Estimate pupil-response based on event-onsets, see
@@ -929,7 +930,9 @@ class PupilData(GenericEyeData):
         response that falls outside these periods (`valid`) and the share
         that falls on real, not masked data (`observed`) are stored with the
         parameters (weighted by the response, see
-        :func:`~pypillometry.signal.pupil.pupil_response_coverage`).
+        :func:`~pypillometry.signal.pupil.pupil_response_coverage`). Events
+        with a `valid` share below `min_valid` are left out of the fit;
+        their coefficient is NaN.
 
         Parameters
         ----------
@@ -947,6 +950,10 @@ class PupilData(GenericEyeData):
         bounds : dict
             in case that one or both parameters are estimated, give the lower
             and upper bounds for the parameters        
+        min_valid : float
+            events whose share `valid` is below this are left out of the
+            fit (coefficient NaN), as their amplitude cannot be estimated
+            reliably; default 0.5; 0 uses all events
         inplace : bool or None
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes                                        
@@ -988,8 +995,14 @@ class PupilData(GenericEyeData):
             pred, coef, npar_est, tmax_est, x1=pupil.pupil_response(obj.tx, syd, 
                                                             obj.event_onsets, obj.fs, 
                                                             npar=npar, tmax=tmax, verbose=verbose,
-                                                            bounds=bounds, valid=valid)
+                                                            bounds=bounds, valid=valid,
+                                                            min_valid=min_valid)
             share_valid = pupil.pupil_response_coverage(x1, valid)
+            nout = int(np.sum(np.isnan(coef)))
+            if nout > 0:
+                logger.info(f"Eye {eye}: {nout} of {len(coef)} events left out of the "
+                            f"response fit (less than {min_valid:g} of their response "
+                            "outside excluded/missing data); their coefficient is NaN")
             share_observed = pupil.pupil_response_coverage(
                 x1, ~np.asarray(obj.data.mask[f"{eye}_pupil"], dtype=bool))
             
@@ -1002,7 +1015,8 @@ class PupilData(GenericEyeData):
                                 "coef":coef,
                                 "bounds":bounds,
                                 "valid":share_valid,
-                                "observed":share_observed
+                                "observed":share_observed,
+                                "min_valid":min_valid
                             }
         
         return obj
