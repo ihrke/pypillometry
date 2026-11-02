@@ -37,6 +37,10 @@ Version history
     between sample indices and time use the data object); sample indices
     are ``units="samples"`` (instead of None); eyedata objects have
     excluded periods (`excluded`, Intervals in ms)
+3
+    metadata of the events: eyedata objects have `event_meta` (dict of
+    arrays, one value per event), Intervals have `event_meta` (None or
+    dict of arrays, one value per interval)
 """
 
 import importlib
@@ -49,7 +53,7 @@ from loguru import logger
 __all__ = []
 
 #: version of the state written by this version of pypillometry
-FORMAT_VERSION = 2
+FORMAT_VERSION = 3
 
 # classes that moved: (old module, old name) -> (new module, new name),
 # used when reading pickle files (see _Unpickler)
@@ -452,5 +456,26 @@ def _migrate_1_to_2(state, class_name):
     return state
 
 
-_MIGRATIONS = [_migrate_0_to_1, _migrate_1_to_2]
+def _v2_intervals(st):
+    """Version-3 state of an Intervals object (version-2 state `st`)."""
+    if st is None:
+        return None
+    return {**st, "event_meta": None}
+
+
+def _migrate_2_to_3(state, class_name):
+    """Version 2 -> 3: events and Intervals have metadata (none)."""
+    state = dict(state)
+    if class_name in _SEGMENTED_CLASSES:
+        state["intervals"] = _v2_intervals(state.get("intervals"))
+        return state
+    for key in ("blinks", "interpolated_blinks"):
+        if state.get(key) is not None:
+            state[key] = {k: _v2_intervals(v) for k, v in state[key].items()}
+    state["excluded"] = _v2_intervals(state.get("excluded"))
+    state["event_meta"] = {}
+    return state
+
+
+_MIGRATIONS = [_migrate_0_to_1, _migrate_1_to_2, _migrate_2_to_3]
 assert len(_MIGRATIONS) == FORMAT_VERSION
