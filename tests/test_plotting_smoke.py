@@ -83,6 +83,12 @@ class TestPlottingSmokePupil(unittest.TestCase):
         fig = plt.figure()
         self.data.plot.pupil_plot(plot_range=(0, 10))
         self.assertIsNotNone(plt.gcf())
+
+    def test_pupil_plot_range_positional(self):
+        """plot_range can be given as the first positional argument"""
+        fig = plt.figure()
+        self.data.plot.pupil_plot((0, 10))
+        self.assertIsNotNone(plt.gcf())
     
     def test_pupil_plot_no_events(self):
         """Test pupil_plot without events"""
