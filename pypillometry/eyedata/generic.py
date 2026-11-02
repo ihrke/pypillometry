@@ -1760,8 +1760,103 @@ class GenericEyeData(state.VersionedState, ABC):
         # internal storage is always in ms
         events = events.to_units("ms")
         obj.set_event_onsets(events.onsets, events.labels)
-        
+
         return obj
+
+    @keephistory
+    def add_events(self, events, inplace=None):
+        """
+        Add events to the events of the dataset.
+
+        The new events are merged with the existing ones and all events are
+        sorted by onset (events at the same time keep their order, existing
+        ones first). Events from a behaviour log on another clock can be
+        mapped to the eye-tracker clock with :func:`~pypillometry.sync_clocks`
+        first.
+
+        Parameters
+        ----------
+        events : Events
+            the events to add (converted to ms if needed)
+        inplace : bool or None, optional
+            if `True`, make change in-place and return the object;
+            if `False`, make and return copy before making changes;
+            if `None`, use the object-level setting (specified in the constructor)
+
+        Returns
+        -------
+        :class:`~pypillometry.GenericEyeData`
+            the object with the added events (`self` or a copy, depending on `inplace`)
+
+        Raises
+        ------
+        TypeError
+            if `events` is not an Events object
+        ValueError
+            if an onset is outside the time range of the data
+
+        Examples
+        --------
+        >>> ev = pp.Events.from_table(behav, ["stim_on", "response"], units="sec")
+        >>> d.add_events(ev)
+
+        See Also
+        --------
+        set_events : replace all events
+        """
+        from ..events import Events
+
+        obj = self._get_inplace(inplace)
+
+        if not isinstance(events, Events):
+            raise TypeError(f"events must be an Events object, got {type(events)}")
+
+        events = events.to_units("ms")
+        onsets = np.concatenate([obj.event_onsets, events.onsets])
+        labels = np.concatenate([np.asarray(obj.event_labels, dtype=str),
+                                 events.labels])
+        order = np.argsort(onsets, kind="stable")
+        obj.set_event_onsets(onsets[order], labels[order])
+
+        return obj
+
+    def event_onset(self, label: str, units: str = "ms") -> float:
+        """
+        Onset of the one event with the given label.
+
+        Parameters
+        ----------
+        label : str
+            label of the event; only a label equal to it matches
+        units : str, optional
+            units of the returned onset: "ms" (default), "sec", "min" or "h"
+
+        Returns
+        -------
+        float
+            onset of the event
+
+        Raises
+        ------
+        ValueError
+            if no event or more than one event has this label
+
+        Examples
+        --------
+        >>> d.event_onset("Start Block 2", units="sec")
+        312.5
+
+        See Also
+        --------
+        get_events : all events (e.g., ``get_events().filter(label)`` for
+            labels that occur several times)
+        """
+        events = self.get_events(units)
+        onsets = events.onsets[events.labels == label]
+        if len(onsets) != 1:
+            raise ValueError(f"expected one event with label '{label}', "
+                             f"found {len(onsets)}")
+        return float(onsets[0])
 
     @keephistory
     def fill_time_discontinuities(self, yval=np.nan, print_info=True):
