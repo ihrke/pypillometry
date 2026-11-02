@@ -16,8 +16,9 @@
 - `plot_timeseries()`, `plot_scanpath()`, `sub_slice()`: default `units="ms"`
   (was None)
 - `sub_slice()` was renamed to `crop()`; `sub_slice()` is a deprecated alias
-- `get_intervals()`: `interval` was renamed to `window`; it has no default
-  for single events (was `(-200, 200)`), and `(0, 0)` between two events
+- `get_intervals()`, `stat_per_event()`: `interval` was renamed to `window`;
+  it has no default for single events (was `(-200, 200)` in
+  `get_intervals()`), and `(0, 0)` between two events
 
 ### Added
 

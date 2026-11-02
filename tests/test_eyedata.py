@@ -879,7 +879,7 @@ class TestEyeData(unittest.TestCase):
         
         # Test mean pupil size in interval around events
         stats = self.eyedata.stat_per_event(
-            interval=(-100, 100),
+            window=(-100, 100),
             event_select='stim',
             eyes=['left'],
             variables=['pupil'],
@@ -897,8 +897,8 @@ class TestEyeData(unittest.TestCase):
                          event_onsets=np.array([7000., 12000.]), event_labels=np.array(["a", "a"]))
         expected = [6895., 11895.]
         calls = [
-            dict(interval=(-200, 0), event_select="a", units="ms"),
-            dict(interval=(-.2, 0), event_select="a", units="sec"),
+            dict(window=(-200, 0), event_select="a", units="ms"),
+            dict(window=(-.2, 0), event_select="a", units="sec"),
             dict(intervals=d.get_intervals("a", window=(-20, 0))),  # sample indices
             dict(intervals=d.get_intervals("a", window=(-.2, 0), units="sec")),
         ]
@@ -919,7 +919,7 @@ class TestEyeData(unittest.TestCase):
         d.mask_intervals(Intervals([(310, 315)], units="samples"), inplace=True)
         for f in (np.mean, np.nanmean, np.ma.median):
             with self.subTest(statfct=f.__name__):
-                res = d.stat_per_event(interval=(-200, 0), event_select="a", statfct=f)["left_pupil"]
+                res = d.stat_per_event(window=(-200, 0), event_select="a", statfct=f)["left_pupil"]
                 np.testing.assert_array_equal(res, [10., 10., np.nan])
 
     def test_get_duration(self):

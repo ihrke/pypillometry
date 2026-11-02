@@ -162,7 +162,7 @@ function (by default the mean) to each interval:
 
 .. code-block:: python
 
-    peak = d.stat_per_event(interval=(500, 1500) * u.ms, event_select="stim",
+    peak = d.stat_per_event(window=(500, 1500) * u.ms, event_select="stim",
                             variables="pupil", statfct=np.max)
 
 Tutorial: :doc:`/notebooks/erpds`.

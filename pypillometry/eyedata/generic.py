@@ -2474,7 +2474,7 @@ class GenericEyeData(state.VersionedState, ABC):
             
     def stat_per_event(self, 
                        intervals=None,
-                       interval: Tuple[float,float]=None, event_select=None,                        
+                       window: Tuple[float,float]=None, event_select=None,
                        eyes: str|list=[], variables: str|list=[],                       
                        statfct: Callable=np.mean, units: str="ms",
                        **kwargs):
@@ -2488,11 +2488,12 @@ class GenericEyeData(state.VersionedState, ABC):
         intervals : Intervals, optional
             Intervals object to use, in any time units or in sample indices
             (``units="samples"``, the default of :meth:`get_intervals`). If
-            provided, interval and event_select are ignored.
-        interval : tuple (min,max) or Quantity, optional
+            provided, window and event_select are ignored.
+        window : tuple (min,max) or Quantity, optional
             time-window relative to event-onset (0 is event-onset), e.g.
             ``(-200, 0) * u.ms``; plain numbers are in units given by `units`.
-            Required if intervals is not provided.
+            Required for single events if intervals is not provided; between
+            two events, the default is ``(0, 0)`` (see :meth:`get_intervals`).
         event_select : str or function, optional
             variable describing which events to select and align to
             see :meth:`get_intervals` for details.
@@ -2507,7 +2508,7 @@ class GenericEyeData(state.VersionedState, ABC):
             `np.ma.median`, but not `np.median`; a warning is logged
             otherwise). Intervals where all samples are masked give NaN.
         units : str, optional
-            units for plain numbers in `interval` (if used); default "ms"
+            units for plain numbers in `window` (if used); default "ms"
         **kwargs
             passed onto the event_select function
 
@@ -2527,9 +2528,10 @@ class GenericEyeData(state.VersionedState, ABC):
                 raise TypeError("intervals must be an Intervals object")
             intervs = intervals
         else:
-            if event_select is None or interval is None:
-                raise ValueError("Must provide either 'intervals' or both 'event_select' and 'interval'")
-            intervs = self.get_intervals(event_select, interval, units=units, **kwargs)
+            if event_select is None:
+                raise ValueError("Must provide either 'intervals' or 'event_select' "
+                                 "(and 'window')")
+            intervs = self.get_intervals(event_select, window, units=units, **kwargs)
 
         # bounds in sample indices, matched against the sample numbers
         tx = np.arange(len(self.tx))
