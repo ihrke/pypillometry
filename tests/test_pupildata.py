@@ -92,12 +92,12 @@ class TestPupilData(unittest.TestCase):
 
 
     def test_estimate_baseline_nan_raises_clear_error(self):
-        d = pp.get_example_data("rlmw_002_short").sub_slice(0, 10, units="sec")
+        d = pp.get_example_data("rlmw_002_short").crop(0, 10, units="sec")
         with self.assertRaisesRegex(ValueError, "pupil_blinks_interpolate"):
             d.pupil_estimate_baseline(eyes="left", inplace=False)
 
     def test_estimate_baseline_after_interpolation(self):
-        d = pp.get_example_data("rlmw_002_short").sub_slice(0, 10, units="sec")
+        d = pp.get_example_data("rlmw_002_short").crop(0, 10, units="sec")
         d = d.pupil_blinks_detect(eyes="left", apply_mask=True, inplace=False)
         d = d.pupil_blinks_interpolate(eyes="left", inplace=False)
         d = d.pupil_estimate_baseline(eyes="left", inplace=False)
@@ -105,7 +105,7 @@ class TestPupilData(unittest.TestCase):
 
     def test_estimate_baseline_seed(self):
         """same seed gives the same baseline"""
-        d = pp.get_example_data("rlmw_002_short").sub_slice(0, 10, units="sec")
+        d = pp.get_example_data("rlmw_002_short").crop(0, 10, units="sec")
         d = d.pupil_blinks_detect(eyes="left", apply_mask=True, inplace=False)
         d = d.pupil_blinks_interpolate(eyes="left", inplace=False)
         b1 = d.pupil_estimate_baseline(eyes="left", inplace=False, seed=1)

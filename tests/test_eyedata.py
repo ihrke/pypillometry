@@ -2383,9 +2383,9 @@ class TestMasksAndBlinksKept(unittest.TestCase):
         d.set_blinks(blinks, eyes=["left"], variables=["pupil"], apply_mask=True)
         return d
 
-    def test_sub_slice(self):
+    def test_crop(self):
         d = self.make()
-        s = d.sub_slice(5000, 10000, inplace=False)
+        s = d.crop(5000, 10000, inplace=False)
         # masks are sliced with the data
         np.testing.assert_array_equal(s.data.mask["left_pupil"], d.data.mask["left_pupil"][500:])
         # blinks are shifted; the one across the start is cut
@@ -2393,10 +2393,10 @@ class TestMasksAndBlinksKept(unittest.TestCase):
         # original unchanged
         self.assertEqual(list(d.get_blinks("left", "pupil").intervals), [(490, 520), (600, 620)])
         # blinks outside the slice are dropped
-        s = d.sub_slice(0, 4000, inplace=False)
+        s = d.crop(0, 4000, inplace=False)
         self.assertEqual(list(s.get_blinks("left", "pupil").intervals), [])
         # the call is recorded in the history
-        self.assertEqual(s.history[-1]["funcname"], "sub_slice")
+        self.assertEqual(s.history[-1]["funcname"], "crop")
 
     def test_downsample(self):
         d = self.make()
@@ -2462,9 +2462,9 @@ class TestHistoryLog(unittest.TestCase):
     def test_failed_call_does_not_break_recording(self):
         d = self.make()
         with self.assertRaises(Exception):
-            d.sub_slice(0, 1000, units="no-such-unit", inplace=True)
-        d.sub_slice(0, 5000, inplace=True)
-        self.assertEqual(d.history[-1]["funcname"], "sub_slice")
+            d.crop(0, 1000, units="no-such-unit", inplace=True)
+        d.crop(0, 5000, inplace=True)
+        self.assertEqual(d.history[-1]["funcname"], "crop")
 
     def test_setters_recorded(self):
         from pypillometry.intervals import Intervals

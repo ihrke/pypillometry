@@ -420,10 +420,10 @@ def eyedata():
     return get_rlmw_002_short()
 
 
-def test_sub_slice_with_units(eyedata):
-    ref = eyedata.sub_slice(10, 20, units="sec", inplace=False)
+def test_crop_with_units(eyedata):
+    ref = eyedata.crop(10, 20, units="sec", inplace=False)
     for start, end in [(10 * u.sec, 20 * u.sec), ("10 sec", "20 sec"), (10000, 20000)]:
-        d = eyedata.sub_slice(start, end, inplace=False)
+        d = eyedata.crop(start, end, inplace=False)
         np.testing.assert_array_equal(d.tx, ref.tx)
 
 

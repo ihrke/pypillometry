@@ -90,12 +90,12 @@ class TestExcluded(unittest.TestCase):
         r = d.reset_time()
         np.testing.assert_array_equal(r.get_excluded().intervals, [(2000, 3000)])
         self.assertEqual(r.get_excluded("samples").intervals, d.get_excluded("samples").intervals)
-        s = d.sub_slice(6000, 20000, units="ms")
+        s = d.crop(6000, 20000, units="ms")
         np.testing.assert_array_equal(s.get_excluded().intervals, [(7000, 8000)])
         self.assertEqual(s.get_excluded("samples").intervals, [(500, 1000)])
         self.assertTrue(s.data.mask["left_x"][500:1000].all())
         # period outside of the remaining data: kept, but no samples
-        s2 = d.sub_slice(9000, 20000, units="ms")
+        s2 = d.crop(9000, 20000, units="ms")
         np.testing.assert_array_equal(s2.get_excluded().intervals, [(7000, 8000)])
         self.assertEqual(len(s2.get_excluded("samples")), 0)
         self.assertEqual(s2.excluded_duration("sec"), 0)
@@ -165,12 +165,12 @@ class TestIncludedSplitRemove(unittest.TestCase):
 
     def test_remove_excluded(self):
         d = self.make()
-        r = d.remove_excluded(inplace=False)
+        r = d.remove_intervals(d.get_excluded(), inplace=False)
         self.assertEqual(len(r), 9000)
         # time re-aligned: no gaps, starts at the same time
         self.assertEqual(r.tx[0], 5000.)
         np.testing.assert_allclose(np.diff(r.tx), 2.)
-        # events shifted with the data, those in excluded periods removed
+        # events shifted with the data, those in removed periods deleted
         self.assertEqual(list(r.event_labels), ["a", "b", "c"])
         np.testing.assert_allclose(r.event_onsets, [6000, 8000, 18000])
         # data and blinks at their new positions
@@ -181,14 +181,37 @@ class TestIncludedSplitRemove(unittest.TestCase):
         self.assertEqual(bl_r[-1], (bl_d[-1][0] - 2000, bl_d[-1][1] - 2000))
         # nothing excluded or masked for exclusion any more
         self.assertEqual(len(r.get_excluded()), 0)
-        self.assertEqual(r.params["removed_excluded"], [(7000., 8000.), (12000., 13000.)])
+        self.assertEqual(r.params["removed_intervals"], [(7000., 8000.), (12000., 13000.)])
         self.assertFalse(r.data.mask["left_x"].any())
-        # without excluded periods, nothing changes
+        # nothing to remove: nothing changes
         e = _make_data()
-        self.assertEqual(len(e.remove_excluded()), len(e))
+        self.assertEqual(len(e.remove_intervals(e.get_excluded())), len(e))
         with self.assertRaises(ValueError):
-            _make_data().exclude_intervals([(0, 1e6)]).remove_excluded()
+            _make_data().remove_intervals([(0, 1e6)])
 
+    def test_remove_intervals(self):
+        d = self.make()
+        # remove one period: the other excluded period moves with the data
+        r = d.remove_intervals([(7 * u.sec, 8 * u.sec)], inplace=False)
+        self.assertEqual(r.get_excluded().intervals, [(11000., 12000.)])
+        self.assertTrue(r.data.mask["left_x"][3000:3500].all())
+        # sample indices work as well
+        r2 = d.remove_intervals(pp.Intervals([(1000, 1500)], "samples"), inplace=False)
+        np.testing.assert_array_equal(r2.tx, r.tx)
+        # removing the beginning and end does not shift: same as crop()
+        e = _make_data()
+        e.set_event_onsets([6000, 9000, 20000], ["a", "b", "c"])
+        r = e.remove_intervals([(-np.inf, 7000), (15000, np.inf)], inplace=False)
+        c = e.crop(7000, 15000 - 2, inplace=False)
+        np.testing.assert_array_equal(r.tx, c.tx)
+        np.testing.assert_array_equal(r.data["left_pupil"], c.data["left_pupil"])
+        np.testing.assert_array_equal(r.event_onsets, c.event_onsets)
+
+    def test_sub_slice_deprecated(self):
+        d = _make_data()
+        with self.assertWarns(DeprecationWarning):
+            s = d.sub_slice(6000, 8000)
+        np.testing.assert_array_equal(s.tx, d.crop(6000, 8000).tx)
 
 if __name__ == "__main__":
     unittest.main()
