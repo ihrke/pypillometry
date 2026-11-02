@@ -831,6 +831,12 @@ class PupilData(GenericEyeData):
                                 method: str="envelope_iter_bspline_2", inplace=None, **kwargs):
         """
         Apply one of the baseline-estimation methods.
+
+        The data must not contain NaN: interpolate blinks first (see
+        :meth:`pupil_blinks_interpolate`) and bridge longer gaps, e.g., the
+        excluded periods (breaks), by linear interpolation:
+        ``d.interpolate_intervals(d.get_excluded(), variables="pupil")``.
+        Interpolated samples are used for the fit like other samples.
         
         Parameters
         ----------
@@ -883,7 +889,8 @@ class PupilData(GenericEyeData):
                 raise ValueError(
                     f"'{eye}_{variable}' contains NaN (e.g., blinks that were "
                     "not interpolated); the baseline cannot be estimated. "
-                    "Interpolate them first, e.g., with pupil_blinks_interpolate().")
+                    "Interpolate them first, e.g., with pupil_blinks_interpolate() "
+                    "(blinks) or interpolate_intervals(d.get_excluded()) (breaks).")
 
             if method=="envelope_iter_bspline_2":
                 txd,syd,base2,base1=baseline.baseline_envelope_iter_bspline(self.tx, self.data[eye,variable],
@@ -906,6 +913,7 @@ class PupilData(GenericEyeData):
                           npar: str|float="free", tmax: str|float="free", 
                           verbose: int=50,
                           bounds: dict={"npar":(1,20), "tmax":(100,2000)},
+                          min_valid: float=0.5,
                           inplace=None):
         """
         Estimate pupil-response based on event-onsets, see
@@ -914,6 +922,17 @@ class PupilData(GenericEyeData):
         If a baseline has been estimated (see :meth:`pupil_estimate_baseline`),
         it is subtracted from the pupil signal before estimating the response;
         otherwise, a baseline of zero is used.
+
+        The excluded periods (see
+        :meth:`~pypillometry.GenericEyeData.exclude_intervals`, e.g., breaks)
+        and missing (NaN) samples are not used for the fit; interpolated
+        samples (e.g., blinks) are. For each event, the share of its
+        response that falls outside these periods (`valid`) and the share
+        that falls on real, not masked data (`observed`) are stored with the
+        parameters (weighted by the response, see
+        :func:`~pypillometry.signal.pupil.pupil_response_coverage`). Events
+        with a `valid` share below `min_valid` are left out of the fit;
+        their coefficient is NaN.
 
         Parameters
         ----------
@@ -931,6 +950,10 @@ class PupilData(GenericEyeData):
         bounds : dict
             in case that one or both parameters are estimated, give the lower
             and upper bounds for the parameters        
+        min_valid : float
+            events whose share `valid` is below this are left out of the
+            fit (coefficient NaN), as their amplitude cannot be estimated
+            reliably; default 0.5; 0 uses all events
         inplace : bool or None
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes                                        
@@ -945,7 +968,9 @@ class PupilData(GenericEyeData):
         -----
         The predicted response is stored in ``data[eye, "response"]``; the
         estimated parameters (`npar`, `tmax`, the coefficients `coef` and the
-        `bounds`) are stored in ``params["response"][eye]``.
+        `bounds`) are stored in ``params["response"][eye]``, together with
+        the shares `valid` and `observed` (0-1, one per event; NaN for
+        events without response in the data, e.g., at the very end).
 
         References
         ----------
@@ -966,10 +991,20 @@ class PupilData(GenericEyeData):
                 base=obj.data[eye,"baseline"]
         
             syd = obj.data[eye,"pupil"]-base
+            valid = ~obj._excluded_mask() & np.isfinite(syd)
             pred, coef, npar_est, tmax_est, x1=pupil.pupil_response(obj.tx, syd, 
                                                             obj.event_onsets, obj.fs, 
                                                             npar=npar, tmax=tmax, verbose=verbose,
-                                                            bounds=bounds)
+                                                            bounds=bounds, valid=valid,
+                                                            min_valid=min_valid)
+            share_valid = pupil.pupil_response_coverage(x1, valid)
+            nout = int(np.sum(np.isnan(coef)))
+            if nout > 0:
+                logger.info(f"Eye {eye}: {nout} of {len(coef)} events left out of the "
+                            f"response fit (less than {min_valid:g} of their response "
+                            "outside excluded/missing data); their coefficient is NaN")
+            share_observed = pupil.pupil_response_coverage(
+                x1, ~np.asarray(obj.data.mask[f"{eye}_pupil"], dtype=bool))
             
             obj.data[eye+"_response"]=pred
 
@@ -978,7 +1013,10 @@ class PupilData(GenericEyeData):
                                 "tmax":tmax_est,
                                 "tmax_free":True if tmax=="free" else False,
                                 "coef":coef,
-                                "bounds":bounds
+                                "bounds":bounds,
+                                "valid":share_valid,
+                                "observed":share_observed,
+                                "min_valid":min_valid
                             }
         
         return obj

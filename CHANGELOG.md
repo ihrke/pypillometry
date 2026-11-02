@@ -52,9 +52,16 @@
   `add_latency()` (e.g., reaction times), `row()`, `to_table()`, `+`
 - `get_intervals()` passes the metadata of the events on to the intervals
   (`Intervals.event_meta`, also in `as_pandas()`)
+- `pupil_estimate_response()` stores the share of each event's response
+  that is valid (`valid`) and that is real, not interpolated, data
+  (`observed`) in `params["response"][eye]`; `pupil_response(valid=...)`,
+  `pupil_response_coverage()`
 
 ### Changed
 
+- `pupil_estimate_response()` does not use excluded periods and NaN
+  samples for the fit; events with less than `min_valid` (default 0.5) of
+  their response outside them are left out (coefficient NaN)
 - `get_intervals()` with two events pairs each first event with the next
   second event (e.g., `("End Block", "Start Block")` gives the breaks);
   events without a partner are skipped with a warning (before: pairs by
@@ -68,6 +75,8 @@
 
 ### Fixed
 
+- Baseline estimation: the weights of the troughs were given to the sample
+  before each trough (0-based indices passed to Stan)
 - HTML representation of eyedata objects escapes names, labels and history
 - `set_events()` stored onsets of `Events` with `units=None` as ms
 - Segments of index intervals that are not event-locked got a time axis

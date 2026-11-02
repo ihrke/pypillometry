@@ -274,7 +274,7 @@ def baseline_envelope_iter_bspline(tx,sy,event_onsets,fs, fsd=10, lp=2,
         'ncol':B.shape[1],
         'B':B,
         'npeaks':peaks_ix.shape[0],
-        'peakix':peaks_ix,
+        'peakix':peaks_ix+1,  # Stan indices start at 1
         'lam_sig':lam_sig,
         'pa':0.05,
         'lam_prominences':w
@@ -315,7 +315,7 @@ def baseline_envelope_iter_bspline(tx,sy,event_onsets,fs, fsd=10, lp=2,
         'ncol':B2.shape[1],
         'B':B2,
         'npeaks':peaks2_ix.shape[0],
-        'peakix':peaks2_ix,
+        'peakix':peaks2_ix+1,
         'lam_sig':lam_sig,
         'pa':0.05,
         'lam_prominences':w2

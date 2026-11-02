@@ -12,7 +12,8 @@ from scipy.ndimage import uniform_filter1d
 __all__ = [
     "lowpass_filter_iterative", "pupil_signal_quality", "pupil_kernel_t",
     "pupil_get_max_duration", "pupil_kernel", "plot_prf",
-    "pupil_build_design_matrix", "pupil_response", "pupilresponse_nnls",
+    "pupil_build_design_matrix", "pupil_response", "pupil_response_coverage",
+    "pupilresponse_nnls",
     "pupil_eye_offset",
 ]
 
@@ -437,21 +438,25 @@ def pupil_build_design_matrix(tx,event_onsets,fs,npar,tmax,max_duration="estimat
     return x1
 
 def pupil_response(tx, sy, event_onsets, fs, npar="free", tmax="free", verbose=10, 
-                   bounds={"npar":(1,20), "tmax":(100,2000)}, display_progress=True):
+                   bounds={"npar":(1,20), "tmax":(100,2000)}, display_progress=True,
+                   valid=None, min_valid=0):
     """
     Estimate pupil-response based on event-onsets.
 
     The amplitudes of one PRF per event (see :py:func:`pupil_kernel()`) are
     estimated with non-negative least-squares (NNLS). If `npar` and/or
     `tmax` are "free", they are optimized (minimizing the sum of squared
-    residuals) within `bounds`.
+    residuals) within `bounds`. Only the valid samples (see `valid`) are
+    used for the fit; the prediction is computed for all samples. Events
+    whose response falls mostly on invalid samples (see `min_valid`) are
+    left out of the fit; their coefficient is NaN.
 
     Parameters
     ----------
     tx : np.ndarray
         time-vector in milliseconds
     sy : np.ndarray
-        (baseline-corrected) pupil signal
+        (baseline-corrected) pupil signal; NaN samples are not used
     event_onsets : np.ndarray
         onsets of events (stimuli/responses) in milliseconds
     fs : float
@@ -472,13 +477,23 @@ def pupil_response(tx, sy, event_onsets, fs, npar="free", tmax="free", verbose=1
         show the progress of the optimization (if both parameters are free,
         each iteration is logged; otherwise passed as `disp` option to
         :func:`scipy.optimize.minimize_scalar`)
+    valid : np.ndarray or None
+        boolean array (same length as `sy`), True for the samples that are
+        used for the fit (e.g., False in long gaps); None: all samples
+        that are not NaN
+    min_valid : float
+        events whose share of the response on valid samples (see
+        :py:func:`pupil_response_coverage()`) is below this are left out
+        of the fit (their amplitude cannot be estimated reliably); default 0
+        (all events are used)
 
     Returns
     -------
     pred : np.ndarray
         predicted signal (same length as `sy`)
     coef : np.ndarray
-        non-negative amplitude of each event's PRF
+        non-negative amplitude of each event's PRF (NaN for events left
+        out, see `min_valid`)
     npar : float
         `npar` used (estimated if "free")
     tmax : float
@@ -487,74 +502,78 @@ def pupil_response(tx, sy, event_onsets, fs, npar="free", tmax="free", verbose=1
         design matrix (nevents x len(tx)),
         see :py:func:`pupil_build_design_matrix()`
     """
+    sy = np.asarray(sy, dtype=float)
+    valid = np.isfinite(sy) if valid is None else np.asarray(valid, dtype=bool) & np.isfinite(sy)
+    if not valid.any():
+        raise ValueError("no valid samples to estimate the response")
+    syv = sy[valid]
+
+    def fit(npar, tmax):
+        """Design matrix, coefficients and sum of squared residuals."""
+        maxdur=pupil_get_max_duration(npar,tmax)
+        logger.debug("npar,tmax,maxdur=(%.2f,%.2f,%i)"%(npar,tmax,maxdur))
+        x1=pupil_build_design_matrix(tx, event_onsets, fs, npar, tmax, maxdur)
+        coef=np.full(x1.shape[0], np.nan)
+        use = np.ones(x1.shape[0], dtype=bool) if min_valid <= 0 \
+            else pupil_response_coverage(x1, valid) >= min_valid
+        xv = x1[use][:, valid]
+        if use.any():
+            coef[use]=scipy.optimize.nnls(xv.T, syv)[0]
+        resid=syv-np.dot(xv.T, coef[use])
+        return x1, coef, np.sum(resid**2)
+
     if npar=="free" and tmax=="free":
         logger.info("optimizing both npar and tmax, might take a while...")
-        def objective(x, event_onsets, tx,sy,fs):
-            npar_t,tmax_t=x
-            npar,tmax=x
-            #npar=trans_logistic_vec(npar_t, a=bounds["npar"][0], b=bounds["npar"][1], inverse=True)
-            #tmax=trans_logistic_vec(tmax_t, a=bounds["tmax"][0], b=bounds["tmax"][1], inverse=True)
-            maxdur=pupil_get_max_duration(npar,tmax)
-            logger.debug("npar,tmax,maxdur=(%.2f,%.2f,%i)"%(npar,tmax,maxdur))
-            x1=pupil_build_design_matrix(tx, event_onsets, fs, npar, tmax, maxdur)
-            coef=scipy.optimize.nnls(x1.T, sy)[0]    
-            pred=np.dot(x1.T, coef)  ## predicted signal
-            resid=sy-pred         ## residuals            
-            return np.sum(resid**2)
-        
-        #npar_start_trans=trans_logistic_vec(10,a=bounds["npar"][0], b=bounds["npar"][1],inverse=False)
-        #tmax_start_trans=trans_logistic_vec(900,a=bounds["tmax"][0], b=bounds["tmax"][1],inverse=False)
-        #r=scipy.optimize.minimize(objective, (npar_start_trans, tmax_start_trans), 
-        #                          args=(event_onsets,tx,sy,fs), 
-        #                          method="Nelder-Mead")    
         # L-BFGS-B has no `disp` option (in recent scipy): log iterations instead
         def log_progress(xk):
             logger.info("npar=%.2f, tmax=%.2f" % (xk[0], xk[1]))
-        r=scipy.optimize.minimize(objective, (10,900), #(npar_start_trans, tmax_start_trans), 
-                                  args=(event_onsets,tx,sy,fs), bounds=[bounds["npar"],bounds["tmax"]],
+        r=scipy.optimize.minimize(lambda x: fit(x[0], x[1])[2], (10,900),
+                                  bounds=[bounds["npar"],bounds["tmax"]],
                                   callback=log_progress if display_progress else None)
-                                  #method="Nelder-Mead")    
-        
-        #npar=trans_logistic_vec(r.x[0], a=bounds["npar"][0], b=bounds["npar"][1], inverse=False)
-        #tmax=trans_logistic_vec(r.x[1], a=bounds["tmax"][0], b=bounds["tmax"][1], inverse=False)
         npar,tmax=r.x[0],r.x[1]
     elif npar=="free":
         logger.info("optimizing npar only, might take a while...")
-        def objective(x, tmax, event_onsets, tx,sy,fs):
-            npar=x
-            maxdur=pupil_get_max_duration(npar,tmax)
-            logger.debug("npar,maxdur=(%.2f,%i)"%(npar,maxdur))
-            x1=pupil_build_design_matrix(tx, event_onsets, fs, npar, tmax, maxdur)            
-            coef=scipy.optimize.nnls(x1.T, sy)[0]    
-            pred=np.dot(x1.T, coef)  ## predicted signal
-            resid=sy-pred         ## residuals            
-            return np.sum(resid**2)
-        r=scipy.optimize.minimize_scalar(objective, bounds=bounds["npar"],
-                                  args=(tmax,event_onsets,tx,sy,fs), 
+        r=scipy.optimize.minimize_scalar(lambda x: fit(x, tmax)[2], bounds=bounds["npar"],
                                   method="bounded", options={"disp":display_progress,"xatol":.1})        
         npar=r.x
     elif tmax=="free":
         logger.info("optimizing tmax only, might take a while...")
-        def objective(x, npar, event_onsets, tx,sy,fs):
-            tmax=x
-            maxdur=pupil_get_max_duration(npar,tmax)   
-            logger.debug("tmax,maxdur=(%.2f,%i)"%(tmax,maxdur)) 
-            x1=pupil_build_design_matrix(tx, event_onsets, fs, npar, tmax, maxdur)
-            coef=scipy.optimize.nnls(x1.T, sy)[0]    
-            pred=np.dot(x1.T, coef)  ## predicted signal
-            resid=sy-pred         ## residuals            
-            return np.sum(resid**2)
-        r=scipy.optimize.minimize_scalar(objective, bounds=bounds["tmax"],
-                                  args=(npar,event_onsets,tx,sy,fs), 
+        r=scipy.optimize.minimize_scalar(lambda x: fit(npar, x)[2], bounds=bounds["tmax"],
                                   method="bounded",options={"disp":display_progress,"xatol":1})        
         tmax=r.x
   
-    maxdur=pupil_get_max_duration(npar,tmax)
-    x1=pupil_build_design_matrix(tx, event_onsets, fs, npar, tmax, maxdur)
-    coef=scipy.optimize.nnls(x1.T, sy)[0]    
-    pred=np.dot(x1.T, coef)  ## predicted signal
+    x1, coef, _ = fit(npar, tmax)
+    pred=np.dot(x1.T, np.nan_to_num(coef))  ## predicted signal (events left out: 0)
     
     return pred, coef, npar, tmax, x1
+
+
+def pupil_response_coverage(x1, valid):
+    """
+    Share of each event's response that falls on valid samples.
+
+    The share is weighted by the response (the event's row in the design
+    matrix), so samples near the peak of the response count more than
+    samples in its tail: an event whose peak is missing gets a low share
+    even if most of its (long) tail is valid.
+
+    Parameters
+    ----------
+    x1 : np.ndarray
+        design matrix (nevents x n), see :py:func:`pupil_build_design_matrix()`
+    valid : np.ndarray
+        boolean array (length n), True for valid samples
+
+    Returns
+    -------
+    np.ndarray
+        share (0-1) for each event; NaN for events without response in
+        the data (e.g., at the very end)
+    """
+    total = x1.sum(axis=1)
+    with np.errstate(invalid="ignore", divide="ignore"):
+        return np.where(total > 0, np.dot(x1, np.asarray(valid, dtype=float)) / total,
+                        np.nan)
 
         
      
