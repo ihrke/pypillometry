@@ -31,9 +31,18 @@
   `split_excluded()` (one object per included period)
 - `remove_intervals()`: remove periods (e.g., breaks) and join the rest
   (time and events after them are shifted back)
+- `keep_intervals()`: exclude everything outside the given periods;
+  `Intervals.complement()`: the periods not covered
+- `get_intervals()`: `"<start>"` and `"<end>"` select the start and end of
+  the recording; `exact=True` (also `Events.filter()`) matches labels
+  equal to the string
 
 ### Changed
 
+- `get_intervals()` with two events pairs each first event with the next
+  second event (e.g., `("End Block", "Start Block")` gives the breaks);
+  events without a partner are skipped with a warning (before: pairs by
+  order, error if the numbers differ)
 - Saved files (pickle and HDF5) contain a versioned state of the object.
 - Conversions between sample indices and time use the time vector of the
   data (a time maps to the first sample at or after it), so recordings that

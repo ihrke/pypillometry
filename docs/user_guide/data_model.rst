@@ -132,8 +132,19 @@ object and masks all variables during them:
                              units="ms")
     d = d.exclude_intervals(breaks)
     d = d.exclude_intervals([(0, 2 * u.min)])   # calibration at the start
+    d = d.exclude_intervals(d.get_intervals(("<start>", "Start Block 1"),
+                                            interval=(0, 0), units="ms"))
     d.get_excluded()                            # the excluded periods
     d.excluded_duration("min")                  # their total duration
+
+:meth:`~GenericEyeData.keep_intervals` does the opposite: it excludes
+everything outside the given periods, e.g., to keep only the fMRI run:
+
+.. code-block:: python
+
+    run = d.get_intervals(("rsfMRI_ONSET", "rsfMRI_END"), interval=(0, 0),
+                          units="ms")
+    d = d.keep_intervals(run)
 
 Because the samples are masked, everything that ignores masked data
 (averages, :meth:`~GenericEyeData.scale`, segments, ...) also ignores the
