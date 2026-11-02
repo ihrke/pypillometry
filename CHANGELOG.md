@@ -75,6 +75,9 @@
 
 ### Fixed
 
+- `pupil_estimate_response()` was very slow for long recordings with many
+  events (NNLS on the full design matrix); the NNLS is now solved on the
+  small events x events form (same solution, e.g., 0.4 s instead of 200 s)
 - `downsample()` set windows in which all samples are masked to NaN, so
   interpolated blinks were lost; they now hold the mean of the stored values
   (and stay masked)
