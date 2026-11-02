@@ -1659,6 +1659,54 @@ class TestIntervalsFilter(unittest.TestCase):
         self.assertEqual(filtered.intervals, [(100, 200)])
 
 
+class TestIntervalsComplement(unittest.TestCase):
+    """Intervals.complement()"""
+
+    def test_samples_with_data(self):
+        iv = Intervals([(10, 20), (50, 60)], units="samples")
+        c = iv.complement(timebase(100))
+        self.assertEqual(c.intervals, [(0, 10), (20, 50), (60, 100)])
+        self.assertEqual(c.data_time_range, (0, 100))
+
+    def test_masks_add_up(self):
+        d = timebase(100, fs=100., t0=500.)
+        iv = Intervals([(600, 700), (900, 1000)], units="ms")
+        c = iv.complement(d)
+        np.testing.assert_array_equal(iv.to_mask(d) + c.to_mask(d), 1)
+
+    def test_time_units_cover_last_sample(self):
+        d = timebase(100, fs=100.)  # samples at 0, 10, ..., 990 ms
+        c = Intervals([(0, 500)], units="ms").complement(d)
+        self.assertEqual(c.intervals, [(500.0, 1000.0)])
+        self.assertEqual(c.to_units("sec").intervals, [(0.5, 1.0)])
+        c = Intervals([(0, 0.5)], units="sec").complement(d)
+        self.assertEqual(c.intervals, [(0.5, 1.0)])
+
+    def test_data_time_range(self):
+        iv = Intervals([(10, 20)], units="ms", data_time_range=(0, 100))
+        self.assertEqual(iv.complement().intervals, [(0, 10), (20, 100)])
+
+    def test_overlapping_and_outside(self):
+        iv = Intervals([(-50, 10), (5, 30), (80, 200)], units="samples")
+        self.assertEqual(iv.complement(timebase(100)).intervals, [(30, 80)])
+
+    def test_empty(self):
+        c = Intervals([], units="samples").complement(timebase(100))
+        self.assertEqual(c.intervals, [(0, 100)])
+
+    def test_everything_covered(self):
+        c = Intervals([(0, 100)], units="samples").complement(timebase(100))
+        self.assertEqual(c.intervals, [])
+
+    def test_label(self):
+        iv = Intervals([(10, 20)], units="samples", label="blocks")
+        self.assertEqual(iv.complement(timebase(100)).label, "not blocks")
+
+    def test_needs_range(self):
+        with self.assertRaisesRegex(ValueError, "data object"):
+            Intervals([(10, 20)], units="ms").complement()
+
+
 class TestIntervalsSubtractOperator(unittest.TestCase):
     """Test Intervals - operator for subtracting intervals"""
     

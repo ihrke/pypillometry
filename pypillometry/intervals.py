@@ -831,7 +831,59 @@ class Intervals(Stateful):
                         data_time_range=self.data_time_range,
                         event_onsets=merged_onsets,
                         interval_window=None)
-    
+
+    def complement(self, data=None) -> 'Intervals':
+        """
+        Return the periods not covered by the intervals.
+
+        These are the gaps between the intervals and before the first and
+        after the last one, within the whole recording (if `data` is given)
+        or within `data_time_range`. Overlapping intervals are merged first.
+        Event information (labels, onsets) is not kept.
+
+        Parameters
+        ----------
+        data : GenericEyeData, optional
+            data object the intervals belong to; the complement is taken
+            within the whole recording, from the first sample to the end of
+            the last one (one sample past it, as intervals are
+            end-exclusive). If not given, `data_time_range` is used; in time
+            units, its end is the time of the last sample, so the last
+            sample is not covered.
+
+        Returns
+        -------
+        Intervals
+            the periods not covered, in the units of this object
+
+        Raises
+        ------
+        ValueError
+            if `data` is not given and `data_time_range` is not set
+
+        Examples
+        --------
+        >>> iv = Intervals([(10, 20), (50, 60)], units="samples", data_time_range=(0, 100))
+        >>> iv.complement().intervals
+        [(0, 10), (20, 50), (60, 100)]
+        """
+        if data is not None:
+            n = len(data.tx)
+            if self.units == "samples":
+                full, data_time_range = (0, n), (0, n)
+            else:
+                fac = 1.0 / _MS_PER_UNIT[self.units]
+                full = (float(data.tx[0]) * fac, float(_samples_to_ms(data, n)) * fac)
+                data_time_range = (float(data.tx[0]) * fac, float(data.tx[-1]) * fac)
+        elif self.data_time_range is None:
+            raise ValueError("complement() needs the data object or data_time_range, "
+                             "e.g., intervals.complement(d)")
+        else:
+            full = data_time_range = tuple(self.data_time_range)
+        result = Intervals([full], self.units, data_time_range=data_time_range) - self
+        result.label = f"not {self.label}" if self.label else "complement"
+        return result
+
     def pad(self, left: float = 0, right: float = 0):
         """
         Add padding to the left (start) and right (end) of each interval.
