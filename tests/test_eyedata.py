@@ -2514,9 +2514,22 @@ class TestMasksAndBlinksKept(unittest.TestCase):
         # partly masked windows use the valid samples only
         self.assertEqual(x.data["left_pupil"][70], 10.)
         self.assertEqual(x.data["left_pupil"][48], 10.)
+        # fully masked windows hold the mean of the stored values (NaN if NaN)
+        self.assertTrue(np.isnan(x.data["left_pupil"][40]))
+        self.assertEqual(x.data["left_pupil"][50], 999.)
         # blinks are rescaled and still cover the blink
         self.assertEqual(list(x.get_blinks("left", "pupil").intervals), [(49, 52), (60, 62)])
         self.assertEqual(x.get_blinks("left", "pupil").data_time_range, (0, len(x.tx)))
+
+    def test_downsample_keeps_interpolated(self):
+        d = self.make()
+        d.data["left_pupil"][490:520] = np.linspace(20., 50., 30)  # interpolated, masked
+        x = d.downsample(10, inplace=False)
+        np.testing.assert_allclose(x.data["left_pupil"][49:52],
+                                   [d.data["left_pupil"][490:500].mean(),
+                                    d.data["left_pupil"][500:510].mean(),
+                                    d.data["left_pupil"][510:520].mean()])
+        self.assertTrue(np.all(x.data.mask["left_pupil"][49:52] == 1))
 
     def test_fill_time_discontinuities(self):
         from pypillometry.intervals import Intervals
