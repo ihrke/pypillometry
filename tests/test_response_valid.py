@@ -67,6 +67,21 @@ class TestPupilResponseValid(unittest.TestCase):
                 for y in (sy, garbage)]
         self.assertAlmostEqual(tmax[0], tmax[1])
 
+    def test_min_valid(self):
+        d = self.d
+        sy = d.data["left", "pupil"] - 3000
+        cov = pupil_response_coverage(
+            pupil_build_design_matrix(d.tx, d.event_onsets, d.fs, 10, 900), self.valid)
+        pred, coef, _, _, _ = pupil_response(d.tx, sy, d.event_onsets, d.fs, npar=10,
+                                             tmax=900, valid=self.valid, min_valid=0.5)
+        np.testing.assert_array_equal(np.isnan(coef), cov < 0.5)
+        self.assertTrue(np.isnan(coef).any())
+        self.assertFalse(np.isnan(pred).any())
+        # default: all events
+        coef0 = pupil_response(d.tx, sy, d.event_onsets, d.fs, npar=10, tmax=900,
+                               valid=self.valid)[1]
+        self.assertFalse(np.isnan(coef0).any())
+
     def test_no_valid_samples(self):
         d = self.d
         with self.assertRaises(ValueError):
@@ -99,6 +114,17 @@ class TestResponseExcluded(unittest.TestCase):
         y = self.d.data["left", "pupil"]
         np.testing.assert_allclose(np.diff(y[2700:3300], 2), 0, atol=1e-6)
         self.assertTrue(self.d.data.mask["left_pupil"][2700:3300].all())
+
+    def test_events_in_break_left_out(self):
+        par = self.est.params["response"]["left"]
+        np.testing.assert_array_equal(np.isnan(par["coef"]), par["valid"] < 0.5)
+        self.assertTrue(np.isnan(par["coef"][self.est.event_onsets == 28500][0]))
+        self.assertEqual(par["min_valid"], 0.5)
+        # no huge values in the predicted response
+        self.assertLess(np.max(self.est.data["left", "response"]), 1000)
+        est0 = self.d.pupil_estimate_response(eyes="left", npar=10, tmax=900,
+                                              min_valid=0, inplace=False)
+        self.assertFalse(np.isnan(est0.params["response"]["left"]["coef"]).any())
 
     def test_shares(self):
         par = self.est.params["response"]["left"]
