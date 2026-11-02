@@ -461,14 +461,17 @@ def _nnls_gram(x, y):
     coef = np.zeros(x.shape[0])
     if x.shape[0] == 0:
         return coef, yy
-    s, v = np.linalg.eigh(gram)
-    keep = s > max(s.max(), 0) * 1e-12
-    if not keep.any():
+    # regressors without data keep coefficient 0; left in, rounding noise in
+    # the eigenvectors can give them huge coefficients
+    use = np.diag(gram) > np.diag(gram).max() * 1e-12
+    if not use.any():
         return coef, yy
+    s, v = np.linalg.eigh(gram[np.ix_(use, use)])
+    keep = s > max(s.max(), 0) * 1e-12
     sq = np.sqrt(s[keep])
     a = sq[:, None] * v[:, keep].T            # a.T @ a = gram (on its range)
-    c = np.dot(v[:, keep].T, b) / sq          # a.T @ c = b
-    coef = scipy.optimize.nnls(a, c)[0]
+    c = np.dot(v[:, keep].T, b[use]) / sq     # a.T @ c = b
+    coef[use] = scipy.optimize.nnls(a, c)[0]
     sse = yy - 2 * np.dot(b, coef) + np.dot(coef, np.dot(gram, coef))
     return coef, max(float(sse), 0.)
 
