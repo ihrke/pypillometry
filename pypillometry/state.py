@@ -36,11 +36,10 @@ Version history
     Intervals without `sampling_rate` and `time_offset` (conversions
     between sample indices and time use the data object); sample indices
     are ``units="samples"`` (instead of None); eyedata objects have
-    excluded periods (`excluded`, Intervals in ms)
-3
-    metadata of the events: eyedata objects have `event_meta` (dict of
-    arrays, one value per event), Intervals have `event_meta` (None or
-    dict of arrays, one value per interval)
+    excluded periods (`excluded`, Intervals in ms); metadata of the
+    events: eyedata objects have `event_meta` (dict of arrays, one value
+    per event), Intervals have `event_meta` (None or dict of arrays, one
+    value per interval)
 """
 
 import importlib
@@ -53,7 +52,7 @@ from loguru import logger
 __all__ = []
 
 #: version of the state written by this version of pypillometry
-FORMAT_VERSION = 3
+FORMAT_VERSION = 2
 
 # classes that moved: (old module, old name) -> (new module, new name),
 # used when reading pickle files (see _Unpickler)
@@ -436,12 +435,14 @@ def _v1_intervals(st):
     st = {k: v for k, v in st.items() if k not in ("sampling_rate", "time_offset")}
     if st.get("units") is None:
         st["units"] = "samples"
+    st["event_meta"] = None
     return st
 
 
 def _migrate_1_to_2(state, class_name):
     """Version 1 -> 2: Intervals lose `sampling_rate` and `time_offset`;
-    sample indices are "samples" instead of None; no excluded periods."""
+    sample indices are "samples" instead of None; no excluded periods;
+    no metadata of events and Intervals."""
     state = dict(state)
     if class_name in _SEGMENTED_CLASSES:
         state["intervals"] = _v1_intervals(state.get("intervals"))
@@ -452,30 +453,11 @@ def _migrate_1_to_2(state, class_name):
     # no excluded periods
     state["excluded"] = {"intervals": np.zeros((0, 2)), "units": "ms", "label": "excluded",
                          "event_labels": None, "event_indices": None, "event_onsets": None,
-                         "data_time_range": None, "interval_window": None}
-    return state
-
-
-def _v2_intervals(st):
-    """Version-3 state of an Intervals object (version-2 state `st`)."""
-    if st is None:
-        return None
-    return {**st, "event_meta": None}
-
-
-def _migrate_2_to_3(state, class_name):
-    """Version 2 -> 3: events and Intervals have metadata (none)."""
-    state = dict(state)
-    if class_name in _SEGMENTED_CLASSES:
-        state["intervals"] = _v2_intervals(state.get("intervals"))
-        return state
-    for key in ("blinks", "interpolated_blinks"):
-        if state.get(key) is not None:
-            state[key] = {k: _v2_intervals(v) for k, v in state[key].items()}
-    state["excluded"] = _v2_intervals(state.get("excluded"))
+                         "data_time_range": None, "interval_window": None,
+                         "event_meta": None}
     state["event_meta"] = {}
     return state
 
 
-_MIGRATIONS = [_migrate_0_to_1, _migrate_1_to_2, _migrate_2_to_3]
+_MIGRATIONS = [_migrate_0_to_1, _migrate_1_to_2]
 assert len(_MIGRATIONS) == FORMAT_VERSION

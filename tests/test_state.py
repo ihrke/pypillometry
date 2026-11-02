@@ -280,22 +280,8 @@ class TestMigrate(unittest.TestCase):
                             "interpolated_blinks": {"left_pupil": None}}, "PupilData")
         self.assertEqual(st["blinks"]["left_pupil"],
                          {"units": "samples", "label": "b", "event_meta": None})
-
-    def test_v2_event_meta(self):
-        """version 2 -> 3: no metadata for events and Intervals"""
-        d = make_eyedata(keep_orig=False)
-        st = state.to_state(d)
-        st["format_version"] = 2
-        del st["event_meta"]
-        for key in ("blinks", "interpolated_blinks"):
-            for iv in st[key].values():
-                if iv is not None:
-                    del iv["event_meta"]
-        del st["excluded"]["event_meta"]
-        d2 = state.from_state(st)
-        self.assertEqual(d2.event_meta, {})
-        self.assertIsNone(d2._excluded.event_meta)
-        self.assertEqual(len(d2.get_events()), 3)
+        self.assertEqual(st["event_meta"], {})
+        self.assertIsNone(st["excluded"]["event_meta"])
 
     def test_current_version_unchanged(self):
         st = state.to_state(make_eyedata(keep_orig=False))
