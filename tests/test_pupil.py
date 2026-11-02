@@ -1,11 +1,13 @@
 import unittest
 import sys
 import numpy as np
+import scipy.optimize
 import pypillometry as pp
 from pypillometry.signal.pupil import (
     pupil_kernel_t, 
     lowpass_filter_iterative,
-    pupil_signal_quality
+    pupil_signal_quality,
+    pupil_build_design_matrix
 )
 
 class TestPupil(unittest.TestCase):
@@ -208,3 +210,53 @@ class TestBaselinePupilModel(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class TestNNLSGram(unittest.TestCase):
+    """NNLS on the small form (x @ x.T) gives the solution of scipy's NNLS."""
+
+    def setUp(self):
+        rng = np.random.default_rng(0)
+        self.x = rng.normal(size=(20, 500))
+        self.y = rng.normal(size=500)
+
+    def compare(self, x, y):
+        from pypillometry.signal.pupil import _nnls_gram
+        ref = scipy.optimize.nnls(x.T, y)[0]
+        coef, sse = _nnls_gram(x, y)
+        self.assertTrue(np.all(coef >= 0))
+        np.testing.assert_allclose(coef, ref, atol=1e-8)
+        self.assertAlmostEqual(sse, np.sum((y - x.T @ coef) ** 2))
+
+    def test_random(self):
+        self.compare(self.x, self.y)
+
+    def test_zero_row(self):
+        x = self.x.copy()
+        x[5] = 0
+        self.compare(x, self.y)
+
+    def test_pupil_responses(self):
+        """overlapping responses with known amplitudes"""
+        from pypillometry.signal.pupil import _nnls_gram
+        rng = np.random.default_rng(1)
+        tx = np.arange(3000) * 20.
+        x = pupil_build_design_matrix(tx, np.arange(500., 57000., 1500.), 50, 10, 900)
+        amp = rng.uniform(0, 2, x.shape[0])
+        y = x.T @ amp + rng.normal(0, 0.01, len(tx))
+        self.compare(x, y)
+        np.testing.assert_allclose(_nnls_gram(x, y)[0], amp, atol=0.05)
+
+    def test_duplicate_rows(self):
+        """singular x @ x.T: same fit (sse) as scipy, coefficients not unique"""
+        from pypillometry.signal.pupil import _nnls_gram
+        x = np.vstack([self.x, self.x[:3]])
+        coef, sse = _nnls_gram(x, self.y)
+        ref = scipy.optimize.nnls(x.T, self.y)[0]
+        self.assertAlmostEqual(sse, np.sum((self.y - x.T @ ref) ** 2))
+
+    def test_no_rows(self):
+        from pypillometry.signal.pupil import _nnls_gram
+        coef, sse = _nnls_gram(np.zeros((0, 500)), self.y)
+        self.assertEqual(len(coef), 0)
+        self.assertAlmostEqual(sse, np.sum(self.y ** 2))
