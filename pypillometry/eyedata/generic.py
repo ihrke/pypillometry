@@ -2334,8 +2334,10 @@ class GenericEyeData(state.VersionedState, ABC):
         All data fields and the time-vector are downsampled simultaneously.
         See :func:`pypillometry.signal.baseline.downsample`. Masked samples are
         left out of the window means; a new sample is masked only if all
-        samples in its window were masked. Stored blinks (in sample indices)
-        are rescaled to the new sampling rate.
+        samples in its window were masked. It then holds the mean of the
+        stored values (e.g., of interpolated blinks; NaN only if they are
+        NaN). Stored blinks (in sample indices) are rescaled to the new
+        sampling rate.
 
         Parameters
         ----------
@@ -2365,15 +2367,18 @@ class GenericEyeData(state.VersionedState, ABC):
             
         dsfac=int(dsfac)
         # downsample all of the variables/eyes in the data; masked samples are
-        # left out of the window means, and a new sample is masked (NaN) only
-        # if all samples in its window were masked
+        # left out of the window means, and a new sample is masked only if all
+        # samples in its window were masked; it then holds the mean of the
+        # stored values (e.g., interpolated blinks)
         ndata=EyeDataDict()
         for k,v in obj.data.items():
-            v=np.where(obj.data.mask[k].astype(bool), np.nan, v)
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", RuntimeWarning)  # all-NaN windows
-                y=baseline.downsample(v, dsfac)
-            ndata.set_with_mask(k, y, mask=np.isnan(y).astype(int))
+                y=baseline.downsample(np.where(obj.data.mask[k].astype(bool), np.nan, v), dsfac)
+                stored=baseline.downsample(v, dsfac)
+            allmasked=np.isnan(y)
+            y[allmasked]=stored[allmasked]
+            ndata.set_with_mask(k, y, mask=allmasked.astype(int))
         obj.data=ndata
 
         # also downsample the time-vector
