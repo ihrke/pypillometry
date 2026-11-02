@@ -19,6 +19,8 @@
 - `get_intervals()`, `stat_per_event()`: `interval` was renamed to `window`;
   it has no default for single events (was `(-200, 200)` in
   `get_intervals()`), and `(0, 0)` between two events
+- `pupil_plot()`: `plot_range` is the first argument (before `eyes`), so
+  `d.plot.pupil_plot((0, 20))` works; positional `eyes` must be passed by name
 
 ### Added
 
