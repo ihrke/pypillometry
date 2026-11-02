@@ -60,7 +60,8 @@
 ### Changed
 
 - `pupil_estimate_response()` does not use excluded periods and NaN
-  samples for the fit
+  samples for the fit; events with less than `min_valid` (default 0.5) of
+  their response outside them are left out (coefficient NaN)
 - `get_intervals()` with two events pairs each first event with the next
   second event (e.g., `("End Block", "Start Block")` gives the breaks);
   events without a partner are skipped with a warning (before: pairs by
