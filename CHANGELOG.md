@@ -5,22 +5,10 @@
 ### Breaking changes
 
 - `EyeData.get_pupildata()` was removed, use `to_pupildata()` 
-- `Events` need time units; `units=None` (sample indices) raises an error
-- Sample indices are `units="samples"`; `units=None` raises an error
-  (`get_intervals`, `get_blinks`, `mask_as_intervals`, `Intervals`, plots)
-- Converting `Intervals` between sample indices and time needs the data
-  object: `to_units("ms", d)`, `to_mask(d)`, `Intervals.from_mask(mask, d)`;
-  `Intervals` no longer have `sampling_rate` and `time_offset`
-- `Intervals.merge(distance=...)`: plain numbers are in the units of the
-  intervals (were ms)
-- `plot_timeseries()`, `plot_scanpath()`, `sub_slice()`: default `units="ms"`
-  (was None)
+- `Events` now need time units, sample indices are `units="samples"`
+- Converting `Intervals` between sample indices and time now requires the data
 - `sub_slice()` was renamed to `crop()`; `sub_slice()` is a deprecated alias
-- `get_intervals()`, `stat_per_event()`: `interval` was renamed to `window`;
-  it has no default for single events (was `(-200, 200)` in
-  `get_intervals()`), and `(0, 0)` between two events
-- `pupil_plot()`: `plot_range` is the first argument (before `eyes`), so
-  `d.plot.pupil_plot((0, 20))` works; positional `eyes` must be passed by name
+- `get_intervals()`, `stat_per_event()`: `interval` was renamed to `window`
 
 ### Added
 
@@ -29,35 +17,13 @@
 - Default quality thresholds based on reference data from six datasets
 - `pypilinfo --quality/--html/--descriptions`: quality reports
 - HDF5 files: `write_file()`/`write_pickle()` write HDF5 if filename ends `.h5`
-- Excluded periods (e.g., breaks, calibration): `exclude_intervals()`,
-  `get_excluded()`, `excluded_duration()`; all variables are masked there,
-  blink detection ignores them, and they are saved with the object;
-  `quality_report()` only uses the included time; `get_included()`,
-  `split_excluded()` (one object per included period)
-- `remove_intervals()`: remove periods (e.g., breaks) and join the rest
-  (time and events after them are shifted back)
-- `keep_intervals()`: exclude everything outside the given periods;
-  `Intervals.complement()`: the periods not covered
-- `get_intervals()`: `"<start>"` and `"<end>"` select the start and end of
-  the recording; `exact=True` (also `Events.filter()`) matches labels
-  equal to the string
-- Events from behaviour logs: `Events.from_table()` (one column per kind of
-  event), `sync_clocks()` (fits offset and drift between the clocks from
-  paired times, shows the residuals), `add_events()`; `event_onset()`
-  returns the onset of the one event with a label
-- Event metadata (e.g., trial, condition, reaction time): `Events.meta`
-  (one numpy array per column), stored in the data (`event_meta`) and in
-  saved files; from trigger labels (`Events.parse_labels()`) or from a
-  behaviour log (`Events.from_table(meta=...)`); `filter()` selects by
-  metadata (e.g., `filter("S_", cond="easy", rt=lambda rt: rt < 800)`);
-  `set_meta()`, `fill_meta()` (copy to all events of a trial),
-  `add_latency()` (e.g., reaction times), `row()`, `to_table()`, `+`
-- `get_intervals()` passes the metadata of the events on to the intervals
-  (`Intervals.event_meta`, also in `as_pandas()`)
-- `pupil_estimate_response()` stores the share of each event's response
-  that is valid (`valid`) and that is real, not interpolated, data
-  (`observed`) in `params["response"][eye]`; `pupil_response(valid=...)`,
-  `pupil_response_coverage()`
+- Excluded periods (e.g., breaks, calibration): `exclude_intervals()`
+- `remove_intervals()`: remove periods (e.g., breaks)
+- `get_intervals()`: `"<start>"` and `"<end>"` 
+- Events from behaviour logs: `Events.from_table()` 
+- `sync_clocks()` (fits offset and drift between clocks)
+- Event metadata (e.g., trial, condition, reaction time): 
+- `get_intervals()` passes the metadata 
 
 ### Changed
 
@@ -65,30 +31,16 @@
   samples for the fit; events with less than `min_valid` (default 0.5) of
   their response outside them are left out (coefficient NaN)
 - `get_intervals()` with two events pairs each first event with the next
-  second event (e.g., `("End Block", "Start Block")` gives the breaks);
-  events without a partner are skipped with a warning (before: pairs by
-  order, error if the numbers differ)
+  second event (e.g., `("End Block", "Start Block")` gives the breaks)
 - Saved files (pickle and HDF5) contain a versioned state of the object.
   Files from earlier versions are upgraded when they are read.
-- Conversions between sample indices and time use the time vector of the
-  data (a time maps to the first sample at or after it), so recordings that
-  do not start at 0 or have gaps are handled correctly
-- `fit_foreshortening(intervals=...)`: intervals are end-exclusive
 
 ### Fixed
 
-- `pupil_estimate_response()` was very slow for long recordings with many
-  events (NNLS on the full design matrix); the NNLS is now solved on the
-  small events x events form (same solution, e.g., 0.4 s instead of 200 s)
-- `downsample()` set windows in which all samples are masked to NaN, so
-  interpolated blinks were lost; they now hold the mean of the stored values
-  (and stay masked)
-- Baseline estimation: the weights of the troughs were given to the sample
-  before each trough (0-based indices passed to Stan)
-- HTML representation of eyedata objects escapes names, labels and history
+- `pupil_estimate_response()` uses more efficient solver
+- `downsample()` respects masked samples
 - `set_events()` stored onsets of `Events` with `units=None` as ms
-- Segments of index intervals that are not event-locked got a time axis
-  that ignored the start time of the recording
+- Segments of index intervals that are not event-locked wrong time
 - `plot_intervals()` with index intervals mixed sample indices and ms
 
 ## 2.0.0 (2026-10-28)
