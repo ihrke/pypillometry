@@ -146,7 +146,7 @@ as times, so they stay valid after slicing, downsampling and
 :meth:`~GenericEyeData.get_included` returns the periods between them. To
 get rid of the excluded data altogether, :meth:`~GenericEyeData.split_excluded`
 returns one object per included period, and
-:meth:`~GenericEyeData.remove_excluded` deletes the excluded samples and
+:meth:`~GenericEyeData.remove_intervals` deletes the excluded samples and
 joins the rest (the time vector and the events are shifted so that there
 are no gaps):
 
@@ -154,7 +154,7 @@ are no gaps):
 
     d.get_included("sec")          # the periods that are not excluded
     parts = d.split_excluded()     # list of objects, original time
-    joined = d.remove_excluded()   # one object, time re-aligned
+    joined = d.remove_intervals(d.get_excluded())   # one object, time re-aligned
 
 
 Pipelines and history

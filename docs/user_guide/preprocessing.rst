@@ -152,7 +152,8 @@ Selecting and cleaning up data
 .. autosummary::
    :nosignatures:
 
-   GenericEyeData.sub_slice
+   GenericEyeData.crop
+   GenericEyeData.remove_intervals
    GenericEyeData.reset_time
    GenericEyeData.drop_data
    EyeData.to_pupildata
@@ -161,8 +162,11 @@ Selecting and cleaning up data
    GenericEyeData.fill_time_discontinuities
    GenericEyeData.copy
 
-:meth:`~GenericEyeData.sub_slice` cuts out a time range, e.g., one block
-of the experiment: ``d.sub_slice(3 * u.min, 5 * u.min)``.
+:meth:`~GenericEyeData.crop` cuts out a time range, e.g., one block
+of the experiment: ``d.crop(3 * u.min, 5 * u.min)`` (``sub_slice`` is a
+deprecated alias). :meth:`~GenericEyeData.remove_intervals` removes periods
+in the middle, e.g., breaks, and joins the rest: the time vector and the
+events after a removed period are shifted back, so that there are no gaps.
 :meth:`~GenericEyeData.reset_time` makes the time vector start at zero
 (or at any other time).
 :meth:`~EyeData.to_pupildata` and :meth:`~EyeData.to_gazedata` turn

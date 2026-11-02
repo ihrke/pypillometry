@@ -15,6 +15,7 @@
   intervals (were ms)
 - `plot_timeseries()`, `plot_scanpath()`, `sub_slice()`: default `units="ms"`
   (was None)
+- `sub_slice()` was renamed to `crop()`; `sub_slice()` is a deprecated alias
 
 ### Added
 
@@ -27,8 +28,9 @@
   `get_excluded()`, `excluded_duration()`; all variables are masked there,
   blink detection ignores them, and they are saved with the object;
   `quality_report()` only uses the included time; `get_included()`,
-  `split_excluded()` (one object per included period) and
-  `remove_excluded()` (delete them and join the rest)
+  `split_excluded()` (one object per included period)
+- `remove_intervals()`: remove periods (e.g., breaks) and join the rest
+  (time and events after them are shifted back)
 
 ### Changed
 

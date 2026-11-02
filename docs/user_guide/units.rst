@@ -12,7 +12,7 @@ string:
     import pypillometry as pp
     from pypillometry import u
 
-    d.sub_slice(3 * u.min, 5 * u.min)               # or ("3 min", "5 min")
+    d.crop(3 * u.min, 5 * u.min)                    # or ("3 min", "5 min")
     d.get_intervals("stim", (-200, 800) * u.ms)
     d.pupil_blinks_detect(min_duration="20 ms")
     d.plot.pupil_plot(plot_range=(3, 5) * u.min)
@@ -47,7 +47,7 @@ result should be returned:
 
     d.get_duration(units="min")
     d.get_events(units="sec")
-    d.sub_slice(3, 5, units="min")
+    d.crop(3, 5, units="min")
 
 Sample indices are ``units="samples"`` (aliases: "sample", "index",
 "indices", "idx"); ``units=None`` is not accepted. Converting positions
