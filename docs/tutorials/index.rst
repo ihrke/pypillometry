@@ -102,6 +102,13 @@ Events and event-related analyses
 
       Select, filter, convert and change the events of a recording.
 
+   .. grid-item-card:: Event metadata
+      :link: /notebooks/event_metadata
+      :link-type: doc
+
+      Trial, condition or reaction time for each event, from the trigger
+      labels or a behaviour log; select events by them.
+
    .. grid-item-card:: Intervals
       :link: /notebooks/intervals
       :link-type: doc
@@ -166,6 +173,7 @@ More examples for the experimental features are in
    :caption: Events and event-related analyses
 
    /notebooks/events
+   /notebooks/event_metadata
    /notebooks/intervals
    /notebooks/erpds
 

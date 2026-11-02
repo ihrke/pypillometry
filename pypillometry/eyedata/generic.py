@@ -15,6 +15,7 @@ from .eyedatadict import EyeDataDict
 from .experimental_setup import ExperimentalSetup
 from ..signal import baseline
 from ..intervals import stat_event_interval, Intervals
+from ..events import _pair_with_next, _meta_dict
 from ..logging import logging_get_level
 from .. import config
 from .. import state
@@ -60,44 +61,6 @@ def _history_arg(v):
         return f"{type(v).__name__}({len(v)})"  # e.g. Intervals(13)
     except TypeError:
         return type(v).__name__
-
-
-def _pair_with_next(on1, on2):
-    """Pair each first event with the next second event after it.
-
-    `on1` and `on2` are the onsets of the first and the second events. Each
-    event is used at most once. If several first events come before the
-    same second event, the last of them (the closest one) is used. A second
-    event at the same time as a first event is not paired with it.
-
-    Returns
-    -------
-    pairs : list of (int, int)
-        indices into `on1` and `on2` of the pairs, in time order
-    unpaired1, unpaired2 : list of int
-        indices of the first events without a second event (before the next
-        first event or the end) and of the second events without a first
-        event before them
-    """
-    # at the same time, second events come first, so they are not paired
-    # with a first event at that time
-    order = sorted([(t, 0, k) for k, t in enumerate(on2)] +
-                   [(t, 1, k) for k, t in enumerate(on1)])
-    pairs, unpaired1, unpaired2 = [], [], []
-    pending = None  # last first event without a partner
-    for _, role, k in order:
-        if role == 1:
-            if pending is not None:
-                unpaired1.append(pending)
-            pending = k
-        elif pending is not None:
-            pairs.append((pending, k))
-            pending = None
-        else:
-            unpaired2.append(k)
-    if pending is not None:
-        unpaired1.append(pending)
-    return pairs, sorted(unpaired1), sorted(unpaired2)
 
 
 # number of decorated methods currently running; only the outermost call
@@ -159,6 +122,7 @@ class GenericEyeData(state.VersionedState, ABC):
     data: EyeDataDict ## dictionary with data (contains ndarrays)
     tx: np.ndarray ## time vector
     event_onsets: np.ndarray ## vector with event onsets in time units
+    event_meta: dict ## metadata of the events (column name -> array)
     inplace: Optional[bool] ## whether to make changes in-place (None: package default)
     info: dict ## optional info about the dataset
     params: dict ## parameters 
@@ -166,7 +130,7 @@ class GenericEyeData(state.VersionedState, ABC):
     # state (see pypillometry.state); subclasses add their own fields
     _STATE_FIELDS = (
         "name", "fs", "tx", ("data", "EyeDataDict"), "event_onsets",
-        "event_labels", ("blinks", "dict:Intervals", "_blinks"),
+        "event_labels", "event_meta", ("blinks", "dict:Intervals", "_blinks"),
         ("interpolated_blinks", "dict:Intervals", "_interpolated_blinks"),
         ("excluded", "Intervals", "_excluded"),
         "params", "history", "inplace", "info", ("original", "versioned"))
@@ -1025,6 +989,12 @@ class GenericEyeData(state.VersionedState, ABC):
                                   units="ms", label="excluded")
         return obj
 
+    def _keep_events(self, keep):
+        """Keep only the events where `keep` is True (in place)."""
+        self.event_onsets = np.asarray(self.event_onsets)[keep]
+        self.event_labels = np.asarray(self.event_labels)[keep]
+        self.event_meta = {name: col[keep] for name, col in self.event_meta.items()}
+
     def _keep_samples(self, keep, shift=None):
         """
         Keep only the samples where `keep` is True (in place).
@@ -1108,9 +1078,7 @@ class GenericEyeData(state.VersionedState, ABC):
         start = parse_time(start, default=default)
         end = parse_time(end, default=default)
         obj._keep_samples((obj.tx >= start) & (obj.tx <= end))
-        keepev = (obj.event_onsets >= start) & (obj.event_onsets <= end)
-        obj.event_onsets = obj.event_onsets[keepev]
-        obj.event_labels = obj.event_labels[keepev]
+        obj._keep_events((obj.event_onsets >= start) & (obj.event_onsets <= end))
         return obj
 
     def sub_slice(self, start: float=-np.inf, end: float=np.inf,
@@ -1606,7 +1574,8 @@ class GenericEyeData(state.VersionedState, ABC):
         return result
 
     @keephistory
-    def set_event_onsets(self, event_onsets: np.ndarray, event_labels: np.ndarray):
+    def set_event_onsets(self, event_onsets: np.ndarray, event_labels: np.ndarray,
+                         event_meta: dict = None):
         """
         Set onsets of events in the data (in-place).
 
@@ -1617,12 +1586,16 @@ class GenericEyeData(state.VersionedState, ABC):
         event_labels : np.ndarray or None
             array of labels (strings), same length as `event_onsets`;
             if `None`, all labels are set to 0
+        event_meta : dict or None, optional
+            metadata of the events: column name -> values (one per event);
+            see :class:`~pypillometry.Events`
 
         Raises
         ------
         ValueError
             if any onset is outside the range of the time-vector or if
-            `event_labels` and `event_onsets` differ in length
+            `event_labels`, `event_onsets` or a metadata column differ in
+            length
 
         See Also
         --------
@@ -1644,6 +1617,7 @@ class GenericEyeData(state.VersionedState, ABC):
             if self.event_onsets.size!=np.array(event_labels).size:
                 raise ValueError("event_labels must have same length as event_onsets")
             self.event_labels=np.array(event_labels)
+        self.event_meta = _meta_dict(event_meta, self.event_onsets.size)
 
     @property
     def events(self):
@@ -1701,7 +1675,8 @@ class GenericEyeData(state.VersionedState, ABC):
             onsets=self.event_onsets.copy(),
             labels=self.event_labels.copy(),
             units="ms",
-            data_time_range=data_time_range
+            data_time_range=data_time_range,
+            meta=self.event_meta
         )
         
         # Convert to requested units if different from ms
@@ -1713,10 +1688,10 @@ class GenericEyeData(state.VersionedState, ABC):
     @keephistory
     def set_events(self, events, inplace=None):
         """
-        Replace event onsets and labels from an Events object.
+        Replace event onsets, labels and metadata from an Events object.
         
-        This method updates the internal event_onsets and event_labels arrays
-        from an Events object. The Events object's onsets are automatically
+        This method updates the internal event_onsets, event_labels and
+        event_meta from an Events object. The Events object's onsets are automatically
         converted to milliseconds (the internal storage format) if needed.
         
         Parameters
@@ -1759,7 +1734,7 @@ class GenericEyeData(state.VersionedState, ABC):
         
         # internal storage is always in ms
         events = events.to_units("ms")
-        obj.set_event_onsets(events.onsets, events.labels)
+        obj.set_event_onsets(events.onsets, events.labels, events.meta)
 
         return obj
 
@@ -1770,7 +1745,8 @@ class GenericEyeData(state.VersionedState, ABC):
 
         The new events are merged with the existing ones and all events are
         sorted by onset (events at the same time keep their order, existing
-        ones first). Events from a behaviour log on another clock can be
+        ones first). Metadata columns that only the existing or only the new
+        events have get missing values (NaN or "") for the other events. Events from a behaviour log on another clock can be
         mapped to the eye-tracker clock with :func:`~pypillometry.sync_clocks`
         first.
 
@@ -1811,12 +1787,8 @@ class GenericEyeData(state.VersionedState, ABC):
         if not isinstance(events, Events):
             raise TypeError(f"events must be an Events object, got {type(events)}")
 
-        events = events.to_units("ms")
-        onsets = np.concatenate([obj.event_onsets, events.onsets])
-        labels = np.concatenate([np.asarray(obj.event_labels, dtype=str),
-                                 events.labels])
-        order = np.argsort(onsets, kind="stable")
-        obj.set_event_onsets(onsets[order], labels[order])
+        merged = obj.get_events() + events
+        obj.set_event_onsets(merged.onsets, merged.labels, merged.meta)
 
         return obj
 
@@ -2011,6 +1983,9 @@ class GenericEyeData(state.VersionedState, ABC):
             Intervals object containing interval on- and offsets for each match,
             with associated metadata (event labels, indices, units). For
             ``"<start>"`` as first event, the event indices are None.
+            The metadata of the events (see :class:`~pypillometry.Events`)
+            are kept in `event_meta` (for two events, those of the first
+            one, or of the second one if the first is ``"<start>"``).
         """
         from ..intervals import Intervals
         from ..events import Events
@@ -2068,12 +2043,19 @@ class GenericEyeData(state.VersionedState, ABC):
             return (on, np.clip(_ms_to_samples(self, on), 0, n-1), np.where(ix)[0],
                     [self.event_labels[i] for i in np.where(ix)[0]])
 
+        def meta_of(indices):
+            """Metadata of the events with `indices` (None if there are none)."""
+            if indices is None or not self.event_meta:
+                return None
+            return {name: col[indices] for name, col in self.event_meta.items()}
+
         if isinstance(event_select, Events):
             # events given directly
             on1 = on2 = event_select.to_units("ms").onsets
             eix1 = eix2 = np.clip(_ms_to_samples(self, on1), 0, n-1)
             selected_labels = event_select.labels.tolist()
             selected_indices = None
+            selected_meta = dict(event_select.meta) or None
             if label is None:
                 label = f"events_{len(event_select)}"
         elif isinstance(event_select, tuple):
@@ -2107,10 +2089,13 @@ class GenericEyeData(state.VersionedState, ABC):
                     label = "between_events"
             selected_labels = [f"{l_a[i]}_to_{l_b[j]}" for i, j in pairs]
             selected_indices = None if i_a is None else i_a[pa]
+            selected_meta = meta_of(selected_indices) if i_a is not None \
+                else meta_of(None if i_b is None else i_b[pb])
         else:
             # one event with a window around it
             on1, eix1, selected_indices, selected_labels = select(event_select)
             on2, eix2 = on1, eix1
+            selected_meta = meta_of(selected_indices)
             if label is None:
                 label = event_select if isinstance(event_select, str) else "custom_events"
 
@@ -2138,7 +2123,8 @@ class GenericEyeData(state.VersionedState, ABC):
             event_indices=selected_indices,
             data_time_range=data_time_range,
             event_onsets=event_onsets_list,
-            interval_window=window
+            interval_window=window,
+            event_meta=selected_meta
         )
 
     def get_segments(self, intervals, variable: str, name: str = None):
@@ -2659,6 +2645,7 @@ class GenericEyeData(state.VersionedState, ABC):
         other_size += self.tx.nbytes
         other_size += self.event_onsets.nbytes if self.event_onsets is not None else 0
         other_size += self.event_labels.nbytes if self.event_labels is not None else 0
+        other_size += sum(col.nbytes for col in self.event_meta.values())
         
         # String attributes
         other_size += sys.getsizeof(self.name) if self.name is not None else 0
@@ -3286,8 +3273,8 @@ class GenericEyeData(state.VersionedState, ABC):
         for a, b in periods.intervals:
             in_removed |= (on >= a) & (on < b)
         obj._keep_samples(~removed, shift=shift)
-        obj.event_onsets = (on - ev_shift)[~in_removed]
-        obj.event_labels = np.asarray(obj.event_labels)[~in_removed]
+        obj.event_onsets = on - ev_shift
+        obj._keep_events(~in_removed)
         obj.params["removed_intervals"] = obj.params.get("removed_intervals", []) + \
             [(float(a), float(b)) for a, b in periods.intervals]
         return obj

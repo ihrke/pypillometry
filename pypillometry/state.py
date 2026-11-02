@@ -36,7 +36,10 @@ Version history
     Intervals without `sampling_rate` and `time_offset` (conversions
     between sample indices and time use the data object); sample indices
     are ``units="samples"`` (instead of None); eyedata objects have
-    excluded periods (`excluded`, Intervals in ms)
+    excluded periods (`excluded`, Intervals in ms); metadata of the
+    events: eyedata objects have `event_meta` (dict of arrays, one value
+    per event), Intervals have `event_meta` (None or dict of arrays, one
+    value per interval)
 """
 
 import importlib
@@ -432,12 +435,14 @@ def _v1_intervals(st):
     st = {k: v for k, v in st.items() if k not in ("sampling_rate", "time_offset")}
     if st.get("units") is None:
         st["units"] = "samples"
+    st["event_meta"] = None
     return st
 
 
 def _migrate_1_to_2(state, class_name):
     """Version 1 -> 2: Intervals lose `sampling_rate` and `time_offset`;
-    sample indices are "samples" instead of None; no excluded periods."""
+    sample indices are "samples" instead of None; no excluded periods;
+    no metadata of events and Intervals."""
     state = dict(state)
     if class_name in _SEGMENTED_CLASSES:
         state["intervals"] = _v1_intervals(state.get("intervals"))
@@ -448,7 +453,9 @@ def _migrate_1_to_2(state, class_name):
     # no excluded periods
     state["excluded"] = {"intervals": np.zeros((0, 2)), "units": "ms", "label": "excluded",
                          "event_labels": None, "event_indices": None, "event_onsets": None,
-                         "data_time_range": None, "interval_window": None}
+                         "data_time_range": None, "interval_window": None,
+                         "event_meta": None}
+    state["event_meta"] = {}
     return state
 
 
