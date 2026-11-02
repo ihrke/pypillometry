@@ -238,3 +238,50 @@ class TestQualityReport(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestExcludedPeriods(unittest.TestCase):
+    """Measures refer to the included samples only (step: excluded periods)."""
+
+    def make(self):
+        # 20 s at 500 Hz; a "break" from 8 to 12 s (samples 4000-6000) with
+        # the gaze off the screen, a different pupil level and missing data
+        d = _make_data()
+        for eye in ("left", "right"):
+            d.data[f"{eye}_x"][4000:6000] = 5000.
+            d.data[f"{eye}_pupil"][4000:6000] = 2000.
+        d.data["left_pupil"][3900:4100] = np.nan   # dropout into the break
+        d.data["left_pupil"][5000:5500] = np.nan   # missing during the break
+        d.set_experimental_setup(screen_resolution=(1000, 800),
+                                 physical_screen_size=("52 cm", "29 cm"),
+                                 eye_to_screen_center="60 cm")
+        return d
+
+    def test_included_measures(self):
+        d = self.make()
+        r0 = d.quality_report()
+        self.assertNotIn("included_duration", r0["info"]["all"])
+        self.assertGreater(r0["gaze"]["left"]["offscreen_pct"].value, 10)
+        self.assertGreater(r0["pupil"]["right"]["jump_rate"].value, 0)
+
+        e = d.exclude_intervals([(8000, 12000)], inplace=False)
+        r = e.quality_report()
+        info = r["info"]["all"]
+        self.assertAlmostEqual(info["duration"].value, 20 / 60)
+        self.assertAlmostEqual(info["included_duration"].value, 16 / 60)
+        self.assertEqual(info["n_samples"].value, 10000)
+        # off-screen and jumps only from the break: gone
+        self.assertEqual(r["gaze"]["left"]["offscreen_pct"].value, 0)
+        self.assertEqual(r["pupil"]["right"]["jump_rate"].value, 0)
+        # missing data and dropouts: only samples 3900-4000 are left, over 16 s
+        left = r["pupil"]["left"]
+        self.assertAlmostEqual(left["missing_pct"].value, 100 * 100 / 8000)
+        self.assertAlmostEqual(left["longest_dropout"].value, 100 / 500)
+        self.assertAlmostEqual(left["dropout_rate"].value, 1 / (16 / 60))
+        # the excluded samples are masked, but not counted as artifacts
+        e.pupil_blinks_detect(apply_mask=True, inplace=True)
+        r = e.quality_report()
+        self.assertAlmostEqual(r["blinks"]["left"]["rate"].value,
+                               len(e.get_blinks("left", "pupil")) / (16 / 60))
+        self.assertLess(r["artifacts"]["right"]["pupil_masked_pct"].value, 1)
+        self.assertLess(r["artifacts"]["right"]["other_pct"].value, 1)
