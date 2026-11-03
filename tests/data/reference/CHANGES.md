@@ -171,3 +171,14 @@ Changes of the API calls alone (same numbers) need no entry.
   earlier samples stayed masked).
 - **Why**: the layer describes the samples it is stored with.
 - **Step**: 5, `refactor/05-mask-layers`
+
+### `interpolate_intervals` sets the `interpolated` layer
+
+- **Case**: none
+- **Change**: the samples interpolated by `interpolate_intervals` get the
+  `interpolated` layer, so `get_interpolated_blinks()` (and the
+  "interpolated" percentage of the quality report) include them (before:
+  only `pupil_blinks_interpolate` was recorded). With `store_as_suffix`,
+  the new variable gets the masks and layers of the original one.
+- **Why**: one layer for reconstructed samples (refactor plan 2.2).
+- **Step**: 5, `refactor/05-mask-layers`

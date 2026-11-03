@@ -3091,7 +3091,9 @@ class GenericEyeData(state.VersionedState, ABC):
         
         This function replaces data within the specified intervals with interpolated
         values based on boundary points outside each interval. The
-        interpolated samples are also marked as masked. Intervals without
+        interpolated samples get the ``"interpolated"`` layer (see
+        :meth:`get_interpolated_blinks`) and are also marked as masked in
+        ``data.mask``. Intervals without
         valid (non-NaN) boundary points on both sides are skipped with a
         warning.
 
@@ -3183,6 +3185,7 @@ class GenericEyeData(state.VersionedState, ABC):
             # Get the data and mask
             data = obj.data[key].copy()
             mask = obj.data.mask[key].copy()
+            interpolated = np.zeros(len(data), dtype=bool)
             
             # Interpolate each interval
             for start, end in intervals_array:
@@ -3258,10 +3261,15 @@ class GenericEyeData(state.VersionedState, ABC):
                 
                 # Update mask for interpolated region
                 mask[start_idx:end_idx] = 1
+                interpolated[start_idx:end_idx] = True
             
-            # Store result
+            # Store result (with the masks and layers of `key`)
             target_key = key if store_as_suffix is None else f"{key}{store_as_suffix}"
-            obj.data.set_with_mask(target_key, data, mask=mask)
+            if target_key == key:
+                obj.data.set_with_mask(key, data, preserve_mask=True)
+            else:
+                obj.data._set_channel(target_key, data, obj.data._mask[key], obj.data.layers[key])
+            obj.data.set_layer(target_key, "interpolated", interpolated)
         
         # Handle dict vs single Intervals
         if isinstance(intervals, dict):

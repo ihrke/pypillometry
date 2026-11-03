@@ -239,3 +239,14 @@ class TestInterpolatedLayer:
         np.testing.assert_array_equal(
             d.data.mask["left_pupilinterp"],
             d.data.mask["left_pupil"] | d.data.get_layer("left_pupilinterp", "interpolated"))
+
+    def test_interpolate_intervals_sets_layer(self):
+        import pypillometry as pp
+        d = blink_data()
+        iv = pp.Intervals([(200, 215), (500, 520)], units="samples")
+        d.interpolate_intervals(iv, store_as_suffix="_lin")
+        d.interpolate_intervals(iv)
+        for var in ("pupil", "pupil_lin"):
+            np.testing.assert_array_equal(
+                np.asarray(d.get_interpolated_blinks("left", var).intervals), [(200, 215), (500, 520)])
+        assert d.data.mask["left_pupil"][200:215].all()
