@@ -48,3 +48,44 @@ class TestSelect:
 
     def test_empty_dict(self):
         assert EyeDataDict().select() == []
+
+
+class TestEyeNameValidation:
+    def test_tuple_key_with_underscore_in_eye(self):
+        d = EyeDataDict()
+        with pytest.raises(ValueError, match="may not contain '_'"):
+            d["my_eye", "pupil"] = np.ones(3)
+        with pytest.raises(ValueError, match="may not contain '_'"):
+            d.set_with_mask(("my_eye", "pupil"), np.ones(3))
+        assert len(d.data) == 0
+
+    def test_string_key_splits_at_first_underscore(self):
+        # a string key is never ambiguous: the eye is everything before the first '_'
+        d = EyeDataDict(left_pupil_interp=np.ones(3))
+        assert d.eyes == ["left"]
+        assert d.variables == ["pupil_interp"]
+        assert d.select("left", "pupil_interp") == [("left", "pupil_interp")]
+
+    def test_tuple_read_with_underscore_in_eye(self):
+        # "my_eye_pupil" is eye "my", variable "eye_pupil"; ("my_eye", "pupil")
+        # must not silently return it
+        d = EyeDataDict(my_eye_pupil=np.ones(3))
+        assert d["my", "eye_pupil"] is d.data["my_eye_pupil"]
+        with pytest.raises(ValueError, match="'my_eye'"):
+            d["my_eye", "pupil"]
+
+    def test_select_with_underscore_in_eye(self):
+        d = EyeDataDict(my_eye_pupil=np.ones(3))
+        with pytest.raises(ValueError, match="'my_eye'"):
+            d.select("my_eye", "pupil")
+
+    def test_eyedata_tuple_keys(self):
+        import pypillometry as pp
+        d = pp.EyeData(left_x=np.ones(3), left_y=np.ones(3), left_pupil=np.ones(3),
+                       sampling_rate=10)
+        with pytest.raises(ValueError, match="may not contain '_'"):
+            d["my_eye", "pupil"] = np.ma.array(np.ones(3))
+        with pytest.raises(ValueError, match="may not contain '_'"):
+            d["my_eye", "pupil"]
+        d["mean", "pupil"] = np.ones(3)
+        assert "mean_pupil" in d.data

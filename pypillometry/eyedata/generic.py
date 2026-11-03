@@ -11,7 +11,7 @@ from .. import io
 from ..convenience import sizeof_fmt, ByteSize, _round_values, requires_package, is_url, suppress_all_output, normalize_unit, _warn_if_ignores_mask
 from ..units import UNSET, _has_units, _time_values_and_units, parse_time, _ms_to_samples, _samples_to_ms
 from ..io import download
-from .eyedatadict import EyeDataDict
+from .eyedatadict import EyeDataDict, _join_key
 from .experimental_setup import ExperimentalSetup
 from ..signal import baseline
 from ..intervals import stat_event_interval, Intervals
@@ -267,7 +267,7 @@ class GenericEyeData(state.VersionedState, ABC):
             if key[0] == "time":
                 unit = key[1] if len(key) > 1 else None
                 return self._get_time_array(unit)
-            normalized_key = "_".join(key)
+            normalized_key = _join_key(key)
 
         if isinstance(normalized_key, str):
             if normalized_key.startswith("time"):
@@ -324,7 +324,7 @@ class GenericEyeData(state.VersionedState, ABC):
                 unit = key[1] if len(key) > 1 else None
                 self._set_time_array(value, unit)
                 return
-            normalized_key = "_".join(key)
+            normalized_key = _join_key(key)
         
         # Handle string keys starting with "time"
         if isinstance(normalized_key, str):
@@ -405,7 +405,7 @@ class GenericEyeData(state.VersionedState, ABC):
                 raise KeyError("Empty key tuple")
             if key[0] == "time":
                 raise ValueError("Cannot delete time array using __delitem__")
-            normalized_key = "_".join(key)
+            normalized_key = _join_key(key)
                 
         # Delete from EyeDataDict (removes both data and mask)
         del self.data[normalized_key]
