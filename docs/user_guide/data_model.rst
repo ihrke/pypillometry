@@ -116,6 +116,26 @@ Detection methods return :class:`Intervals` (``apply_mask=False``, the
 default) so that you can check them before applying them with
 :meth:`~GenericEyeData.mask_intervals` (see :doc:`events_intervals`).
 
+Each variable also keeps *mask layers* that record why a sample is
+masked: ``"blink"`` (:meth:`~PupilData.pupil_blinks_detect`,
+:meth:`~GenericEyeData.set_blinks`), ``"interpolated"``
+(:meth:`~PupilData.pupil_blinks_interpolate`,
+:meth:`~GenericEyeData.interpolate_intervals`) and ``"user"``
+(:meth:`~GenericEyeData.mask_intervals`, assigning a masked array). The
+blinks returned by :meth:`~GenericEyeData.get_blinks` are the stretches of
+the ``"blink"`` layer. Detecting blinks again replaces the blinks (and
+their mask), and :meth:`~GenericEyeData.clear_layer` removes a layer.
+:meth:`~GenericEyeData.mask` and :meth:`~GenericEyeData.values` give the
+mask (or the values with NaN) under a :class:`MaskPolicy`; by default,
+interpolated samples count as usable:
+
+.. code-block:: python
+
+    d.mask("left", "pupil")                     # NaN, blinks, ...; not interpolated
+    d.mask("left", "pupil", policy="strict")    # interpolated samples too
+    d.values("left", "pupil")                   # values, NaN where masked
+    d.clear_layer("blink")                      # undo blink detection
+
 
 Excluded periods
 ----------------
