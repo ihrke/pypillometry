@@ -257,3 +257,16 @@ class TestFormat3RoundTrip:
         out = str(tmp_path / f"out.{ext}")
         pp.write_pickle(obj, out)
         assert_same_state(obj, pp.read_pickle(out))
+
+
+class TestRecordingVersions:
+
+    def test_versions_of_loaded_objects(self):
+        with state._recording_versions() as seen:
+            pp.read_pickle(os.path.join(FIXTURE_DIR, "eyedata.pypil"))
+        # the object and its original
+        assert seen == [("EyeData", 2), ("EyeData", 2)]
+        with state._recording_versions() as seen:
+            pp.read_pickle(os.path.join(FIXTURE_DIR, "dict_of_eyedata.pypil"))
+        assert {v for _, v in seen} == {2} and len(seen) == 3
+        assert state._versions_seen is None

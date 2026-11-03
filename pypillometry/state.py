@@ -53,6 +53,7 @@ Version history
     with the class name in ``intervals["class"]``
 """
 
+import contextlib
 import importlib
 import pickle
 from collections import namedtuple
@@ -68,6 +69,10 @@ FORMAT_VERSION = 3
 # classes that moved: (old module, old name) -> (new module, new name),
 # used when reading pickle files (see _Unpickler)
 _RENAMED_CLASSES = {}
+
+# list that collects (class name, format version) of the states passed to
+# migrate(), or None (see _recording_versions)
+_versions_seen = None
 
 
 def to_state(obj) -> dict:
@@ -135,6 +140,8 @@ def migrate(state: dict, class_name: str) -> dict:
         the state in the current version (may be `state` itself)
     """
     version = state.get("format_version", 0)
+    if _versions_seen is not None:
+        _versions_seen.append((class_name, version))
     if version > FORMAT_VERSION:
         raise ValueError(
             f"the data was saved with a newer version of pypillometry (format "
@@ -148,6 +155,24 @@ def migrate(state: dict, class_name: str) -> dict:
         version += 1
         state["format_version"] = version
     return state
+
+
+@contextlib.contextmanager
+def _recording_versions():
+    """
+    Context manager that collects the format versions of the objects loaded
+    in its block.
+
+    Yields a list of ``(class name, format version)``, one entry for each
+    state passed to :func:`migrate` (each object, including nested ones such
+    as `original`), before it is upgraded.
+    """
+    global _versions_seen
+    outer, _versions_seen = _versions_seen, []
+    try:
+        yield _versions_seen
+    finally:
+        _versions_seen = outer
 
 
 def _find_class(name: str):
