@@ -1205,7 +1205,7 @@ class GenericEyeData(state.VersionedState, ABC):
         """
         Reads an eyedata object from an Eyelink file.
 
-        All "messages" are stored as event_labels (can be filtered later) and
+        All "messages" are stored as events (can be filtered later) and
         it tries to be smart to detect different information from the EDF file.
         Spatial calibration/validation data is automatically parsed and stored
         in the `calibration` attribute as SpatialCalibration objects.
@@ -1228,7 +1228,7 @@ class GenericEyeData(state.VersionedState, ABC):
             returned by the "eyelinkio" package;
             if False (default), return only the eyedata object
         remove_eyelink_triggers : bool, optional
-            if True (default), remove all Eyelink triggers from the event_labels
+            if True (default), remove all Eyelink triggers from the events
             (related to eye-tracker settings, calibration, validation etc)
         **kwargs
             additional arguments passed to :func:`pypillometry.io.read_eyelink`

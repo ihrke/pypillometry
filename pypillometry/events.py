@@ -166,7 +166,7 @@ class Events:
     place; all methods return new Events.
 
     The events of a dataset are obtained with
-    :meth:`~pypillometry.GenericEyeData.get_events`. An (e.g., filtered)
+    :attr:`~pypillometry.GenericEyeData.events`. An (e.g., filtered)
     Events object can be passed as `event_select` to
     :meth:`~pypillometry.GenericEyeData.get_intervals` or stored in a dataset
     with :meth:`~pypillometry.GenericEyeData.set_events` or added with
@@ -1047,7 +1047,7 @@ class Events:
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
            >>> plt.figure(figsize=(10, 3))
-           >>> d.get_events().filter("S_").plot(units="sec")
+           >>> d.events.filter("S_").plot(units="sec")
         """
         import matplotlib.pyplot as plt
 
@@ -1333,7 +1333,7 @@ def sync_clocks(src, dst, src_units=UNSET, dst_units=UNSET,
         times on the source clock (e.g., from the behaviour log)
     dst : array-like, Quantity or Events
         times of the same moments on the target clock, in the same order
-        (e.g., ``d.get_events().filter("Start Block")``)
+        (e.g., ``d.events.filter("Start Block")``)
     src_units, dst_units : str or Unit, optional
         units of plain numbers in `src` and `dst` (e.g., "sec", "ms");
         needed unless the times carry units or are :class:`Events`
@@ -1359,7 +1359,7 @@ def sync_clocks(src, dst, src_units=UNSET, dst_units=UNSET,
     Examples
     --------
     >>> starts = behav.groupby("block").trialstart.min()     # in sec
-    >>> sync = pp.sync_clocks(starts, d.get_events().filter("Start Block"),
+    >>> sync = pp.sync_clocks(starts, d.events.filter("Start Block"),
     ...                       src_units="sec")
     >>> d.add_events(sync(pp.Events.from_table(behav, ["stim_on"], units="sec")))
     """
