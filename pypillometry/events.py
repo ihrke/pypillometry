@@ -9,6 +9,7 @@ from typing import Optional, List, Tuple
 
 from loguru import logger
 from pypillometry.convenience import normalize_unit
+from pypillometry.state import Stateful
 from pypillometry.units import (UNSET, Quantity, _has_units, _time_values_and_units,
                                 parse_time)
 
@@ -152,7 +153,7 @@ def _pair_with_next(on1, on2):
 
 
 
-class Events:
+class Events(Stateful):
     """
     Container for events with metadata.
     
@@ -220,6 +221,9 @@ class Events:
     array(['easy', 'easy'], dtype='<U4')
     """
 
+    # state (see pypillometry.state)
+    _STATE_FIELDS = ("onsets", "labels", "units", "data_time_range", ("meta", None, "_meta"))
+
     def __init__(self,
                  onsets: np.ndarray | List,
                  labels: np.ndarray | List,
@@ -247,6 +251,12 @@ class Events:
         # Events are immutable: methods return new objects
         for arr in (self.onsets, self.labels, *self._meta.values()):
             arr.flags.writeable = False
+
+    def _set_state(self, st: dict):
+        """Set the attributes from a state of the current version (checked like
+        the arguments of the constructor)."""
+        self.__init__(st["onsets"], st["labels"], units=st["units"],
+                      data_time_range=st["data_time_range"], meta=st["meta"])
 
     @property
     def meta(self):

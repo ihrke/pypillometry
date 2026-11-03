@@ -286,10 +286,11 @@ class TestMigrate(unittest.TestCase):
                 self.assertIn(iv.units, ("samples", "ms", "sec", "min", "h"))
                 self.assertFalse(hasattr(iv, "sampling_rate"))
                 self.assertFalse(hasattr(iv, "time_offset"))
-        st = state.migrate({"format_version": 1, "class": "PupilData",
-                            "blinks": {"left_pupil": {"units": None, "sampling_rate": 10.,
-                                                      "time_offset": 0., "label": "b"}},
-                            "interpolated_blinks": {"left_pupil": None}}, "PupilData")
+        # the step 1 -> 2 alone (later steps need a complete state)
+        st = state._MIGRATIONS[1]({"format_version": 1, "class": "PupilData",
+                                   "blinks": {"left_pupil": {"units": None, "sampling_rate": 10.,
+                                                             "time_offset": 0., "label": "b"}},
+                                   "interpolated_blinks": {"left_pupil": None}}, "PupilData")
         self.assertEqual(st["blinks"]["left_pupil"],
                          {"units": "samples", "label": "b", "event_meta": None})
         self.assertEqual(st["event_meta"], {})

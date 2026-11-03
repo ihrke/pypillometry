@@ -143,12 +143,15 @@ class TestEventsSaved(unittest.TestCase):
                 np.testing.assert_array_equal(d2.events.labels, d.events.labels)
                 np.testing.assert_array_equal(d2.events.meta["k"], d.events.meta["k"])
 
-    def test_state_has_format2_keys(self):
+    def test_state_has_events_state(self):
         st = state.to_state(make_data())
-        np.testing.assert_array_equal(st["event_onsets"], [1500, 3000, 5000, 7000, 9000])
-        np.testing.assert_array_equal(st["event_labels"], ["a", "b", "c", "d", "e"])
-        self.assertIsInstance(st["event_meta"], dict)
-        np.testing.assert_array_equal(st["event_meta"]["k"], [1, 2, 3, 4, 5])
+        self.assertNotIn("event_onsets", st)
+        ev = st["events"]
+        np.testing.assert_array_equal(ev["onsets"], [1500, 3000, 5000, 7000, 9000])
+        np.testing.assert_array_equal(ev["labels"], ["a", "b", "c", "d", "e"])
+        self.assertEqual(ev["units"], "ms")
+        self.assertIsInstance(ev["meta"], dict)
+        np.testing.assert_array_equal(ev["meta"]["k"], [1, 2, 3, 4, 5])
 
     def test_copy(self):
         d = make_data()

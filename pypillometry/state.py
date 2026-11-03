@@ -40,6 +40,9 @@ Version history
     events: eyedata objects have `event_meta` (dict of arrays, one value
     per event), Intervals have `event_meta` (None or dict of arrays, one
     value per interval)
+3
+    eyedata objects store their events as one Events state (`events`:
+    `onsets` in `units`, `labels`, `data_time_range`, `meta`)
 """
 
 import importlib
@@ -52,7 +55,7 @@ from loguru import logger
 __all__ = []
 
 #: version of the state written by this version of pypillometry
-FORMAT_VERSION = 2
+FORMAT_VERSION = 3
 
 # classes that moved: (old module, old name) -> (new module, new name),
 # used when reading pickle files (see _Unpickler)
@@ -265,7 +268,8 @@ def _nested_class(name):
     from .eyedata.eyedatadict import EyeDataDict
     from .eyedata.experimental_setup import ExperimentalSetup
     from .eyedata.spatial_calibration import SpatialCalibration
-    return {"Intervals": Intervals, "EyeDataDict": EyeDataDict,
+    from .events import Events
+    return {"Intervals": Intervals, "EyeDataDict": EyeDataDict, "Events": Events,
             "ExperimentalSetup": ExperimentalSetup,
             "SpatialCalibration": SpatialCalibration}[name]
 
@@ -459,5 +463,17 @@ def _migrate_1_to_2(state, class_name):
     return state
 
 
-_MIGRATIONS = [_migrate_0_to_1, _migrate_1_to_2]
+def _migrate_2_to_3(state, class_name):
+    """Version 2 -> 3: the events of eyedata objects are one Events state
+    (`events`) instead of `event_onsets`, `event_labels` and `event_meta`."""
+    state = dict(state)
+    if class_name in _SEGMENTED_CLASSES:
+        return state
+    state["events"] = {"onsets": state.pop("event_onsets"),
+                       "labels": state.pop("event_labels"), "units": "ms",
+                       "data_time_range": None, "meta": state.pop("event_meta")}
+    return state
+
+
+_MIGRATIONS = [_migrate_0_to_1, _migrate_1_to_2, _migrate_2_to_3]
 assert len(_MIGRATIONS) == FORMAT_VERSION
