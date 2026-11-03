@@ -12,7 +12,7 @@ from ..convenience import sizeof_fmt, ByteSize, _round_values, requires_package,
 from ..units import UNSET, _has_units, _time_values_and_units, parse_time, _ms_to_samples, _samples_to_ms
 from ..io import download
 from .eyedatadict import (EyeDataDict, COMPAT_LAYERS, LAYER_DTYPE, NAN_LAYER, REC_LAYERS,
-                          _join_key)
+                          MaskPolicy, _as_policy, _join_key)
 from .experimental_setup import ExperimentalSetup
 from ..signal import baseline
 from ..intervals import stat_event_interval, Intervals, _as_intervals
@@ -162,37 +162,36 @@ def _keep_dict(d, keep):
     return nd
 
 
-def _decimate_dict(d, factor):
+def _decimate_dict(d, factor, policy="default"):
     """EyeDataDict with the samples of `d` decimated (see GenericEyeData._decimate)."""
     nd = EyeDataDict()
     nd.layer_names = list(d.layer_names)
-    compat = LAYER_DTYPE(d.layer_bits(COMPAT_LAYERS))
+    pol = _as_policy(policy)
+    # layers that make a sample unusable under the policy
+    masking = LAYER_DTYPE(d.layer_bits(pol.layers + ((NAN_LAYER,) if pol.nan else ()))
+                          & ~d.layer_bits(pol.unless))
     nan_bit = LAYER_DTYPE(d.layer_bits(NAN_LAYER))
-    interp_bit = LAYER_DTYPE(d.layer_bits("interpolated"))
-    rec = None if d.rec_layers is None else _decimate_layers(d.rec_layers, factor)
+    if d.rec_layers is not None:
+        nd.rec_layers = _decimate_layers(d.rec_layers, factor)
     for k, v in d.items():
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", RuntimeWarning)  # all-NaN windows
-            y = baseline.downsample(np.where(d._compat_mask(k), np.nan, v), factor)
+            y = baseline.downsample(np.where(d.get_policy_mask(k, policy), np.nan, v), factor)
             stored = baseline.downsample(v, factor)
         allmasked = np.isnan(y)
         y[allmasked] = stored[allmasked]
         # NAN_LAYER only where the whole window is masked (below)
-        layers = _decimate_layers(d.layers[k] & ~nan_bit, factor)
-        # a window whose samples are all masked (or NaN) stays masked: if no
-        # layer covers more than half of it, it gets the compat layers of
-        # its samples except "interpolated" (NAN_LAYER if there are none)
-        todo = allmasked & ((layers & compat) == 0)
-        if rec is not None:
-            todo &= (rec & compat) == 0
+        nd._set_channel(k, y, _decimate_layers(d.layers[k] & ~nan_bit, factor))
+        # a window whose samples are all unusable stays unusable: if the
+        # layers that cover more than half of it do not make it unusable,
+        # it gets the masking layers of its samples (NAN_LAYER if there
+        # are none)
+        todo = allmasked & ~nd.get_policy_mask(k, MaskPolicy(pol.layers, pol.unless, nan=False))
         if todo.any():
-            present = np.bitwise_or.reduceat(d.layers[k] & (compat & ~interp_bit),
+            present = np.bitwise_or.reduceat(d.layers[k] & masking,
                                              np.arange(0, len(v), factor))
             present[present == 0] = nd.layer_bits(NAN_LAYER, create=True)
-            layers[todo] |= present[todo]
-        nd._set_channel(k, y, layers)
-    if rec is not None:
-        nd.rec_layers = rec
+            nd.layers[k][todo] |= present[todo]
     return nd
 
 
@@ -2566,17 +2565,18 @@ class GenericEyeData(state.VersionedState, ABC):
 
     
     @keephistory
-    def downsample(self, fsd: float, dsfac: bool=False, inplace=None):
+    def downsample(self, fsd: float, dsfac: bool=False, policy="default", inplace=None):
         """
         Simple downsampling scheme using mean within the downsampling window.
 
         All data fields and the time-vector are downsampled simultaneously.
-        See :func:`pypillometry.signal.baseline.downsample`. Masked samples are
-        left out of the window means; a new sample is masked only if all
-        samples in its window were masked. It then holds the mean of the
-        stored values (e.g., of interpolated blinks; NaN only if they are
-        NaN). Stored blinks (in sample indices) are rescaled to the new
-        sampling rate.
+        See :func:`pypillometry.signal.baseline.downsample`. The samples
+        that are unusable under the mask `policy` are left out of the window
+        means (by default, interpolated samples are used, see :meth:`mask`).
+        A layer is kept for a new sample if it covers more than half of its
+        window. A new sample whose window has no usable sample holds the
+        mean of the stored values (NaN only if they are NaN) and stays
+        unusable.
 
         The new sampling rate is ``fs/factor``, the rate of the decimated
         data. It differs from `fsd` if `fs/fsd` is not an integer
@@ -2591,6 +2591,9 @@ class GenericEyeData(state.VersionedState, ABC):
             decimate factor is ``int(fs/fsd)``; a warning is logged if
             `fs/fsd` is not an integer);
             if True, `fsd` is the decimate factor (a positive integer)
+        policy : str, MaskPolicy or list of str
+            mask policy that decides which samples are used for the window
+            means (see :meth:`mask`); default ``"default"``
         inplace : bool or None, optional
             if `True`, make change in-place and return the object;
             if `False`, make and return copy before making changes;
@@ -2611,26 +2614,27 @@ class GenericEyeData(state.VersionedState, ABC):
         """
         dsfac=_decimate_factor(self.fs, fsd, dsfac)
         obj = self._get_inplace(inplace)
-        obj._decimate(dsfac)
+        obj._decimate(dsfac, policy)
         return obj
 
-    def _decimate(self, factor):
+    def _decimate(self, factor, policy="default"):
         """
         Decimate the samples by the integer `factor` (in place).
 
         Each window of `factor` samples becomes one sample (the last window
-        may be shorter): values are the mean of the unmasked samples, the
-        time is the mean time of the window, and the new sampling rate is
-        ``fs/factor``. A layer (e.g., ``"blink"``) is set for a new sample
-        if it covers more than half of the samples in the window (also the
-        recording-wide layers, e.g. excluded periods). A new sample whose
-        window was masked entirely holds the mean of the stored values
-        (e.g., interpolated blinks) and stays masked: if no layer covers
-        more than half of the window, it gets the masking layers of its
-        samples (not "interpolated").
+        may be shorter): values are the mean of the samples that are usable
+        under the mask `policy`, the time is the mean time of the window,
+        and the new sampling rate is ``fs/factor``. A layer (e.g.,
+        ``"blink"``) is set for a new sample if it covers more than half of
+        the samples in the window (also the recording-wide layers, e.g.
+        excluded periods). A new sample whose window has no usable sample
+        holds the mean of the stored values and stays unusable: if the
+        layers that cover more than half of the window do not make it
+        unusable, it gets the layers of its samples that make them unusable
+        under `policy`.
         Events stay valid.
         """
-        self._map_sample_aligned(_decimate_dict, factor)
+        self._map_sample_aligned(_decimate_dict, factor, policy)
         self._set_timebase(baseline.downsample(self.tx, factor), self.fs/factor)
         return self
 

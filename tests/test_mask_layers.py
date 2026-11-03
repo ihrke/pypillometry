@@ -543,14 +543,22 @@ class TestNoStoredMask:
         v = d.data["left_pupil"].copy()
         v[4:8] = np.nan
         d.data.set_with_mask("left_pupil", v, preserve_mask=True)
-        d._decimate(4)
-        np.testing.assert_array_equal(d.data.mask["left_pupil"], [1, 1])
+        d._decimate(4, "strict")  # the interpolated samples are unusable too
+        np.testing.assert_array_equal(d.mask("left", "pupil", "strict"), [1, 1])
         assert d.data.get_layer("left_pupil", "user")[0]
-        # not "interpolated": the window stays masked under the default policy
-        assert not d.data.get_layer("left_pupil", "interpolated")[0]
-        assert d.mask("left", "pupil").all()
+        assert d.data.get_layer("left_pupil", "interpolated")[0]
         assert d.data.get_layer("left_pupil", NAN_LAYER)[1]
         assert d.data["left_pupil"][0] == 1.5  # mean of the values
+
+    def test_decimate_uses_interpolated_samples(self):
+        import pypillometry as pp
+        d = pp.PupilData(left_pupil=np.arange(8, dtype=float), sampling_rate=100)
+        # window 0: half user, half interpolated -> the interpolated samples are used
+        d.data.set_layer("left_pupil", "user", [1, 1, 0, 0, 0, 0, 0, 0])
+        d.data.set_layer("left_pupil", "interpolated", [0, 0, 1, 1, 0, 0, 0, 0])
+        d._decimate(4)
+        assert d.data["left_pupil"][0] == 2.5
+        np.testing.assert_array_equal(d.mask("left", "pupil"), [0, 0])
 
     def test_state_has_no_mask_and_old_masks_are_translated(self):
         import pypillometry as pp

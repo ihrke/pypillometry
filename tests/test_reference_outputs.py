@@ -621,6 +621,29 @@ def _stats_interp(case_id, key, stored):
     return _stats(case_id, k, ~_case_b(case_id.split(".")[2])[k][1])[name]
 
 
+def _window_means(x, factor):
+    """Mean of the non-NaN values of `x` per window of `factor` samples (NaN
+    if there are none; the last window may be shorter)."""
+    nw = -(-len(x) // factor)
+    w = np.concatenate([x, np.full(nw * factor - len(x), np.nan)]).reshape(nw, factor)
+    n = (~np.isnan(w)).sum(axis=1)
+    return np.where(n > 0, np.nansum(w, axis=1) / np.maximum(n, 1), np.nan)
+
+
+def _downsampled_values(case_id, key, stored):
+    """Pupil values after `downsample` (step 7): window means of the samples
+    that are usable under the default policy (interpolated samples are used);
+    windows without such samples: mean of all values."""
+    name, _, k = key.partition(".")
+    if k not in ("left_pupil", "right_pupil"):
+        return stored  # gaze: nothing interpolated, unchanged
+    factor = 500 // int(case_id.rsplit(".", 1)[1])
+    v, usable = _case_b("rlmw")[k]
+    y = _window_means(np.where(usable, v, np.nan), factor)
+    y = np.where(np.isnan(y), _window_means(v, factor), y)
+    return {"sub": y[::10], "nansum": float(np.nansum(y))}[name]
+
+
 #: intended changes (see CHANGES.md): (case id prefix, result key prefix) ->
 #: function mapping (case id, key, stored reference value) to the expected value
 CHANGED = {("e.segments.rlmw.interp", ""): _segments_interp,
@@ -632,6 +655,8 @@ CHANGED = {("e.segments.rlmw.interp", ""): _segments_interp,
            ("g.downsample.", "blinks."): _downsampled_runs,
            ("g.downsample.", "mask."): _downsampled_mask,
            ("g.downsample.", "masked."): _downsampled_masked,
+           ("g.downsample.", "sub."): _downsampled_values,
+           ("g.downsample.", "nansum."): _downsampled_values,
            ("f.quality.", "artifacts."): _quality_other,
            ("h.merge_eyes.", ""): _merged_pupil,
            ("h.scale.", ""): _scaled_pupil}

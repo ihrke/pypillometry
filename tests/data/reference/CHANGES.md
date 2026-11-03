@@ -585,3 +585,19 @@ Changes of the API calls alone (same numbers) need no entry.
   up to 1.6 / 4.4 / 8.8 units. `policy="strict"` gives the old values.
 - **Why**: decision 4 (interpolated samples are used in analyses; D2).
 - **Step**: 7, `refactor/07-value-policy`
+
+### `downsample`: interpolated samples enter the window means
+
+- **Case**: `g.downsample.*`, keys `sub.*_pupil` and `nansum.*_pupil`
+  (masks and gaze unchanged); expected values derived from case b in the
+  test
+- **Change**: `downsample(..., policy="default")` averages the samples of
+  each window that are usable under the mask policy, so interpolated
+  samples enter the means (before: left out unless the whole window was
+  masked). The ">1/2 of the window" rule for the layers is unchanged; a
+  window without usable samples still holds the mean of all its values and
+  stays unusable under the policy. Size: rlmw, 10-14 of 10233 samples per
+  eye change at 250 Hz (max 3.0 units), 18-19 of 4093 at 100 Hz (max 3.8).
+  `policy="strict"` gives the old values.
+- **Why**: decision 4 (interpolated samples are used).
+- **Step**: 7, `refactor/07-value-policy`
