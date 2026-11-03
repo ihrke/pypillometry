@@ -356,7 +356,8 @@ class GazeData(GenericEyeData):
         Parameters
         ----------
         eyes : str or list, default=[]
-            Eye(s) to check for offscreen coordinates. If empty, checks all available eyes.
+            Eye(s) to check for offscreen coordinates. If empty, checks all available eyes
+            that have x and y data.
             Can be a single eye name (e.g., "left") or a list (e.g., ["left", "right"]).
         apply_mask : bool, default=True
             If True, apply detected offscreen periods as masks to the data and return self.
@@ -400,7 +401,7 @@ class GazeData(GenericEyeData):
             )
         
         # Get eyes to check
-        eyes_list, _ = obj._get_eye_var(eyes, [])
+        eyes_list = obj._eyes_with(eyes, ["x", "y"])
         
         # Dictionary to store intervals per eye
         intervals_dict = {}
@@ -413,11 +414,6 @@ class GazeData(GenericEyeData):
         for eye in eyes_list:
             vx = f"{eye}_x"
             vy = f"{eye}_y"
-            
-            # Check if this eye has x and y data
-            if vx not in obj.data.keys() or vy not in obj.data.keys():
-                logger.warning(f"Eye '{eye}' does not have both x and y coordinates. Skipping.")
-                continue
             
             # Get coordinates
             if ignore_existing_mask:
