@@ -118,6 +118,63 @@ class EyeDataDict(MutableMapping, Stateful):
         """
         return EyeDataDict({k:v for k,v in self.data.items() if k.endswith("_"+variable)})
 
+    def select(self, eyes=None, variables=None) -> List[Tuple[str, str]]:
+        """
+        Return the existing (eye, variable) pairs for the given eyes and variables.
+
+        Only pairs for which data is stored are returned, so data where not
+        every eye has every variable (e.g., ``left_pupil``, ``left_x``,
+        ``right_pupil``) can be processed pair by pair.
+
+        Parameters
+        ----------
+        eyes : str or list of str, optional
+            eye(s) to select; if None or empty, all available eyes
+        variables : str or list of str, optional
+            variable(s) to select; if None or empty, all available variables
+
+        Returns
+        -------
+        list of tuple
+            ``(eye, variable)`` pairs, ordered by eye, then variable (in the
+            order given or, for all eyes/variables, the order of the data)
+
+        Raises
+        ------
+        KeyError
+            if something that was explicitly requested does not exist: a
+            pair (if both `eyes` and `variables` are given), or an eye or
+            variable without any data among the selected pairs (if only
+            one of them is given). The message lists the available channels.
+
+        Examples
+        --------
+        >>> d = EyeDataDict(left_pupil=[1,2], left_x=[3,4], right_pupil=[5,6])
+        >>> d.select()
+        [('left', 'pupil'), ('left', 'x'), ('right', 'pupil')]
+        >>> d.select(variables="x")
+        [('left', 'x')]
+        """
+        eyes_given = eyes is not None and len(eyes) > 0
+        vars_given = variables is not None and len(variables) > 0
+        eyes = ([eyes] if isinstance(eyes, str) else list(eyes)) if eyes_given else self.eyes
+        variables = (([variables] if isinstance(variables, str) else list(variables))
+                     if vars_given else self.variables)
+
+        pairs = [(e, v) for e in eyes for v in variables if f"{e}_{v}" in self.data]
+        if eyes_given and vars_given:
+            missing = [f"{e}_{v}" for e in eyes for v in variables if (e, v) not in pairs]
+        elif eyes_given:
+            missing = [e for e in eyes if not any(pe == e for pe, _ in pairs)]
+        elif vars_given:
+            missing = [v for v in variables if not any(pv == v for _, pv in pairs)]
+        else:
+            missing = []
+        if missing:
+            raise KeyError("No data for %s; available channels: %s"
+                           % (", ".join(missing), ", ".join(self.data.keys())))
+        return pairs
+
     def __contains__(self, key):
         return key in self.data
 
