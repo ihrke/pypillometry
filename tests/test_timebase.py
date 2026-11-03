@@ -237,5 +237,95 @@ class TestRemovedIntervalsClock(unittest.TestCase):
         self.check(d)
 
 
+class TestChains(unittest.TestCase):
+    """Data, masks, blinks, excluded periods and events stay aligned after
+    chains of crop, remove_intervals, fill_time_discontinuities, reset_time
+    and downsample."""
+
+    BLINKS = [(2100., 2300.), (8000., 8200.), (12000., 12100.)]
+    EXCLUDED = [(14000., 15000.)]
+    EVENTS = [500., 2500., 7000., 9000., 13000., 16000., 18500.]
+
+    def make(self):
+        from pypillometry.intervals import Intervals
+        # 500 Hz, 20 s with a time gap at 10000-10400 ms; the pupil holds
+        # the original time of each sample
+        tx = np.arange(10000) * 2.
+        tx = tx[(tx < 10000) | (tx >= 10400)]
+        d = pp.PupilData(left_pupil=tx.copy(), right_pupil=tx.copy(), time=tx,
+                         sampling_rate=500, fill_time_discontinuities=False,
+                         event_onsets=self.EVENTS,
+                         event_labels=[str(t) for t in self.EVENTS])
+        blinks = Intervals(self.BLINKS, units="ms")
+        d.set_blinks(blinks.to_units("samples", d), eyes="left", apply_mask=False)
+        d.set_blinks(blinks, eyes="right", apply_mask=False)
+        d.exclude_intervals(self.EXCLUDED, inplace=True)
+        return d
+
+    @staticmethod
+    def inside(t, periods):
+        return np.any([(t >= a) & (t < b) for a, b in periods], axis=0)
+
+    def check(self, d, t0=0.):
+        # original time (as the data store it): the original time of the
+        # object plus `t0`, the sum of the reset_time shifts
+        orig = d._original_time(d.tx) + t0
+        for k in d.data.keys():
+            self.assertEqual(len(d.data[k]), len(d))
+        self.assertAlmostEqual(d.fs, 1000. / np.median(np.diff(d.tx)))
+        # data (outside of filled-in gaps) at the original time
+        valid = ~np.isnan(d.data["left_pupil"])
+        np.testing.assert_allclose(d.data["left_pupil"][valid], orig[valid])
+        # events at their original time
+        np.testing.assert_allclose(d._original_time(d.events.onsets) + t0,
+                                   [float(l) for l in d.events.labels])
+        # blinks (stored in samples and in ms) and excluded periods
+        for eye in ("left", "right"):
+            np.testing.assert_array_equal(
+                d.get_blinks(eye, "pupil").to_mask(d).astype(bool), self.inside(orig, self.BLINKS))
+        np.testing.assert_array_equal(d.get_excluded().to_mask(d).astype(bool),
+                                      self.inside(orig, self.EXCLUDED))
+        np.testing.assert_array_equal(d.data.mask["left_pupil"].astype(bool),
+                                      self.inside(orig, self.EXCLUDED) | ~valid)
+
+    def test_chain(self):
+        d = self.make()
+        self.check(d)
+        steps = [("fill_time_discontinuities", (), {}),
+                 ("crop", (1000, 19000), {}),
+                 ("remove_intervals", ([(5000, 6000)],), {}),
+                 ("reset_time", (), {}),
+                 ("remove_intervals", ([(2400, 2600), (10500, 11000)],), {}),
+                 ("crop", (500, 17000), {}),
+                 ("reset_time", (-250.,), {})]
+        t0 = 0.
+        for name, args, kw in steps:
+            with self.subTest(step=name, args=args):
+                if name == "reset_time":
+                    t0 += args[0] if args else d.tx[0]
+                getattr(d, name)(*args, **kw)
+                self.check(d, t0)
+
+    def test_downsample_at_the_end(self):
+        d = self.make().fill_time_discontinuities()
+        d.remove_intervals([(5000, 6000)], inplace=True)
+        d.reset_time(500., inplace=True)
+        x = d.downsample(250, inplace=False)
+        self.assertEqual(x.fs, 250.)
+        # each new sample holds the mean original time of its window
+        orig = d._original_time(d.tx)
+        n = len(orig) // 2 * 2
+        means = orig[:n].reshape(-1, 2).mean(axis=1)
+        same_shift = np.diff(orig[:n].reshape(-1, 2) - d.tx[:n].reshape(-1, 2)).ravel() == 0
+        np.testing.assert_allclose(x._original_time(x.tx[:n // 2])[same_shift], means[same_shift])
+        np.testing.assert_allclose(x._original_time(x.events.onsets) + 500.,
+                                   [float(l) for l in x.events.labels])
+        # blinks still cover the blinks
+        for eye in ("left", "right"):
+            ds = d.get_blinks(eye, "pupil").to_mask(d).astype(bool)
+            xs = x.get_blinks(eye, "pupil").to_mask(x).astype(bool)
+            self.assertTrue(np.all(xs[np.flatnonzero(ds) // 2]))
+
+
 if __name__ == "__main__":
     unittest.main()
