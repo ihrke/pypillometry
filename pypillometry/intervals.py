@@ -109,45 +109,34 @@ def merge_intervals(*args, label: str = 'merged'):
                 f"Found {first_units} and {obj.units}"
             )
     
-    # Collect all intervals and metadata
-    all_intervals = []
-    all_event_labels = []
-    all_event_onsets = []
-    metas = []
-    has_labels = False
-    has_onsets = False
-    
-    for obj in intervals_list:
-        all_intervals.extend(obj.intervals)
-        
-        # Collect metadata if present in any object
-        if obj.event_labels is not None:
-            has_labels = True
-            all_event_labels.extend(obj.event_labels)
-        else:
-            # Pad with None for this object's intervals
-            all_event_labels.extend([None] * len(obj.intervals))
-        
-        if obj.event_onsets is not None:
-            has_onsets = True
-            all_event_onsets.extend(obj.event_onsets)
-        else:
-            all_event_onsets.extend([None] * len(obj.intervals))
-
-        metas.append(obj.event_meta or {})
-    
+    all_intervals = [pair for obj in intervals_list for pair in obj.intervals]
     if not all_intervals:
         # All were empty
         return Intervals([], units=first_units, label=label)
-    
-    return Intervals(
-        all_intervals,
-        units=first_units,
-        label=label,
-        event_labels=all_event_labels if has_labels else None,
-        event_onsets=all_event_onsets if has_onsets else None,
-        event_meta=_concat_meta(metas, [len(obj) for obj in intervals_list]) or None
-    )
+    labels, onsets, meta = _concat_rows(intervals_list)
+    return Intervals(all_intervals, units=first_units, label=label,
+                     event_labels=labels, event_onsets=onsets, event_meta=meta)
+
+
+def _concat_rows(intervals_list):
+    """
+    The per-interval table (event labels, onsets, metadata) of several
+    Intervals, concatenated row by row. A column that is missing in some of
+    them is filled with "" (labels), NaN (onsets) or as in
+    :func:`~pypillometry.events._concat_meta`; None if all of them lack it.
+    """
+    lengths = [len(obj) for obj in intervals_list]
+
+    def column(get, fill):
+        if all(get(obj) is None for obj in intervals_list):
+            return None
+        return [v for obj, k in zip(intervals_list, lengths)
+                for v in (list(get(obj)) if get(obj) is not None else [fill] * k)]
+    labels = column(lambda obj: obj.event_labels, "")
+    onsets = column(lambda obj: obj.event_onsets, np.nan)
+    meta = _concat_meta([obj.event_meta or {} for obj in intervals_list], lengths) or None
+    return labels, onsets, meta
+
 
 def _check_pairs(pairs):
     """Raise a ValueError unless `pairs` are (start, end) with finite start <= end."""
@@ -309,6 +298,10 @@ class Intervals(Stateful):
         _check_pairs(self.intervals)
 
         self.label = label
+        for name, col in (("event_labels", event_labels), ("event_onsets", event_onsets)):
+            if col is not None and len(col) != len(self.intervals):
+                raise ValueError(f"{name} has {len(col)} values for "
+                                 f"{len(self.intervals)} intervals")
         self.event_labels = event_labels
         self.event_onsets = event_onsets
         self.event_meta = None if event_meta is None \
@@ -557,40 +550,9 @@ class Intervals(Stateful):
         else:
             combined_label = self.label or other.label
         
-        # Combine event_labels
-        if self.event_labels is not None and other.event_labels is not None:
-            combined_event_labels = list(self.event_labels) + list(other.event_labels)
-        elif self.event_labels is not None:
-            combined_event_labels = list(self.event_labels)
-        elif other.event_labels is not None:
-            combined_event_labels = list(other.event_labels)
-        else:
-            combined_event_labels = None
-        
-        # Combine event_onsets (convert other's if needed)
-        if self.event_onsets is not None and other_converted.event_onsets is not None:
-            combined_event_onsets = np.concatenate([
-                np.asarray(self.event_onsets),
-                np.asarray(other_converted.event_onsets)
-            ])
-        elif self.event_onsets is not None:
-            combined_event_onsets = np.asarray(self.event_onsets)
-        elif other_converted.event_onsets is not None:
-            combined_event_onsets = np.asarray(other_converted.event_onsets)
-        else:
-            combined_event_onsets = None
-        
-        combined_meta = _concat_meta([self.event_meta or {}, other.event_meta or {}],
-                                     [len(self), len(other)]) or None
-
-        return Intervals(
-            combined_intervals,
-            self.units,
-            label=combined_label,
-            event_labels=combined_event_labels,
-            event_onsets=combined_event_onsets,
-            event_meta=combined_meta
-        )
+        labels, onsets, meta = _concat_rows([self, other_converted])
+        return Intervals(combined_intervals, self.units, label=combined_label,
+                         event_labels=labels, event_onsets=onsets, event_meta=meta)
     
     def __array__(self, dtype=None, copy=None) -> np.ndarray:
         """

@@ -447,7 +447,8 @@ class TestIntervalsAddOperator(unittest.TestCase):
         b = Intervals([(200, 300)], units="ms")
         c = a + b
         
-        self.assertEqual(c.event_labels, ["a"])
+        # one label per interval ("" where it is missing)
+        self.assertEqual(c.event_labels, ["a", ""])
     
     def test_add_partial_metadata_right_only(self):
         """Test adding when only right operand has metadata"""
@@ -455,7 +456,7 @@ class TestIntervalsAddOperator(unittest.TestCase):
         b = Intervals([(200, 300)], units="ms", event_labels=["b"])
         c = a + b
         
-        self.assertEqual(c.event_labels, ["b"])
+        self.assertEqual(c.event_labels, ["", "b"])
     
     def test_add_no_metadata(self):
         """Test adding when neither operand has metadata"""
@@ -1126,8 +1127,8 @@ class TestMergeIntervals(unittest.TestCase):
         
         merged = merge_intervals(intervals1, intervals2, intervals3)
         
-        # Should preserve labels with None for missing
-        self.assertEqual(merged.event_labels, ["a", None, "c"])
+        # Should preserve labels with "" for missing
+        self.assertEqual(merged.event_labels, ["a", "", "c"])
     
     def test_merge_intervals_no_metadata(self):
         """Test merging when no objects have metadata"""

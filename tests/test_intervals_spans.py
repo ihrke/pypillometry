@@ -93,3 +93,42 @@ class TestNoDataRange:
         d = pp.PupilData(left_pupil=np.ones(100), sampling_rate=100)
         assert pp.Intervals([(10, 20)], "samples").complement(d).intervals == \
             [(0, 10), (20, 100)]
+
+
+class TestRowTable:
+    """Event labels, onsets and metadata: one row per interval."""
+
+    def a(self):
+        return pp.Intervals([(0, 100), (200, 300)], units="ms", event_labels=["x", "y"],
+                            event_onsets=[50, 250], event_meta={"t": [1, 2]})
+
+    def b(self):
+        return pp.Intervals([(1, 2)], units="sec")
+
+    def test_lengths_validated(self):
+        with pytest.raises(ValueError, match="event_labels has 1 values for 2 intervals"):
+            pp.Intervals([(0, 1), (2, 3)], units="ms", event_labels=["a"])
+        with pytest.raises(ValueError, match="event_onsets has 3 values for 2 intervals"):
+            pp.Intervals([(0, 1), (2, 3)], units="ms", event_onsets=[0, 1, 2])
+
+    @pytest.mark.parametrize("combine", [lambda a, b: a + b,
+                                         lambda a, b: pp.merge_intervals(a, b.to_units("ms"))])
+    def test_concatenated_row_wise(self, combine):
+        c = combine(self.a(), self.b())
+        assert c.intervals == [(0, 100), (200, 300), (1000., 2000.)]
+        assert c.event_labels == ["x", "y", ""]
+        np.testing.assert_array_equal(c.event_onsets, [50, 250, np.nan])
+        np.testing.assert_array_equal(c.event_meta["t"], [1, 2, np.nan])
+        # and the result converts (onsets included)
+        np.testing.assert_array_equal(c.to_units("sec").event_onsets, [0.05, 0.25, np.nan])
+
+    def test_kept_by_filter_merge_pad(self):
+        a = self.a()
+        f = a.filter(time_range=(150, 400))
+        assert f.event_labels == ["y"] and list(f.event_onsets) == [250]
+        assert f.event_meta["t"].tolist() == [2]
+        m = a.merge(distance=100)
+        assert m.event_labels == ["x_y"] and list(m.event_onsets) == [50]
+        assert m.event_meta["t"].tolist() == [1]
+        p = a.pad(10, 10)
+        assert p.event_labels == a.event_labels and p.event_meta["t"].tolist() == [1, 2]
