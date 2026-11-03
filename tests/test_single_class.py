@@ -131,3 +131,14 @@ class TestSetupAndCalibration(unittest.TestCase):
         q = state.from_state(st)
         self.assertIsNone(q.experimental_setup)
         self.assertIsNone(q.calibration)
+
+
+class TestDropData(unittest.TestCase):
+    def test_keeps_class_and_attributes(self):
+        from pypillometry.signal.fake import generate_foreshortening_data
+        f = generate_foreshortening_data(duration=1, fs=100, seed=1)
+        p = f.drop_data(variables=["x", "y"])
+        self.assertIs(type(p), pp.FakeEyeData)
+        self.assertEqual(p.variables, ["pupil"])
+        self.assertIs(p.sim_fct, f.sim_fct)
+        self.assertEqual(p.experimental_setup.to_dict(), f.experimental_setup.to_dict())

@@ -1833,12 +1833,9 @@ class GenericEyeData(state.VersionedState, ABC):
         
         This method never works in place - it always returns a new object.
         All data of the given eyes and all data of the given variables are
-        dropped (together with their stored blinks).
-        The returned object's class is determined by what data remains:
-
-        - If only pupil variables remain: returns PupilData
-        - If only x/y variables remain: returns GazeData
-        - If both pupil and x/y remain: returns EyeData
+        dropped (together with their mask layers). Everything else is kept
+        (events, excluded periods, parameters, history, experimental setup,
+        calibration); the class of the object does not change.
 
         Parameters
         ----------
@@ -1851,8 +1848,8 @@ class GenericEyeData(state.VersionedState, ABC):
             
         Returns
         -------
-        GenericEyeData subclass
-            A new object with the specified data removed, cast to the appropriate class.
+        :class:`~pypillometry.GenericEyeData`
+            A new object (same class) with the specified data removed.
             
         Raises
         ------
@@ -1901,38 +1898,7 @@ class GenericEyeData(state.VersionedState, ABC):
         
         if len(remaining_vars) == 0 or len(remaining_eyes) == 0:
             raise ValueError("Dropping the specified data would leave no data remaining")
-        
-        
-        return result._cast_to_data_class()
 
-    def _cast_to_data_class(self):
-        """
-        Return the object cast to the class that matches its data.
-
-        Objects with pupil and gaze data become EyeData, objects with only
-        pupil data PupilData and objects with only gaze data GazeData. Objects
-        with neither keep their class. The attributes are shared with `self`
-        (not copied).
-        """
-        # Import here to avoid circular imports
-        from . import PupilData, GazeData, EyeData
-
-        variables = self.data.get_available_variables()
-        has_pupil = 'pupil' in variables
-        has_gaze = 'x' in variables or 'y' in variables
-        if has_pupil and has_gaze:
-            target_class = EyeData
-        elif has_pupil:
-            target_class = PupilData
-        elif has_gaze:
-            target_class = GazeData
-        else:
-            target_class = self.__class__
-
-        if target_class is self.__class__:
-            return self
-        result = target_class.__new__(target_class)
-        result.__dict__.update(self.__dict__)
         return result
 
     def _check_events(self, events) -> Events:

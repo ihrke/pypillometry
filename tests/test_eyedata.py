@@ -328,45 +328,41 @@ class TestEyeData(unittest.TestCase):
         self.assertIn('duration_minutes', summary)  # Updated to match actual key
         self.assertIn('nevents', summary)  # Updated to match actual key
 
-    def test_to_pupildata(self):
-        """Test conversion to PupilData"""
-        pd = self.eyedata.to_pupildata()
-        self.assertEqual(pd.__class__, pp.PupilData)
+    def test_drop_gaze(self):
+        """Dropping the gaze data keeps the class and the pupil data"""
+        pd = self.eyedata.drop_data(variables=["x", "y"])
+        self.assertIs(pd.__class__, pp.EyeData)
         self.assertEqual(sorted(pd.eyes), ["left", "right"])
         self.assertEqual(pd.variables, ["pupil"])
         np.testing.assert_array_equal(pd.tx, self.time)
         np.testing.assert_array_equal(pd.data['left_pupil'], self.left_pupil)
 
-        left = self.eyedata.to_pupildata("left")
+        left = self.eyedata.drop_data(eyes="right", variables=["x", "y"])
         self.assertEqual(left.eyes, ["left"])
         np.testing.assert_array_equal(left.data['left_pupil'], self.left_pupil)
 
         with self.assertRaises(ValueError):
-            self.eyedata.to_pupildata(eyes='invalid')
-        with self.assertRaises(ValueError):
-            self.eyedata.to_pupildata(eyes=[])
+            self.eyedata.drop_data(eyes=["left", "right"])
 
-    def test_to_pupildata_keeps_masks_and_copies(self):
+    def test_drop_data_keeps_masks_and_copies(self):
         """Masks and history are kept, and the original is unchanged"""
         d = self.eyedata.copy()
         d.data.add_mask("left_pupil", np.s_[10:20])
-        pd = d.to_pupildata()
+        pd = d.drop_data(variables=["x", "y"])
         np.testing.assert_array_equal(pd.data.mask["left_pupil"],
                                       d.data.mask["left_pupil"])
-        self.assertEqual(pd.history[-1]["funcname"], "to_pupildata")
+        self.assertEqual(pd.history[-1]["funcname"], "drop_data")
         pd.data["left_pupil"][0] = -1
         self.assertNotEqual(d.data["left_pupil"][0], -1)
         self.assertIn("left_x", d.data)
 
-    def test_to_gazedata(self):
-        """Test conversion to GazeData"""
-        g = self.eyedata.to_gazedata("right")
-        self.assertEqual(g.__class__, pp.GazeData)
+    def test_drop_pupil(self):
+        """Dropping the pupil data keeps the class and the gaze data"""
+        g = self.eyedata.drop_data(eyes="left", variables="pupil")
+        self.assertIs(g.__class__, pp.EyeData)
         self.assertEqual(g.eyes, ["right"])
         self.assertEqual(sorted(g.variables), ["x", "y"])
         np.testing.assert_array_equal(g.data['right_x'], self.eyedata.data['right_x'])
-        with self.assertRaises(ValueError):
-            self.eyedata.to_gazedata(eyes='invalid')
 
     def test_correct_pupil_foreshortening(self):
         """Test the correct_pupil_foreshortening method"""
@@ -2580,7 +2576,7 @@ def test_summary_keys():
     d = pp.EyeData(left_x=np.ones(100), left_y=np.ones(100),
                    left_pupil=np.ones(100), sampling_rate=100)
     g = pp.EyeData(left_x=np.ones(100), left_y=np.ones(100), sampling_rate=100)
-    for obj in [d, d.to_pupildata(), g]:
+    for obj in [d, d.drop_data(variables=["x", "y"]), g]:
         s = obj.summary()
         assert "params" in s
         assert "parameters" not in s
