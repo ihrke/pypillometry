@@ -1,8 +1,8 @@
 """
 Versioned state of the objects that can be saved to a file.
 
-The eyedata objects (:class:`~pypillometry.PupilData`,
-:class:`~pypillometry.GazeData`, :class:`~pypillometry.EyeData`, ...) and the
+The eyedata objects (:class:`~pypillometry.EyeData`,
+:class:`~pypillometry.FakeEyeData`) and the
 segmented data (:class:`~pypillometry.SegmentedEyeData`, ...) define their
 content as a *state*: a dict that contains only numbers, strings, None,
 lists, tuples, dicts and numpy arrays (plus whatever the user stored in
@@ -68,8 +68,12 @@ __all__ = []
 FORMAT_VERSION = 3
 
 # classes that moved: (old module, old name) -> (new module, new name),
-# used when reading pickle files (see _Unpickler)
-_RENAMED_CLASSES = {}
+# used when reading pickle files (see _Unpickler) and states (see _find_class)
+_RENAMED_CLASSES = {
+    # one class for all eyedata (pypillometry 2.2)
+    ("pypillometry.eyedata.pupildata", "PupilData"): ("pypillometry.eyedata.eyedata", "EyeData"),
+    ("pypillometry.eyedata.gazedata", "GazeData"): ("pypillometry.eyedata.eyedata", "EyeData"),
+}
 
 # list that collects (class name, format version) of the states passed to
 # migrate(), or None (see _recording_versions)
@@ -177,7 +181,9 @@ def _recording_versions():
 
 
 def _find_class(name: str):
-    """The class (eyedata or segmented data) called `name`."""
+    """The class (eyedata or segmented data) called `name` (or renamed from `name`)."""
+    renamed = {old: new for (_, old), (_, new) in _RENAMED_CLASSES.items()}
+    name = renamed.get(name, name)
     from .eyedata.generic import GenericEyeData
     from .segmented import SegmentedEyeData
     # importing the package registers all its classes as subclasses

@@ -224,11 +224,14 @@ class TestFormatVersion0(unittest.TestCase):
         self.assertEqual(st["format_version"], state.FORMAT_VERSION)
 
     def test_pupildata_and_gazedata(self):
+        # loaded as EyeData (one class since 2.2)
         p = self.load("pupildata_v0.pkl")
-        self.assertIsInstance(p, pp.PupilData)
+        self.assertIs(type(p), pp.EyeData)
         self.assertEqual(p.eyes, ["left", "right"])
+        # the setup that the PupilData object had in memory is kept
+        self.assertEqual(p.experimental_setup.screen_resolution, (1280, 1024))
         g = self.load("gazedata_v0.pkl")
-        self.assertIsInstance(g, pp.GazeData)
+        self.assertIs(type(g), pp.EyeData)
         self.assertEqual(g.calibration["left"].eye, "left")
 
     def test_fakeeyedata(self):

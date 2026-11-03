@@ -140,9 +140,18 @@ def assert_matches(actual, expected, path="", rtol=1e-12):
         assert actual == expected, f"{path}: {actual!r} != {expected!r}"
 
 
+# one data class since 2.2: PupilData and GazeData objects load as EyeData
+_NEW_CLASS = {"PupilData": "EyeData", "GazeData": "EyeData"}
+
+
 def load_manifest():
+    """The manifest, with the class names of the current version."""
     with open(os.path.join(FIXTURE_DIR, "manifest.json")) as f:
-        return json.load(f)
+        manifest = json.load(f)
+    for entry in manifest["files"].values():
+        for e in [entry, *entry.get("entries", {}).values()]:
+            e["class"] = _NEW_CLASS.get(e["class"], e["class"])
+    return manifest
 
 
 def load_fixture(fname):

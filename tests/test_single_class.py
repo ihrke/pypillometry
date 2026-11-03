@@ -1,4 +1,7 @@
 """One data class (EyeData) for every set of channels."""
+import os
+import shutil
+import tempfile
 import unittest
 
 import numpy as np
@@ -111,8 +114,6 @@ class TestSetupAndCalibration(unittest.TestCase):
         self.assertEqual(d.experimental_setup.screen_resolution, (1280, 1024))
 
     def test_kept_without_gaze_on_save(self):
-        import os
-        import tempfile
         p = self.d.drop_data(variables=["x", "y"])
         for ext in (".pypil", ".h5"):
             with self.subTest(ext=ext), tempfile.TemporaryDirectory() as tmp:
@@ -142,3 +143,48 @@ class TestDropData(unittest.TestCase):
         self.assertEqual(p.variables, ["pupil"])
         self.assertIs(p.sim_fct, f.sim_fct)
         self.assertEqual(p.experimental_setup.to_dict(), f.experimental_setup.to_dict())
+
+
+class TestOldClassesLoad(unittest.TestCase):
+    """Files of PupilData and GazeData objects load as EyeData."""
+
+    FIXTURES = os.path.join(os.path.dirname(__file__), "data", "format2")
+
+    def load(self, fname):
+        with pp.nologging():
+            return pp.read_pickle(os.path.join(self.FIXTURES, fname))
+
+    def test_format2_files(self):
+        for fname in ("pupildata.pypil", "pupildata.h5", "gazedata.pypil", "gazedata.h5"):
+            with self.subTest(fname=fname):
+                d = self.load(fname)
+                self.assertIs(type(d), pp.EyeData)
+        self.assertIsNone(self.load("pupildata.h5").experimental_setup)
+        self.assertIsNotNone(self.load("gazedata.h5").experimental_setup)
+        objs = self.load("dict_of_eyedata.pypil")
+        self.assertEqual({type(v) for v in objs.values()}, {pp.EyeData})
+
+    def test_states_with_old_class_names(self):
+        """States (e.g., in HDF5 files) of development versions of format 3."""
+        from pypillometry import state
+        d = pp.get_rlmw_002_short().crop(0, 1000, inplace=False)
+        for old, keep in (("PupilData", ["x", "y"]), ("GazeData", ["pupil"])):
+            with self.subTest(old=old):
+                st = state.to_state(d.drop_data(variables=keep))
+                st["class"] = old
+                if old == "PupilData":
+                    del st["experimental_setup"], st["calibration"]
+                q = state.from_state(st)
+                self.assertIs(type(q), pp.EyeData)
+                self.assertEqual(state.to_state(q)["class"], "EyeData")
+
+    def test_pypil_upgrade(self):
+        from pypillometry import hdf5
+        from pypillometry.cli import pypil_upgrade_main
+        with tempfile.TemporaryDirectory() as tmp:
+            src = os.path.join(tmp, "p.h5")
+            shutil.copy(os.path.join(self.FIXTURES, "pupildata.h5"), src)
+            with pp.nologging():
+                pypil_upgrade_main(["-q", "-i", src])
+            self.assertEqual(hdf5.read_state(src)["class"], "EyeData")
+            self.assertEqual(hdf5.read_state(src)["format_version"], 3)
