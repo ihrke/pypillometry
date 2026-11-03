@@ -20,22 +20,26 @@ step:
 Events
 ------
 
-:meth:`~GenericEyeData.get_events` returns the events of a dataset as an
+:attr:`~GenericEyeData.events` holds the events of a dataset as an
 :class:`Events` object, a list of onsets and labels:
 
 .. code-block:: python
 
-    events = d.get_events()              # onsets in ms
-    events = d.get_events(units="sec")   # onsets in seconds
+    events = d.events                    # onsets in ms
+    events = d.events.to_units("sec")    # onsets in seconds
     events.filter("stim")                # labels containing "stim"
     events.filter("stim", exact=True)    # labels equal to "stim"
     events.filter(lambda lab: lab.endswith("_1"))
     events.filter((60, 120))             # onsets between 60 and 120 s
     events[:10]                          # the first ten events
 
-:meth:`~Events.filter` and indexing return new :class:`Events`. You can
-store changed events in the dataset with :meth:`~GenericEyeData.set_events`,
-e.g., to remove test trials or to rename labels.
+:class:`Events` cannot be changed in place: :meth:`~Events.filter`,
+indexing and the other methods return new :class:`Events`. You can store
+changed events in the dataset with :meth:`~GenericEyeData.set_events`,
+e.g., to remove test trials or to rename labels. Operations that change
+the time of the data (:meth:`~GenericEyeData.crop`,
+:meth:`~GenericEyeData.remove_intervals`,
+:meth:`~GenericEyeData.reset_time`) move the events with it.
 :meth:`~GenericEyeData.add_events` adds events to the existing ones, and
 :meth:`~GenericEyeData.event_onset` returns the onset of the one event with
 a given label (it raises an error unless exactly one event has it):
@@ -54,8 +58,8 @@ Event metadata
 ~~~~~~~~~~~~~~
 
 Each event can have *metadata*, e.g., the trial, the condition, the choice
-or the reaction time. They are stored in ``events.meta``, a dict with one
-numpy array per column (one value per event). Missing values are NaN in
+or the reaction time. They are stored in ``events.meta``, a read-only
+mapping with one numpy array per column (one value per event). Missing values are NaN in
 numeric columns and ``""`` in text columns. There are two common sources:
 
 - **Trigger labels** that code information, e.g., ``S_12_3_5`` for the
@@ -65,7 +69,7 @@ numeric columns and ``""`` in text columns. There are two common sources:
 
   .. code-block:: python
 
-      ev = d.get_events()
+      ev = d.events
       ev = ev.parse_labels(r"^[FSCR]_(?P<trial>\d+)")
       ev = ev.parse_labels(r"^S_\d+_(?P<left>\d+)_(?P<right>\d+)")
       ev = ev.parse_labels(r"^R_\d+_(?P<reward>\d+)")
@@ -90,7 +94,7 @@ selects events by their metadata:
     ev.filter(ev.meta["left"] < ev.meta["right"])  # boolean array
 
 :meth:`~GenericEyeData.set_events` stores the metadata in the dataset
-(they are saved with it), and :meth:`~GenericEyeData.get_intervals` passes
+(e.g., ``d = d.set_events(ev)``; they are saved with it), and :meth:`~GenericEyeData.get_intervals` passes
 the metadata of the selected events on to the intervals
 (``intervals.event_meta``, also in :meth:`~Intervals.as_pandas`).
 :meth:`~Events.to_table` returns the events with their metadata as a dict
@@ -188,7 +192,7 @@ maps times or events to the eye-tracker clock:
 .. code-block:: python
 
     starts = behav.groupby("block").trialstart.min()             # in sec
-    sync = pp.sync_clocks(starts, d.get_events().filter("Start Block"),
+    sync = pp.sync_clocks(starts, d.events.filter("Start Block"),
                           src_units="sec")
     d.add_events(sync(ev))
 

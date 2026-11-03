@@ -46,7 +46,7 @@ result should be returned:
 .. code-block:: python
 
     d.get_duration(units="min")
-    d.get_events(units="sec")
+    d.event_onset("Start Block 2", units="sec")
     d.crop(3, 5, units="min")
 
 Sample indices are ``units="samples"`` (aliases: "sample", "index",
