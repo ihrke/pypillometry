@@ -181,7 +181,7 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
         """Test plot_masked with milliseconds units"""
         self.data.pupil_blinks_detect()
         # Check if there are intervals before checking labels
-        intervals = self.data.mask_as_intervals('left', 'pupil')
+        intervals = self.data.mask_as_intervals('left', 'pupil')['left_pupil']
         fig = plt.figure()
         self.data.plot.plot_masked('left', 'pupil', units='ms')
         self.assertIsNotNone(plt.gcf())
@@ -195,7 +195,7 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
         """Test plot_masked with seconds units"""
         self.data.pupil_blinks_detect()
         # Check if there are intervals before checking labels
-        intervals = self.data.mask_as_intervals('left', 'pupil')
+        intervals = self.data.mask_as_intervals('left', 'pupil')['left_pupil']
         fig = plt.figure()
         self.data.plot.plot_masked('left', 'pupil', units='sec')
         self.assertIsNotNone(plt.gcf())
@@ -209,7 +209,7 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
         """Test plot_masked with indices (units="samples")"""
         self.data.pupil_blinks_detect()
         # Check if there are intervals before checking labels
-        intervals = self.data.mask_as_intervals('left', 'pupil')
+        intervals = self.data.mask_as_intervals('left', 'pupil')['left_pupil']
         fig = plt.figure()
         self.data.plot.plot_masked('left', 'pupil', units="samples")
         self.assertIsNotNone(plt.gcf())

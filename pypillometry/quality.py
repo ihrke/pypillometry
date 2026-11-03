@@ -827,7 +827,7 @@ def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[],
         var = "pupil" if eye in pupil_eyes else "x"
         if "blink" not in obj.data.layer_names:  # no blink detection
             continue
-        bl = obj.get_blinks(eye, var)
+        bl = obj.get_blinks(eye, var)[f"{eye}_{var}"]
         blinks_mask[eye] = bl.to_mask(obj).astype(bool) & inc
         dur_ms = np.array([(e - s) for s, e in bl.intervals], dtype=float) / fs * 1000
         b.add("blinks", eye, "n", "number", int(len(bl)), "", "number of detected blinks")

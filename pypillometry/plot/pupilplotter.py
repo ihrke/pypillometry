@@ -366,21 +366,13 @@ class PupilPlotter(GenericPlotter):
         # Get blinks for specified eyes and variables (in ms for consistent padding)
         blinks_result = self.obj.get_blinks(eyes=eyes, variables=variables, units="ms")
         
-        # Handle dict or single Intervals
-        if isinstance(blinks_result, dict):
-            # Merge all blinks from dict
-            from ..intervals import merge_intervals
-            all_blinks_list = [b for b in blinks_result.values() if len(b) > 0]
-            if not all_blinks_list:
-                logger.warning("No blinks to plot")
-                return []
-            blinks = merge_intervals(*all_blinks_list)
-        else:
-            blinks = blinks_result
-        
-        if len(blinks) == 0:
+        # Merge all blinks from dict
+        from ..intervals import merge_intervals
+        all_blinks_list = [b for b in blinks_result.values() if len(b) > 0]
+        if not all_blinks_list:
             logger.warning("No blinks to plot")
             return []
+        blinks = merge_intervals(*all_blinks_list)
         
         # Pad blinks with pre/post time (pre_blink and post_blink are in ms)
         padded_blinks = blinks.pad(left=pre_blink, right=post_blink)

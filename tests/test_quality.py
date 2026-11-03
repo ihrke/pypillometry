@@ -118,7 +118,7 @@ class TestQualityReport(unittest.TestCase):
         d.pupil_blinks_detect(apply_mask=True)
         r = d.quality_report()
         self.assertIn("blinks", r)
-        self.assertEqual(r["blinks"]["left"]["n"].value, len(d.get_blinks("left", "pupil")))
+        self.assertEqual(r["blinks"]["left"]["n"].value, len(d.get_blinks("left", "pupil")["left_pupil"]))
         self.assertIn("artifacts", r)
         self.assertGreaterEqual(r["artifacts"]["left"]["pupil_masked_pct"].value, 2.0)
         d.pupil_blinks_interpolate()
@@ -301,6 +301,6 @@ class TestExcludedPeriods(unittest.TestCase):
         e.pupil_blinks_detect(apply_mask=True, inplace=True)
         r = e.quality_report()
         self.assertAlmostEqual(r["blinks"]["left"]["rate"].value,
-                               len(e.get_blinks("left", "pupil")) / (16 / 60))
+                               len(e.get_blinks("left", "pupil")["left_pupil"]) / (16 / 60))
         self.assertLess(r["artifacts"]["right"]["pupil_masked_pct"].value, 1)
         self.assertLess(r["artifacts"]["right"]["other_pct"].value, 1)

@@ -35,7 +35,6 @@ from io import BytesIO
 import base64
 import copy
 import pickle
-import inspect
 import h5py
 import tempfile
 import os
@@ -647,22 +646,6 @@ class GenericEyeData(state.VersionedState, ABC):
         """Return number of events in data."""
         return len(self._events)
 
-    def _get_eye_var(self, eyes,variables):
-        """Private helper function"""        
-        if isinstance(eyes, str):
-            eyes=[eyes]
-        if len(eyes)==0:
-            eyes=self.eyes
-
-        if isinstance(variables, str):
-            variables=[variables]
-        if len(variables)==0:
-            variables=self.variables
-
-        funcname = inspect.stack()[1].function
-        logger.debug("%s(): eyes=%s, vars=%s" % (funcname, repr(eyes), repr(variables)))
-        return eyes, variables
-
     def _eyes_with(self, eyes, variables):
         """Private helper: the eyes that have data for all `variables`.
 
@@ -783,7 +766,7 @@ class GenericEyeData(state.VersionedState, ABC):
     def get_blinks(self, eyes: str|list = [], variables: str|list = [], 
                    units: str = "samples"):
         """
-        Get blinks as Intervals object or dict of Intervals.
+        Get blinks as a dict of Intervals (one per eye/variable).
 
         The blinks are the runs of the ``"blink"`` layer (blinks that
         overlap or touch are one blink), without the runs that overlap or
@@ -796,19 +779,17 @@ class GenericEyeData(state.VersionedState, ABC):
         ----------
         eyes : str or list of str, optional
             Eye(s) to get blinks for; if empty, all available eyes.
-            If multiple, returns dict.
         variables : str or list of str, optional
             Variable(s) to get blinks for; if empty, all available variables.
-            If multiple, returns dict.
         units : str, optional
             Units for intervals: "ms", "sec", "min", "h", or "samples" for
             sample indices (default)
             
         Returns
         -------
-        Intervals or dict
-            If single eye and variable: returns Intervals object.
-            If multiple eyes/variables: returns dict with keys like "left_pupil".
+        dict
+            one Intervals object per existing eye/variable combination, keys
+            like "left_pupil" (also for a single eye and variable)
 
         Raises
         ------
@@ -818,8 +799,8 @@ class GenericEyeData(state.VersionedState, ABC):
             
         Examples
         --------
-        >>> blinks = data.get_blinks('left', 'pupil')
-        >>> blinks_ms = data.get_blinks('left', 'pupil', units="ms")
+        >>> blinks = data.get_blinks('left', 'pupil')["left_pupil"]
+        >>> blinks_ms = data.get_blinks('left', 'pupil', units="ms")["left_pupil"]
         >>> blinks_dict = data.get_blinks(['left', 'right'], 'pupil')
         >>> blinks_idx = blinks_ms.to_units("indices", data)
         """
@@ -829,7 +810,7 @@ class GenericEyeData(state.VersionedState, ABC):
     def get_interpolated_blinks(self, eyes: str|list = [], variables: str|list = [], 
                                 units: str = "samples"):
         """
-        Get interpolated blinks as Intervals object or dict of Intervals.
+        Get interpolated blinks as a dict of Intervals (one per eye/variable).
         
         Interpolated blinks are the runs of the ``"interpolated"`` layer:
         the blink regions that were successfully interpolated
@@ -846,19 +827,18 @@ class GenericEyeData(state.VersionedState, ABC):
         ----------
         eyes : str or list of str, optional
             Eye(s) to get interpolated blinks for; if empty, all available eyes.
-            If multiple, returns dict.
         variables : str or list of str, optional
             Variable(s) to get interpolated blinks for; if empty, all available
-            variables. If multiple, returns dict.
+            variables.
         units : str, optional
             Units for intervals: "ms", "sec", "min", "h", or "samples" for
             sample indices (default)
             
         Returns
         -------
-        Intervals or dict
-            If single eye and variable: returns Intervals object.
-            If multiple eyes/variables: returns dict with keys like "left_pupil".
+        dict
+            one Intervals object per existing eye/variable combination, keys
+            like "left_pupil" (also for a single eye and variable)
 
         Raises
         ------
@@ -888,23 +868,16 @@ class GenericEyeData(state.VersionedState, ABC):
 
     def _layer_intervals(self, layer, eyes, variables, units, suffix, skip_excluded=False):
         """Runs of `layer` (e.g., interpolated blinks) for eyes/variables
-        (see `_layer_runs`).
-
-        Returns an Intervals object for a single eye and variable, else a
-        dict (keys like "left_pupil") over the existing eye/variable
-        combinations.
+        (see `_layer_runs`): a dict (keys like "left_pupil") over the
+        existing eye/variable combinations.
         """
-        pairs = self.data.select(eyes, variables)
-        eyes, variables = self._get_eye_var(eyes, variables)
         result = {}
-        for e, v in pairs:
+        for e, v in self.data.select(eyes, variables):
             key = f"{e}_{v}"
             runs = self._layer_runs(key, layer, skip_excluded)
             result[key] = Intervals(runs.intervals, "samples",
                                     label=f"{key}_{suffix}").to_units(units, self)
-        if len(eyes) > 1 or len(variables) > 1:
-            return result
-        return next(iter(result.values()))
+        return result
 
     def _channel_key(self, eye, var):
         """Key ``"<eye>_<var>"`` of an existing channel (`var` None: `eye` is the key)."""
@@ -1020,11 +993,9 @@ class GenericEyeData(state.VersionedState, ABC):
         ----------
         eyes : str or list of str, optional
             Eye(s) to get masks for; if empty, all available eyes.
-            If multiple, returns dict.
         variables : str or list of str, optional
-            Variable(s) to get masks for; if empty, all available variables.
-            If multiple, returns dict (combinations not present in the data
-            are left out).
+            Variable(s) to get masks for; if empty, all available variables
+            (combinations not present in the data are left out).
         units : str, optional
             Units for intervals: "ms", "sec", "min", "h", or "samples" for
             sample indices (default).
@@ -1035,9 +1006,9 @@ class GenericEyeData(state.VersionedState, ABC):
             
         Returns
         -------
-        Intervals or dict
-            If single eye and variable: returns Intervals object.
-            If multiple eyes/variables: returns dict with keys like "left_pupil".
+        dict
+            one Intervals object per existing eye/variable combination, keys
+            like "left_pupil" (also for a single eye and variable)
 
         Raises
         ------
@@ -1047,20 +1018,16 @@ class GenericEyeData(state.VersionedState, ABC):
             
         Examples
         --------
-        >>> mask_intervals = data.mask_as_intervals('left', 'pupil')
-        >>> mask_ms = data.mask_as_intervals('left', 'pupil', units='ms')
+        >>> mask_intervals = data.mask_as_intervals('left', 'pupil')["left_pupil"]
+        >>> mask_ms = data.mask_as_intervals('left', 'pupil', units='ms')["left_pupil"]
         >>> mask_dict = data.mask_as_intervals(['left', 'right'], 'pupil')
         """
-        pairs = self.data.select(eyes, variables)
-        eyes, variables = self._get_eye_var(eyes, variables)
         result = {}
-        for e, v in pairs:
+        for e, v in self.data.select(eyes, variables):
             key = f"{e}_{v}"
             mask = self.data.get_policy_mask(key, policy)
             result[key] = Intervals.from_mask(mask, self, units, label=label or f"{key}_mask")
-        if len(eyes) > 1 or len(variables) > 1:
-            return result
-        return next(iter(result.values()))
+        return result
     
     def _mask_to_intervals_list(self, mask):
         """Helper method to convert mask array to list of interval tuples.
@@ -1100,9 +1067,8 @@ class GenericEyeData(state.VersionedState, ABC):
             number of detected blinks per eye/variable, with keys like
             "left_pupil"; combinations without blinks are left out
         """
-        return {eye+"_"+var:len(self.get_blinks(eye,var)) 
-                for eye,var in self.data.select(eyes,variables)
-                if len(self.get_blinks(eye,var)) > 0}
+        return {key: len(iv) for key, iv in self.get_blinks(eyes, variables).items()
+                if len(iv) > 0}
 
 
     def blink_stats(self, eyes: list = [], units: str = "ms") -> dict:
@@ -1132,7 +1098,7 @@ class GenericEyeData(state.VersionedState, ABC):
             if f"{eye}_pupil" not in self.data:
                 stats[eye] = None  # no pupil data, so no blinks
                 continue
-            blinks = self.get_blinks(eye, "pupil", units=units)
+            blinks = self.get_blinks(eye, "pupil", units=units)[f"{eye}_pupil"]
             if len(blinks) > 0:
                 stats[eye] = blinks.stats()
             else:
@@ -3100,7 +3066,7 @@ class GenericEyeData(state.VersionedState, ABC):
         --------
         Interpolate blinks for left eye pupil data:
         
-        >>> blinks = data.get_blinks(eyes='left', variables='pupil')
+        >>> blinks = data.get_blinks(eyes='left', variables='pupil')["left_pupil"]
         >>> data.interpolate_intervals(blinks, eyes=['left'], variables=['pupil'])
         
         Interpolate using a dict of intervals:

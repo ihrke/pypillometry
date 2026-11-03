@@ -1769,7 +1769,7 @@ class TestConversionWithData(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "samples"):
             self.d.get_intervals("", (-10, 20), units=None)
         with self.assertRaisesRegex(ValueError, "samples"):
-            self.d.get_blinks("left", "pupil", units=None)
+            self.d.get_blinks("left", "pupil", units=None)["left_pupil"]
         with self.assertRaisesRegex(ValueError, "samples"):
             Intervals([(0, 10)], units="ms").to_units(None)
         self.assertEqual(Intervals([(0, 10)], units="indices").units, "samples")

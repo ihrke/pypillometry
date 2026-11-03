@@ -367,7 +367,7 @@ class Intervals(Stateful):
             
         Examples
         --------
-        >>> blinks = d.get_blinks("left", "pupil")
+        >>> blinks = d.get_blinks("left", "pupil")["left_pupil"]
         >>> mask = blinks.to_mask(d)
         """
         n = len(data.tx)
@@ -624,7 +624,7 @@ class Intervals(Stateful):
         
         Convert between indices and time units (needs the data object):
         
-        >>> blinks = data.get_blinks("left", "pupil")
+        >>> blinks = data.get_blinks("left", "pupil")["left_pupil"]
         >>> blinks_ms = blinks.to_units("ms", data)
         >>> blinks_idx = blinks_ms.to_units("samples", data)
         """

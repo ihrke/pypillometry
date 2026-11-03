@@ -597,7 +597,7 @@ class _PupilMethods:
             # Store detected blinks internally (always); return them as stored
             # (blinks that touch are one blink)
             obj.set_blinks(intervals_obj, eyes=[eye], variables=["pupil"], apply_mask=apply_mask)
-            detected_intervals[f"{eye}_pupil"] = obj.get_blinks(eye, "pupil")
+            detected_intervals.update(obj.get_blinks(eye, "pupil"))
         
         # Return based on apply_mask
         if apply_mask:
@@ -698,7 +698,7 @@ class _PupilMethods:
             logger.debug(f"Interpolating blinks for eye {eye}")
             syr=obj.data[eye,"pupil"].copy() ## interpolated signal
             interpolated = np.zeros(len(syr), dtype=bool)  # interpolated samples
-            bls = self.get_blinks(eye, "pupil")
+            bls = self.get_blinks(eye, "pupil")[f"{eye}_pupil"]
             
             # Use raw data for velocity computation - blink_onsets_mahot handles NaN/zeros internally
             # Don't use mask-applied data here because the mask includes blink regions,

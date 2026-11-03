@@ -168,10 +168,10 @@ class TestPupilData(unittest.TestCase):
             p[a:b] = np.nan
         d = pp.EyeData(left_pupil=p, sampling_rate=1000)
         d = d.pupil_blinks_detect(apply_mask=True, inplace=False)
-        self.assertEqual(len(d.get_blinks("left", "pupil")), 2)
+        self.assertEqual(len(d.get_blinks("left", "pupil")["left_pupil"]), 2)
         d = d.pupil_blinks_interpolate(inplace=False)
         self.assertEqual(np.isnan(d.data["left", "pupil"]).sum(), 0)
-        self.assertEqual(len(d.get_interpolated_blinks("left", "pupil")), 1)
+        self.assertEqual(len(d.get_interpolated_blinks("left", "pupil")["left_pupil"]), 1)
 
 if __name__ == '__main__':
     unittest.main()

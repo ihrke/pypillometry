@@ -588,19 +588,12 @@ class GenericPlotter:
         obj = self.obj
         
         # Get masked intervals for specified eyes/variables
-        intervals_result = obj.mask_as_intervals(eyes, variables, units=units)
+        intervals_dict = obj.mask_as_intervals(eyes, variables, units=units)
         
         # Handle empty result
-        if isinstance(intervals_result, dict):
-            if len(intervals_result) == 0:
-                logger.warning("No masked intervals found")
-                return
-            intervals_dict = intervals_result
-        else:
-            # Single Intervals object - convert to dict for uniform handling
-            eye, var = obj.data.select(eyes, variables)[0]
-            key = f"{eye}_{var}"
-            intervals_dict = {key: intervals_result}
+        if len(intervals_dict) == 0:
+            logger.warning("No masked intervals found")
+            return
         
         ax = plt.gca()
         

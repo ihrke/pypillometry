@@ -130,7 +130,7 @@ class TestIncompleteBlinkStores:
         assert d.nblinks() == {"left_pupil": 1, "left_x": 1, "left_y": 1, "right_pupil": 1}
         assert set(d.get_blinks(variables="x")) == {"left_x"}
         with pytest.raises(KeyError, match="right_x"):
-            d.get_blinks("right", "x")
+            d.get_blinks("right", "x")["right_x"]
         with pytest.raises(KeyError, match="right_x"):
             d.set_blinks(iv, eyes="right", variables="x")
 
@@ -138,7 +138,7 @@ class TestIncompleteBlinkStores:
         d = incomplete_eyedata
         assert set(d.mask_as_intervals()) == {"left_pupil", "left_x", "left_y", "right_pupil"}
         with pytest.raises(KeyError, match="available channels"):
-            d.mask_as_intervals("right", "x")
+            d.mask_as_intervals("right", "x")["right_x"]
 
     def test_blink_stats(self, incomplete_eyedata):
         d = incomplete_eyedata
