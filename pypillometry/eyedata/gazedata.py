@@ -349,8 +349,11 @@ class GazeData(GenericEyeData):
         Detect and mask gaze coordinates that fall outside the screen boundaries.
         
         This method identifies points where the (x,y) coordinates fall outside the 
-        defined screen limits. When apply_mask=True, these points are masked. 
-        When apply_mask=False, the offscreen periods are returned as Intervals objects.
+        defined screen limits. When apply_mask=True, these points are masked:
+        they replace the ``"offscreen"`` layer of x and y of the checked eyes
+        (so running the method again with other screen limits gives the same
+        result as running it once). When apply_mask=False, the offscreen
+        periods are returned as Intervals objects.
         
         Parameters
         ----------
@@ -362,7 +365,8 @@ class GazeData(GenericEyeData):
             If True, apply detected offscreen periods as masks to the data and return self.
             If False, return detected offscreen periods as dict of Intervals objects.
         ignore_existing_mask : bool, default=False
-            If False (default), only check non-masked data points for offscreen coordinates.
+            If False (default), only check non-masked data points for offscreen
+            coordinates (the offscreen layer itself does not count).
             If True, check all data points including those already masked (e.g., from blinks).
         inplace : bool or None
             If True, make change in-place and return the object.
@@ -420,9 +424,9 @@ class GazeData(GenericEyeData):
                 x = obj.data[vx]
                 y = obj.data[vy]
             else:
-                # Use masked arrays (respects existing masks)
-                x = obj[vx]
-                y = obj[vy]
+                # existing masks, without the offscreen layer (it is replaced)
+                x = np.ma.masked_array(obj.data[vx], obj.data._compat_mask(vx, ["offscreen"]))
+                y = np.ma.masked_array(obj.data[vy], obj.data._compat_mask(vy, ["offscreen"]))
 
             # Check all points including already masked ones
             offscreen_mask = (
@@ -449,10 +453,12 @@ class GazeData(GenericEyeData):
             
             logger.debug(f"Detected {len(intervals_obj)} offscreen intervals for {eye} eye")
         
-        # Apply mask if requested
+        # Apply mask if requested: replaces the offscreen layer of x and y
         if apply_mask:
             for eye, intervals_obj in intervals_dict.items():
-                obj.mask_intervals(intervals_obj, eyes=[eye], variables=['x', 'y'], inplace=True)
+                m = intervals_obj.to_mask(obj).astype(bool)
+                for var in ("x", "y"):
+                    obj.data.set_layer(f"{eye}_{var}", "offscreen", m, replace=True)
             return obj
         else:
             return intervals_dict

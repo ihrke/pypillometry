@@ -312,3 +312,15 @@ Changes of the API calls alone (same numbers) need no entry.
   only its own layer (refactor plan 2.3), and the excluded layer
   overrides the others in the masks.
 - **Step**: 5, `refactor/05-mask-layers`
+
+### `mask_offscreen_coords` sets the `offscreen` layer and replaces it
+
+- **Case**: none (`d.offscreen.*` run once: same masks)
+- **Change**: the off-screen samples are stored as the `offscreen` layer
+  of x and y (before: the `user` layer, via `mask_intervals`). Running the
+  method again replaces the layer of the checked eyes (before, the masks
+  only grew, and with `ignore_existing_mask=False` the samples masked by
+  the first run were not checked again). `clear_layer("offscreen")`
+  removes the mask.
+- **Why**: detectors replace their own layer (refactor plan 2.2).
+- **Step**: 5, `refactor/05-mask-layers`

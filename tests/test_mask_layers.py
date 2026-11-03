@@ -415,3 +415,29 @@ def test_detect_returns_the_stored_blinks():
         found = d.pupil_blinks_detect(min_duration=10)
     assert found.intervals == [(100, 131)]
     assert d.get_blinks("left", "pupil").intervals == [(100, 131)]
+
+
+class TestGazeLayers:
+
+    def gaze(self):
+        import pypillometry as pp
+        x = np.array([10., 500, 2000, 500, 500, 500, -5, 500])
+        y = np.full(8, 300.)
+        d = pp.GazeData(left_x=x, left_y=y, right_x=x + 1, right_y=y, sampling_rate=100,
+                        inplace=False)
+        d.set_experimental_setup(screen_resolution=(1000, 800))
+        return d
+
+    def test_offscreen_layer_replaced(self):
+        d = self.gaze().mask_offscreen_coords()
+        expected = np.isin(np.arange(8), [2, 6])
+        for key in ("left_x", "left_y", "right_x", "right_y"):
+            np.testing.assert_array_equal(d.data.get_layer(key, "offscreen"), expected)
+            np.testing.assert_array_equal(d.data.mask[key], expected)
+        assert not d.data.get_layer("left_x", "user").any()
+        # running again (smaller screen) replaces the layer
+        d.set_experimental_setup(screen_resolution=(400, 800))
+        e = d.mask_offscreen_coords()
+        np.testing.assert_array_equal(e.data.get_layer("left_x", "offscreen"),
+                                      np.isin(np.arange(8), [1, 2, 3, 4, 5, 6, 7]))
+        assert not e.clear_layer("offscreen").data.mask["left_x"].any()

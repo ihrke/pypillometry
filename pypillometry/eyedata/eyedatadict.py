@@ -40,7 +40,8 @@ MAX_LAYERS = 16
 #: not use :meth:`~pypillometry.GenericEyeData.mask` yet) contains;
 #: ``"_blink_applied"`` marks blinks that were applied as mask (``apply_mask=True``);
 #: ``"excluded"`` is a recording-wide layer (`EyeDataDict.rec_layers`)
-COMPAT_LAYERS = ("user", "interpolated", "_blink_applied", "excluded")
+COMPAT_LAYERS = ("user", "interpolated", "_blink_applied", "excluded",
+                 "offscreen", "divergence")
 
 
 #: the standard layers: missing data (blink, offscreen, divergence, user),
@@ -126,12 +127,7 @@ class _CompatMask(Mapping):
         self._d = d
 
     def __getitem__(self, key):
-        m = self._d._mask[key].copy()
-        bits = self._d.layer_bits(COMPAT_LAYERS)
-        if bits:
-            m |= (self._d.layers[key] & bits) != 0
-            m |= (self._d.rec_layers & bits) != 0
-        out = m.astype(int)
+        out = self._d._compat_mask(key).astype(int)
         out.flags.writeable = False
         return out
 
@@ -483,6 +479,17 @@ class EyeDataDict(MutableMapping, Stateful):
         if "_" not in key:
             raise ValueError("Key must be in format 'eye_variable'")
         return key
+
+    def _compat_mask(self, key: str, without=()) -> NDArray:
+        """Boolean mask of `key` as in `mask`, without the layers `without`
+        (e.g., the layer that a detector is about to replace)."""
+        m = self._mask[key].copy()
+        names = [name for name in COMPAT_LAYERS if name not in without]
+        bits = self.layer_bits(names)
+        if bits:
+            m |= (self.layers[key] & bits) != 0
+            m |= (self.rec_layers & bits) != 0
+        return m
 
     @property
     def mask(self) -> Mapping:
