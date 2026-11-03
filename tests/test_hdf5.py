@@ -50,10 +50,10 @@ class TestObjects(HDF5TestCase):
         # the restored object can be processed further
         d2.pupil_lowpass_filter(cutoff=5, inplace=False)
 
-    def test_pupildata_gazedata(self):
+    def test_pupil_only_and_gaze_only(self):
         d = make_eyedata(keep_orig=False)
-        self.roundtrip(d.to_pupildata())
-        self.roundtrip(d.to_gazedata())
+        self.roundtrip(d.drop_data(variables=["x", "y"]))
+        self.roundtrip(d.drop_data(variables=["pupil"]))
 
     def test_fakeeyedata(self):
         f2 = self.roundtrip(generate_foreshortening_data(duration=1, fs=100, seed=1))

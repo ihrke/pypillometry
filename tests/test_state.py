@@ -96,10 +96,10 @@ class TestPickleRoundTrip(unittest.TestCase):
         self.assertEqual(d2.history, d.history)
         np.testing.assert_array_equal(d2["left_pupil"].mask, d["left_pupil"].mask)
 
-    def test_pupildata_and_gazedata(self):
+    def test_pupil_only_and_gaze_only(self):
         d = make_eyedata(keep_orig=False)
-        self.roundtrip(d.to_pupildata())
-        self.roundtrip(d.to_gazedata())
+        self.roundtrip(d.drop_data(variables=["x", "y"]))
+        self.roundtrip(d.drop_data(variables=["pupil"]))
 
     def test_fakeeyedata(self):
         f = generate_foreshortening_data(duration=1, fs=100, seed=1)
@@ -153,9 +153,9 @@ class TestStateCoverage(unittest.TestCase):
         seg = d.get_segments(d.get_intervals("F_", window=(-200, 800), units="ms"),
                              "left_pupil")
         return [
-            d, d.to_pupildata(), d.to_gazedata(),
-            pp.PupilData(left_pupil=np.ones(10), sampling_rate=10),
-            pp.GazeData(left_x=np.ones(10), left_y=np.ones(10), sampling_rate=10),
+            d, d.drop_data(variables=["x", "y"]), d.drop_data(variables=["pupil"]),
+            pp.EyeData(left_pupil=np.ones(10), sampling_rate=10),
+            pp.EyeData(left_x=np.ones(10), left_y=np.ones(10), sampling_rate=10),
             generate_foreshortening_data(duration=1, fs=100, seed=1),
             seg, pp.group_segments([seg, seg]),
             # nested in the state of segments that are not event-locked
@@ -186,10 +186,6 @@ class TestStateCoverage(unittest.TestCase):
                 classes.add(cls)
                 fields = {f.attr for f in cls._state_fields()}
                 attrs = set(vars(obj)) - cls._state_exclude()
-                # PupilData made from EyeData keeps the gaze attributes
-                # (not saved, see CHANGELOG)
-                if cls is pp.PupilData:
-                    attrs -= {"experimental_setup", "calibration"}
                 with self.subTest(cls=cls.__name__):
                     self.assertEqual(attrs - fields, set(), "attributes not in the state")
                     self.assertEqual(fields - attrs, set(), "fields without attribute")
@@ -228,11 +224,14 @@ class TestFormatVersion0(unittest.TestCase):
         self.assertEqual(st["format_version"], state.FORMAT_VERSION)
 
     def test_pupildata_and_gazedata(self):
+        # loaded as EyeData (one class since 2.2)
         p = self.load("pupildata_v0.pkl")
-        self.assertIsInstance(p, pp.PupilData)
+        self.assertIs(type(p), pp.EyeData)
         self.assertEqual(p.eyes, ["left", "right"])
+        # the setup that the PupilData object had in memory is kept
+        self.assertEqual(p.experimental_setup.screen_resolution, (1280, 1024))
         g = self.load("gazedata_v0.pkl")
-        self.assertIsInstance(g, pp.GazeData)
+        self.assertIs(type(g), pp.EyeData)
         self.assertEqual(g.calibration["left"].eye, "left")
 
     def test_fakeeyedata(self):
@@ -301,8 +300,8 @@ class TestMigrate(unittest.TestCase):
         self.assertIs(state.migrate(st, "EyeData"), st)
 
     def test_from_state_finds_class(self):
-        st = state.to_state(make_eyedata(keep_orig=False).to_pupildata())
-        self.assertIsInstance(state.from_state(st), pp.PupilData)
+        st = state.to_state(generate_foreshortening_data(duration=1, fs=100, seed=1))
+        self.assertIsInstance(state.from_state(st), pp.FakeEyeData)
         st["class"] = "NoSuchClass"
         with self.assertRaisesRegex(ValueError, "unknown class"):
             state.from_state(st)

@@ -171,7 +171,7 @@ pygments_dark_style = "monokai"
 # documents everything under its public name (pypillometry.pupil_response).
 # This hook redirects such links (and bare method names) to the public name.
 
-_PUBLIC_CLASSES = ["GenericEyeData", "PupilData", "GazeData", "EyeData"]
+_PUBLIC_CLASSES = ["GenericEyeData", "EyeData"]
 
 
 def _resolve_public_name(app, env, node, contnode):

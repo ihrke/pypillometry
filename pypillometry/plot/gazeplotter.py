@@ -20,7 +20,8 @@ class GazePlotter(GenericPlotter):
     object and provides methods to plot the data in various ways.
 
     It is usually not created directly; instead, it is available as the `plot`
-    attribute of a :class:`~pypillometry.GazeData` object, e.g.
+    attribute of an :class:`~pypillometry.EyeData` object (as part of
+    :class:`~pypillometry.EyePlotter`), e.g.
     ``d.plot.plot_heatmap()``.
 
     Parameters
@@ -119,6 +120,7 @@ class GazePlotter(GenericPlotter):
            >>> d = pp.get_example_data("rlmw_002_short")
            >>> d.plot.plot_heatmap(eyes="left")
         """
+        self.obj._require("x", "y")
         obj = self.obj
         
         # Validate plot_range
@@ -369,6 +371,7 @@ class GazePlotter(GenericPlotter):
            >>> d = pp.get_example_data("rlmw_002_short")
            >>> d.plot.plot_scanpath(plot_range=(10, 12) * u.sec, eyes="left")
         """
+        self.obj._require("x", "y")
         obj = self.obj
 
         # Validate plot_range

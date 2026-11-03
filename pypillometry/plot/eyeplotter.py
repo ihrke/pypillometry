@@ -104,6 +104,7 @@ class EyePlotter(GazePlotter,PupilPlotter):
         ``vmin``/``vmax`` set the color range, ``min_samples`` hides bins with
         few samples and ``smooth`` applies Gaussian smoothing.
         """
+        self.obj._require("pupil", "x", "y")
         obj = self.obj
         
         # Handle eyes parameter

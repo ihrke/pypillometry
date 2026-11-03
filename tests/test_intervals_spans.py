@@ -40,7 +40,7 @@ class TestInfiniteBoundsInLists:
     """-inf/inf in plain lists stand for the start/end of the recording."""
 
     def make(self):
-        return pp.PupilData(left_pupil=np.arange(100.), sampling_rate=100,
+        return pp.EyeData(left_pupil=np.arange(100.), sampling_rate=100,
                             time=np.arange(100) * 10. + 1000)
 
     def test_remove_intervals(self):
@@ -82,7 +82,7 @@ class TestNoDataRange:
             pp.Intervals([(0, 1)], units="ms", data_time_range=(0, 10))
 
     def test_conversions_not_clipped(self):
-        d = pp.PupilData(left_pupil=np.ones(100), sampling_rate=100)
+        d = pp.EyeData(left_pupil=np.ones(100), sampling_rate=100)
         iv = pp.Intervals([(-50, 20), (980, 1100)], units="ms", event_onsets=[-50, 1050])
         ix = iv.to_units("samples", d)
         assert ix.intervals == [(-5, 2), (98, 110)]
@@ -91,7 +91,7 @@ class TestNoDataRange:
         assert iv.to_mask(d).sum() == 4
 
     def test_complement_needs_the_data(self):
-        d = pp.PupilData(left_pupil=np.ones(100), sampling_rate=100)
+        d = pp.EyeData(left_pupil=np.ones(100), sampling_rate=100)
         assert pp.Intervals([(10, 20)], "samples").complement(d).intervals == \
             [(0, 10), (20, 100)]
 

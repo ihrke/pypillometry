@@ -14,14 +14,14 @@ class TestGazeData(unittest.TestCase):
         d = pp.get_example_data("rlmw_002_short")
         print(d)
     def test_scale(self):
-        d = pp.GazeData(sampling_rate=10, left_x=[1,2,1,2], left_y=[3,4,3,4])
+        d = pp.EyeData(sampling_rate=10, left_x=[1,2,1,2], left_y=[3,4,3,4])
         d=d.scale(["x",'y'])
         self.assertEqual(d.data["left","x"].mean(), 0)
         self.assertEqual(d.data["left","y"].mean(), 0)
         self.assertEqual(d.params["scale"]["mean"]["left"]["x"], 1.5)
         self.assertEqual(d.params["scale"]["mean"]["left"]["y"], 3.5)
     def test_scale_fixed(self):
-        d = pp.GazeData(sampling_rate=10, left_x=[1,2,1,2], left_y=[3,4,3,4])
+        d = pp.EyeData(sampling_rate=10, left_x=[1,2,1,2], left_y=[3,4,3,4])
         scalepars = {
             "left": {
                 "x": 1,
@@ -38,7 +38,7 @@ class TestGazeData(unittest.TestCase):
         self.assertEqual(d.data["left","x"].mean(), 1)
         self.assertEqual(d.data["left","y"].mean(), 1)
     def test_unscale(self):
-        d = pp.GazeData(sampling_rate=10, left_x=[1,2,1,2], left_y=[3,4,3,4])
+        d = pp.EyeData(sampling_rate=10, left_x=[1,2,1,2], left_y=[3,4,3,4])
         d=d.scale(["x",'y'])
         d=d.unscale(["x",'y'])
         self.assertEqual(d.data["left","x"].mean(), 1.5)
@@ -46,7 +46,7 @@ class TestGazeData(unittest.TestCase):
     
     def test_scale_preserves_mask(self):
         """Test that scale() preserves existing masks"""
-        d = pp.GazeData(sampling_rate=10, left_x=[1, 2, 3, 4], left_y=[5, 6, 7, 8])
+        d = pp.EyeData(sampling_rate=10, left_x=[1, 2, 3, 4], left_y=[5, 6, 7, 8])
         
         # Manually mask some points
         d.data.add_mask('left_x', np.s_[1])
@@ -65,7 +65,7 @@ class TestGazeData(unittest.TestCase):
     
     def test_unscale_preserves_mask(self):
         """Test that unscale() preserves existing masks"""
-        d = pp.GazeData(sampling_rate=10, left_x=[1, 2, 3, 4], left_y=[5, 6, 7, 8])
+        d = pp.EyeData(sampling_rate=10, left_x=[1, 2, 3, 4], left_y=[5, 6, 7, 8])
         
         # Manually mask some points
         d.data.add_mask('left_x', np.s_[1])
@@ -91,7 +91,7 @@ class TestGazeData(unittest.TestCase):
         right_x = np.array([105, 105, 105, 105, 105, 105, 105, 105, 105, 105])
         right_y = np.array([205, 205, 205, 205, 205, 205, 205, 205, 205, 205])
         
-        d = pp.GazeData(
+        d = pp.EyeData(
             sampling_rate=10,
             left_x=left_x, left_y=left_y,
             right_x=right_x, right_y=right_y
@@ -131,7 +131,7 @@ class TestGazeData(unittest.TestCase):
         right_x = np.array([105, 110, 115, 120, 125])  # Increasing distance
         right_y = np.array([205, 210, 215, 220, 225])  # Increasing distance
         
-        d = pp.GazeData(
+        d = pp.EyeData(
             sampling_rate=10,
             left_x=left_x, left_y=left_y,
             right_x=right_x, right_y=right_y
@@ -162,7 +162,7 @@ class TestGazeData(unittest.TestCase):
         right_x = np.array([105, 105, 105, 105])
         right_y = np.array([205, 205, 205, 205])
         
-        d = pp.GazeData(
+        d = pp.EyeData(
             sampling_rate=10,
             left_x=left_x, left_y=left_y,
             right_x=right_x, right_y=right_y
@@ -181,7 +181,7 @@ class TestGazeData(unittest.TestCase):
     def test_mask_eye_divergences_requires_both_eyes(self):
         """Test that function raises error if both eyes are not available"""
         # Create data with only left eye
-        d = pp.GazeData(
+        d = pp.EyeData(
             sampling_rate=10,
             left_x=[100, 100, 100],
             left_y=[200, 200, 200]
@@ -195,7 +195,7 @@ class TestGazeData(unittest.TestCase):
     
     def test_mask_eye_divergences_invalid_thr_type(self):
         """Test that invalid thr_type raises error"""
-        d = pp.GazeData(
+        d = pp.EyeData(
             sampling_rate=10,
             left_x=[100, 100], left_y=[200, 200],
             right_x=[105, 105], right_y=[205, 205]
@@ -209,7 +209,7 @@ class TestGazeData(unittest.TestCase):
     
     def test_mask_eye_divergences_percentile_out_of_range(self):
         """Test that percentile threshold must be between 0 and 1"""
-        d = pp.GazeData(
+        d = pp.EyeData(
             sampling_rate=10,
             left_x=[100, 100], left_y=[200, 200],
             right_x=[105, 105], right_y=[205, 205]
@@ -228,7 +228,7 @@ class TestGazeData(unittest.TestCase):
         right_x = np.array([105, 105, 105, 105, 105])
         right_y = np.array([205, 205, 205, 205, 205])
         
-        d = pp.GazeData(
+        d = pp.EyeData(
             sampling_rate=10,
             left_x=left_x, left_y=left_y,
             right_x=right_x, right_y=right_y
@@ -252,7 +252,7 @@ class TestGazeData(unittest.TestCase):
         right_x = np.array([105, 105, 105, 105])
         right_y = np.array([205, 205, 205, 205])
         
-        d = pp.GazeData(
+        d = pp.EyeData(
             sampling_rate=10,
             left_x=left_x, left_y=left_y,
             right_x=right_x, right_y=right_y
@@ -277,7 +277,7 @@ class TestGazeData(unittest.TestCase):
         from pypillometry.intervals import Intervals
         
         # Create test data with divergence
-        d = pp.GazeData(
+        d = pp.EyeData(
             left_x=np.array([100, 110, 120, 130, 140]),
             left_y=np.array([100, 100, 100, 100, 100]),
             right_x=np.array([100, 110, 500, 130, 140]),  # Large divergence at index 2
@@ -302,7 +302,7 @@ class TestGazeData(unittest.TestCase):
     
     def test_mask_eye_divergences_apply_mask_true_default(self):
         """Test that apply_mask=True is the default behavior"""
-        d = pp.GazeData(
+        d = pp.EyeData(
             left_x=np.array([100, 110, 120, 130, 140]),
             left_y=np.array([100, 100, 100, 100, 100]),
             right_x=np.array([100, 110, 500, 130, 140]),
@@ -314,8 +314,8 @@ class TestGazeData(unittest.TestCase):
         result = d.mask_eye_divergences(threshold=0.5, thr_type="percentile", 
                                        inplace=False)
         
-        # Should return GazeData object (self)
-        self.assertIsInstance(result, pp.GazeData)
+        # Should return the EyeData object (self)
+        self.assertIsInstance(result, pp.EyeData)
         
         # Mask should be applied
         mask_sum = np.sum(result.data.mask['left_x'])
@@ -331,7 +331,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         left_x = np.array([100, 200, 300, 1500, 500])  # 1500 is outside
         left_y = np.array([100, 200, 300, 400, 1200])  # 1200 is outside
         
-        d = pp.GazeData(
+        d = pp.EyeData(
             sampling_rate=10,
             left_x=left_x,
             left_y=left_y,
@@ -362,7 +362,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         right_x = np.array([100, 200, 300, 1500])
         right_y = np.array([100, 1200, 300, 400])
         
-        d = pp.GazeData(
+        d = pp.EyeData(
             sampling_rate=10,
             left_x=left_x, left_y=left_y,
             right_x=right_x, right_y=right_y,
@@ -384,7 +384,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         from pypillometry.intervals import Intervals
         
         # Create data with offscreen points
-        d = pp.GazeData(
+        d = pp.EyeData(
             left_x=np.array([100, 1500, 300, 400, 1600]),
             left_y=np.array([100, 200, 300, 400, 500]),
             sampling_rate=1000,
@@ -409,7 +409,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
     
     def test_mask_offscreen_coords_apply_mask_true_default(self):
         """Test that apply_mask=True is the default behavior"""
-        d = pp.GazeData(
+        d = pp.EyeData(
             left_x=np.array([100, 1500, 300, 400]),
             left_y=np.array([100, 200, 300, 400]),
             sampling_rate=1000,
@@ -419,8 +419,8 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         # Call without apply_mask argument (should default to True)
         result = d.mask_offscreen_coords(eyes='left', inplace=False)
         
-        # Should return GazeData object
-        self.assertIsInstance(result, pp.GazeData)
+        # Should return the EyeData object
+        self.assertIsInstance(result, pp.EyeData)
         
         # Mask should be applied
         mask_sum = np.sum(result.data.mask['left_x'])
@@ -431,7 +431,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         left_x = np.array([100, 1500, 300, 400])
         left_y = np.array([100, 200, 300, 400])
         
-        d = pp.GazeData(
+        d = pp.EyeData(
             sampling_rate=10,
             left_x=left_x,
             left_y=left_y,
@@ -450,7 +450,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
     def test_mask_offscreen_coords_no_screen_limits(self):
         """Test that function raises error if screen limits are not set"""
         # Create data without setting screen resolution
-        d = pp.GazeData(
+        d = pp.EyeData(
             sampling_rate=10,
             left_x=[100, 200, 300],
             left_y=[100, 200, 300]
@@ -467,7 +467,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         left_x = np.array([100, 200, 300, 400])
         left_y = np.array([100, 200, 300, 400])
         
-        d = pp.GazeData(
+        d = pp.EyeData(
             sampling_rate=10,
             left_x=left_x,
             left_y=left_y,
@@ -486,7 +486,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         left_x = np.array([-10, 100, 200, 300])
         left_y = np.array([100, -5, 200, 300])
         
-        d = pp.GazeData(
+        d = pp.EyeData(
             sampling_rate=10,
             left_x=left_x,
             left_y=left_y,
@@ -505,7 +505,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         left_x = np.array([100, 1500, 300, 1600, 500])
         left_y = np.array([100, 200, 300, 400, 500])
         
-        d = pp.GazeData(
+        d = pp.EyeData(
             sampling_rate=10,
             left_x=left_x,
             left_y=left_y,
@@ -533,7 +533,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         left_x = np.array([100, 1500, 300, 1600, 500])
         left_y = np.array([100, 200, 300, 400, 500])
         
-        d = pp.GazeData(
+        d = pp.EyeData(
             sampling_rate=10,
             left_x=left_x,
             left_y=left_y,
@@ -560,7 +560,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         left_x = np.array([100, 200, 300, 400, 500])
         left_y = np.array([100, 200, 300, 400, 500])
         
-        d = pp.GazeData(
+        d = pp.EyeData(
             sampling_rate=10,
             left_x=left_x,
             left_y=left_y,
@@ -585,7 +585,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         right_x = np.array([1500, 200, 300, 400])
         right_y = np.array([100, 200, 300, 400])
         
-        d = pp.GazeData(
+        d = pp.EyeData(
             sampling_rate=10,
             left_x=left_x, left_y=left_y,
             right_x=right_x, right_y=right_y,
@@ -608,7 +608,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         right_x = np.array([1500, 200, 300, 400])
         right_y = np.array([100, 200, 300, 400])
         
-        d = pp.GazeData(
+        d = pp.EyeData(
             sampling_rate=10,
             left_x=left_x, left_y=left_y,
             right_x=right_x, right_y=right_y,
@@ -629,7 +629,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         right_x = np.array([1500, 200, 300, 400])
         right_y = np.array([100, 200, 300, 400])
         
-        d = pp.GazeData(
+        d = pp.EyeData(
             sampling_rate=10,
             left_x=left_x, left_y=left_y,
             right_x=right_x, right_y=right_y,
@@ -648,7 +648,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         left_x = np.array([100, 1500, 300, 1600])
         left_y = np.array([100, 200, 1200, 400])
         
-        d = pp.GazeData(
+        d = pp.EyeData(
             sampling_rate=10,
             left_x=left_x,
             left_y=left_y,
@@ -674,7 +674,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         left_x = np.array([0, 640, 1280, 1281])
         left_y = np.array([0, 512, 1024, 1025])
         
-        d = pp.GazeData(
+        d = pp.EyeData(
             sampling_rate=10,
             left_x=left_x,
             left_y=left_y,
@@ -694,14 +694,14 @@ class TestMaskOffscreenCoords(unittest.TestCase):
 
     def test_summary_and_repr_html(self):
         x = np.random.randn(100)
-        d = pp.GazeData(left_x=x, left_y=x, sampling_rate=100)
+        d = pp.EyeData(left_x=x, left_y=x, sampling_rate=100)
         self.assertEqual(d.summary()["eyes"], ["left"])
         self.assertIn("left", d._repr_html_())
 
     def test_repr_html_is_escaped(self):
         """names and history with "<" or "&" are shown as text, not markup"""
         x = np.random.randn(100)
-        d = pp.GazeData(left_x=x, left_y=x, sampling_rate=100, name="<b>x&y</b>")
+        d = pp.EyeData(left_x=x, left_y=x, sampling_rate=100, name="<b>x&y</b>")
         html = d._repr_html_()
         self.assertIn("&lt;b&gt;x&amp;y&lt;/b&gt;", html)
         self.assertNotIn("<b>x&y</b>", html)

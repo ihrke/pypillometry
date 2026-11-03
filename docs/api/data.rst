@@ -14,8 +14,6 @@ Main classes
    :nosignatures:
 
    EyeData
-   PupilData
-   GazeData
 
 Base class and containers
 -------------------------

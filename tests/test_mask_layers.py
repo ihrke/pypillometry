@@ -108,7 +108,7 @@ class TestRecLayers:
 
     def test_policy_unless_does_not_apply(self):
         import pypillometry as pp
-        d = pp.PupilData(left_pupil=np.arange(6, dtype=float), sampling_rate=100)
+        d = pp.EyeData(left_pupil=np.arange(6, dtype=float), sampling_rate=100)
         d.data.set_layer("left_pupil", "interpolated", [1, 1, 1, 0, 0, 0])
         d.data.set_rec_layer("excluded", [0, 1, 1, 1, 0, 0])
         assert list(np.flatnonzero(d.mask("left", "pupil"))) == [1, 2, 3]
@@ -116,7 +116,7 @@ class TestRecLayers:
 
     def test_sample_operations(self):
         import pypillometry as pp
-        d = pp.PupilData(left_pupil=np.arange(12, dtype=float), sampling_rate=100)
+        d = pp.EyeData(left_pupil=np.arange(12, dtype=float), sampling_rate=100)
         d.data.set_rec_layer("excluded", np.arange(12) < 7)
         c = d.crop(30, 80, inplace=False)  # samples 3..8
         np.testing.assert_array_equal(c.data.get_rec_layer("excluded"), [1, 1, 1, 1, 0, 0])
@@ -128,7 +128,7 @@ class TestRecLayers:
     def test_state(self):
         import pypillometry as pp
         from pypillometry import state
-        d = pp.PupilData(left_pupil=np.arange(6, dtype=float), sampling_rate=100)
+        d = pp.EyeData(left_pupil=np.arange(6, dtype=float), sampling_rate=100)
         d.data.set_rec_layer("excluded", [0, 1, 1, 0, 0, 0])
         r = state.from_state(state.to_state(d))
         np.testing.assert_array_equal(r.data.rec_layers, d.data.rec_layers)
@@ -178,7 +178,7 @@ class TestSampleOperations:
 
     def data(self, n=12):
         import pypillometry as pp
-        d = pp.PupilData(left_pupil=np.arange(n, dtype=float), sampling_rate=100)
+        d = pp.EyeData(left_pupil=np.arange(n, dtype=float), sampling_rate=100)
         return d
 
     def test_keep_samples(self):
@@ -229,7 +229,7 @@ class TestPolicies:
         import pypillometry as pp
         pupil = np.arange(10, dtype=float)
         pupil[0] = np.nan
-        d = pp.PupilData(left_pupil=pupil, sampling_rate=100)
+        d = pp.EyeData(left_pupil=pupil, sampling_rate=100)
         dd = d.data
         d.set_blinks(pp.Intervals([(2, 5)], "samples"), apply_mask=True)
         dd.set_layer("left_pupil", "interpolated", np.isin(np.arange(10), [3, 4, 5]))
@@ -292,7 +292,7 @@ def pp_policy(*args, **kwargs):
 
 
 def blink_data():
-    """PupilData (100 Hz, 10 s) with NaN blinks; the pupil closes and opens
+    """Pupil-only EyeData (100 Hz, 10 s) with NaN blinks; the pupil closes and opens
     over 5 samples around them."""
     import pypillometry as pp
     n = 1000
@@ -303,7 +303,7 @@ def blink_data():
         p[on - 5:on] -= 300 * ramp
         p[off:off + 5] -= 300 * ramp[::-1]
         p[on:off] = np.nan
-    return pp.PupilData(left_pupil=p, sampling_rate=100)
+    return pp.EyeData(left_pupil=p, sampling_rate=100)
 
 
 class TestInterpolatedLayer:
@@ -342,7 +342,7 @@ class TestInterpolatedLayer:
 
     def test_interpolate_intervals_anchors_follow_policy(self):
         import pypillometry as pp
-        d = pp.PupilData(left_pupil=np.arange(100, dtype=float), sampling_rate=100)
+        d = pp.EyeData(left_pupil=np.arange(100, dtype=float), sampling_rate=100)
         d.data.add_mask("left_pupil", np.s_[40:50])
         d.interpolate_intervals(pp.Intervals([(40, 50)], "samples"))
         d.data["left_pupil"][40:50] = 1000.  # an odd reconstruction
@@ -473,7 +473,7 @@ class TestGazeLayers:
         import pypillometry as pp
         x = np.array([10., 500, 2000, 500, 500, 500, -5, 500])
         y = np.full(8, 300.)
-        d = pp.GazeData(left_x=x, left_y=y, right_x=x + 1, right_y=y, sampling_rate=100,
+        d = pp.EyeData(left_x=x, left_y=y, right_x=x + 1, right_y=y, sampling_rate=100,
                         inplace=False)
         d.set_experimental_setup(screen_resolution=(1000, 800))
         return d
@@ -507,7 +507,7 @@ class TestGazeLayers:
 
 def test_masked_array_assignment_checks_key_and_shape():
     import pypillometry as pp
-    d = pp.PupilData(left_pupil=np.ones(5), sampling_rate=10)
+    d = pp.EyeData(left_pupil=np.ones(5), sampling_rate=10)
     with pytest.raises(ValueError, match="eye_variable"):
         d["dist"] = np.ma.ones(5)
     with pytest.raises(ValueError, match="shape"):
@@ -523,7 +523,7 @@ class TestNoStoredMask:
         pupil = 1000 + np.sin(np.arange(500) / 20)
         pupil[200:220] = np.nan
         pupil[300:310] = 0.  # zero-coded blink, masked (finding 4.9)
-        d = pp.PupilData(left_pupil=pupil, sampling_rate=100, inplace=False)
+        d = pp.EyeData(left_pupil=pupil, sampling_rate=100, inplace=False)
         d.mask_intervals(pp.Intervals([(300, 310)], "samples"), inplace=True)
         f = d.pupil_lowpass_filter(5)
         assert np.isnan(f.data["left_pupil"][200:220]).all()
@@ -538,7 +538,7 @@ class TestNoStoredMask:
         pupil = 1000 + np.sin(np.arange(500) / 20)
         pupil[200:220] = np.nan  # raised an error before
         pupil[300:310] = 0.
-        d = pp.PupilData(left_pupil=pupil, sampling_rate=100, inplace=False)
+        d = pp.EyeData(left_pupil=pupil, sampling_rate=100, inplace=False)
         d.mask_intervals(pp.Intervals([(300, 310)], "samples"), inplace=True)
         f = d.pupil_smooth_window(winsize=50)
         assert np.isnan(f.data["left_pupil"][200:220]).all()
@@ -549,7 +549,7 @@ class TestNoStoredMask:
 
     def test_decimate_keeps_fully_masked_windows_masked(self):
         import pypillometry as pp
-        d = pp.PupilData(left_pupil=np.arange(8, dtype=float), sampling_rate=100)
+        d = pp.EyeData(left_pupil=np.arange(8, dtype=float), sampling_rate=100)
         # window 0: half user, half interpolated -> no layer covers > 1/2
         d.data.set_layer("left_pupil", "user", [1, 1, 0, 0, 0, 0, 0, 0])
         d.data.set_layer("left_pupil", "interpolated", [0, 0, 1, 1, 0, 0, 0, 0])
@@ -566,7 +566,7 @@ class TestNoStoredMask:
 
     def test_decimate_uses_interpolated_samples(self):
         import pypillometry as pp
-        d = pp.PupilData(left_pupil=np.arange(8, dtype=float), sampling_rate=100)
+        d = pp.EyeData(left_pupil=np.arange(8, dtype=float), sampling_rate=100)
         # window 0: half user, half interpolated -> the interpolated samples are used
         d.data.set_layer("left_pupil", "user", [1, 1, 0, 0, 0, 0, 0, 0])
         d.data.set_layer("left_pupil", "interpolated", [0, 0, 1, 1, 0, 0, 0, 0])
@@ -579,7 +579,7 @@ class TestNoStoredMask:
         from pypillometry import state
         pupil = np.arange(6, dtype=float)
         pupil[1] = np.nan
-        d = pp.PupilData(left_pupil=pupil, sampling_rate=100)
+        d = pp.EyeData(left_pupil=pupil, sampling_rate=100)
         assert "mask" not in state.to_state(d)["data"]
         st = format2_state(d)
         # a state with the old mask (no layers)
@@ -599,7 +599,7 @@ class TestNoStoredMask:
         from pypillometry import state
         pupil = np.arange(6, dtype=float)
         pupil[[1, 2]] = np.nan
-        d = pp.PupilData(left_pupil=pupil, sampling_rate=100)
+        d = pp.EyeData(left_pupil=pupil, sampling_rate=100)
         d.data.set_layer("left_pupil", "blink", [0, 0, 0, 0, 1, 0])
         st = state.to_state(d)
         dd = st["data"]
@@ -625,7 +625,7 @@ class TestConsumersUsePolicy:
         import pypillometry as pp
         n = 200
         left, right = np.full(n, 1000.), np.full(n, 900.)
-        d = pp.PupilData(left_pupil=left, right_pupil=right, sampling_rate=100)
+        d = pp.EyeData(left_pupil=left, right_pupil=right, sampling_rate=100)
         d.data.add_mask("left_pupil", np.s_[50:60])
         d.interpolate_intervals(pp.Intervals([(50, 60)], "samples"), eyes="left")
         d.data.add_mask("right_pupil", np.s_[100:110])

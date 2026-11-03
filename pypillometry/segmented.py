@@ -215,7 +215,7 @@ class SegmentedEyeData(state.VersionedState):
         Parameters
         ----------
         eyedata : GenericEyeData
-            Source eye data object (PupilData, GazeData, etc.)
+            Source eye data object
         intervals : Epochs or Intervals
             the segments to extract; for Epochs (e.g., from
             :meth:`~pypillometry.GenericEyeData.get_intervals` with a window),

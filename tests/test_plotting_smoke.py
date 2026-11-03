@@ -118,7 +118,7 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
     
     def setUp(self):
         """Create simple test data"""
-        self.data = pp.PupilData(
+        self.data = pp.EyeData(
             sampling_rate=100,
             left_pupil=np.sin(np.linspace(0, 10*np.pi, 1000)),
             right_pupil=np.cos(np.linspace(0, 10*np.pi, 1000))
@@ -257,7 +257,7 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
         """with units="samples", events are drawn at sample indices"""
         pupil = np.ones(1000)
         pupil[100:150] = np.nan
-        d = pp.PupilData(time=5000 + np.arange(1000) * 10.0, left_pupil=pupil,
+        d = pp.EyeData(time=5000 + np.arange(1000) * 10.0, left_pupil=pupil,
                          event_onsets=[6000, 9000], event_labels=["a", "b"])
         fig = plt.figure()
         d.plot.plot_masked('left', 'pupil', units="samples", show_events=True)
@@ -272,7 +272,7 @@ class TestPlottingGaze(unittest.TestCase):
     def setUp(self):
         rng = np.random.default_rng(1)
         n = 500
-        self.data = pp.GazeData(
+        self.data = pp.EyeData(
             sampling_rate=100,
             left_x=rng.uniform(0, 100, n), left_y=rng.uniform(0, 100, n),
             right_x=rng.uniform(0, 100, n), right_y=rng.uniform(0, 100, n),

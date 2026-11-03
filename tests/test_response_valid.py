@@ -21,7 +21,7 @@ def fake_pupil(duration=60, fs=100, shift_at=30, shift=500., seed=1):
     x1 = pupil_build_design_matrix(tx, onsets, fs, 10, 900)
     resp = np.dot(x1.T, rng.uniform(50, 150, len(onsets)))
     sy = base + resp + rng.normal(0, 5, len(tx))
-    d = pp.PupilData(time=tx, left_pupil=sy, sampling_rate=fs,
+    d = pp.EyeData(time=tx, left_pupil=sy, sampling_rate=fs,
                      event_onsets=onsets, event_labels=["stim"] * len(onsets),
                      inplace=False)
     return d

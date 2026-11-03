@@ -14,7 +14,7 @@ from pypillometry import state
 def make_data():
     """10 s at 100 Hz from 1000 ms, five events with metadata."""
     tx = 1000 + np.arange(1000) * 10.
-    d = pp.PupilData(left_pupil=np.full(1000, 5.), time=tx, sampling_rate=100,
+    d = pp.EyeData(left_pupil=np.full(1000, 5.), time=tx, sampling_rate=100,
                      event_onsets=[1500, 3000, 5000, 7000, 9000],
                      event_labels=["a", "b", "c", "d", "e"])
     return d.set_events(d.events.set_meta("k", [1, 2, 3, 4, 5]))
@@ -48,17 +48,17 @@ class TestStoredEvents(unittest.TestCase):
         self.assertEqual(list(d.events.meta), ["k"])
 
     def test_constructor_without_labels(self):
-        d = pp.PupilData(left_pupil=np.ones(10), sampling_rate=10, event_onsets=[100, 200])
+        d = pp.EyeData(left_pupil=np.ones(10), sampling_rate=10, event_onsets=[100, 200])
         np.testing.assert_array_equal(d.events.labels, ["", ""])
-        d = pp.PupilData(left_pupil=np.ones(10), sampling_rate=10)
+        d = pp.EyeData(left_pupil=np.ones(10), sampling_rate=10)
         self.assertEqual(len(d.events), 0)
 
     def test_constructor_validates(self):
         with self.assertRaises(ValueError):
-            pp.PupilData(left_pupil=np.ones(10), sampling_rate=10,
+            pp.EyeData(left_pupil=np.ones(10), sampling_rate=10,
                          event_onsets=[100, 200], event_labels=["a"])
         with self.assertRaises(ValueError):
-            pp.PupilData(left_pupil=np.ones(10), sampling_rate=10,
+            pp.EyeData(left_pupil=np.ones(10), sampling_rate=10,
                          event_onsets=[5000], event_labels=["a"])
 
 

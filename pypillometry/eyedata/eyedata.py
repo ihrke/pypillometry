@@ -1,12 +1,12 @@
-from .generic import keephistory
-from .gazedata import GazeData
+from .generic import GenericEyeData, keephistory
+from .gazedata import _GazeMethods
 from .eyedatadict import EyeDataDict
 from ..plot import EyePlotter
 from ..units import parse_distance, parse_angle
 import numpy as np
 from loguru import logger
 
-from .pupildata import PupilData
+from .pupildata import _PupilMethods
 import numpy as np
 from collections.abc import Iterable
 from typing import Optional, Dict, Union
@@ -26,14 +26,18 @@ from ..signal.baseline import butter_lowpass_filter, downsample
 
 
 
-class EyeData(GazeData,PupilData):
+class EyeData(_GazeMethods, _PupilMethods, GenericEyeData):
     """
-    Class for handling eye-tracking data. This class is a subclass of
-    :class:`~pypillometry.GazeData` and :class:`~pypillometry.PupilData`
-    and inherits all their methods and attributes. In addition to the
-    methods in GazeData which implement functions for eye-tracking data and
-    those in PupilData for pupillometric data, `EyeData` provides methods
-    that need both gaze and pupil data (e.g., foreshortening correction).
+    Class for eye-tracking and pupillometric data: pupil size and/or gaze
+    position (x, y) of one or two eyes.
+
+    The object can hold any of these channels (e.g., only pupil data, only
+    gaze data, or both). Methods that need pupil data (``pupil_*``) or gaze
+    data (e.g., :meth:`mask_offscreen_coords`) raise a ValueError if the
+    object has none. The pupil and gaze methods are defined in separate
+    modules (:mod:`pypillometry.eyedata.pupildata` and
+    :mod:`pypillometry.eyedata.gazedata`); the methods here need both (e.g.,
+    foreshortening correction).
 
     Properties such as :attr:`~pypillometry.GenericEyeData.eyes` and
     :attr:`~pypillometry.GenericEyeData.variables` are inherited from
@@ -45,11 +49,10 @@ class EyeData(GazeData,PupilData):
         timing array (in ms) or `None`, in which case the time-array goes from [0,maxT]
         using `sampling_rate`
     left_x, left_y, left_pupil : np.ndarray or None
-        data from left eye (at least one of the eyes must be provided, both x and y)
-        pupil is optional
+        data from the left eye: gaze position (x and y, both or neither)
+        and pupil size; at least one channel of one eye must be provided
     right_x, right_y, right_pupil : np.ndarray or None
-        data from right eye (at least one of the eyes must be provided, both x and y)
-        pupil is optional
+        data from the right eye (as for the left eye)
     event_onsets : np.ndarray or None
         time-onsets of any events in the data (in ms, matched in `time` vector)
     event_labels : np.ndarray or None
@@ -111,8 +114,12 @@ class EyeData(GazeData,PupilData):
         """Constructor for the EyeData class.
         """
         logger.debug("Creating EyeData object")
-        if (left_x is None or left_y is None) and (right_x is None or right_y is None):
-            raise ValueError("At least one of the eye-traces must be provided (both x and y)")
+        if all(v is None for v in (left_x, left_y, left_pupil, right_x, right_y, right_pupil)):
+            raise ValueError("At least one channel (e.g., left_pupil, or left_x and "
+                             "left_y) must be provided")
+        for eye, x, y in (("left", left_x, left_y), ("right", right_x, right_y)):
+            if (x is None) != (y is None):
+                raise ValueError(f"{eye}_x and {eye}_y must be provided together")
         self.data=EyeDataDict(left_x=left_x, left_y=left_y, left_pupil=left_pupil,
                                 right_x=right_x, right_y=right_y, right_pupil=right_pupil)
         
@@ -120,13 +127,9 @@ class EyeData(GazeData,PupilData):
         self._init_common(time, sampling_rate, 
                           event_onsets, event_labels, 
                           name, fill_time_discontinuities, 
-                          info=info, inplace=inplace)
-        
-        # Experimental setup (geometry)
-        self.experimental_setup = experimental_setup
-        
-        # Spatial calibration data
-        self.calibration = calibration
+                          info=info, inplace=inplace,
+                          experimental_setup=experimental_setup,
+                          calibration=calibration)
 
         self.original=None
         if keep_orig: 
@@ -146,84 +149,40 @@ class EyeData(GazeData,PupilData):
         : dict
             A dictionary summarizing the dataset.
         """        
-        ds = dict(GazeData.summary(self),
-                  **PupilData.summary(self))
-        return ds
+        # Experimental setup info
+        if self.experimental_setup is not None:
+            setup_info = self.experimental_setup.summary()
+        else:
+            setup_info = "not set"
 
-    def _select_eyes(self, eyes, variable):
-        """Return the eyes to drop so that only `eyes` (with `variable`) remain."""
-        available = self.data.get_available_eyes(variable)
-        if eyes is None:
-            eyes = available
-        elif isinstance(eyes, str):
-            eyes = [eyes]
-        if len(eyes) == 0:
-            raise ValueError("No eyes selected")
-        missing = [e for e in eyes if e not in available]
-        if missing:
-            raise ValueError("No %s data for eye(s): %s" % (variable, ", ".join(missing)))
-        return [e for e in self.eyes if e not in eyes]
+        # Calibration info
+        if self.calibration is not None:
+            calibration_info = {
+                eye: cal.get_stats() for eye, cal in self.calibration.items()
+            }
+        else:
+            calibration_info = "not available"
+        
+        summary=dict(
+            name=self.name, 
+            n=len(self),
+            sampling_rate=self.fs,
+            eyes=self.eyes,
+            data=list(self.data.keys()),
+            nevents=self.nevents(), 
+            experimental_setup=setup_info,
+            calibration=calibration_info,
+            duration_minutes=self.get_duration("min"),
+            start_min=self.tx.min()/1000./60.,
+            end_min=self.tx.max()/1000./60.,
+            params=self._strfy_params()
+        )
+        if self._excluded_mask().any():
+            summary["excluded_minutes"] = self.excluded_duration("min")
+        summary["nblinks"] = self.nblinks()
+        summary["blinks"] = self.blink_stats()
 
-    @keephistory
-    def to_pupildata(self, eyes=None):
-        """
-        Return a copy of the data as a PupilData object (without gaze data).
-
-        All other data are kept (masks, blinks, events, parameters, history,
-        further variables), so the result can be processed further as if it
-        had been loaded as PupilData. This never works in place.
-
-        Parameters
-        ----------
-        eyes : str or list of str, optional
-            Eyes to keep (e.g., ``"left"`` or ``["left", "right"]``); if
-            `None`, all eyes with pupil data are kept.
-
-        Returns
-        -------
-        PupilData
-            copy of the data without the x/y variables
-
-        Raises
-        ------
-        ValueError
-            if there is no pupil data for one of `eyes`
-
-        Examples
-        --------
-        >>> pd = d.to_pupildata()           # all eyes
-        >>> pd_left = d.to_pupildata("left")
-        """
-        drop = self._select_eyes(eyes, "pupil")
-        return self.drop_data(eyes=drop, variables=["x", "y"])
-
-    @keephistory
-    def to_gazedata(self, eyes=None):
-        """
-        Return a copy of the data as a GazeData object (without pupil data).
-
-        All other data are kept (masks, blinks, events, parameters, history,
-        experimental setup, calibration, further variables). This never works
-        in place.
-
-        Parameters
-        ----------
-        eyes : str or list of str, optional
-            Eyes to keep (e.g., ``"left"`` or ``["left", "right"]``); if
-            `None`, all eyes with gaze data are kept.
-
-        Returns
-        -------
-        GazeData
-            copy of the data without the pupil variable
-
-        Raises
-        ------
-        ValueError
-            if there is no gaze data for one of `eyes`
-        """
-        drop = self._select_eyes(eyes, "x")
-        return self.drop_data(eyes=drop, variables=["pupil"])
+        return summary
 
     @keephistory
     def correct_pupil_foreshortening(self, eyes=[], midpoint=None, store_as="pupil", inplace=None):
@@ -274,6 +233,7 @@ class EyeData(GazeData,PupilData):
         ValueError
             if no experimental setup is set (see :meth:`set_experimental_setup`)
         """
+        self._require("pupil", "x", "y")
         obj=self._get_inplace(inplace)
         eyes=self._eyes_with(eyes, ["pupil", "x", "y"])
 
@@ -462,6 +422,7 @@ class EyeData(GazeData,PupilData):
         correct_pupil_foreshortening : Simple foreshortening correction method
         """
         # Validate eye
+        self._require("pupil", "x", "y")
         if eye not in self.eyes:
             raise ValueError(f"Eye '{eye}' not found in dataset. Available: {self.eyes}")
         

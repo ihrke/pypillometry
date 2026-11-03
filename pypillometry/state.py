@@ -1,8 +1,8 @@
 """
 Versioned state of the objects that can be saved to a file.
 
-The eyedata objects (:class:`~pypillometry.PupilData`,
-:class:`~pypillometry.GazeData`, :class:`~pypillometry.EyeData`, ...) and the
+The eyedata objects (:class:`~pypillometry.EyeData`,
+:class:`~pypillometry.FakeEyeData`) and the
 segmented data (:class:`~pypillometry.SegmentedEyeData`, ...) define their
 content as a *state*: a dict that contains only numbers, strings, None,
 lists, tuples, dicts and numpy arrays (plus whatever the user stored in
@@ -42,7 +42,8 @@ Version history
     value per interval)
 3
     eyedata objects store their events as one Events state (`events`:
-    `onsets` in `units`, `labels`, `data_time_range`, `meta`); masks are
+    `onsets` in `units`, `labels`, `data_time_range`, `meta`); all eyedata
+    objects have `experimental_setup` and `calibration`; masks are
     layers: EyeDataDicts have `layers` (one uint16 bit-field per key),
     `layer_names` (layer i is bit i) and `rec_layers` (recording-wide
     layers, e.g. excluded periods) instead of `mask`; eyedata objects have
@@ -67,8 +68,12 @@ __all__ = []
 FORMAT_VERSION = 3
 
 # classes that moved: (old module, old name) -> (new module, new name),
-# used when reading pickle files (see _Unpickler)
-_RENAMED_CLASSES = {}
+# used when reading pickle files (see _Unpickler) and states (see _find_class)
+_RENAMED_CLASSES = {
+    # one class for all eyedata (pypillometry 2.2)
+    ("pypillometry.eyedata.pupildata", "PupilData"): ("pypillometry.eyedata.eyedata", "EyeData"),
+    ("pypillometry.eyedata.gazedata", "GazeData"): ("pypillometry.eyedata.eyedata", "EyeData"),
+}
 
 # list that collects (class name, format version) of the states passed to
 # migrate(), or None (see _recording_versions)
@@ -176,7 +181,9 @@ def _recording_versions():
 
 
 def _find_class(name: str):
-    """The class (eyedata or segmented data) called `name`."""
+    """The class (eyedata or segmented data) called `name` (or renamed from `name`)."""
+    renamed = {old: new for (_, old), (_, new) in _RENAMED_CLASSES.items()}
+    name = renamed.get(name, name)
     from .eyedata.generic import GenericEyeData
     from .segmented import SegmentedEyeData
     # importing the package registers all its classes as subclasses
@@ -692,7 +699,8 @@ def _migrate_2_to_3(state, class_name):
     (`events`) instead of `event_onsets`, `event_labels` and `event_meta`;
     masks are layers (see _v2_eyedata_layers); segments store Epochs (see
     _v2_spans); a sampling rate that does not fit the time vector is
-    corrected (see _v2_fix_fs)."""
+    corrected (see _v2_fix_fs); all eyedata objects have an experimental
+    setup and calibration (None for PupilData)."""
     state = dict(state)
     if class_name in _SEGMENTED_CLASSES:
         state["intervals"] = _v2_spans(state.get("intervals"), state.get("sampling_rate"))
@@ -702,6 +710,9 @@ def _migrate_2_to_3(state, class_name):
                        "data_time_range": None, "meta": state.pop("event_meta")}
     _v2_fix_fs(state)
     _v2_eyedata_layers(state)
+    # PupilData had no experimental setup and calibration
+    state.setdefault("experimental_setup", None)
+    state.setdefault("calibration", None)
     return state
 
 

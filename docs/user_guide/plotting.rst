@@ -4,9 +4,9 @@ Plotting
 ========
 
 Every data object has a ``plot`` attribute with the plotting functions
-that fit its data: a :class:`PupilPlotter` for :class:`PupilData`, a
-:class:`GazePlotter` for :class:`GazeData` and an :class:`EyePlotter` (with
-both sets of functions) for :class:`EyeData`. All plots use
+(an :class:`EyePlotter`, which has the functions of :class:`PupilPlotter`
+and :class:`GazePlotter`). Pupil plots need pupil data and gaze plots need
+gaze data; they raise an error if the data are missing. All plots use
 :mod:`matplotlib`, so they can be adjusted and saved as usual. Most
 functions take ``eyes=``, ``variables=``, ``plot_range=`` and ``units=``
 arguments.

@@ -7,9 +7,9 @@ import pypillometry as pp
 
 
 def make(n=1000, fs=1000.):
-    """PupilData with `n` samples at `fs` Hz (sample i at i*1000/fs ms)."""
+    """Pupil-only EyeData with `n` samples at `fs` Hz (sample i at i*1000/fs ms)."""
     tx = np.arange(n) * 1000. / fs
-    return pp.PupilData(left_pupil=np.full(n, 10.), time=tx, sampling_rate=fs)
+    return pp.EyeData(left_pupil=np.full(n, 10.), time=tx, sampling_rate=fs)
 
 
 def actual_fs(d):
@@ -20,32 +20,32 @@ class TestConstructorTime(unittest.TestCase):
 
     def test_default_time_vector(self):
         # without `time`, sample i is at i*1000/fs ms
-        d = pp.PupilData(left_pupil=np.ones(5), sampling_rate=1000)
+        d = pp.EyeData(left_pupil=np.ones(5), sampling_rate=1000)
         np.testing.assert_array_equal(d.tx, [0., 1., 2., 3., 4.])
-        d = pp.PupilData(left_pupil=np.ones(4), sampling_rate=300)
+        d = pp.EyeData(left_pupil=np.ones(4), sampling_rate=300)
         np.testing.assert_allclose(d.tx, np.arange(4) * 1000. / 300)
 
     def test_rate_must_match_time_vector(self):
         tx = np.arange(100) * 3.  # 333.3 Hz
         with self.assertRaisesRegex(ValueError, "does not match the time vector"):
-            pp.PupilData(left_pupil=np.ones(100), time=tx, sampling_rate=300)
+            pp.EyeData(left_pupil=np.ones(100), time=tx, sampling_rate=300)
         with self.assertRaisesRegex(ValueError, "positive number"):
-            pp.PupilData(left_pupil=np.ones(100), time=tx, sampling_rate=0)
-        d = pp.PupilData(left_pupil=np.ones(100), time=tx, sampling_rate=1000. / 3)
+            pp.EyeData(left_pupil=np.ones(100), time=tx, sampling_rate=0)
+        d = pp.EyeData(left_pupil=np.ones(100), time=tx, sampling_rate=1000. / 3)
         self.assertAlmostEqual(d.fs, 1000. / 3)
         # without a sampling rate, it is taken from the time vector
-        self.assertEqual(pp.PupilData(left_pupil=np.ones(100), time=tx).fs, 333.)
+        self.assertEqual(pp.EyeData(left_pupil=np.ones(100), time=tx).fs, 333.)
 
     def test_tolerated_time_vectors(self):
         # 300 Hz with time stamps rounded to whole ms (steps of 3 and 4 ms)
         tx = np.floor(np.arange(300) * 1000. / 300)
-        pp.PupilData(left_pupil=np.ones(300), time=tx, sampling_rate=300)
+        pp.EyeData(left_pupil=np.ones(300), time=tx, sampling_rate=300)
         # a gap in the time vector
         tx = np.r_[0:500, 800:1000] * 2.
-        pp.PupilData(left_pupil=np.ones(700), time=tx, sampling_rate=500,
+        pp.EyeData(left_pupil=np.ones(700), time=tx, sampling_rate=500,
                      fill_time_discontinuities=False)
         # a single sample
-        pp.PupilData(left_pupil=np.ones(1), time=[0.], sampling_rate=500)
+        pp.EyeData(left_pupil=np.ones(1), time=[0.], sampling_rate=500)
 
     def test_setting_the_time_vector_is_checked(self):
         d = make(n=10)
@@ -251,7 +251,7 @@ class TestChains(unittest.TestCase):
         # the original time of each sample
         tx = np.arange(10000) * 2.
         tx = tx[(tx < 10000) | (tx >= 10400)]
-        d = pp.PupilData(left_pupil=tx.copy(), right_pupil=tx.copy(), time=tx,
+        d = pp.EyeData(left_pupil=tx.copy(), right_pupil=tx.copy(), time=tx,
                          sampling_rate=500, fill_time_discontinuities=False,
                          event_onsets=self.EVENTS,
                          event_labels=[str(t) for t in self.EVENTS])

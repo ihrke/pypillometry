@@ -68,14 +68,14 @@ class TestSegmentedEyeDataCreation(unittest.TestCase):
     
     def test_creation_from_eyedata(self):
         """Test creating SegmentedEyeData from GenericEyeData via get_segments"""
-        # Create PupilData with events
+        # Create pupil-only EyeData with events
         n_samples = 1000
         fs = 100
         pupil = np.sin(np.linspace(0, 10*np.pi, n_samples)) * 100 + 500
         event_onsets = [1000, 3000, 5000, 7000]  # in ms
         event_labels = ["stim1", "stim2", "stim3", "stim4"]
         
-        data = pp.PupilData(
+        data = pp.EyeData(
             sampling_rate=fs,
             left_pupil=pupil,
             event_onsets=event_onsets,
@@ -105,7 +105,7 @@ class TestSegmentedEyeDataCreation(unittest.TestCase):
     
     def test_variable_not_found_error(self):
         """Test error when variable doesn't exist in eyedata"""
-        data = pp.PupilData(
+        data = pp.EyeData(
             sampling_rate=100,
             left_pupil=np.random.randn(100),
             event_onsets=[500],
@@ -299,7 +299,7 @@ class TestSegmentedEyeDataMasking(unittest.TestCase):
         pupil = np.random.randn(n_samples) + 500
         pupil[100:120] = np.nan  # Create missing data
         
-        data = pp.PupilData(
+        data = pp.EyeData(
             sampling_rate=fs,
             left_pupil=pupil,
             event_onsets=[1000, 2000, 3000],
@@ -507,8 +507,8 @@ class TestSegmentedEyeDataFromIntervals(unittest.TestCase):
     
     def test_name_from_intervals_label(self):
         """Test that name defaults to intervals label"""
-        # Create PupilData
-        data = pp.PupilData(
+        # Create pupil-only EyeData
+        data = pp.EyeData(
             sampling_rate=100,
             left_pupil=np.random.randn(500) + 500,
             event_onsets=[1000, 2000, 3000],
@@ -527,14 +527,14 @@ class TestSegmentedEyeDataTimeAxis(unittest.TestCase):
     
     def test_time_axis_is_relative_to_event(self):
         """Test that time axis uses interval_window for event-locked intervals"""
-        # Create PupilData with events
+        # Create pupil-only EyeData with events
         n_samples = 1000
         fs = 100
         pupil = np.random.randn(n_samples) + 500
         event_onsets = [2000, 5000, 8000]  # in ms (2s, 5s, 8s)
         event_labels = ["stim"] * 3
         
-        data = pp.PupilData(
+        data = pp.EyeData(
             sampling_rate=fs,
             left_pupil=pupil,
             event_onsets=event_onsets,
@@ -846,7 +846,7 @@ class TestSegmentedEyeDataLength(unittest.TestCase):
         fs = 500
         onsets = 2000 + np.arange(10) * 1000.7  # not on the sample grid
         labels = [f"ev{i}" for i in range(10)]
-        data = pp.PupilData(sampling_rate=fs, left_pupil=np.random.randn(10000) + 500,
+        data = pp.EyeData(sampling_rate=fs, left_pupil=np.random.randn(10000) + 500,
                             event_onsets=onsets, event_labels=labels)
         lengths = set()
         for lab in labels:

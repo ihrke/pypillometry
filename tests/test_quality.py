@@ -153,13 +153,13 @@ class TestQualityReport(unittest.TestCase):
         self.assertEqual(r["calibration"]["left"]["mean_error"].label, "ok")
         self.assertEqual(r["calibration"]["left"]["model"].value, "HV9")
 
-    def test_pupildata_and_gazedata(self):
+    def test_pupil_only_and_gaze_only(self):
         d = _make_data()
-        r = d.to_pupildata("left").quality_report()
+        r = d.drop_data(eyes="right", variables=["x", "y"]).quality_report()
         self.assertIn("pupil", r)
         self.assertNotIn("gaze", r)
         self.assertNotIn("binocular", r)
-        g = pp.GazeData(time=d.tx, left_x=d.data["left_x"], left_y=d.data["left_y"],
+        g = pp.EyeData(time=d.tx, left_x=d.data["left_x"], left_y=d.data["left_y"],
                         sampling_rate=d.fs)
         r = g.quality_report()
         self.assertNotIn("pupil", r)

@@ -1742,7 +1742,7 @@ class TestConversionWithData(unittest.TestCase):
     """Conversions use the time vector of the data (recording not starting at 0)."""
 
     def setUp(self):
-        self.d = pp.PupilData(time=1000 + np.arange(0, 10000, 10.), left_pupil=np.ones(1000),
+        self.d = pp.EyeData(time=1000 + np.arange(0, 10000, 10.), left_pupil=np.ones(1000),
                               event_onsets=[2000, 5005], event_labels=["a", "b"])
 
     def test_get_intervals_samples_and_ms_agree(self):

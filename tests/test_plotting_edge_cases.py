@@ -95,7 +95,7 @@ class TestPlottingMinimalData(unittest.TestCase):
     
     def setUp(self):
         """Create minimal test data"""
-        self.data = pp.PupilData(
+        self.data = pp.EyeData(
             sampling_rate=10,
             left_pupil=[1, 2, 3, 4, 5],
             right_pupil=[2, 3, 4, 5, 6]
@@ -131,7 +131,7 @@ class TestPlottingSingleEye(unittest.TestCase):
     
     def setUp(self):
         """Create data with only left eye"""
-        self.data = pp.PupilData(
+        self.data = pp.EyeData(
             sampling_rate=100,
             left_pupil=np.sin(np.linspace(0, 10*np.pi, 1000))
         )
@@ -161,7 +161,7 @@ class TestPlottingLargeData(unittest.TestCase):
     
     def setUp(self):
         """Create large test data"""
-        self.data = pp.PupilData(
+        self.data = pp.EyeData(
             sampling_rate=1000,  # 1000 Hz
             left_pupil=np.random.randn(100000),  # 100 seconds
             right_pupil=np.random.randn(100000)

@@ -73,14 +73,14 @@ class TestPypilview(CLITestCase):
         read.assert_called_once_with(EDF, remove_eyelink_triggers=True)
 
     def test_pickle_any_extension(self):
-        d = pp.PupilData(left_pupil=np.ones(100), sampling_rate=100, name="saved")
+        d = pp.EyeData(left_pupil=np.ones(100), sampling_rate=100, name="saved")
         for ext in (".pkl", ".pypil", ""):
             fname = os.path.join(self.tmp, "data" + ext)
             pp.write_pickle(d, fname)
             with patch.object(pp, "view") as view:
                 pypilview_main([fname, "--eyes", "left"])
             shown = view.call_args.args[0]
-            self.assertIsInstance(shown, pp.PupilData)
+            self.assertIsInstance(shown, pp.EyeData)
             self.assertEqual(shown.name, "saved")
             self.assertEqual(view.call_args.kwargs["eyes"], ["left"])
 

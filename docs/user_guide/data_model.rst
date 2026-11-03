@@ -6,48 +6,31 @@ Data objects
 Data classes
 ------------
 
-All data are held in one of three classes. Choose the one that matches
-what your eye tracker recorded:
-
-.. list-table::
-   :header-rows: 1
-   :widths: 20 30 50
-
-   * - Class
-     - Contains
-     - Use for
-   * - :class:`PupilData`
-     - pupil size
-     - pupillometry without gaze position
-   * - :class:`GazeData`
-     - gaze position (x, y)
-     - eye movements without pupil size
-   * - :class:`EyeData`
-     - pupil size and gaze position
-     - the usual case; needed for anything that combines both, e.g.,
-       :doc:`foreshortening correction </experimental/foreshortening>`
+All data are held in one class, :class:`EyeData`. It holds whatever your
+eye tracker recorded, for one or both eyes: pupil size, gaze position
+(x, y), or both. The experimental setup (screen geometry, see
+:class:`ExperimentalSetup`) and the calibration results can be stored with
+any of them.
 
 .. mermaid::
 
    classDiagram
-    GenericEyeData <|-- PupilData
-    GenericEyeData <|-- GazeData
-    PupilData <|-- EyeData
-    GazeData <|-- EyeData
+    GenericEyeData <|-- EyeData
+    EyeData <|-- FakeEyeData
     GenericEyeData: data (EyeDataDict)
-    GenericEyeData: events, blinks, history
+    GenericEyeData: events, layers, history, experimental_setup, calibration
     GenericEyeData: get_intervals(), get_segments(), downsample(), ...
-    PupilData: plot (PupilPlotter)
-    PupilData: pupil_blinks_detect(), pupil_lowpass_filter(), ...
-    GazeData: plot (GazePlotter)
-    GazeData: mask_offscreen_coords(), experimental_setup, ...
     EyeData: plot (EyePlotter)
+    EyeData: pupil_blinks_detect(), pupil_lowpass_filter(), ...
+    EyeData: mask_offscreen_coords(), mask_eye_divergences(), ...
     EyeData: correct_pupil_foreshortening(), ...
 
-All three share the methods of :class:`GenericEyeData` (events, intervals,
-masks, downsampling, slicing, ...). :class:`EyeData` has the methods of
-both :class:`PupilData` and :class:`GazeData`. Methods that only make sense
-for pupil data start with ``pupil_``.
+The generic methods (events, intervals, masks, downsampling, slicing, ...)
+work for any data. Methods that need pupil data start with ``pupil_``; they
+raise an error if the object has no pupil data ("no pupil data; available
+channels: left_x, left_y"). The same holds for the methods that need gaze
+data (e.g., :meth:`~EyeData.mask_offscreen_coords`) or both (e.g.,
+:doc:`foreshortening correction </experimental/foreshortening>`).
 
 An object is usually created by reading a file (see
 :doc:`loading_data`):
@@ -89,7 +72,7 @@ left empty, all eyes and variables are processed:
     d.plot.plot_timeseries(variables=["x", "y"])     # only gaze
 
 New eyes and variables can be added. For example,
-:meth:`~PupilData.pupil_merge_eyes` combines the pupils of both eyes into
+:meth:`~EyeData.pupil_merge_eyes` combines the pupils of both eyes into
 ``merged_pupil`` (eye ``merged``, variable ``pupil``), and you can store
 your own arrays with ``d["left", "myvar"] = array``.
 
@@ -104,7 +87,7 @@ Missing samples (NaN), blinks and samples where the gaze is off the
 screen are typical examples. Every time series is a
 :class:`numpy.ma.MaskedArray`, and masked samples are ignored by
 averages, segments and statistics. Interpolated samples (e.g., blinks
-after :meth:`~PupilData.pupil_blinks_interpolate`) are *not* masked by
+after :meth:`~EyeData.pupil_blinks_interpolate`) are *not* masked by
 default: they are used like other samples (see the mask policies below).
 
 .. code-block:: python
@@ -119,12 +102,12 @@ default) so that you can check them before applying them with
 :meth:`~GenericEyeData.mask_intervals` (see :doc:`events_intervals`).
 
 Each variable also keeps *mask layers* that record why a sample is
-masked: ``"blink"`` (:meth:`~PupilData.pupil_blinks_detect`,
+masked: ``"blink"`` (:meth:`~EyeData.pupil_blinks_detect`,
 :meth:`~GenericEyeData.set_blinks`), ``"interpolated"``
-(:meth:`~PupilData.pupil_blinks_interpolate`,
+(:meth:`~EyeData.pupil_blinks_interpolate`,
 :meth:`~GenericEyeData.interpolate_intervals`), ``"offscreen"``
-(:meth:`~GazeData.mask_offscreen_coords`), ``"divergence"``
-(:meth:`~GazeData.mask_eye_divergences`) and ``"user"``
+(:meth:`~EyeData.mask_offscreen_coords`), ``"divergence"``
+(:meth:`~EyeData.mask_eye_divergences`) and ``"user"``
 (:meth:`~GenericEyeData.mask_intervals`, assigning a masked array). The
 ``"excluded"`` layer (see below) belongs to the whole recording, not to
 a variable. The blinks returned by :meth:`~GenericEyeData.get_blinks` are
@@ -145,8 +128,8 @@ interpolated samples count as usable:
 All processing and analysis methods read the data under one policy: the
 default one unless you pass ``policy=`` (``"strict"`` leaves out the
 interpolated samples, ``"raw"`` uses all values). Filters
-(:meth:`~PupilData.pupil_lowpass_filter`,
-:meth:`~PupilData.pupil_smooth_window`) and the baseline model bridge the
+(:meth:`~EyeData.pupil_lowpass_filter`,
+:meth:`~EyeData.pupil_smooth_window`) and the baseline model bridge the
 unusable samples linearly instead of using their values, and only change
 the usable samples; masked samples keep their values. Segments,
 :meth:`~GenericEyeData.stat_per_event`, :meth:`~GenericEyeData.scale`,

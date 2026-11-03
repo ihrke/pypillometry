@@ -23,7 +23,8 @@ class PupilPlotter(GenericPlotter):
     and provides methods to plot the data in various ways.
 
     It is usually not created directly; instead, it is available as the `plot`
-    attribute of a :class:`~pypillometry.PupilData` object, e.g.
+    attribute of an :class:`~pypillometry.EyeData` object (as part of
+    :class:`~pypillometry.EyePlotter`), e.g.
     ``d.plot.pupil_plot()``.
 
     Parameters
@@ -94,6 +95,7 @@ class PupilPlotter(GenericPlotter):
            >>> plt.figure(figsize=(10, 3))
            >>> d.plot.pupil_plot(plot_range=(0, 20) * u.sec)
         """
+        self.obj._require("pupil")
         if not isinstance(eyes, list):
             eyes=[eyes]
         if len(eyes)==0:
@@ -267,6 +269,7 @@ class PupilPlotter(GenericPlotter):
         instead.
         """
 
+        self.obj._require("pupil")
         obj = self.obj
         unit_factor = obj._unit_fac(units)
         interv = parse_time(interv, to=units, default=units)

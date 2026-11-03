@@ -328,45 +328,41 @@ class TestEyeData(unittest.TestCase):
         self.assertIn('duration_minutes', summary)  # Updated to match actual key
         self.assertIn('nevents', summary)  # Updated to match actual key
 
-    def test_to_pupildata(self):
-        """Test conversion to PupilData"""
-        pd = self.eyedata.to_pupildata()
-        self.assertEqual(pd.__class__, pp.PupilData)
+    def test_drop_gaze(self):
+        """Dropping the gaze data keeps the class and the pupil data"""
+        pd = self.eyedata.drop_data(variables=["x", "y"])
+        self.assertIs(pd.__class__, pp.EyeData)
         self.assertEqual(sorted(pd.eyes), ["left", "right"])
         self.assertEqual(pd.variables, ["pupil"])
         np.testing.assert_array_equal(pd.tx, self.time)
         np.testing.assert_array_equal(pd.data['left_pupil'], self.left_pupil)
 
-        left = self.eyedata.to_pupildata("left")
+        left = self.eyedata.drop_data(eyes="right", variables=["x", "y"])
         self.assertEqual(left.eyes, ["left"])
         np.testing.assert_array_equal(left.data['left_pupil'], self.left_pupil)
 
         with self.assertRaises(ValueError):
-            self.eyedata.to_pupildata(eyes='invalid')
-        with self.assertRaises(ValueError):
-            self.eyedata.to_pupildata(eyes=[])
+            self.eyedata.drop_data(eyes=["left", "right"])
 
-    def test_to_pupildata_keeps_masks_and_copies(self):
+    def test_drop_data_keeps_masks_and_copies(self):
         """Masks and history are kept, and the original is unchanged"""
         d = self.eyedata.copy()
         d.data.add_mask("left_pupil", np.s_[10:20])
-        pd = d.to_pupildata()
+        pd = d.drop_data(variables=["x", "y"])
         np.testing.assert_array_equal(pd.data.mask["left_pupil"],
                                       d.data.mask["left_pupil"])
-        self.assertEqual(pd.history[-1]["funcname"], "to_pupildata")
+        self.assertEqual(pd.history[-1]["funcname"], "drop_data")
         pd.data["left_pupil"][0] = -1
         self.assertNotEqual(d.data["left_pupil"][0], -1)
         self.assertIn("left_x", d.data)
 
-    def test_to_gazedata(self):
-        """Test conversion to GazeData"""
-        g = self.eyedata.to_gazedata("right")
-        self.assertEqual(g.__class__, pp.GazeData)
+    def test_drop_pupil(self):
+        """Dropping the pupil data keeps the class and the gaze data"""
+        g = self.eyedata.drop_data(eyes="left", variables="pupil")
+        self.assertIs(g.__class__, pp.EyeData)
         self.assertEqual(g.eyes, ["right"])
         self.assertEqual(sorted(g.variables), ["x", "y"])
         np.testing.assert_array_equal(g.data['right_x'], self.eyedata.data['right_x'])
-        with self.assertRaises(ValueError):
-            self.eyedata.to_gazedata(eyes='invalid')
 
     def test_correct_pupil_foreshortening(self):
         """Test the correct_pupil_foreshortening method"""
@@ -551,7 +547,7 @@ class TestEyeData(unittest.TestCase):
         t = np.arange(n)
         left = 1000 + 50*np.sin(t/100)
         right = left - 20
-        d = pp.PupilData(left_pupil=left, right_pupil=right, sampling_rate=100)
+        d = pp.EyeData(left_pupil=left, right_pupil=right, sampling_rate=100)
         d.data.add_mask('left_pupil', np.s_[100:150])
         d.data.add_mask('right_pupil', np.s_[100:150])   # e.g., interpolated in both
         d.data.add_mask('right_pupil', np.s_[300:350])   # masked in one eye
@@ -882,7 +878,7 @@ class TestEyeData(unittest.TestCase):
         # 100 Hz, time starts at 5000 ms, pupil = time, so the mean over
         # [onset-200 ms, onset) is onset-105
         t = 5000 + np.arange(2000)*10.
-        d = pp.PupilData(left_pupil=t.copy(), time=t, sampling_rate=100,
+        d = pp.EyeData(left_pupil=t.copy(), time=t, sampling_rate=100,
                          event_onsets=np.array([7000., 12000.]), event_labels=np.array(["a", "a"]))
         expected = [6895., 11895.]
         calls = [
@@ -903,7 +899,7 @@ class TestEyeData(unittest.TestCase):
         p[110:115] = np.nan   # missing
         p[310:315] = 999.     # masked below
         p[500:520] = np.nan   # whole third window missing
-        d = pp.PupilData(left_pupil=p, time=t, sampling_rate=100,
+        d = pp.EyeData(left_pupil=p, time=t, sampling_rate=100,
                          event_onsets=np.array([1200., 3200., 5200.]), event_labels=np.array(["a"]*3))
         d.mask_intervals(Intervals([(310, 315)], units="samples"), inplace=True)
         for f in (np.mean, np.nanmean, np.ma.median):
@@ -1264,7 +1260,7 @@ class TestEyeData(unittest.TestCase):
     def test_interpolate_intervals_ignores_masked_anchors(self):
         """Masked samples (e.g., other blinks) are not used as anchor points"""
         from pypillometry.intervals import Intervals
-        d = pp.PupilData(sampling_rate=100, left_pupil=np.full(300, 10.0))
+        d = pp.EyeData(sampling_rate=100, left_pupil=np.full(300, 10.0))
         d.data['left_pupil'][100:150] = np.nan
         d.data['left_pupil'][150:152] = 1000.0   # artifact right after the gap
         d.data.add_mask('left_pupil', np.s_[150:152])
@@ -1275,7 +1271,7 @@ class TestEyeData(unittest.TestCase):
     def test_interpolate_intervals_margin_sign(self):
         """margin is relative to start/end; wrong signs raise"""
         from pypillometry.intervals import Intervals
-        d = pp.PupilData(sampling_rate=100, left_pupil=np.full(300, 10.0))
+        d = pp.EyeData(sampling_rate=100, left_pupil=np.full(300, 10.0))
         d.data['left_pupil'][100:150] = np.nan
         intervals = Intervals([(100, 150)], units="samples")
         for margin in [(20, 20), (-20, -20)]:
@@ -1580,7 +1576,7 @@ class TestEyeDataDelitem(unittest.TestCase):
         # Create pupil data with some manually masked regions (seeded noise:
         # with some noise, velocity detection marks the masked region)
         rng = np.random.default_rng(1)
-        pd = pp.PupilData(
+        pd = pp.EyeData(
             left_pupil=rng.random(1000) * 100 + 3000,
             sampling_rate=100
         )
@@ -1624,7 +1620,7 @@ class TestEyeDataDelitem(unittest.TestCase):
     def test_pupil_lowpass_preserves_mask(self):
         """Test that lowpass filtering preserves existing mask"""
         # Create pupil data
-        pd = pp.PupilData(
+        pd = pp.EyeData(
             left_pupil=np.random.rand(1000) * 100 + 3000,
             sampling_rate=100
         )
@@ -1653,7 +1649,7 @@ class TestEyeDataDelitem(unittest.TestCase):
     def test_pupil_smooth_preserves_mask(self):
         """Test that smoothing preserves existing mask"""
         # Create pupil data
-        pd = pp.PupilData(
+        pd = pp.EyeData(
             left_pupil=np.random.rand(1000) * 100 + 3000,
             sampling_rate=100
         )
@@ -2374,7 +2370,7 @@ class TestPupilBlinksDetectZero(unittest.TestCase):
 
     def make(self, pupil):
         t = np.arange(len(pupil))
-        return pp.PupilData(left_pupil=pupil, time=t, sampling_rate=1000)
+        return pp.EyeData(left_pupil=pupil, time=t, sampling_rate=1000)
 
     def signal(self):
         return 1000 + 50*np.sin(np.arange(5000)/500)
@@ -2436,7 +2432,7 @@ class TestMissingPupilOnImport(unittest.TestCase):
 
     def test_constructor_keeps_zero_pupil(self):
         p = np.array([1., 0., -1., 0., 2.])  # e.g. baseline-corrected data
-        d = pp.PupilData(left_pupil=p, time=np.arange(5), sampling_rate=1000)
+        d = pp.EyeData(left_pupil=p, time=np.arange(5), sampling_rate=1000)
         np.testing.assert_array_equal(d.data["left_pupil"], p)
         self.assertEqual(d.data.mask["left_pupil"].sum(), 0)
 
@@ -2457,7 +2453,7 @@ class TestMasksAndBlinksKept(unittest.TestCase):
         t = np.arange(1000)*10.  # 100 Hz
         p = np.full(1000, 10.)
         p[400:410] = np.nan
-        d = pp.PupilData(left_pupil=p, time=t, sampling_rate=100)
+        d = pp.EyeData(left_pupil=p, time=t, sampling_rate=100)
         blinks = Intervals([(490, 520), (600, 620)], units="samples")
         d.set_blinks(blinks, eyes=["left"], variables=["pupil"], apply_mask=True)
         return d
@@ -2509,7 +2505,7 @@ class TestMasksAndBlinksKept(unittest.TestCase):
         from pypillometry.intervals import Intervals
         # 100 Hz with samples 550-579 missing (a 300 ms gap)
         keep = np.r_[0:550, 580:1000]
-        g = pp.PupilData(left_pupil=np.full(970, 10.), time=(np.arange(1000)*10.)[keep],
+        g = pp.EyeData(left_pupil=np.full(970, 10.), time=(np.arange(1000)*10.)[keep],
                          sampling_rate=100, fill_time_discontinuities=False)
         g.data.add_mask("left_pupil", np.s_[300])
         # blinks in the gapped data (570-590 = original samples 600-620)
@@ -2532,7 +2528,7 @@ class TestHistoryLog(unittest.TestCase):
     def make(self):
         p = np.full(1000, 10.)
         p[300:330] = np.nan
-        return pp.PupilData(left_pupil=p, time=np.arange(1000)*10., sampling_rate=100)
+        return pp.EyeData(left_pupil=p, time=np.arange(1000)*10., sampling_rate=100)
 
     def test_nested_calls_not_recorded(self):
         d = self.make()
@@ -2579,8 +2575,8 @@ class TestHistoryLog(unittest.TestCase):
 def test_summary_keys():
     d = pp.EyeData(left_x=np.ones(100), left_y=np.ones(100),
                    left_pupil=np.ones(100), sampling_rate=100)
-    g = pp.GazeData(left_x=np.ones(100), left_y=np.ones(100), sampling_rate=100)
-    for obj in [d, d.to_pupildata(), g]:
+    g = pp.EyeData(left_x=np.ones(100), left_y=np.ones(100), sampling_rate=100)
+    for obj in [d, d.drop_data(variables=["x", "y"]), g]:
         s = obj.summary()
         assert "params" in s
         assert "parameters" not in s

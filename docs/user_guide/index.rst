@@ -16,7 +16,7 @@ If you have not used the package before, start with the
       :link: data_model
       :link-type: doc
 
-      ``EyeData``, ``PupilData`` and ``GazeData``; eyes and variables;
+      ``EyeData``; eyes and variables;
       masks; pipelines, in-place operations and history.
 
    .. grid-item-card:: :fas:`file-import` Loading and saving data

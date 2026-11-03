@@ -264,14 +264,24 @@ class GenericEyeData(state.VersionedState, ABC):
     inplace: Optional[bool] ## whether to make changes in-place (None: package default)
     info: dict ## optional info about the dataset
     params: dict ## parameters 
+    experimental_setup: Optional[ExperimentalSetup] ## geometry of the setup (or None)
+    calibration: Optional[dict] ## SpatialCalibration per eye (or None)
 
     # state (see pypillometry.state); subclasses add their own fields
     _STATE_FIELDS = (
         "name", "fs", "tx", ("data", "EyeDataDict"), ("events", "Events", "_events"),
-        "params", "history", "inplace", "info", ("original", "versioned"))
+        "params", "history", "inplace", "info", ("original", "versioned"),
+        ("experimental_setup", "ExperimentalSetup"),
+        ("calibration", "dict:SpatialCalibration"))
     # EyeDataDicts with one value per sample; the operations that change
     # the samples (_keep_samples, _decimate, _insert_samples) apply to all
     _SAMPLE_ALIGNED = ("data",)
+
+    def _set_state(self, st: dict):
+        # PupilData states of development versions of format 3 (before
+        # 2.2) have no experimental setup and calibration; this can be
+        # removed before 2.2 is released
+        super()._set_state({"experimental_setup": None, "calibration": None, **st})
 
     @abstractmethod
     def __init__():
@@ -285,7 +295,9 @@ class GenericEyeData(state.VersionedState, ABC):
                     name: str|None,
                     fill_time_discontinuities: bool,
                     inplace: Optional[bool],
-                    info: dict = None):
+                    info: dict = None,
+                    experimental_setup: Optional[ExperimentalSetup] = None,
+                    calibration: Optional[dict] = None):
         """
         Common code for the child-classes of GenericEyeData.
         Assumes that self.data is already set and filled.
@@ -332,6 +344,10 @@ class GenericEyeData(state.VersionedState, ABC):
 
         ## set info
         self.info = info if info is not None else {}
+
+        ## experimental setup (geometry) and spatial calibration data
+        self.experimental_setup = experimental_setup
+        self.calibration = calibration
 
         ## fill in time discontinuities (part of construction, so bypass
         ## @keephistory and keep it out of the history)
@@ -661,6 +677,19 @@ class GenericEyeData(state.VersionedState, ABC):
         found = dict.fromkeys(eye for eye, _ in pairs)
         return [eye for eye in found if all((eye, var) in pairs for var in variables)]
 
+    def _require(self, *variables):
+        """Private helper: raise a ValueError unless there is data for each
+        of `variables` (in at least one eye).
+
+        Used by methods that need specific data (e.g., pupil or gaze), so
+        that they fail with a clear message.
+        """
+        available = self.data.get_available_variables()
+        missing = [var for var in variables if var not in available]
+        if missing:
+            raise ValueError("no %s data; available channels: %s"
+                             % (", ".join(missing), ", ".join(self.data.keys()) or "none"))
+
     def _get_inplace(self, inplace):
         """Private helper function.
         
@@ -945,7 +974,7 @@ class GenericEyeData(state.VersionedState, ABC):
         Clear a mask layer (e.g., ``"blink"``) for the selected channels.
 
         Clearing ``"blink"`` removes the blinks and their mask (e.g., to
-        undo :meth:`~pypillometry.PupilData.pupil_blinks_detect`).
+        undo :meth:`~pypillometry.EyeData.pupil_blinks_detect`).
         ``"excluded"`` is a recording-wide layer: clearing it removes the
         excluded periods (`eyes` and `variables` are ignored).
 
@@ -1127,7 +1156,7 @@ class GenericEyeData(state.VersionedState, ABC):
         - both eyes: correlation of the pupils and disparity of the gaze
 
         Further measures are added if available: blinks (after
-        :meth:`~pypillometry.PupilData.pupil_blinks_detect`), masked and
+        :meth:`~pypillometry.EyeData.pupil_blinks_detect`), masked and
         interpolated data (after preprocessing; masked: unusable under the
         mask `policy`, see :meth:`mask`) and calibration/validation
         errors (e.g., when read from an Eyelink file).
@@ -1475,7 +1504,7 @@ class GenericEyeData(state.VersionedState, ABC):
         """
         Reads a :class:`~pypillometry.GenericEyeData` object from a pickle
         or HDF5 file (see :meth:`write_file`).
-        Use as ``pypillometry.PupilData.from_file("yourfile.pypil")``.
+        Use as ``pypillometry.EyeData.from_file("yourfile.pypil")``.
 
         The file is read with :func:`pypillometry.io.read_pickle`, so
         `fname` can also be an HTTP(S) or SSH URL. Files written by older
@@ -1621,11 +1650,8 @@ class GenericEyeData(state.VersionedState, ABC):
         screen_coords = edf["info"]["screen_coords"]
         setup = ExperimentalSetup(screen_resolution=tuple(screen_coords)) if screen_coords is not None else None
         
-        kwargs = dict(**d, calibration=calibration, experimental_setup=setup)
-        # only pass what the constructor accepts (e.g., PupilData has no gaze)
-        accepted = inspect.signature(cls.__init__).parameters
-        kwargs = {k: v for k, v in kwargs.items() if k in accepted}
-        obj = cls(time=tx, **kwargs, event_onsets=evon, event_labels=evlab,
+        obj = cls(time=tx, **d, calibration=calibration, experimental_setup=setup,
+            event_onsets=evon, event_labels=evlab,
             sampling_rate=sfreq, info=info, name=edf["info"]["filename"])
 
         # filter out irrelevant triggers
@@ -1804,12 +1830,9 @@ class GenericEyeData(state.VersionedState, ABC):
         
         This method never works in place - it always returns a new object.
         All data of the given eyes and all data of the given variables are
-        dropped (together with their stored blinks).
-        The returned object's class is determined by what data remains:
-
-        - If only pupil variables remain: returns PupilData
-        - If only x/y variables remain: returns GazeData
-        - If both pupil and x/y remain: returns EyeData
+        dropped (together with their mask layers). Everything else is kept
+        (events, excluded periods, parameters, history, experimental setup,
+        calibration); the class of the object does not change.
 
         Parameters
         ----------
@@ -1822,8 +1845,8 @@ class GenericEyeData(state.VersionedState, ABC):
             
         Returns
         -------
-        GenericEyeData subclass
-            A new object with the specified data removed, cast to the appropriate class.
+        :class:`~pypillometry.GenericEyeData`
+            A new object (same class) with the specified data removed.
             
         Raises
         ------
@@ -1872,38 +1895,7 @@ class GenericEyeData(state.VersionedState, ABC):
         
         if len(remaining_vars) == 0 or len(remaining_eyes) == 0:
             raise ValueError("Dropping the specified data would leave no data remaining")
-        
-        
-        return result._cast_to_data_class()
 
-    def _cast_to_data_class(self):
-        """
-        Return the object cast to the class that matches its data.
-
-        Objects with pupil and gaze data become EyeData, objects with only
-        pupil data PupilData and objects with only gaze data GazeData. Objects
-        with neither keep their class. The attributes are shared with `self`
-        (not copied).
-        """
-        # Import here to avoid circular imports
-        from . import PupilData, GazeData, EyeData
-
-        variables = self.data.get_available_variables()
-        has_pupil = 'pupil' in variables
-        has_gaze = 'x' in variables or 'y' in variables
-        if has_pupil and has_gaze:
-            target_class = EyeData
-        elif has_pupil:
-            target_class = PupilData
-        elif has_gaze:
-            target_class = GazeData
-        else:
-            target_class = self.__class__
-
-        if target_class is self.__class__:
-            return self
-        result = target_class.__new__(target_class)
-        result.__dict__.update(self.__dict__)
         return result
 
     def _check_events(self, events) -> Events:
@@ -2743,7 +2735,7 @@ class GenericEyeData(state.VersionedState, ABC):
             and return the object.
             If False, return merged blinks as dict of Intervals objects without
             storing them or applying masks (same default as
-            :meth:`~pypillometry.PupilData.pupil_blinks_detect`).
+            :meth:`~pypillometry.EyeData.pupil_blinks_detect`).
         inplace : bool or None, optional
             if `True`, make change in-place and return the object;
             if `False`, make and return copy before making changes;

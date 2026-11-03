@@ -15,8 +15,7 @@ EDF files from SR Research Eyelink eye trackers are read with
     import pypillometry as pp
 
     d = pp.EyeData.from_eyelink("recording.edf")
-    p = pp.PupilData.from_eyelink("recording.edf")   # pupil only
-    g = pp.GazeData.from_eyelink("recording.edf")    # gaze only
+    p = d.drop_data(variables=["x", "y"])   # pupil only
 
 The result contains all samples, all messages (as events), the screen
 resolution and the calibration/validation results (as
@@ -55,8 +54,8 @@ constructors as arrays:
         name="subject01",
     )
 
-Any of the eyes or variables can be left out. :class:`PupilData` and
-:class:`GazeData` take the corresponding subset of arguments. Gaps in the
+Any of the eyes or variables can be left out (e.g., only ``left_pupil``
+for pupil data without gaze); the x and y of an eye go together. Gaps in the
 time vector (e.g., when recording was paused) are filled with masked
 samples, so the samples are evenly spaced.
 

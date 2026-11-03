@@ -1,156 +1,20 @@
 from loguru import logger
-from .generic import GenericEyeData, keephistory
-from .eyedatadict import EyeDataDict, _without_layer
-from ..plot import GazePlotter
+from .generic import keephistory
+from .eyedatadict import _without_layer
 from ..intervals import Intervals
 import numpy as np
 import json
-from typing import Optional, Dict
-from .spatial_calibration import SpatialCalibration
 from .experimental_setup import ExperimentalSetup
 
 
-class GazeData(GenericEyeData):
+class _GazeMethods:
     """
-    Class representing Eye-Tracking data (x,y) from one or two eyes.
+    Methods of :class:`~pypillometry.EyeData` for gaze data.
 
-    If you also want to store pupil-size, use the :class:`~pypillometry.EyeData` class.
-    If you only want to store pupil-size, use the :class:`~pypillometry.PupilData` class.
-
-    Properties such as :attr:`~pypillometry.GenericEyeData.eyes` and
-    :attr:`~pypillometry.GenericEyeData.variables` are inherited from
-    :class:`~pypillometry.GenericEyeData`.
-
-    Parameters
-    ----------
-    time : np.ndarray or None
-        timing array (in ms) or `None`, in which case the time-array goes from [0,maxT]
-        using `sampling_rate`
-    left_x, left_y : np.ndarray or None
-        data from left eye (at least one of the eyes must be provided, both x and y)
-    right_x, right_y : np.ndarray or None
-        data from right eye (at least one of the eyes must be provided, both x and y)
-    event_onsets : np.ndarray or None
-        time-onsets of any events in the data (in ms, matched in `time` vector)
-    event_labels : np.ndarray or None
-        for each event in `event_onsets`, provide a label
-    sampling_rate : float or None
-        sampling-rate of the signal in Hz; if `None`, it is estimated from
-        the median difference in `time` (either `time` or `sampling_rate`
-        must be provided)
-    experimental_setup : ExperimentalSetup, optional
-        Geometric model of the experimental setup including screen geometry,
-        eye position, camera position, and screen orientation.
-    name : str or None
-        name of the dataset or `None` (in which case a random string is selected)
-    calibration : dict, optional
-        Dictionary of SpatialCalibration objects, one per eye (keys: 'left', 'right')
-    fill_time_discontinuities : bool
-        sometimes, when the eyetracker loses signal, no entry in the EDF is made; 
-        when this option is True, such entries will be made and the signal set to 0 there
-        (or do it later using `fill_time_discontinuities()`)
-    keep_orig : bool
-        keep a copy of the original dataset? If `True`, a copy of the object
-        as initiated in the constructor is stored in member `original`
-    info : dict or None
-        optional dictionary with additional information about the dataset
-        (stored in member `info`)
-    inplace : bool or None
-        default for methods called with `inplace=None`: if True, they modify the
-        object in place; if False, they return a modified copy; if None (default),
-        use the package-level setting (see :func:`~pypillometry.set_default_inplace`,
-        initially True). The method-level `inplace` argument overrides this.
+    Internal: not a data class (no state and no constructor). The methods
+    that need gaze data (x and y) raise a ValueError if there is none.
     """
-    # state (see pypillometry.state): adds to that of GenericEyeData
-    _STATE_FIELDS = (("experimental_setup", "ExperimentalSetup"),
-                     ("calibration", "dict:SpatialCalibration"))
 
-    def __init__(self, 
-                    time: np.ndarray = None,
-                    left_x: np.ndarray = None,
-                    left_y: np.ndarray = None,
-                    right_x: np.ndarray = None,
-                    right_y: np.ndarray = None,
-                    event_onsets: np.ndarray = None,
-                    event_labels: np.ndarray = None,
-                    sampling_rate: float = None,
-                    experimental_setup: Optional[ExperimentalSetup] = None,
-                    name: str = None,
-                    calibration: Optional[Dict[str, SpatialCalibration]] = None,
-                    fill_time_discontinuities: bool = True,
-                    keep_orig: bool = False,
-                    info: dict = None,
-                    inplace: Optional[bool] = None):
-        """Constructor for the GazeData class.
-        """
-        if (left_x is None and left_y is None and right_x is None and right_y is None):
-            raise ValueError("At least one eye-trace (both x and y coordinates) must be provided")
-            
-        # Initialize data dictionary
-        self.data=EyeDataDict(left_x=left_x, left_y=left_y, right_x=right_x, right_y=right_y)
-        
-        self._init_common(time, sampling_rate, 
-                          event_onsets, event_labels, 
-                          name, fill_time_discontinuities, 
-                          info=info, inplace=inplace)
-        
-        # Experimental setup (geometry)
-        self.experimental_setup = experimental_setup
-        
-        # Spatial calibration data
-        self.calibration = calibration
-
-        self.original=None
-        if keep_orig: 
-            self.original=self.copy()
-
-    @property
-    def plot(self):
-        """Plotting functions for this object (a :class:`~pypillometry.GazePlotter`)."""
-        return GazePlotter(self)
-
-    def summary(self):
-        """
-        Return a summary of the dataset as a dictionary.
-
-        Returns
-        -------
-        dict
-            dictionary containing description of dataset
-        """
-        # Experimental setup info
-        if self.experimental_setup is not None:
-            setup_info = self.experimental_setup.summary()
-        else:
-            setup_info = "not set"
-
-        # Calibration info
-        if self.calibration is not None:
-            calibration_info = {
-                eye: cal.get_stats() for eye, cal in self.calibration.items()
-            }
-        else:
-            calibration_info = "not available"
-        
-        summary=dict(
-            name=self.name, 
-            n=len(self.data),
-            sampling_rate=self.fs,
-            eyes=self.eyes,
-            data=list(self.data.keys()),
-            nevents=self.nevents(), 
-            experimental_setup=setup_info,
-            calibration=calibration_info,
-            duration_minutes=self.get_duration("min"),
-            start_min=self.tx.min()/1000./60.,
-            end_min=self.tx.max()/1000./60.,
-            params=self._strfy_params()
-        )
-        if self._excluded_mask().any():
-            summary["excluded_minutes"] = self.excluded_duration("min")
-
-        return summary
-    
     @keephistory
     def set_experimental_setup(self, **kwargs):
         """
@@ -247,7 +111,7 @@ class GazeData(GenericEyeData):
         
         Returns
         -------
-        GazeData or Intervals
+        EyeData or Intervals
             If apply_mask=True: returns the object for chaining.
             If apply_mask=False: returns Intervals object containing detected divergence intervals.
         
@@ -271,6 +135,7 @@ class GazeData(GenericEyeData):
         >>> # Only check non-masked data points
         >>> gaze_data = gaze_data.mask_eye_divergences(ignore_existing_mask=False)
         """
+        self._require("x", "y")
         obj = self._get_inplace(inplace)
         
         # Check that both eyes are available
@@ -384,7 +249,7 @@ class GazeData(GenericEyeData):
         
         Returns
         -------
-        GazeData or dict of Intervals
+        EyeData or dict of Intervals
             If apply_mask=True: returns self for chaining.
             If apply_mask=False: returns dict of Intervals objects (one per eye) containing 
             detected offscreen intervals.
@@ -403,6 +268,7 @@ class GazeData(GenericEyeData):
         >>> # Check all data including already masked points (e.g., during blinks)
         >>> gaze_data = gaze_data.mask_offscreen_coords(ignore_existing_mask=True)
         """
+        self._require("x", "y")
         obj = self._get_inplace(inplace)
         
         # Require experimental_setup for screen limits

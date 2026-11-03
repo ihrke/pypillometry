@@ -153,12 +153,12 @@ class TestExcluded(unittest.TestCase):
         self.assertEqual(len(r.get_excluded()), 0)
         self.assertFalse(r._excluded_mask().any())
 
-    def test_to_pupildata_gazedata_and_summary(self):
+    def test_drop_data_and_summary(self):
         d = _make_data().exclude_intervals([(7000, 8000)])
-        p = d.to_pupildata("left")
+        p = d.drop_data(eyes="right", variables=["x", "y"])
         np.testing.assert_array_equal(p.get_excluded().intervals, [(7000, 8000)])
         self.assertTrue(p.data.mask["left_pupil"][1000:1500].all())
-        g = d.to_gazedata("left")
+        g = d.drop_data(eyes="right", variables="pupil")
         np.testing.assert_array_equal(g.get_excluded().intervals, [(7000, 8000)])
         self.assertAlmostEqual(d.summary()["excluded_minutes"], 1 / 60)
         self.assertNotIn("excluded_minutes", _make_data().summary())

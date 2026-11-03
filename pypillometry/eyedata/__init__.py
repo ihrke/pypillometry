@@ -2,21 +2,20 @@
 eyedata.py
 ==========
 
-Module containing classes for handling eye data. Several different classes are available for handling
-different types of eye data.
+Module containing the class for handling eye data.
 
-- :class:`PupilData`: If you have only pupillometric data, use this class.
-- :class:`GazeData`: If you only have gaze data, use this class.
-- :class:`EyeData`: If you have both gaze and pupillometric data, use this class.
+- :class:`EyeData`: pupil and/or gaze data of one or two eyes (any set of
+  channels, e.g. only pupil data).
 
-These classes inherit from :class:`GenericEyeData`, which provides some basic, shared functionality 
-for handling eye data.
+It inherits from :class:`GenericEyeData`, which provides the basic, shared
+functionality; the methods for pupil and gaze data are defined in the
+modules `pupildata` and `gazedata`.
 
-The data inside each of these classes is stored in the `data` attribute, which is a dictionary-like object
+The data are stored in the `data` attribute, which is a dictionary-like object
 of type :class:`EyeDataDict`. 
 
-Each of these classes provides access to a matching plotter object (from module :mod:`pypillometry.plot`) 
-that is stored in the `plot` attribute.
+The plotting methods (module :mod:`pypillometry.plot`) are available in the
+`plot` attribute.
 
 Calibration classes:
 
@@ -32,14 +31,12 @@ Simulation classes:
 - :class:`FakeEyeData`: Synthetic eye-tracking data for testing and validation.
 """
 
-__all__ = ["EyeDataDict", "MaskPolicy", "GenericEyeData","GazeData","PupilData", "EyeData", 
+__all__ = ["EyeDataDict", "MaskPolicy", "GenericEyeData", "EyeData", 
            "SpatialCalibration", "ForeshorteningCalibration", "FakeEyeData",
            "ExperimentalSetup", "keephistory"]
 
 from .eyedatadict import EyeDataDict, MaskPolicy
 from .generic import GenericEyeData, keephistory
-from .gazedata import GazeData
-from .pupildata import PupilData
 from .eyedata import EyeData
 from .spatial_calibration import SpatialCalibration
 from .foreshortening_calibration import ForeshorteningCalibration
