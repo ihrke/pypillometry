@@ -127,6 +127,27 @@ def _check_per_pair(pairs, mean, sd):
             raise ValueError("mean and sd must be provided for each variable")
 
 
+def _decimate_factor(fs, fsd, dsfac):
+    """Decimate factor for :meth:`GenericEyeData.downsample` (checks the arguments)."""
+    what = "decimate factor" if dsfac else "sampling rate in Hz"
+    if isinstance(fsd, bool) or not isinstance(fsd, numbers.Real) or not np.isfinite(fsd):
+        raise TypeError(f"fsd must be a finite number (the {what}), got {fsd!r}")
+    if dsfac:
+        if fsd < 1 or fsd != int(fsd):
+            raise ValueError(f"the decimate factor must be a positive integer, got {fsd}")
+        return int(fsd)
+    if not 0 < fsd <= fs:
+        raise ValueError(f"fsd must be a sampling rate in Hz above 0 and at most "
+                         f"the current rate ({fs} Hz), got {fsd}")
+    ratio = fs / fsd
+    if np.isclose(ratio, round(ratio)):
+        return int(round(ratio))
+    factor = int(ratio)
+    logger.warning(f"{fs} Hz is not a multiple of {fsd} Hz: decimating by {factor}, "
+                   f"the new sampling rate is {fs/factor:g} Hz")
+    return factor
+
+
 class GenericEyeData(state.VersionedState, ABC):
     """
     Generic class for eyedata. 
@@ -2294,8 +2315,9 @@ class GenericEyeData(state.VersionedState, ABC):
             new sampling-rate (in Hz) or decimate-factor
         dsfac : bool, optional
             if False (default), `fsd` is the requested sampling rate (the
-            decimate factor is ``int(fs/fsd)``);
-            if True, `fsd` is the decimate factor
+            decimate factor is ``int(fs/fsd)``; a warning is logged if
+            `fs/fsd` is not an integer);
+            if True, `fsd` is the decimate factor (a positive integer)
         inplace : bool or None, optional
             if `True`, make change in-place and return the object;
             if `False`, make and return copy before making changes;
@@ -2305,15 +2327,17 @@ class GenericEyeData(state.VersionedState, ABC):
         -------
         :class:`~pypillometry.GenericEyeData`
             the downsampled object (`self` or a copy, depending on `inplace`)
-        """
-        obj = self._get_inplace(inplace)
 
-        if dsfac:
-            dsfac=fsd
-        else:
-            dsfac=int(obj.fs/fsd) # calculate downsampling factor
-            
-        dsfac=int(dsfac)
+        Raises
+        ------
+        TypeError
+            if `fsd` is not a number
+        ValueError
+            if the sampling rate `fsd` is not above 0 and at most `fs`, or
+            the decimate factor is not a positive integer
+        """
+        dsfac=_decimate_factor(self.fs, fsd, dsfac)
+        obj = self._get_inplace(inplace)
         # downsample all of the variables/eyes in the data; masked samples are
         # left out of the window means, and a new sample is masked only if all
         # samples in its window were masked; it then holds the mean of the

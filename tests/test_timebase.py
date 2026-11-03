@@ -39,5 +39,38 @@ class TestDownsampleRate(unittest.TestCase):
         self.assertAlmostEqual(x.fs, actual_fs(x))
 
 
+class TestDownsampleArguments(unittest.TestCase):
+
+    def test_bad_rates(self):
+        d = make()
+        for fsd in (0, -10, 2000):
+            with self.assertRaisesRegex(ValueError, "sampling rate in Hz"):
+                d.downsample(fsd, inplace=False)
+        with self.assertRaisesRegex(TypeError, "fsd must be a finite number"):
+            d.downsample("100 Hz", inplace=False)
+        for fsd in (np.inf, np.nan):
+            with self.assertRaisesRegex(TypeError, "fsd must be a finite number"):
+                d.downsample(fsd, inplace=False)
+
+    def test_bad_factors(self):
+        d = make()
+        for fac in (0, -2, 2.5):
+            with self.assertRaisesRegex(ValueError, "positive integer"):
+                d.downsample(fac, dsfac=True, inplace=False)
+
+    def test_same_rate_is_a_copy(self):
+        d = make()
+        x = d.downsample(1000, inplace=False)
+        self.assertEqual(x.fs, 1000.)
+        np.testing.assert_array_equal(x.tx, d.tx)
+
+    def test_float_noise_in_ratio(self):
+        # 1000/(1000/15) is 14.999999999999998 in floating point
+        d = make()
+        x = d.downsample(1000. / 15, inplace=False)
+        self.assertEqual(len(x), int(np.ceil(len(d) / 15)))
+        self.assertAlmostEqual(x.fs, 1000. / 15)
+
+
 if __name__ == "__main__":
     unittest.main()
