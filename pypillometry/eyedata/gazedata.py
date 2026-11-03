@@ -229,6 +229,9 @@ class GazeData(GenericEyeData):
             - "pixel": threshold is the maximum allowed distance in pixels
         store_as : str or None, default=None
             Variable name to store the distance timeseries. If None, distance is not stored.
+            The distance is stored for both eyes (``left_<store_as>`` and
+            ``right_<store_as>``, the same values), masked where one of the
+            coordinates is masked or the eyes diverge.
         apply_mask : bool, default=True
             If True, apply detected divergences as masks to the data and return self.
             If False, return detected divergences as an Intervals object.
@@ -316,18 +319,17 @@ class GazeData(GenericEyeData):
         # Convert mask to intervals
         intervals_list = obj._mask_to_intervals_list(divergence_mask)
         
-        # Store distance as a timeseries if requested
+        # Store distance as a timeseries if requested: as variable `store_as`
+        # of both eyes (a key without an eye would be taken for an eye),
+        # masked where any of the coordinates is masked or the eyes diverge
         if store_as is not None:
-            dist_copy = dist.copy()
-            dist_copy.mask |= divergence_mask
-            # If we ignored existing masks for calculation, still apply them to stored result
-            if ignore_existing_mask:
-                # Combine masks from all source variables
-                original_mask = np.logical_or.reduce(
-                    [obj.data._compat_mask(k, ["divergence"])
-                     for k in ("left_x", "left_y", "right_x", "right_y")])
-                dist_copy.mask |= original_mask
-            obj[store_as] = dist_copy
+            source_mask = np.logical_or.reduce(
+                [obj.data._compat_mask(k, ["divergence"])
+                 for k in ("left_x", "left_y", "right_x", "right_y")])
+            for eye in ("left", "right"):
+                key = f"{eye}_{store_as}"
+                obj.data.set_with_mask(key, np.ma.getdata(dist), mask=source_mask)
+                obj.data.set_layer(key, "divergence", divergence_mask, replace=True)
         
         # Create Intervals object for the detected divergences
         intervals_obj = Intervals(

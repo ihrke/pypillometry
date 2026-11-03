@@ -335,3 +335,17 @@ Changes of the API calls alone (same numbers) need no entry.
   count as an existing mask. `clear_layer("divergence")` removes it.
 - **Why**: detectors replace their own layer (refactor plan 2.2).
 - **Step**: 5, `refactor/05-mask-layers`
+
+### `mask_eye_divergences(store_as=...)` stores the distance for both eyes
+
+- **Case**: none (the reference cases do not store the distance)
+- **Change**: `store_as="dist"` stores the distance as `left_dist` and
+  `right_dist` (the same values) instead of under the key `"dist"`, which
+  was taken for an eye (`d.eyes` was `[..., "dist"]`; `crop` and
+  `downsample` raised, finding 5.3). The stored distance is masked where
+  one of the coordinates is masked (other layers) and has the
+  `divergence` layer where the eyes diverge (before: all of it in one
+  mask). Its values are as before.
+- **Why**: every channel is `<eye>_<variable>`; the distance belongs to
+  the pair of eyes, and storing it with each eye keeps it a variable.
+- **Step**: 5, `refactor/05-mask-layers`
