@@ -14,7 +14,8 @@ from ..io import download
 from .eyedatadict import EyeDataDict, _join_key
 from .experimental_setup import ExperimentalSetup
 from ..signal import baseline
-from ..intervals import stat_event_interval, Intervals
+from ..intervals import stat_event_interval, Intervals, _as_intervals
+from ..epochs import Epochs
 from ..events import Events, _pair_with_next
 from ..logging import logging_get_level
 from .. import config
@@ -1166,13 +1167,13 @@ class GenericEyeData(state.VersionedState, ABC):
 
     def _as_spans(self, intervals):
         """
-        Intervals from `intervals`: an Intervals object (returned as it is)
-        or a list of ``(start, end)`` tuples in ms (or with units), where
+        Intervals from `intervals`: an Intervals object (returned as it is),
+        Epochs (their spans in ms) or a list of ``(start, end)`` tuples in ms (or with units), where
         ``-np.inf`` and ``np.inf`` stand for the start and the end of the
         recording.
         """
-        if isinstance(intervals, Intervals):
-            return intervals
+        if isinstance(intervals, (Intervals, Epochs)):
+            return _as_intervals(intervals)
         bounds = {-np.inf: float(self.tx[0]),
                   np.inf: float(_samples_to_ms(self, len(self.tx)))}
 
@@ -2737,10 +2738,10 @@ class GenericEyeData(state.VersionedState, ABC):
 
         Parameters
         ----------
-        intervals : Intervals, optional
-            Intervals object to use, in any time units or in sample indices
-            (``units="samples"``, the default of :meth:`get_intervals`). If
-            provided, window and event_select are ignored.
+        intervals : Intervals or Epochs, optional
+            Intervals object (in any time units or in sample indices) or
+            :class:`~pypillometry.Epochs` (e.g., from :meth:`get_intervals`).
+            If provided, window and event_select are ignored.
         window : tuple (min,max) or Quantity, optional
             time-window relative to event-onset (0 is event-onset), e.g.
             ``(-200, 0) * u.ms``; plain numbers are in units given by `units`.
@@ -2776,9 +2777,7 @@ class GenericEyeData(state.VersionedState, ABC):
         
         # Accept either Intervals object or old-style parameters
         if intervals is not None:
-            if not isinstance(intervals, Intervals):
-                raise TypeError("intervals must be an Intervals object")
-            intervs = intervals
+            intervs = _as_intervals(intervals)
         else:
             if event_select is None:
                 raise ValueError("Must provide either 'intervals' or 'event_select' "
@@ -2889,12 +2888,14 @@ class GenericEyeData(state.VersionedState, ABC):
 
         Parameters
         ----------
-        intervals : Intervals or dict
+        intervals : Intervals, Epochs or dict
             Either:
 
-            - A single Intervals object: applied to all specified eyes/variables
-            - A dict of Intervals: keys like "left_pupil", "right_x", etc.
-              When dict is provided, `eyes` and `variables` are ignored.
+            - A single Intervals (or :class:`~pypillometry.Epochs`) object:
+              applied to all specified eyes/variables
+            - A dict of Intervals (or Epochs): keys like "left_pupil",
+              "right_x", etc. When dict is provided, `eyes` and `variables`
+              are ignored.
         eyes : str or list of str, optional
             eye(s) to apply mask to (e.g., ``["left", "right"]``);
             if empty, all available eyes. Ignored if `intervals` is a dict.
@@ -2942,9 +2943,7 @@ class GenericEyeData(state.VersionedState, ABC):
 
         n = len(obj.tx)
         for key, interval_obj in per_key.items():
-            if not isinstance(interval_obj, Intervals):
-                raise TypeError(f"intervals must be Intervals objects (or a dict of them), "
-                                f"got {type(interval_obj)} for '{key}'")
+            interval_obj = _as_intervals(interval_obj, f"intervals for '{key}'")
             if key not in obj.data.data:
                 logger.warning(f"Key '{key}' not found in data, skipping")
                 continue
@@ -2968,12 +2967,14 @@ class GenericEyeData(state.VersionedState, ABC):
 
         Parameters
         ----------
-        intervals : Intervals or dict
+        intervals : Intervals, Epochs or dict
             Either:
 
-            - A single Intervals object: applied to all specified eyes/variables
-            - A dict of Intervals: keys like "left_pupil", "right_x", etc.
-              When dict is provided, `eyes` and `variables` are ignored.
+            - A single Intervals (or :class:`~pypillometry.Epochs`) object:
+              applied to all specified eyes/variables
+            - A dict of Intervals (or Epochs): keys like "left_pupil",
+              "right_x", etc. When dict is provided, `eyes` and `variables`
+              are ignored.
         eyes : str or list of str, optional
             eye(s) to interpolate; if empty, all available eyes.
             Ignored if `intervals` is a dict.
@@ -3135,18 +3136,14 @@ class GenericEyeData(state.VersionedState, ABC):
         # Handle dict vs single Intervals
         if isinstance(intervals, dict):
             for key, interval_obj in intervals.items():
-                if not isinstance(interval_obj, Intervals):
-                    raise TypeError(f"Dict values must be Intervals objects, got {type(interval_obj)}")
-                
+                interval_obj = _as_intervals(interval_obj, f"intervals for '{key}'")
                 if key not in obj.data.data:
                     logger.warning(f"Key '{key}' not found in data, skipping")
                     continue
                 
                 interpolate_single_key(key, interval_obj)
         else:
-            if not isinstance(intervals, Intervals):
-                raise TypeError(f"intervals must be Intervals or dict, got {type(intervals)}")
-            
+            intervals = _as_intervals(intervals)
             for eye, var in obj.data.select(eyes, variables):
                 interpolate_single_key(f"{eye}_{var}", intervals)
         
@@ -3195,10 +3192,10 @@ class GenericEyeData(state.VersionedState, ABC):
 
         Parameters
         ----------
-        intervals : Intervals or list of tuple
+        intervals : Intervals, Epochs or list of tuple
             the periods to exclude: an :class:`~pypillometry.Intervals`
             object (e.g., from :meth:`get_intervals`; in time units or sample
-            indices) or a list of ``(start, end)`` tuples (in ms, or with
+            indices), :class:`~pypillometry.Epochs` or a list of ``(start, end)`` tuples (in ms, or with
             units, e.g., ``[(0, 2 * u.min)]``; ``-np.inf`` and ``np.inf``
             stand for the start and end of the recording); ends are exclusive
         inplace : bool or None, optional
@@ -3247,10 +3244,10 @@ class GenericEyeData(state.VersionedState, ABC):
 
         Parameters
         ----------
-        intervals : Intervals or list of tuple
+        intervals : Intervals, Epochs or list of tuple
             the periods to keep: an :class:`~pypillometry.Intervals`
             object (e.g., from :meth:`get_intervals`; in time units or sample
-            indices) or a list of ``(start, end)`` tuples (in ms, or with
+            indices), :class:`~pypillometry.Epochs` or a list of ``(start, end)`` tuples (in ms, or with
             units; ``-np.inf`` and ``np.inf`` stand for the start and end of
             the recording); ends are exclusive
         inplace : bool or None, optional
@@ -3371,9 +3368,10 @@ class GenericEyeData(state.VersionedState, ABC):
 
         Parameters
         ----------
-        intervals : Intervals or list of tuple
+        intervals : Intervals, Epochs or list of tuple
             the periods to remove: an :class:`~pypillometry.Intervals`
-            object (in time units or sample indices) or a list of
+            object (in time units or sample indices),
+            :class:`~pypillometry.Epochs` or a list of
             ``(start, end)`` tuples (in ms, or with units, e.g.,
             ``[(10 * u.min, 12 * u.min)]``; ``-np.inf`` and ``np.inf`` stand
             for the start and end of the recording); ends are exclusive

@@ -1,6 +1,6 @@
 from typing import Iterable, Optional, Tuple, Union
 from ..eyedata import GenericEyeData
-from ..intervals import Intervals
+from ..intervals import Intervals, _as_intervals
 from ..units import parse_time, normalize_unit
 import numpy as np
 from loguru import logger
@@ -92,9 +92,10 @@ class GenericPlotter:
 
         Parameters
         ----------
-        intervals : Intervals
-            :class:`~pypillometry.Intervals` object containing the intervals
-            to plot (from :meth:`~pypillometry.GenericEyeData.get_intervals`)
+        intervals : Intervals or Epochs
+            the intervals to plot (e.g., from
+            :meth:`~pypillometry.GenericEyeData.get_intervals`); Epochs are
+            plotted in ms, with a line at each event onset
         eyes : str or list
             eyes to plot; if empty, all available eyes are plotted
         variables : str or list
@@ -122,7 +123,8 @@ class GenericPlotter:
         Raises
         ------
         TypeError
-            if `intervals` is not an :class:`~pypillometry.Intervals` object
+            if `intervals` is not an :class:`~pypillometry.Intervals` or
+            :class:`~pypillometry.Epochs` object
 
         Examples
         --------
@@ -138,8 +140,7 @@ class GenericPlotter:
            >>> d.plot.plot_intervals(intervals, variables="pupil", nrow=2, ncol=5,
            ...                       figsize=(12, 4))
         """
-        if not isinstance(intervals, Intervals):
-            raise TypeError("intervals must be an Intervals object. Use get_intervals() to create one.")
+        intervals = _as_intervals(intervals)
         
         obj = self.obj  # PupilData object
         nsubplots = nrow * ncol  # number of subplots per figure

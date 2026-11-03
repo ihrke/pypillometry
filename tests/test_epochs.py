@@ -106,3 +106,56 @@ class TestSpans:
         df = make_epochs().as_pandas()
         assert list(df.columns) == ["onset", "start", "end", "label", "trial"]
         assert df["start"].tolist() == [800., 2800., 4800.]
+
+
+class TestMethodsAcceptEpochs:
+    """The methods that take spans accept Epochs (their spans in ms)."""
+
+    def make(self):
+        n = 1000
+        return pp.EyeData(left_pupil=np.arange(n) * 1., left_x=np.zeros(n),
+                          left_y=np.zeros(n), sampling_rate=100,
+                          event_onsets=[1000, 5000], event_labels=["a", "b"])
+
+    def epochs(self):
+        return pp.Epochs([1000, 5000], (-200, 300))
+
+    def test_mask_intervals(self):
+        d = self.make().mask_intervals(self.epochs(), eyes="left", variables="pupil",
+                                       inplace=False)
+        expected = np.zeros(1000, dtype=bool)
+        expected[80:130] = expected[480:530] = True
+        np.testing.assert_array_equal(d.data.mask["left_pupil"].astype(bool), expected)
+        d = self.make().mask_intervals({"left_x": self.epochs()}, inplace=False)
+        assert d.data.mask["left_x"].sum() == 100
+
+    def test_interpolate_intervals(self):
+        d = self.make().interpolate_intervals(self.epochs(), eyes="left",
+                                              variables="pupil", inplace=False)
+        assert d.data.mask["left_pupil"].sum() == 100
+
+    def test_exclude_and_remove(self):
+        d = self.make()
+        assert d.exclude_intervals(self.epochs(), inplace=False).get_excluded().intervals \
+            == [(800., 1300.), (4800., 5300.)]
+        assert len(d.remove_intervals(self.epochs(), inplace=False).tx) == 900
+
+    def test_stat_per_event(self):
+        d = self.make()
+        st = d.stat_per_event(self.epochs(), eyes="left", variables="pupil")
+        np.testing.assert_allclose(st["left_pupil"], [104.5, 504.5])
+        st2 = d.stat_per_event(self.epochs().to_intervals(), eyes="left",
+                               variables="pupil")
+        np.testing.assert_array_equal(st["left_pupil"], st2["left_pupil"])
+
+    def test_plot_intervals(self):
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+        figs = self.make().plot.plot_intervals(self.epochs(), nrow=1, ncol=2)
+        assert len(figs) == 1
+        plt.close("all")
+
+    def test_type_error(self):
+        with pytest.raises(TypeError, match="must be Intervals or Epochs, got list"):
+            self.make().mask_intervals([(0, 100)])

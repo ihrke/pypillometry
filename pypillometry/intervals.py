@@ -8,6 +8,7 @@ from pypillometry.units import (UNSET, _has_units, _time_values_and_units, parse
                                 _ms_to_samples, _samples_to_ms)
 from pypillometry.state import Stateful
 from pypillometry.events import _meta_dict, _concat_meta
+from pypillometry.epochs import Epochs
 
 __all__ = [
     "Intervals", "merge_intervals",
@@ -186,6 +187,15 @@ def _check_pairs(pairs):
             raise ValueError(f"interval {i} is {pair}; start and end must be finite")
         if start > end:
             raise ValueError(f"interval {i} is {pair}; its start is after its end")
+
+
+def _as_intervals(obj, what="intervals"):
+    """`obj` as Intervals: Intervals as they are, Epochs converted to spans in ms."""
+    if isinstance(obj, Intervals):
+        return obj
+    if isinstance(obj, Epochs):
+        return obj.to_intervals()
+    raise TypeError(f"{what} must be Intervals or Epochs, got {type(obj).__name__}")
 
 
 def stat_event_interval(tx,sy,intervals,statfct=np.mean):
