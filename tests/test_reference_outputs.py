@@ -501,13 +501,26 @@ def _downsampled_masked(case_id, key, stored):
     return int(_downsampled_mask(case_id, mkey, load_arrays(case_id)[mkey]).sum())
 
 
+def _quality_other(case_id, key, stored):
+    """`artifacts.<eye>.other_pct` after interpolation (step 5): interpolated
+    samples (and blinks) are not "other artifacts". In case b, every masked
+    pupil sample is interpolated, so nothing is left."""
+    if not key.endswith(".other_pct"):
+        return stored
+    scalars = load_reference()["cases"][case_id]["scalars"]
+    group = key.rsplit(".", 1)[0]
+    assert scalars[f"{group}.pupil_masked_pct"] == scalars[f"{group}.interpolated_pct"]
+    return 0.0
+
+
 #: intended changes (see CHANGES.md): (case id prefix, result key prefix) ->
 #: function mapping (case id, key, stored reference value) to the expected value
 CHANGED = {("e.segments.", "tx."): lambda case_id, key, stored: _segment_time_axis(stored),
            ("g.downsample.", "interpolated."): _downsampled_runs,
            ("g.downsample.", "blinks."): _downsampled_runs,
            ("g.downsample.", "mask."): _downsampled_mask,
-           ("g.downsample.", "masked."): _downsampled_masked}
+           ("g.downsample.", "masked."): _downsampled_masked,
+           ("f.quality.", "artifacts."): _quality_other}
 
 
 def expected_value(case_id, key, stored):

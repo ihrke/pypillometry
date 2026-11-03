@@ -371,3 +371,25 @@ Changes of the API calls alone (same numbers) need no entry.
 - **Why**: one store for masks (finding D1); NaN is read from the values
   (refactor plan 2.2) except where a filter filled it (step 7).
 - **Step**: 5, `refactor/05-mask-layers`
+
+### Quality report: masked time by layer; interpolation is not "other artifacts"
+
+- **Case**: `f.quality.{rlmw,synth}.interp`, keys
+  `artifacts.{left,right}.other_pct` (expected value 0 is computed in
+  `tests/test_reference_outputs.py`, `_quality_other`: in case b every
+  masked pupil sample is interpolated): rlmw 2.50 -> 0 (left), 1.62 -> 0
+  (right); synth 0.93 -> 0, 0.69 -> 0. All other numbers are unchanged.
+- **Change**: `other_pct` counts the masked samples that are not missing
+  (NaN, or NaN before a filter filled them), not in a blink and not
+  interpolated. Before, the interpolated samples around a blink (the
+  margins of `pupil_blinks_interpolate`) were counted as other artifacts
+  (finding 5.8), and so were NaN filled by `pupil_lowpass_filter` (so a
+  report after filtering alone no longer has the artifacts section). The
+  artifacts section has new metrics for the masked time per layer, shown
+  when the layer exists: `offscreen_pct`, `divergence_pct` and
+  `user_pct` (samples where the layer is set for any variable of the eye).
+  `pupil_masked_pct`/`gaze_masked_pct` are unchanged (the mask that the
+  analyses use until step 7: interpolated samples count as masked).
+- **Why**: the layers say why a sample is masked, so the report does not
+  have to guess (finding D1).
+- **Step**: 5, `refactor/05-mask-layers`
