@@ -282,7 +282,8 @@ class TestBlinkLayer:
     def test_set_blinks_none_and_clear_layer_unmask(self):
         d = blink_data()
         nan = np.isnan(d.data["left_pupil"])
-        for undo in (lambda d: d.set_blinks(None, eyes="left", variables="pupil"),):
+        for undo in (lambda d: d.set_blinks(None, eyes="left", variables="pupil"),
+                     lambda d: d.clear_layer("blink")):
             d.pupil_blinks_detect(apply_mask=True)
             assert d.data.mask["left_pupil"].sum() > nan.sum()
             undo(d)
@@ -324,6 +325,6 @@ class TestBlinkLayer:
         e = state.from_state(st)
         np.testing.assert_array_equal(e.data.mask["left_pupil"], d.data.mask["left_pupil"])
         assert e.get_blinks("left", "pupil").intervals == d.get_blinks("left", "pupil").intervals
-        e.set_blinks(None)
+        e.clear_layer("blink")
         np.testing.assert_array_equal(e.data.mask["left_pupil"].astype(bool),
                                       np.isnan(e.data["left_pupil"]))

@@ -934,6 +934,9 @@ class GenericEyeData(state.VersionedState, ABC):
         """
         Clear a mask layer (e.g., ``"blink"``) for the selected channels.
 
+        Clearing ``"blink"`` removes the blinks and their mask (e.g., to
+        undo :meth:`~pypillometry.PupilData.pupil_blinks_detect`).
+
         Parameters
         ----------
         name : str
@@ -953,8 +956,11 @@ class GenericEyeData(state.VersionedState, ABC):
             the object without the layer (`self` or a copy, depending on `inplace`)
         """
         obj = self._get_inplace(inplace)
+        # the mask of applied blinks goes with the blinks
+        names = [name, "_blink_applied"] if name == "blink" else [name]
         for eye, var in obj.data.select(eyes, variables):
-            obj.data.clear_layer(f"{eye}_{var}", name)
+            for n in names:
+                obj.data.clear_layer(f"{eye}_{var}", n)
         return obj
 
     def mask_as_intervals(self, eyes: str|list = [], variables: str|list = [], 
