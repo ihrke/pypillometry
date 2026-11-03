@@ -264,14 +264,24 @@ class GenericEyeData(state.VersionedState, ABC):
     inplace: Optional[bool] ## whether to make changes in-place (None: package default)
     info: dict ## optional info about the dataset
     params: dict ## parameters 
+    experimental_setup: Optional[ExperimentalSetup] ## geometry of the setup (or None)
+    calibration: Optional[dict] ## SpatialCalibration per eye (or None)
 
     # state (see pypillometry.state); subclasses add their own fields
     _STATE_FIELDS = (
         "name", "fs", "tx", ("data", "EyeDataDict"), ("events", "Events", "_events"),
-        "params", "history", "inplace", "info", ("original", "versioned"))
+        "params", "history", "inplace", "info", ("original", "versioned"),
+        ("experimental_setup", "ExperimentalSetup"),
+        ("calibration", "dict:SpatialCalibration"))
     # EyeDataDicts with one value per sample; the operations that change
     # the samples (_keep_samples, _decimate, _insert_samples) apply to all
     _SAMPLE_ALIGNED = ("data",)
+
+    def _set_state(self, st: dict):
+        # PupilData states of development versions of format 3 (before
+        # 2.2) have no experimental setup and calibration; this can be
+        # removed before 2.2 is released
+        super()._set_state({"experimental_setup": None, "calibration": None, **st})
 
     @abstractmethod
     def __init__():
@@ -285,7 +295,9 @@ class GenericEyeData(state.VersionedState, ABC):
                     name: str|None,
                     fill_time_discontinuities: bool,
                     inplace: Optional[bool],
-                    info: dict = None):
+                    info: dict = None,
+                    experimental_setup: Optional[ExperimentalSetup] = None,
+                    calibration: Optional[dict] = None):
         """
         Common code for the child-classes of GenericEyeData.
         Assumes that self.data is already set and filled.
@@ -332,6 +344,10 @@ class GenericEyeData(state.VersionedState, ABC):
 
         ## set info
         self.info = info if info is not None else {}
+
+        ## experimental setup (geometry) and spatial calibration data
+        self.experimental_setup = experimental_setup
+        self.calibration = calibration
 
         ## fill in time discontinuities (part of construction, so bypass
         ## @keephistory and keep it out of the history)

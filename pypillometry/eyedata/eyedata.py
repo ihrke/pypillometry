@@ -123,13 +123,9 @@ class EyeData(GazeData,PupilData):
         self._init_common(time, sampling_rate, 
                           event_onsets, event_labels, 
                           name, fill_time_discontinuities, 
-                          info=info, inplace=inplace)
-        
-        # Experimental setup (geometry)
-        self.experimental_setup = experimental_setup
-        
-        # Spatial calibration data
-        self.calibration = calibration
+                          info=info, inplace=inplace,
+                          experimental_setup=experimental_setup,
+                          calibration=calibration)
 
         self.original=None
         if keep_orig: 

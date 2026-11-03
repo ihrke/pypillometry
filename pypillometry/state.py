@@ -42,7 +42,8 @@ Version history
     value per interval)
 3
     eyedata objects store their events as one Events state (`events`:
-    `onsets` in `units`, `labels`, `data_time_range`, `meta`); masks are
+    `onsets` in `units`, `labels`, `data_time_range`, `meta`); all eyedata
+    objects have `experimental_setup` and `calibration`; masks are
     layers: EyeDataDicts have `layers` (one uint16 bit-field per key),
     `layer_names` (layer i is bit i) and `rec_layers` (recording-wide
     layers, e.g. excluded periods) instead of `mask`; eyedata objects have
@@ -692,7 +693,8 @@ def _migrate_2_to_3(state, class_name):
     (`events`) instead of `event_onsets`, `event_labels` and `event_meta`;
     masks are layers (see _v2_eyedata_layers); segments store Epochs (see
     _v2_spans); a sampling rate that does not fit the time vector is
-    corrected (see _v2_fix_fs)."""
+    corrected (see _v2_fix_fs); all eyedata objects have an experimental
+    setup and calibration (None for PupilData)."""
     state = dict(state)
     if class_name in _SEGMENTED_CLASSES:
         state["intervals"] = _v2_spans(state.get("intervals"), state.get("sampling_rate"))
@@ -702,6 +704,9 @@ def _migrate_2_to_3(state, class_name):
                        "data_time_range": None, "meta": state.pop("event_meta")}
     _v2_fix_fs(state)
     _v2_eyedata_layers(state)
+    # PupilData had no experimental setup and calibration
+    state.setdefault("experimental_setup", None)
+    state.setdefault("calibration", None)
     return state
 
 

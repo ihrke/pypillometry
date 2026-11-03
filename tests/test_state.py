@@ -186,10 +186,6 @@ class TestStateCoverage(unittest.TestCase):
                 classes.add(cls)
                 fields = {f.attr for f in cls._state_fields()}
                 attrs = set(vars(obj)) - cls._state_exclude()
-                # PupilData made from EyeData keeps the gaze attributes
-                # (not saved, see CHANGELOG)
-                if cls is pp.PupilData:
-                    attrs -= {"experimental_setup", "calibration"}
                 with self.subTest(cls=cls.__name__):
                     self.assertEqual(attrs - fields, set(), "attributes not in the state")
                     self.assertEqual(fields - attrs, set(), "fields without attribute")

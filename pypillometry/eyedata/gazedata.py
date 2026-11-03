@@ -61,10 +61,6 @@ class GazeData(GenericEyeData):
         use the package-level setting (see :func:`~pypillometry.set_default_inplace`,
         initially True). The method-level `inplace` argument overrides this.
     """
-    # state (see pypillometry.state): adds to that of GenericEyeData
-    _STATE_FIELDS = (("experimental_setup", "ExperimentalSetup"),
-                     ("calibration", "dict:SpatialCalibration"))
-
     def __init__(self, 
                     time: np.ndarray = None,
                     left_x: np.ndarray = None,
@@ -92,13 +88,9 @@ class GazeData(GenericEyeData):
         self._init_common(time, sampling_rate, 
                           event_onsets, event_labels, 
                           name, fill_time_discontinuities, 
-                          info=info, inplace=inplace)
-        
-        # Experimental setup (geometry)
-        self.experimental_setup = experimental_setup
-        
-        # Spatial calibration data
-        self.calibration = calibration
+                          info=info, inplace=inplace,
+                          experimental_setup=experimental_setup,
+                          calibration=calibration)
 
         self.original=None
         if keep_orig: 

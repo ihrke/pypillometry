@@ -89,3 +89,45 @@ class TestMissingChannels(unittest.TestCase):
             d.crop(0, 500, inplace=False)
             d.quality_report()
             d.summary()
+
+
+class TestSetupAndCalibration(unittest.TestCase):
+    """Every eyedata object has an experimental setup and calibration (4.5)."""
+
+    def setUp(self):
+        self.d = pp.get_rlmw_002_short().crop(0, 2000, inplace=False)
+        self.d.set_experimental_setup(screen_resolution=(1280, 1024),
+                                      physical_screen_size=("30 cm", "20 cm"),
+                                      eye_to_screen_center="60 cm")
+        self.d.calibration = {"left": pp.SpatialCalibration(
+            eye="left", model="HV9", points=np.zeros((2, 2)), measured=np.zeros((2, 2)),
+            errors=np.zeros(2))}
+
+    def test_pupil_only_from_constructor(self):
+        d = _pupil_only()
+        self.assertIsNone(d.experimental_setup)
+        self.assertIsNone(d.calibration)
+        d.set_experimental_setup(screen_resolution=(1280, 1024))
+        self.assertEqual(d.experimental_setup.screen_resolution, (1280, 1024))
+
+    def test_kept_without_gaze_on_save(self):
+        import os
+        import tempfile
+        p = self.d.drop_data(variables=["x", "y"])
+        for ext in (".pypil", ".h5"):
+            with self.subTest(ext=ext), tempfile.TemporaryDirectory() as tmp:
+                fname = os.path.join(tmp, "d" + ext)
+                p.write_file(fname)
+                q = pp.read_pickle(fname)
+                self.assertEqual(sorted(q.data.keys()), ["left_pupil", "right_pupil"])
+                self.assertEqual(q.experimental_setup.screen_resolution, (1280, 1024))
+                self.assertEqual(list(q.calibration), ["left"])
+
+    def test_state_without_setup(self):
+        """States of development versions of format 3 without the two fields."""
+        from pypillometry import state
+        st = state.to_state(self.d)
+        del st["experimental_setup"], st["calibration"]
+        q = state.from_state(st)
+        self.assertIsNone(q.experimental_setup)
+        self.assertIsNone(q.calibration)
