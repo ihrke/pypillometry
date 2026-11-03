@@ -778,8 +778,7 @@ class GenericEyeData(state.VersionedState, ABC):
             key = f"{e}_{v}"
             iv = store.get(key)
             if iv is None:
-                iv = Intervals([], units="samples", label=f"{key}_{suffix}",
-                               data_time_range=(0, len(self.tx)))
+                iv = Intervals([], units="samples", label=f"{key}_{suffix}")
             result[key] = iv.to_units(units, self)
         if len(eyes) > 1 or len(variables) > 1:
             return result
@@ -1205,14 +1204,11 @@ class GenericEyeData(state.VersionedState, ABC):
             None: the clock did not change, so intervals in time units
             stay valid
         """
-        n = len(self.tx)
-
         def remap(iv, keep_units):
             if iv.units == "samples":
                 if move is None:
                     return iv
-                return Intervals(move(iv.intervals), "samples", label=iv.label,
-                                 data_time_range=(0, n))
+                return Intervals(move(iv.intervals), "samples", label=iv.label)
             if time_map is None:
                 return iv
             if move is None:
@@ -1222,7 +1218,7 @@ class GenericEyeData(state.VersionedState, ABC):
             # samples dropped and clock changed: go through the sample indices
             # (blinks stay in sample indices, the excluded periods go back to ms)
             moved = Intervals(move(iv.to_units("samples", old).intervals), "samples",
-                              label=iv.label, data_time_range=(0, n))
+                              label=iv.label)
             if not keep_units:
                 return moved
             return Intervals(moved.to_units("ms", self).intervals, "ms", label=iv.label)
@@ -2724,8 +2720,7 @@ class GenericEyeData(state.VersionedState, ABC):
             merged_intervals = Intervals(
                 intervals=[(int(s), int(e)) for s, e in newblinks],
                 units="samples",
-                label=f"{eye}_{var}_blinks",
-                data_time_range=(0, len(obj.tx)))
+                label=f"{eye}_{var}_blinks")
             
             key = f"{eye}_{var}"
             merged_dict[key] = merged_intervals
@@ -3185,7 +3180,7 @@ class GenericEyeData(state.VersionedState, ABC):
                     if not excl[min(max(int(on) - 1, 0), n):min(max(int(off) + 1, 0), n)].any()]
             if len(keep) < len(iv):
                 self._blinks[key] = Intervals([iv.intervals[k] for k in keep], iv.units,
-                                              label=iv.label, data_time_range=iv.data_time_range)
+                                              label=iv.label)
 
     @keephistory
     def exclude_intervals(self, intervals, inplace=None):
@@ -3307,7 +3302,7 @@ class GenericEyeData(state.VersionedState, ABC):
             n = len(self.tx)
             pairs = [(max(s, 0), min(e, n)) for s, e in iv.intervals]
             iv = Intervals([(s, e) for s, e in pairs if e > s], "samples",
-                           label="excluded", data_time_range=(0, n))
+                           label="excluded")
         return iv
 
     def get_included(self, units: str = "ms") -> Intervals:

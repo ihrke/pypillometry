@@ -660,8 +660,7 @@ class PupilData(GenericEyeData):
             intervals_obj = Intervals(
                 intervals=filtered_blinks,
                 units="samples",
-                label=f"{eye}_pupil_blinks",
-                data_time_range=(0, len(obj.tx)))
+                label=f"{eye}_pupil_blinks")
             
             # Store detected blinks internally (always)
             key = f"{eye}_pupil"
@@ -818,8 +817,7 @@ class PupilData(GenericEyeData):
             obj._interpolated_blinks[key] = Intervals(
                 intervals=interpolated_intervals,
                 units="samples",
-                label=f"{key}_interpolated_blinks",
-                data_time_range=(0, len(obj.tx)))
+                label=f"{key}_interpolated_blinks")
             logger.debug(f"Stored {len(interpolated_intervals)} interpolated blinks for {eye}")
 
         return obj

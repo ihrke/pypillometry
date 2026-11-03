@@ -71,3 +71,25 @@ class TestNoEventLocking:
         iv = pp.Intervals._from_state({**st, "interval_window": (-5, 5),
                                        "event_indices": [3]})
         assert iv.intervals == [(0, 1)] and not hasattr(iv, "interval_window")
+
+
+class TestNoDataRange:
+    """Intervals do not store the range of the data; nothing is clipped to it."""
+
+    def test_removed_argument(self):
+        with pytest.raises(TypeError, match="data_time_range"):
+            pp.Intervals([(0, 1)], units="ms", data_time_range=(0, 10))
+
+    def test_conversions_not_clipped(self):
+        d = pp.PupilData(left_pupil=np.ones(100), sampling_rate=100)
+        iv = pp.Intervals([(-50, 20), (980, 1100)], units="ms", event_onsets=[-50, 1050])
+        ix = iv.to_units("samples", d)
+        assert ix.intervals == [(-5, 2), (98, 110)]
+        assert list(ix.event_onsets) == [-5, 105]
+        # but masks only cover the data
+        assert iv.to_mask(d).sum() == 4
+
+    def test_complement_needs_the_data(self):
+        d = pp.PupilData(left_pupil=np.ones(100), sampling_rate=100)
+        assert pp.Intervals([(10, 20)], "samples").complement(d).intervals == \
+            [(0, 10), (20, 100)]
