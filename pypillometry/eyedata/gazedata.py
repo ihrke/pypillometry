@@ -271,6 +271,7 @@ class GazeData(GenericEyeData):
         >>> # Only check non-masked data points
         >>> gaze_data = gaze_data.mask_eye_divergences(ignore_existing_mask=False)
         """
+        self._require("x", "y")
         obj = self._get_inplace(inplace)
         
         # Check that both eyes are available
@@ -403,6 +404,7 @@ class GazeData(GenericEyeData):
         >>> # Check all data including already masked points (e.g., during blinks)
         >>> gaze_data = gaze_data.mask_offscreen_coords(ignore_existing_mask=True)
         """
+        self._require("x", "y")
         obj = self._get_inplace(inplace)
         
         # Require experimental_setup for screen limits

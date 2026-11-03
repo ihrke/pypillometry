@@ -277,6 +277,7 @@ class EyeData(GazeData,PupilData):
         ValueError
             if no experimental setup is set (see :meth:`set_experimental_setup`)
         """
+        self._require("pupil", "x", "y")
         obj=self._get_inplace(inplace)
         eyes=self._eyes_with(eyes, ["pupil", "x", "y"])
 
@@ -465,6 +466,7 @@ class EyeData(GazeData,PupilData):
         correct_pupil_foreshortening : Simple foreshortening correction method
         """
         # Validate eye
+        self._require("pupil", "x", "y")
         if eye not in self.eyes:
             raise ValueError(f"Eye '{eye}' not found in dataset. Available: {self.eyes}")
         

@@ -94,6 +94,7 @@ class PupilPlotter(GenericPlotter):
            >>> plt.figure(figsize=(10, 3))
            >>> d.plot.pupil_plot(plot_range=(0, 20) * u.sec)
         """
+        self.obj._require("pupil")
         if not isinstance(eyes, list):
             eyes=[eyes]
         if len(eyes)==0:
@@ -267,6 +268,7 @@ class PupilPlotter(GenericPlotter):
         instead.
         """
 
+        self.obj._require("pupil")
         obj = self.obj
         unit_factor = obj._unit_fac(units)
         interv = parse_time(interv, to=units, default=units)

@@ -52,3 +52,40 @@ class TestConstructor(unittest.TestCase):
     def test_x_without_y(self):
         with self.assertRaisesRegex(ValueError, "left_x and left_y"):
             pp.EyeData(left_x=np.ones(10), left_pupil=np.ones(10), sampling_rate=100)
+
+
+class TestMissingChannels(unittest.TestCase):
+    """Pupil and gaze methods say which data are missing."""
+
+    def test_pupil_methods_on_gaze_only(self):
+        d = _gaze_only()
+        calls = [lambda: d.pupil_lowpass_filter(5), lambda: d.pupil_smooth_window(),
+                 lambda: d.pupil_merge_eyes(), lambda: d.pupil_blinks_detect(),
+                 lambda: d.pupil_blinks_interpolate(), lambda: d.pupil_estimate_baseline(),
+                 lambda: d.pupil_estimate_response(),
+                 lambda: d.plot.pupil_plot(), lambda: d.plot.pupil_plot_segments()]
+        for call in calls:
+            with self.subTest(call=call):
+                with self.assertRaisesRegex(ValueError, "no pupil data; available "
+                                            "channels: left_x, left_y"):
+                    call()
+
+    def test_gaze_methods_on_pupil_only(self):
+        d = _pupil_only()
+        calls = [lambda: d.mask_eye_divergences(), lambda: d.mask_offscreen_coords(),
+                 lambda: d.correct_pupil_foreshortening(),
+                 lambda: d.fit_foreshortening("left"),
+                 lambda: d.plot.plot_heatmap(), lambda: d.plot.plot_scanpath(),
+                 lambda: d.plot.plot_pupil_foreshortening_error_surface()]
+        for call in calls:
+            with self.subTest(call=call):
+                with self.assertRaisesRegex(ValueError, "no x, y data; available "
+                                            "channels: left_pupil"):
+                    call()
+
+    def test_generic_methods_work(self):
+        for d in (_gaze_only(), _pupil_only()):
+            d.downsample(50, inplace=False)
+            d.crop(0, 500, inplace=False)
+            d.quality_report()
+            d.summary()

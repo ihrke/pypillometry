@@ -208,6 +208,7 @@ class PupilData(GenericEyeData):
         """
         from ..signal.pupil import lowpass_filter_iterative
         
+        self._require("pupil")
         obj = self._get_inplace(inplace)
         eyes=self._eyes_with(eyes, "pupil")
 
@@ -253,6 +254,7 @@ class PupilData(GenericEyeData):
         PupilData
             the object with the smoothed pupil data
         """
+        self._require("pupil")
         obj = self._get_inplace(inplace)
         eyes=self._eyes_with(eyes, "pupil")
 
@@ -369,6 +371,7 @@ class PupilData(GenericEyeData):
         merge_eyes : Generic merge method in GenericEyeData (masks if all eyes invalid)
         pypillometry.signal.pupil.pupil_eye_offset : Compute local offset between eyes
         """
+        self._require("pupil")
         obj = self._get_inplace(inplace)
         
         # Check that we have both eyes
@@ -621,6 +624,7 @@ class PupilData(GenericEyeData):
             (keys like ``"left_pupil"``)
         """
         # without apply_mask, the blinks are returned and stored in self
+        self._require("pupil")
         obj = self._get_inplace(inplace) if apply_mask else self
         eyes=self._eyes_with(eyes, "pupil")
 
@@ -785,6 +789,7 @@ class PupilData(GenericEyeData):
         PupilData
             the object with the interpolated pupil data
         """
+        self._require("pupil")
         obj = self._get_inplace(inplace)
         eyes=self._eyes_with(eyes, "pupil")
 
@@ -916,6 +921,7 @@ class PupilData(GenericEyeData):
         phasic pupil dynamics in humans. *Behavior Research Methods*, 57(9), 233.
         https://doi.org/10.3758/s13428-025-02755-7
         """
+        self._require(variable)
         obj = self._get_inplace(inplace)
         if not isinstance(variable, str):
             logger.warning("variable must be a string; using default 'pupil'")
@@ -1026,6 +1032,7 @@ class PupilData(GenericEyeData):
         phasic pupil dynamics in humans. *Behavior Research Methods*, 57(9), 233.
         https://doi.org/10.3758/s13428-025-02755-7
         """
+        self._require("pupil")
         obj = self._get_inplace(inplace)
         eyes=self._eyes_with(eyes, "pupil")
 
