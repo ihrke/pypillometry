@@ -11,9 +11,10 @@ import numpy as np
 
 import pypillometry as pp
 from pypillometry.cli import (pypilview_main, edf2pypil_main, pypilinfo_main,
-                              _default_output, _format_size)
+                              pypil_upgrade_main, _default_output, _format_size)
 
 EDF = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "test.edf")
+FORMAT2 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "format2")
 
 
 class CLITestCase(unittest.TestCase):
@@ -329,6 +330,146 @@ class TestPypilinfo(CLITestCase):
         self.assertEqual(_format_size(500), "500 B")
         self.assertEqual(_format_size(2048), "2.0 KB")
         self.assertEqual(_format_size(31 * 1024**2), "31.0 MB")
+
+
+class TestPypilUpgrade(CLITestCase):
+    """pypil-upgrade on copies of the format-2 fixtures."""
+
+    FILES = ["pupildata.pypil", "pupildata_uncompressed.pypil", "eyedata.h5",
+             "segmented.pypil", "dict_of_eyedata.pypil"]
+
+    def setUp(self):
+        super().setUp()
+        self.src = os.path.join(self.tmp, "in")
+        os.makedirs(os.path.join(self.src, "sub"))
+        for name in self.FILES:
+            shutil.copy(os.path.join(FORMAT2, name), self.src)
+        shutil.copy(os.path.join(FORMAT2, "segmented.h5"), os.path.join(self.src, "sub"))
+        shutil.copy(EDF, self.src)
+        shutil.copy(os.path.join(FORMAT2, "manifest.json"), self.src)
+
+    def run_main(self, argv):
+        with patch("sys.stdout", new_callable=StringIO) as out, \
+             patch("sys.stderr", new_callable=StringIO) as err:
+            status = pypil_upgrade_main(argv)
+        return status, out.getvalue(), err.getvalue()
+
+    def assert_exits(self, argv, message):
+        with self.assertRaises(SystemExit) as cm, \
+             patch("sys.stderr", new_callable=StringIO) as err:
+            pypil_upgrade_main(argv)
+        self.assertEqual(cm.exception.code, 2)
+        self.assertIn(message, err.getvalue())
+
+    def versions(self, fname):
+        from pypillometry import state
+        with state._recording_versions() as seen:
+            obj = pp.read_pickle(fname)
+        return obj, {v for _, v in seen}
+
+    def snapshot(self):
+        out = {}
+        for root, _, files in os.walk(self.tmp):
+            for name in files:
+                fname = os.path.join(root, name)
+                with open(fname, "rb") as f:
+                    out[fname] = f.read()
+        return out
+
+    def test_dry_run_changes_nothing(self):
+        before = self.snapshot()
+        status, out, _ = self.run_main(["-n", "-r", self.src])
+        self.assertEqual(status, 0)
+        self.assertEqual(self.snapshot(), before)
+        self.assertIn("eyedata.h5: would convert, format 2 -> 3 (EyeData, hdf5)", out)
+        self.assertIn("test.edf: skipped (not a pickle or HDF5 file)", out)
+        self.assertIn("8 file(s): 6 would be converted, 0 up to date, 2 skipped, 0 failed",
+                      out)
+
+    def test_needs_output_or_in_place(self):
+        self.assert_exits([self.src], "-o/--output or -i/--in-place")
+        self.assert_exits(["-i", "-o", "out", self.src], "not allowed with")
+        self.assert_exits(["-i", "-f", self.src], "-f/--force needs -o")
+        self.assert_exits(["-i", os.path.join(self.tmp, "nothing")], "not found")
+
+    def test_in_place(self):
+        edf = self.snapshot()[os.path.join(self.src, "test.edf")]
+        status, out, _ = self.run_main(["-i", self.src])
+        self.assertEqual(status, 0)
+        self.assertIn("5 converted, 0 up to date, 2 skipped", out)
+        for name in self.FILES:
+            obj, versions = self.versions(os.path.join(self.src, name))
+            self.assertEqual(versions, {3}, name)
+        # not recursive: the file in the subfolder is unchanged
+        self.assertEqual(self.versions(os.path.join(self.src, "sub", "segmented.h5"))[1], {2})
+        with open(os.path.join(self.src, "test.edf"), "rb") as f:
+            self.assertEqual(f.read(), edf)
+        # keeps the format: HDF5, compressed and uncompressed pickles
+        from pypillometry.cli import _detect_format
+        self.assertEqual(_detect_format(os.path.join(self.src, "eyedata.h5")), "hdf5")
+        with open(os.path.join(self.src, "pupildata.pypil"), "rb") as f:
+            self.assertEqual(f.read(4), b"\x28\xb5\x2f\xfd")
+        with open(os.path.join(self.src, "pupildata_uncompressed.pypil"), "rb") as f:
+            self.assertEqual(f.read(1), b"\x80")
+        # a second run finds nothing to do
+        before = self.snapshot()
+        status, out, _ = self.run_main(["-i", self.src])
+        self.assertIn("0 converted, 5 up to date", out)
+        self.assertEqual(self.snapshot(), before)
+        self.assertEqual([f for f in os.listdir(self.src) if f.endswith(".tmp")], [])
+
+    def test_converted_objects_unchanged(self):
+        from pypillometry import state
+        from tests.test_state import assert_state_equal
+        self.run_main(["-r", "-o", os.path.join(self.tmp, "out"), self.src])
+        for name in self.FILES + [os.path.join("sub", "segmented.h5")]:
+            old = pp.read_pickle(os.path.join(self.src, name))
+            new = pp.read_pickle(os.path.join(self.tmp, "out", name))
+            if isinstance(old, dict):
+                old, new = old["eye"], new["eye"]
+            assert_state_equal(self, state.to_state(old), state.to_state(new))
+
+    def test_output_folder(self):
+        out_dir = os.path.join(self.tmp, "out")
+        before = self.snapshot()
+        status, out, _ = self.run_main(["-r", "-o", out_dir, self.src])
+        self.assertEqual(status, 0)
+        self.assertIn("6 converted", out)
+        # the input files are unchanged; skipped files are not copied
+        self.assertEqual({k: v for k, v in self.snapshot().items() if k in before}, before)
+        self.assertEqual(sorted(os.listdir(out_dir)), sorted(self.FILES + ["sub"]))
+        self.assertEqual(self.versions(os.path.join(out_dir, "sub", "segmented.h5"))[1], {3})
+        # existing output files: only with -f
+        status, _, err = self.run_main(["-o", out_dir, os.path.join(self.src, "eyedata.h5")])
+        self.assertEqual(status, 1)
+        self.assertIn("output file exists", err)
+        status, _, _ = self.run_main(["-f", "-o", out_dir, os.path.join(self.src, "eyedata.h5")])
+        self.assertEqual(status, 0)
+
+    def test_single_file_to_file(self):
+        target = os.path.join(self.tmp, "new.h5")
+        status, out, _ = self.run_main(["-o", target, os.path.join(self.src, "eyedata.h5")])
+        self.assertEqual(status, 0)
+        self.assertIn(f"written to {target}", out)
+        self.assertIsInstance(pp.read_pickle(target), pp.EyeData)
+
+    def test_output_is_input(self):
+        fname = os.path.join(self.src, "eyedata.h5")
+        self.assert_exits(["-f", "-o", fname, fname], "use -i")
+
+    def test_unreadable_and_foreign_pickles(self):
+        with open(os.path.join(self.src, "broken.pkl"), "wb") as f:
+            f.write(b"\x80\x05 not a pickle")
+        pp.write_pickle({"a": [1, 2]}, os.path.join(self.src, "other.pkl"))
+        status, out, err = self.run_main(["-i", self.src])
+        self.assertEqual(status, 1)
+        self.assertIn("broken.pkl: cannot read", err)
+        self.assertIn("other.pkl: skipped (no pypillometry objects)", out)
+
+    def test_quiet(self):
+        status, out, _ = self.run_main(["-q", "-n", self.src])
+        self.assertEqual(out.splitlines(), [
+            "7 file(s): 5 would be converted, 0 up to date, 2 skipped, 0 failed"])
 
 
 class TestVerbosity(CLITestCase):
