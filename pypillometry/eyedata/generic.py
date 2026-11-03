@@ -1650,11 +1650,8 @@ class GenericEyeData(state.VersionedState, ABC):
         screen_coords = edf["info"]["screen_coords"]
         setup = ExperimentalSetup(screen_resolution=tuple(screen_coords)) if screen_coords is not None else None
         
-        kwargs = dict(**d, calibration=calibration, experimental_setup=setup)
-        # only pass what the constructor accepts (e.g., PupilData has no gaze)
-        accepted = inspect.signature(cls.__init__).parameters
-        kwargs = {k: v for k, v in kwargs.items() if k in accepted}
-        obj = cls(time=tx, **kwargs, event_onsets=evon, event_labels=evlab,
+        obj = cls(time=tx, **d, calibration=calibration, experimental_setup=setup,
+            event_onsets=evon, event_labels=evlab,
             sampling_rate=sfreq, info=info, name=edf["info"]["filename"])
 
         # filter out irrelevant triggers
