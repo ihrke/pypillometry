@@ -2940,7 +2940,8 @@ class GenericEyeData(state.VersionedState, ABC):
         """Merge masks of all variables into a single joint mask.
         
         This function creates a joint mask by taking the logical OR of all individual masks
-        using `get_mask()`, then applies this joint mask to all variables.
+        (under the default mask policy, see `get_mask()`), then applies this joint mask to
+        all variables (the newly masked samples get the ``"user"`` layer).
         
         Parameters
         ----------

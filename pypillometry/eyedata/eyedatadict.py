@@ -53,9 +53,12 @@ class MaskPolicy:
     `layers` is set and none of the layers in `unless` is set. Recording-wide
     layers (e.g., ``"excluded"``) mask a sample regardless of `unless`.
 
-    The predefined policies are in `POLICIES`: ``"default"`` (interpolated
-    samples are used), ``"strict"`` (interpolated samples are masked) and
-    ``"raw"`` (nothing is masked).
+    The predefined policies are in `POLICIES`: ``"default"`` (NaN, blinks
+    applied as mask, off-screen gaze, eye divergences, user masks and
+    excluded periods are masked; interpolated samples are used),
+    ``"strict"`` (interpolated samples are masked too) and ``"raw"``
+    (nothing is masked, not even NaN). All processing and analysis methods
+    take the policy as their `policy` argument.
 
     Parameters
     ----------
