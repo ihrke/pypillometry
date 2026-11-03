@@ -28,7 +28,7 @@ def _extract_epochs(eyedata, epochs, variable):
     The length and the time axis come from the window: ``w0 + arange(n) *
     1000/fs`` ms, with ``n`` the window length in samples (rounded). Each
     segment starts at the first sample at or after ``onset + w0``. Parts
-    outside the data are masked (their values are 0).
+    outside the data are masked (their values are NaN).
     """
     w0, w1 = epochs.window
     n = eyedata._samples(w1 - w0, rounding="nearest")
@@ -36,7 +36,7 @@ def _extract_epochs(eyedata, epochs, variable):
     starts = np.atleast_1d(_ms_to_samples(eyedata, epochs.onsets + w0))
     ix = starts[None, :] + np.arange(n)[:, None]
     inside = (ix >= 0) & (ix < len(eyedata.tx))
-    values = np.zeros(ix.shape)
+    values = np.full(ix.shape, np.nan)
     mask = np.ones(ix.shape, dtype=bool)
     values[inside] = eyedata.data[variable][ix[inside]]
     mask[inside] = eyedata.data.mask[variable][ix[inside]].astype(bool)

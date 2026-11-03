@@ -547,3 +547,12 @@ Changes of the API calls alone (same numbers) need no entry.
   old values.
 - **Why**: decision 4 (interpolated samples are used in analyses).
 - **Step**: 7, `refactor/07-value-policy`
+
+### Segment padding outside the data is NaN
+
+- **Case**: none (no reference segment reaches outside the data)
+- **Change**: the parts of segments outside the data (see "Event-locked
+  windows are not clipped") hold NaN instead of 0; they stay masked.
+- **Why**: a value that is not data should not look like data (e.g., after
+  `baseline_correct`, the padding was `-baseline`).
+- **Step**: 7, `refactor/07-value-policy`

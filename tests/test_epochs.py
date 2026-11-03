@@ -194,6 +194,8 @@ class TestSegmentsFromEpochs:
         mask = np.ma.getmaskarray(s.data)[:, 0]
         assert not mask[:200].any() and mask[200:].all()
         assert s.data[199, 0] == 2999
+        # the padding is NaN (not 0)
+        assert np.isnan(np.ma.getdata(s.data)[200:, 0]).all()
 
     def test_window_outside_the_data(self):
         d = self.ramp()
