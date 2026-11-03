@@ -422,3 +422,20 @@ Changes of the API calls alone (same numbers) need no entry.
 - **Why**: same as "`fs` after `downsample` is the actual rate" (finding
   3.1); `fs` must fit `tx`.
 - **Step**: 6, `refactor/06-migration`
+
+### Lowpass filter: gaps bridged linearly
+
+- **Case**: none of the reference cases (`c.lowpass.*` filter after
+  interpolation, without gaps; unchanged)
+- **Change**: `lowpass_filter_iterative` (used by `pupil_lowpass_filter`,
+  `pupil_eye_offset`/`pupil_merge_eyes(method="local_offset")` and
+  `pupil_signal_quality`) starts from a linear bridge across the NaN gaps
+  instead of the global mean. Size: `rlmw_002_short`, left pupil with its
+  NaN blinks (2.7 % of the samples), `cutoff=5`: valid samples within
+  20 ms of a gap change by a median of 47 units (max 129), 20-100 ms: 4.6
+  (max 70), 100-300 ms: 0.3 (max 10), farther: < 0.2. On a synthetic
+  signal with known truth, the median error within 20 ms of a gap drops
+  from 16.3 to 1.7 units (max 56 -> 6).
+- **Why**: the global mean pulled the valid samples next to gaps towards
+  it (finding 3.3).
+- **Step**: 7, `refactor/07-value-policy`

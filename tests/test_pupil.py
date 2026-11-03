@@ -87,6 +87,15 @@ class TestLowpassFilterIterative(unittest.TestCase):
         gap_values = result[80:120]
         np.testing.assert_allclose(gap_values, 100, atol=1)
     
+    def test_gap_in_ramp_does_not_bias_neighbours(self):
+        """Gaps are bridged linearly, not filled with the global mean
+        (finding 3.3): a ramp with a gap stays a ramp next to the gap"""
+        ramp = np.linspace(500, 1500, 2000)
+        signal = ramp.copy()
+        signal[1600:1700] = np.nan  # the global mean (1000) is far off here
+        result = lowpass_filter_iterative(signal, cutoff=4.0, fs=500)
+        np.testing.assert_allclose(result[1500:1800], ramp[1500:1800], atol=0.01)
+
     def test_all_nan_returns_copy(self):
         """All NaN input should return NaN array"""
         signal = np.full(100, np.nan)
