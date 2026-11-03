@@ -396,7 +396,8 @@ class GenericEyeData(state.VersionedState, ABC):
         (mask and data stored separately in EyeDataDict).
         
         Special handling for "time" keys:
-        - data["time"] = array: Updates tx directly (assumes milliseconds)
+        - data["time"] = array: Updates tx (assumes milliseconds; the steps
+          must match the sampling rate `fs`)
         - data["time_sec"] = array: Converts from seconds to milliseconds
         - data["time_min"] = array: Converts from minutes to milliseconds
         - data["time_h"] = array: Converts from hours to milliseconds
@@ -462,7 +463,7 @@ class GenericEyeData(state.VersionedState, ABC):
         
         if unit is None or unit == "":
             # Already in milliseconds
-            self.tx = value.astype(float)
+            self._set_timebase(value.astype(float))
             return
         
         # Normalize unit (handles all aliases)
@@ -470,13 +471,13 @@ class GenericEyeData(state.VersionedState, ABC):
         
         if unit == "ms":
             # Already in milliseconds
-            self.tx = value.astype(float)
+            self._set_timebase(value.astype(float))
         else:
             # Convert to milliseconds
             # _unit_fac gives factor to convert FROM ms to target unit
             # So to convert TO ms, we divide by the factor
             factor = self._unit_fac(unit)
-            self.tx = (value / factor).astype(float)
+            self._set_timebase((value / factor).astype(float))
 
     @keephistory
     def __delitem__(self, key):
@@ -1111,7 +1112,7 @@ class GenericEyeData(state.VersionedState, ABC):
         obj = self._get_inplace(inplace)
         if t0 is None:
             t0 = self.tx[0]
-        obj.tx=self.tx-t0
+        obj._set_timebase(self.tx-t0)
         obj._events = self._events.shift(-t0)
         obj._excluded = Intervals([(s - t0, e - t0) for s, e in self._excluded.intervals],
                                   units="ms", label="excluded")
@@ -1150,7 +1151,7 @@ class GenericEyeData(state.VersionedState, ABC):
         for k, v in self.data.items():
             ndata.set_with_mask(k, v[keep], mask=self.data.mask[k][keep])
         self.data = ndata
-        self.tx = (self.tx if shift is None else self.tx - shift)[keep]
+        self._set_timebase((self.tx if shift is None else self.tx - shift)[keep])
         if excluded is not None:
             self._excluded = Intervals(Intervals(excluded, "samples").to_units("ms", self).intervals,
                                        "ms", label="excluded")
@@ -1927,7 +1928,7 @@ class GenericEyeData(state.VersionedState, ABC):
             for k in nv:
                 ndata.set_with_mask(k, np.concatenate(nv[k]), mask=np.concatenate(nm[k]))
             self.data=ndata
-            self.tx=ntx
+            self._set_timebase(ntx)
 
             # move stored blinks in sample indices to the new sample positions
             # (blinks in time units stay valid)
@@ -2397,11 +2398,9 @@ class GenericEyeData(state.VersionedState, ABC):
             ndata.set_with_mask(k, y, mask=allmasked.astype(int))
         obj.data=ndata
 
-        # also downsample the time-vector
-        obj.tx=baseline.downsample(obj.tx, dsfac)
-
-        # set new sampling rate (the actual rate of the decimated data)
-        obj.fs=obj.fs/dsfac
+        # also downsample the time-vector; the new sampling rate is the
+        # actual rate of the decimated data
+        obj._set_timebase(baseline.downsample(obj.tx, dsfac), obj.fs/dsfac)
 
         # rescale stored blinks in sample indices so that they still cover the
         # blinks: round starts down and ends up (blinks in time units stay valid)

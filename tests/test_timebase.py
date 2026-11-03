@@ -47,6 +47,13 @@ class TestConstructorTime(unittest.TestCase):
         # a single sample
         pp.PupilData(left_pupil=np.ones(1), time=[0.], sampling_rate=500)
 
+    def test_setting_the_time_vector_is_checked(self):
+        d = make(n=10)
+        d["time_sec"] = np.arange(10) / 1000. + 5
+        np.testing.assert_allclose(d.tx, np.arange(10) + 5000.)
+        with self.assertRaisesRegex(ValueError, "does not match the time vector"):
+            d["time"] = np.arange(10) * 2.
+
 
 class TestDownsampleRate(unittest.TestCase):
 
