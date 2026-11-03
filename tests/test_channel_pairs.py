@@ -183,3 +183,41 @@ class TestIncompleteScaleMerge:
         d.merge_eyes(variables="pupil")
         d.scale()
         assert set(d.params["scale"]["mean"]["mean"]) == {"pupil"}
+
+
+class TestIncompleteIntervals:
+    def test_mask_and_interpolate_intervals(self, incomplete_eyedata):
+        import pypillometry as pp
+        d = incomplete_eyedata
+        iv = pp.Intervals([(100, 110)], units="samples", data_time_range=(0, len(d)))
+        d.mask_intervals(iv)
+        for key in ["left_pupil", "left_x", "left_y", "right_pupil"]:
+            assert d.data.mask[key][100:110].all()
+        d.interpolate_intervals(iv, store_as_suffix="_int")
+        assert set(d.data.keys()) >= {"left_x_int", "left_y_int", "left_pupil_int",
+                                      "right_pupil_int"}
+        with pytest.raises(KeyError, match="right_x"):
+            d.mask_intervals(iv, eyes="right", variables="x")
+        with pytest.raises(KeyError, match="right_x"):
+            d.interpolate_intervals(iv, eyes=["left", "right"], variables="x")
+
+    def test_blinks_merge_close(self, incomplete_eyedata):
+        import pypillometry as pp
+        d = incomplete_eyedata
+        iv = pp.Intervals([(10, 20), (22, 30)], units="samples", data_time_range=(0, len(d)))
+        d.set_blinks(iv)
+        merged = d.blinks_merge_close(distance=5, units="samples")
+        assert {k: len(v) for k, v in merged.items()} == {
+            "left_pupil": 1, "left_x": 1, "left_y": 1, "right_pupil": 1}
+        d.blinks_merge_close(distance=5, units="samples", apply_mask=True)
+        assert d.nblinks() == {"left_pupil": 1, "left_x": 1, "left_y": 1, "right_pupil": 1}
+
+    def test_stat_per_event(self, incomplete_eyedata):
+        import pypillometry as pp
+        d = incomplete_eyedata
+        iv = pp.Intervals([(100, 200), (300, 400)], units="samples", data_time_range=(0, len(d)))
+        stat = d.stat_per_event(iv)
+        assert set(stat) == {"left_pupil", "left_x", "left_y", "right_pupil"}
+        assert stat["right_pupil"].shape == (2,)
+        with pytest.raises(KeyError, match="right_y"):
+            d.stat_per_event(iv, eyes="right", variables="y")

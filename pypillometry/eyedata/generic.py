@@ -21,7 +21,6 @@ from .. import config
 from .. import state
 
 import numpy as np
-import itertools
 import numbers
 import warnings
 from loguru import logger
@@ -2519,7 +2518,7 @@ class GenericEyeData(state.VersionedState, ABC):
             If apply_mask=False: returns dict of Intervals objects (one per eye/variable combination).
         """
         obj = self._get_inplace(inplace)
-        eyes, variables = obj._get_eye_var(eyes, variables)
+        pairs = obj.data.select(eyes, variables)
 
         distance_ix = obj._samples(distance, units)
 
@@ -2528,7 +2527,7 @@ class GenericEyeData(state.VersionedState, ABC):
         # Dictionary to store merged intervals
         merged_dict = {}
 
-        for eye, var in itertools.product(eyes, variables):
+        for eye, var in pairs:
             blinks = obj.get_blinks(eye, var)
             if len(blinks) == 0:
                 continue
@@ -2615,7 +2614,7 @@ class GenericEyeData(state.VersionedState, ABC):
         """
         from ..intervals import Intervals, stat_event_interval
         
-        eyes,variables=self._get_eye_var(eyes,variables)
+        pairs = self.data.select(eyes, variables)
         
         # Accept either Intervals object or old-style parameters
         if intervals is not None:
@@ -2634,7 +2633,7 @@ class GenericEyeData(state.VersionedState, ABC):
 
         _warn_if_ignores_mask(statfct, "statfct")
         stat={}
-        for eye,var in itertools.product(eyes, variables):
+        for eye,var in pairs:
             # masked array, so that masked samples are ignored
             stat[eye+"_"+var]=stat_event_interval(tx, self[eye,var], intervals_list, statfct)
 
@@ -2782,8 +2781,7 @@ class GenericEyeData(state.VersionedState, ABC):
             # one Intervals object per eye_variable
             per_key = intervals
         else:
-            eyes, variables = obj._get_eye_var(eyes, variables)
-            per_key = {f"{eye}_{var}": intervals for eye in eyes for var in variables}
+            per_key = {f"{eye}_{var}": intervals for eye, var in obj.data.select(eyes, variables)}
 
         n = len(obj.tx)
         for key, interval_obj in per_key.items():
@@ -2992,16 +2990,8 @@ class GenericEyeData(state.VersionedState, ABC):
             if not isinstance(intervals, Intervals):
                 raise TypeError(f"intervals must be Intervals or dict, got {type(intervals)}")
             
-            eyes, variables = obj._get_eye_var(eyes, variables)
-            
-            for eye in eyes:
-                for var in variables:
-                    key = f"{eye}_{var}"
-                    if key not in obj.data.data:
-                        logger.warning(f"Key '{key}' not found in data, skipping")
-                        continue
-                    
-                    interpolate_single_key(key, intervals)
+            for eye, var in obj.data.select(eyes, variables):
+                interpolate_single_key(f"{eye}_{var}", intervals)
         
         return obj
 
