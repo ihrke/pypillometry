@@ -23,4 +23,15 @@ Changes of the API calls alone (same numbers) need no entry.
 
 ## Entries
 
-(none yet)
+### `fs` after `downsample` is the actual rate
+
+- **Case**: none of the reference cases (they use integer factors,
+  `g.downsample.rlmw.250` and `g.downsample.rlmw.100`, which are unchanged)
+- **Change**: `downsample(fsd)` decimates by `int(fs/fsd)` and now stores
+  `fs/factor` as the new sampling rate instead of the requested `fsd`
+  (1000 Hz, `fsd=300`: `fs` is 333.3, was 300; `fsd=400`: 500, was 400;
+  `dsfac=True` with factor 2.5: see the argument checks). Everything that
+  converts between ms and samples afterwards (segment lengths, time axes,
+  filter design, blink durations) uses the new value.
+- **Why**: the stored rate did not match the time vector (finding 3.1).
+- **Step**: 3, `refactor/03-timebase`

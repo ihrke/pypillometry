@@ -2284,13 +2284,17 @@ class GenericEyeData(state.VersionedState, ABC):
         NaN). Stored blinks (in sample indices) are rescaled to the new
         sampling rate.
 
+        The new sampling rate is ``fs/factor``, the rate of the decimated
+        data. It differs from `fsd` if `fs/fsd` is not an integer
+        (e.g., 1000 Hz with ``fsd=300`` gives factor 3 and 333.3 Hz).
+
         Parameters
         ----------
         fsd : float
             new sampling-rate (in Hz) or decimate-factor
         dsfac : bool, optional
-            if False (default), `fsd` is the new sampling rate (the decimate
-            factor is ``int(fs/fsd)``);
+            if False (default), `fsd` is the requested sampling rate (the
+            decimate factor is ``int(fs/fsd)``);
             if True, `fsd` is the decimate factor
         inplace : bool or None, optional
             if `True`, make change in-place and return the object;
@@ -2306,7 +2310,6 @@ class GenericEyeData(state.VersionedState, ABC):
 
         if dsfac:
             dsfac=fsd
-            fsd=float(obj.fs/dsfac)
         else:
             dsfac=int(obj.fs/fsd) # calculate downsampling factor
             
@@ -2329,8 +2332,8 @@ class GenericEyeData(state.VersionedState, ABC):
         # also downsample the time-vector
         obj.tx=baseline.downsample(obj.tx, dsfac)
 
-        # set new sampling rate
-        obj.fs=fsd
+        # set new sampling rate (the actual rate of the decimated data)
+        obj.fs=obj.fs/dsfac
 
         # rescale stored blinks in sample indices so that they still cover the
         # blinks: round starts down and ends up (blinks in time units stay valid)
