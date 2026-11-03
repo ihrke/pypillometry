@@ -300,6 +300,13 @@ class GenericEyeData(state.VersionedState, ABC):
                     self.data.set_layer(key, "blink", blink)
                     self.data.set_layer(key, "_blink_applied", applied)
                     self.data._mask[key] &= ~applied
+        if "rec_layers" not in st["data"]:
+            # excluded periods (ms) -> recording-wide layer, out of the stored mask
+            excl = self._excluded.to_mask(self).astype(bool)
+            if excl.any():
+                self.data.set_rec_layer("excluded", excl)
+                for key in self.data.keys():
+                    self.data._mask[key] &= ~(excl & ~np.isnan(self.data.data[key]))
 
     @abstractmethod
     def __init__():
@@ -3284,7 +3291,7 @@ class GenericEyeData(state.VersionedState, ABC):
 
     def _excluded_mask(self) -> np.ndarray:
         """Boolean array that is True for the samples in an excluded period."""
-        return self._excluded.to_mask(self).astype(bool)
+        return self.data.get_rec_layer("excluded")
 
     def _drop_excluded_blinks(self):
         """Remove blinks (from the blink layer) that overlap or touch an
@@ -3304,8 +3311,9 @@ class GenericEyeData(state.VersionedState, ABC):
         Exclude periods that are not part of the analysis (e.g., breaks or
         the calibration at the start).
 
-        The periods are stored with the object (see :meth:`get_excluded`)
-        and all variables are masked during them, so that functions that
+        The periods are stored with the object as the recording-wide
+        ``"excluded"`` layer (see :meth:`get_excluded`), which masks all
+        variables (also those added later), so that functions that
         ignore masked data (e.g., :meth:`scale`, :meth:`get_segments`) also
         ignore the excluded periods. Unlike other masked data (blinks,
         artifacts), excluded periods are not treated as missing data: blinks
@@ -3314,8 +3322,7 @@ class GenericEyeData(state.VersionedState, ABC):
 
         The periods are stored as times, so they stay valid after
         :meth:`crop`, :meth:`downsample` and :meth:`reset_time`. Calling
-        the method again adds to the excluded periods. Variables that are
-        added later are not masked automatically.
+        the method again adds to the excluded periods.
 
         Parameters
         ----------
@@ -3352,9 +3359,7 @@ class GenericEyeData(state.VersionedState, ABC):
         new = [(float(s), float(e)) for s, e in new.intervals if e > s]
         merged = Intervals(list(obj._excluded.intervals) + new, units="ms").merge()
         obj._excluded = Intervals(merged.intervals, units="ms", label="excluded")
-        excl = obj._excluded_mask()
-        for key in obj.data.keys():
-            obj.data.add_mask(key, excl)
+        obj.data.set_rec_layer("excluded", Intervals(new, units="ms").to_mask(obj))
         obj._drop_excluded_blinks()
         return obj
 

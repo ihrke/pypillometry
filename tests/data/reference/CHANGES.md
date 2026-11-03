@@ -257,3 +257,19 @@ Changes of the API calls alone (same numbers) need no entry.
   samples are the same).
 - **Why**: the returned blinks are the blinks stored in the object.
 - **Step**: 5, `refactor/05-mask-layers`
+
+### Excluded periods are a recording-wide layer
+
+- **Case**: none (`g.exclude_intervals.rlmw` is not downsampled; its masks
+  and summary are unchanged)
+- **Change**: `exclude_intervals`/`keep_intervals` set the recording-wide
+  `excluded` layer instead of writing the periods into the mask of every
+  variable. Variables added later (e.g. `d["left", "baseline"] = ...`) are
+  therefore masked in the excluded periods, too (before, they were not).
+  After `downsample`, a new sample is excluded if the excluded periods
+  cover more than half of its window (before: if its time was within an
+  excluded period). Excluded samples stay masked under every policy with
+  the layer, also where they are interpolated (`unless` does not apply to
+  recording-wide layers).
+- **Why**: one store for excluded periods (finding D1); refactor plan 2.2.
+- **Step**: 5, `refactor/05-mask-layers`

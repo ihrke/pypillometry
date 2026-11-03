@@ -38,8 +38,9 @@ LAYER_DTYPE = np.uint16
 MAX_LAYERS = 16
 #: layers that :attr:`EyeDataDict.mask` (the mask read by the code that does
 #: not use :meth:`~pypillometry.GenericEyeData.mask` yet) contains;
-#: ``"_blink_applied"`` marks blinks that were applied as mask (``apply_mask=True``)
-COMPAT_LAYERS = ("user", "interpolated", "_blink_applied")
+#: ``"_blink_applied"`` marks blinks that were applied as mask (``apply_mask=True``);
+#: ``"excluded"`` is a recording-wide layer (`EyeDataDict.rec_layers`)
+COMPAT_LAYERS = ("user", "interpolated", "_blink_applied", "excluded")
 
 
 #: the standard layers: missing data (blink, offscreen, divergence, user),
@@ -680,7 +681,8 @@ class EyeDataDict(MutableMapping, Stateful):
         Afterwards, ``self.mask[key]`` equals `mask`: samples that are not
         masked in `mask` are removed from the stored mask and from the layers
         in `COMPAT_LAYERS`, samples that were not masked yet are added to the
-        stored mask (or to `layer`).
+        stored mask (or to `layer`). The recording-wide layers (e.g.,
+        excluded periods) are not changed, so their samples stay masked.
 
         Parameters
         ----------

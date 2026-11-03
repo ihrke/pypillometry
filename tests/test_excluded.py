@@ -36,6 +36,18 @@ class TestExcluded(unittest.TestCase):
         # the data themselves are not changed
         np.testing.assert_array_equal(e.data["left_x"], d.data["left_x"])
 
+    def test_recording_wide_layer(self):
+        e = _make_data().exclude_intervals([(5000, 7000)])
+        np.testing.assert_array_equal(e.data.get_rec_layer("excluded"),
+                                      np.arange(10000) < 1000)
+        # variables added later are masked in the excluded periods, too
+        e["left", "baseline"] = np.ones(10000)
+        self.assertTrue(e.data.mask["left_baseline"][:1000].all())
+        self.assertFalse(e.data.mask["left_baseline"][1000:].any())
+        # interpolated samples stay masked by default if excluded
+        e.data.set_layer("left_x", "interpolated", np.ones(10000, dtype=bool))
+        np.testing.assert_array_equal(e.mask("left", "x"), np.arange(10000) < 1000)
+
     def test_merge_and_units(self):
         d = _make_data()
         d = d.exclude_intervals([(5000, 6000), (5500, 7000)])
