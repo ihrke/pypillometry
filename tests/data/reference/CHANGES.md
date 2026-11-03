@@ -231,3 +231,16 @@ Changes of the API calls alone (same numbers) need no entry.
   detectors return the object).
 - **Why**: the detected blinks were lost.
 - **Step**: 5, `refactor/05-mask-layers`
+
+### `mask_intervals` and masked-array assignment set the `user` layer
+
+- **Case**: none (the masks are the same; `d.offscreen.*` and
+  `d.divergence.*` are unchanged)
+- **Change**: `mask_intervals` (and so, until they get their own layers,
+  `mask_offscreen_coords` and `mask_eye_divergences`) and
+  `d[key] = np.ma.array(...)` record the masked samples in the `user`
+  layer. After `downsample`, these samples are masked where they cover
+  more than half of a window (before: only where the whole window was
+  masked). `clear_layer("user")` removes them.
+- **Why**: masks can be undone; decision 4 (">½ of the window").
+- **Step**: 5, `refactor/05-mask-layers`

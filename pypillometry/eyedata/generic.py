@@ -463,8 +463,11 @@ class GenericEyeData(state.VersionedState, ABC):
         """
         Set data arrays using dict-style access.
         
-        Accepts numpy arrays (mask will be all zeros) or masked arrays
-        (mask and data stored separately in EyeDataDict).
+        Accepts numpy arrays (mask will be all zeros, except for NaN, and
+        the layers are cleared) or masked arrays (mask and data stored
+        separately in EyeDataDict: the mask of the variable becomes the
+        mask of the array, samples masked in addition are added to the
+        ``"user"`` layer, see :meth:`~pypillometry.EyeDataDict.set_mask`).
         
         Special handling for "time" keys:
         - data["time"] = array: Updates tx (assumes milliseconds; the steps
@@ -512,7 +515,7 @@ class GenericEyeData(state.VersionedState, ABC):
         if isinstance(value, np.ma.MaskedArray):
             # Extract data and mask from masked array
             self.data.data[normalized_key] = value.data.astype(float)
-            self.data.set_mask(normalized_key, np.ma.getmaskarray(value))
+            self.data.set_mask(normalized_key, np.ma.getmaskarray(value), layer="user")
         else:
             # Regular array - let EyeDataDict handle it (creates zero mask)
             value = np.asarray(value)
@@ -2980,8 +2983,8 @@ class GenericEyeData(state.VersionedState, ABC):
         """Apply Intervals as masks to selected data.
         
         Takes detected intervals (e.g., blinks, artifacts) and applies them
-        as masks to specified eyes and variables. Existing masks are kept
-        (the new mask is added to them).
+        as masks to specified eyes and variables: they are added to the
+        ``"user"`` layer (existing masks are kept).
 
         Parameters
         ----------
@@ -3047,7 +3050,7 @@ class GenericEyeData(state.VersionedState, ABC):
             mask = np.zeros(n, dtype=bool)
             for start, end in interval_obj.to_units("samples", obj).intervals:
                 mask[min(max(int(start), 0), n):min(max(int(end), 0), n)] = True
-            obj.data.add_mask(key, mask)
+            obj.data.set_layer(key, "user", mask)
         
         return obj
 

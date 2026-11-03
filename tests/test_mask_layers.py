@@ -328,3 +328,31 @@ class TestBlinkLayer:
         e.clear_layer("blink")
         np.testing.assert_array_equal(e.data.mask["left_pupil"].astype(bool),
                                       np.isnan(e.data["left_pupil"]))
+
+
+class TestUserLayer:
+
+    def test_mask_intervals(self):
+        import pypillometry as pp
+        d = blink_data()
+        d.mask_intervals(pp.Intervals([(10, 20)], units="samples"))
+        np.testing.assert_array_equal(np.flatnonzero(d.data.get_layer("left_pupil", "user")),
+                                      np.arange(10, 20))
+        assert d.data.mask["left_pupil"][10:20].all() and d.mask("left", "pupil")[10:20].all()
+        d.clear_layer("user")
+        assert not d.data.mask["left_pupil"][10:20].any()
+
+    def test_masked_array_assignment(self):
+        d = blink_data().pupil_blinks_detect(apply_mask=True)
+        x = d["left_pupil"]
+        x.mask[30:40] = True
+        d["left_pupil"] = x * 2
+        np.testing.assert_array_equal(np.flatnonzero(d.data.get_layer("left_pupil", "user")),
+                                      np.arange(30, 40))
+        np.testing.assert_array_equal(d.data.mask["left_pupil"], np.ma.getmaskarray(x))
+        assert len(d.get_blinks("left", "pupil")) == 3  # the blinks are kept
+        # unmasked samples are removed from the masks
+        x.mask[:] = False
+        d["left_pupil"] = x
+        assert not d.data.mask["left_pupil"].any()
+        assert len(d.get_blinks("left", "pupil")) == 3
