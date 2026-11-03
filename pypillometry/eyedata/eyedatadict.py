@@ -119,6 +119,13 @@ def _as_policy(policy) -> MaskPolicy:
     return MaskPolicy(policy)
 
 
+def _without_layer(policy, name: str) -> MaskPolicy:
+    """`policy` without the layer `name` (e.g., the layer that a detector is
+    about to replace)."""
+    policy = _as_policy(policy)
+    return MaskPolicy([n for n in policy.layers if n != name], policy.unless, policy.nan)
+
+
 class _CompatMask(Mapping):
     """
     Read-only mapping key -> int mask (1: masked) of an :class:`EyeDataDict`.
