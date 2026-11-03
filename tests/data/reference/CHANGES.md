@@ -409,3 +409,16 @@ Changes of the API calls alone (same numbers) need no entry.
 - **Why**: decision 3 of the refactor plan (each layer bit set if it
   covers more than half of the window).
 - **Step**: 5, `refactor/05-mask-layers`
+
+### Files saved after `downsample`: `fs` corrected on load
+
+- **Case**: none (reference cases are computed, not loaded)
+- **Change**: loading a file of state format <= 2 whose `fs` does not fit
+  its time vector (rule of `_check_timebase`: within 5 % of the median or
+  mean step) sets `fs = 1000 / median step` with a warning. These are
+  files saved after `downsample(fsd)` with a non-integer `fs/fsd` (e.g.
+  1000 Hz, `fsd=300`: stored 300 Hz, data at 333.3 Hz). Before, they
+  loaded with the wrong `fs`.
+- **Why**: same as "`fs` after `downsample` is the actual rate" (finding
+  3.1); `fs` must fit `tx`.
+- **Step**: 6, `refactor/06-migration`

@@ -608,6 +608,25 @@ def _v2_spans(st, fs):
             "label": st.get("label")}
 
 
+def _v2_fix_fs(state):
+    """Correct the sampling rate of a version-2 eyedata state (in place) if it
+    does not fit the time vector (as after `downsample` before version 3, which
+    stored the requested rate instead of the actual one)."""
+    tx = np.asarray(state["tx"], dtype=float)
+    fs = state.get("fs")
+    if len(tx) < 2 or not isinstance(fs, (int, float, np.integer, np.floating)) or fs <= 0:
+        return
+    steps = (np.median(np.diff(tx)), (tx[-1] - tx[0]) / (len(tx) - 1))
+    if any(np.isclose(step, 1000. / fs, rtol=0.05, atol=0) for step in steps) \
+            or not steps[0] > 0:
+        return
+    new = 1000. / float(steps[0])
+    logger.warning(f"{state.get('name')}: the sampling rate ({fs:g} Hz) does not match "
+                   f"the time vector ({new:g} Hz, e.g. after downsample() in an older "
+                   f"version of pypillometry); set to {new:g} Hz")
+    state["fs"] = new
+
+
 def _v2_eyedata_layers(state):
     """Move the masks, blinks, interpolated blinks and excluded periods of a
     version-2 eyedata state into the layers of its data (in place)."""
@@ -648,7 +667,8 @@ def _migrate_2_to_3(state, class_name):
     """Version 2 -> 3: the events of eyedata objects are one Events state
     (`events`) instead of `event_onsets`, `event_labels` and `event_meta`;
     masks are layers (see _v2_eyedata_layers); segments store Epochs (see
-    _v2_spans)."""
+    _v2_spans); a sampling rate that does not fit the time vector is
+    corrected (see _v2_fix_fs)."""
     state = dict(state)
     if class_name in _SEGMENTED_CLASSES:
         state["intervals"] = _v2_spans(state.get("intervals"), state.get("sampling_rate"))
@@ -656,6 +676,7 @@ def _migrate_2_to_3(state, class_name):
     state["events"] = {"onsets": state.pop("event_onsets"),
                        "labels": state.pop("event_labels"), "units": "ms",
                        "data_time_range": None, "meta": state.pop("event_meta")}
+    _v2_fix_fs(state)
     _v2_eyedata_layers(state)
     return state
 
