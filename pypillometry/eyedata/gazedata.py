@@ -111,7 +111,7 @@ class _GazeMethods:
         
         Returns
         -------
-        GazeData or Intervals
+        EyeData or Intervals
             If apply_mask=True: returns the object for chaining.
             If apply_mask=False: returns Intervals object containing detected divergence intervals.
         
@@ -249,7 +249,7 @@ class _GazeMethods:
         
         Returns
         -------
-        GazeData or dict of Intervals
+        EyeData or dict of Intervals
             If apply_mask=True: returns self for chaining.
             If apply_mask=False: returns dict of Intervals objects (one per eye) containing 
             detected offscreen intervals.

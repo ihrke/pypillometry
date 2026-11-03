@@ -127,8 +127,8 @@ def get_example_data(key, cache_dir=None):
 
     Returns
     -------
-    EyeData, GazeData or PupilData
-        The example dataset as an EyeData, GazeData or PupilData object.
+    EyeData
+        The example dataset.
     """
     if key not in example_datasets:
         raise ValueError(f"Key '{key}' not found in example datasets. "

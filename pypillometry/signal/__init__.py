@@ -2,7 +2,7 @@
 Stateless, low-level signal-processing functions operating on numpy arrays.
 
 These functions are used by the data classes (e.g.,
-:class:`~pypillometry.PupilData`) and generally work in samples or
+:class:`~pypillometry.EyeData`) and generally work in samples or
 milliseconds; see the individual docstrings for units.
 
 - :mod:`~pypillometry.signal.baseline`: filtering, downsampling and

@@ -97,7 +97,7 @@ class _PupilMethods:
 
         Returns
         -------
-        PupilData
+        EyeData
             the object with the filtered pupil data
         """
         from ..signal.pupil import lowpass_filter_iterative
@@ -145,7 +145,7 @@ class _PupilMethods:
 
         Returns
         -------
-        PupilData
+        EyeData
             the object with the smoothed pupil data
         """
         self._require("pupil")
@@ -220,7 +220,7 @@ class _PupilMethods:
             
         Returns
         -------
-        PupilData
+        EyeData
             The object with merged pupil data stored as "merged_pupil".
             
         Raises
@@ -511,7 +511,7 @@ class _PupilMethods:
             
         Returns
         -------
-        PupilData or Intervals or dict
+        EyeData or Intervals or dict
             If `apply_mask=True`: returns the object (for chaining)
             If `apply_mask=False` and single eye: returns Intervals object
             If `apply_mask=False` and multiple eyes: returns dict of Intervals objects
@@ -639,7 +639,7 @@ class _PupilMethods:
 
         This procedure relies heavily on eye-balling (reconstructing visually convincing signal),
         so it can help to inspect the result visually (e.g., using
-        :meth:`~pypillometry.PupilPlotter.plot_blinks`) to set
+        :meth:`~pypillometry.EyePlotter.plot_blinks`) to set
         good parameter values for `winsize`, `vel_onset`, `vel_offset` and `margin`
         (see paper linked above).
 
@@ -680,7 +680,7 @@ class _PupilMethods:
 
         Returns
         -------
-        PupilData
+        EyeData
             the object with the interpolated pupil data
         """
         self._require("pupil")
@@ -801,7 +801,7 @@ class _PupilMethods:
             
         Returns
         -------
-        PupilData
+        EyeData
             object with baseline estimated (stored in ``data[eye, "baseline"]``)
 
         Raises
@@ -909,7 +909,7 @@ class _PupilMethods:
 
         Returns
         -------
-        PupilData
+        EyeData
             the object with the estimated response
 
         Notes

@@ -20,7 +20,8 @@ class GazePlotter(GenericPlotter):
     object and provides methods to plot the data in various ways.
 
     It is usually not created directly; instead, it is available as the `plot`
-    attribute of a :class:`~pypillometry.GazeData` object, e.g.
+    attribute of an :class:`~pypillometry.EyeData` object (as part of
+    :class:`~pypillometry.EyePlotter`), e.g.
     ``d.plot.plot_heatmap()``.
 
     Parameters

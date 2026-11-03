@@ -143,7 +143,7 @@ class GenericPlotter:
         """
         intervals = _as_intervals(intervals)
         
-        obj = self.obj  # PupilData object
+        obj = self.obj  # EyeData object
         nsubplots = nrow * ncol  # number of subplots per figure
         
         # x-axis in the units of the Intervals (sample numbers for indices)

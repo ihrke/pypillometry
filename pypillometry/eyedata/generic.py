@@ -974,7 +974,7 @@ class GenericEyeData(state.VersionedState, ABC):
         Clear a mask layer (e.g., ``"blink"``) for the selected channels.
 
         Clearing ``"blink"`` removes the blinks and their mask (e.g., to
-        undo :meth:`~pypillometry.PupilData.pupil_blinks_detect`).
+        undo :meth:`~pypillometry.EyeData.pupil_blinks_detect`).
         ``"excluded"`` is a recording-wide layer: clearing it removes the
         excluded periods (`eyes` and `variables` are ignored).
 
@@ -1156,7 +1156,7 @@ class GenericEyeData(state.VersionedState, ABC):
         - both eyes: correlation of the pupils and disparity of the gaze
 
         Further measures are added if available: blinks (after
-        :meth:`~pypillometry.PupilData.pupil_blinks_detect`), masked and
+        :meth:`~pypillometry.EyeData.pupil_blinks_detect`), masked and
         interpolated data (after preprocessing; masked: unusable under the
         mask `policy`, see :meth:`mask`) and calibration/validation
         errors (e.g., when read from an Eyelink file).
@@ -1504,7 +1504,7 @@ class GenericEyeData(state.VersionedState, ABC):
         """
         Reads a :class:`~pypillometry.GenericEyeData` object from a pickle
         or HDF5 file (see :meth:`write_file`).
-        Use as ``pypillometry.PupilData.from_file("yourfile.pypil")``.
+        Use as ``pypillometry.EyeData.from_file("yourfile.pypil")``.
 
         The file is read with :func:`pypillometry.io.read_pickle`, so
         `fname` can also be an HTTP(S) or SSH URL. Files written by older
@@ -2735,7 +2735,7 @@ class GenericEyeData(state.VersionedState, ABC):
             and return the object.
             If False, return merged blinks as dict of Intervals objects without
             storing them or applying masks (same default as
-            :meth:`~pypillometry.PupilData.pupil_blinks_detect`).
+            :meth:`~pypillometry.EyeData.pupil_blinks_detect`).
         inplace : bool or None, optional
             if `True`, make change in-place and return the object;
             if `False`, make and return copy before making changes;
