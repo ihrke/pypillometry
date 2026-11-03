@@ -539,8 +539,8 @@ class GenericEyeData(state.VersionedState, ABC):
         # For non-time keys, set data in EyeDataDict
         # Check for masked array BEFORE converting with asarray
         if isinstance(value, np.ma.MaskedArray):
-            # Extract data and mask from masked array
-            self.data.data[normalized_key] = value.data.astype(float)
+            # Extract data and mask from masked array (layers kept where consistent)
+            self.data.set_with_mask(normalized_key, value.data, preserve_mask=True)
             self.data.set_mask(normalized_key, np.ma.getmaskarray(value), layer="user")
         else:
             # Regular array - let EyeDataDict handle it (creates zero mask)

@@ -453,3 +453,13 @@ class TestGazeLayers:
             np.testing.assert_array_equal(e.data.get_layer(key, "divergence"), expected)
         assert not e.data.get_layer("left_x", "user").any()
         assert not e.clear_layer("divergence").data.mask["right_x"].any()
+
+
+def test_masked_array_assignment_checks_key_and_shape():
+    import pypillometry as pp
+    d = pp.PupilData(left_pupil=np.ones(5), sampling_rate=10)
+    with pytest.raises(ValueError, match="eye_variable"):
+        d["dist"] = np.ma.ones(5)
+    with pytest.raises(ValueError, match="shape"):
+        d["left_a"] = np.ma.ones(4)
+    assert list(d.data.keys()) == ["left_pupil"]
