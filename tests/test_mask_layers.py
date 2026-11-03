@@ -569,3 +569,25 @@ class TestNoStoredMask:
                                       [0, 1, 0, 0, 0, 0])
         np.testing.assert_array_equal(r.data.get_layer("left_pupil", "user"),
                                       [0, 0, 1, 0, 0, 0])
+
+
+class TestConsumersUsePolicy:
+    """Processing and analyses read the data under a mask policy (step 7)."""
+
+    def binocular(self):
+        import pypillometry as pp
+        n = 200
+        left, right = np.full(n, 1000.), np.full(n, 900.)
+        d = pp.PupilData(left_pupil=left, right_pupil=right, sampling_rate=100)
+        d.data.add_mask("left_pupil", np.s_[50:60])
+        d.interpolate_intervals(pp.Intervals([(50, 60)], "samples"), eyes="left")
+        d.data.add_mask("right_pupil", np.s_[100:110])
+        return d
+
+    def test_pupil_merge_eyes(self):
+        d = self.binocular()
+        m = d.pupil_merge_eyes(method="both_available", inplace=False)
+        assert list(np.flatnonzero(m.mask("merged", "pupil"))) == list(range(100, 110))
+        s = d.pupil_merge_eyes(method="both_available", policy="strict", inplace=False)
+        assert list(np.flatnonzero(s.mask("merged", "pupil"))) == list(range(50, 60)) + \
+            list(range(100, 110))

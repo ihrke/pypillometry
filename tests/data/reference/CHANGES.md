@@ -518,3 +518,15 @@ Changes of the API calls alone (same numbers) need no entry.
   `policy="strict"` gives the old values.
 - **Why**: decision 4 (interpolated samples are used in analyses).
 - **Step**: 7, `refactor/07-value-policy`
+
+### `pupil_merge_eyes`: interpolated samples are used
+
+- **Case**: none (no reference case uses `pupil_merge_eyes`)
+- **Change**: `pupil_merge_eyes(..., policy="default")`: valid samples are
+  the usable samples under the mask policy, so interpolated blinks count
+  as valid (before: as missing; with "both_available" the merged sample
+  was masked, otherwise the other eye was used alone). Size: rlmw after
+  case b, default method: 1247 of 20465 merged samples change (median 18,
+  max 51 units). `policy="strict"` gives the old values.
+- **Why**: decision 4 (interpolated samples are used in analyses).
+- **Step**: 7, `refactor/07-value-policy`

@@ -277,6 +277,7 @@ class PupilData(GenericEyeData):
                          lowpass_cutoff: float = 0.2,
                          max_iter: int = 10,
                          keep_eyes: bool = True, 
+                         policy="default",
                          inplace: bool | None = None):
         """
         Merge pupil data from both eyes into a single "merged" variable.
@@ -284,7 +285,9 @@ class PupilData(GenericEyeData):
         This method combines left and right pupil signals, handling missing data
         (masked values) intelligently. Where both eyes are valid, the signals are
         averaged to reduce noise. Where only one eye is valid, that eye's data is
-        used (with offset correction if applicable).
+        used (with offset correction if applicable). Valid samples are the
+        usable samples under the mask `policy` (by default, interpolated
+        samples are used, see :meth:`~pypillometry.GenericEyeData.mask`).
         
         Parameters
         ----------
@@ -312,6 +315,9 @@ class PupilData(GenericEyeData):
         keep_eyes : bool, optional
             If True (default), keep the original left/right pupil data.
             If False, remove the original eye data after merging.
+        policy : str, MaskPolicy or list of str
+            mask policy that decides which samples are valid (see
+            :meth:`~pypillometry.GenericEyeData.mask`); default ``"default"``
         inplace : bool or None, optional
             If True, modify in-place. If False, return a copy.
             If None, use the object's default setting.
@@ -380,8 +386,8 @@ class PupilData(GenericEyeData):
         # get data and mask from object
         left_data = obj.data["left_pupil"]
         right_data = obj.data["right_pupil"]
-        left_mask = np.asarray(obj.data.mask["left_pupil"], dtype=bool)
-        right_mask = np.asarray(obj.data.mask["right_pupil"], dtype=bool)
+        left_mask = obj.mask("left", "pupil", policy)
+        right_mask = obj.mask("right", "pupil", policy)
         
         # Determine valid regions
         both_valid = ~left_mask & ~right_mask
