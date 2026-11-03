@@ -303,11 +303,14 @@ class EyeData(GazeData,PupilData):
             ydist = np.abs(self.data[vy] - midpoint[1]) * scaling_factor_y
             dist = np.sqrt(xdist**2 + ydist**2)
             corr = np.sqrt((dist**2) / (setup.d**2) + 1)  # correction factor
-            # correct the masked samples too and keep the mask
-            x = self[eye, "pupil"]
-            corrected = x.data * corr
-            obj[eye, store_as] = np.ma.array(
-                corrected, mask=np.ma.getmaskarray(x) | np.isnan(corrected))
+            # correct the masked samples too and keep the layers of the
+            # pupil (NaN gaze gives NaN)
+            corrected = self.data[eye, "pupil"] * corr
+            key, target = f"{eye}_pupil", f"{eye}_{store_as}"
+            if target == key:
+                obj.data.set_with_mask(key, corrected, preserve_mask=True)
+            else:
+                obj.data._set_channel(target, corrected, obj.data.layers[key])
 
         return obj
 
