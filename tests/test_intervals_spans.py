@@ -54,3 +54,20 @@ class TestInfiniteBoundsInLists:
         assert e.get_excluded().intervals == [(1500., 2000.)]
         k = d.keep_intervals([(-np.inf, 1500)], inplace=False)
         assert k.get_excluded().intervals == [(1500., 2000.)]
+
+
+class TestNoEventLocking:
+    """Intervals have no event-locking metadata (that is Epochs)."""
+
+    @pytest.mark.parametrize("kwarg", ["interval_window", "event_indices"])
+    def test_removed_arguments(self, kwarg):
+        with pytest.raises(TypeError, match=kwarg):
+            pp.Intervals([(0, 1)], units="ms", **{kwarg: (0, 1)})
+
+    def test_format2_state_keys(self):
+        st = pp.Intervals([(0, 1)], units="ms")._to_state()
+        assert st["interval_window"] is None and st["event_indices"] is None
+        # old states with these keys load
+        iv = pp.Intervals._from_state({**st, "interval_window": (-5, 5),
+                                       "event_indices": [3]})
+        assert iv.intervals == [(0, 1)] and not hasattr(iv, "interval_window")

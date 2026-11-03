@@ -112,11 +112,9 @@ def merge_intervals(*args, label: str = 'merged'):
     # Collect all intervals and metadata
     all_intervals = []
     all_event_labels = []
-    all_event_indices = []
     all_event_onsets = []
     metas = []
     has_labels = False
-    has_indices = False
     has_onsets = False
     
     for obj in intervals_list:
@@ -130,12 +128,6 @@ def merge_intervals(*args, label: str = 'merged'):
             # Pad with None for this object's intervals
             all_event_labels.extend([None] * len(obj.intervals))
         
-        if obj.event_indices is not None:
-            has_indices = True
-            all_event_indices.extend(obj.event_indices)
-        else:
-            all_event_indices.extend([None] * len(obj.intervals))
-        
         if obj.event_onsets is not None:
             has_onsets = True
             all_event_onsets.extend(obj.event_onsets)
@@ -147,28 +139,18 @@ def merge_intervals(*args, label: str = 'merged'):
     if not all_intervals:
         # All were empty
         return Intervals([], units=first_units, label=label,
-                        data_time_range=intervals_list[0].data_time_range,
-                        interval_window=intervals_list[0].interval_window)
+                        data_time_range=intervals_list[0].data_time_range)
     
     # Use data_time_range from first object if available
     data_time_range = intervals_list[0].data_time_range if intervals_list[0].data_time_range is not None else None
-    
-    # Only preserve interval_window if all objects have the same value
-    combined_window = intervals_list[0].interval_window
-    for obj in intervals_list[1:]:
-        if obj.interval_window != combined_window:
-            combined_window = None
-            break
     
     return Intervals(
         all_intervals,
         units=first_units,
         label=label,
         event_labels=all_event_labels if has_labels else None,
-        event_indices=all_event_indices if has_indices else None,
         event_onsets=all_event_onsets if has_onsets else None,
         data_time_range=data_time_range,
-        interval_window=combined_window,
         event_meta=_concat_meta(metas, [len(obj) for obj in intervals_list]) or None
     )
 
@@ -284,19 +266,11 @@ class Intervals(Stateful):
         Descriptive label for the interval collection
     event_labels : list, optional
         Event labels corresponding to each interval
-    event_indices : np.ndarray, optional
-        Indices (into the dataset's events) of the event corresponding to
-        each interval
     data_time_range : tuple, optional
         Range (min, max) of the original dataset (in same units as
         intervals); used for clipping in :meth:`pad` and for plotting
     event_onsets : list or np.ndarray, optional
         Original event onset times (in same units as intervals)
-    interval_window : tuple, optional
-        The relative time window around events, in same units as intervals
-        (e.g., (-200, 800) for 200ms before to 800ms after). When set, indicates that intervals are event-locked and
-        zero corresponds to event onset. Used by
-        :class:`~pypillometry.SegmentedEyeData` to create the appropriate time axis.
     event_meta : dict, optional
         Metadata of the event corresponding to each interval (column name
         -> array with one value per interval; see
@@ -312,14 +286,13 @@ class Intervals(Stateful):
     ...     print(f"{start}-{end}")
     """
     
-    # state (see pypillometry.state); intervals as (n, 2) array
+    # state (see pypillometry.state); intervals as (n, 2) array; format 2
+    # also has "event_indices" and "interval_window" (see _to_state)
     _STATE_FIELDS = (("intervals", "pairs"), "units", "label", "event_labels",
-                     "event_indices", "event_onsets", "data_time_range",
-                     "interval_window", "event_meta")
+                     "event_onsets", "data_time_range", "event_meta")
 
     def __init__(self, intervals, units=UNSET, label=None, event_labels=None,
-                 event_indices=None, data_time_range=None, event_onsets=None,
-                 interval_window=None, event_meta=None):
+                 data_time_range=None, event_onsets=None, event_meta=None):
         """
         Initialize an Intervals object (see class docstring for parameters).
 
@@ -344,23 +317,24 @@ class Intervals(Stateful):
 
         self.label = label
         self.event_labels = event_labels
-        self.event_indices = event_indices
         self.data_time_range = data_time_range
         self.event_onsets = event_onsets
-        self.interval_window = interval_window
         self.event_meta = None if event_meta is None \
             else _meta_dict(event_meta, len(self.intervals))
 
     def _copy_with(self, **changes):
         """New Intervals with the attributes of this one, except `changes`."""
         kwargs = dict(intervals=self.intervals, units=self.units, label=self.label,
-                      event_labels=self.event_labels, event_indices=self.event_indices,
+                      event_labels=self.event_labels,
                       data_time_range=self.data_time_range,
                       event_onsets=self.event_onsets,
-                      interval_window=self.interval_window,
                       event_meta=self.event_meta)
         kwargs.update(changes)
         return Intervals(**kwargs)
+
+    def _to_state(self) -> dict:
+        """State of the object (format 2 has `event_indices` and `interval_window`)."""
+        return {**super()._to_state(), "event_indices": None, "interval_window": None}
 
     def _in_own_units(self, value):
         """`value` (e.g., a duration) in the units of this object; plain numbers are unchanged."""
@@ -546,7 +520,7 @@ class Intervals(Stateful):
         - Units: other is converted to self's units if different
         - data_time_range: expanded to cover both
         - label: combined with ' + '
-        - event_labels/indices/onsets: concatenated
+        - event_labels/onsets/meta: concatenated
         
         Parameters
         ----------
@@ -602,19 +576,6 @@ class Intervals(Stateful):
         else:
             combined_event_labels = None
         
-        # Combine event_indices
-        if self.event_indices is not None and other.event_indices is not None:
-            combined_event_indices = np.concatenate([
-                np.asarray(self.event_indices), 
-                np.asarray(other.event_indices)
-            ])
-        elif self.event_indices is not None:
-            combined_event_indices = np.asarray(self.event_indices)
-        elif other.event_indices is not None:
-            combined_event_indices = np.asarray(other.event_indices)
-        else:
-            combined_event_indices = None
-        
         # Combine event_onsets (convert other's if needed)
         if self.event_onsets is not None and other_converted.event_onsets is not None:
             combined_event_onsets = np.concatenate([
@@ -644,21 +605,13 @@ class Intervals(Stateful):
         combined_meta = _concat_meta([self.event_meta or {}, other.event_meta or {}],
                                      [len(self), len(other)]) or None
 
-        # Only preserve interval_window if both have the same value
-        combined_interval_window = None
-        if self.interval_window is not None and other_converted.interval_window is not None:
-            if self.interval_window == other_converted.interval_window:
-                combined_interval_window = self.interval_window
-        
         return Intervals(
             combined_intervals,
             self.units,
             label=combined_label,
             event_labels=combined_event_labels,
-            event_indices=combined_event_indices,
             data_time_range=combined_range,
             event_onsets=combined_event_onsets,
-            interval_window=combined_interval_window,
             event_meta=combined_meta
         )
     
@@ -754,8 +707,7 @@ class Intervals(Stateful):
                 units=target_units,
                 data_time_range=scale(self.data_time_range),
                 event_onsets=None if self.event_onsets is None
-                else np.asarray(self.event_onsets) * fac,
-                interval_window=scale(self.interval_window))
+                else np.asarray(self.event_onsets) * fac)
 
         if data is None:
             raise ValueError(
@@ -767,28 +719,21 @@ class Intervals(Stateful):
         starts_ends = self._positions_to_ms(np.reshape(self.intervals, (-1, 2)), data)
         onsets = None if self.event_onsets is None \
             else self._positions_to_ms(self.event_onsets, data)
-        window = self.interval_window
         if target_units == "samples":
             converted = _ms_to_samples(data, starts_ends).reshape(-1, 2)
             if onsets is not None:
                 onsets = np.clip(_ms_to_samples(data, onsets), 0, n - 1)
             data_time_range = (0, n)
-            if window is not None:
-                # durations relative to the event
-                window = tuple(int(round(w * _MS_PER_UNIT[self.units] * data.fs / 1000.))
-                               for w in window)
         else:
             fac = 1.0 / _MS_PER_UNIT[target_units]
             converted = starts_ends * fac
             if onsets is not None:
                 onsets = onsets * fac
             data_time_range = (float(data.tx[0]) * fac, float(data.tx[-1]) * fac)
-            if window is not None:
-                window = tuple(w * 1000. / data.fs * fac for w in window)
         return self._copy_with(
             intervals=[tuple(row) for row in np.asarray(converted).tolist()],
             units=target_units, data_time_range=data_time_range,
-            event_onsets=onsets, interval_window=window)
+            event_onsets=onsets)
     
     def merge(self, merge_sep='_', distance: float = 0):
         """
@@ -796,7 +741,6 @@ class Intervals(Stateful):
         
         When intervals are merged, metadata is handled as follows:
         - event_labels: Labels of merged intervals are joined with merge_sep
-        - event_indices: First index of merged group is kept
         - event_onsets: First onset of merged group is kept
         - event_meta: Metadata of the first interval of merged group is kept
         
@@ -855,7 +799,6 @@ class Intervals(Stateful):
         
         # Build merged metadata
         merged_labels = None
-        merged_indices = None
         merged_onsets = None
         
         if self.event_labels is not None:
@@ -863,10 +806,6 @@ class Intervals(Stateful):
             for group in merged_groups:
                 group_labels = [str(self.event_labels[i]) for i in group]
                 merged_labels.append(merge_sep.join(group_labels))
-        
-        if self.event_indices is not None:
-            # Keep the first index from each merge group
-            merged_indices = [self.event_indices[group[0]] for group in merged_groups]
         
         if self.event_onsets is not None:
             # Keep the first onset from each merge group
@@ -877,13 +816,10 @@ class Intervals(Stateful):
             first = [group[0] for group in merged_groups]
             merged_meta = {name: col[first] for name, col in self.event_meta.items()}
 
-        # interval_window is not preserved after merge (merged intervals aren't event-locked)
         return Intervals(merged, self.units, self.label, 
                         event_labels=merged_labels,
-                        event_indices=merged_indices,
                         data_time_range=self.data_time_range,
                         event_onsets=merged_onsets,
-                        interval_window=None,
                         event_meta=merged_meta)
 
     def complement(self, data=None) -> 'Intervals':
@@ -1010,20 +946,13 @@ class Intervals(Stateful):
             for start, end in self.intervals
         ]
         
-        # Update interval_window if it exists
-        padded_window = None
-        if self.interval_window is not None:
-            padded_window = (self.interval_window[0] - left, self.interval_window[1] + right)
-        
         return Intervals(
             padded, 
             self.units, 
             self.label,
             event_labels=self.event_labels,
-            event_indices=self.event_indices,
             data_time_range=self.data_time_range,
             event_onsets=self.event_onsets,
-            interval_window=padded_window,
             event_meta=self.event_meta
         )
     
@@ -1128,10 +1057,8 @@ class Intervals(Stateful):
                 units=self.units,
                 label=self.label,
                 event_labels=None,
-                event_indices=None,
                 data_time_range=self.data_time_range,
-                event_onsets=None,
-                interval_window=self.interval_window
+                event_onsets=None
             )
         
         min_duration = self._in_own_units(min_duration)
@@ -1175,10 +1102,6 @@ class Intervals(Stateful):
         if self.event_labels is not None:
             filtered_event_labels = [self.event_labels[i] for i in indices]
         
-        filtered_event_indices = None
-        if self.event_indices is not None:
-            filtered_event_indices = np.array([self.event_indices[i] for i in indices])
-        
         filtered_event_onsets = None
         if self.event_onsets is not None:
             filtered_event_onsets = np.array([self.event_onsets[i] for i in indices])
@@ -1192,10 +1115,8 @@ class Intervals(Stateful):
             units=self.units,
             label=self.label,
             event_labels=filtered_event_labels,
-            event_indices=filtered_event_indices,
             data_time_range=self.data_time_range,
             event_onsets=filtered_event_onsets,
-            interval_window=self.interval_window,
             event_meta=filtered_meta
         )
 
@@ -1208,7 +1129,7 @@ class Intervals(Stateful):
         -------
         pandas.DataFrame
             DataFrame with columns ``start``, ``end``, and ``duration``. When metadata
-            is available, columns ``event_label``, ``event_index``, and ``event_onset``
+            is available, columns ``event_label`` and ``event_onset``
             are included, and the column ``units`` gives the units. The
             metadata of the events (`event_meta`) are added as columns.
 
@@ -1229,8 +1150,6 @@ class Intervals(Stateful):
             record["units"] = self.units
             if self.event_labels is not None and idx < len(self.event_labels):
                 record["event_label"] = self.event_labels[idx]
-            if self.event_indices is not None and idx < len(self.event_indices):
-                record["event_index"] = self.event_indices[idx]
             if self.event_onsets is not None and idx < len(self.event_onsets):
                 record["event_onset"] = self.event_onsets[idx]
             for name, col in (self.event_meta or {}).items():

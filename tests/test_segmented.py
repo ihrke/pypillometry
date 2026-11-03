@@ -560,38 +560,6 @@ class TestSegmentedEyeDataTimeAxis(unittest.TestCase):
         zero_idx = np.argmin(np.abs(segments.tx))
         expected_zero_idx = int(segments.n_timepoints * 200 / 1000)  # 200ms into a 1000ms window
         self.assertAlmostEqual(zero_idx, expected_zero_idx, delta=5)
-    
-    def test_interval_window_preserved_across_units(self):
-        """Test that interval_window is preserved when converting units"""
-        intervals = Intervals(
-            [(0, 100), (200, 300)],
-            units="ms",
-            label="test",
-            interval_window=(-50, 50)
-        )
-        
-        # Convert to seconds
-        intervals_sec = intervals.to_units("sec")
-        
-        # interval_window should be converted too
-        self.assertIsNotNone(intervals_sec.interval_window)
-        self.assertAlmostEqual(intervals_sec.interval_window[0], -0.05)
-        self.assertAlmostEqual(intervals_sec.interval_window[1], 0.05)
-    
-    def test_interval_window_updated_by_pad(self):
-        """Test that padding updates interval_window"""
-        intervals = Intervals(
-            [(100, 200), (300, 400)],
-            units="ms",
-            label="test",
-            interval_window=(-50, 50)
-        )
-        
-        # Pad by 10ms on each side
-        padded = intervals.pad(left=10, right=10)
-        
-        # interval_window should be expanded
-        self.assertEqual(padded.interval_window, (-60, 60))
 
 
 class TestGroupLevelSegmentedData(unittest.TestCase):

@@ -85,32 +85,27 @@ class TestIntervalsClass(unittest.TestCase):
         """Test Intervals with event metadata"""
         intervals_list = [(0, 100), (200, 300)]
         event_labels = ["event1", "event2"]
-        event_indices = np.array([0, 5])
         
         intervals = Intervals(
             intervals_list, 
             units="ms", 
             label="stimuli",
             event_labels=event_labels,
-            event_indices=event_indices
         )
         
         self.assertEqual(intervals.label, "stimuli")
         self.assertEqual(intervals.event_labels, ["event1", "event2"])
-        np.testing.assert_array_equal(intervals.event_indices, [0, 5])
 
     def test_intervals_as_pandas(self):
         """Test conversion of intervals to pandas DataFrame"""
         intervals_list = [(0, 100), (200, 260)]
         event_labels = ["stim", "resp"]
-        event_indices = np.array([0, 1])
         event_onsets = [0, 200]
         intervals = Intervals(
             intervals_list,
             units="ms",
             label="events",
             event_labels=event_labels,
-            event_indices=event_indices,
             event_onsets=event_onsets,
         )
 
@@ -120,7 +115,6 @@ class TestIntervalsClass(unittest.TestCase):
         self.assertTrue((df["start"].values == np.array([0, 200])).all())
         self.assertTrue((df["duration"].values == np.array([100, 60])).all())
         self.assertTrue((df["event_label"].values == np.array(event_labels)).all())
-        self.assertTrue((df["event_index"].values == event_indices).all())
         self.assertTrue((df["event_onset"].values == np.array(event_onsets)).all())
 
         empty_df = Intervals([], units="ms").as_pandas()
@@ -146,12 +140,10 @@ class TestIntervalsMethods(unittest.TestCase):
         """Test that merge preserves and combines metadata"""
         intervals_list = [(0, 100), (50, 150), (200, 300)]
         event_labels = ["event1", "event2", "event3"]
-        event_indices = [0, 1, 2]
         event_onsets = [10, 60, 210]
         
         intervals = Intervals(intervals_list, units="ms", label="test",
                              event_labels=event_labels,
-                             event_indices=event_indices,
                              event_onsets=event_onsets)
         
         merged = intervals.merge()
@@ -165,9 +157,7 @@ class TestIntervalsMethods(unittest.TestCase):
         self.assertEqual(merged.event_labels[1], "event3")
         
         # First interval: first index from merged group
-        self.assertEqual(merged.event_indices[0], 0)
         # Second interval: original index
-        self.assertEqual(merged.event_indices[1], 2)
         
         # First interval: first onset from merged group
         self.assertEqual(merged.event_onsets[0], 10)
@@ -246,7 +236,6 @@ class TestIntervalsMethods(unittest.TestCase):
             [(10, 15), (17, 22), (30, 35)], 
             units="ms",
             event_labels=["a", "b", "c"],
-            event_indices=[0, 1, 2],
             event_onsets=[10, 17, 30]
         )
         
@@ -256,7 +245,6 @@ class TestIntervalsMethods(unittest.TestCase):
         self.assertEqual(len(merged), 2)
         self.assertEqual(merged.event_labels[0], "a_b")  # Labels joined
         self.assertEqual(merged.event_labels[1], "c")
-        self.assertEqual(merged.event_indices[0], 0)  # First index kept
         self.assertEqual(merged.event_onsets[0], 10)  # First onset kept
     
     def test_intervals_merge_with_distance_preserves_units(self):
@@ -299,7 +287,6 @@ class TestIntervalsMethods(unittest.TestCase):
             units="ms",
             label="test",
             event_labels=["a", "b"],
-            event_indices=[0, 1],
             event_onsets=[100, 300],
             data_time_range=(0, 1000)
         )
@@ -309,7 +296,6 @@ class TestIntervalsMethods(unittest.TestCase):
         self.assertEqual(padded.units, "ms")
         self.assertEqual(padded.label, "test")
         self.assertEqual(padded.event_labels, ["a", "b"])
-        self.assertEqual(padded.event_indices, [0, 1])
         self.assertEqual(padded.event_onsets, [100, 300])
         self.assertEqual(padded.data_time_range, (0, 1000))
     
@@ -470,14 +456,6 @@ class TestIntervalsAddOperator(unittest.TestCase):
         
         self.assertEqual(c.event_labels, ["event1", "event2"])
     
-    def test_add_preserves_event_indices(self):
-        """Test that event_indices are concatenated"""
-        a = Intervals([(0, 100)], units="ms", event_indices=np.array([0]))
-        b = Intervals([(200, 300)], units="ms", event_indices=np.array([5]))
-        c = a + b
-        
-        np.testing.assert_array_equal(c.event_indices, [0, 5])
-    
     def test_add_preserves_event_onsets(self):
         """Test that event_onsets are concatenated and converted"""
         a = Intervals([(0, 100)], units="ms", event_onsets=np.array([50]))
@@ -517,7 +495,6 @@ class TestIntervalsAddOperator(unittest.TestCase):
         c = a + b
         
         self.assertIsNone(c.event_labels)
-        self.assertIsNone(c.event_indices)
         self.assertIsNone(c.event_onsets)
         self.assertIsNone(c.data_time_range)
     
@@ -1071,12 +1048,11 @@ class TestIntervalsConversionMethods(unittest.TestCase):
         """a time is converted to the first sample at or after it"""
         d = timebase(10, fs=100., t0=1000.)  # samples at 1000, 1010, ..., 1090 ms
         intervals = Intervals([(1000, 1020), (1015, 1100)], units="ms",
-                              event_onsets=[1005, 1015], interval_window=(-5, 15))
+                              event_onsets=[1005, 1015])
         idx = intervals.to_units("indices", d)
         self.assertEqual(idx.units, "samples")
         self.assertEqual(idx.intervals, [(0, 2), (2, 10)])
         self.assertEqual(list(idx.event_onsets), [1, 2])
-        self.assertEqual(idx.interval_window, (0, 2))  # durations via fs
         self.assertEqual(idx.data_time_range, (0, 10))
         # and back: each index is the time of its sample
         back = idx.to_units("ms", d)
@@ -1175,17 +1151,14 @@ class TestMergeIntervals(unittest.TestCase):
         """Test that all metadata is preserved"""
         intervals1 = Intervals([(0, 100), (200, 300)], units="ms",
                               event_labels=["a", "b"],
-                              event_indices=[0, 1],
                               event_onsets=[10, 20])
         intervals2 = Intervals([(400, 500)], units="ms",
                               event_labels=["c"],
-                              event_indices=[2],
                               event_onsets=[30])
         
         merged = merge_intervals(intervals1, intervals2)
         
         self.assertEqual(merged.event_labels, ["a", "b", "c"])
-        self.assertEqual(list(merged.event_indices), [0, 1, 2])
         self.assertEqual(list(merged.event_onsets), [10, 20, 30])
     
     def test_merge_intervals_partial_metadata(self):
@@ -1210,7 +1183,6 @@ class TestMergeIntervals(unittest.TestCase):
         
         # Should have no metadata
         self.assertIsNone(merged.event_labels)
-        self.assertIsNone(merged.event_indices)
         self.assertIsNone(merged.event_onsets)
     
     def test_merge_intervals_does_not_merge_overlaps(self):
@@ -1541,7 +1513,6 @@ class TestIntervalsFilter(unittest.TestCase):
             units="ms", 
             label="test_label",
             event_labels=["a", "b", "c"],
-            event_indices=np.array([0, 1, 2]),
             event_onsets=np.array([50, 250, 450]),
             data_time_range=(0, 1000))
         
@@ -1550,7 +1521,6 @@ class TestIntervalsFilter(unittest.TestCase):
         self.assertEqual(filtered.units, "ms")
         self.assertEqual(filtered.label, "test_label")
         self.assertEqual(filtered.event_labels, ["a", "b", "c"])
-        np.testing.assert_array_equal(filtered.event_indices, [0, 1, 2])
         np.testing.assert_array_equal(filtered.event_onsets, [50, 250, 450])
         self.assertEqual(filtered.data_time_range, (0, 1000))
     
@@ -1560,7 +1530,6 @@ class TestIntervalsFilter(unittest.TestCase):
             [(0, 50), (200, 300), (400, 500)], 
             units="ms",
             event_labels=["short", "medium", "long"],
-            event_indices=np.array([0, 1, 2]),
             event_onsets=np.array([25, 250, 450])
         )
         
@@ -1569,7 +1538,6 @@ class TestIntervalsFilter(unittest.TestCase):
         
         self.assertEqual(len(filtered), 2)
         self.assertEqual(filtered.event_labels, ["medium", "long"])
-        np.testing.assert_array_equal(filtered.event_indices, [1, 2])
         np.testing.assert_array_equal(filtered.event_onsets, [250, 450])
     
     def test_filter_empty_intervals(self):
