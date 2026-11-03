@@ -235,7 +235,6 @@ class GenericEyeData(state.VersionedState, ABC):
     # state (see pypillometry.state); subclasses add their own fields
     _STATE_FIELDS = (
         "name", "fs", "tx", ("data", "EyeDataDict"),
-        ("blinks", "dict:Intervals", "_blinks"),
         ("excluded", "Intervals", "_excluded"),
         "params", "history", "inplace", "info", ("original", "versioned"))
     # the events are stored as "event_onsets", "event_labels" and
@@ -257,8 +256,12 @@ class GenericEyeData(state.VersionedState, ABC):
         """Set the attributes from a state of the current version.
 
         States written before the mask layers existed (no ``layers`` in the
-        data) store the interpolated blinks as Intervals; they become the
-        ``"interpolated"`` layer where the stored mask is set.
+        data) store the blinks and interpolated blinks as Intervals. The
+        blinks become the ``"blink"`` layer; where they are masked (and not
+        NaN), the mask is moved from the stored mask to the
+        ``"_blink_applied"`` layer, so that re-detecting blinks unmasks them.
+        The interpolated blinks become the ``"interpolated"`` layer where the
+        stored mask is set.
         """
         super()._set_state(st)
         self._events = Events(st["event_onsets"], st["event_labels"], units="ms",
@@ -269,6 +272,13 @@ class GenericEyeData(state.VersionedState, ABC):
                     iv = Intervals._from_state(ivst)
                     self.data.set_layer(key, "interpolated",
                                         iv.to_mask(self).astype(bool) & self.data._mask[key])
+            for key, ivst in (st.get("blinks") or {}).items():
+                if ivst is not None and key in self.data:
+                    blink = Intervals._from_state(ivst).to_mask(self).astype(bool)
+                    applied = blink & self.data._mask[key] & ~np.isnan(self.data.data[key])
+                    self.data.set_layer(key, "blink", blink)
+                    self.data.set_layer(key, "_blink_applied", applied)
+                    self.data._mask[key] &= ~applied
 
     @abstractmethod
     def __init__():
@@ -318,7 +328,6 @@ class GenericEyeData(state.VersionedState, ABC):
             event_labels = np.full(len(event_onsets), "")
         self._events = self._check_events(Events(event_onsets, event_labels, units="ms"))
 
-        self._init_blinks()
         self._excluded = Intervals([], units="ms", label="excluded")
 
         ## empty parameter dict
@@ -684,14 +693,31 @@ class GenericEyeData(state.VersionedState, ABC):
         Returns
         -------
         dict
-            dictionary with blinks for each eye
+            dictionary with blinks (Intervals in samples) for each
+            eye/variable, keys like "left_pupil"
         """
-        return self._blinks
+        return {key: Intervals.from_mask(self.data.get_layer(key, "blink"), self,
+                                         label=f"{key}_blinks")
+                for key in self.data.keys()}
+
+    def _set_blink_layer(self, key, intervals, apply_mask):
+        """Replace the blink layer of `key` by `intervals` (None: no blinks);
+        with `apply_mask`, the blinks are also masked in ``data.mask``."""
+        blink = (np.zeros(len(self.tx), dtype=bool) if intervals is None
+                 else intervals.to_mask(self).astype(bool))
+        self.data.set_layer(key, "blink", blink, replace=True)
+        if apply_mask:
+            self.data.set_layer(key, "_blink_applied", blink, replace=True)
+        else:
+            self.data.clear_layer(key, "_blink_applied")
     
     @keephistory
     def set_blinks(self, intervals, eyes=[], variables=[], apply_mask=True):
         """
         Set blinks for specified eyes and variables (in-place).
+
+        The blinks replace the ``"blink"`` layer of the selected variables
+        (and the mask of the blinks set before).
 
         Parameters
         ----------
@@ -703,8 +729,8 @@ class GenericEyeData(state.VersionedState, ABC):
             - a dict of Intervals (or `None`) with keys like "left_pupil",
               "right_x", etc.; when a dict is provided, `eyes` and
               `variables` are ignored;
-            - `None`: remove the stored blinks for the specified
-              eyes/variables (the mask is not changed).
+            - `None`: remove the blinks for the specified
+              eyes/variables (and their mask).
         eyes : str or list of str, optional
             eye(s) to set blinks for (e.g., ``["left", "right"]``);
             if empty, all available eyes. Ignored if `intervals` is a dict.
@@ -713,45 +739,35 @@ class GenericEyeData(state.VersionedState, ABC):
             if empty, all available variables. Ignored if `intervals` is a dict.
         apply_mask : bool, optional
             If True, also apply the intervals as mask to the data
-            (existing masks are kept). If False, only store intervals.
-            Default is True.
+            (``data.mask``; other masks are kept). If False, only store
+            intervals. Default is True.
         """
         # Check if intervals is a dict
         if isinstance(intervals, dict):
-            # Store each Intervals object to its corresponding eye_variable
             for key, interval_obj in intervals.items():
                 if interval_obj is not None and not isinstance(interval_obj, Intervals):
                     raise TypeError(f"Dict values must be Intervals objects or None, got {type(interval_obj)} for key '{key}'")
-                
-                self._blinks[key] = interval_obj
-            
-            # Apply mask if requested (filter out None values)
-            if apply_mask:
-                intervals_to_mask = {k: v for k, v in intervals.items() if v is not None}
-                if intervals_to_mask:
-                    self.mask_intervals(intervals_to_mask, inplace=True)
+            per_key = intervals
         else:
             # Single Intervals object - apply to specified eyes/variables
             if intervals is not None and not isinstance(intervals, Intervals):
                 raise TypeError(f"intervals must be an Intervals object, dict, or None, got {type(intervals)}")
-            
-            keys = [f"{eye}_{var}" for eye, var in self.data.select(eyes, variables)]
-            
-            # Store for all existing combinations of eyes and variables
-            for key in keys:
-                self._blinks[key] = intervals
-            
-            # Apply mask if requested and intervals exist
-            if apply_mask and intervals is not None:
-                self.mask_intervals({key: intervals for key in keys}, inplace=True)
+            per_key = {f"{eye}_{var}": intervals for eye, var in self.data.select(eyes, variables)}
+
+        for key, interval_obj in per_key.items():
+            if key not in self.data:
+                logger.warning(f"Key '{key}' not found in data, skipping")
+                continue
+            self._set_blink_layer(key, interval_obj, apply_mask)
 
     def get_blinks(self, eyes: str|list = [], variables: str|list = [], 
                    units: str = "samples"):
         """
         Get blinks as Intervals object or dict of Intervals.
 
-        If no blinks are stored for an eye/variable, an empty Intervals
-        object is returned for it.
+        The blinks are the runs of the ``"blink"`` layer (blinks that
+        overlap or touch are one blink). If no blinks are stored for an
+        eye/variable, an empty Intervals object is returned for it.
 
         Parameters
         ----------
@@ -784,27 +800,7 @@ class GenericEyeData(state.VersionedState, ABC):
         >>> blinks_dict = data.get_blinks(['left', 'right'], 'pupil')
         >>> blinks_idx = blinks_ms.to_units("indices", data)
         """
-        return self._stored_intervals(self._blinks, eyes, variables, units, "blinks")
-
-    def _stored_intervals(self, store, eyes, variables, units, suffix):
-        """Intervals stored in `store` (e.g., blinks) for eyes/variables.
-
-        Returns an Intervals object for a single eye and variable, else a
-        dict (keys like "left_pupil") over the existing eye/variable
-        combinations; combinations without stored intervals get empty Intervals.
-        """
-        pairs = self.data.select(eyes, variables)
-        eyes, variables = self._get_eye_var(eyes, variables)
-        result = {}
-        for e, v in pairs:
-            key = f"{e}_{v}"
-            iv = store.get(key)
-            if iv is None:
-                iv = Intervals([], units="samples", label=f"{key}_{suffix}")
-            result[key] = iv.to_units(units, self)
-        if len(eyes) > 1 or len(variables) > 1:
-            return result
-        return next(iter(result.values()))
+        return self._layer_intervals("blink", eyes, variables, units, "blinks")
 
     def get_interpolated_blinks(self, eyes: str|list = [], variables: str|list = [], 
                                 units: str = "samples"):
@@ -1030,23 +1026,6 @@ class GenericEyeData(state.VersionedState, ABC):
         # Use Intervals.from_mask() for the conversion
         intervals_obj = Intervals.from_mask(mask)
         return intervals_obj.intervals
-
-    def _init_blinks(self, eyes=[], variables=[]):
-        """Initialize blink-arrays for selected eyes and variables.
-
-        All by default
-
-        Parameters
-        ----------
-        eyes: str or list
-            list of eyes to initialize blinks for; if empty, initialize for all
-        variables: str or list
-            list of variables to initialize blinks for; if empty, initialize for all
-        """        
-        ## initialize blinks (for the existing eye/variable combinations)
-        self._blinks={}
-        for eye,variable in self.data.select(eyes, variables):
-            self._blinks[f"{eye}_{variable}"] = None
 
     def nblinks(self, eyes=[], variables=[]) -> Dict[str, int]:
         """
@@ -1317,8 +1296,8 @@ class GenericEyeData(state.VersionedState, ABC):
         Remap the stored intervals after the samples or the clock changed (in place).
 
         Called by the operations that change the samples or the clock, after
-        the new time vector is set. Remaps the blinks, the interpolated
-        blinks and the excluded periods.
+        the new time vector is set. Remaps the excluded periods (the mask
+        layers are moved with the samples).
 
         Parameters
         ----------
@@ -1352,9 +1331,6 @@ class GenericEyeData(state.VersionedState, ABC):
                 return moved
             return Intervals(moved.to_units("ms", self).intervals, "ms", label=iv.label)
 
-        for key, iv in self._blinks.items():
-            if iv is not None:
-                self._blinks[key] = remap(iv, keep_units=False)
         self._excluded = remap(self._excluded, keep_units=True)
 
     def _original_time(self, t):
@@ -1922,18 +1898,6 @@ class GenericEyeData(state.VersionedState, ABC):
         if len(remaining_vars) == 0 or len(remaining_eyes) == 0:
             raise ValueError("Dropping the specified data would leave no data remaining")
         
-        # Also clean up related stored data (blinks, interpolated_blinks, etc.)
-        # Remove blinks for dropped eyes/variables
-        blinks_to_remove = []
-        for key in result._blinks.keys():
-            parts = key.split("_", 1)
-            if len(parts) == 2:
-                eye, var = parts
-                if eye in eyes or var in variables:
-                    blinks_to_remove.append(key)
-        for key in blinks_to_remove:
-            del result._blinks[key]
-
         
         return result._cast_to_data_class()
 
@@ -2753,7 +2717,6 @@ class GenericEyeData(state.VersionedState, ABC):
                 if not keep_eyes:
                     for eye in eyes:
                         logger.debug("Dropping eye %s for variable %s" % (eye, var))
-                        obj.set_blinks(None, eyes=[eye], variables=[var])
                         del obj.data[eye+"_"+var]
         else:
             raise ValueError("Method %s not implemented" % method)
@@ -3294,20 +3257,16 @@ class GenericEyeData(state.VersionedState, ABC):
         return self._excluded.to_mask(self).astype(bool)
 
     def _drop_excluded_blinks(self):
-        """Remove stored blinks that overlap or touch an excluded period."""
+        """Remove blinks (from the blink layer) that overlap or touch an
+        excluded period (their mask is kept)."""
         excl = self._excluded_mask()
         if not excl.any():
             return
         n = len(excl)
-        for key, iv in self._blinks.items():
-            if iv is None or len(iv) == 0:
-                continue
-            ix = iv.to_units("samples", self)
-            keep = [k for k, (on, off) in enumerate(ix.intervals)
-                    if not excl[min(max(int(on) - 1, 0), n):min(max(int(off) + 1, 0), n)].any()]
-            if len(keep) < len(iv):
-                self._blinks[key] = Intervals([iv.intervals[k] for k in keep], iv.units,
-                                              label=iv.label)
+        for key in self.data.keys():
+            for on, off in Intervals.from_mask(self.data.get_layer(key, "blink")).intervals:
+                if excl[max(on - 1, 0):min(off + 1, n)].any():
+                    self.data.clear_layer(key, "blink", where=np.s_[on:off])
 
     @keephistory
     def exclude_intervals(self, intervals, inplace=None):

@@ -462,7 +462,7 @@ def _segment_time_axis(stored):
 
 #: layers (stored in case b, as intervals) that are decimated with the
 #: ">1/2 of the window" rule and are part of the mask (step 5)
-DECIMATED_LAYERS = ("interpolated",)
+DECIMATED_LAYERS = ("interpolated", "blinks")
 
 
 def _more_than_half(case_id, key):
@@ -482,8 +482,9 @@ def _more_than_half(case_id, key):
 
 
 def _downsampled_runs(case_id, key, stored):
-    """Interpolated blinks after `downsample`: runs of the decimated layer."""
-    run = _more_than_half(case_id, key.partition(".")[2])["interpolated"]
+    """Blinks / interpolated blinks after `downsample`: runs of the decimated layer."""
+    name, _, key = key.partition(".")
+    run = _more_than_half(case_id, key)[name]
     return iv_samples(pp.Intervals.from_mask(run))
 
 
@@ -504,6 +505,7 @@ def _downsampled_masked(case_id, key, stored):
 #: function mapping (case id, key, stored reference value) to the expected value
 CHANGED = {("e.segments.", "tx."): lambda case_id, key, stored: _segment_time_axis(stored),
            ("g.downsample.", "interpolated."): _downsampled_runs,
+           ("g.downsample.", "blinks."): _downsampled_runs,
            ("g.downsample.", "mask."): _downsampled_mask,
            ("g.downsample.", "masked."): _downsampled_masked}
 

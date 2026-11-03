@@ -165,7 +165,7 @@ Changes of the API calls alone (same numbers) need no entry.
   `interpolated` layer on `<eye>_pupilinterp`, so
   `get_interpolated_blinks(eye, "pupilinterp")` returns them (before they
   were stored for `<eye>_pupil`, whose data were not interpolated). The new
-  variable gets the masks and layers of the pupil.
+  variable gets the masks and layers of the pupil (its blinks, too).
   Calling `pupil_blinks_interpolate` again adds to the layer (before, the
   interpolated blinks of the last call replaced the earlier ones; the
   earlier samples stayed masked).
@@ -181,4 +181,29 @@ Changes of the API calls alone (same numbers) need no entry.
   only `pupil_blinks_interpolate` was recorded). With `store_as_suffix`,
   the new variable gets the masks and layers of the original one.
 - **Why**: one layer for reconstructed samples (refactor plan 2.2).
+- **Step**: 5, `refactor/05-mask-layers`
+
+### Blinks are a layer: runs of the layer, `downsample` and `set_blinks`
+
+- **Case**: `g.downsample.rlmw.{250,100}`, keys `blinks.*` and, with the
+  blinks of case b being applied as mask, `mask.*` and `masked.*` (pupil)
+  (expected values: `_downsampled_runs`, `_downsampled_mask`)
+- **Change**: blinks are stored as the `blink` layer of their variable;
+  `get_blinks()` returns the runs of the layer, so blinks that overlap or
+  touch are one blink (a blink inside another one is gone, finding 4.3:
+  `blinks_merge_close` no longer shrinks it), and blinks set in time units
+  come back as sample runs converted to the requested units. After
+  `downsample`, a new sample is in a blink if blinks cover more than half
+  of its window (before: start rounded down, end up); the mask of applied
+  blinks follows the same rule. After `fill_time_discontinuities`, a blink
+  across a gap is two blinks (the inserted samples are not blinks).
+  `set_blinks` replaces the blinks *and their mask*: `set_blinks(None)`
+  unmasks the blinks that were set with `apply_mask=True` (before, the
+  mask stayed, finding 4.2), and so does setting other blinks; NaN samples
+  and other masks stay masked. Blinks removed by `exclude_intervals`
+  (touching an excluded period) keep their mask, as before. The quality
+  report has the blink section for all eyes once blinks were detected
+  for any eye (0 blinks for eyes without detection).
+- **Why**: one store for blinks (finding D1); the mask of the blinks can
+  be undone.
 - **Step**: 5, `refactor/05-mask-layers`

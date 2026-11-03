@@ -126,7 +126,6 @@ class TestResetTime(unittest.TestCase):
             with self.subTest(units=units):
                 d = self.make(units).reset_time(inplace=False)
                 self.assertEqual(d.tx[0], 0.)
-                self.assertEqual(d._blinks["left_pupil"].units, units)
                 b = d.get_blinks("left", "pupil")
                 self.assertEqual(list(b.intervals), [(300, 320)])
                 # blinks and mask agree

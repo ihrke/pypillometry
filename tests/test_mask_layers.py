@@ -208,12 +208,16 @@ def pp_policy(*args, **kwargs):
 
 
 def blink_data():
-    """PupilData (100 Hz, 10 s) with NaN blinks."""
+    """PupilData (100 Hz, 10 s) with NaN blinks; the pupil closes and opens
+    over 5 samples around them."""
     import pypillometry as pp
     n = 1000
     t = np.arange(n) * 10.
     p = 1000 + 20 * np.sin(2 * np.pi * t / 3000)
+    ramp = np.linspace(0, 1, 5)
     for on, off in [(200, 215), (500, 520), (800, 812)]:
+        p[on - 5:on] -= 300 * ramp
+        p[off:off + 5] -= 300 * ramp[::-1]
         p[on:off] = np.nan
     return pp.PupilData(left_pupil=p, sampling_rate=100)
 
@@ -250,3 +254,53 @@ class TestInterpolatedLayer:
             np.testing.assert_array_equal(
                 np.asarray(d.get_interpolated_blinks("left", var).intervals), [(200, 215), (500, 520)])
         assert d.data.mask["left_pupil"][200:215].all()
+
+
+class TestBlinkLayer:
+
+    def test_detect_sets_layer_and_mask(self):
+        d = blink_data().pupil_blinks_detect(apply_mask=True)
+        blink = d.data.get_layer("left_pupil", "blink")
+        np.testing.assert_array_equal(d.get_blinks("left", "pupil").to_mask(d).astype(bool), blink)
+        assert d.data.mask["left_pupil"][blink].all()
+        assert d.mask("left", "pupil")[blink].all()
+
+    def test_set_blinks_none_and_clear_layer_unmask(self):
+        d = blink_data()
+        nan = np.isnan(d.data["left_pupil"])
+        for undo in (lambda d: d.set_blinks(None, eyes="left", variables="pupil"),):
+            d.pupil_blinks_detect(apply_mask=True)
+            assert d.data.mask["left_pupil"].sum() > nan.sum()
+            undo(d)
+            assert len(d.get_blinks("left", "pupil")) == 0
+            np.testing.assert_array_equal(d.data.mask["left_pupil"].astype(bool), nan)
+
+    def test_merge_close_on_runs(self):
+        # finding 4.3: a blink containing another one shrank
+        import pypillometry as pp
+        d = blink_data()
+        d.set_blinks(pp.Intervals([(100, 400), (150, 200), (420, 430)], units="samples"),
+                     eyes="left", variables="pupil")
+        assert d.get_blinks("left", "pupil").intervals == [(100, 400), (420, 430)]
+        merged = d.blinks_merge_close(distance=10, units="samples")
+        assert merged["left_pupil"].intervals == [(100, 400), (420, 430)]
+        d.blinks_merge_close(distance=30, units="samples", apply_mask=True)
+        assert d.get_blinks("left", "pupil").intervals == [(100, 430)]
+        assert d.data.mask["left_pupil"][100:430].all()
+
+    def test_format2_blinks_are_translated(self):
+        # a state without layers (format 2 as written before step 5): blinks
+        # and mask are translated so that removing the blinks unmasks them
+        from pypillometry import state
+        d = blink_data().pupil_blinks_detect(apply_mask=True)
+        st = state.to_state(d)
+        st["data"]["mask"] = {k: np.asarray(m) for k, m in d.data.mask.items()}
+        del st["data"]["layers"], st["data"]["layer_names"]
+        st["blinks"] = {"left_pupil": d.get_blinks("left", "pupil")._to_state()}
+        st["interpolated_blinks"] = {"left_pupil": None}
+        e = state.from_state(st)
+        np.testing.assert_array_equal(e.data.mask["left_pupil"], d.data.mask["left_pupil"])
+        assert e.get_blinks("left", "pupil").intervals == d.get_blinks("left", "pupil").intervals
+        e.set_blinks(None)
+        np.testing.assert_array_equal(e.data.mask["left_pupil"].astype(bool),
+                                      np.isnan(e.data["left_pupil"]))

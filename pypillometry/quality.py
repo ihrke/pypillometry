@@ -821,7 +821,7 @@ def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[]) -> 
     blinks_mask = {}
     for eye in list(dict.fromkeys(pupil_eyes + gaze_eyes)):
         var = "pupil" if eye in pupil_eyes else "x"
-        if obj._blinks.get(f"{eye}_{var}") is None:
+        if "blink" not in obj.data.layer_names:  # no blink detection
             continue
         bl = obj.get_blinks(eye, var)
         blinks_mask[eye] = bl.to_mask(obj).astype(bool) & inc

@@ -427,15 +427,10 @@ class PupilData(GenericEyeData):
         # Store merged data
         obj.data.set_with_mask("merged_pupil", merged, mask=merged_mask)
         
-        # Initialize blinks for merged variable
-        obj._blinks["merged_pupil"] = None
-        
         # Optionally remove original eye data
         if not keep_eyes:
             del obj.data["left_pupil"]
             del obj.data["right_pupil"]
-            obj._blinks.pop("left_pupil", None)
-            obj._blinks.pop("right_pupil", None)
             logger.debug("Removed original left/right pupil data")
         
         return obj
@@ -519,7 +514,8 @@ class PupilData(GenericEyeData):
         (f.eks., 0 or NaN). Second, blinks are defined as everything between
         two crossings of the velocity profile (from negative to positive).
         
-        Detected blinks are always stored in the object (retrieve them with
+        Detected blinks are always stored in the object, as the ``"blink"``
+        layer of the pupil (retrieve them with
         :meth:`~pypillometry.GenericEyeData.get_blinks`). When `apply_mask=True`,
         the blinks are also applied as masks to the data. When `apply_mask=False`
         (default), the detected blinks are returned as Intervals objects.
