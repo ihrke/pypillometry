@@ -1629,53 +1629,6 @@ class GenericEyeData(state.VersionedState, ABC):
         result.__dict__.update(self.__dict__)
         return result
 
-    @keephistory
-    def set_event_onsets(self, event_onsets: np.ndarray, event_labels: np.ndarray,
-                         event_meta: dict = None):
-        """
-        Set onsets of events in the data (in-place).
-
-        Parameters
-        ----------
-        event_onsets : np.ndarray or None
-            array of onsets (in ms); `None` removes all events
-        event_labels : np.ndarray or None
-            array of labels (strings), same length as `event_onsets`;
-            if `None`, all labels are empty
-        event_meta : dict or None, optional
-            metadata of the events: column name -> values (one per event);
-            see :class:`~pypillometry.Events`
-
-        Raises
-        ------
-        ValueError
-            if any onset is outside the range of the time-vector or if
-            `event_labels`, `event_onsets` or a metadata column differ in
-            length
-
-        See Also
-        --------
-        set_events : set events from an :class:`~pypillometry.Events` object
-        """
-        if event_onsets is None:
-            event_onsets = []
-        if event_labels is None:
-            event_labels = np.full(len(event_onsets), "")
-        self._events = self._check_events(Events(event_onsets, event_labels,
-                                                 units="ms", meta=event_meta))
-
-    @property
-    def event_onsets(self):
-        return self._events.onsets
-
-    @property
-    def event_labels(self):
-        return self._events.labels
-
-    @property
-    def event_meta(self):
-        return self._events.meta
-
     def _check_events(self, events) -> Events:
         """
         `events` in ms, checked against the data.
@@ -1711,56 +1664,18 @@ class GenericEyeData(state.VersionedState, ABC):
         """
         return self._events
 
-    def get_events(self, units: str = "ms"):
-        """
-        Get events as an Events object.
-        
-        Returns the event onsets and labels stored in the dataset as an
-        Events object, which provides convenient filtering and display capabilities.
-        
-        Parameters
-        ----------
-        units : str, optional
-            Units for the event onsets: "ms", "sec", "min", or "h".
-            Default is "ms" (the internal storage format).
-            
-        Returns
-        -------
-        Events
-            Events object containing the event onsets and labels
-            
-        Examples
-        --------
-        >>> events = data.get_events()
-        >>> len(events)
-        42
-        
-        >>> # Get events in seconds
-        >>> events_sec = data.get_events(units="sec")
-        
-        >>> # Filter and work with events
-        >>> stim_events = data.get_events().filter("stim")
-        
-        See Also
-        --------
-        set_events : Replace events from an Events object
-        get_intervals : Extract intervals around events
-        """
-        return self._events.to_units(units)
-    
     @keephistory
     def set_events(self, events, inplace=None):
         """
-        Replace event onsets, labels and metadata from an Events object.
-        
-        This method updates the internal event_onsets, event_labels and
-        event_meta from an Events object. The Events object's onsets are automatically
-        converted to milliseconds (the internal storage format) if needed.
-        
+        Replace the events of the dataset.
+
+        The onsets are converted to ms (the internal storage format) if
+        needed. The time range of the data is not stored with the events.
+
         Parameters
         ----------
         events : Events
-            Events object containing the new events to set
+            the new events (onsets, labels and metadata)
         inplace : bool or None, optional
             if `True`, make change in-place and return the object;
             if `False`, make and return copy before making changes;
@@ -1770,23 +1685,23 @@ class GenericEyeData(state.VersionedState, ABC):
         -------
         :class:`~pypillometry.GenericEyeData`
             the object with updated events (`self` or a copy, depending on `inplace`)
-            
+
+        Raises
+        ------
+        TypeError
+            if `events` is not an Events object
+        ValueError
+            if an onset is outside the time range of the data
+
         Examples
         --------
-        >>> # Filter events and set them back
-        >>> events = data.get_events()
-        >>> stim_events = events.filter("stim")
-        >>> data.set_events(stim_events)
-        
-        >>> # Modify events and update
-        >>> events = data.get_events()
-        >>> # ... filter or modify events ...
-        >>> data.set_events(events)
-        
+        >>> d = d.set_events(d.events.filter("stim"))  # doctest: +SKIP
+        >>> d = d.set_events(d.events.parse_labels(r"_(?P<trial>\\d+)"))  # doctest: +SKIP
+
         See Also
         --------
-        get_events : Get events as an Events object
-        set_event_onsets : Lower-level method to set events from arrays
+        events : the events of the dataset
+        add_events : add events to the existing ones
         """
         obj = self._get_inplace(inplace)
         obj._events = obj._check_events(events)
@@ -1868,8 +1783,8 @@ class GenericEyeData(state.VersionedState, ABC):
 
         See Also
         --------
-        get_events : all events (e.g., ``get_events().filter(label)`` for
-            labels that occur several times)
+        events : all events (e.g., ``events.filter(label)`` for labels
+            that occur several times)
         """
         events = self._events.to_units(units)
         onsets = events.onsets[events.labels == label]
