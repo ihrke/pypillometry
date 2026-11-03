@@ -333,8 +333,7 @@ class GazeData(GenericEyeData):
         intervals_obj = Intervals(
             intervals=intervals_list,
             units="samples",
-            label="eye_divergences",
-            data_time_range=(0, len(obj.tx)))
+            label="eye_divergences")
         
         # Apply mask if requested
         if apply_mask:
@@ -444,8 +443,7 @@ class GazeData(GenericEyeData):
             intervals_obj = Intervals(
                 intervals=intervals_list,
                 units="samples",
-                label=f"{eye}_offscreen",
-                data_time_range=(0, len(obj.tx)))
+                label=f"{eye}_offscreen")
             
             intervals_dict[eye] = intervals_obj
             

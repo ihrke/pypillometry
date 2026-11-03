@@ -13,6 +13,7 @@ tutorials :doc:`/notebooks/events`, :doc:`/notebooks/event_metadata` and
    :nosignatures:
 
    Events
+   Epochs
    Intervals
    ClockSync
 

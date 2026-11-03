@@ -13,12 +13,94 @@ import scipy.stats
 
 from .io import write_pickle, read_pickle
 from . import state
-from .units import parse_time
+from .units import parse_time, _ms_to_samples
 from .convenience import _warn_if_ignores_mask, _check_accepts_axis
 
 __all__ = [
     "SegmentedEyeData", "GroupLevelSegmentedData", "group_segments",
 ]
+
+
+def _extract_epochs(eyedata, epochs, variable):
+    """
+    Time axis and segments (masked array, time points x epochs) of `variable`.
+
+    The length and the time axis come from the window: ``w0 + arange(n) *
+    1000/fs`` ms, with ``n`` the window length in samples (rounded). Each
+    segment starts at the first sample at or after ``onset + w0``. Parts
+    outside the data are masked (their values are 0).
+    """
+    w0, w1 = epochs.window
+    n = eyedata._samples(w1 - w0, rounding="nearest")
+    tx = w0 + np.arange(n) * 1000. / eyedata.fs
+    starts = np.atleast_1d(_ms_to_samples(eyedata, epochs.onsets + w0))
+    ix = starts[None, :] + np.arange(n)[:, None]
+    inside = (ix >= 0) & (ix < len(eyedata.tx))
+    values = np.zeros(ix.shape)
+    mask = np.ones(ix.shape, dtype=bool)
+    values[inside] = eyedata.data[variable][ix[inside]]
+    mask[inside] = eyedata.data.mask[variable][ix[inside]].astype(bool)
+    return tx, ma.masked_array(values, mask=mask)
+
+
+def _epochs_from_spans(eyedata, intervals):
+    """
+    Epochs for Intervals of the same length: onsets at the starts, window
+    (0, length) in ms; their event labels and metadata are kept.
+    """
+    from .epochs import Epochs
+    if len(intervals) == 0:
+        raise ValueError("no intervals to extract segments from")
+    lengths = np.diff(np.asarray(intervals, dtype=float), axis=1)[:, 0]
+    if not np.allclose(lengths, lengths[0], rtol=1e-9, atol=0):
+        raise ValueError(
+            f"get_segments() needs intervals of the same length, got lengths from "
+            f"{lengths.min():g} to {lengths.max():g} {intervals.units}; for "
+            f"event-locked segments, use a window around single events, e.g., "
+            f"get_intervals(event, window=(-200, 800) * u.ms)")
+    if lengths[0] <= 0:
+        raise ValueError("get_segments() needs intervals that are longer than 0")
+    spans = np.asarray(intervals.to_units("ms", eyedata), dtype=float)
+    labels = None if intervals.event_labels is None else \
+        [str(lab) for lab in intervals.event_labels]
+    return Epochs(spans[:, 0], (0., float(np.mean(spans[:, 1] - spans[:, 0]))),
+                  labels=labels, meta=intervals.event_meta, label=intervals.label)
+
+
+def _spans_to_state(spans):
+    """State of the Epochs or Intervals of a SegmentedEyeData (format 2: Intervals)."""
+    from .epochs import Epochs
+    if not isinstance(spans, Epochs):
+        return None if spans is None else spans._to_state()
+    return {"intervals": np.asarray(spans, dtype=float).reshape(-1, 2), "units": "ms",
+            "label": spans.label, "event_labels": spans.labels.copy(),
+            "event_indices": None, "event_onsets": spans.onsets.copy(),
+            "data_time_range": None, "interval_window": spans.window,
+            "event_meta": {k: v.copy() for k, v in spans.meta.items()} or None}
+
+
+def _spans_from_state(st, fs):
+    """
+    Epochs or Intervals from their state (format 2, Intervals): event-locked
+    intervals (with `interval_window`) are Epochs; onsets and window in
+    sample indices are converted to ms with the sampling rate `fs` (from the
+    first sample of the recording, whose time is unknown).
+    """
+    from .epochs import Epochs
+    from .intervals import Intervals, _MS_PER_UNIT
+    if st is None:
+        return None
+    if st.get("interval_window") is None or st.get("event_onsets") is None:
+        return Intervals._from_state(st)
+    if st["units"] == "samples":
+        logger.warning("segments made from intervals in sample indices: event onsets "
+                       "converted to ms from the first sample of the recording")
+        fac = 1000. / fs
+    else:
+        fac = _MS_PER_UNIT[st["units"]]
+    return Epochs(np.asarray(st["event_onsets"], dtype=float) * fac,
+                  tuple(np.asarray(st["interval_window"], dtype=float) * fac),
+                  labels=st["event_labels"], meta=st["event_meta"], label=st["label"])
 
 
 class SegmentedEyeData(state.VersionedState):
@@ -29,7 +111,7 @@ class SegmentedEyeData(state.VersionedState):
     "right_x") extracted around events. Tracks masked/missing data.
 
     Usually created with :meth:`~pypillometry.GenericEyeData.get_segments`
-    from the Intervals returned by
+    from the :class:`~pypillometry.Epochs` returned by
     :meth:`~pypillometry.GenericEyeData.get_intervals`, e.g.
     ``d.get_segments(d.get_intervals("F", window=(-200, 800), units="ms"),
     "left_pupil")``. Segments of several subjects can be combined with
@@ -45,15 +127,18 @@ class SegmentedEyeData(state.VersionedState):
         Time axis relative to segment onset (in ms)
     data : np.ma.MaskedArray
         Masked array with shape (n_timepoints, n_segments)
-    intervals : Intervals, optional
-        Source Intervals object with event metadata
+    intervals : Epochs, optional
+        the epochs the segments were extracted from (event onsets, window,
+        labels and metadata); segments from old files made from intervals
+        that were not event-locked keep these Intervals
     sampling_rate : float, optional
         Original sampling rate in Hz
     """
     
-    # state (see pypillometry.state)
-    _STATE_FIELDS = ("name", "variable", "tx", ("data", "masked"),
-                     ("intervals", "Intervals"), "sampling_rate")
+    # state (see pypillometry.state); `intervals` (Epochs or Intervals) is
+    # stored as the state of an Intervals object (see _to_state)
+    _STATE_FIELDS = ("name", "variable", "tx", ("data", "masked"), "sampling_rate")
+    _STATE_EXCLUDE = ("intervals",)
 
     def __init__(self, 
                  name: str, 
@@ -78,6 +163,17 @@ class SegmentedEyeData(state.VersionedState):
         if "_" not in variable:
             raise ValueError(f"Variable must be in 'eye_variable' format (e.g., 'left_pupil'), got '{variable}'")
     
+    def _to_state(self) -> dict:
+        """State of the object (without ``format_version`` and ``class``)."""
+        st = super()._to_state()
+        st["intervals"] = _spans_to_state(self.intervals)
+        return st
+
+    def _set_state(self, st: dict):
+        """Set the attributes from a state of the current version."""
+        super()._set_state(st)
+        self.intervals = _spans_from_state(st["intervals"], self.sampling_rate)
+
     @property
     def eye(self) -> str:
         """Return the eye part of the variable (e.g., 'left' from 'left_pupil')."""
@@ -123,8 +219,8 @@ class SegmentedEyeData(state.VersionedState):
             Time axis relative to segment onset (in ms)
         variable : str
             Variable name in "eye_variable" format
-        intervals : Intervals, optional
-            Source Intervals object with event metadata
+        intervals : Epochs, optional
+            the epochs the segments were extracted from
         name : str, optional
             Name for the dataset (default "segments")
         sampling_rate : float, optional
@@ -166,8 +262,14 @@ class SegmentedEyeData(state.VersionedState):
         ----------
         eyedata : GenericEyeData
             Source eye data object (PupilData, GazeData, etc.)
-        intervals : Intervals
-            Intervals object defining the segments to extract
+        intervals : Epochs or Intervals
+            the segments to extract; for Epochs (e.g., from
+            :meth:`~pypillometry.GenericEyeData.get_intervals` with a window),
+            the length and the time axis (``window[0] + arange(n) * 1000/fs``
+            ms) come from the window, and the parts outside the data are
+            masked. Intervals must all have the same length; they are used
+            as Epochs with the onsets at their starts and the window
+            ``(0, length)`` (kept as `intervals` of the result)
         variable : str
             Variable to extract in "eye_variable" format (e.g., "left_pupil")
         name : str, optional
@@ -179,9 +281,10 @@ class SegmentedEyeData(state.VersionedState):
             New instance with extracted segments
         """
         from .intervals import Intervals
-        
-        if not isinstance(intervals, Intervals):
-            raise TypeError("intervals must be an Intervals object. Use get_intervals() to create one.")
+        from .epochs import Epochs
+
+        if not isinstance(intervals, (Intervals, Epochs)):
+            raise TypeError("intervals must be Epochs or Intervals, e.g., from get_intervals()")
         
         # Validate variable format
         if "_" not in variable:
@@ -191,57 +294,14 @@ class SegmentedEyeData(state.VersionedState):
         if variable not in eyedata.data:
             available = list(eyedata.data.data.keys())
             raise KeyError(f"Variable '{variable}' not found in data. Available: {available}")
-        
-        # start samples of the segments (converted with the data's time vector)
-        intervals_idx = intervals.to_units("samples", eyedata).intervals
-        intervals_ms = intervals.to_units("ms", eyedata)
 
-        # for event-locked intervals, the length and time axis come from the
-        # window (relative to the event), so they do not depend on the event
-        # timing; otherwise from the first interval
-        if intervals.interval_window is not None:
-            w0, w1 = intervals_ms.interval_window
-        else:
-            w0, w1 = intervals_ms.intervals[0]
-        duration_ix = eyedata._samples(w1 - w0, rounding="nearest")
-        txw = np.linspace(w0, w1, num=duration_ix)
-        
-        n_segments = len(intervals_idx)
-        
-        # Extract segments
-        data_arr = np.zeros((duration_ix, n_segments))
-        mask_arr = np.ones((duration_ix, n_segments), dtype=bool)
-        
-        for i, (on, _) in enumerate(intervals_idx):
-            off = on + duration_ix
-            onl, offl = 0, duration_ix  # "local" window indices
-            
-            if on < 0:  # pad with zeros in case timewindow starts before data
-                onl = abs(on)
-                on = 0
-            if off > eyedata.tx.size:
-                offl = duration_ix - (off - eyedata.tx.size)
-                off = eyedata.tx.size
-            
-            # Ensure we extract exactly the right number of samples
-            segment_len = min(offl - onl, off - on)
-            data_arr[onl:onl+segment_len, i] = eyedata.data[variable][on:on+segment_len]
-            mask_arr[onl:onl+segment_len, i] = eyedata.data.mask[variable][on:on+segment_len]
-        
-        masked_data = ma.masked_array(data_arr, mask=mask_arr)
-        
-        # Determine name
         if name is None:
             name = intervals.label if intervals.label is not None else "segments"
-        
-        return cls(
-            name=name,
-            variable=variable,
-            tx=txw,
-            data=masked_data,
-            intervals=intervals,
-            sampling_rate=eyedata.fs
-        )
+        if isinstance(intervals, Intervals):
+            intervals = _epochs_from_spans(eyedata, intervals)
+        txw, masked_data = _extract_epochs(eyedata, intervals, variable)
+        return cls(name=name, variable=variable, tx=txw, data=masked_data,
+                   intervals=intervals, sampling_rate=eyedata.fs)
     
     def summary(self) -> dict:
         """
@@ -373,11 +433,19 @@ class SegmentedEyeData(state.VersionedState):
 
             Default is 0 (baseline at event onset).
 
+            The window must be within the time axis of the segments.
+
         Returns
         -------
         SegmentedEyeData
             New instance with baseline-corrected data (the object itself if
             `window` is None)
+
+        Raises
+        ------
+        ValueError
+            if the window (or time point) is not within the segments, or its
+            start is not before its end
 
         Examples
         --------
@@ -395,6 +463,7 @@ class SegmentedEyeData(state.VersionedState):
         # Create copy of data
         corrected_data = self.data.copy()
         window = parse_time(window)
+        self._check_baseline_window(window)
 
         if np.ndim(window) == 0:
             # Single time point
@@ -420,6 +489,25 @@ class SegmentedEyeData(state.VersionedState):
             sampling_rate=self.sampling_rate
         )
     
+    def _check_baseline_window(self, window):
+        """Raise a ValueError if the baseline `window` (ms) is not within the segments."""
+        step = 1000. / self.sampling_rate if self.sampling_rate else \
+            float(np.median(np.diff(self.tx))) if len(self.tx) > 1 else 0.
+        # a time point stands for the samples within half a step around it;
+        # the end of a window is exclusive
+        lo, hi = self.tx[0] - step / 2, self.tx[-1] + step / 2
+        seg = f"the segments cover {self.tx[0]:g} to {self.tx[-1]:g} ms"
+        if np.ndim(window) == 0:
+            if not lo <= window <= hi:
+                raise ValueError(f"baseline time {window:g} ms is outside the segments; {seg}")
+            return
+        if len(window) != 2 or window[0] >= window[1]:
+            raise ValueError(f"baseline window must be (start, end) with start < end, "
+                             f"got {tuple(window)}")
+        if window[0] < lo or window[1] > hi + step / 2:
+            raise ValueError(f"baseline window ({window[0]:g}, {window[1]:g}) ms is not "
+                             f"within the segments; {seg}")
+
     def plot(self,
              meanfct=np.mean,
              varfct=scipy.stats.sem,
@@ -629,8 +717,8 @@ class GroupLevelSegmentedData(SegmentedEyeData):
         Percentage of masked data per subject at each timepoint (shape: n_timepoints)
     n_subjects : int
         Number of subjects combined
-    intervals : Intervals, optional
-        Source Intervals object
+    intervals : Epochs, optional
+        the epochs of the first segments
     sampling_rate : float, optional
         Original sampling rate in Hz
     """

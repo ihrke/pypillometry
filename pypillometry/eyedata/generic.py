@@ -14,7 +14,8 @@ from ..io import download
 from .eyedatadict import EyeDataDict, _join_key
 from .experimental_setup import ExperimentalSetup
 from ..signal import baseline
-from ..intervals import stat_event_interval, Intervals
+from ..intervals import stat_event_interval, Intervals, _as_intervals
+from ..epochs import Epochs
 from ..events import Events, _pair_with_next
 from ..logging import logging_get_level
 from .. import config
@@ -777,8 +778,7 @@ class GenericEyeData(state.VersionedState, ABC):
             key = f"{e}_{v}"
             iv = store.get(key)
             if iv is None:
-                iv = Intervals([], units="samples", label=f"{key}_{suffix}",
-                               data_time_range=(0, len(self.tx)))
+                iv = Intervals([], units="samples", label=f"{key}_{suffix}")
             result[key] = iv.to_units(units, self)
         if len(eyes) > 1 or len(variables) > 1:
             return result
@@ -1164,6 +1164,25 @@ class GenericEyeData(state.VersionedState, ABC):
             obj.params["removed_shifts"] = [(t - t0, sh) for t, sh in obj.params["removed_shifts"]]
         return obj
 
+    def _as_spans(self, intervals):
+        """
+        Intervals from `intervals`: an Intervals object (returned as it is),
+        Epochs (their spans in ms) or a list of ``(start, end)`` tuples in ms (or with units), where
+        ``-np.inf`` and ``np.inf`` stand for the start and the end of the
+        recording.
+        """
+        if isinstance(intervals, (Intervals, Epochs)):
+            return _as_intervals(intervals)
+        bounds = {-np.inf: float(self.tx[0]),
+                  np.inf: float(_samples_to_ms(self, len(self.tx)))}
+
+        def bound(v):
+            if isinstance(v, numbers.Real) and np.isinf(v):
+                return bounds[v]
+            return v
+        # plain numbers are ms; values with units are converted
+        return Intervals([tuple(bound(v) for v in pair) for pair in intervals], units="ms")
+
     def _remap_interval_stores(self, old, move=None, time_map=None):
         """
         Remap the stored intervals after the samples or the clock changed (in place).
@@ -1185,14 +1204,11 @@ class GenericEyeData(state.VersionedState, ABC):
             None: the clock did not change, so intervals in time units
             stay valid
         """
-        n = len(self.tx)
-
         def remap(iv, keep_units):
             if iv.units == "samples":
                 if move is None:
                     return iv
-                return Intervals(move(iv.intervals), "samples", label=iv.label,
-                                 data_time_range=(0, n))
+                return Intervals(move(iv.intervals), "samples", label=iv.label)
             if time_map is None:
                 return iv
             if move is None:
@@ -1202,7 +1218,7 @@ class GenericEyeData(state.VersionedState, ABC):
             # samples dropped and clock changed: go through the sample indices
             # (blinks stay in sample indices, the excluded periods go back to ms)
             moved = Intervals(move(iv.to_units("samples", old).intervals), "samples",
-                              label=iv.label, data_time_range=(0, n))
+                              label=iv.label)
             if not keep_units:
                 return moved
             return Intervals(moved.to_units("ms", self).intervals, "ms", label=iv.label)
@@ -2088,7 +2104,7 @@ class GenericEyeData(state.VersionedState, ABC):
                     units: str=UNSET, label: str|None=None, exact: bool=False,
                     **kwargs):
         """
-        Return an Intervals object containing intervals relative to event-onsets.
+        Return the time windows around events (Epochs) or between events (Intervals).
         For example, extract the interval before and after a stimulus has been presented.
         It is possible to select based on the event label, e.g. only select
         events matching "stimulus" or "response". It is also
@@ -2131,15 +2147,17 @@ class GenericEyeData(state.VersionedState, ABC):
             are in units given by the `units` parameter. Required for single
             events; for two events (tuple), the default is ``(0, 0)``.
         units : str, optional
-            units of the returned intervals (one of "ms", "sec", "min", "h", or
-            "samples" for sample indices, i.e., indices into the time-array);
-            plain numbers in `window` are in these units, a `window` with
-            units is converted to them. If not given, the units of `window`
-            are used ("samples" if `window` has no units). In samples, each
-            event is placed at the first sample at or after its onset.
+            units of plain numbers in `window` (one of "ms", "sec", "min",
+            "h", or "samples" for sample indices, i.e., indices into the
+            time-array; converted to ms with the sampling rate); for two
+            events, also the units of the returned Intervals (a `window` with
+            units is converted to them). If not given, the units of `window`
+            are used ("samples" if `window` has no units). Between two events
+            in samples, each event is placed at the first sample at or after
+            its onset.
         label : str or None, optional
-            optional label for the Intervals object. If None, a label is automatically
-            generated from the event_select parameter
+            optional label for the Epochs or Intervals object. If None, a
+            label is automatically generated from the event_select parameter
         exact : bool, optional
             if True, string selectors match only labels that are equal to
             them; if False (default), labels that contain them
@@ -2149,13 +2167,15 @@ class GenericEyeData(state.VersionedState, ABC):
 
         Returns
         -------
-        :class:`~pypillometry.Intervals`
-            Intervals object containing interval on- and offsets for each match,
-            with associated metadata (event labels, indices, units). For
-            ``"<start>"`` as first event, the event indices are None.
-            The metadata of the events (see :class:`~pypillometry.Events`)
-            are kept in `event_meta` (for two events, those of the first
-            one, or of the second one if the first is ``"<start>"``).
+        :class:`~pypillometry.Epochs` or :class:`~pypillometry.Intervals`
+            for single events (a str, function or Events): Epochs with the
+            onsets (ms) of the selected events, the window (in ms), their
+            labels and metadata (see :class:`~pypillometry.Events`).
+            For two events (tuple): Intervals with the spans between them
+            (in `units`) and, per interval, the label ``"<first>_to_<second>"``,
+            the onset of the first event and the metadata of the first event
+            (of the second one if the first is ``"<start>"``).
+            Windows that extend beyond the data are not clipped.
         """
         from ..intervals import Intervals
         from ..events import Events
@@ -2269,18 +2289,22 @@ class GenericEyeData(state.VersionedState, ABC):
             if label is None:
                 label = event_select if isinstance(event_select, str) else "custom_events"
 
+        if not between:
+            # one window around each event, in ms
+            fac = 1000. / self.fs if units == "samples" else 1. / self._unit_fac(units)
+            return Epochs(on1, (window[0] * fac, window[1] * fac), labels=selected_labels,
+                          meta=selected_meta, label=label)
+
         if units == "samples":
             # sample of each event, the window in samples around it
-            sti = np.maximum(eix1+window[0], 0)
-            ste = np.minimum(eix2+window[1], n)
+            sti = eix1+window[0]
+            ste = eix2+window[1]
             event_onsets_list = np.atleast_1d(eix1).tolist()
-            data_time_range = (0, n)
         else:
             fac = self._unit_fac(units)
             sti = on1*fac+window[0]
             ste = on2*fac+window[1]
             event_onsets_list = (on1*fac).tolist()
-            data_time_range = (self.tx[0]*fac, self.tx[-1]*fac)
         bad=np.where(ste<=sti)[0]
         if len(bad)>0:
             raise ValueError("window {} gives empty intervals for pair(s) {}"
@@ -2290,10 +2314,7 @@ class GenericEyeData(state.VersionedState, ABC):
             units=units,
             label=label,
             event_labels=selected_labels,
-            event_indices=selected_indices,
-            data_time_range=data_time_range,
             event_onsets=event_onsets_list,
-            interval_window=window,
             event_meta=selected_meta
         )
 
@@ -2306,8 +2327,12 @@ class GenericEyeData(state.VersionedState, ABC):
         
         Parameters
         ----------
-        intervals : Intervals
-            Intervals object defining the segments to extract (from get_intervals())
+        intervals : Epochs or Intervals
+            the segments to extract: :class:`~pypillometry.Epochs` (from
+            :meth:`get_intervals` with a window around single events; length
+            and time axis ``window[0] + arange(n) * 1000/fs`` from the
+            window, parts outside the data masked) or Intervals that all have
+            the same length (time axis from 0 at their starts)
         variable : str
             Variable to extract in "eye_variable" format (e.g., "left_pupil", "right_x")
         name : str, optional
@@ -2317,12 +2342,18 @@ class GenericEyeData(state.VersionedState, ABC):
         -------
         SegmentedEyeData
             Object containing the extracted segments with mask information
+
+        Raises
+        ------
+        ValueError
+            if `intervals` are Intervals of different lengths (e.g., between
+            two events)
             
         Examples
         --------
         >>> # Extract pupil segments around stimulus events
-        >>> intervals = data.get_intervals("stimulus", window=(-200, 800), units="ms")
-        >>> segments = data.get_segments(intervals, "left_pupil")
+        >>> epochs = data.get_intervals("stimulus", window=(-200, 800), units="ms")
+        >>> segments = data.get_segments(epochs, "left_pupil")
         >>> segments.plot()
         
         >>> # Apply baseline correction
@@ -2689,8 +2720,7 @@ class GenericEyeData(state.VersionedState, ABC):
             merged_intervals = Intervals(
                 intervals=[(int(s), int(e)) for s, e in newblinks],
                 units="samples",
-                label=f"{eye}_{var}_blinks",
-                data_time_range=(0, len(obj.tx)))
+                label=f"{eye}_{var}_blinks")
             
             key = f"{eye}_{var}"
             merged_dict[key] = merged_intervals
@@ -2718,10 +2748,10 @@ class GenericEyeData(state.VersionedState, ABC):
 
         Parameters
         ----------
-        intervals : Intervals, optional
-            Intervals object to use, in any time units or in sample indices
-            (``units="samples"``, the default of :meth:`get_intervals`). If
-            provided, window and event_select are ignored.
+        intervals : Intervals or Epochs, optional
+            Intervals object (in any time units or in sample indices) or
+            :class:`~pypillometry.Epochs` (e.g., from :meth:`get_intervals`).
+            If provided, window and event_select are ignored.
         window : tuple (min,max) or Quantity, optional
             time-window relative to event-onset (0 is event-onset), e.g.
             ``(-200, 0) * u.ms``; plain numbers are in units given by `units`.
@@ -2757,14 +2787,13 @@ class GenericEyeData(state.VersionedState, ABC):
         
         # Accept either Intervals object or old-style parameters
         if intervals is not None:
-            if not isinstance(intervals, Intervals):
-                raise TypeError("intervals must be an Intervals object")
-            intervs = intervals
+            intervs = _as_intervals(intervals)
         else:
             if event_select is None:
                 raise ValueError("Must provide either 'intervals' or 'event_select' "
                                  "(and 'window')")
-            intervs = self.get_intervals(event_select, window, units=units, **kwargs)
+            intervs = _as_intervals(self.get_intervals(event_select, window, units=units,
+                                                       **kwargs))
 
         # bounds in sample indices, matched against the sample numbers
         tx = np.arange(len(self.tx))
@@ -2870,12 +2899,14 @@ class GenericEyeData(state.VersionedState, ABC):
 
         Parameters
         ----------
-        intervals : Intervals or dict
+        intervals : Intervals, Epochs or dict
             Either:
 
-            - A single Intervals object: applied to all specified eyes/variables
-            - A dict of Intervals: keys like "left_pupil", "right_x", etc.
-              When dict is provided, `eyes` and `variables` are ignored.
+            - A single Intervals (or :class:`~pypillometry.Epochs`) object:
+              applied to all specified eyes/variables
+            - A dict of Intervals (or Epochs): keys like "left_pupil",
+              "right_x", etc. When dict is provided, `eyes` and `variables`
+              are ignored.
         eyes : str or list of str, optional
             eye(s) to apply mask to (e.g., ``["left", "right"]``);
             if empty, all available eyes. Ignored if `intervals` is a dict.
@@ -2923,9 +2954,7 @@ class GenericEyeData(state.VersionedState, ABC):
 
         n = len(obj.tx)
         for key, interval_obj in per_key.items():
-            if not isinstance(interval_obj, Intervals):
-                raise TypeError(f"intervals must be Intervals objects (or a dict of them), "
-                                f"got {type(interval_obj)} for '{key}'")
+            interval_obj = _as_intervals(interval_obj, f"intervals for '{key}'")
             if key not in obj.data.data:
                 logger.warning(f"Key '{key}' not found in data, skipping")
                 continue
@@ -2949,12 +2978,14 @@ class GenericEyeData(state.VersionedState, ABC):
 
         Parameters
         ----------
-        intervals : Intervals or dict
+        intervals : Intervals, Epochs or dict
             Either:
 
-            - A single Intervals object: applied to all specified eyes/variables
-            - A dict of Intervals: keys like "left_pupil", "right_x", etc.
-              When dict is provided, `eyes` and `variables` are ignored.
+            - A single Intervals (or :class:`~pypillometry.Epochs`) object:
+              applied to all specified eyes/variables
+            - A dict of Intervals (or Epochs): keys like "left_pupil",
+              "right_x", etc. When dict is provided, `eyes` and `variables`
+              are ignored.
         eyes : str or list of str, optional
             eye(s) to interpolate; if empty, all available eyes.
             Ignored if `intervals` is a dict.
@@ -3116,18 +3147,14 @@ class GenericEyeData(state.VersionedState, ABC):
         # Handle dict vs single Intervals
         if isinstance(intervals, dict):
             for key, interval_obj in intervals.items():
-                if not isinstance(interval_obj, Intervals):
-                    raise TypeError(f"Dict values must be Intervals objects, got {type(interval_obj)}")
-                
+                interval_obj = _as_intervals(interval_obj, f"intervals for '{key}'")
                 if key not in obj.data.data:
                     logger.warning(f"Key '{key}' not found in data, skipping")
                     continue
                 
                 interpolate_single_key(key, interval_obj)
         else:
-            if not isinstance(intervals, Intervals):
-                raise TypeError(f"intervals must be Intervals or dict, got {type(intervals)}")
-            
+            intervals = _as_intervals(intervals)
             for eye, var in obj.data.select(eyes, variables):
                 interpolate_single_key(f"{eye}_{var}", intervals)
         
@@ -3153,7 +3180,7 @@ class GenericEyeData(state.VersionedState, ABC):
                     if not excl[min(max(int(on) - 1, 0), n):min(max(int(off) + 1, 0), n)].any()]
             if len(keep) < len(iv):
                 self._blinks[key] = Intervals([iv.intervals[k] for k in keep], iv.units,
-                                              label=iv.label, data_time_range=iv.data_time_range)
+                                              label=iv.label)
 
     @keephistory
     def exclude_intervals(self, intervals, inplace=None):
@@ -3176,11 +3203,12 @@ class GenericEyeData(state.VersionedState, ABC):
 
         Parameters
         ----------
-        intervals : Intervals or list of tuple
+        intervals : Intervals, Epochs or list of tuple
             the periods to exclude: an :class:`~pypillometry.Intervals`
             object (e.g., from :meth:`get_intervals`; in time units or sample
-            indices) or a list of ``(start, end)`` tuples (in ms, or with
-            units, e.g., ``[(0, 2 * u.min)]``); ends are exclusive
+            indices), :class:`~pypillometry.Epochs` or a list of ``(start, end)`` tuples (in ms, or with
+            units, e.g., ``[(0, 2 * u.min)]``; ``-np.inf`` and ``np.inf``
+            stand for the start and end of the recording); ends are exclusive
         inplace : bool or None, optional
             if `True`, make change in-place and return the object;
             if `False`, make and return copy before making changes;
@@ -3203,9 +3231,7 @@ class GenericEyeData(state.VersionedState, ABC):
         keep_intervals : exclude everything outside the given periods
         """
         obj = self._get_inplace(inplace)
-        if not isinstance(intervals, Intervals):
-            # plain numbers are ms; values with units are converted
-            intervals = Intervals(list(intervals), units="ms")
+        intervals = obj._as_spans(intervals)
         new = intervals.to_units("ms", obj)
         new = [(float(s), float(e)) for s, e in new.intervals if e > s]
         merged = Intervals(list(obj._excluded.intervals) + new, units="ms").merge()
@@ -3229,11 +3255,12 @@ class GenericEyeData(state.VersionedState, ABC):
 
         Parameters
         ----------
-        intervals : Intervals or list of tuple
+        intervals : Intervals, Epochs or list of tuple
             the periods to keep: an :class:`~pypillometry.Intervals`
             object (e.g., from :meth:`get_intervals`; in time units or sample
-            indices) or a list of ``(start, end)`` tuples (in ms, or with
-            units); ends are exclusive
+            indices), :class:`~pypillometry.Epochs` or a list of ``(start, end)`` tuples (in ms, or with
+            units; ``-np.inf`` and ``np.inf`` stand for the start and end of
+            the recording); ends are exclusive
         inplace : bool or None, optional
             if `True`, make change in-place and return the object;
             if `False`, make and return copy before making changes;
@@ -3250,9 +3277,7 @@ class GenericEyeData(state.VersionedState, ABC):
         >>> run = d.get_intervals(("rsfMRI_ONSET", "rsfMRI_END"), units="ms")  # doctest: +SKIP
         >>> d = d.keep_intervals(run)  # doctest: +SKIP
         """
-        if not isinstance(intervals, Intervals):
-            # plain numbers are ms; values with units are converted
-            intervals = Intervals(list(intervals), units="ms")
+        intervals = self._as_spans(intervals)
         return self.exclude_intervals(intervals.complement(self), inplace=inplace)
 
     def get_excluded(self, units: str = "ms") -> Intervals:
@@ -3277,7 +3302,7 @@ class GenericEyeData(state.VersionedState, ABC):
             n = len(self.tx)
             pairs = [(max(s, 0), min(e, n)) for s, e in iv.intervals]
             iv = Intervals([(s, e) for s, e in pairs if e > s], "samples",
-                           label="excluded", data_time_range=(0, n))
+                           label="excluded")
         return iv
 
     def get_included(self, units: str = "ms") -> Intervals:
@@ -3354,11 +3379,13 @@ class GenericEyeData(state.VersionedState, ABC):
 
         Parameters
         ----------
-        intervals : Intervals or list of tuple
+        intervals : Intervals, Epochs or list of tuple
             the periods to remove: an :class:`~pypillometry.Intervals`
-            object (in time units or sample indices) or a list of
+            object (in time units or sample indices),
+            :class:`~pypillometry.Epochs` or a list of
             ``(start, end)`` tuples (in ms, or with units, e.g.,
-            ``[(10 * u.min, 12 * u.min)]``); ends are exclusive
+            ``[(10 * u.min, 12 * u.min)]``; ``-np.inf`` and ``np.inf`` stand
+            for the start and end of the recording); ends are exclusive
         inplace : bool or None, optional
             if `True`, make change in-place and return the object;
             if `False`, make and return copy before making changes;
@@ -3387,9 +3414,7 @@ class GenericEyeData(state.VersionedState, ABC):
         >>> d = d.remove_intervals(d.get_excluded())  # doctest: +SKIP
         """
         obj = self._get_inplace(inplace)
-        if not isinstance(intervals, Intervals):
-            # plain numbers are ms; values with units are converted
-            intervals = Intervals(list(intervals), units="ms")
+        intervals = obj._as_spans(intervals)
         n = len(obj.tx)
         tx = obj.tx
         tend = tx[-1] + 1000.0 / obj.fs

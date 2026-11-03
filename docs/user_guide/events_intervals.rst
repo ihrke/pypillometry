@@ -5,16 +5,18 @@ Events, intervals and segments
 
 Most experiments send *events* (triggers) to the eye tracker, e.g., when a
 stimulus appears or a response is given. Analyses then look at the data in
-*intervals* around these events. :mod:`pypillometry` has a class for each
-step:
+*windows* around these events or in the *intervals* between them.
+:mod:`pypillometry` has a class for each step:
 
 .. mermaid::
 
    flowchart LR
-     E["<b>Events</b><br/>onsets + labels + metadata"] -- "get_intervals()" --> I["<b>Intervals</b><br/>(start, end) pairs"]
-     I -- "get_segments()" --> S["<b>SegmentedEyeData</b><br/>segments x time"]
+     E["<b>Events</b><br/>onsets + labels + metadata"] -- "get_intervals(event, window)" --> P["<b>Epochs</b><br/>onsets + one window"]
+     E -- "get_intervals((event1, event2))" --> I["<b>Intervals</b><br/>(start, end) pairs"]
+     P -- "get_segments()" --> S["<b>SegmentedEyeData</b><br/>segments x time"]
      S -- "group_segments()" --> G["<b>GroupLevelSegmentedData</b><br/>participants x time"]
-     I -- "stat_per_event()" --> N["one value<br/>per event"]
+     P -- "stat_per_event()" --> N["one value<br/>per event"]
+     P -- "to_intervals()" --> I
 
 
 Events
@@ -214,11 +216,36 @@ the labels). With a single shared moment, only the offset is fitted.
 Tutorial: :doc:`/notebooks/importdata_behaviour`.
 
 
+Epochs
+------
+
+An :class:`Epochs` object holds the onsets of some events (in ms) and *one*
+time window around them, e.g., from 200 ms before to 1000 ms after each
+stimulus, together with the labels and the metadata of the events.
+:meth:`~GenericEyeData.get_intervals` returns Epochs for single events:
+
+.. code-block:: python
+
+    epochs = d.get_intervals("stim", (-200, 1000) * u.ms)
+    epochs.onsets, epochs.window, epochs.labels, epochs.meta["trial"]
+    epochs.keep(epochs.meta["cond"] == "a")     # a subset of the epochs
+    epochs.to_intervals("sec")                  # the spans as Intervals
+
+Epochs can be used wherever the methods take intervals (e.g.,
+:meth:`~GenericEyeData.mask_intervals`,
+:meth:`~GenericEyeData.exclude_intervals`,
+:meth:`~GenericEyeData.stat_per_event`); they stand for their spans
+``(onset + window[0], onset + window[1])`` in ms. Windows that extend
+beyond the recording are not cut off: the methods that read the data use
+the part within it (in segments, the rest is masked).
+
 Intervals
 ---------
 
 An :class:`Intervals` object is a list of (start, end) pairs, together with
-their units and, where applicable, the events they belong to. Intervals
+their units and, optionally, one label, onset and metadata row per
+interval (e.g., of the event it belongs to), which are kept when
+intervals are converted, filtered, padded, combined or merged. Intervals
 come from several places:
 
 .. list-table::
@@ -228,7 +255,7 @@ come from several places:
    * - Source
      - Example
    * - windows around events
-     - ``d.get_intervals("stim", (-200, 1000) * u.ms)``
+     - ``d.get_intervals("stim", (-200, 1000) * u.ms).to_intervals()``
    * - spans between two events
      - ``d.get_intervals(("trial_start", "response"))``
    * - detected blinks
@@ -272,8 +299,8 @@ Sample indices and time
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 Intervals are either in time units ("ms", "sec", "min", "h") or in sample
-indices (``units="samples"``, e.g., blinks; also the default of
-:meth:`~GenericEyeData.get_intervals` for plain numbers). Intervals are
+indices (``units="samples"``, e.g., blinks; plain numbers in the window of
+:meth:`~GenericEyeData.get_intervals` are sample indices, too). Intervals are
 end-exclusive: ``(start, end)`` covers the samples with
 ``start <= t < end``.
 
@@ -315,16 +342,25 @@ Segments and event-related pupil dilation
 -----------------------------------------
 
 :meth:`~GenericEyeData.get_segments` cuts the data of one variable in each
-interval and returns a :class:`SegmentedEyeData` object (a matrix of
+epoch and returns a :class:`SegmentedEyeData` object (a matrix of
 segments × time points). Averaged over segments, this is the
 *event-related pupil dilation* (ERPD):
 
 .. code-block:: python
 
-    intervals = d.get_intervals("stim", (-200, 1000) * u.ms)
-    erpd = d.get_segments(intervals, "left_pupil", name="stimulus")
+    epochs = d.get_intervals("stim", (-200, 1000) * u.ms)
+    erpd = d.get_segments(epochs, "left_pupil", name="stimulus")
     erpd = erpd.baseline_correct((-200, 0))   # subtract the pre-stimulus mean
     erpd.plot()
+
+The length and the time axis of the segments come from the window: the
+time points are ``window[0] + k * 1000/fs`` ms (at 500 Hz: -200, -198, ...,
+998 ms). Parts of a window outside the recording are masked. The segments
+keep their epochs (``erpd.intervals``). :meth:`~GenericEyeData.get_segments`
+also takes Intervals, but only if they all have the same length (the time
+axis then starts at 0 at their starts); for intervals between two events,
+it raises an error. The baseline window of
+:meth:`~SegmentedEyeData.baseline_correct` must be within the segments.
 
 :func:`group_segments` averages the ERPDs of several participants into a
 :class:`GroupLevelSegmentedData` object, which can be plotted the same way.

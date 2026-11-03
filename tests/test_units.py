@@ -429,17 +429,20 @@ def test_crop_with_units(eyedata):
 
 def test_get_intervals_with_units(eyedata):
     ref = eyedata.get_intervals("F", (-200, 800), units="ms")
-    iv = eyedata.get_intervals("F", (-200, 800) * u.ms)
-    assert iv.units == "ms"
-    assert iv.intervals == ref.intervals
-    assert iv.interval_window == (-200, 800)
-    # converted to the requested units
-    iv = eyedata.get_intervals("F", (-0.2, 0.8) * u.sec, units="ms")
-    np.testing.assert_allclose(iv.intervals, ref.intervals)
-    # ... including sampling units
-    ix = eyedata.get_intervals("F", (-200, 800) * u.ms, units="samples")
+    ep = eyedata.get_intervals("F", (-200, 800) * u.ms)
+    assert ep == ref
+    assert ep.window == (-200, 800)
+    # Epochs are in ms, whatever the units of the window
+    ep = eyedata.get_intervals("F", (-0.2, 0.8) * u.sec, units="ms")
+    np.testing.assert_allclose(ep.window, ref.window)
+    ep = eyedata.get_intervals("F", (-0.2, 0.8), units="sec")
+    np.testing.assert_allclose(ep.window, ref.window)
+    # plain numbers without units are samples (finding 2.5, step 9)
     n = int(eyedata.fs * 0.2)
-    assert ix.intervals == eyedata.get_intervals("F", (-n, 4 * n)).intervals
+    ep = eyedata.get_intervals("F", (-n, 4 * n))
+    np.testing.assert_allclose(ep.window, ref.window)
+    assert ep.to_intervals("samples", eyedata).intervals == \
+        ref.to_intervals("samples", eyedata).intervals
 
 
 def test_stat_per_event_with_units(eyedata):

@@ -111,7 +111,7 @@ check blink detection and interpolation:
 .. plot::
    :context: close-figs
 
-   intervals = d.get_intervals("S_", (0, 1000) * u.ms, units="sec")
+   intervals = d.get_intervals("S_", (0, 1000) * u.ms).to_intervals("sec")
    plt.figure(figsize=(10, 3))
    d.plot.pupil_plot(eyes="left", plot_range=(0, 20) * u.sec,
                      show_events=False)

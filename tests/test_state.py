@@ -112,7 +112,7 @@ class TestPickleRoundTrip(unittest.TestCase):
         seg = d.get_segments(iv, "left_pupil")
         seg2 = self.roundtrip(seg)
         np.testing.assert_array_equal(seg2.data.mask, seg.data.mask)
-        self.assertEqual(seg2.intervals.intervals, seg.intervals.intervals)
+        self.assertEqual(seg2.intervals, seg.intervals)
         self.roundtrip(pp.group_segments([seg, seg]))
 
     def test_write_file_from_file(self):
@@ -270,7 +270,8 @@ class TestMigrate(unittest.TestCase):
         for name, cls in [("eyedata_v1.pypil", pp.EyeData), ("eyedata_v1.h5", pp.EyeData),
                           ("segmented_v1.h5", pp.SegmentedEyeData)]:
             obj = cls.from_file(os.path.join(DATA, name))
-            ivs = [obj.intervals] if cls is pp.SegmentedEyeData else \
+            # segments: event-locked intervals are loaded as Epochs (in ms)
+            ivs = [obj.intervals.to_intervals()] if cls is pp.SegmentedEyeData else \
                 [iv for iv in obj._blinks.values() if iv is not None]
             self.assertTrue(ivs)
             for iv in ivs:

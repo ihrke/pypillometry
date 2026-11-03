@@ -123,7 +123,7 @@ class TestIncompleteBlinkStores:
     def test_set_and_get_blinks(self, incomplete_eyedata):
         import pypillometry as pp
         d = incomplete_eyedata
-        iv = pp.Intervals([(10, 20)], units="samples", data_time_range=(0, len(d)))
+        iv = pp.Intervals([(10, 20)], units="samples")
         d.set_blinks(iv)
         assert set(d.get_blinks()) == {"left_pupil", "left_x", "left_y", "right_pupil"}
         assert d.data.mask["right_pupil"][10:20].all()
@@ -189,7 +189,7 @@ class TestIncompleteIntervals:
     def test_mask_and_interpolate_intervals(self, incomplete_eyedata):
         import pypillometry as pp
         d = incomplete_eyedata
-        iv = pp.Intervals([(100, 110)], units="samples", data_time_range=(0, len(d)))
+        iv = pp.Intervals([(100, 110)], units="samples")
         d.mask_intervals(iv)
         for key in ["left_pupil", "left_x", "left_y", "right_pupil"]:
             assert d.data.mask[key][100:110].all()
@@ -204,7 +204,7 @@ class TestIncompleteIntervals:
     def test_blinks_merge_close(self, incomplete_eyedata):
         import pypillometry as pp
         d = incomplete_eyedata
-        iv = pp.Intervals([(10, 20), (22, 30)], units="samples", data_time_range=(0, len(d)))
+        iv = pp.Intervals([(10, 20), (22, 30)], units="samples")
         d.set_blinks(iv)
         merged = d.blinks_merge_close(distance=5, units="samples")
         assert {k: len(v) for k, v in merged.items()} == {
@@ -215,7 +215,7 @@ class TestIncompleteIntervals:
     def test_stat_per_event(self, incomplete_eyedata):
         import pypillometry as pp
         d = incomplete_eyedata
-        iv = pp.Intervals([(100, 200), (300, 400)], units="samples", data_time_range=(0, len(d)))
+        iv = pp.Intervals([(100, 200), (300, 400)], units="samples")
         stat = d.stat_per_event(iv)
         assert set(stat) == {"left_pupil", "left_x", "left_y", "right_pupil"}
         assert stat["right_pupil"].shape == (2,)
@@ -276,7 +276,7 @@ class TestIncompletePlots:
     def test_plot_intervals(self, incomplete_eyedata):
         import pypillometry as pp
         d = incomplete_eyedata
-        iv = pp.Intervals([(100, 200), (300, 400)], units="samples", data_time_range=(0, len(d)))
+        iv = pp.Intervals([(100, 200), (300, 400)], units="samples")
         figs = d.plot.plot_intervals(iv, show_mask=True)
         labels = [line.get_label() for line in figs[0].axes[0].get_lines()]
         assert labels == ["left_x", "left_y", "left_pupil", "right_pupil"]
