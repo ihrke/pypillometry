@@ -314,8 +314,8 @@ class TestGazeData(unittest.TestCase):
         result = d.mask_eye_divergences(threshold=0.5, thr_type="percentile", 
                                        inplace=False)
         
-        # Should return GazeData object (self)
-        self.assertIsInstance(result, pp.GazeData)
+        # Should return the EyeData object (self)
+        self.assertIsInstance(result, pp.EyeData)
         
         # Mask should be applied
         mask_sum = np.sum(result.data.mask['left_x'])
@@ -419,8 +419,8 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         # Call without apply_mask argument (should default to True)
         result = d.mask_offscreen_coords(eyes='left', inplace=False)
         
-        # Should return GazeData object
-        self.assertIsInstance(result, pp.GazeData)
+        # Should return the EyeData object
+        self.assertIsInstance(result, pp.EyeData)
         
         # Mask should be applied
         mask_sum = np.sum(result.data.mask['left_x'])

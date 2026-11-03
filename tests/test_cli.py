@@ -80,7 +80,7 @@ class TestPypilview(CLITestCase):
             with patch.object(pp, "view") as view:
                 pypilview_main([fname, "--eyes", "left"])
             shown = view.call_args.args[0]
-            self.assertIsInstance(shown, pp.PupilData)
+            self.assertIsInstance(shown, pp.EyeData)
             self.assertEqual(shown.name, "saved")
             self.assertEqual(view.call_args.kwargs["eyes"], ["left"])
 

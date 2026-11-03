@@ -2,20 +2,18 @@
 pupildata.py
 ============
 
-Class representing pupillometric data.
+Methods of :class:`~pypillometry.EyeData` for pupil data.
 """
 
 import itertools
 from typing import Optional, Tuple
-from .eyedatadict import EyeDataDict
-from .generic import GenericEyeData, keephistory
+from .generic import keephistory
 #from .. import convenience
 from ..signal import baseline
 from ..signal import preproc
 from ..signal import pupil
 from ..signal.pupil import _bridge_gaps
 #from .. import io
-from ..plot import PupilPlotter
 from ..intervals import Intervals
 
 import json
@@ -58,117 +56,13 @@ def _merge_overlapping_blink_windows(blinks, n):
         out.append((t1, on, off, t4))
     return out
 
-class PupilData(GenericEyeData):
+class _PupilMethods:
     """
-    Class representing pupillometric data. 
+    Methods of :class:`~pypillometry.EyeData` for pupil data.
 
-    The class is a subclass of :class:`~pypillometry.GenericEyeData` and inherits all its methods.
-
-    If eye-tracking data is available in addition to pupillometry, use the :class:`~pypillometry.EyeData` class.
-
-    Properties such as :attr:`~pypillometry.GenericEyeData.eyes` and
-    :attr:`~pypillometry.GenericEyeData.variables` are inherited from
-    :class:`~pypillometry.GenericEyeData`.
-
-    Parameters
-    ----------
-    time : np.ndarray or None
-        timing array (in ms) or `None`, in which case the time-array goes from [0,maxT]
-        using `sampling_rate`
-    left_pupil : np.ndarray or None
-        data from left eye (at least one of the eyes must be provided)
-    right_pupil : np.ndarray or None
-        data from right eye (at least one of the eyes must be provided)
-    event_onsets : np.ndarray or None
-        time-onsets of any events in the data (in ms, matched in `time` vector)
-    event_labels : np.ndarray or None
-        for each event in `event_onsets`, provide a label
-    sampling_rate : float or None
-        sampling-rate of the signal in Hz; if `None`, it is estimated from
-        the median difference in `time` (either `time` or `sampling_rate`
-        must be provided)
-    name : str or None
-        name of the dataset or `None` (in which case a random string is selected)
-    fill_time_discontinuities : bool
-        sometimes, when the eyetracker loses signal, no entry in the EDF is made; 
-        when this option is True, such entries will be made and the signal set to 0 there
-        (or do it later using `fill_time_discontinuities()`)
-    keep_orig : bool
-        keep a copy of the original dataset? If `True`, a copy of the object
-        as initiated in the constructor is stored in member `original`
-    info : dict or None
-        optional dictionary with additional information about the dataset
-        (stored in member `info`)
-    inplace : bool or None
-        default for methods called with `inplace=None`: if True, they modify the
-        object in place; if False, they return a modified copy; if None (default),
-        use the package-level setting (see :func:`~pypillometry.set_default_inplace`,
-        initially True). The method-level `inplace` argument overrides this.
-    """    
-    def __init__(self,
-                 time: np.ndarray = None,
-                 left_pupil: np.ndarray=None,
-                 right_pupil: np.ndarray=None, 
-                 event_onsets: np.ndarray = None,
-                 event_labels: np.ndarray = None,
-                 sampling_rate: float = None,
-                 name: str = None,
-                 fill_time_discontinuities: bool = True,
-                 keep_orig: bool = False,
-                 info: dict = None,
-                 inplace: Optional[bool] = None):
-        """Constructor for PupilData object.
-        """
-
-        logger.debug("Creating PupilData object")
-        if (left_pupil is None and right_pupil is None):
-            raise ValueError("At least one of the eyes, left_pupil or right_pupil, must be provided")
-        self.data=EyeDataDict(left_pupil=left_pupil, right_pupil=right_pupil)
-
-        self._init_common(time, sampling_rate, 
-                          event_onsets, event_labels, 
-                          name, fill_time_discontinuities, 
-                          info=info, inplace=inplace)
-
-        # store original
-        self.original=None
-        if keep_orig: 
-            self.original=self.copy()
-
-    @property
-    def plot(self):
-        """Plotting functions for this object (a :class:`~pypillometry.PupilPlotter`)."""
-        return PupilPlotter(self)
-
-
-    def summary(self):
-        """
-        Return a summary of the dataset as a dictionary.
-
-        Returns
-        -------
-        dict
-            dictionary containing description of dataset
-        """
-
-        summary=dict(
-            name=self.name, 
-            n=len(self),
-            sampling_rate=self.fs,
-            eyes=self.eyes,
-            data=list(self.data.keys()),
-            nevents=self.nevents(), 
-            nblinks=self.nblinks(), 
-            blinks=self.blink_stats(),
-            duration_minutes=self.get_duration("min"),
-            start_min=self.tx.min()/1000./60.,
-            end_min=self.tx.max()/1000./60.,
-            params=self._strfy_params()
-        )
-        if self._excluded_mask().any():
-            summary["excluded_minutes"] = self.excluded_duration("min")
-
-        return summary
+    Internal: not a data class (no state and no constructor). The methods
+    need pupil data and raise a ValueError if there is none.
+    """
 
     @keephistory
     def pupil_lowpass_filter(self,  cutoff: float, order: int=2, eyes=[], policy="default",

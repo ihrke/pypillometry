@@ -1,12 +1,12 @@
-from .generic import keephistory
-from .gazedata import GazeData
+from .generic import GenericEyeData, keephistory
+from .gazedata import _GazeMethods
 from .eyedatadict import EyeDataDict
 from ..plot import EyePlotter
 from ..units import parse_distance, parse_angle
 import numpy as np
 from loguru import logger
 
-from .pupildata import PupilData
+from .pupildata import _PupilMethods
 import numpy as np
 from collections.abc import Iterable
 from typing import Optional, Dict, Union
@@ -26,14 +26,18 @@ from ..signal.baseline import butter_lowpass_filter, downsample
 
 
 
-class EyeData(GazeData,PupilData):
+class EyeData(_GazeMethods, _PupilMethods, GenericEyeData):
     """
-    Class for handling eye-tracking data. This class is a subclass of
-    :class:`~pypillometry.GazeData` and :class:`~pypillometry.PupilData`
-    and inherits all their methods and attributes. In addition to the
-    methods in GazeData which implement functions for eye-tracking data and
-    those in PupilData for pupillometric data, `EyeData` provides methods
-    that need both gaze and pupil data (e.g., foreshortening correction).
+    Class for eye-tracking and pupillometric data: pupil size and/or gaze
+    position (x, y) of one or two eyes.
+
+    The object can hold any of these channels (e.g., only pupil data, only
+    gaze data, or both). Methods that need pupil data (``pupil_*``) or gaze
+    data (e.g., :meth:`mask_offscreen_coords`) raise a ValueError if the
+    object has none. The pupil and gaze methods are defined in separate
+    modules (:mod:`pypillometry.eyedata.pupildata` and
+    :mod:`pypillometry.eyedata.gazedata`); the methods here need both (e.g.,
+    foreshortening correction).
 
     Properties such as :attr:`~pypillometry.GenericEyeData.eyes` and
     :attr:`~pypillometry.GenericEyeData.variables` are inherited from
@@ -145,9 +149,40 @@ class EyeData(GazeData,PupilData):
         : dict
             A dictionary summarizing the dataset.
         """        
-        ds = dict(GazeData.summary(self),
-                  **PupilData.summary(self))
-        return ds
+        # Experimental setup info
+        if self.experimental_setup is not None:
+            setup_info = self.experimental_setup.summary()
+        else:
+            setup_info = "not set"
+
+        # Calibration info
+        if self.calibration is not None:
+            calibration_info = {
+                eye: cal.get_stats() for eye, cal in self.calibration.items()
+            }
+        else:
+            calibration_info = "not available"
+        
+        summary=dict(
+            name=self.name, 
+            n=len(self),
+            sampling_rate=self.fs,
+            eyes=self.eyes,
+            data=list(self.data.keys()),
+            nevents=self.nevents(), 
+            experimental_setup=setup_info,
+            calibration=calibration_info,
+            duration_minutes=self.get_duration("min"),
+            start_min=self.tx.min()/1000./60.,
+            end_min=self.tx.max()/1000./60.,
+            params=self._strfy_params()
+        )
+        if self._excluded_mask().any():
+            summary["excluded_minutes"] = self.excluded_duration("min")
+        summary["nblinks"] = self.nblinks()
+        summary["blinks"] = self.blink_stats()
+
+        return summary
 
     @keephistory
     def correct_pupil_foreshortening(self, eyes=[], midpoint=None, store_as="pupil", inplace=None):

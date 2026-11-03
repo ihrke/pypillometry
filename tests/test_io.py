@@ -235,19 +235,17 @@ class TestIO(unittest.TestCase):
             # Just check that it's not a basic type
             self.assertNotIsInstance(edf_data, (str, int, float, list, dict))
 
-    def test_from_eyelink_all_classes(self):
-        """from_eyelink works for PupilData, GazeData and EyeData."""
+    def test_from_eyelink_eyedata(self):
+        """from_eyelink gives an EyeData object with pupil and gaze data."""
         try:
             import eyelinkio
         except ImportError:
             self.skipTest("eyelinkio package not available")
         import pypillometry as pp
-        fname = TEST_EDF
-        for cls in (pp.PupilData, pp.GazeData, pp.EyeData):
-            with self.subTest(cls=cls.__name__):
-                obj = cls.from_eyelink(fname)
-                self.assertIsInstance(obj, cls)
-                self.assertGreater(len(obj.tx), 0)
+        obj = pp.EyeData.from_eyelink(TEST_EDF)
+        self.assertIs(type(obj), pp.EyeData)
+        self.assertGreater(len(obj.tx), 0)
+        self.assertEqual(sorted(obj.variables), ["pupil", "x", "y"])
 
     def test_read_eyelink_url(self):
         """Test reading EDF file from URL using read_eyelink function."""
