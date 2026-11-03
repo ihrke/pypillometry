@@ -13,6 +13,7 @@ from .generic import GenericEyeData, keephistory
 from ..signal import baseline
 from ..signal import preproc
 from ..signal import pupil
+from ..signal.pupil import _bridge_gaps
 #from .. import io
 from ..plot import PupilPlotter
 from ..intervals import Intervals
@@ -219,11 +220,16 @@ class PupilData(GenericEyeData):
         return obj
 
     @keephistory
-    def pupil_smooth_window(self, eyes=[], window: str="hanning", winsize: float=11, inplace=None):
+    def pupil_smooth_window(self, eyes=[], window: str="hanning", winsize: float=11,
+                            policy="default", inplace=None):
         """
         Apply smoothing of the signal using a moving window.
         See :func:`~pypillometry.signal.preproc.smooth_window`.
-        The smoothed signal replaces the pupil data; the mask is preserved.
+
+        Only the usable samples under the mask `policy` are smoothed; the
+        unusable samples (masked or NaN) are bridged linearly for the
+        smoothing and keep their stored values (as in
+        :meth:`pupil_lowpass_filter`). The mask layers are kept.
         
         Parameters
         ----------
@@ -234,6 +240,9 @@ class PupilData(GenericEyeData):
             flat window will produce a moving average smoothing.
         winsize : float, str or Quantity
             the length of the window in ms (or with units, e.g. ``"20 ms"``)
+        policy : str, MaskPolicy or list of str
+            mask policy that decides which samples are usable (see
+            :meth:`~pypillometry.GenericEyeData.mask`); default ``"default"``
         inplace : bool or None
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes                            
@@ -252,8 +261,14 @@ class PupilData(GenericEyeData):
 
         # process requested eyes
         for eye in eyes:
-            smoothed = preproc.smooth_window(obj.data[eye,"pupil"], winsize_ix, window)
-            obj.data.set_with_mask(f"{eye}_pupil", smoothed, preserve_mask=True)
+            x = obj.values(eye, "pupil", policy)  # NaN: unusable
+            usable = ~np.isnan(x)
+            if not usable.any():
+                continue
+            out = obj.data[eye, "pupil"].copy()
+            smoothed = preproc.smooth_window(_bridge_gaps(x), winsize_ix, window)
+            out[usable] = smoothed[usable]
+            obj.data.set_with_mask(f"{eye}_pupil", out, preserve_mask=True)
 
         return obj
 

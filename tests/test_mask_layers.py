@@ -507,6 +507,20 @@ class TestNoStoredMask:
         near = np.r_[290:300, 310:320]
         np.testing.assert_allclose(f.data["left_pupil"][near], pupil[near], atol=0.1)
 
+    def test_smoothing_keeps_nan_and_masked_values(self):
+        import pypillometry as pp
+        pupil = 1000 + np.sin(np.arange(500) / 20)
+        pupil[200:220] = np.nan  # raised an error before
+        pupil[300:310] = 0.
+        d = pp.PupilData(left_pupil=pupil, sampling_rate=100, inplace=False)
+        d.mask_intervals(pp.Intervals([(300, 310)], "samples"), inplace=True)
+        f = d.pupil_smooth_window(winsize=50)
+        assert np.isnan(f.data["left_pupil"][200:220]).all()
+        assert (f.data["left_pupil"][300:310] == 0).all()
+        near = np.r_[290:300, 310:320]
+        np.testing.assert_allclose(f.data["left_pupil"][near], pupil[near], atol=0.1)
+        assert f.data.get_layer("left_pupil", "user")[300:310].all()
+
     def test_decimate_keeps_fully_masked_windows_masked(self):
         import pypillometry as pp
         d = pp.PupilData(left_pupil=np.arange(8, dtype=float), sampling_rate=100)

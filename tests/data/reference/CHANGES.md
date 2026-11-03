@@ -457,3 +457,13 @@ Changes of the API calls alone (same numbers) need no entry.
   neighbours (finding 4.9, D2); the filter must not invent values in gaps
   that would look like data (NaN is read from the values).
 - **Step**: 7, `refactor/07-value-policy`
+
+### Smoothing: only usable samples are smoothed; NaN allowed
+
+- **Case**: none (no reference case smooths)
+- **Change**: `pupil_smooth_window(..., policy="default")` works like
+  `pupil_lowpass_filter`: the unusable samples are bridged linearly for
+  the smoothing and keep their stored values. Data with NaN no longer
+  raise an error; masked values no longer enter the window.
+- **Why**: same as for the lowpass filter (finding 4.9, D2).
+- **Step**: 7, `refactor/07-value-policy`
