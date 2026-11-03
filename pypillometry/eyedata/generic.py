@@ -2627,15 +2627,18 @@ class GenericEyeData(state.VersionedState, ABC):
         return self
 
     @keephistory
-    def merge_eyes(self, eyes=[], variables=[], method="mean", keep_eyes=True, inplace=None):
+    def merge_eyes(self, eyes=[], variables=[], method="mean", keep_eyes=True,
+                   policy="default", inplace=None):
         """Merge data from both eyes into a single variable.
 
         The merged data is stored under the eye name "mean" (e.g.,
         ``obj["mean", "pupil"]``). Each sample is the mean over the eyes
-        in which it is not masked; it is masked in the merged data only if
-        it is masked in all merged eyes (it then holds the mean of the
-        stored values, e.g., of interpolated blinks). Each variable is
-        merged over the selected eyes that have data for it.
+        in which it is usable under the mask `policy` (by default,
+        interpolated samples are used, see :meth:`mask`); it is masked in
+        the merged data (``"user"`` layer) only if it is unusable in all
+        merged eyes (it then holds the mean of the stored values; NaN only
+        if they are NaN). Each variable is merged over the selected eyes
+        that have data for it.
 
         Parameters
         ----------
@@ -2649,6 +2652,9 @@ class GenericEyeData(state.VersionedState, ABC):
         keep_eyes : bool, optional
             keep original eye data (True, default) or drop it together
             with its stored blinks (False)
+        policy : str, MaskPolicy or list of str
+            mask policy that decides which samples are usable (see
+            :meth:`mask`); default ``"default"``
         inplace : bool or None, optional
             if `True`, make change in-place and return the object;
             if `False`, make and return copy before making changes;
@@ -2664,19 +2670,19 @@ class GenericEyeData(state.VersionedState, ABC):
 
         if method=="mean":            
             for var in dict.fromkeys(v for _, v in pairs):
-                # Collect masked arrays from all eyes with this variable
+                # stored values and unusable samples of all eyes with this variable
                 eyes = [eye for eye, v in pairs if v == var]
-                eye_data = [obj[eye, var] for eye in eyes]
-                
-                # Mean over the unmasked eyes; masked only where all eyes
-                # are masked
-                stacked = np.ma.stack(eye_data, axis=0)
-                meanval = np.ma.mean(stacked, axis=0)
+                stored = np.stack([obj.data[eye, var] for eye in eyes])
+                unusable = np.stack([obj.data.get_policy_mask(f"{eye}_{var}", policy)
+                                     for eye in eyes])
+
+                # Mean over the usable eyes; masked only where all eyes
+                # are unusable
+                meanval = np.ma.mean(np.ma.array(stored, mask=unusable), axis=0)
                 allmasked = np.ma.getmaskarray(meanval)
-                # where all eyes are masked, keep the mean of the stored
-                # values (e.g., interpolated blinks), still masked
-                raw = np.ma.masked_invalid(np.stack([obj.data[eye, var] for eye in eyes]))
-                rawmean = np.ma.mean(raw, axis=0).filled(np.nan)
+                # where all eyes are unusable, keep the mean of the stored
+                # values, still masked
+                rawmean = np.ma.mean(np.ma.masked_invalid(stored), axis=0).filled(np.nan)
                 values = np.where(allmasked, rawmean, np.ma.getdata(meanval))
                 obj["mean", var] = np.ma.array(values, mask=allmasked)
                 

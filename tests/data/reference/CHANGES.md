@@ -503,3 +503,18 @@ Changes of the API calls alone (same numbers) need no entry.
 - **Why**: one rule for which samples are used (decision 4: interpolated
   samples are used).
 - **Step**: 7, `refactor/07-value-policy`
+
+### `merge_eyes`: interpolated samples are used
+
+- **Case**: `h.merge_eyes.*`, keys `*.mean_pupil` (gaze unchanged: nothing
+  interpolated); expected values derived from case b in the test
+- **Change**: `merge_eyes(..., policy="default")` averages the eyes in
+  which a sample is usable under the mask policy, so interpolated blinks
+  are averaged with the other eye (before: left out where the other eye
+  was valid) and a sample is masked only if it is unusable in all eyes.
+  Size: rlmw 1247 of 20465 merged samples change, by up to 141 units;
+  masked samples 1007 -> 0, masked mean 1029.12 -> 1034.38; synth 499 of
+  10000 samples, up to 51 units, masked 166 -> 0, mean 949.44 -> 949.99.
+  `policy="strict"` gives the old values.
+- **Why**: decision 4 (interpolated samples are used in analyses).
+- **Step**: 7, `refactor/07-value-policy`

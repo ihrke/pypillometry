@@ -513,6 +513,39 @@ def _quality_other(case_id, key, stored):
     return 0.0
 
 
+def _case_b(dataset):
+    """Pupil values of case b and the samples that are usable under the
+    default mask policy (step 7): unusable are NaN and the samples masked
+    in the old mask (the stored masks) that are not interpolated."""
+    full = load_arrays(f"b.blinks_interpolate.{dataset}")
+    out = {}
+    for key in ("left_pupil", "right_pupil"):
+        v = full[f"pupil.{key}"]
+        interp = np.zeros(len(v), dtype=bool)
+        for on, off in full[f"interpolated.{key}"]:
+            interp[on:off] = True
+        out[key] = (v, ~((full[f"mask.{key}"] & ~interp) | np.isnan(v)))
+    return out
+
+
+def _merged_pupil(case_id, key, stored):
+    """`merge_eyes` of the pupil (step 7): mean over the eyes in which a sample
+    is usable under the default policy (interpolated samples are used)."""
+    name, _, var = key.partition(".")
+    if var != "mean_pupil":
+        return stored  # gaze: nothing interpolated, unchanged
+    b = _case_b(case_id.rsplit(".", 1)[1])
+    v = np.stack([b[k][0] for k in ("left_pupil", "right_pupil")])
+    usable = np.stack([b[k][1] for k in ("left_pupil", "right_pupil")])
+    allmasked = ~usable.any(axis=0)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)
+        merged = np.where(allmasked, np.nanmean(v, axis=0),
+                          np.nansum(np.where(usable, v, 0), axis=0) / usable.sum(axis=0))
+    return {"sub": merged[::50], "mean": float(np.mean(merged[~allmasked])),
+            "nanmean_all": float(np.nanmean(merged)), "masked": int(allmasked.sum())}[name]
+
+
 #: intended changes (see CHANGES.md): (case id prefix, result key prefix) ->
 #: function mapping (case id, key, stored reference value) to the expected value
 CHANGED = {("e.segments.", "tx."): lambda case_id, key, stored: _segment_time_axis(stored),
@@ -520,7 +553,8 @@ CHANGED = {("e.segments.", "tx."): lambda case_id, key, stored: _segment_time_ax
            ("g.downsample.", "blinks."): _downsampled_runs,
            ("g.downsample.", "mask."): _downsampled_mask,
            ("g.downsample.", "masked."): _downsampled_masked,
-           ("f.quality.", "artifacts."): _quality_other}
+           ("f.quality.", "artifacts."): _quality_other,
+           ("h.merge_eyes.", ""): _merged_pupil}
 
 
 def expected_value(case_id, key, stored):
