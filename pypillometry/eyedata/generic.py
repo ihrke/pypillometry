@@ -1132,7 +1132,8 @@ class GenericEyeData(state.VersionedState, ABC):
         Resets time so that time `t0` becomes time zero.
 
         `t0` is subtracted from the time-vector, the event onsets, the
-        excluded periods and blinks stored in time units.
+        excluded periods, blinks stored in time units and the periods in
+        ``params["removed_intervals"]`` (see :meth:`remove_intervals`).
 
         Parameters
         ----------
@@ -1155,6 +1156,12 @@ class GenericEyeData(state.VersionedState, ABC):
         obj._set_timebase(self.tx-t0)
         obj._events = self._events.shift(-t0)
         obj._remap_interval_stores(self, time_map=lambda t: t - t0)
+        # the original time of remove_intervals moves with the clock
+        if "removed_intervals" in obj.params:
+            obj.params["removed_intervals"] = [(a - t0, b - t0)
+                                               for a, b in obj.params["removed_intervals"]]
+        if "removed_shifts" in obj.params:
+            obj.params["removed_shifts"] = [(t - t0, sh) for t, sh in obj.params["removed_shifts"]]
         return obj
 
     def _remap_interval_stores(self, old, move=None, time_map=None):

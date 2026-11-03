@@ -225,6 +225,17 @@ class TestRemovedIntervalsClock(unittest.TestCase):
         self.assertNotIn("removed_shifts", d.params)
         self.check(d)
 
+    def test_reset_time_between_calls(self):
+        d = self.make()
+        d["time"] = d.tx + 1000.
+        d.data["left_pupil"] = d.tx - 1000.  # original time after reset_time
+        d.remove_intervals([(3000, 4000)], inplace=True)
+        d.reset_time(1000., inplace=True)
+        self.assertEqual(d.params["removed_intervals"], [(2000., 3000.)])
+        d.remove_intervals([(5000, 6000)], inplace=True)
+        self.assertEqual(d.params["removed_intervals"], [(2000., 3000.), (6000., 7000.)])
+        self.check(d)
+
 
 if __name__ == "__main__":
     unittest.main()
