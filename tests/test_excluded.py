@@ -107,13 +107,15 @@ class TestExcluded(unittest.TestCase):
         np.testing.assert_array_equal(s.get_excluded().intervals, [(7000, 8000)])
         self.assertEqual(s.get_excluded("samples").intervals, [(500, 1000)])
         self.assertTrue(s.data.mask["left_x"][500:1000].all())
-        # period outside of the remaining data: kept, but no samples
+        # period outside of the remaining data: cut with the samples
         s2 = d.crop(9000, 20000, units="ms")
-        np.testing.assert_array_equal(s2.get_excluded().intervals, [(7000, 8000)])
-        self.assertEqual(len(s2.get_excluded("samples")), 0)
+        self.assertEqual(len(s2.get_excluded()), 0)
         self.assertEqual(s2.excluded_duration("sec"), 0)
         ds = d.downsample(100)
         self.assertEqual(ds._excluded_mask().sum(), 100)
+        # the runs of the layer, at the times of the new samples
+        np.testing.assert_allclose(ds.get_excluded().intervals, [(7004, 8004)])
+        self.assertEqual(len(d.clear_layer("excluded").get_excluded()), 0)
         c = d.copy()
         np.testing.assert_array_equal(c.get_excluded().intervals, [(7000, 8000)])
 

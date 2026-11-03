@@ -273,3 +273,21 @@ Changes of the API calls alone (same numbers) need no entry.
   recording-wide layers).
 - **Why**: one store for excluded periods (finding D1); refactor plan 2.2.
 - **Step**: 5, `refactor/05-mask-layers`
+
+### `get_excluded` returns the runs of the excluded layer
+
+- **Case**: none (`g.exclude_intervals.rlmw`: the periods start and end at
+  samples, so the runs are the same)
+- **Change**: the excluded periods are no longer stored as times
+  (`_excluded`); `get_excluded()` and `get_included()` return the runs of
+  the `excluded` layer, from the time of the first sample of a run to the
+  time of the sample after its last one. A period that does not start or
+  end at a sample is returned from the first sample at or after its
+  start. Periods outside the data are gone after `crop` (before, they
+  were kept as times). After `downsample`, the runs are at the times of
+  the new samples (the window means: 1000 ms excluded at 500 Hz, then
+  `downsample(100)`, gives `(7004, 8004)` instead of `(7000, 8000)`).
+  `clear_layer("excluded")` removes the excluded periods.
+- **Why**: no interval stores next to the samples (refactor plan 2.4:
+  nothing else to remap).
+- **Step**: 5, `refactor/05-mask-layers`

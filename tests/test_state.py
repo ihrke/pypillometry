@@ -158,6 +158,8 @@ class TestStateCoverage(unittest.TestCase):
             pp.GazeData(left_x=np.ones(10), left_y=np.ones(10), sampling_rate=10),
             generate_foreshortening_data(duration=1, fs=100, seed=1),
             seg, pp.group_segments([seg, seg]),
+            # nested in the state of segments that are not event-locked
+            pp.Intervals([(0, 10)], units="ms"),
         ]
 
     def stateful_objects(self, obj, seen):

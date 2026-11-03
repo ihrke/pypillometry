@@ -11,7 +11,7 @@ from .. import io
 from ..convenience import sizeof_fmt, ByteSize, _round_values, requires_package, is_url, suppress_all_output, normalize_unit, _warn_if_ignores_mask
 from ..units import UNSET, _has_units, _time_values_and_units, parse_time, _ms_to_samples, _samples_to_ms
 from ..io import download
-from .eyedatadict import EyeDataDict, LAYER_DTYPE, _join_key
+from .eyedatadict import EyeDataDict, LAYER_DTYPE, REC_LAYERS, _join_key
 from .experimental_setup import ExperimentalSetup
 from ..signal import baseline
 from ..intervals import stat_event_interval, Intervals, _as_intervals
@@ -34,7 +34,6 @@ from io import BytesIO
 import base64
 import copy
 import pickle
-from types import SimpleNamespace
 import inspect
 import h5py
 import tempfile
@@ -256,7 +255,6 @@ class GenericEyeData(state.VersionedState, ABC):
     # state (see pypillometry.state); subclasses add their own fields
     _STATE_FIELDS = (
         "name", "fs", "tx", ("data", "EyeDataDict"),
-        ("excluded", "Intervals", "_excluded"),
         "params", "history", "inplace", "info", ("original", "versioned"))
     # the events are stored as "event_onsets", "event_labels" and
     # "event_meta" (see _to_state)
@@ -282,7 +280,9 @@ class GenericEyeData(state.VersionedState, ABC):
         NaN), the mask is moved from the stored mask to the
         ``"_blink_applied"`` layer, so that re-detecting blinks unmasks them.
         The interpolated blinks become the ``"interpolated"`` layer where the
-        stored mask is set.
+        stored mask is set. The excluded periods (``excluded``, Intervals in
+        ms) become the recording-wide ``"excluded"`` layer and are removed
+        from the stored mask (where the value is not NaN).
         """
         super()._set_state(st)
         self._events = Events(st["event_onsets"], st["event_labels"], units="ms",
@@ -300,9 +300,9 @@ class GenericEyeData(state.VersionedState, ABC):
                     self.data.set_layer(key, "blink", blink)
                     self.data.set_layer(key, "_blink_applied", applied)
                     self.data._mask[key] &= ~applied
-        if "rec_layers" not in st["data"]:
+        if "rec_layers" not in st["data"] and st.get("excluded") is not None:
             # excluded periods (ms) -> recording-wide layer, out of the stored mask
-            excl = self._excluded.to_mask(self).astype(bool)
+            excl = Intervals._from_state(st["excluded"]).to_mask(self).astype(bool)
             if excl.any():
                 self.data.set_rec_layer("excluded", excl)
                 for key in self.data.keys():
@@ -355,8 +355,6 @@ class GenericEyeData(state.VersionedState, ABC):
         if event_labels is None:
             event_labels = np.full(len(event_onsets), "")
         self._events = self._check_events(Events(event_onsets, event_labels, units="ms"))
-
-        self._excluded = Intervals([], units="ms", label="excluded")
 
         ## empty parameter dict
         self.params = dict()
@@ -967,6 +965,8 @@ class GenericEyeData(state.VersionedState, ABC):
 
         Clearing ``"blink"`` removes the blinks and their mask (e.g., to
         undo :meth:`~pypillometry.PupilData.pupil_blinks_detect`).
+        ``"excluded"`` is a recording-wide layer: clearing it removes the
+        excluded periods (`eyes` and `variables` are ignored).
 
         Parameters
         ----------
@@ -989,6 +989,9 @@ class GenericEyeData(state.VersionedState, ABC):
         obj = self._get_inplace(inplace)
         # the mask of applied blinks goes with the blinks
         names = [name, "_blink_applied"] if name == "blink" else [name]
+        if name in REC_LAYERS:
+            obj.data.clear_rec_layer(name)
+            return obj
         for eye, var in obj.data.select(eyes, variables):
             for n in names:
                 obj.data.clear_layer(f"{eye}_{var}", n)
@@ -1276,9 +1279,9 @@ class GenericEyeData(state.VersionedState, ABC):
         """
         Resets time so that time `t0` becomes time zero.
 
-        `t0` is subtracted from the time-vector, the event onsets, the
-        excluded periods, blinks stored in time units and the periods in
-        ``params["removed_intervals"]`` (see :meth:`remove_intervals`).
+        `t0` is subtracted from the time-vector, the event onsets and the
+        periods in ``params["removed_intervals"]`` (see
+        :meth:`remove_intervals`).
 
         Parameters
         ----------
@@ -1300,7 +1303,6 @@ class GenericEyeData(state.VersionedState, ABC):
             t0 = self.tx[0]
         obj._set_timebase(self.tx-t0)
         obj._events = self._events.shift(-t0)
-        obj._remap_interval_stores(self, time_map=lambda t: t - t0)
         # the original time of remove_intervals moves with the clock
         if "removed_intervals" in obj.params:
             obj.params["removed_intervals"] = [(a - t0, b - t0)
@@ -1327,48 +1329,6 @@ class GenericEyeData(state.VersionedState, ABC):
             return v
         # plain numbers are ms; values with units are converted
         return Intervals([tuple(bound(v) for v in pair) for pair in intervals], units="ms")
-
-    def _remap_interval_stores(self, old, move=None, time_map=None):
-        """
-        Remap the stored intervals after the samples or the clock changed (in place).
-
-        Called by the operations that change the samples or the clock, after
-        the new time vector is set. Remaps the excluded periods (the mask
-        layers are moved with the samples).
-
-        Parameters
-        ----------
-        old : object
-            the time vector `tx` and sampling rate `fs` before the change
-            (anything with these attributes, e.g. the object before the change)
-        move : callable or None
-            maps a list of ``(start, end)`` in old sample indices to the new
-            sample indices; None: the samples did not move
-        time_map : callable or None
-            maps an array of times (ms) on the old clock to the new clock;
-            None: the clock did not change, so intervals in time units
-            stay valid
-        """
-        def remap(iv, keep_units):
-            if iv.units == "samples":
-                if move is None:
-                    return iv
-                return Intervals(move(iv.intervals), "samples", label=iv.label)
-            if time_map is None:
-                return iv
-            if move is None:
-                return Intervals([tuple(time_map(np.array([a, b], dtype=float)))
-                                  for a, b in iv.to_units("ms").intervals],
-                                 "ms", label=iv.label).to_units(iv.units)
-            # samples dropped and clock changed: go through the sample indices
-            # (blinks stay in sample indices, the excluded periods go back to ms)
-            moved = Intervals(move(iv.to_units("samples", old).intervals), "samples",
-                              label=iv.label)
-            if not keep_units:
-                return moved
-            return Intervals(moved.to_units("ms", self).intervals, "ms", label=iv.label)
-
-        self._excluded = remap(self._excluded, keep_units=True)
 
     def _original_time(self, t):
         """
@@ -1425,30 +1385,18 @@ class GenericEyeData(state.VersionedState, ABC):
         """
         Keep only the samples where `keep` is True (in place).
 
-        Cuts all variables and masks and moves stored blinks in sample
-        indices to the new sample positions. With `time_map` (a function
+        Cuts all variables, masks and layers. With `time_map` (a function
         mapping an array of times on the old clock to the new clock, e.g.
         to close the gaps), the time vector and the event onsets are
-        mapped, and blinks in time units and excluded periods are moved as
-        well; without it, they stay valid. `keep_events` (one bool per
+        mapped; without it, they stay valid. `keep_events` (one bool per
         event; default: all) selects the events that are kept.
         """
         keep = np.asarray(keep, dtype=bool)
-        n = len(self.tx)
-        kept_before = np.concatenate([[0], np.cumsum(keep)])
-
-        def move(pairs):
-            """(start, end) pairs -> (start, end) at the new sample positions."""
-            pairs = [(int(kept_before[min(max(a, 0), n)]), int(kept_before[min(max(b, 0), n)]))
-                     for a, b in pairs]
-            return [(a, b) for a, b in pairs if b > a]
-
-        old = SimpleNamespace(tx=self.tx, fs=self.fs)
+        old_tx = self.tx
         self._map_sample_aligned(_keep_dict, keep)
         self._set_timebase((self.tx if time_map is None else time_map(self.tx))[keep])
-        self._remap_interval_stores(old, move, time_map)
         if time_map is not None:
-            self._set_removed_shifts(self._original_time(old.tx)[keep])
+            self._set_removed_shifts(self._original_time(old_tx)[keep])
         if keep_events is not None:
             self._events = self._events.keep(keep_events)
         if time_map is not None:
@@ -1760,7 +1708,7 @@ class GenericEyeData(state.VersionedState, ABC):
         ]
         if "excluded_minutes" in summary:
             overview.insert(3, ("Excluded", f"{summary['excluded_minutes']:.2f} min "
-                                f"({len(self._excluded)} periods)"))
+                                f"({len(self.get_excluded())} periods)"))
 
         if blink_stats_raw:
             counts = ", ".join(
@@ -2202,16 +2150,12 @@ class GenericEyeData(state.VersionedState, ABC):
             value of all variables at the new samples (default NaN); the
             new samples are masked as missing and have no layers
 
-        Existing masks and layers are kept and stored blinks in sample indices are
-        moved to the new sample positions; intervals in time units,
-        excluded periods and events stay valid.
+        Existing masks and layers are kept at the old samples; events
+        stay valid.
         """
         pos=np.asarray(pos, dtype=int)
         self._map_sample_aligned(_insert_dict, len(tx), pos, value)
-        old=SimpleNamespace(tx=self.tx, fs=self.fs)
         self._set_timebase(tx)
-        self._remap_interval_stores(
-            old, lambda pairs: [(int(pos[on]), int(pos[off-1])+1) for on, off in pairs])
         return self
     
     def get_intervals(self,
@@ -2685,16 +2629,11 @@ class GenericEyeData(state.VersionedState, ABC):
         window were masked; it then holds the mean of the stored values
         (e.g., interpolated blinks). A layer (e.g., ``"blink"``) is set for
         a new sample if it covers more than half of the samples in the
-        window. Stored blinks in sample indices are
-        rescaled (starts rounded down, ends up); intervals in time units,
-        excluded periods and events stay valid.
+        window (also the recording-wide layers, e.g. excluded periods).
+        Events stay valid.
         """
         self._map_sample_aligned(_decimate_dict, factor)
-        old=SimpleNamespace(tx=self.tx, fs=self.fs)
         self._set_timebase(baseline.downsample(self.tx, factor), self.fs/factor)
-        n=len(self.tx)
-        self._remap_interval_stores(
-            old, lambda pairs: [(int(on)//factor, min(int(np.ceil(off/factor)), n)) for on, off in pairs])
         return self
 
     @keephistory
@@ -3320,9 +3259,9 @@ class GenericEyeData(state.VersionedState, ABC):
         that overlap or touch an excluded period are removed, and blink
         detection ignores them as well.
 
-        The periods are stored as times, so they stay valid after
-        :meth:`crop`, :meth:`downsample` and :meth:`reset_time`. Calling
-        the method again adds to the excluded periods.
+        The layer moves with the samples (:meth:`crop`, :meth:`downsample`,
+        :meth:`remove_intervals`, ...). Calling the method again adds to
+        the excluded periods; ``clear_layer("excluded")`` removes them.
 
         Parameters
         ----------
@@ -3357,8 +3296,6 @@ class GenericEyeData(state.VersionedState, ABC):
         intervals = obj._as_spans(intervals)
         new = intervals.to_units("ms", obj)
         new = [(float(s), float(e)) for s, e in new.intervals if e > s]
-        merged = Intervals(list(obj._excluded.intervals) + new, units="ms").merge()
-        obj._excluded = Intervals(merged.intervals, units="ms", label="excluded")
         obj.data.set_rec_layer("excluded", Intervals(new, units="ms").to_mask(obj))
         obj._drop_excluded_blinks()
         return obj
@@ -3405,26 +3342,22 @@ class GenericEyeData(state.VersionedState, ABC):
         """
         Return the excluded periods (see :meth:`exclude_intervals`).
 
+        The periods are the runs of samples of the ``"excluded"`` layer
+        (from the time of their first sample to the time of the sample
+        after the last one).
+
         Parameters
         ----------
         units : str, optional
             units of the returned intervals ("ms" (default), "sec", "min",
-            "h", or "samples" for sample indices; in samples, only the
-            periods within the data are returned)
+            "h", or "samples" for sample indices)
 
         Returns
         -------
         :class:`~pypillometry.Intervals`
             the excluded periods (empty if there are none)
         """
-        iv = self._excluded.to_units(units, self)
-        if iv.units == "samples":
-            # clip to the data and drop periods outside of it
-            n = len(self.tx)
-            pairs = [(max(s, 0), min(e, n)) for s, e in iv.intervals]
-            iv = Intervals([(s, e) for s, e in pairs if e > s], "samples",
-                           label="excluded")
-        return iv
+        return Intervals.from_mask(self._excluded_mask(), self, units, label="excluded")
 
     def get_included(self, units: str = "ms") -> Intervals:
         """

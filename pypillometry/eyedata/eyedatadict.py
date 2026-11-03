@@ -46,6 +46,8 @@ COMPAT_LAYERS = ("user", "interpolated", "_blink_applied", "excluded")
 #: the standard layers: missing data (blink, offscreen, divergence, user),
 #: reconstructed data (interpolated) and periods outside the analysis (excluded)
 STANDARD_LAYERS = ("blink", "interpolated", "offscreen", "divergence", "user", "excluded")
+#: layers stored in `EyeDataDict.rec_layers` (recording-wide)
+REC_LAYERS = ("excluded",)
 
 
 class MaskPolicy:
