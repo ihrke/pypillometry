@@ -330,3 +330,18 @@ class TestBaselineWindow:
         # mean of the 20 samples before the event: 280 ... 299
         np.testing.assert_allclose(b.data[20, 0], 300 - 289.5)
         np.testing.assert_allclose(s.baseline_correct(0).data[20, :], 0)
+
+
+def test_plot_intervals_past_the_end():
+    # finding 5.2: show_mask crashed when an interval runs past the end of the data
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    n = 1000
+    d = pp.EyeData(left_pupil=np.arange(n) * 1., left_x=np.zeros(n), left_y=np.zeros(n),
+                   sampling_rate=100, event_onsets=[100., 9900.], event_labels=["a", "a"])
+    for ep in [d.get_intervals("a", window=(-200, 500) * u.ms),
+               d.get_intervals("a", window=(-20, 50))]:
+        figs = d.plot.plot_intervals(ep, show_mask=True, nrow=1, ncol=2)
+        assert len(figs) == 1
+    plt.close("all")

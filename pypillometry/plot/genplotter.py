@@ -185,7 +185,8 @@ class GenericPlotter:
 
                 if show_mask:
                     # union of the masks of all plotted eyes/variables
-                    mask = np.zeros(slic.stop - slic.start, dtype=bool)
+                    # (the slice may run past the end of the data)
+                    mask = np.zeros(len(xvals[slic]), dtype=bool)
                     for eye, var in pairs:
                         mask |= obj.data.mask[eye + "_" + var][slic].astype(bool)
                     txm = xvals[slic]
