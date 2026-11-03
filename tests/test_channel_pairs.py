@@ -147,3 +147,39 @@ class TestIncompleteBlinkStores:
         stats = d.blink_stats()
         assert stats["mean"] is None
         assert stats["left"]["n"] >= 1 and stats["right"]["n"] >= 1
+
+
+class TestIncompleteScaleMerge:
+    def test_scale_unscale(self, incomplete_eyedata):
+        d = incomplete_eyedata
+        orig = {k: v.copy() for k, v in d.data.data.items()}
+        d.scale()
+        assert set(d.params["scale"]["mean"]) == {"left", "right"}
+        assert set(d.params["scale"]["mean"]["right"]) == {"pupil"}
+        np.testing.assert_allclose(np.nanmean(d.data["right_pupil"][d.data.mask["right_pupil"] == 0]),
+                                   0, atol=1e-10)
+        d.unscale()
+        for k, v in orig.items():
+            np.testing.assert_allclose(d.data[k], v)
+        with pytest.raises(KeyError, match="right_x"):
+            d.scale(eyes=["left", "right"], variables=["pupil", "x"])
+
+    def test_merge_eyes(self, incomplete_eyedata):
+        d = incomplete_eyedata
+        d.merge_eyes()
+        np.testing.assert_allclose(d.data["mean_pupil"],
+                                   (d.data["left_pupil"] + d.data["right_pupil"]) / 2)
+        np.testing.assert_allclose(d.data["mean_x"], d.data["left_x"])
+
+    def test_merge_eyes_drop_eyes(self, incomplete_eyedata):
+        d = incomplete_eyedata
+        d.merge_eyes(variables="pupil", keep_eyes=False)
+        assert set(d.data.keys()) == {"left_x", "left_y", "mean_pupil"}
+        assert d._blinks.get("right_pupil") is None
+
+    def test_scale_after_merge_eyes(self, incomplete_eyedata):
+        # used to fail with KeyError: 'mean_x' (D6)
+        d = incomplete_eyedata
+        d.merge_eyes(variables="pupil")
+        d.scale()
+        assert set(d.params["scale"]["mean"]["mean"]) == {"pupil"}

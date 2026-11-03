@@ -109,7 +109,24 @@ def keephistory(func):
             target.add_to_history({"funcstring": fstr, "funcname": func.__name__})
         return obj
     return wrapper
-        
+
+
+def _per_pair(pairs, fct):
+    """Nested dict ``{eye: {var: fct(eye, var)}}`` for the (eye, var) `pairs`."""
+    result = {}
+    for eye, var in pairs:
+        result.setdefault(eye, {})[var] = fct(eye, var)
+    return result
+
+
+def _check_per_pair(pairs, mean, sd):
+    """Raise a ValueError if `mean` or `sd` miss a value for one of the `pairs`."""
+    for eye, var in pairs:
+        if eye not in mean or eye not in sd:
+            raise ValueError("mean and sd must be provided for each eye")
+        if var not in mean[eye] or var not in sd[eye]:
+            raise ValueError("mean and sd must be provided for each variable")
+
 
 class GenericEyeData(state.VersionedState, ABC):
     """
@@ -2223,32 +2240,27 @@ class GenericEyeData(state.VersionedState, ABC):
         and are used by :meth:`unscale`.
         """
         obj = self._get_inplace(inplace)
-        eyes,variables=self._get_eye_var(eyes,variables)
+        pairs = obj.data.select(eyes, variables)
 
         if mean is None:
             # use only non-masked samples
-            mean={eye:{var:np.nanmean(obj[eye,var].compressed()) for var in variables} for eye in eyes}
+            mean = _per_pair(pairs, lambda eye, var: np.nanmean(obj[eye,var].compressed()))
         elif isinstance(mean, numbers.Real):
-            mean={eye:{var:mean for var in variables} for eye in eyes}            
+            mean = _per_pair(pairs, lambda eye, var, val=mean: val)
         elif not isinstance(mean, dict):
             raise ValueError("mean must be None, a number or dict")
 
         if sd is None:
-            sd={eye:{var:np.nanstd(obj[eye,var].compressed()) for var in variables} for eye in eyes}
+            sd = _per_pair(pairs, lambda eye, var: np.nanstd(obj[eye,var].compressed()))
         elif isinstance(sd, numbers.Real):
-            sd={eye:{var:sd for var in variables} for eye in eyes}
+            sd = _per_pair(pairs, lambda eye, var, val=sd: val)
         elif not isinstance(sd, dict):
             raise ValueError("sd must be None, a number or dict")
         logger.debug("Mean: %s" % mean)
         logger.debug("SD: %s" % sd)
 
         # check that all eye/var combinations are present in mean/sd
-        for eye in eyes:
-            if eye not in mean or eye not in sd:
-                raise ValueError("mean and sd must be provided for each eye")
-            for var in variables:
-                if var not in mean[eye] or var not in sd[eye]:
-                    raise ValueError("mean and sd must be provided for each variable")
+        _check_per_pair(pairs, mean, sd)
 
         # store scaling parameters
         obj.params["scale"]={
@@ -2256,17 +2268,12 @@ class GenericEyeData(state.VersionedState, ABC):
             "sd": sd
         }
 
-        for var in variables:
-            for eye in eyes:
-                if eye not in obj.eyes:
-                    raise ValueError("No data for eye %s available" % eye)
-                if var not in obj.variables:
-                    raise ValueError("No data for variable %s available" % var)
-                # scale the masked samples too (masked-array arithmetic
-                # would leave them unchanged), keep the mask
-                x = obj[eye, var]
-                obj[eye, var] = np.ma.array((x.data - mean[eye][var]) / sd[eye][var],
-                                            mask=np.ma.getmaskarray(x))
+        for eye, var in pairs:
+            # scale the masked samples too (masked-array arithmetic
+            # would leave them unchanged), keep the mask
+            x = obj[eye, var]
+            obj[eye, var] = np.ma.array((x.data - mean[eye][var]) / sd[eye][var],
+                                        mask=np.ma.getmaskarray(x))
         return obj
         
     @keephistory    
@@ -2304,38 +2311,30 @@ class GenericEyeData(state.VersionedState, ABC):
             the unscaled object (`self` or a copy, depending on `inplace`)
         """
         obj = self._get_inplace(inplace)
-        eyes,variables=self._get_eye_var(eyes,variables)
+        pairs = obj.data.select(eyes, variables)
 
         # if no parameters are provided, use the stored ones (normal)
         if mean is None:
             mean=obj.params["scale"]["mean"]
         elif isinstance(mean, numbers.Real):
-            mean={eye:{var:mean for var in variables} for eye in eyes}
+            mean = _per_pair(pairs, lambda eye, var, val=mean: val)
         elif not isinstance(mean, dict):
             raise ValueError("mean must be None, a number or dict")
         if sd is None:
             sd=obj.params["scale"]["sd"]
         elif isinstance(sd, numbers.Real):
-            sd={eye:{var:sd for var in variables} for eye in eyes}
+            sd = _per_pair(pairs, lambda eye, var, val=sd: val)
         elif not isinstance(sd, dict):
             raise ValueError("sd must be None, a number or dict")
         
         # check whether unscaling parameters are provided
-        for eye in eyes:
-            if eye not in mean or eye not in sd:
-                raise ValueError("mean and sd must be provided for each eye")
-            for var in variables:
-                if var not in mean[eye] or var not in sd[eye]:
-                    raise ValueError("mean and sd must be provided for each variable")
+        _check_per_pair(pairs, mean, sd)
 
-        for eye in eyes:
-            for var in variables:                
-                if var not in obj.variables:
-                    raise ValueError("No data for variable %s available" % var)
-                # unscale the masked samples too, keep the mask
-                x = obj[eye, var]
-                obj[eye, var] = np.ma.array(x.data * sd[eye][var] + mean[eye][var],
-                                            mask=np.ma.getmaskarray(x))
+        for eye, var in pairs:
+            # unscale the masked samples too, keep the mask
+            x = obj[eye, var]
+            obj[eye, var] = np.ma.array(x.data * sd[eye][var] + mean[eye][var],
+                                        mask=np.ma.getmaskarray(x))
         return obj    
 
     
@@ -2419,7 +2418,8 @@ class GenericEyeData(state.VersionedState, ABC):
         ``obj["mean", "pupil"]``). Each sample is the mean over the eyes
         in which it is not masked; it is masked in the merged data only if
         it is masked in all merged eyes (it then holds the mean of the
-        stored values, e.g., of interpolated blinks).
+        stored values, e.g., of interpolated blinks). Each variable is
+        merged over the selected eyes that have data for it.
 
         Parameters
         ----------
@@ -2444,18 +2444,13 @@ class GenericEyeData(state.VersionedState, ABC):
             the object with merged data (`self` or a copy, depending on `inplace`)
         """
         obj = self._get_inplace(inplace)
-        eyes,variables=self._get_eye_var(eyes,variables)
+        pairs = obj.data.select(eyes, variables)
 
         if method=="mean":            
-            for var in variables:
-                # Collect masked arrays from all eyes
-                eye_data = []
-                for eye in eyes:
-                    if var not in obj.variables:
-                        raise ValueError("No data for variable %s available" % var)
-                    if eye not in obj.eyes:
-                        raise ValueError("No data for eye %s available" % eye)
-                    eye_data.append(obj[eye, var])
+            for var in dict.fromkeys(v for _, v in pairs):
+                # Collect masked arrays from all eyes with this variable
+                eyes = [eye for eye, v in pairs if v == var]
+                eye_data = [obj[eye, var] for eye in eyes]
                 
                 # Mean over the unmasked eyes; masked only where all eyes
                 # are masked
