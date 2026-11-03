@@ -439,3 +439,21 @@ Changes of the API calls alone (same numbers) need no entry.
 - **Why**: the global mean pulled the valid samples next to gaps towards
   it (finding 3.3).
 - **Step**: 7, `refactor/07-value-policy`
+
+### Lowpass filter: only usable samples are filtered
+
+- **Case**: none of the reference cases (`c.lowpass.*`: after interpolation
+  every masked sample is interpolated, so all samples are usable; unchanged)
+- **Change**: `pupil_lowpass_filter(..., policy="default")` filters the
+  values under the mask policy: masked samples (and NaN) are bridged for
+  the filter and keep their stored values (NaN stays NaN; before, NaN was
+  replaced by the filtered bridge and masked values entered the filter).
+  Size: `rlmw_002_short` after `pupil_blinks_detect(apply_mask=True)` (959
+  / 508 masked non-NaN samples in the blink margins), `lowpass(5)`: 1989 /
+  2201 of the ~19000 unmasked samples per eye change by more than 1 unit,
+  up to 186 / 161 units. On zero-coded blinks the leak was up to 513 units
+  (finding 4.9).
+- **Why**: masked values (e.g., zero-coded blinks) leaked into the unmasked
+  neighbours (finding 4.9, D2); the filter must not invent values in gaps
+  that would look like data (NaN is read from the values).
+- **Step**: 7, `refactor/07-value-policy`

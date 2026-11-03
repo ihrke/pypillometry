@@ -170,14 +170,19 @@ class PupilData(GenericEyeData):
         return summary
 
     @keephistory
-    def pupil_lowpass_filter(self,  cutoff: float, order: int=2, eyes=[], inplace=None):
+    def pupil_lowpass_filter(self,  cutoff: float, order: int=2, eyes=[], policy="default",
+                             inplace=None):
         """
         Lowpass-filter pupil signal using a Butterworth-filter.
         
-        Uses an iterative approach to handle NaN/masked values properly,
-        preventing NaN propagation through the filter
-        (see :func:`~pypillometry.signal.pupil.lowpass_filter_iterative`).
-        The filtered signal replaces the pupil data; the mask is preserved.
+        Only the usable samples under the mask `policy` are filtered
+        (by default, interpolated samples are used; see
+        :meth:`~pypillometry.GenericEyeData.mask`). The unusable samples
+        (masked or NaN) are bridged linearly for the filter
+        (see :func:`~pypillometry.signal.pupil.lowpass_filter_iterative`),
+        so their stored values (e.g., zeros in blinks) do not enter the
+        filter; they keep their values. The filtered samples replace the
+        pupil data; the mask layers are kept.
     
         Parameters
         ----------
@@ -187,6 +192,9 @@ class PupilData(GenericEyeData):
             filter order
         eyes : list
             list of eyes to filter; if empty, all available eyes are filtered
+        policy : str, MaskPolicy or list of str
+            mask policy that decides which samples are usable (see
+            :meth:`~pypillometry.GenericEyeData.mask`); default ``"default"``
         inplace : bool or None
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes           
@@ -203,9 +211,11 @@ class PupilData(GenericEyeData):
         eyes=self._eyes_with(eyes, "pupil")
 
         for eye in eyes:
-            # Use iterative filter that handles NaN values properly
-            filtered = lowpass_filter_iterative(obj.data[eye,"pupil"], cutoff, obj.fs, order)
-            obj.data.set_with_mask(f"{eye}_pupil", filtered, preserve_mask=True)
+            x = obj.values(eye, "pupil", policy)  # NaN: unusable
+            usable = ~np.isnan(x)
+            out = obj.data[eye, "pupil"].copy()
+            out[usable] = lowpass_filter_iterative(x, cutoff, obj.fs, order)[usable]
+            obj.data.set_with_mask(f"{eye}_pupil", out, preserve_mask=True)
         return obj
 
     @keephistory

@@ -492,16 +492,20 @@ def test_masked_array_assignment_checks_key_and_shape():
 class TestNoStoredMask:
     """The mask is derived from the layers only (no stored mask)."""
 
-    def test_nan_filled_by_a_filter_stays_masked(self):
+    def test_filter_keeps_nan_and_masked_values(self):
         import pypillometry as pp
         pupil = 1000 + np.sin(np.arange(500) / 20)
         pupil[200:220] = np.nan
+        pupil[300:310] = 0.  # zero-coded blink, masked (finding 4.9)
         d = pp.PupilData(left_pupil=pupil, sampling_rate=100, inplace=False)
+        d.mask_intervals(pp.Intervals([(300, 310)], "samples"), inplace=True)
         f = d.pupil_lowpass_filter(5)
-        assert np.isfinite(f.data["left_pupil"]).all()
-        assert f.data.mask["left_pupil"][200:220].all()
+        assert np.isnan(f.data["left_pupil"][200:220]).all()
+        assert (f.data["left_pupil"][300:310] == 0).all()
         assert f.mask("left", "pupil")[200:220].all()
-        assert not f.mask("left", "pupil", policy="raw").any()
+        # the zeros do not enter the filter: the neighbours stay close to the signal
+        near = np.r_[290:300, 310:320]
+        np.testing.assert_allclose(f.data["left_pupil"][near], pupil[near], atol=0.1)
 
     def test_decimate_keeps_fully_masked_windows_masked(self):
         import pypillometry as pp
