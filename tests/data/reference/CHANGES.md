@@ -324,3 +324,14 @@ Changes of the API calls alone (same numbers) need no entry.
   removes the mask.
 - **Why**: detectors replace their own layer (refactor plan 2.2).
 - **Step**: 5, `refactor/05-mask-layers`
+
+### `mask_eye_divergences` sets the `divergence` layer and replaces it
+
+- **Case**: none (`d.divergence.*` run once: same masks)
+- **Change**: the divergent samples are stored as the `divergence` layer
+  of x and y of both eyes (before: the `user` layer, via
+  `mask_intervals`); running the method again replaces the layer, and
+  with `ignore_existing_mask=False` the layer of an earlier run does not
+  count as an existing mask. `clear_layer("divergence")` removes it.
+- **Why**: detectors replace their own layer (refactor plan 2.2).
+- **Step**: 5, `refactor/05-mask-layers`

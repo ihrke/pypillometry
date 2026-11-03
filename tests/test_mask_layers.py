@@ -441,3 +441,15 @@ class TestGazeLayers:
         np.testing.assert_array_equal(e.data.get_layer("left_x", "offscreen"),
                                       np.isin(np.arange(8), [1, 2, 3, 4, 5, 6, 7]))
         assert not e.clear_layer("offscreen").data.mask["left_x"].any()
+
+    def test_divergence_layer_replaced(self):
+        d = self.gaze()
+        d.data.set_layer("right_x", "divergence", np.ones(8, dtype=bool))  # stale
+        d.data.add_mask("left_x", np.s_[0:1])
+        d["right_x"] = d.data["right_x"] + np.where(np.arange(8) == 3, 300, 0)
+        e = d.mask_eye_divergences(threshold=100, thr_type="pixel", ignore_existing_mask=False)
+        expected = np.arange(8) == 3
+        for key in ("left_x", "left_y", "right_x", "right_y"):
+            np.testing.assert_array_equal(e.data.get_layer(key, "divergence"), expected)
+        assert not e.data.get_layer("left_x", "user").any()
+        assert not e.clear_layer("divergence").data.mask["right_x"].any()
