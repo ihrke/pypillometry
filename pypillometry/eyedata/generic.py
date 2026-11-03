@@ -982,11 +982,13 @@ class GenericEyeData(state.VersionedState, ABC):
         return obj
 
     def mask_as_intervals(self, eyes: str|list = [], variables: str|list = [], 
-                          units: str = "samples", label: str|None = None):
+                          units: str = "samples", label: str|None = None,
+                          policy="default"):
         """
         Convert masks to Intervals objects.
 
-        Each contiguous run of masked samples becomes one interval.
+        Each contiguous run of masked samples (unusable under the mask
+        `policy`, see :meth:`mask`) becomes one interval.
 
         Parameters
         ----------
@@ -1002,6 +1004,8 @@ class GenericEyeData(state.VersionedState, ABC):
             sample indices (default).
         label : str, optional
             Descriptive label for the intervals. Default is None.
+        policy : str, MaskPolicy or list of str
+            mask policy (see :meth:`mask`); default ``"default"``
             
         Returns
         -------
@@ -1026,7 +1030,7 @@ class GenericEyeData(state.VersionedState, ABC):
         result = {}
         for e, v in pairs:
             key = f"{e}_{v}"
-            mask = self.data.mask[key]
+            mask = self.data.get_policy_mask(key, policy)
             result[key] = Intervals.from_mask(mask, self, units, label=label or f"{key}_mask")
         if len(eyes) > 1 or len(variables) > 1:
             return result

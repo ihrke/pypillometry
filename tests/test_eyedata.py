@@ -2110,6 +2110,8 @@ class TestEventsWithGetIntervals(unittest.TestCase):
     def test_mask_as_intervals_with_actual_mask(self):
         """Test mask_as_intervals correctly identifies masked intervals"""
         data = self.data.copy()
+        # no NaN (NaN values are always masked)
+        data["left_pupil"] = np.nan_to_num(data.data["left_pupil"])
         
         # Manually create a mask with known intervals
         mask = np.zeros(len(data.tx), dtype=int)

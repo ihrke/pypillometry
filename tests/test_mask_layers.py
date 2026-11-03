@@ -629,3 +629,8 @@ class TestConsumersUsePolicy:
         d = self.binocular()
         assert not np.ma.getmaskarray(d["left_pupil"]).any()
         assert np.ma.getmaskarray(d["right", "pupil"])[100:110].all()
+
+    def test_mask_as_intervals(self):
+        d = self.binocular()
+        assert len(d.mask_as_intervals("left", "pupil")) == 0
+        assert d.mask_as_intervals("left", "pupil", policy="strict").intervals == [(50, 60)]
