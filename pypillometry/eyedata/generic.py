@@ -1093,7 +1093,8 @@ class GenericEyeData(state.VersionedState, ABC):
         """
         Resets time so that time `t0` becomes time zero.
 
-        `t0` is subtracted from the time-vector and from the event onsets.
+        `t0` is subtracted from the time-vector, the event onsets, the
+        excluded periods and blinks stored in time units.
 
         Parameters
         ----------
@@ -1115,8 +1116,7 @@ class GenericEyeData(state.VersionedState, ABC):
             t0 = self.tx[0]
         obj._set_timebase(self.tx-t0)
         obj._events = self._events.shift(-t0)
-        obj._excluded = Intervals([(s - t0, e - t0) for s, e in self._excluded.intervals],
-                                  units="ms", label="excluded")
+        obj._remap_interval_stores(self, time_map=lambda t: t - t0)
         return obj
 
     def _remap_interval_stores(self, old, move=None, time_map=None):
@@ -1150,6 +1150,10 @@ class GenericEyeData(state.VersionedState, ABC):
                                  data_time_range=(0, n))
             if time_map is None:
                 return iv
+            if move is None:
+                return Intervals([tuple(time_map(np.array([a, b], dtype=float)))
+                                  for a, b in iv.to_units("ms").intervals],
+                                 "ms", label=iv.label).to_units(iv.units)
             # samples dropped and clock changed: go through the sample indices
             # (blinks stay in sample indices, the excluded periods go back to ms)
             moved = Intervals(move(iv.to_units("samples", old).intervals), "samples",

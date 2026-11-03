@@ -111,5 +111,28 @@ class TestDownsampleArguments(unittest.TestCase):
         self.assertAlmostEqual(x.fs, 1000. / 15)
 
 
+class TestResetTime(unittest.TestCase):
+
+    def make(self, units):
+        from pypillometry.intervals import Intervals
+        d = make(n=2000)
+        d["time"] = d.tx + 1000.
+        iv = Intervals([(300, 320)], units="samples").to_units(units, d)
+        d.set_blinks(iv, eyes=["left"], variables=["pupil"], apply_mask=True)
+        return d
+
+    def test_blinks_follow_the_clock(self):
+        for units in ("samples", "ms", "sec"):
+            with self.subTest(units=units):
+                d = self.make(units).reset_time(inplace=False)
+                self.assertEqual(d.tx[0], 0.)
+                self.assertEqual(d._blinks["left_pupil"].units, units)
+                b = d.get_blinks("left", "pupil")
+                self.assertEqual(list(b.intervals), [(300, 320)])
+                # blinks and mask agree
+                np.testing.assert_array_equal(np.flatnonzero(b.to_mask(d)),
+                                              np.flatnonzero(d.data.mask["left_pupil"]))
+
+
 if __name__ == "__main__":
     unittest.main()
