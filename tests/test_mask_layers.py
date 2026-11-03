@@ -326,6 +326,18 @@ class TestInterpolatedLayer:
                 np.asarray(d.get_interpolated_blinks("left", var).intervals), [(200, 215), (500, 520)])
         assert d.data.mask["left_pupil"][200:215].all()
 
+    def test_interpolate_intervals_anchors_follow_policy(self):
+        import pypillometry as pp
+        d = pp.PupilData(left_pupil=np.arange(100, dtype=float), sampling_rate=100)
+        d.data.add_mask("left_pupil", np.s_[40:50])
+        d.interpolate_intervals(pp.Intervals([(40, 50)], "samples"))
+        d.data["left_pupil"][40:50] = 1000.  # an odd reconstruction
+        # default: the interpolated samples are boundary points, strict: not
+        for policy, near_1000 in (("default", True), ("strict", False)):
+            r = d.interpolate_intervals(pp.Intervals([(50, 55)], "samples"), margin=(-15, 10),
+                                        policy=policy, inplace=False)
+            assert (r.data["left_pupil"][50] > 500) == near_1000
+
 
 class TestBlinkLayer:
 

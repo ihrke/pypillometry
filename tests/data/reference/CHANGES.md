@@ -491,3 +491,15 @@ Changes of the API calls alone (same numbers) need no entry.
   the `"strict"` policy (before: not in the old mask; same samples).
 - **Why**: masked values must not enter an analysis (D2).
 - **Step**: 7, `refactor/07-value-policy`
+
+### `interpolate_intervals`: boundary points under the mask policy
+
+- **Case**: none (`b.*` interpolate with `pupil_blinks_interpolate`)
+- **Change**: `interpolate_intervals(..., policy="default")` takes its
+  boundary points from the samples that are usable under the policy, so
+  samples interpolated before (by an earlier call) can be boundary points
+  (before: they were masked in the old mask). `policy="strict"` gives the
+  old behaviour.
+- **Why**: one rule for which samples are used (decision 4: interpolated
+  samples are used).
+- **Step**: 7, `refactor/07-value-policy`

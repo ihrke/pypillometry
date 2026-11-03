@@ -3015,17 +3015,17 @@ class GenericEyeData(state.VersionedState, ABC):
     @keephistory
     def interpolate_intervals(self, intervals, eyes=[], variables=[], 
                              method="linear", margin=(-20, 20),
-                             store_as_suffix=None, inplace=None):
+                             store_as_suffix=None, policy="default", inplace=None):
         """
         Interpolate data within specified intervals.
         
         This function replaces data within the specified intervals with interpolated
         values based on boundary points outside each interval. The
         interpolated samples get the ``"interpolated"`` layer (see
-        :meth:`get_interpolated_blinks`) and are also marked as masked in
-        ``data.mask``. Intervals without
-        valid (non-NaN) boundary points on both sides are skipped with a
-        warning.
+        :meth:`get_interpolated_blinks`), so they are used under the default
+        mask policy and masked under the ``"strict"`` one (see :meth:`mask`).
+        Intervals without usable boundary points on both sides are skipped
+        with a warning.
 
         Parameters
         ----------
@@ -3052,7 +3052,8 @@ class GenericEyeData(state.VersionedState, ABC):
             points for interpolation, relative to the start and end of each
             interval: points are taken from ``start + margin[0]`` to the start
             and from the end to ``end + margin[1]``, so `margin[0]` must be
-            <= 0 and `margin[1]` >= 0. Masked or NaN samples are not used.
+            <= 0 and `margin[1]` >= 0. Samples that are unusable under
+            `policy` (masked or NaN) are not used.
             For higher-order methods like "cubic" or "quadratic", more
             boundary points from this margin are used to fit the
             interpolation curve.
@@ -3060,6 +3061,9 @@ class GenericEyeData(state.VersionedState, ABC):
             If None, replace the original data.
             If a string, store interpolated data in a new variable with this suffix
             (e.g., "_interp" creates "left_pupil_interp").
+        policy : str, MaskPolicy or list of str
+            mask policy that decides which boundary points are usable (see
+            :meth:`mask`); default ``"default"``
         inplace : bool or None, optional
             if `True`, make change in-place and return the object;
             if `False`, make and return copy before making changes;
@@ -3112,9 +3116,9 @@ class GenericEyeData(state.VersionedState, ABC):
             # Convert to index-based intervals
             intervals_array = np.array(interval_obj.to_units("samples", obj)).astype(int)
             
-            # Get the data and mask
+            # Get the data and the unusable samples
             data = obj.data[key].copy()
-            mask = obj.data.mask[key].copy()
+            mask = obj.data.get_policy_mask(key, policy)
             interpolated = np.zeros(len(data), dtype=bool)
             
             # Interpolate each interval
@@ -3135,7 +3139,7 @@ class GenericEyeData(state.VersionedState, ABC):
                 right_margin_end = min(len(obj.tx), end_idx + margin_right_ix)
                 
                 # Get valid (non-NaN, non-masked) points from left margin;
-                # `mask` also covers intervals interpolated before
+                # `mask` also covers the intervals interpolated in this call
                 left_indices = []
                 left_times = []
                 left_values = []
