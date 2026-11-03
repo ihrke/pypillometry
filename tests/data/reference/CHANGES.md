@@ -617,3 +617,13 @@ Changes of the API calls alone (same numbers) need no entry.
 - **Why**: one rule for which samples are masked (decision 4); the totals
   no longer count interpolation twice.
 - **Step**: 7, `refactor/07-value-policy`
+
+### `d[key]`: masked under the default mask policy
+
+- **Case**: none (the cases read the stored values and masks directly)
+- **Change**: `d["left_pupil"]` (masked array) masks the samples that are
+  unusable under the default mask policy, so interpolated samples are not
+  masked (before: masked). Also used by `fit_foreshortening` and the
+  plots that hide masked samples.
+- **Why**: decision 4 (interpolated samples are used).
+- **Step**: 7, `refactor/07-value-policy`

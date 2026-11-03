@@ -624,3 +624,8 @@ class TestConsumersUsePolicy:
         assert art["artifacts.right.pupil_masked_pct"] == 5.
         art = d.quality_report(policy="strict").to_dict(flat=True)
         assert art["artifacts.left.pupil_masked_pct"] == 5.
+
+    def test_getitem(self):
+        d = self.binocular()
+        assert not np.ma.getmaskarray(d["left_pupil"]).any()
+        assert np.ma.getmaskarray(d["right", "pupil"])[100:110].all()

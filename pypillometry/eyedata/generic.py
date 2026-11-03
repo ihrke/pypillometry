@@ -421,7 +421,10 @@ class GenericEyeData(state.VersionedState, ABC):
 
     def __getitem__(self, key):
         """
-        Provide dict-style access to data arrays, returning masked arrays.
+        Provide dict-style access to data arrays, returning masked arrays
+        (masked: unusable under the default mask policy, see :meth:`mask`;
+        e.g., interpolated samples are not masked). Use :meth:`values` or
+        :meth:`mask` for other policies.
         Supports special keys for retrieving time in different units.
         """
         normalized_key = key
@@ -441,15 +444,9 @@ class GenericEyeData(state.VersionedState, ABC):
                 if prefix == "time":
                     return self._get_time_array(suffix or None)
 
-        # Delegate to EyeDataDict and wrap using the mask (see EyeDataDict.mask)
+        # Delegate to EyeDataDict and wrap using the default mask policy
         data_array = self.data[normalized_key]
-        try:
-            mask = self.data.mask[normalized_key]
-        except KeyError:
-            # Fallback if mask not directly accessible (e.g., cached dict),
-            # letting EyeDataDict resolve the key.
-            mask = self.data.get_mask(normalized_key)
-
+        mask = self.data.get_policy_mask(self._channel_key(normalized_key, None))
         return np.ma.masked_array(data_array, mask=mask, fill_value=np.nan)
 
     @keephistory
