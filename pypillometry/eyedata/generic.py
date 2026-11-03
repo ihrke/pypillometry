@@ -1943,44 +1943,55 @@ class GenericEyeData(state.VersionedState, ABC):
             gaps_start_ix=gaps_end_ix-1
             logger.info( str(((tx[gaps_end_ix]-tx[gaps_start_ix])/1000))+ " seconds" )
             
-            ## build new time-vector and data: keep all valid segments
-            ## and insert `yval` at regularly spaced time points in each gap
+            ## build new time-vector: keep all valid segments and insert
+            ## regularly spaced time points in each gap
             bounds=np.r_[0, gaps_end_ix, n]
             ntx=[]
-            nv={k:[] for k in self.data.keys()}
-            nm={k:[] for k in self.data.keys()}
             for i in range(ngaps+1):
-                seg=slice(bounds[i], bounds[i+1])
-                ntx.append( tx[seg] )
-                for k,v in self.data.items():
-                    nv[k].append( v[seg] )
-                    nm[k].append( self.data.mask[k][seg] )
+                ntx.append( tx[bounds[i]:bounds[i+1]] )
                 if i<ngaps:
                     start,end=gaps_start_ix[i], gaps_end_ix[i]
                     nfill=int((tx[end]-tx[start])/stepsize)-1
-                    filltx=tx[start]+stepsize*np.arange(1, nfill+1)
-                    ntx.append( filltx )
-                    for k in nv:
-                        nv[k].append( yval*np.ones_like(filltx, dtype=float) )
-                        nm[k].append( np.ones(len(filltx), dtype=int) )  # filled = missing
+                    ntx.append( tx[start]+stepsize*np.arange(1, nfill+1) )
             # new position of each original sample (ntx alternates kept
             # segments and filled gaps)
             lens=[len(t) for t in ntx]
             offsets=np.cumsum([0]+lens[:-1])
             newpos=np.concatenate([offsets[2*i]+np.arange(lens[2*i]) for i in range(ngaps+1)])
-            ntx=np.concatenate(ntx)
+            self._insert_samples(np.concatenate(ntx), newpos, yval)
+        return self
 
-            ndata=EyeDataDict()
-            for k in nv:
-                ndata.set_with_mask(k, np.concatenate(nv[k]), mask=np.concatenate(nm[k]))
-            self.data=ndata
-            old=SimpleNamespace(tx=self.tx, fs=self.fs)
-            self._set_timebase(ntx)
+    def _insert_samples(self, tx, pos, value=np.nan):
+        """
+        Insert new samples (in place).
 
-            # move stored blinks in sample indices to the new sample positions
-            # (blinks in time units stay valid)
-            self._remap_interval_stores(
-                old, lambda pairs: [(int(newpos[on]), int(newpos[off-1])+1) for on, off in pairs])
+        Parameters
+        ----------
+        tx : np.ndarray
+            the new time vector (ms), with the old and the new samples
+        pos : np.ndarray
+            the index in `tx` of each old sample (increasing)
+        value : float, optional
+            value of all variables at the new samples (default NaN); the
+            new samples are masked as missing
+
+        Existing masks are kept and stored blinks in sample indices are
+        moved to the new sample positions; intervals in time units,
+        excluded periods and events stay valid.
+        """
+        pos=np.asarray(pos, dtype=int)
+        ndata=EyeDataDict()
+        for k,v in self.data.items():
+            nv=np.full(len(tx), value, dtype=float)
+            nm=np.ones(len(tx), dtype=int)  # inserted = missing
+            nv[pos]=v
+            nm[pos]=self.data.mask[k]
+            ndata.set_with_mask(k, nv, mask=nm)
+        self.data=ndata
+        old=SimpleNamespace(tx=self.tx, fs=self.fs)
+        self._set_timebase(tx)
+        self._remap_interval_stores(
+            old, lambda pairs: [(int(pos[on]), int(pos[off-1])+1) for on, off in pairs])
         return self
     
     def get_intervals(self,
