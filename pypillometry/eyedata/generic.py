@@ -499,6 +499,20 @@ class GenericEyeData(state.VersionedState, ABC):
         logger.debug("%s(): eyes=%s, vars=%s" % (funcname, repr(eyes), repr(variables)))
         return eyes, variables
 
+    def _eyes_with(self, eyes, variables):
+        """Private helper: the eyes that have data for all `variables`.
+
+        Eyes are taken from `eyes` (all available eyes if empty); without
+        explicitly requested eyes, eyes that lack one of the variables are
+        left out. Raises a KeyError if a requested eye/variable combination
+        does not exist (see :meth:`~pypillometry.EyeDataDict.select`).
+        """
+        if isinstance(variables, str):
+            variables = [variables]
+        pairs = self.data.select(eyes, variables)
+        found = dict.fromkeys(eye for eye, _ in pairs)
+        return [eye for eye in found if all((eye, var) in pairs for var in variables)]
+
     def _get_inplace(self, inplace):
         """Private helper function.
         

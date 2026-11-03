@@ -200,7 +200,7 @@ class PupilData(GenericEyeData):
         from ..signal.pupil import lowpass_filter_iterative
         
         obj = self._get_inplace(inplace)
-        eyes,_=self._get_eye_var(eyes,[])
+        eyes=self._eyes_with(eyes, "pupil")
 
         for eye in eyes:
             # Use iterative filter that handles NaN values properly
@@ -235,7 +235,7 @@ class PupilData(GenericEyeData):
             the object with the smoothed pupil data
         """
         obj = self._get_inplace(inplace)
-        eyes,_=self._get_eye_var(eyes,[])
+        eyes=self._eyes_with(eyes, "pupil")
 
         # convert winsize to index based on sampling rate
         winsize_ix=self._samples(winsize, rounding="up")
@@ -589,7 +589,7 @@ class PupilData(GenericEyeData):
             (keys like ``"left_pupil"``)
         """
         obj = self._get_inplace(inplace)
-        eyes,_=self._get_eye_var(eyes,[])
+        eyes=self._eyes_with(eyes, "pupil")
 
         # Convert ms to samples
         winsize_ix=self._samples(winsize)
@@ -750,7 +750,7 @@ class PupilData(GenericEyeData):
             the object with the interpolated pupil data
         """
         obj = self._get_inplace(inplace)
-        eyes,_=self._get_eye_var(eyes,[])
+        eyes=self._eyes_with(eyes, "pupil")
 
         # parameters in sampling units (from ms)
         winsize_ix=self._samples(winsize, rounding="up")
@@ -878,10 +878,10 @@ class PupilData(GenericEyeData):
         https://doi.org/10.3758/s13428-025-02755-7
         """
         obj = self._get_inplace(inplace)
-        eyes,_=self._get_eye_var(eyes,[])
         if not isinstance(variable, str):
             logger.warning("variable must be a string; using default 'pupil'")
             variable="pupil"
+        eyes=self._eyes_with(eyes, variable)
 
         for eye in eyes:
             logger.debug("Estimating baseline for eye %s"%eye)
@@ -979,7 +979,7 @@ class PupilData(GenericEyeData):
         https://doi.org/10.3758/s13428-025-02755-7
         """
         obj = self._get_inplace(inplace)
-        eyes,_=self._get_eye_var(eyes,[])
+        eyes=self._eyes_with(eyes, "pupil")
 
         obj.params["response"]=dict()
         for eye in eyes:

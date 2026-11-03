@@ -221,3 +221,25 @@ class TestIncompleteIntervals:
         assert stat["right_pupil"].shape == (2,)
         with pytest.raises(KeyError, match="right_y"):
             d.stat_per_event(iv, eyes="right", variables="y")
+
+
+class TestIncompletePupilMethods:
+    @pytest.fixture
+    def d(self, incomplete_eyedata):
+        d = incomplete_eyedata
+        d["extra", "x"] = d.data["left_x"]  # an eye without pupil data
+        return d
+
+    def test_filters_skip_eyes_without_pupil(self, d):
+        d.pupil_lowpass_filter(cutoff=5)
+        d.pupil_smooth_window(winsize=50)
+        with pytest.raises(KeyError, match="extra"):
+            d.pupil_lowpass_filter(cutoff=5, eyes="extra")
+
+    def test_blinks(self, d):
+        d.pupil_blinks_detect()
+        nb = d.nblinks()
+        assert set(nb) == {"left_pupil", "right_pupil"}
+        d.pupil_blinks_interpolate()
+        assert set(d.get_interpolated_blinks(variables="pupil")) == {"left_pupil", "right_pupil"}
+        assert np.all(d.data["right_pupil"][200:220] > 4)
