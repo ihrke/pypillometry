@@ -597,7 +597,9 @@ class PupilData(GenericEyeData):
             if `False` (default), return detected blinks as Intervals (or dict of Intervals)
         ignore_existing_mask : bool
             if `True`, use raw data ignoring existing masks
-            if `False` (default), only detect blinks in non-masked data (already masked regions are skipped)
+            if `False` (default), only detect blinks in the usable data under
+            the default mask policy (masked regions are skipped; interpolated
+            samples are used, see :meth:`~pypillometry.GenericEyeData.mask`)
         inplace : bool or None
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes                                                    
@@ -640,11 +642,9 @@ class PupilData(GenericEyeData):
             # the new blinks replace the old ones, which must not mask the data
             obj.set_blinks(None, eyes=[eye], variables=["pupil"])
 
-            # Get pupil data, optionally ignoring existing mask
-            if ignore_existing_mask:
-                pupil_data = obj.data[eye,"pupil"]
-            else:
-                pupil_data = obj[eye, "pupil"].filled(np.nan)
+            # pupil data: unusable samples (default mask policy) are NaN,
+            # unless the existing mask is ignored
+            pupil_data = obj.values(eye, "pupil", "raw" if ignore_existing_mask else "default")
             
             ## detect blinks with the different strategies
             if "velocity" in strategies:
