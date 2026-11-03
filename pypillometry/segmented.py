@@ -13,12 +13,52 @@ import scipy.stats
 
 from .io import write_pickle, read_pickle
 from . import state
-from .units import parse_time
+from .units import parse_time, _ms_to_samples
 from .convenience import _warn_if_ignores_mask, _check_accepts_axis
 
 __all__ = [
     "SegmentedEyeData", "GroupLevelSegmentedData", "group_segments",
 ]
+
+
+def _extract_epochs(eyedata, epochs, variable):
+    """
+    Time axis and segments (masked array, time points x epochs) of `variable`.
+
+    The length and the time axis come from the window: ``w0 + arange(n) *
+    1000/fs`` ms, with ``n`` the window length in samples (rounded). Each
+    segment starts at the first sample at or after ``onset + w0``. Parts
+    outside the data are masked (their values are 0).
+    """
+    w0, w1 = epochs.window
+    n = eyedata._samples(w1 - w0, rounding="nearest")
+    tx = w0 + np.arange(n) * 1000. / eyedata.fs
+    starts = np.atleast_1d(_ms_to_samples(eyedata, epochs.onsets + w0))
+    ix = starts[None, :] + np.arange(n)[:, None]
+    inside = (ix >= 0) & (ix < len(eyedata.tx))
+    values = np.zeros(ix.shape)
+    mask = np.ones(ix.shape, dtype=bool)
+    values[inside] = eyedata.data[variable][ix[inside]]
+    mask[inside] = eyedata.data.mask[variable][ix[inside]].astype(bool)
+    return tx, ma.masked_array(values, mask=mask)
+
+
+def _spans_to_state(spans):
+    """State of the Epochs or Intervals of a SegmentedEyeData (format 2: Intervals)."""
+    from .epochs import Epochs
+    if not isinstance(spans, Epochs):
+        return None if spans is None else spans._to_state()
+    return {"intervals": np.asarray(spans, dtype=float).reshape(-1, 2), "units": "ms",
+            "label": spans.label, "event_labels": spans.labels.copy(),
+            "event_indices": None, "event_onsets": spans.onsets.copy(),
+            "data_time_range": None, "interval_window": spans.window,
+            "event_meta": {k: v.copy() for k, v in spans.meta.items()} or None}
+
+
+def _spans_from_state(st, fs):
+    """Intervals from their state (format 2)."""
+    from .intervals import Intervals
+    return None if st is None else Intervals._from_state(st)
 
 
 class SegmentedEyeData(state.VersionedState):
@@ -51,9 +91,10 @@ class SegmentedEyeData(state.VersionedState):
         Original sampling rate in Hz
     """
     
-    # state (see pypillometry.state)
-    _STATE_FIELDS = ("name", "variable", "tx", ("data", "masked"),
-                     ("intervals", "Intervals"), "sampling_rate")
+    # state (see pypillometry.state); `intervals` (Epochs or Intervals) is
+    # stored as the state of an Intervals object (see _to_state)
+    _STATE_FIELDS = ("name", "variable", "tx", ("data", "masked"), "sampling_rate")
+    _STATE_EXCLUDE = ("intervals",)
 
     def __init__(self, 
                  name: str, 
@@ -78,6 +119,17 @@ class SegmentedEyeData(state.VersionedState):
         if "_" not in variable:
             raise ValueError(f"Variable must be in 'eye_variable' format (e.g., 'left_pupil'), got '{variable}'")
     
+    def _to_state(self) -> dict:
+        """State of the object (without ``format_version`` and ``class``)."""
+        st = super()._to_state()
+        st["intervals"] = _spans_to_state(self.intervals)
+        return st
+
+    def _set_state(self, st: dict):
+        """Set the attributes from a state of the current version."""
+        super()._set_state(st)
+        self.intervals = _spans_from_state(st["intervals"], self.sampling_rate)
+
     @property
     def eye(self) -> str:
         """Return the eye part of the variable (e.g., 'left' from 'left_pupil')."""
@@ -166,8 +218,12 @@ class SegmentedEyeData(state.VersionedState):
         ----------
         eyedata : GenericEyeData
             Source eye data object (PupilData, GazeData, etc.)
-        intervals : Intervals
-            Intervals object defining the segments to extract
+        intervals : Epochs or Intervals
+            the segments to extract; for Epochs (e.g., from
+            :meth:`~pypillometry.GenericEyeData.get_intervals` with a window),
+            the length and the time axis (``window[0] + arange(n) * 1000/fs``
+            ms) come from the window, and the parts outside the data are
+            masked
         variable : str
             Variable to extract in "eye_variable" format (e.g., "left_pupil")
         name : str, optional
@@ -179,9 +235,10 @@ class SegmentedEyeData(state.VersionedState):
             New instance with extracted segments
         """
         from .intervals import Intervals
-        
-        if not isinstance(intervals, Intervals):
-            raise TypeError("intervals must be an Intervals object. Use get_intervals() to create one.")
+        from .epochs import Epochs
+
+        if not isinstance(intervals, (Intervals, Epochs)):
+            raise TypeError("intervals must be Epochs or Intervals, e.g., from get_intervals()")
         
         # Validate variable format
         if "_" not in variable:
@@ -191,7 +248,14 @@ class SegmentedEyeData(state.VersionedState):
         if variable not in eyedata.data:
             available = list(eyedata.data.data.keys())
             raise KeyError(f"Variable '{variable}' not found in data. Available: {available}")
-        
+
+        if name is None:
+            name = intervals.label if intervals.label is not None else "segments"
+        if isinstance(intervals, Epochs):
+            txw, masked_data = _extract_epochs(eyedata, intervals, variable)
+            return cls(name=name, variable=variable, tx=txw, data=masked_data,
+                       intervals=intervals, sampling_rate=eyedata.fs)
+
         # start samples of the segments (converted with the data's time vector)
         intervals_idx = intervals.to_units("samples", eyedata).intervals
         intervals_ms = intervals.to_units("ms", eyedata)
@@ -229,10 +293,6 @@ class SegmentedEyeData(state.VersionedState):
             mask_arr[onl:onl+segment_len, i] = eyedata.data.mask[variable][on:on+segment_len]
         
         masked_data = ma.masked_array(data_arr, mask=mask_arr)
-        
-        # Determine name
-        if name is None:
-            name = intervals.label if intervals.label is not None else "segments"
         
         return cls(
             name=name,

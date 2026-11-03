@@ -159,3 +159,57 @@ class TestMethodsAcceptEpochs:
     def test_type_error(self):
         with pytest.raises(TypeError, match="must be Intervals or Epochs, got list"):
             self.make().mask_intervals([(0, 100)])
+
+
+class TestSegmentsFromEpochs:
+
+    def ramp(self, n=3000, fs=1000.):
+        """Pupil = sample index."""
+        return pp.EyeData(left_pupil=np.arange(n) * 1., left_x=np.zeros(n),
+                          left_y=np.zeros(n), sampling_rate=fs,
+                          event_onsets=[100., 1500.], event_labels=["ev", "ev"])
+
+    def test_time_axis_from_window(self):
+        # finding 2.3: the step is 1000/fs, the last sample is not at w1
+        d = self.ramp(fs=50.)
+        s = d.get_segments(pp.Epochs([10000.], (-200, 800)), "left_pupil")
+        assert s.n_timepoints == 50
+        np.testing.assert_allclose(np.diff(s.tx), 20.)
+        assert s.tx[0] == -200. and s.tx[-1] == 780.
+
+    def test_padded_not_clipped_at_start(self):
+        # finding 2.2: the event stays at t=0 when the window starts before the data
+        d = self.ramp()
+        s = d.get_segments(pp.Epochs([100., 1500.], (-200, 300)), "left_pupil")
+        assert s.n_timepoints == 500
+        i0 = np.flatnonzero(s.tx == 0)[0]
+        assert s.data[i0, 0] == 100 and s.data[i0, 1] == 1500
+        mask = np.ma.getmaskarray(s.data)
+        assert mask[:100, 0].all() and not mask[100:, 0].any()
+        assert not mask[:, 1].any()
+
+    def test_padded_at_end(self):
+        d = self.ramp()
+        s = d.get_segments(pp.Epochs([2900.], (-100, 300)), "left_pupil")
+        mask = np.ma.getmaskarray(s.data)[:, 0]
+        assert not mask[:200].any() and mask[200:].all()
+        assert s.data[199, 0] == 2999
+
+    def test_window_outside_the_data(self):
+        d = self.ramp()
+        s = d.get_segments(pp.Epochs([5000.], (0, 100)), "left_pupil")
+        assert s.data.mask.all()
+
+    def test_keeps_the_epochs(self):
+        d = self.ramp()
+        ep = pp.Epochs([100., 1500.], (-200, 300), labels=["a", "b"], label="ev")
+        s = d.get_segments(ep, "left_pupil")
+        assert s.intervals is ep
+        assert s.name == "ev"
+
+    def test_mask_is_copied(self):
+        d = self.ramp().mask_intervals(pp.Intervals([(1500, 1510)], "ms"),
+                                       eyes="left", variables="pupil", inplace=False)
+        s = d.get_segments(pp.Epochs([1500.], (-10, 20)), "left_pupil")
+        np.testing.assert_array_equal(np.ma.getmaskarray(s.data)[:, 0],
+                                      (np.arange(30) >= 10) & (np.arange(30) < 20))
