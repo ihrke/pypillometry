@@ -239,7 +239,7 @@ class TestPlotIntervalsParameters(unittest.TestCase):
         intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
         
         for units in ["ms", "sec", "min"]:
-            intervals_in_units = intervals.to_units(units)
+            intervals_in_units = intervals.to_intervals(units)
             figs = self.data.plot.plot_intervals(intervals_in_units)
             self.assertIsNotNone(figs)
             plt.close('all')
@@ -256,7 +256,7 @@ class TestPlotIntervalsParameters(unittest.TestCase):
         for key in d.data:
             d.data.mask[key][:] = 0
         intervals = d.get_intervals("F", window=(-200, 200), units="ms")
-        start, end = intervals.to_units("samples", self.data).intervals[0]
+        start, end = intervals.to_intervals("samples", self.data).intervals[0]
         d.data.mask["left_pupil"][int(start) + 10:int(start) + 50] = 1
         figs = d.plot.plot_intervals(intervals, eyes=["left"],
                                      variables=["pupil", "x"], show_mask=True)

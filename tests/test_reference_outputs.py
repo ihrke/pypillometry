@@ -268,12 +268,12 @@ for _ds in DATASETS:
 
 def _segments(dataset, preproc):
     d = preprocessed(dataset) if preproc else get_data(dataset)
-    iv = d.get_intervals(EVENT[dataset], window=(-200, 1000) * u.ms)
-    out = {"intervals_ms": iv_float(iv),
-           "intervals_samples": iv_samples(iv.to_units("samples", d)),
-           "event_onsets": np.asarray(iv.event_onsets, dtype=float)}
+    ep = d.get_intervals(EVENT[dataset], window=(-200, 1000) * u.ms)
+    out = {"intervals_ms": iv_float(ep.to_intervals()),
+           "intervals_samples": iv_samples(ep.to_intervals("samples", d)),
+           "event_onsets": np.asarray(ep.onsets, dtype=float)}
     for k in pupil_keys(d):
-        seg = d.get_segments(iv, k)
+        seg = d.get_segments(ep, k)
         with pp.nologging():
             bc = seg.baseline_correct((-200, 0))
         out[f"tx.{k}"] = np.asarray(seg.tx, dtype=float)
@@ -453,6 +453,26 @@ def assert_same(name, actual, expected):
                                    equal_nan=True, err_msg=name)
 
 
+def _segment_time_axis(stored):
+    """Segment time axis ``w0 + arange(n) * 1000/fs`` (step 4; was ``linspace(w0, w1, n)``)."""
+    n = len(stored)
+    np.testing.assert_allclose(stored, np.linspace(-200., 1000., n))  # the old axis
+    return -200. + np.arange(n) * 1000. / 500.  # both data sets at 500 Hz
+
+
+#: intended changes (see CHANGES.md): (case id prefix, result key prefix) ->
+#: function mapping the stored reference value to the expected value
+CHANGED = {("e.segments.", "tx."): _segment_time_axis}
+
+
+def expected_value(case_id, key, stored):
+    """The stored reference value, or the corrected one for an intended change."""
+    for (case_prefix, key_prefix), fct in CHANGED.items():
+        if case_id.startswith(case_prefix) and key.startswith(key_prefix):
+            return fct(stored)
+    return stored
+
+
 def test_reference_covers_all_cases():
     assert set(load_reference()["cases"]) == set(CASES)
 
@@ -465,7 +485,7 @@ def test_reference_output(case_id):
     assert set(arrays) == set(ref_arrays)
     assert set(scalars) == set(ref["scalars"])
     for k in sorted(ref_arrays):
-        assert_same(f"{case_id}:{k}", arrays[k], ref_arrays[k])
+        assert_same(f"{case_id}:{k}", arrays[k], expected_value(case_id, k, ref_arrays[k]))
     for k, v in sorted(ref["scalars"].items()):
         if isinstance(v, float):
             assert_same(f"{case_id}:{k}", scalars[k], v)

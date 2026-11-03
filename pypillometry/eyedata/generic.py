@@ -2108,7 +2108,7 @@ class GenericEyeData(state.VersionedState, ABC):
                     units: str=UNSET, label: str|None=None, exact: bool=False,
                     **kwargs):
         """
-        Return an Intervals object containing intervals relative to event-onsets.
+        Return the time windows around events (Epochs) or between events (Intervals).
         For example, extract the interval before and after a stimulus has been presented.
         It is possible to select based on the event label, e.g. only select
         events matching "stimulus" or "response". It is also
@@ -2151,15 +2151,17 @@ class GenericEyeData(state.VersionedState, ABC):
             are in units given by the `units` parameter. Required for single
             events; for two events (tuple), the default is ``(0, 0)``.
         units : str, optional
-            units of the returned intervals (one of "ms", "sec", "min", "h", or
-            "samples" for sample indices, i.e., indices into the time-array);
-            plain numbers in `window` are in these units, a `window` with
-            units is converted to them. If not given, the units of `window`
-            are used ("samples" if `window` has no units). In samples, each
-            event is placed at the first sample at or after its onset.
+            units of plain numbers in `window` (one of "ms", "sec", "min",
+            "h", or "samples" for sample indices, i.e., indices into the
+            time-array; converted to ms with the sampling rate); for two
+            events, also the units of the returned Intervals (a `window` with
+            units is converted to them). If not given, the units of `window`
+            are used ("samples" if `window` has no units). Between two events
+            in samples, each event is placed at the first sample at or after
+            its onset.
         label : str or None, optional
-            optional label for the Intervals object. If None, a label is automatically
-            generated from the event_select parameter
+            optional label for the Epochs or Intervals object. If None, a
+            label is automatically generated from the event_select parameter
         exact : bool, optional
             if True, string selectors match only labels that are equal to
             them; if False (default), labels that contain them
@@ -2169,13 +2171,15 @@ class GenericEyeData(state.VersionedState, ABC):
 
         Returns
         -------
-        :class:`~pypillometry.Intervals`
-            Intervals object containing interval on- and offsets for each match,
-            with associated metadata (event labels, indices, units). For
-            ``"<start>"`` as first event, the event indices are None.
-            The metadata of the events (see :class:`~pypillometry.Events`)
-            are kept in `event_meta` (for two events, those of the first
-            one, or of the second one if the first is ``"<start>"``).
+        :class:`~pypillometry.Epochs` or :class:`~pypillometry.Intervals`
+            for single events (a str, function or Events): Epochs with the
+            onsets (ms) of the selected events, the window (in ms), their
+            labels and metadata (see :class:`~pypillometry.Events`).
+            For two events (tuple): Intervals with the spans between them
+            (in `units`) and, per interval, the label ``"<first>_to_<second>"``,
+            the onset of the first event and the metadata of the first event
+            (of the second one if the first is ``"<start>"``).
+            Windows that extend beyond the data are not clipped.
         """
         from ..intervals import Intervals
         from ..events import Events
@@ -2289,18 +2293,22 @@ class GenericEyeData(state.VersionedState, ABC):
             if label is None:
                 label = event_select if isinstance(event_select, str) else "custom_events"
 
+        if not between:
+            # one window around each event, in ms
+            fac = 1000. / self.fs if units == "samples" else 1. / self._unit_fac(units)
+            return Epochs(on1, (window[0] * fac, window[1] * fac), labels=selected_labels,
+                          meta=selected_meta, label=label)
+
         if units == "samples":
             # sample of each event, the window in samples around it
-            sti = np.maximum(eix1+window[0], 0)
-            ste = np.minimum(eix2+window[1], n)
+            sti = eix1+window[0]
+            ste = eix2+window[1]
             event_onsets_list = np.atleast_1d(eix1).tolist()
-            data_time_range = (0, n)
         else:
             fac = self._unit_fac(units)
             sti = on1*fac+window[0]
             ste = on2*fac+window[1]
             event_onsets_list = (on1*fac).tolist()
-            data_time_range = (self.tx[0]*fac, self.tx[-1]*fac)
         bad=np.where(ste<=sti)[0]
         if len(bad)>0:
             raise ValueError("window {} gives empty intervals for pair(s) {}"
@@ -2310,10 +2318,7 @@ class GenericEyeData(state.VersionedState, ABC):
             units=units,
             label=label,
             event_labels=selected_labels,
-            event_indices=selected_indices,
-            data_time_range=data_time_range,
             event_onsets=event_onsets_list,
-            interval_window=window,
             event_meta=selected_meta
         )
 
@@ -2782,7 +2787,8 @@ class GenericEyeData(state.VersionedState, ABC):
             if event_select is None:
                 raise ValueError("Must provide either 'intervals' or 'event_select' "
                                  "(and 'window')")
-            intervs = self.get_intervals(event_select, window, units=units, **kwargs)
+            intervs = _as_intervals(self.get_intervals(event_select, window, units=units,
+                                                       **kwargs))
 
         # bounds in sample indices, matched against the sample numbers
         tx = np.arange(len(self.tx))

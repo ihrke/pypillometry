@@ -544,8 +544,8 @@ class TestSegmentedEyeDataTimeAxis(unittest.TestCase):
         # Get intervals with window (-200, 800)
         intervals = data.get_intervals("stim", window=(-200, 800), units="ms")
         
-        # Verify interval_window is set
-        self.assertEqual(intervals.interval_window, (-200, 800))
+        # event-locked: Epochs with the window
+        self.assertEqual(intervals.window, (-200, 800))
         
         # Get segments
         segments = data.get_segments(intervals, "left_pupil")

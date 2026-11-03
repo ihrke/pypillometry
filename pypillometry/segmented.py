@@ -56,9 +56,27 @@ def _spans_to_state(spans):
 
 
 def _spans_from_state(st, fs):
-    """Intervals from their state (format 2)."""
-    from .intervals import Intervals
-    return None if st is None else Intervals._from_state(st)
+    """
+    Epochs or Intervals from their state (format 2, Intervals): event-locked
+    intervals (with `interval_window`) are Epochs; onsets and window in
+    sample indices are converted to ms with the sampling rate `fs` (from the
+    first sample of the recording, whose time is unknown).
+    """
+    from .epochs import Epochs
+    from .intervals import Intervals, _MS_PER_UNIT
+    if st is None:
+        return None
+    if st.get("interval_window") is None or st.get("event_onsets") is None:
+        return Intervals._from_state(st)
+    if st["units"] == "samples":
+        logger.warning("segments made from intervals in sample indices: event onsets "
+                       "converted to ms from the first sample of the recording")
+        fac = 1000. / fs
+    else:
+        fac = _MS_PER_UNIT[st["units"]]
+    return Epochs(np.asarray(st["event_onsets"], dtype=float) * fac,
+                  tuple(np.asarray(st["interval_window"], dtype=float) * fac),
+                  labels=st["event_labels"], meta=st["event_meta"], label=st["label"])
 
 
 class SegmentedEyeData(state.VersionedState):

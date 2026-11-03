@@ -97,16 +97,15 @@ def eyedata_facts(d):
 
 
 def segmented_facts(s):
-    iv = s.intervals
+    ep = s.intervals  # Epochs (in ms)
     return {"class": type(s).__name__, "name": s.name, "variable": s.variable,
             "n_segments": s.n_segments, "n_timepoints": s.n_timepoints,
             "sampling_rate": s.sampling_rate, "tx_first": s.tx[0], "tx_last": s.tx[-1],
             "masked": int(np.ma.getmaskarray(s.data).sum()),
             "data_sum": float(np.ma.getdata(s.data).sum()),
-            "intervals": {"units": iv.units, "intervals": np.asarray(iv.intervals),
-                          "interval_window": iv.interval_window,
-                          "events": events_facts(iv.event_onsets, iv.event_labels,
-                                                 iv.event_meta)}}
+            "intervals": {"units": "ms", "intervals": np.asarray(ep),
+                          "interval_window": ep.window,
+                          "events": events_facts(ep.onsets, ep.labels, ep.meta)}}
 
 
 def facts(obj):

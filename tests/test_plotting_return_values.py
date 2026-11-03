@@ -43,13 +43,7 @@ class TestPlottingReturnValues(unittest.TestCase):
         intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
         if len(intervals) >= 5:
             # Take first 5 intervals
-            from pypillometry.intervals import Intervals
-            intervals_subset = Intervals(
-                intervals.intervals[:5],
-                intervals.units,
-                intervals.label,
-                event_labels=intervals.event_labels[:5] if intervals.event_labels else None,
-                event_indices=intervals.event_indices[:5] if intervals.event_indices is not None else None)
+            intervals_subset = intervals.keep(np.arange(len(intervals)) < 5)
             figs = self.data.plot.plot_intervals(intervals_subset, nrow=2, ncol=2)
             self.assertEqual(len(figs), 2)
     

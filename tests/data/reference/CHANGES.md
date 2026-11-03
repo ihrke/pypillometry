@@ -68,3 +68,19 @@ Changes of the API calls alone (same numbers) need no entry.
   its original length before, finding 4.11).
 - **Why**: the ground truth must stay aligned with the data.
 - **Step**: 3, `refactor/03-timebase`
+
+### Segment time axis at the sampling rate
+
+- **Case**: `e.segments.{rlmw,synth}.{raw,interp}`, keys `tx.left_pupil`,
+  `tx.right_pupil` (the expected value is computed in
+  `tests/test_reference_outputs.py`, `_segment_time_axis`)
+- **Change**: the time axis of the segments is `w0 + arange(n) * 1000/fs`
+  instead of `linspace(w0, w1, n)`: for the window (-200, 1000) ms at 500 Hz
+  (n = 600), the steps are 2 ms (were 2.0033 ms) and the last time point is
+  998 ms (was 1000 ms). The segment data, masks and the baseline-corrected
+  values are unchanged (`baseline_correct((-200, 0))` picks the same
+  samples).
+- **Why**: the time of each point must be the time of its sample relative
+  to the event (finding 2.3); `get_intervals(event, window)` now returns
+  `Epochs`, and `get_segments` takes the axis from their window.
+- **Step**: 4, `refactor/04-epochs`

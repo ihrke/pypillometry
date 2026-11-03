@@ -213,3 +213,38 @@ class TestSegmentsFromEpochs:
         s = d.get_segments(pp.Epochs([1500.], (-10, 20)), "left_pupil")
         np.testing.assert_array_equal(np.ma.getmaskarray(s.data)[:, 0],
                                       (np.arange(30) >= 10) & (np.arange(30) < 20))
+
+
+class TestGetIntervals:
+
+    def make(self):
+        n = 3000
+        return pp.EyeData(left_pupil=np.arange(n) * 1., left_x=np.zeros(n),
+                          left_y=np.zeros(n), sampling_rate=1000,
+                          event_onsets=[100., 1500., 2900.], event_labels=["ev", "ev", "x"],
+                          )
+
+    def test_single_events_give_epochs(self):
+        d = self.make()
+        ep = d.get_intervals("ev", window=(-200, 300) * u.ms)
+        assert isinstance(ep, pp.Epochs)
+        np.testing.assert_array_equal(ep.onsets, [100., 1500.])
+        assert ep.window == (-200., 300.) and ep.label == "ev"
+        assert isinstance(d.get_intervals(d.events, window=(0, 10) * u.ms), pp.Epochs)
+
+    def test_two_events_give_intervals(self):
+        iv = self.make().get_intervals(("ev", "x"), units="ms")
+        assert isinstance(iv, pp.Intervals)
+        assert iv.intervals == [(1500., 2900.)]
+
+    def test_not_clipped_in_samples(self):
+        # findings 2.2/2.6: windows in samples near the start are not clipped,
+        # so the segment is not shifted (event at t=0 has the value 100)
+        d = self.make()
+        for window in [(-200, 300), (-200, 300) * u.ms]:
+            ep = d.get_intervals("ev", window=window)
+            assert ep.to_intervals("samples", d).intervals[0] == (-100, 400)
+            s = d.get_segments(ep, "left_pupil")
+            assert s.data[s.tx == 0, 0] == 100
+        ep = d.get_intervals("x", window=(-100, 300))
+        assert list(ep) == [(2800., 3200.)]
