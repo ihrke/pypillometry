@@ -157,6 +157,8 @@ def _keep_dict(d, keep):
     nd.layer_names = list(d.layer_names)
     for k, v in d.items():
         nd._set_channel(k, v[keep], d._mask[k][keep], d.layers[k][keep])
+    if d.rec_layers is not None:
+        nd.rec_layers = d.rec_layers[keep].copy()
     return nd
 
 
@@ -172,6 +174,8 @@ def _decimate_dict(d, factor):
         allmasked = np.isnan(y)
         y[allmasked] = stored[allmasked]
         nd._set_channel(k, y, allmasked, _decimate_layers(d.layers[k], factor))
+    if d.rec_layers is not None:
+        nd.rec_layers = _decimate_layers(d.rec_layers, factor)
     return nd
 
 
@@ -208,6 +212,9 @@ def _insert_dict(d, n, pos, value):
         nm[pos] = d._mask[k]
         nl[pos] = d.layers[k]
         nd._set_channel(k, nv, nm, nl)
+    if d.rec_layers is not None:
+        nd.rec_layers = np.zeros(n, dtype=LAYER_DTYPE)
+        nd.rec_layers[pos] = d.rec_layers
     return nd
 
 

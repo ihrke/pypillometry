@@ -127,6 +127,7 @@ class _CompatMask(Mapping):
         bits = self._d.layer_bits(COMPAT_LAYERS)
         if bits:
             m |= (self._d.layers[key] & bits) != 0
+            m |= (self._d.rec_layers & bits) != 0
         out = m.astype(int)
         out.flags.writeable = False
         return out
@@ -160,7 +161,9 @@ class EyeDataDict(MutableMapping, Stateful):
     Each key also has mask *layers*: a bit-field (`layers`, dtype
     `LAYER_DTYPE`) with one bit per named layer (e.g., ``"blink"``). The
     layer names are registered in `layer_names` (the same for all keys);
-    a layer gets the next free bit when it is first set. `mask` is the
+    a layer gets the next free bit when it is first set. Layers that
+    apply to all keys (e.g., ``"excluded"``) are stored once, in
+    `rec_layers` (recording-wide layers, same registry). `mask` is the
     mask as one 0/1 array per key (see `COMPAT_LAYERS`).
 
     The dictionary can be indexed by a string "eye_variable" or by a tuple
@@ -169,7 +172,7 @@ class EyeDataDict(MutableMapping, Stateful):
 
     # state (see pypillometry.state): data, masks and layers
     _STATE_FIELDS = (("values", None, "data"), ("mask", None, "_mask"),
-                     "layers", "layer_names")
+                     "layers", "layer_names", "rec_layers")
     _STATE_EXCLUDE = ("length", "shape")
 
     def __init__(self, *args, **kwargs) -> None:
@@ -178,6 +181,8 @@ class EyeDataDict(MutableMapping, Stateful):
         self._mask: Dict[str, NDArray] = dict()
         self.layers: Dict[str, NDArray] = dict()  # layer bit-fields
         self.layer_names: List[str] = []  # layer i is bit 1 << i
+        # recording-wide layers (one bit-field for all keys; None without data)
+        self.rec_layers: Optional[NDArray] = None
         self.length: int = 0
         self.shape: Optional[Tuple[int, ...]] = None
         self.update(dict(*args, **kwargs))  # use the free update to set keys
@@ -349,6 +354,7 @@ class EyeDataDict(MutableMapping, Stateful):
         self.data[key] = value
         self._mask[key] = np.isnan(value)  # mask missing values
         self.layers[key] = np.zeros(self.shape, dtype=LAYER_DTYPE)
+        self._init_rec_layers()
 
     def set_with_mask(self, key: Union[str, Tuple[str, str]], value: NDArray, 
                       mask: Optional[NDArray] = None, preserve_mask: bool = False) -> None:
@@ -408,6 +414,7 @@ class EyeDataDict(MutableMapping, Stateful):
         existed = key in self.data
         # Store data
         self.data[key] = value_float
+        self._init_rec_layers()
         
         # Handle mask
         if mask is not None and existed:
@@ -423,6 +430,11 @@ class EyeDataDict(MutableMapping, Stateful):
             # Create new mask (default behavior, same as __setitem__)
             self._mask[key] = np.isnan(value_float)
             self.layers[key] = np.zeros(self.shape, dtype=LAYER_DTYPE)
+
+    def _init_rec_layers(self) -> None:
+        """Create empty recording-wide layers once the length is known."""
+        if self.rec_layers is None:
+            self.rec_layers = np.zeros(self.shape, dtype=LAYER_DTYPE)
 
     def _set_channel(self, key: str, values: NDArray, mask: NDArray, layers: NDArray) -> None:
         """Set values, stored mask and layers of `key` as given (no other rules)."""
@@ -555,6 +567,41 @@ class EyeDataDict(MutableMapping, Stateful):
             else:
                 self.layers[key][where] &= ~bit
 
+    def get_rec_layer(self, name: str) -> NDArray:
+        """Boolean array that is True where the recording-wide layer `name` is set."""
+        if self.rec_layers is None:
+            return np.zeros(self.length, dtype=bool)
+        return (self.rec_layers & self.layer_bits(name)) != 0
+
+    def set_rec_layer(self, name: str, mask: NDArray, replace: bool = False) -> None:
+        """
+        Set the recording-wide layer `name` (all keys) where `mask` is True.
+
+        Parameters
+        ----------
+        name : str
+            layer name (registered if new)
+        mask : array-like of bool
+            one value per sample
+        replace : bool, optional
+            clear the layer first (True) or add to it (False, default)
+        """
+        if self.rec_layers is None:
+            raise KeyError("No data")
+        mask = np.asarray(mask, dtype=bool)
+        if mask.shape != self.shape:
+            raise ValueError(f"Mask must have shape {self.shape}")
+        bit = LAYER_DTYPE(self.layer_bits(name, create=True))
+        if replace:
+            self.rec_layers &= ~bit
+        self.rec_layers[mask] |= bit
+
+    def clear_rec_layer(self, name: str) -> None:
+        """Clear the recording-wide layer `name`."""
+        bit = LAYER_DTYPE(self.layer_bits(name))
+        if bit and self.rec_layers is not None:
+            self.rec_layers &= ~bit
+
     def get_policy_mask(self, key: str, policy="default") -> NDArray:
         """
         Boolean mask of `key` under `policy` (True: unusable sample).
@@ -586,6 +633,8 @@ class EyeDataDict(MutableMapping, Stateful):
         unless = self.layer_bits(policy.unless)
         if unless:
             masked &= (layers & unless) == 0
+        # recording-wide layers (e.g., excluded): `unless` does not apply
+        masked |= (self.rec_layers & self.layer_bits(policy.layers)) != 0
         if policy.nan:
             masked |= np.isnan(self.data[key])
         return masked
@@ -599,6 +648,7 @@ class EyeDataDict(MutableMapping, Stateful):
         st = dict(st)
         st.setdefault("layers", None)
         st.setdefault("layer_names", [])
+        st.setdefault("rec_layers", None)
         super()._set_state(st)
         self._mask = {k: np.asarray(m).astype(bool) for k, m in self._mask.items()}
         if self.layers is None:
@@ -607,6 +657,10 @@ class EyeDataDict(MutableMapping, Stateful):
         first = next(iter(self.data.values()), None)
         self.length = 0 if first is None else first.shape[0]
         self.shape = None if first is None else first.shape
+        if self.rec_layers is not None:
+            self.rec_layers = np.asarray(self.rec_layers, dtype=LAYER_DTYPE)
+        elif first is not None:
+            self._init_rec_layers()
 
     def copy(self) -> 'EyeDataDict':
         """Create a deep copy of the dictionary (data and masks)."""
@@ -616,6 +670,8 @@ class EyeDataDict(MutableMapping, Stateful):
             new_dict[key] = value.copy()
             new_dict._mask[key] = self._mask[key].copy()
             new_dict.layers[key] = self.layers[key].copy()
+        if self.rec_layers is not None:
+            new_dict.rec_layers = self.rec_layers.copy()
         return new_dict
 
     def set_mask(self, key: str, mask: NDArray, layer: Optional[str] = None) -> None:
@@ -729,6 +785,8 @@ class EyeDataDict(MutableMapping, Stateful):
             total_size += arr.nbytes
         for arr in list(self._mask.values()) + list(self.layers.values()):
             total_size += arr.nbytes
+        if self.rec_layers is not None:
+            total_size += self.rec_layers.nbytes
         return ByteSize(total_size)
 
     def count_masked(self, per_key: bool = False) -> Union[int, Dict[str, int]]:

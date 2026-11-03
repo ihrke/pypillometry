@@ -72,6 +72,53 @@ class TestLayerStorage:
         assert d.get_layer("left_pupil", "blink").sum() == 1
 
 
+class TestRecLayers:
+    """Recording-wide layers (one bit-field for all keys, same registry)."""
+
+    def test_set_get_clear(self):
+        d = small_dict()
+        assert d.rec_layers.dtype == LAYER_DTYPE and not d.rec_layers.any()
+        d.set_layer("left_pupil", "blink", [0, 1, 0, 0, 0])
+        d.set_rec_layer("excluded", [1, 1, 0, 0, 0])
+        assert d.layer_names == ["blink", "excluded"]
+        np.testing.assert_array_equal(d.get_rec_layer("excluded"), [1, 1, 0, 0, 0])
+        d.set_rec_layer("excluded", [0, 0, 0, 0, 1], replace=True)
+        np.testing.assert_array_equal(d.get_rec_layer("excluded"), [0, 0, 0, 0, 1])
+        c = d.copy()
+        d.clear_rec_layer("excluded")
+        assert not d.get_rec_layer("excluded").any()
+        assert c.get_rec_layer("excluded")[4]
+        assert not EyeDataDict().get_rec_layer("excluded").any()
+
+    def test_policy_unless_does_not_apply(self):
+        import pypillometry as pp
+        d = pp.PupilData(left_pupil=np.arange(6, dtype=float), sampling_rate=100)
+        d.data.set_layer("left_pupil", "interpolated", [1, 1, 1, 0, 0, 0])
+        d.data.set_rec_layer("excluded", [0, 1, 1, 1, 0, 0])
+        assert list(np.flatnonzero(d.mask("left", "pupil"))) == [1, 2, 3]
+        assert list(np.flatnonzero(d.mask("left", "pupil", policy="raw"))) == []
+
+    def test_sample_operations(self):
+        import pypillometry as pp
+        d = pp.PupilData(left_pupil=np.arange(12, dtype=float), sampling_rate=100)
+        d.data.set_rec_layer("excluded", np.arange(12) < 7)
+        c = d.crop(30, 80, inplace=False)  # samples 3..8
+        np.testing.assert_array_equal(c.data.get_rec_layer("excluded"), [1, 1, 1, 1, 0, 0])
+        d._decimate(4)  # windows 4/4, 3/4, 0/4
+        np.testing.assert_array_equal(d.data.get_rec_layer("excluded"), [1, 1, 0])
+        d._insert_samples(np.arange(4) * 40., [0, 2, 3])
+        np.testing.assert_array_equal(d.data.get_rec_layer("excluded"), [1, 0, 1, 0])
+
+    def test_state(self):
+        import pypillometry as pp
+        from pypillometry import state
+        d = pp.PupilData(left_pupil=np.arange(6, dtype=float), sampling_rate=100)
+        d.data.set_rec_layer("excluded", [0, 1, 1, 0, 0, 0])
+        r = state.from_state(state.to_state(d))
+        np.testing.assert_array_equal(r.data.rec_layers, d.data.rec_layers)
+        assert r.data.rec_layers.dtype == LAYER_DTYPE
+
+
 class TestCompatMask:
     """`EyeDataDict.mask`: stored mask or a layer in COMPAT_LAYERS."""
 
