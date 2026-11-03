@@ -1,0 +1,2073 @@
+{
+ "date": "2026-11-03",
+ "description": "format-2 fixture files written by pypillometry before the 2.2 refactor (see tests/test_format2_fixtures.py)",
+ "files": {
+  "dict_of_eyedata.pypil": {
+   "class": "dict",
+   "entries": {
+    "eye": {
+     "blinks": {
+      "left_pupil": [
+       [
+        500,
+        560
+       ],
+       [
+        1800,
+        1850
+       ]
+      ],
+      "left_x": [],
+      "left_y": [],
+      "right_pupil": [
+       [
+        510,
+        565
+       ],
+       [
+        1300,
+        1340
+       ]
+      ],
+      "right_x": [],
+      "right_y": []
+     },
+     "calibration": {
+      "left": {
+       "errors": [
+        [
+         0.3,
+         -13.3,
+         -1.6
+        ],
+        [
+         0.3,
+         13.2,
+         -0.2
+        ],
+        [
+         0.42,
+         16.1,
+         9.2
+        ],
+        [
+         0.25,
+         8.0,
+         -3.0
+        ],
+        [
+         0.5,
+         -20.0,
+         4.5
+        ]
+       ],
+       "eye": "left",
+       "measured": [
+        [
+         626.7,
+         510.4
+        ],
+        [
+         653.2,
+         86.8
+        ],
+        [
+         656.1,
+         945.2
+        ],
+        [
+         123.0,
+         509.0
+        ],
+        [
+         1145.0,
+         516.5
+        ]
+       ],
+       "model": "HV5",
+       "points": [
+        [
+         640.0,
+         512.0
+        ],
+        [
+         640.0,
+         87.0
+        ],
+        [
+         640.0,
+         936.0
+        ],
+        [
+         115.0,
+         512.0
+        ],
+        [
+         1165.0,
+         512.0
+        ]
+       ],
+       "screen_resolution": [
+        1280,
+        1024
+       ]
+      },
+      "right": {
+       "errors": [
+        [
+         0.24,
+         -10.64,
+         -1.2800000000000002
+        ],
+        [
+         0.24,
+         10.56,
+         -0.16000000000000003
+        ],
+        [
+         0.336,
+         12.880000000000003,
+         7.359999999999999
+        ],
+        [
+         0.2,
+         6.4,
+         -2.4000000000000004
+        ],
+        [
+         0.4,
+         -16.0,
+         3.6
+        ]
+       ],
+       "eye": "right",
+       "measured": [
+        [
+         629.36,
+         510.72
+        ],
+        [
+         650.56,
+         86.84
+        ],
+        [
+         652.88,
+         943.36
+        ],
+        [
+         121.4,
+         509.6
+        ],
+        [
+         1149.0,
+         515.6
+        ]
+       ],
+       "model": "HV5",
+       "points": [
+        [
+         640.0,
+         512.0
+        ],
+        [
+         640.0,
+         87.0
+        ],
+        [
+         640.0,
+         936.0
+        ],
+        [
+         115.0,
+         512.0
+        ],
+        [
+         1165.0,
+         512.0
+        ]
+       ],
+       "screen_resolution": [
+        1280,
+        1024
+       ]
+      }
+     },
+     "class": "EyeData",
+     "data_nansum": {
+      "left_pupil": 3010888.8508928567,
+      "left_x": 1941201.0,
+      "left_y": 1535926.0,
+      "right_pupil": 3010758.894990741,
+      "right_x": 1920084.7,
+      "right_y": 1530583.5
+     },
+     "events": {
+      "labels": [
+       "stim_1_a",
+       "resp_1",
+       "stim_2_b",
+       "resp_2",
+       "stim_3_a",
+       "resp_3",
+       "stim_4_b"
+      ],
+      "meta": {
+       "cond": [
+        "a",
+        "",
+        "b",
+        "",
+        "a",
+        "",
+        "b"
+       ],
+       "rt": [
+        NaN,
+        612.5,
+        NaN,
+        580.0,
+        NaN,
+        NaN,
+        NaN
+       ],
+       "trial": [
+        1,
+        1,
+        2,
+        2,
+        3,
+        3,
+        4
+       ]
+      },
+      "onsets": [
+       300.0,
+       1100.0,
+       1900.0,
+       2700.0,
+       3500.0,
+       4300.0,
+       5100.0
+      ]
+     },
+     "excluded_ms": [
+      [
+       0.0,
+       200.0
+      ],
+      [
+       5180.0,
+       5400.0
+      ]
+     ],
+     "eyes": [
+      "left",
+      "right"
+     ],
+     "fs": 500.0,
+     "has_original": true,
+     "history": [
+      "pupil_blinks_detect",
+      "pupil_blinks_interpolate",
+      "exclude_intervals",
+      "mask_offscreen_coords",
+      "set_events",
+      "mask_intervals"
+     ],
+     "history_len": 6,
+     "info": {
+      "session": 2,
+      "subject": "s01"
+     },
+     "interpolated_blinks": {
+      "left_pupil": [
+       [
+        495,
+        575
+       ],
+       [
+        1795,
+        1865
+       ],
+       [
+        2595,
+        2635
+       ]
+      ],
+      "left_x": [],
+      "left_y": [],
+      "right_pupil": [
+       [
+        505,
+        580
+       ],
+       [
+        1295,
+        1355
+       ],
+       [
+        2595,
+        2640
+       ]
+      ],
+      "right_x": [],
+      "right_y": []
+     },
+     "keys": [
+      "left_pupil",
+      "left_x",
+      "left_y",
+      "right_pupil",
+      "right_x",
+      "right_y"
+     ],
+     "masked": {
+      "left_pupil": 380,
+      "left_x": 240,
+      "left_y": 240,
+      "right_pupil": 345,
+      "right_x": 220,
+      "right_y": 220
+     },
+     "masked_unexplained": {
+      "left_pupil": 20,
+      "left_x": 30,
+      "left_y": 30,
+      "right_pupil": 0,
+      "right_x": 10,
+      "right_y": 10
+     },
+     "n": 3000,
+     "name": "fixture_eyedata",
+     "setup": {
+      "alpha_tilt": 0.0,
+      "beta_tilt": 0.0,
+      "camera_offset": null,
+      "camera_spherical": null,
+      "d": 600.0,
+      "ipd": null,
+      "physical_screen_size": [
+       300.0,
+       200.0
+      ],
+      "screen_offset": [
+       0.0,
+       0.0
+      ],
+      "screen_resolution": [
+       1280,
+       1024
+      ]
+     },
+     "tx_first": 0.0,
+     "tx_last": 5998.0,
+     "variables": [
+      "pupil",
+      "x",
+      "y"
+     ]
+    },
+    "pupil": {
+     "blinks": {
+      "left_pupil": [
+       [
+        500,
+        560
+       ],
+       [
+        1800,
+        1850
+       ],
+       [
+        2600,
+        2620
+       ]
+      ],
+      "right_pupil": [
+       [
+        510,
+        565
+       ],
+       [
+        1300,
+        1340
+       ],
+       [
+        2600,
+        2625
+       ]
+      ]
+     },
+     "calibration": null,
+     "class": "PupilData",
+     "data_nansum": {
+      "left_pupil": 3010676.9062723215,
+      "right_pupil": 3010726.746138889
+     },
+     "events": {
+      "labels": [
+       "stim_1_a",
+       "resp_1",
+       "stim_2_b",
+       "resp_2",
+       "stim_3_a",
+       "resp_3",
+       "stim_4_b"
+      ],
+      "meta": {
+       "cond": [
+        "a",
+        "",
+        "b",
+        "",
+        "a",
+        "",
+        "b"
+       ],
+       "rt": [
+        NaN,
+        612.5,
+        NaN,
+        580.0,
+        NaN,
+        NaN,
+        NaN
+       ],
+       "trial": [
+        1,
+        1,
+        2,
+        2,
+        3,
+        3,
+        4
+       ]
+      },
+      "onsets": [
+       300.0,
+       1100.0,
+       1900.0,
+       2700.0,
+       3500.0,
+       4300.0,
+       5100.0
+      ]
+     },
+     "excluded_ms": [
+      [
+       5800.0,
+       6000.0
+      ]
+     ],
+     "eyes": [
+      "left",
+      "right"
+     ],
+     "fs": 500.0,
+     "has_original": false,
+     "history": [
+      "pupil_blinks_detect",
+      "pupil_blinks_interpolate",
+      "exclude_intervals",
+      "set_events"
+     ],
+     "history_len": 4,
+     "info": {},
+     "interpolated_blinks": {
+      "left_pupil": [
+       [
+        495,
+        575
+       ],
+       [
+        1795,
+        1865
+       ],
+       [
+        2595,
+        2635
+       ]
+      ],
+      "right_pupil": [
+       [
+        505,
+        580
+       ],
+       [
+        1295,
+        1355
+       ],
+       [
+        2595,
+        2640
+       ]
+      ]
+     },
+     "keys": [
+      "left_pupil",
+      "right_pupil"
+     ],
+     "masked": {
+      "left_pupil": 290,
+      "right_pupil": 280
+     },
+     "masked_unexplained": {
+      "left_pupil": 0,
+      "right_pupil": 0
+     },
+     "n": 3000,
+     "name": "fixture_pupildata",
+     "setup": null,
+     "tx_first": 0.0,
+     "tx_last": 5998.0,
+     "variables": [
+      "pupil"
+     ]
+    }
+   }
+  },
+  "eyedata.h5": {
+   "blinks": {
+    "left_pupil": [
+     [
+      500,
+      560
+     ],
+     [
+      1800,
+      1850
+     ]
+    ],
+    "left_x": [],
+    "left_y": [],
+    "right_pupil": [
+     [
+      510,
+      565
+     ],
+     [
+      1300,
+      1340
+     ]
+    ],
+    "right_x": [],
+    "right_y": []
+   },
+   "calibration": {
+    "left": {
+     "errors": [
+      [
+       0.3,
+       -13.3,
+       -1.6
+      ],
+      [
+       0.3,
+       13.2,
+       -0.2
+      ],
+      [
+       0.42,
+       16.1,
+       9.2
+      ],
+      [
+       0.25,
+       8.0,
+       -3.0
+      ],
+      [
+       0.5,
+       -20.0,
+       4.5
+      ]
+     ],
+     "eye": "left",
+     "measured": [
+      [
+       626.7,
+       510.4
+      ],
+      [
+       653.2,
+       86.8
+      ],
+      [
+       656.1,
+       945.2
+      ],
+      [
+       123.0,
+       509.0
+      ],
+      [
+       1145.0,
+       516.5
+      ]
+     ],
+     "model": "HV5",
+     "points": [
+      [
+       640.0,
+       512.0
+      ],
+      [
+       640.0,
+       87.0
+      ],
+      [
+       640.0,
+       936.0
+      ],
+      [
+       115.0,
+       512.0
+      ],
+      [
+       1165.0,
+       512.0
+      ]
+     ],
+     "screen_resolution": [
+      1280,
+      1024
+     ]
+    },
+    "right": {
+     "errors": [
+      [
+       0.24,
+       -10.64,
+       -1.2800000000000002
+      ],
+      [
+       0.24,
+       10.56,
+       -0.16000000000000003
+      ],
+      [
+       0.336,
+       12.880000000000003,
+       7.359999999999999
+      ],
+      [
+       0.2,
+       6.4,
+       -2.4000000000000004
+      ],
+      [
+       0.4,
+       -16.0,
+       3.6
+      ]
+     ],
+     "eye": "right",
+     "measured": [
+      [
+       629.36,
+       510.72
+      ],
+      [
+       650.56,
+       86.84
+      ],
+      [
+       652.88,
+       943.36
+      ],
+      [
+       121.4,
+       509.6
+      ],
+      [
+       1149.0,
+       515.6
+      ]
+     ],
+     "model": "HV5",
+     "points": [
+      [
+       640.0,
+       512.0
+      ],
+      [
+       640.0,
+       87.0
+      ],
+      [
+       640.0,
+       936.0
+      ],
+      [
+       115.0,
+       512.0
+      ],
+      [
+       1165.0,
+       512.0
+      ]
+     ],
+     "screen_resolution": [
+      1280,
+      1024
+     ]
+    }
+   },
+   "class": "EyeData",
+   "data_nansum": {
+    "left_pupil": 3010888.8508928567,
+    "left_x": 1941201.0,
+    "left_y": 1535926.0,
+    "right_pupil": 3010758.894990741,
+    "right_x": 1920084.7,
+    "right_y": 1530583.5
+   },
+   "events": {
+    "labels": [
+     "stim_1_a",
+     "resp_1",
+     "stim_2_b",
+     "resp_2",
+     "stim_3_a",
+     "resp_3",
+     "stim_4_b"
+    ],
+    "meta": {
+     "cond": [
+      "a",
+      "",
+      "b",
+      "",
+      "a",
+      "",
+      "b"
+     ],
+     "rt": [
+      NaN,
+      612.5,
+      NaN,
+      580.0,
+      NaN,
+      NaN,
+      NaN
+     ],
+     "trial": [
+      1,
+      1,
+      2,
+      2,
+      3,
+      3,
+      4
+     ]
+    },
+    "onsets": [
+     300.0,
+     1100.0,
+     1900.0,
+     2700.0,
+     3500.0,
+     4300.0,
+     5100.0
+    ]
+   },
+   "excluded_ms": [
+    [
+     0.0,
+     200.0
+    ],
+    [
+     5180.0,
+     5400.0
+    ]
+   ],
+   "eyes": [
+    "left",
+    "right"
+   ],
+   "fs": 500.0,
+   "has_original": true,
+   "history": [
+    "pupil_blinks_detect",
+    "pupil_blinks_interpolate",
+    "exclude_intervals",
+    "mask_offscreen_coords",
+    "set_events",
+    "mask_intervals"
+   ],
+   "history_len": 6,
+   "info": {
+    "session": 2,
+    "subject": "s01"
+   },
+   "interpolated_blinks": {
+    "left_pupil": [
+     [
+      495,
+      575
+     ],
+     [
+      1795,
+      1865
+     ],
+     [
+      2595,
+      2635
+     ]
+    ],
+    "left_x": [],
+    "left_y": [],
+    "right_pupil": [
+     [
+      505,
+      580
+     ],
+     [
+      1295,
+      1355
+     ],
+     [
+      2595,
+      2640
+     ]
+    ],
+    "right_x": [],
+    "right_y": []
+   },
+   "keys": [
+    "left_pupil",
+    "left_x",
+    "left_y",
+    "right_pupil",
+    "right_x",
+    "right_y"
+   ],
+   "masked": {
+    "left_pupil": 380,
+    "left_x": 240,
+    "left_y": 240,
+    "right_pupil": 345,
+    "right_x": 220,
+    "right_y": 220
+   },
+   "masked_unexplained": {
+    "left_pupil": 20,
+    "left_x": 30,
+    "left_y": 30,
+    "right_pupil": 0,
+    "right_x": 10,
+    "right_y": 10
+   },
+   "n": 3000,
+   "name": "fixture_eyedata",
+   "setup": {
+    "alpha_tilt": 0.0,
+    "beta_tilt": 0.0,
+    "camera_offset": null,
+    "camera_spherical": null,
+    "d": 600.0,
+    "ipd": null,
+    "physical_screen_size": [
+     300.0,
+     200.0
+    ],
+    "screen_offset": [
+     0.0,
+     0.0
+    ],
+    "screen_resolution": [
+     1280,
+     1024
+    ]
+   },
+   "tx_first": 0.0,
+   "tx_last": 5998.0,
+   "variables": [
+    "pupil",
+    "x",
+    "y"
+   ]
+  },
+  "eyedata.pypil": {
+   "blinks": {
+    "left_pupil": [
+     [
+      500,
+      560
+     ],
+     [
+      1800,
+      1850
+     ]
+    ],
+    "left_x": [],
+    "left_y": [],
+    "right_pupil": [
+     [
+      510,
+      565
+     ],
+     [
+      1300,
+      1340
+     ]
+    ],
+    "right_x": [],
+    "right_y": []
+   },
+   "calibration": {
+    "left": {
+     "errors": [
+      [
+       0.3,
+       -13.3,
+       -1.6
+      ],
+      [
+       0.3,
+       13.2,
+       -0.2
+      ],
+      [
+       0.42,
+       16.1,
+       9.2
+      ],
+      [
+       0.25,
+       8.0,
+       -3.0
+      ],
+      [
+       0.5,
+       -20.0,
+       4.5
+      ]
+     ],
+     "eye": "left",
+     "measured": [
+      [
+       626.7,
+       510.4
+      ],
+      [
+       653.2,
+       86.8
+      ],
+      [
+       656.1,
+       945.2
+      ],
+      [
+       123.0,
+       509.0
+      ],
+      [
+       1145.0,
+       516.5
+      ]
+     ],
+     "model": "HV5",
+     "points": [
+      [
+       640.0,
+       512.0
+      ],
+      [
+       640.0,
+       87.0
+      ],
+      [
+       640.0,
+       936.0
+      ],
+      [
+       115.0,
+       512.0
+      ],
+      [
+       1165.0,
+       512.0
+      ]
+     ],
+     "screen_resolution": [
+      1280,
+      1024
+     ]
+    },
+    "right": {
+     "errors": [
+      [
+       0.24,
+       -10.64,
+       -1.2800000000000002
+      ],
+      [
+       0.24,
+       10.56,
+       -0.16000000000000003
+      ],
+      [
+       0.336,
+       12.880000000000003,
+       7.359999999999999
+      ],
+      [
+       0.2,
+       6.4,
+       -2.4000000000000004
+      ],
+      [
+       0.4,
+       -16.0,
+       3.6
+      ]
+     ],
+     "eye": "right",
+     "measured": [
+      [
+       629.36,
+       510.72
+      ],
+      [
+       650.56,
+       86.84
+      ],
+      [
+       652.88,
+       943.36
+      ],
+      [
+       121.4,
+       509.6
+      ],
+      [
+       1149.0,
+       515.6
+      ]
+     ],
+     "model": "HV5",
+     "points": [
+      [
+       640.0,
+       512.0
+      ],
+      [
+       640.0,
+       87.0
+      ],
+      [
+       640.0,
+       936.0
+      ],
+      [
+       115.0,
+       512.0
+      ],
+      [
+       1165.0,
+       512.0
+      ]
+     ],
+     "screen_resolution": [
+      1280,
+      1024
+     ]
+    }
+   },
+   "class": "EyeData",
+   "data_nansum": {
+    "left_pupil": 3010888.8508928567,
+    "left_x": 1941201.0,
+    "left_y": 1535926.0,
+    "right_pupil": 3010758.894990741,
+    "right_x": 1920084.7,
+    "right_y": 1530583.5
+   },
+   "events": {
+    "labels": [
+     "stim_1_a",
+     "resp_1",
+     "stim_2_b",
+     "resp_2",
+     "stim_3_a",
+     "resp_3",
+     "stim_4_b"
+    ],
+    "meta": {
+     "cond": [
+      "a",
+      "",
+      "b",
+      "",
+      "a",
+      "",
+      "b"
+     ],
+     "rt": [
+      NaN,
+      612.5,
+      NaN,
+      580.0,
+      NaN,
+      NaN,
+      NaN
+     ],
+     "trial": [
+      1,
+      1,
+      2,
+      2,
+      3,
+      3,
+      4
+     ]
+    },
+    "onsets": [
+     300.0,
+     1100.0,
+     1900.0,
+     2700.0,
+     3500.0,
+     4300.0,
+     5100.0
+    ]
+   },
+   "excluded_ms": [
+    [
+     0.0,
+     200.0
+    ],
+    [
+     5180.0,
+     5400.0
+    ]
+   ],
+   "eyes": [
+    "left",
+    "right"
+   ],
+   "fs": 500.0,
+   "has_original": true,
+   "history": [
+    "pupil_blinks_detect",
+    "pupil_blinks_interpolate",
+    "exclude_intervals",
+    "mask_offscreen_coords",
+    "set_events",
+    "mask_intervals"
+   ],
+   "history_len": 6,
+   "info": {
+    "session": 2,
+    "subject": "s01"
+   },
+   "interpolated_blinks": {
+    "left_pupil": [
+     [
+      495,
+      575
+     ],
+     [
+      1795,
+      1865
+     ],
+     [
+      2595,
+      2635
+     ]
+    ],
+    "left_x": [],
+    "left_y": [],
+    "right_pupil": [
+     [
+      505,
+      580
+     ],
+     [
+      1295,
+      1355
+     ],
+     [
+      2595,
+      2640
+     ]
+    ],
+    "right_x": [],
+    "right_y": []
+   },
+   "keys": [
+    "left_pupil",
+    "left_x",
+    "left_y",
+    "right_pupil",
+    "right_x",
+    "right_y"
+   ],
+   "masked": {
+    "left_pupil": 380,
+    "left_x": 240,
+    "left_y": 240,
+    "right_pupil": 345,
+    "right_x": 220,
+    "right_y": 220
+   },
+   "masked_unexplained": {
+    "left_pupil": 20,
+    "left_x": 30,
+    "left_y": 30,
+    "right_pupil": 0,
+    "right_x": 10,
+    "right_y": 10
+   },
+   "n": 3000,
+   "name": "fixture_eyedata",
+   "setup": {
+    "alpha_tilt": 0.0,
+    "beta_tilt": 0.0,
+    "camera_offset": null,
+    "camera_spherical": null,
+    "d": 600.0,
+    "ipd": null,
+    "physical_screen_size": [
+     300.0,
+     200.0
+    ],
+    "screen_offset": [
+     0.0,
+     0.0
+    ],
+    "screen_resolution": [
+     1280,
+     1024
+    ]
+   },
+   "tx_first": 0.0,
+   "tx_last": 5998.0,
+   "variables": [
+    "pupil",
+    "x",
+    "y"
+   ]
+  },
+  "gazedata.h5": {
+   "blinks": {
+    "left_x": [],
+    "left_y": [],
+    "right_x": [],
+    "right_y": []
+   },
+   "calibration": null,
+   "class": "GazeData",
+   "data_nansum": {
+    "left_x": 1942005.8,
+    "left_y": 1536512.5000000002,
+    "right_x": 1920519.7999999998,
+    "right_y": 1530507.2
+   },
+   "events": {
+    "labels": [
+     "stim_1_a",
+     "resp_1",
+     "stim_2_b",
+     "resp_2",
+     "stim_3_a",
+     "resp_3",
+     "stim_4_b"
+    ],
+    "meta": {},
+    "onsets": [
+     300.0,
+     1100.0,
+     1900.0,
+     2700.0,
+     3500.0,
+     4300.0,
+     5100.0
+    ]
+   },
+   "excluded_ms": [],
+   "eyes": [
+    "left",
+    "right"
+   ],
+   "fs": 500.0,
+   "has_original": false,
+   "history": [
+    "mask_offscreen_coords"
+   ],
+   "history_len": 1,
+   "info": {},
+   "interpolated_blinks": {
+    "left_x": [],
+    "left_y": [],
+    "right_x": [],
+    "right_y": []
+   },
+   "keys": [
+    "left_x",
+    "left_y",
+    "right_x",
+    "right_y"
+   ],
+   "masked": {
+    "left_x": 30,
+    "left_y": 30,
+    "right_x": 10,
+    "right_y": 10
+   },
+   "masked_unexplained": {
+    "left_x": 30,
+    "left_y": 30,
+    "right_x": 10,
+    "right_y": 10
+   },
+   "n": 3000,
+   "name": "fixture_gazedata",
+   "setup": {
+    "alpha_tilt": 0.0,
+    "beta_tilt": 0.0,
+    "camera_offset": null,
+    "camera_spherical": null,
+    "d": 600.0,
+    "ipd": null,
+    "physical_screen_size": [
+     300.0,
+     200.0
+    ],
+    "screen_offset": [
+     0.0,
+     0.0
+    ],
+    "screen_resolution": [
+     1280,
+     1024
+    ]
+   },
+   "tx_first": 0.0,
+   "tx_last": 5998.0,
+   "variables": [
+    "x",
+    "y"
+   ]
+  },
+  "gazedata.pypil": {
+   "blinks": {
+    "left_x": [],
+    "left_y": [],
+    "right_x": [],
+    "right_y": []
+   },
+   "calibration": null,
+   "class": "GazeData",
+   "data_nansum": {
+    "left_x": 1942005.8,
+    "left_y": 1536512.5000000002,
+    "right_x": 1920519.7999999998,
+    "right_y": 1530507.2
+   },
+   "events": {
+    "labels": [
+     "stim_1_a",
+     "resp_1",
+     "stim_2_b",
+     "resp_2",
+     "stim_3_a",
+     "resp_3",
+     "stim_4_b"
+    ],
+    "meta": {},
+    "onsets": [
+     300.0,
+     1100.0,
+     1900.0,
+     2700.0,
+     3500.0,
+     4300.0,
+     5100.0
+    ]
+   },
+   "excluded_ms": [],
+   "eyes": [
+    "left",
+    "right"
+   ],
+   "fs": 500.0,
+   "has_original": false,
+   "history": [
+    "mask_offscreen_coords"
+   ],
+   "history_len": 1,
+   "info": {},
+   "interpolated_blinks": {
+    "left_x": [],
+    "left_y": [],
+    "right_x": [],
+    "right_y": []
+   },
+   "keys": [
+    "left_x",
+    "left_y",
+    "right_x",
+    "right_y"
+   ],
+   "masked": {
+    "left_x": 30,
+    "left_y": 30,
+    "right_x": 10,
+    "right_y": 10
+   },
+   "masked_unexplained": {
+    "left_x": 30,
+    "left_y": 30,
+    "right_x": 10,
+    "right_y": 10
+   },
+   "n": 3000,
+   "name": "fixture_gazedata",
+   "setup": {
+    "alpha_tilt": 0.0,
+    "beta_tilt": 0.0,
+    "camera_offset": null,
+    "camera_spherical": null,
+    "d": 600.0,
+    "ipd": null,
+    "physical_screen_size": [
+     300.0,
+     200.0
+    ],
+    "screen_offset": [
+     0.0,
+     0.0
+    ],
+    "screen_resolution": [
+     1280,
+     1024
+    ]
+   },
+   "tx_first": 0.0,
+   "tx_last": 5998.0,
+   "variables": [
+    "x",
+    "y"
+   ]
+  },
+  "pupildata.h5": {
+   "blinks": {
+    "left_pupil": [
+     [
+      500,
+      560
+     ],
+     [
+      1800,
+      1850
+     ],
+     [
+      2600,
+      2620
+     ]
+    ],
+    "right_pupil": [
+     [
+      510,
+      565
+     ],
+     [
+      1300,
+      1340
+     ],
+     [
+      2600,
+      2625
+     ]
+    ]
+   },
+   "calibration": null,
+   "class": "PupilData",
+   "data_nansum": {
+    "left_pupil": 3010676.9062723215,
+    "right_pupil": 3010726.746138889
+   },
+   "events": {
+    "labels": [
+     "stim_1_a",
+     "resp_1",
+     "stim_2_b",
+     "resp_2",
+     "stim_3_a",
+     "resp_3",
+     "stim_4_b"
+    ],
+    "meta": {
+     "cond": [
+      "a",
+      "",
+      "b",
+      "",
+      "a",
+      "",
+      "b"
+     ],
+     "rt": [
+      NaN,
+      612.5,
+      NaN,
+      580.0,
+      NaN,
+      NaN,
+      NaN
+     ],
+     "trial": [
+      1,
+      1,
+      2,
+      2,
+      3,
+      3,
+      4
+     ]
+    },
+    "onsets": [
+     300.0,
+     1100.0,
+     1900.0,
+     2700.0,
+     3500.0,
+     4300.0,
+     5100.0
+    ]
+   },
+   "excluded_ms": [
+    [
+     5800.0,
+     6000.0
+    ]
+   ],
+   "eyes": [
+    "left",
+    "right"
+   ],
+   "fs": 500.0,
+   "has_original": false,
+   "history": [
+    "pupil_blinks_detect",
+    "pupil_blinks_interpolate",
+    "exclude_intervals",
+    "set_events"
+   ],
+   "history_len": 4,
+   "info": {},
+   "interpolated_blinks": {
+    "left_pupil": [
+     [
+      495,
+      575
+     ],
+     [
+      1795,
+      1865
+     ],
+     [
+      2595,
+      2635
+     ]
+    ],
+    "right_pupil": [
+     [
+      505,
+      580
+     ],
+     [
+      1295,
+      1355
+     ],
+     [
+      2595,
+      2640
+     ]
+    ]
+   },
+   "keys": [
+    "left_pupil",
+    "right_pupil"
+   ],
+   "masked": {
+    "left_pupil": 290,
+    "right_pupil": 280
+   },
+   "masked_unexplained": {
+    "left_pupil": 0,
+    "right_pupil": 0
+   },
+   "n": 3000,
+   "name": "fixture_pupildata",
+   "setup": null,
+   "tx_first": 0.0,
+   "tx_last": 5998.0,
+   "variables": [
+    "pupil"
+   ]
+  },
+  "pupildata.pypil": {
+   "blinks": {
+    "left_pupil": [
+     [
+      500,
+      560
+     ],
+     [
+      1800,
+      1850
+     ],
+     [
+      2600,
+      2620
+     ]
+    ],
+    "right_pupil": [
+     [
+      510,
+      565
+     ],
+     [
+      1300,
+      1340
+     ],
+     [
+      2600,
+      2625
+     ]
+    ]
+   },
+   "calibration": null,
+   "class": "PupilData",
+   "data_nansum": {
+    "left_pupil": 3010676.9062723215,
+    "right_pupil": 3010726.746138889
+   },
+   "events": {
+    "labels": [
+     "stim_1_a",
+     "resp_1",
+     "stim_2_b",
+     "resp_2",
+     "stim_3_a",
+     "resp_3",
+     "stim_4_b"
+    ],
+    "meta": {
+     "cond": [
+      "a",
+      "",
+      "b",
+      "",
+      "a",
+      "",
+      "b"
+     ],
+     "rt": [
+      NaN,
+      612.5,
+      NaN,
+      580.0,
+      NaN,
+      NaN,
+      NaN
+     ],
+     "trial": [
+      1,
+      1,
+      2,
+      2,
+      3,
+      3,
+      4
+     ]
+    },
+    "onsets": [
+     300.0,
+     1100.0,
+     1900.0,
+     2700.0,
+     3500.0,
+     4300.0,
+     5100.0
+    ]
+   },
+   "excluded_ms": [
+    [
+     5800.0,
+     6000.0
+    ]
+   ],
+   "eyes": [
+    "left",
+    "right"
+   ],
+   "fs": 500.0,
+   "has_original": false,
+   "history": [
+    "pupil_blinks_detect",
+    "pupil_blinks_interpolate",
+    "exclude_intervals",
+    "set_events"
+   ],
+   "history_len": 4,
+   "info": {},
+   "interpolated_blinks": {
+    "left_pupil": [
+     [
+      495,
+      575
+     ],
+     [
+      1795,
+      1865
+     ],
+     [
+      2595,
+      2635
+     ]
+    ],
+    "right_pupil": [
+     [
+      505,
+      580
+     ],
+     [
+      1295,
+      1355
+     ],
+     [
+      2595,
+      2640
+     ]
+    ]
+   },
+   "keys": [
+    "left_pupil",
+    "right_pupil"
+   ],
+   "masked": {
+    "left_pupil": 290,
+    "right_pupil": 280
+   },
+   "masked_unexplained": {
+    "left_pupil": 0,
+    "right_pupil": 0
+   },
+   "n": 3000,
+   "name": "fixture_pupildata",
+   "setup": null,
+   "tx_first": 0.0,
+   "tx_last": 5998.0,
+   "variables": [
+    "pupil"
+   ]
+  },
+  "pupildata_uncompressed.pypil": {
+   "blinks": {
+    "left_pupil": [
+     [
+      500,
+      560
+     ],
+     [
+      1800,
+      1850
+     ],
+     [
+      2600,
+      2620
+     ]
+    ],
+    "right_pupil": [
+     [
+      510,
+      565
+     ],
+     [
+      1300,
+      1340
+     ],
+     [
+      2600,
+      2625
+     ]
+    ]
+   },
+   "calibration": null,
+   "class": "PupilData",
+   "data_nansum": {
+    "left_pupil": 3010676.9062723215,
+    "right_pupil": 3010726.746138889
+   },
+   "events": {
+    "labels": [
+     "stim_1_a",
+     "resp_1",
+     "stim_2_b",
+     "resp_2",
+     "stim_3_a",
+     "resp_3",
+     "stim_4_b"
+    ],
+    "meta": {
+     "cond": [
+      "a",
+      "",
+      "b",
+      "",
+      "a",
+      "",
+      "b"
+     ],
+     "rt": [
+      NaN,
+      612.5,
+      NaN,
+      580.0,
+      NaN,
+      NaN,
+      NaN
+     ],
+     "trial": [
+      1,
+      1,
+      2,
+      2,
+      3,
+      3,
+      4
+     ]
+    },
+    "onsets": [
+     300.0,
+     1100.0,
+     1900.0,
+     2700.0,
+     3500.0,
+     4300.0,
+     5100.0
+    ]
+   },
+   "excluded_ms": [
+    [
+     5800.0,
+     6000.0
+    ]
+   ],
+   "eyes": [
+    "left",
+    "right"
+   ],
+   "fs": 500.0,
+   "has_original": false,
+   "history": [
+    "pupil_blinks_detect",
+    "pupil_blinks_interpolate",
+    "exclude_intervals",
+    "set_events"
+   ],
+   "history_len": 4,
+   "info": {},
+   "interpolated_blinks": {
+    "left_pupil": [
+     [
+      495,
+      575
+     ],
+     [
+      1795,
+      1865
+     ],
+     [
+      2595,
+      2635
+     ]
+    ],
+    "right_pupil": [
+     [
+      505,
+      580
+     ],
+     [
+      1295,
+      1355
+     ],
+     [
+      2595,
+      2640
+     ]
+    ]
+   },
+   "keys": [
+    "left_pupil",
+    "right_pupil"
+   ],
+   "masked": {
+    "left_pupil": 290,
+    "right_pupil": 280
+   },
+   "masked_unexplained": {
+    "left_pupil": 0,
+    "right_pupil": 0
+   },
+   "n": 3000,
+   "name": "fixture_pupildata",
+   "setup": null,
+   "tx_first": 0.0,
+   "tx_last": 5998.0,
+   "variables": [
+    "pupil"
+   ]
+  },
+  "segmented.h5": {
+   "class": "SegmentedEyeData",
+   "data_sum": 2011798.7092912947,
+   "intervals": {
+    "events": {
+     "labels": [
+      "stim_1_a",
+      "stim_2_b",
+      "stim_3_a",
+      "stim_4_b"
+     ],
+     "meta": {
+      "cond": [
+       "a",
+       "b",
+       "a",
+       "b"
+      ],
+      "rt": [
+       NaN,
+       NaN,
+       NaN,
+       NaN
+      ],
+      "trial": [
+       1,
+       2,
+       3,
+       4
+      ]
+     },
+     "onsets": [
+      300.0,
+      1900.0,
+      3500.0,
+      5100.0
+     ]
+    },
+    "interval_window": [
+     -200.0,
+     800.0
+    ],
+    "intervals": [
+     [
+      100.0,
+      1100.0
+     ],
+     [
+      1700.0,
+      2700.0
+     ],
+     [
+      3300.0,
+      4300.0
+     ],
+     [
+      4900.0,
+      5900.0
+     ]
+    ],
+    "units": "ms"
+   },
+   "masked": 305,
+   "n_segments": 4,
+   "n_timepoints": 500,
+   "name": "stim",
+   "sampling_rate": 500.0,
+   "tx_first": -200.0,
+   "tx_last": 800.0,
+   "variable": "left_pupil"
+  },
+  "segmented.pypil": {
+   "class": "SegmentedEyeData",
+   "data_sum": 2011798.7092912947,
+   "intervals": {
+    "events": {
+     "labels": [
+      "stim_1_a",
+      "stim_2_b",
+      "stim_3_a",
+      "stim_4_b"
+     ],
+     "meta": {
+      "cond": [
+       "a",
+       "b",
+       "a",
+       "b"
+      ],
+      "rt": [
+       NaN,
+       NaN,
+       NaN,
+       NaN
+      ],
+      "trial": [
+       1,
+       2,
+       3,
+       4
+      ]
+     },
+     "onsets": [
+      300.0,
+      1900.0,
+      3500.0,
+      5100.0
+     ]
+    },
+    "interval_window": [
+     -200.0,
+     800.0
+    ],
+    "intervals": [
+     [
+      100.0,
+      1100.0
+     ],
+     [
+      1700.0,
+      2700.0
+     ],
+     [
+      3300.0,
+      4300.0
+     ],
+     [
+      4900.0,
+      5900.0
+     ]
+    ],
+    "units": "ms"
+   },
+   "masked": 305,
+   "n_segments": 4,
+   "n_timepoints": 500,
+   "name": "stim",
+   "sampling_rate": 500.0,
+   "tx_first": -200.0,
+   "tx_last": 800.0,
+   "variable": "left_pupil"
+  }
+ },
+ "format_version": 2,
+ "package_modified": false,
+ "pypillometry_commit": "b9e7162bb5af22f86457d463b37653cad3f553d7",
+ "pypillometry_version": "2.1.0"
+}
