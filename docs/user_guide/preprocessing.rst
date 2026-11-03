@@ -58,7 +58,10 @@ drops in the pupil's velocity profile. The detected blinks are stored in the
 object. With ``apply_mask=False`` (the default), they are also returned as
 :class:`Intervals` so that you can check them first.
 :meth:`~PupilData.pupil_blinks_interpolate` replaces the pupil size during
-blinks by a smooth curve (Mathôt, 2013). Interpolated samples remain masked.
+blinks by a smooth curve (Mathôt, 2013). Interpolated samples are used by
+all later steps (filters, segments, statistics); they keep the
+``"interpolated"`` layer, so they can be left out with
+``policy="strict"`` (see :doc:`data_model`).
 
 Blinks differ a lot between participants, and checking the result for
 each participant is worth the effort. The tutorial :doc:`/notebooks/blinks`
@@ -105,6 +108,12 @@ reduces the amount of data, e.g., for modeling.
    PupilData.pupil_lowpass_filter
    PupilData.pupil_smooth_window
    GenericEyeData.downsample
+
+The filters only use the usable samples: masked samples (e.g., blinks
+that were not interpolated, or zero-coded blinks) are bridged linearly
+for the filter and keep their values, so they do not leak into their
+neighbours. Interpolating blinks before filtering gives a better bridge
+than a straight line.
 
 :meth:`~GenericEyeData.downsample` averages the samples within each new
 sampling interval (masked samples are left out), so filter before

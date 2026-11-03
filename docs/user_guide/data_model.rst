@@ -100,10 +100,12 @@ Masks
 -----
 
 Samples can be *masked*, i.e. marked as invalid without removing them.
-Blinks, samples where the gaze is off the screen, or interpolated
-segments are typical examples. Every time series is a
+Missing samples (NaN), blinks and samples where the gaze is off the
+screen are typical examples. Every time series is a
 :class:`numpy.ma.MaskedArray`, and masked samples are ignored by
-averages, segments and statistics.
+averages, segments and statistics. Interpolated samples (e.g., blinks
+after :meth:`~PupilData.pupil_blinks_interpolate`) are *not* masked by
+default: they are used like other samples (see the mask policies below).
 
 .. code-block:: python
 
@@ -139,6 +141,23 @@ interpolated samples count as usable:
     d.mask("left", "pupil", policy="strict")    # interpolated samples too
     d.values("left", "pupil")                   # values, NaN where masked
     d.clear_layer("blink")                      # undo blink detection
+
+All processing and analysis methods read the data under one policy: the
+default one unless you pass ``policy=`` (``"strict"`` leaves out the
+interpolated samples, ``"raw"`` uses all values). Filters
+(:meth:`~PupilData.pupil_lowpass_filter`,
+:meth:`~PupilData.pupil_smooth_window`) and the baseline model bridge the
+unusable samples linearly instead of using their values, and only change
+the usable samples; masked samples keep their values. Segments,
+:meth:`~GenericEyeData.stat_per_event`, :meth:`~GenericEyeData.scale`,
+:meth:`~GenericEyeData.merge_eyes`, :meth:`~GenericEyeData.downsample` and
+the quality report leave out the unusable samples. ``d["left_pupil"]`` and
+``d.data.mask`` give the mask under the default policy.
+
+.. code-block:: python
+
+    seg = d.get_segments(epochs, "left_pupil", policy="strict")  # without interpolated samples
+    d.stat_per_event(epochs, policy="strict")
 
 
 Excluded periods
