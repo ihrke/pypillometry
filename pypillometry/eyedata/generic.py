@@ -11,7 +11,7 @@ from .. import io
 from ..convenience import sizeof_fmt, ByteSize, _round_values, requires_package, is_url, suppress_all_output, normalize_unit, _warn_if_ignores_mask
 from ..units import UNSET, _has_units, _time_values_and_units, parse_time, _ms_to_samples, _samples_to_ms
 from ..io import download
-from .eyedatadict import (EyeDataDict, COMPAT_LAYERS, LAYER_DTYPE, NAN_LAYER, REC_LAYERS,
+from .eyedatadict import (EyeDataDict, LAYER_DTYPE, NAN_LAYER, REC_LAYERS,
                           MaskPolicy, _as_policy, _join_key)
 from .experimental_setup import ExperimentalSetup
 from ..signal import baseline
@@ -696,7 +696,7 @@ class GenericEyeData(state.VersionedState, ABC):
 
     def _set_blink_layer(self, key, intervals, apply_mask):
         """Replace the blink layer of `key` by `intervals` (None: no blinks);
-        with `apply_mask`, the blinks are also masked in ``data.mask``."""
+        with `apply_mask`, the blinks also mask the data (see `mask`)."""
         blink = (np.zeros(len(self.tx), dtype=bool) if intervals is None
                  else intervals.to_mask(self).astype(bool))
         self.data.set_layer(key, "blink", blink, replace=True)
@@ -732,9 +732,9 @@ class GenericEyeData(state.VersionedState, ABC):
             variable(s) to set blinks for (e.g., ``["pupil", "x", "y"]``);
             if empty, all available variables. Ignored if `intervals` is a dict.
         apply_mask : bool, optional
-            If True, also apply the intervals as mask to the data
-            (``data.mask``; other masks are kept). If False, only store
-            intervals. Default is True.
+            If True, also apply the intervals as mask to the data (they
+            are masked under the mask policies, see :meth:`mask`; other
+            masks are kept). If False, only store intervals. Default is True.
         """
         # Check if intervals is a dict
         if isinstance(intervals, dict):

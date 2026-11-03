@@ -132,7 +132,7 @@ class TestMethodsAcceptEpochs:
     def test_interpolate_intervals(self):
         d = self.make().interpolate_intervals(self.epochs(), eyes="left",
                                               variables="pupil", inplace=False)
-        assert d.data.mask["left_pupil"].sum() == 100
+        assert d.mask("left_pupil", policy="strict").sum() == 100
 
     def test_exclude_and_remove(self):
         d = self.make()

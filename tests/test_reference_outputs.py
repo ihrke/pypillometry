@@ -124,10 +124,16 @@ def pupil_keys(d):
     return [k for k in d.data.keys() if k.endswith("_pupil")]
 
 
+def old_mask(d, k):
+    """The mask as the reference stored it: it contained the interpolated
+    samples, so it is the mask under the strict policy (step 7)."""
+    return d.mask(k, policy="strict")
+
+
 def masks(d, keys=None):
     """Mask of every variable."""
     keys = d.data.keys() if keys is None else keys
-    return {f"mask.{k}": np.asarray(d.data.mask[k], dtype=bool).copy() for k in keys}
+    return {f"mask.{k}": old_mask(d, k) for k in keys}
 
 
 def blinks(d, keys, units="samples"):
@@ -151,7 +157,7 @@ def summary(d, step=50):
            "event_labels": np.asarray(d.events.labels, dtype=str)}
     for k in d.data.keys():
         v = np.asarray(d.data[k], dtype=float)
-        m = np.asarray(d.data.mask[k], dtype=bool)
+        m = old_mask(d, k)
         out[f"nansum.{k}"] = float(np.nansum(v))
         out[f"masked.{k}"] = int(m.sum())
         out[f"sub.{k}"] = v[::step].copy()
@@ -374,7 +380,7 @@ def _scale(dataset):
             for eye, v in vals.items():
                 out[f"param_{stat}.{eye}_{var}"] = float(v)
     for k in d.data.keys():
-        x = np.ma.masked_array(d.data[k], mask=d.data.mask[k])
+        x = np.ma.masked_array(d.data[k], mask=old_mask(d, k))
         out[f"mean.{k}"] = float(masked_mean(x))
         out[f"std.{k}"] = float(np.ma.std(x))
         out[f"nanmean_all.{k}"] = float(np.nanmean(d.data[k]))
@@ -387,10 +393,10 @@ def _merge_eyes(dataset):
     for k in d.data.keys():
         if not k.startswith("mean_"):
             continue
-        x = np.ma.masked_array(d.data[k], mask=d.data.mask[k])
+        x = np.ma.masked_array(d.data[k], mask=old_mask(d, k))
         out[f"mean.{k}"] = float(masked_mean(x))
         out[f"nanmean_all.{k}"] = float(np.nanmean(d.data[k]))
-        out[f"masked.{k}"] = int(d.data.mask[k].sum())
+        out[f"masked.{k}"] = int(old_mask(d, k).sum())
         out[f"sub.{k}"] = np.asarray(d.data[k][::50], dtype=float)
     out["keys"] = np.asarray(sorted(d.data.keys()), dtype=str)
     return out

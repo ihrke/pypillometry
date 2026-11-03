@@ -627,3 +627,20 @@ Changes of the API calls alone (same numbers) need no entry.
   plots that hide masked samples.
 - **Why**: decision 4 (interpolated samples are used).
 - **Step**: 7, `refactor/07-value-policy`
+
+### `data.mask` is the mask under the default policy
+
+- **Case**: none in numbers. The reference masks (`mask.*`, `masked.*` and
+  the masked means of `h.*`) are compared with the mask under the
+  `"strict"` policy, which is what the old mask held (interpolated
+  samples masked); they are unchanged.
+- **Change**: `d.data.mask[key]` (and `get_mask`, `count_masked`,
+  `mask_as_intervals`) is the mask under the default policy: interpolated
+  samples are not masked, NaN values always are. The derived "compat"
+  mask of steps 5-6 (the old mask rebuilt from the layers) is gone.
+  `set_mask(key, mask)` makes this mask equal to `mask`, except for NaN
+  values and excluded periods (always masked); samples it masks that are
+  interpolated lose the `interpolated` layer.
+- **Why**: one mask rule for all code (D2); the old mask mixed "missing"
+  and "reconstructed".
+- **Step**: 7, `refactor/07-value-policy`

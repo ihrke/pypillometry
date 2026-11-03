@@ -105,7 +105,8 @@ class TestMigratedState:
         data = d.data
         for key, m in old["data"]["mask"].items():
             m = np.asarray(m, dtype=bool)
-            np.testing.assert_array_equal(data._compat_mask(key), m, err_msg=key)
+            # the old mask is the strict mask (interpolated samples masked)
+            np.testing.assert_array_equal(d.mask(key, policy="strict"), m, err_msg=key)
             nan = np.isnan(old["data"]["values"][key])
             explained = nan | data.get_rec_layer("excluded")
             for layer in ("blink", "interpolated"):

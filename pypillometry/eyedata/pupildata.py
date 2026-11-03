@@ -733,8 +733,10 @@ class PupilData(GenericEyeData):
         before interpolating. Blinks that are so close that the anchor points
         of one fall into the other are merged and interpolated together.
         The interpolated samples get the ``"interpolated"`` layer (on the
-        variable they are stored in, see `store_as`) and remain masked in
-        ``data.mask``; the interpolated blinks can be retrieved with
+        variable they are stored in, see `store_as`): they are used under the
+        default mask policy and masked under the ``"strict"`` one (see
+        :meth:`~pypillometry.GenericEyeData.mask`); the interpolated blinks
+        can be retrieved with
         :meth:`~pypillometry.GenericEyeData.get_interpolated_blinks`.
 
         This procedure relies heavily on eye-balling (reconstructing visually convincing signal),

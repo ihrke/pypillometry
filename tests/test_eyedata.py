@@ -1071,9 +1071,11 @@ class TestEyeData(unittest.TestCase):
         interpolated = result.data['left_pupil'][100:200]
         self.assertFalse(np.any(np.isnan(interpolated)))
         
-        # Check that mask was applied to interpolated region
-        mask = result.data.mask['left_pupil']
+        # Check that the interpolated region is marked (masked under the
+        # strict policy, used under the default one)
+        mask = result.mask('left_pupil', policy="strict")
         self.assertTrue(np.all(mask[100:200] == 1))
+        self.assertFalse(np.any(result.data.mask['left_pupil'][100:200]))
         
     def test_interpolate_intervals_dict(self):
         """Test interpolate_intervals with a dict of Intervals"""
@@ -1105,9 +1107,9 @@ class TestEyeData(unittest.TestCase):
         self.assertFalse(np.any(np.isnan(result.data['left_pupil'][100:150])))
         self.assertFalse(np.any(np.isnan(result.data['right_pupil'][150:250])))
         
-        # Check masks
-        self.assertTrue(np.all(result.data.mask['left_pupil'][100:150] == 1))
-        self.assertTrue(np.all(result.data.mask['right_pupil'][150:250] == 1))
+        # Check masks (interpolated: masked under the strict policy)
+        self.assertTrue(np.all(result.mask('left_pupil', policy="strict")[100:150]))
+        self.assertTrue(np.all(result.mask('right_pupil', policy="strict")[150:250]))
         
     def test_interpolate_intervals_store_as_suffix(self):
         """Test interpolate_intervals with store_as_suffix creates new variable"""
@@ -1210,9 +1212,9 @@ class TestEyeData(unittest.TestCase):
         self.assertFalse(np.any(np.isnan(result.data['left_pupil'][100:150])))
         self.assertFalse(np.any(np.isnan(result.data['left_pupil'][200:250])))
         
-        # Masks should be applied
-        self.assertTrue(np.all(result.data.mask['left_pupil'][100:150] == 1))
-        self.assertTrue(np.all(result.data.mask['left_pupil'][200:250] == 1))
+        # Masks should be applied (interpolated: masked under the strict policy)
+        self.assertTrue(np.all(result.mask('left_pupil', policy="strict")[100:150]))
+        self.assertTrue(np.all(result.mask('left_pupil', policy="strict")[200:250]))
         
     def test_interpolate_intervals_inplace_false(self):
         """Test interpolate_intervals with inplace=False returns copy"""
@@ -1598,9 +1600,10 @@ class TestEyeDataDelitem(unittest.TestCase):
         pd = pd.pupil_blinks_detect(eyes=['left'], min_duration=50, apply_mask=True, inplace=True)
         pd_interp = pd.pupil_blinks_interpolate(eyes=['left'], store_as='pupil', inplace=False)
         
-        # Verify manual mask is preserved
+        # Verify manual mask is preserved (strict policy: interpolated
+        # samples count as masked)
         np.testing.assert_array_equal(
-            pd_interp.data.mask['left_pupil'][manual_mask_indices],
+            pd_interp.mask('left_pupil', policy="strict")[manual_mask_indices],
             original_mask[manual_mask_indices],
             err_msg="Manually masked regions should be preserved"
         )
@@ -1608,7 +1611,7 @@ class TestEyeDataDelitem(unittest.TestCase):
         # Verify blink regions are now masked (interpolated regions are marked)
         # Note: not all indices might be interpolated depending on the algorithm
         self.assertTrue(
-            np.any(pd_interp.data.mask['left_pupil'][blink_indices] == 1),
+            np.any(pd_interp.mask('left_pupil', policy="strict")[blink_indices]),
             "At least some interpolated blink regions should be masked"
         )
         
