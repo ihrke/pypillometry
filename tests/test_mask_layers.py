@@ -143,3 +143,65 @@ class TestSampleOperations:
         assert not d.data.get_layer("left_pupil", "user").any()
         # values: mean of the samples that are not masked (user is a compat layer)
         np.testing.assert_allclose(d.data["left_pupil"][[0, 5]], [1.5, 20.])
+
+
+class TestPolicies:
+    """mask(eye, var, policy) / values(eye, var, policy)."""
+
+    def data(self):
+        import pypillometry as pp
+        pupil = np.arange(10, dtype=float)
+        pupil[0] = np.nan
+        d = pp.PupilData(left_pupil=pupil, sampling_rate=100)
+        dd = d.data
+        dd.set_layer("left_pupil", "blink", np.isin(np.arange(10), [2, 3, 4]))
+        dd.set_layer("left_pupil", "interpolated", np.isin(np.arange(10), [3, 4, 5]))
+        dd.set_layer("left_pupil", "user", np.arange(10) == 8)
+        return d
+
+    def test_default_strict_raw(self):
+        d = self.data()
+        idx = lambda m: list(np.flatnonzero(m))
+        # default: NaN, blink unless interpolated, user
+        assert idx(d.mask("left", "pupil")) == [0, 2, 8]
+        assert idx(d.mask("left_pupil", policy="strict")) == [0, 2, 3, 4, 5, 8]
+        assert idx(d.mask("left", "pupil", policy="raw")) == []
+        assert idx(d.mask("left", "pupil", policy=["blink"])) == [0, 2, 3, 4]
+        p = pp_policy(["blink"], nan=False)
+        assert idx(d.mask("left", "pupil", policy=p)) == [2, 3, 4]
+
+    def test_values(self):
+        d = self.data()
+        v = d.values("left", "pupil")
+        assert list(np.flatnonzero(np.isnan(v))) == [0, 2, 8]
+        assert v[3] == 3. and d.data["left_pupil"][2] == 2.  # stored values unchanged
+        np.testing.assert_array_equal(d.values("left", "pupil", policy="raw")[1:],
+                                      np.arange(1, 10))
+
+    def test_stored_mask_counts_like_a_layer(self):
+        d = self.data()
+        d.data.add_mask("left_pupil", np.s_[5:7])
+        # 5 is interpolated (usable by default), 6 is not
+        assert list(np.flatnonzero(d.mask("left", "pupil"))) == [0, 2, 6, 8]
+
+    def test_errors(self):
+        d = self.data()
+        with pytest.raises(ValueError, match="unknown policy"):
+            d.mask("left", "pupil", policy="lenient")
+        with pytest.raises(ValueError, match="unknown layer"):
+            d.mask("left", "pupil", policy=["blinks"])
+        with pytest.raises(KeyError, match="available channels"):
+            d.mask("right", "pupil")
+
+    def test_clear_layer(self):
+        d = self.data()
+        c = d.clear_layer("blink", inplace=False)
+        assert d.data.get_layer("left_pupil", "blink").any()
+        assert not c.data.get_layer("left_pupil", "blink").any()
+        assert c.history[-1]["funcname"] == "clear_layer"
+        assert list(np.flatnonzero(c.mask("left", "pupil"))) == [0, 8]
+
+
+def pp_policy(*args, **kwargs):
+    import pypillometry as pp
+    return pp.MaskPolicy(*args, **kwargs)

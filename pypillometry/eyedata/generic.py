@@ -842,6 +842,95 @@ class GenericEyeData(state.VersionedState, ABC):
         return self._stored_intervals(self._interpolated_blinks, eyes, variables,
                                       units, "interpolated_blinks")
 
+    def _channel_key(self, eye, var):
+        """Key ``"<eye>_<var>"`` of an existing channel (`var` None: `eye` is the key)."""
+        key = eye if var is None else _join_key((eye, var))
+        if key not in self.data:
+            raise KeyError(f"No data for {key}; available channels: "
+                           f"{', '.join(self.data.keys())}")
+        return key
+
+    def mask(self, eye: str, var: str|None = None, policy="default") -> np.ndarray:
+        """
+        Mask of a channel under a mask policy (True: unusable sample).
+
+        A sample is unusable if its value is NaN or if one of the layers
+        of the policy is set (see :class:`~pypillometry.MaskPolicy`). By
+        default, blinks, off-screen gaze, eye divergences, user masks and
+        excluded periods are masked, interpolated samples are not.
+
+        Parameters
+        ----------
+        eye : str
+            eye (e.g., "left") or the key of the channel (e.g., "left_pupil")
+        var : str, optional
+            variable (e.g., "pupil"); None if `eye` is the key
+        policy : str, MaskPolicy or list of str
+            ``"default"``, ``"strict"`` (interpolated samples are masked
+            too), ``"raw"`` (nothing is masked), a
+            :class:`~pypillometry.MaskPolicy` or a list of layers
+
+        Returns
+        -------
+        np.ndarray
+            boolean array, one value per sample
+
+        Examples
+        --------
+        >>> d.mask("left", "pupil")  # doctest: +SKIP
+        >>> d.mask("left_pupil", policy="strict")  # doctest: +SKIP
+        >>> d.mask("left", "pupil", policy=["blink"])  # doctest: +SKIP
+        """
+        return self.data.get_policy_mask(self._channel_key(eye, var), policy)
+
+    def values(self, eye: str, var: str|None = None, policy="default") -> np.ndarray:
+        """
+        Values of a channel with NaN where the sample is unusable under `policy`.
+
+        Parameters
+        ----------
+        eye, var, policy
+            see :meth:`mask`
+
+        Returns
+        -------
+        np.ndarray
+            copy of the values (float), NaN where :meth:`mask` is True
+        """
+        key = self._channel_key(eye, var)
+        out = self.data[key].copy()
+        out[self.data.get_policy_mask(key, policy)] = np.nan
+        return out
+
+    @keephistory
+    def clear_layer(self, name: str, eyes: str|list = [], variables: str|list = [],
+                    inplace=None):
+        """
+        Clear a mask layer (e.g., ``"blink"``) for the selected channels.
+
+        Parameters
+        ----------
+        name : str
+            name of the layer
+        eyes : str or list of str, optional
+            eye(s); if empty, all available eyes
+        variables : str or list of str, optional
+            variable(s); if empty, all available variables
+        inplace : bool or None, optional
+            if `True`, make change in-place and return the object;
+            if `False`, make and return copy before making changes;
+            if `None`, use the object-level setting (specified in the constructor)
+
+        Returns
+        -------
+        :class:`~pypillometry.GenericEyeData`
+            the object without the layer (`self` or a copy, depending on `inplace`)
+        """
+        obj = self._get_inplace(inplace)
+        for eye, var in obj.data.select(eyes, variables):
+            obj.data.clear_layer(f"{eye}_{var}", name)
+        return obj
+
     def mask_as_intervals(self, eyes: str|list = [], variables: str|list = [], 
                           units: str = "samples", label: str|None = None):
         """
