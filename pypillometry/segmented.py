@@ -43,6 +43,30 @@ def _extract_epochs(eyedata, epochs, variable):
     return tx, ma.masked_array(values, mask=mask)
 
 
+def _epochs_from_spans(eyedata, intervals):
+    """
+    Epochs for Intervals of the same length: onsets at the starts, window
+    (0, length) in ms; their event labels and metadata are kept.
+    """
+    from .epochs import Epochs
+    if len(intervals) == 0:
+        raise ValueError("no intervals to extract segments from")
+    lengths = np.diff(np.asarray(intervals, dtype=float), axis=1)[:, 0]
+    if not np.allclose(lengths, lengths[0], rtol=1e-9, atol=0):
+        raise ValueError(
+            f"get_segments() needs intervals of the same length, got lengths from "
+            f"{lengths.min():g} to {lengths.max():g} {intervals.units}; for "
+            f"event-locked segments, use a window around single events, e.g., "
+            f"get_intervals(event, window=(-200, 800) * u.ms)")
+    if lengths[0] <= 0:
+        raise ValueError("get_segments() needs intervals that are longer than 0")
+    spans = np.asarray(intervals.to_units("ms", eyedata), dtype=float)
+    labels = None if intervals.event_labels is None else \
+        [str(lab) for lab in intervals.event_labels]
+    return Epochs(spans[:, 0], (0., float(np.mean(spans[:, 1] - spans[:, 0]))),
+                  labels=labels, meta=intervals.event_meta, label=intervals.label)
+
+
 def _spans_to_state(spans):
     """State of the Epochs or Intervals of a SegmentedEyeData (format 2: Intervals)."""
     from .epochs import Epochs
@@ -241,7 +265,9 @@ class SegmentedEyeData(state.VersionedState):
             :meth:`~pypillometry.GenericEyeData.get_intervals` with a window),
             the length and the time axis (``window[0] + arange(n) * 1000/fs``
             ms) come from the window, and the parts outside the data are
-            masked
+            masked. Intervals must all have the same length; they are used
+            as Epochs with the onsets at their starts and the window
+            ``(0, length)`` (kept as `intervals` of the result)
         variable : str
             Variable to extract in "eye_variable" format (e.g., "left_pupil")
         name : str, optional
@@ -269,57 +295,11 @@ class SegmentedEyeData(state.VersionedState):
 
         if name is None:
             name = intervals.label if intervals.label is not None else "segments"
-        if isinstance(intervals, Epochs):
-            txw, masked_data = _extract_epochs(eyedata, intervals, variable)
-            return cls(name=name, variable=variable, tx=txw, data=masked_data,
-                       intervals=intervals, sampling_rate=eyedata.fs)
-
-        # start samples of the segments (converted with the data's time vector)
-        intervals_idx = intervals.to_units("samples", eyedata).intervals
-        intervals_ms = intervals.to_units("ms", eyedata)
-
-        # for event-locked intervals, the length and time axis come from the
-        # window (relative to the event), so they do not depend on the event
-        # timing; otherwise from the first interval
-        if intervals.interval_window is not None:
-            w0, w1 = intervals_ms.interval_window
-        else:
-            w0, w1 = intervals_ms.intervals[0]
-        duration_ix = eyedata._samples(w1 - w0, rounding="nearest")
-        txw = np.linspace(w0, w1, num=duration_ix)
-        
-        n_segments = len(intervals_idx)
-        
-        # Extract segments
-        data_arr = np.zeros((duration_ix, n_segments))
-        mask_arr = np.ones((duration_ix, n_segments), dtype=bool)
-        
-        for i, (on, _) in enumerate(intervals_idx):
-            off = on + duration_ix
-            onl, offl = 0, duration_ix  # "local" window indices
-            
-            if on < 0:  # pad with zeros in case timewindow starts before data
-                onl = abs(on)
-                on = 0
-            if off > eyedata.tx.size:
-                offl = duration_ix - (off - eyedata.tx.size)
-                off = eyedata.tx.size
-            
-            # Ensure we extract exactly the right number of samples
-            segment_len = min(offl - onl, off - on)
-            data_arr[onl:onl+segment_len, i] = eyedata.data[variable][on:on+segment_len]
-            mask_arr[onl:onl+segment_len, i] = eyedata.data.mask[variable][on:on+segment_len]
-        
-        masked_data = ma.masked_array(data_arr, mask=mask_arr)
-        
-        return cls(
-            name=name,
-            variable=variable,
-            tx=txw,
-            data=masked_data,
-            intervals=intervals,
-            sampling_rate=eyedata.fs
-        )
+        if isinstance(intervals, Intervals):
+            intervals = _epochs_from_spans(eyedata, intervals)
+        txw, masked_data = _extract_epochs(eyedata, intervals, variable)
+        return cls(name=name, variable=variable, tx=txw, data=masked_data,
+                   intervals=intervals, sampling_rate=eyedata.fs)
     
     def summary(self) -> dict:
         """

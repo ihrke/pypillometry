@@ -2331,8 +2331,12 @@ class GenericEyeData(state.VersionedState, ABC):
         
         Parameters
         ----------
-        intervals : Intervals
-            Intervals object defining the segments to extract (from get_intervals())
+        intervals : Epochs or Intervals
+            the segments to extract: :class:`~pypillometry.Epochs` (from
+            :meth:`get_intervals` with a window around single events; length
+            and time axis ``window[0] + arange(n) * 1000/fs`` from the
+            window, parts outside the data masked) or Intervals that all have
+            the same length (time axis from 0 at their starts)
         variable : str
             Variable to extract in "eye_variable" format (e.g., "left_pupil", "right_x")
         name : str, optional
@@ -2342,6 +2346,12 @@ class GenericEyeData(state.VersionedState, ABC):
         -------
         SegmentedEyeData
             Object containing the extracted segments with mask information
+
+        Raises
+        ------
+        ValueError
+            if `intervals` are Intervals of different lengths (e.g., between
+            two events)
             
         Examples
         --------

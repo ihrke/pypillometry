@@ -248,3 +248,51 @@ class TestGetIntervals:
             assert s.data[s.tx == 0, 0] == 100
         ep = d.get_intervals("x", window=(-100, 300))
         assert list(ep) == [(2800., 3200.)]
+
+
+class TestSegmentsFromIntervals:
+
+    def make(self):
+        n = 3000
+        return pp.EyeData(left_pupil=np.arange(n) * 1., left_x=np.zeros(n),
+                          left_y=np.zeros(n), sampling_rate=1000,
+                          event_onsets=[100., 400., 1500., 2000.],
+                          event_labels=["S_", "R_", "S_", "R_"])
+
+    def test_different_lengths_raise(self):
+        # finding 2.1: between-event intervals gave segments with 0 time points
+        d = self.make()
+        iv = d.get_intervals(("S_", "R_"), units="ms")
+        with pytest.raises(ValueError, match="same length, got lengths from 300 to 500 ms"):
+            d.get_segments(iv, "left_pupil")
+
+    def test_same_length(self):
+        d = self.make()
+        iv = pp.Intervals([(100, 400), (1500, 1800)], units="ms",
+                          event_labels=["a", "b"], event_meta={"t": [1, 2]}, label="x")
+        s = d.get_segments(iv, "left_pupil")
+        assert s.n_timepoints == 300 and s.tx[0] == 0 and s.tx[-1] == 299
+        np.testing.assert_array_equal(s.data[0], [100, 1500])
+        assert isinstance(s.intervals, pp.Epochs)
+        assert s.intervals.labels.tolist() == ["a", "b"]
+        assert s.intervals.meta["t"].tolist() == [1, 2]
+        assert s.name == "x"
+        repr(s)
+        s.baseline_correct((0, 10))
+
+    def test_same_length_in_samples(self):
+        d = self.make()
+        s = d.get_segments(pp.Intervals([(100, 400), (1500, 1800)], "samples"), "left_pupil")
+        np.testing.assert_array_equal(s.data[0], [100, 1500])
+        assert s.n_timepoints == 300
+
+    def test_empty_or_zero_length(self):
+        d = self.make()
+        with pytest.raises(ValueError, match="no intervals"):
+            d.get_segments(pp.Intervals([], "ms"), "left_pupil")
+        with pytest.raises(ValueError, match="longer than 0"):
+            d.get_segments(pp.Intervals([(5, 5)], "ms"), "left_pupil")
+
+    def test_wrong_type(self):
+        with pytest.raises(TypeError, match="Epochs or Intervals"):
+            self.make().get_segments([(0, 100)], "left_pupil")
