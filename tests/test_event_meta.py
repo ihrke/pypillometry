@@ -78,6 +78,30 @@ class TestMetaColumns(unittest.TestCase):
         np.testing.assert_array_equal(ev.meta["y"], [np.nan, 2.5, np.nan])
         np.testing.assert_array_equal(ev.meta["s"], ["p", "", "q"])
 
+    def test_meta_is_read_only(self):
+        ev = Events([1, 2], ["a", "b"], meta={"x": [10, 20]})
+        with self.assertRaises(TypeError):
+            ev.meta["y"] = [1, 2]
+        with self.assertRaises(TypeError):
+            del ev.meta["x"]
+        with self.assertRaises(ValueError):
+            ev.meta["x"][0] = 99
+        self.assertEqual(list(ev.meta), ["x"])
+        np.testing.assert_array_equal(ev.meta["x"], [10, 20])
+
+    def test_onsets_and_labels_are_read_only(self):
+        ev = Events([1, 2], ["a", "b"])
+        with self.assertRaises(ValueError):
+            ev.onsets[0] = 5
+        with self.assertRaises(ValueError):
+            ev.labels[0] = "c"
+
+    def test_new_events_from_read_only_arrays(self):
+        ev = Events([1, 2], ["a", "b"], meta={"x": [10, 20]})
+        new = Events(ev.onsets, ev.labels, meta=ev.meta)
+        np.testing.assert_array_equal(new.meta["x"], [10, 20])
+        np.testing.assert_array_equal(ev.set_meta("x", 5).meta["x"], [5, 5])
+
     def test_drop_meta(self):
         ev = Events([1], ["a"], meta={"x": [1], "y": [2]})
         self.assertEqual(list(ev.drop_meta("x").meta), ["y"])

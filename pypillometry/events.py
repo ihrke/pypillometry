@@ -2,6 +2,7 @@
 """
 
 import re
+from types import MappingProxyType
 
 import numpy as np
 from typing import Optional, List, Tuple
@@ -161,6 +162,9 @@ class Events:
     Onsets are always times (not sample indices), so they stay valid when
     the data are sliced or resampled.
 
+    Events are immutable: onsets, labels and metadata cannot be changed in
+    place; all methods return new Events.
+
     The events of a dataset are obtained with
     :meth:`~pypillometry.GenericEyeData.get_events`. An (e.g., filtered)
     Events object can be passed as `event_select` to
@@ -171,8 +175,8 @@ class Events:
     eye-tracker clock with :func:`~pypillometry.sync_clocks`.
 
     Each event can have metadata (e.g., trial, condition, reaction time),
-    stored in `meta`: a dict that maps column names to numpy arrays with one
-    value per event. Missing values are NaN in numeric columns and "" in
+    stored in `meta`: a read-only mapping of column names to numpy arrays
+    with one value per event. Missing values are NaN in numeric columns and "" in
     string columns. Metadata come from a behaviour log (see
     :meth:`from_table`), from the labels of the events (see
     :meth:`parse_labels`) or are added with :meth:`set_meta` and
@@ -239,7 +243,22 @@ class Events:
         # Validate that onsets and labels have same length
         if len(self.onsets) != len(self.labels):
             raise ValueError(f"onsets and labels must have same length, got {len(self.onsets)} and {len(self.labels)}")
-        self.meta = _meta_dict(meta, len(self.onsets))
+        self._meta = _meta_dict(meta, len(self.onsets))
+        # Events are immutable: methods return new objects
+        for arr in (self.onsets, self.labels, *self._meta.values()):
+            arr.flags.writeable = False
+
+    @property
+    def meta(self):
+        """
+        Metadata of the events (read-only).
+
+        A mapping of column name -> numpy array (one value per event). It
+        cannot be changed in place; :meth:`set_meta`, :meth:`drop_meta`,
+        :meth:`parse_labels`, :meth:`fill_meta` and :meth:`add_latency`
+        return new Events with changed metadata.
+        """
+        return MappingProxyType(self._meta)
 
     def _take(self, idx) -> 'Events':
         """New Events with the events `idx` (index array, mask or slice)."""
