@@ -345,3 +345,25 @@ def test_plot_intervals_past_the_end():
         figs = d.plot.plot_intervals(ep, show_mask=True, nrow=1, ncol=2)
         assert len(figs) == 1
     plt.close("all")
+
+
+class TestStatPerEventOutside:
+    """Windows partly or entirely outside the data (not clipped in get_intervals)."""
+
+    def make(self):
+        n = 1000
+        return pp.PupilData(left_pupil=np.arange(n) * 1., sampling_rate=100,
+                            event_onsets=[50., 9950.], event_labels=["a", "a"])
+
+    def test_partly_outside_uses_the_part_inside(self):
+        d = self.make()
+        st = d.stat_per_event(window=(-100, 100) * u.ms, event_select="a", eyes="left",
+                              variables="pupil")["left_pupil"]
+        # samples 0..14 and 985..999 (the last one is included)
+        np.testing.assert_allclose(st, [7., 992.])
+
+    def test_entirely_outside_gives_nan(self):
+        d = self.make()
+        st = d.stat_per_event(pp.Epochs([20000., -5000., 5000.], (0, 100)), eyes="left",
+                              variables="pupil")["left_pupil"]
+        assert np.isnan(st[0]) and np.isnan(st[1]) and st[2] == 504.5

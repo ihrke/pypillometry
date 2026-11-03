@@ -181,7 +181,9 @@ def stat_event_interval(tx,sy,intervals,statfct=np.mean):
         intervals where all samples are masked give NaN
     intervals : list of tuples (start, end)
         absolute start and end times of the intervals, in the same units as
-        `tx`; each is matched to the closest sample in `tx`
+        `tx`; each is matched to the closest sample in `tx` (an end after
+        the last sample includes it). Only the part of an interval within
+        `tx` is used; intervals entirely outside give NaN
     statfct : callable
         function mapping np.array to a single number (default: `np.mean`)
 
@@ -197,8 +199,11 @@ def stat_event_interval(tx,sy,intervals,statfct=np.mean):
     res=np.zeros(len(starts))
 
     for i,interv in enumerate(zip(starts,ends)):
+        if interv[1] <= tx[0] or interv[0] > tx[-1]:
+            res[i]=np.nan  # no sample within the interval (end exclusive)
+            continue
         start_ix=np.argmin(np.abs(interv[0]-tx))
-        end_ix=np.argmin(np.abs(interv[1]-tx))
+        end_ix=len(tx) if interv[1] > tx[-1] else np.argmin(np.abs(interv[1]-tx))
         if start_ix==end_ix:
             end_ix+=1
         seg=sy[start_ix:end_ix]
