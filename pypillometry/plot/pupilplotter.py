@@ -60,8 +60,8 @@ class PupilPlotter(GenericPlotter):
         show_events : bool
             plot events as vertical lines with labels
         show_blinks : bool
-            highlight masked regions of the pupil data (e.g., detected blinks)
-            with a red background
+            highlight masked or interpolated regions of the pupil data (e.g.,
+            detected blinks; the ``"strict"`` mask policy) with a red background
         units : str
             one of "sec"=seconds (default), "ms"=millisec, "min"=minutes, "h"=hours
         label_prefix : str
@@ -188,9 +188,9 @@ class PupilPlotter(GenericPlotter):
         if show_blinks:
             ax = plt.gca()
             for eye in eyes:
-                mask = self.obj.data.mask.get(f"{eye}_pupil")
-                if mask is None:
+                if f"{eye}_pupil" not in self.obj.data:
                     continue
+                mask = self.obj.data.get_policy_mask(f"{eye}_pupil", "strict")
                 masked_segment = mask[startix:endix]
                 blink_spans = []
                 in_blink = False

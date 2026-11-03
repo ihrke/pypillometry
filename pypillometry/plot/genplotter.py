@@ -110,7 +110,8 @@ class GenericPlotter:
         figsize : Tuple[int,int]
             size (width, height) of each figure in inches
         show_mask : bool
-            shade samples masked in any of the plotted eyes/variables
+            shade samples masked (default mask policy) in any of the plotted
+            eyes/variables
         show_index : bool
             plot a number with the interval's index (e.g., for identifying abnormal blinks)
 
@@ -188,7 +189,7 @@ class GenericPlotter:
                     # (the slice may run past the end of the data)
                     mask = np.zeros(len(xvals[slic]), dtype=bool)
                     for eye, var in pairs:
-                        mask |= obj.data.mask[eye + "_" + var][slic].astype(bool)
+                        mask |= obj.data.get_policy_mask(eye + "_" + var)[slic]
                     txm = xvals[slic]
                     mint = obj._mask_to_intervals_list(mask)
                     for sm, em in mint:
@@ -254,7 +255,9 @@ class GenericPlotter:
             Whether to plot the data in masked regions. If True (default), plots all data including
             masked regions. If False, masked data points are not plotted (gaps in the line).
         show_mask_highlight : bool
-            Whether to highlight masked regions with a light red background. Default is True.
+            Whether to highlight masked regions (default mask policy:
+            interpolated samples are not masked) with a light red background.
+            Default is True.
         label_prefix : str
             Prefix to add to labels in the legend. Useful for overlaying multiple datasets.
             Default is "" (no prefix).
@@ -408,8 +411,8 @@ class GenericPlotter:
                     ax.plot(tx, data_to_plot, **plot_kwargs)
                     
                     # Highlight masked regions with axvspan (automatically extends full height)
-                    if show_mask_highlight and vname in obj.data.mask:
-                        mask = obj.data.mask[vname][startix:endix]
+                    if show_mask_highlight and vname in obj.data:
+                        mask = obj.data.get_policy_mask(vname)[startix:endix]
                         mask_intervals = obj._mask_to_intervals_list(mask)
                         for start_ix, end_ix in mask_intervals:
                             # Convert indices to time values, clamp end_ix to valid range
