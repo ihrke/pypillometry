@@ -431,11 +431,19 @@ class SegmentedEyeData(state.VersionedState):
 
             Default is 0 (baseline at event onset).
 
+            The window must be within the time axis of the segments.
+
         Returns
         -------
         SegmentedEyeData
             New instance with baseline-corrected data (the object itself if
             `window` is None)
+
+        Raises
+        ------
+        ValueError
+            if the window (or time point) is not within the segments, or its
+            start is not before its end
 
         Examples
         --------
@@ -453,6 +461,7 @@ class SegmentedEyeData(state.VersionedState):
         # Create copy of data
         corrected_data = self.data.copy()
         window = parse_time(window)
+        self._check_baseline_window(window)
 
         if np.ndim(window) == 0:
             # Single time point
@@ -478,6 +487,25 @@ class SegmentedEyeData(state.VersionedState):
             sampling_rate=self.sampling_rate
         )
     
+    def _check_baseline_window(self, window):
+        """Raise a ValueError if the baseline `window` (ms) is not within the segments."""
+        step = 1000. / self.sampling_rate if self.sampling_rate else \
+            float(np.median(np.diff(self.tx))) if len(self.tx) > 1 else 0.
+        # a time point stands for the samples within half a step around it;
+        # the end of a window is exclusive
+        lo, hi = self.tx[0] - step / 2, self.tx[-1] + step / 2
+        seg = f"the segments cover {self.tx[0]:g} to {self.tx[-1]:g} ms"
+        if np.ndim(window) == 0:
+            if not lo <= window <= hi:
+                raise ValueError(f"baseline time {window:g} ms is outside the segments; {seg}")
+            return
+        if len(window) != 2 or window[0] >= window[1]:
+            raise ValueError(f"baseline window must be (start, end) with start < end, "
+                             f"got {tuple(window)}")
+        if window[0] < lo or window[1] > hi + step / 2:
+            raise ValueError(f"baseline window ({window[0]:g}, {window[1]:g}) ms is not "
+                             f"within the segments; {seg}")
+
     def plot(self,
              meanfct=np.mean,
              varfct=scipy.stats.sem,

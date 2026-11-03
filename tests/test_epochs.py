@@ -296,3 +296,37 @@ class TestSegmentsFromIntervals:
     def test_wrong_type(self):
         with pytest.raises(TypeError, match="Epochs or Intervals"):
             self.make().get_segments([(0, 100)], "left_pupil")
+
+
+class TestBaselineWindow:
+    """Finding 2.4: a baseline window outside the segments raises."""
+
+    def segments(self):
+        n = 1000
+        d = pp.PupilData(left_pupil=np.arange(n) * 1., sampling_rate=100,
+                         event_onsets=[3000., 6000.], event_labels=["a", "a"])
+        return d.get_segments(d.get_intervals("a", window=(-200, 800) * u.ms), "left_pupil")
+
+    @pytest.mark.parametrize("window, msg", [
+        ((-500, -300), r"baseline window \(-500, -300\) ms is not within the segments; "
+                       r"the segments cover -200 to 790 ms"),
+        ((0, 5000), "is not within the segments"),
+        (-1000, "baseline time -1000 ms is outside the segments"),
+        (900, "outside the segments"),
+        ((0, -100), "start < end"),
+    ])
+    def test_outside_raises(self, window, msg):
+        with pytest.raises(ValueError, match=msg):
+            self.segments().baseline_correct(window)
+
+    @pytest.mark.parametrize("window", [(-200, 0), (0, 800), -200, 790, 0, (-200, 800)])
+    def test_within(self, window):
+        s = self.segments().baseline_correct(window)
+        assert not np.ma.getmaskarray(s.data).all()
+
+    def test_values(self):
+        s = self.segments()
+        b = s.baseline_correct((-200, 0))
+        # mean of the 20 samples before the event: 280 ... 299
+        np.testing.assert_allclose(b.data[20, 0], 300 - 289.5)
+        np.testing.assert_allclose(s.baseline_correct(0).data[20, :], 0)
