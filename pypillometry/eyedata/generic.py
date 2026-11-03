@@ -2801,7 +2801,7 @@ class GenericEyeData(state.VersionedState, ABC):
                        window: Tuple[float,float]=None, event_select=None,
                        eyes: str|list=[], variables: str|list=[],                       
                        statfct: Callable=np.mean, units: str="ms",
-                       **kwargs):
+                       policy="default", **kwargs):
         """
         Return result of applying a statistical function to data in a
         given interval relative to event-onsets. For example, extract mean 
@@ -2833,6 +2833,10 @@ class GenericEyeData(state.VersionedState, ABC):
             otherwise). Intervals where all samples are masked give NaN.
         units : str, optional
             units for plain numbers in `window` (if used); default "ms"
+        policy : str, MaskPolicy or list of str
+            mask policy: the samples that are unusable under it are masked
+            (see :meth:`mask`); default ``"default"`` (interpolated samples
+            are used)
         **kwargs
             passed onto the event_select function
 
@@ -2863,8 +2867,10 @@ class GenericEyeData(state.VersionedState, ABC):
         _warn_if_ignores_mask(statfct, "statfct")
         stat={}
         for eye,var in pairs:
-            # masked array, so that masked samples are ignored
-            stat[eye+"_"+var]=stat_event_interval(tx, self[eye,var], intervals_list, statfct)
+            # masked array, so that the unusable samples are ignored
+            key = f"{eye}_{var}"
+            x = np.ma.masked_array(self.data[key], self.data.get_policy_mask(key, policy))
+            stat[key]=stat_event_interval(tx, x, intervals_list, statfct)
 
         return stat
 

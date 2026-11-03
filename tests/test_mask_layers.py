@@ -600,3 +600,11 @@ class TestConsumersUsePolicy:
         assert not np.ma.getmaskarray(seg.data).any()
         seg = d.get_segments(ep, "left_pupil", policy="strict")
         assert list(np.flatnonzero(np.ma.getmaskarray(seg.data)[:, 0])) == list(range(10, 20))
+
+    def test_stat_per_event(self):
+        import pypillometry as pp
+        d = self.binocular()
+        d.data["left_pupil"][50:60] = 0.  # an odd reconstruction
+        iv = pp.Intervals([(400., 700.)], "ms")  # samples 40-69
+        assert d.stat_per_event(iv, eyes="left")["left_pupil"][0] == 2000. / 3
+        assert d.stat_per_event(iv, eyes="left", policy="strict")["left_pupil"][0] == 1000.

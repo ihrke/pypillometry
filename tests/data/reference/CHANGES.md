@@ -572,3 +572,16 @@ Changes of the API calls alone (same numbers) need no entry.
 - **Why**: decision 4 (interpolated samples are used in analyses; D2: users
   who interpolate to keep trials lost them).
 - **Step**: 7, `refactor/07-value-policy`
+
+### `stat_per_event`: interpolated samples are used
+
+- **Case**: `e.stat_per_event.*.interp`, pupil keys (`*.raw` and gaze
+  unchanged); expected values derived from case b in the test
+- **Change**: `stat_per_event(..., policy="default")` leaves out only the
+  samples that are unusable under the mask policy, so interpolated samples
+  enter the statistics (before: masked). Size: rlmw 1 of 10 events per eye
+  changes (mean before the event by up to 7.2 units, mean after by 5.7,
+  median after by 15.0); synth 1-4 of 13 events per eye and statistic, by
+  up to 1.6 / 4.4 / 8.8 units. `policy="strict"` gives the old values.
+- **Why**: decision 4 (interpolated samples are used in analyses; D2).
+- **Step**: 7, `refactor/07-value-policy`

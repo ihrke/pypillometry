@@ -592,10 +592,41 @@ def _segments_interp(case_id, key, stored):
     return _segments(case_id, k, ~_case_b(case_id.split(".")[2])[k][1])[name]
 
 
+def _stats(case_id, k, masked):
+    """`stat_per_event` of pupil `k` of case b (as in case e), with the
+    samples where `masked` (full rate) left out."""
+    dataset = case_id.split(".")[2]
+    v = _case_b(dataset)[k][0]
+    d = get_data(dataset)
+    out = {}
+    for name, window, fct in (("mean_pre", (-200, 0), np.mean),
+                              ("mean_post", (0, 1000), np.mean),
+                              ("median_post", (0, 1000), np.median)):
+        ivs = iv_samples(d.get_intervals(EVENT[dataset], window=window * u.ms)
+                         .to_intervals("samples", d))
+        res = []
+        for start, end in ivs:
+            start, end = max(start, 0), min(end, len(v))
+            sel = v[start:max(end, start + 1)][~masked[start:max(end, start + 1)]]
+            res.append(fct(sel) if len(sel) else np.nan)
+        out[name] = np.asarray(res)
+    return out
+
+
+def _stats_interp(case_id, key, stored):
+    """`stat_per_event` after interpolation (step 7): interpolated samples are used."""
+    name, _, k = key.partition(".")
+    if k not in ("left_pupil", "right_pupil"):
+        return stored  # gaze: nothing interpolated, unchanged
+    return _stats(case_id, k, ~_case_b(case_id.split(".")[2])[k][1])[name]
+
+
 #: intended changes (see CHANGES.md): (case id prefix, result key prefix) ->
 #: function mapping (case id, key, stored reference value) to the expected value
 CHANGED = {("e.segments.rlmw.interp", ""): _segments_interp,
            ("e.segments.synth.interp", ""): _segments_interp,
+           ("e.stat_per_event.rlmw.interp", ""): _stats_interp,
+           ("e.stat_per_event.synth.interp", ""): _stats_interp,
            ("e.segments.", "tx."): lambda case_id, key, stored: _segment_time_axis(stored),
            ("g.downsample.", "interpolated."): _downsampled_runs,
            ("g.downsample.", "blinks."): _downsampled_runs,
