@@ -164,7 +164,6 @@ def _decimate_dict(d, factor):
     """EyeDataDict with the samples of `d` decimated (see GenericEyeData._decimate)."""
     nd = EyeDataDict()
     nd.layer_names = list(d.layer_names)
-    bits = [1 << i for i in range(len(d.layer_names))]
     for k, v in d.items():
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", RuntimeWarning)  # all-NaN windows
@@ -172,13 +171,28 @@ def _decimate_dict(d, factor):
             stored = baseline.downsample(v, factor)
         allmasked = np.isnan(y)
         y[allmasked] = stored[allmasked]
-        layers = np.zeros(len(y), dtype=LAYER_DTYPE)
-        for bit in bits:
-            # set where the layer covers more than half of the window
-            cover = baseline.downsample(((d.layers[k] & bit) != 0).astype(float), factor)
-            layers[cover > 0.5] |= LAYER_DTYPE(bit)
-        nd._set_channel(k, y, allmasked, layers)
+        nd._set_channel(k, y, allmasked, _decimate_layers(d.layers[k], factor))
     return nd
+
+
+def _decimate_layers(layers, factor):
+    """Decimated layer bit-field: a bit is set where it is set for more than
+    half of the samples in the window (the last window may be shorter)."""
+    n = len(layers)
+    nw = -(-n // factor)
+    out = np.zeros(nw, dtype=LAYER_DTYPE)
+    if n == 0:
+        return out
+    windows = np.concatenate([layers, np.zeros(nw * factor - n, dtype=LAYER_DTYPE)])
+    windows = windows.reshape(nw, factor)
+    size = np.full(nw, factor)
+    size[-1] = n - (nw - 1) * factor
+    present = int(np.bitwise_or.reduce(layers))
+    for i in range(present.bit_length()):
+        bit = LAYER_DTYPE(1 << i)
+        if present & bit:
+            out[2 * ((windows & bit) != 0).sum(axis=1) > size] |= bit
+    return out
 
 
 def _insert_dict(d, n, pos, value):
