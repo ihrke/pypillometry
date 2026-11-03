@@ -1164,6 +1164,25 @@ class GenericEyeData(state.VersionedState, ABC):
             obj.params["removed_shifts"] = [(t - t0, sh) for t, sh in obj.params["removed_shifts"]]
         return obj
 
+    def _as_spans(self, intervals):
+        """
+        Intervals from `intervals`: an Intervals object (returned as it is)
+        or a list of ``(start, end)`` tuples in ms (or with units), where
+        ``-np.inf`` and ``np.inf`` stand for the start and the end of the
+        recording.
+        """
+        if isinstance(intervals, Intervals):
+            return intervals
+        bounds = {-np.inf: float(self.tx[0]),
+                  np.inf: float(_samples_to_ms(self, len(self.tx)))}
+
+        def bound(v):
+            if isinstance(v, numbers.Real) and np.isinf(v):
+                return bounds[v]
+            return v
+        # plain numbers are ms; values with units are converted
+        return Intervals([tuple(bound(v) for v in pair) for pair in intervals], units="ms")
+
     def _remap_interval_stores(self, old, move=None, time_map=None):
         """
         Remap the stored intervals after the samples or the clock changed (in place).
@@ -3180,7 +3199,8 @@ class GenericEyeData(state.VersionedState, ABC):
             the periods to exclude: an :class:`~pypillometry.Intervals`
             object (e.g., from :meth:`get_intervals`; in time units or sample
             indices) or a list of ``(start, end)`` tuples (in ms, or with
-            units, e.g., ``[(0, 2 * u.min)]``); ends are exclusive
+            units, e.g., ``[(0, 2 * u.min)]``; ``-np.inf`` and ``np.inf``
+            stand for the start and end of the recording); ends are exclusive
         inplace : bool or None, optional
             if `True`, make change in-place and return the object;
             if `False`, make and return copy before making changes;
@@ -3203,9 +3223,7 @@ class GenericEyeData(state.VersionedState, ABC):
         keep_intervals : exclude everything outside the given periods
         """
         obj = self._get_inplace(inplace)
-        if not isinstance(intervals, Intervals):
-            # plain numbers are ms; values with units are converted
-            intervals = Intervals(list(intervals), units="ms")
+        intervals = obj._as_spans(intervals)
         new = intervals.to_units("ms", obj)
         new = [(float(s), float(e)) for s, e in new.intervals if e > s]
         merged = Intervals(list(obj._excluded.intervals) + new, units="ms").merge()
@@ -3233,7 +3251,8 @@ class GenericEyeData(state.VersionedState, ABC):
             the periods to keep: an :class:`~pypillometry.Intervals`
             object (e.g., from :meth:`get_intervals`; in time units or sample
             indices) or a list of ``(start, end)`` tuples (in ms, or with
-            units); ends are exclusive
+            units; ``-np.inf`` and ``np.inf`` stand for the start and end of
+            the recording); ends are exclusive
         inplace : bool or None, optional
             if `True`, make change in-place and return the object;
             if `False`, make and return copy before making changes;
@@ -3250,9 +3269,7 @@ class GenericEyeData(state.VersionedState, ABC):
         >>> run = d.get_intervals(("rsfMRI_ONSET", "rsfMRI_END"), units="ms")  # doctest: +SKIP
         >>> d = d.keep_intervals(run)  # doctest: +SKIP
         """
-        if not isinstance(intervals, Intervals):
-            # plain numbers are ms; values with units are converted
-            intervals = Intervals(list(intervals), units="ms")
+        intervals = self._as_spans(intervals)
         return self.exclude_intervals(intervals.complement(self), inplace=inplace)
 
     def get_excluded(self, units: str = "ms") -> Intervals:
@@ -3358,7 +3375,8 @@ class GenericEyeData(state.VersionedState, ABC):
             the periods to remove: an :class:`~pypillometry.Intervals`
             object (in time units or sample indices) or a list of
             ``(start, end)`` tuples (in ms, or with units, e.g.,
-            ``[(10 * u.min, 12 * u.min)]``); ends are exclusive
+            ``[(10 * u.min, 12 * u.min)]``; ``-np.inf`` and ``np.inf`` stand
+            for the start and end of the recording); ends are exclusive
         inplace : bool or None, optional
             if `True`, make change in-place and return the object;
             if `False`, make and return copy before making changes;
@@ -3387,9 +3405,7 @@ class GenericEyeData(state.VersionedState, ABC):
         >>> d = d.remove_intervals(d.get_excluded())  # doctest: +SKIP
         """
         obj = self._get_inplace(inplace)
-        if not isinstance(intervals, Intervals):
-            # plain numbers are ms; values with units are converted
-            intervals = Intervals(list(intervals), units="ms")
+        intervals = obj._as_spans(intervals)
         n = len(obj.tx)
         tx = obj.tx
         tend = tx[-1] + 1000.0 / obj.fs

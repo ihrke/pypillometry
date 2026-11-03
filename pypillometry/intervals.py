@@ -171,6 +171,23 @@ def merge_intervals(*args, label: str = 'merged'):
         event_meta=_concat_meta(metas, [len(obj) for obj in intervals_list]) or None
     )
 
+def _check_pairs(pairs):
+    """Raise a ValueError unless `pairs` are (start, end) with finite start <= end."""
+    for i, pair in enumerate(pairs):
+        if len(pair) != 2:
+            raise ValueError(f"interval {i} is {pair}; intervals must be (start, end) pairs")
+        start, end = pair
+        try:
+            finite = np.isfinite(start) and np.isfinite(end)
+        except TypeError:
+            raise ValueError(f"interval {i} is {pair}; start and end must be "
+                             "numbers") from None
+        if not finite:
+            raise ValueError(f"interval {i} is {pair}; start and end must be finite")
+        if start > end:
+            raise ValueError(f"interval {i} is {pair}; its start is after its end")
+
+
 def stat_event_interval(tx,sy,intervals,statfct=np.mean):
     """
     Return result of applying a statistical function to pupillometric data in
@@ -295,6 +312,9 @@ class Intervals(Stateful):
                  interval_window=None, event_meta=None):
         """
         Initialize an Intervals object (see class docstring for parameters).
+
+        Raises a ValueError if a start or end is not finite or a start is
+        after its end.
         """
         try:
             intervals, self.units = _time_values_and_units(intervals, units)
@@ -310,7 +330,8 @@ class Intervals(Stateful):
             self.intervals = [tuple(row) for row in intervals]
         else:
             self.intervals = [tuple(i) for i in intervals]
-        
+        _check_pairs(self.intervals)
+
         self.label = label
         self.event_labels = event_labels
         self.event_indices = event_indices
@@ -952,7 +973,8 @@ class Intervals(Stateful):
         Notes
         -----
         - Negative padding values will shrink intervals (left adds to start, 
-          right subtracts from end)
+          right subtracts from end); a ValueError is raised if an interval
+          would end before it starts
         """
         if not self.intervals:
             return self
@@ -966,6 +988,12 @@ class Intervals(Stateful):
             min_bound = 0 if self.units == "samples" else -float('inf')
             max_bound = float('inf')
         
+        for i, (start, end) in enumerate(self.intervals):
+            if start - left > end + right:
+                raise ValueError(
+                    f"padding (left={left}, right={right}) would make interval {i} "
+                    f"({start}, {end}) end before it starts")
+
         # Apply padding and clip to bounds
         padded = [
             (max(min_bound, start - left), min(max_bound, end + right))
