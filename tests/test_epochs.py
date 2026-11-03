@@ -82,7 +82,7 @@ class TestSpans:
                                    [(0.8, 1.8), (2.8, 3.8), (4.8, 5.8)])
 
     def test_to_intervals_samples(self):
-        d = pp.PupilData(left_pupil=np.ones(1000), sampling_rate=100)
+        d = pp.EyeData(left_pupil=np.ones(1000), sampling_rate=100)
         ep = pp.Epochs([1000, 3000], (-200, 800))
         assert ep.to_intervals("samples", d).intervals == [(80, 180), (280, 380)]
         with pytest.raises(ValueError, match="needs the data object"):
@@ -305,7 +305,7 @@ class TestBaselineWindow:
 
     def segments(self):
         n = 1000
-        d = pp.PupilData(left_pupil=np.arange(n) * 1., sampling_rate=100,
+        d = pp.EyeData(left_pupil=np.arange(n) * 1., sampling_rate=100,
                          event_onsets=[3000., 6000.], event_labels=["a", "a"])
         return d.get_segments(d.get_intervals("a", window=(-200, 800) * u.ms), "left_pupil")
 
@@ -354,7 +354,7 @@ class TestStatPerEventOutside:
 
     def make(self):
         n = 1000
-        return pp.PupilData(left_pupil=np.arange(n) * 1., sampling_rate=100,
+        return pp.EyeData(left_pupil=np.arange(n) * 1., sampling_rate=100,
                             event_onsets=[50., 9950.], event_labels=["a", "a"])
 
     def test_partly_outside_uses_the_part_inside(self):

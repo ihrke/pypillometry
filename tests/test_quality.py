@@ -159,7 +159,7 @@ class TestQualityReport(unittest.TestCase):
         self.assertIn("pupil", r)
         self.assertNotIn("gaze", r)
         self.assertNotIn("binocular", r)
-        g = pp.GazeData(time=d.tx, left_x=d.data["left_x"], left_y=d.data["left_y"],
+        g = pp.EyeData(time=d.tx, left_x=d.data["left_x"], left_y=d.data["left_y"],
                         sampling_rate=d.fs)
         r = g.quality_report()
         self.assertNotIn("pupil", r)

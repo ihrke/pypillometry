@@ -13,7 +13,7 @@ class TestInplaceDefault(unittest.TestCase):
         pp.set_default_inplace(True)
 
     def make(self, **kwargs):
-        return pp.PupilData(left_pupil=self.x, sampling_rate=100, **kwargs)
+        return pp.EyeData(left_pupil=self.x, sampling_rate=100, **kwargs)
 
     def test_package_default_is_inplace(self):
         self.assertTrue(pp.get_default_inplace())
@@ -62,7 +62,7 @@ class TestInplaceDefault(unittest.TestCase):
         from pypillometry.eyedata.experimental_setup import ExperimentalSetup
         pp.set_default_inplace(False)
         x = np.array([100., 200, 300, 1500, 500])
-        d = pp.GazeData(sampling_rate=10, left_x=x, left_y=x, right_x=x, right_y=x,
+        d = pp.EyeData(sampling_rate=10, left_x=x, left_y=x, right_x=x, right_y=x,
                         experimental_setup=ExperimentalSetup(screen_resolution=(1280, 1024)))
         r = d.mask_offscreen_coords(eyes="left")
         self.assertIsNot(r, d)

@@ -13,7 +13,7 @@ class TestPupilData(unittest.TestCase):
         d = pp.get_example_data("rlmw_002_short")
         print(d)
     def test_scale(self):
-        d = pp.PupilData(sampling_rate=10, left_pupil=[1,2,1,2], right_pupil=[3,4,3,4])
+        d = pp.EyeData(sampling_rate=10, left_pupil=[1,2,1,2], right_pupil=[3,4,3,4])
         d=d.scale("pupil")
         self.assertEqual(d.data["left","pupil"].mean(), 0)
         self.assertEqual(d.data["right","pupil"].mean(), 0)
@@ -21,14 +21,14 @@ class TestPupilData(unittest.TestCase):
         self.assertEqual(d.params["scale"]["mean"]["right"]["pupil"], 3.5)
     def test_scale_ignores_masked(self):
         # masked (non-NaN) and NaN samples do not enter mean/sd
-        d = pp.PupilData(sampling_rate=10, left_pupil=[1., 3., 1., 3., 999., np.nan])
+        d = pp.EyeData(sampling_rate=10, left_pupil=[1., 3., 1., 3., 999., np.nan])
         d.data.add_mask("left_pupil", np.s_[4])
         d = d.scale("pupil", inplace=False)
         self.assertEqual(d.params["scale"]["mean"]["left"]["pupil"], 2.)
         self.assertEqual(d.params["scale"]["sd"]["left"]["pupil"], 1.)
     def test_scale_masked_samples(self):
         # masked samples are scaled as well and stay masked
-        d = pp.PupilData(sampling_rate=10, left_pupil=[1., 3., 1., 3., 5.])
+        d = pp.EyeData(sampling_rate=10, left_pupil=[1., 3., 1., 3., 5.])
         d.data.add_mask("left_pupil", np.s_[4])
         s = d.scale("pupil", inplace=False)
         np.testing.assert_allclose(s.data["left", "pupil"], [-1, 1, -1, 1, 3])
@@ -37,7 +37,7 @@ class TestPupilData(unittest.TestCase):
         np.testing.assert_allclose(u.data["left", "pupil"], [1, 3, 1, 3, 5])
         self.assertEqual(u.data.mask["left_pupil"][4], 1)
     def test_scale_fixed(self):
-        d = pp.PupilData(sampling_rate=10, left_pupil=[1,2,1,2], right_pupil=[3,4,3,4])
+        d = pp.EyeData(sampling_rate=10, left_pupil=[1,2,1,2], right_pupil=[3,4,3,4])
         scalepars = {
             "left": {"pupil": 1},
             "right": {"pupil": 3}
@@ -50,14 +50,14 @@ class TestPupilData(unittest.TestCase):
         self.assertEqual(d.data["left","pupil"].mean(), 1)
         self.assertEqual(d.data["right","pupil"].mean(), 1)
     def test_unscale(self):
-        d = pp.PupilData(sampling_rate=10, left_pupil=[1,2,1,2], right_pupil=[3,4,3,4])
+        d = pp.EyeData(sampling_rate=10, left_pupil=[1,2,1,2], right_pupil=[3,4,3,4])
         d=d.scale("pupil")
         d=d.unscale("pupil")
         self.assertEqual(d.data["left","pupil"].mean(), 1.5)
         self.assertEqual(d.data["right","pupil"].mean(), 3.5)
     def test_scale_unscale_numbers(self):
         # scale() and unscale() accept ints and floats
-        d = pp.PupilData(sampling_rate=10, left_pupil=[1,2,1,2], right_pupil=[3,4,3,4])
+        d = pp.EyeData(sampling_rate=10, left_pupil=[1,2,1,2], right_pupil=[3,4,3,4])
         for mean, sd in [(1, 2), (1.0, 2.0), (np.float32(1), np.int64(2))]:
             s = d.scale("pupil", mean=mean, sd=sd, inplace=False)
             self.assertEqual(s.data["left","pupil"].mean(), 0.25)
@@ -66,7 +66,7 @@ class TestPupilData(unittest.TestCase):
 
     def test_constructor_history_empty(self):
         # filling time gaps in the constructor is not a user operation
-        d = pp.PupilData(sampling_rate=10, left_pupil=[1., 2., 3.])
+        d = pp.EyeData(sampling_rate=10, left_pupil=[1., 2., 3.])
         self.assertEqual(d.history, [])
         d.fill_time_discontinuities()
         self.assertEqual([h["funcname"] for h in d.history],
@@ -77,7 +77,7 @@ class TestPupilData(unittest.TestCase):
         segs = [np.arange(0, 1000, 2), np.arange(1500, 2500, 2), np.arange(3000, 4000, 2)]
         t = np.concatenate(segs).astype(float)
         x = np.concatenate([np.full(len(s), i+1.) for i, s in enumerate(segs)])
-        d = pp.PupilData(left_pupil=x, time=t)
+        d = pp.EyeData(left_pupil=x, time=t)
         self.assertEqual(len(d.tx), 2000)
         self.assertEqual(len(d.data["left_pupil"]), len(d.tx))
         np.testing.assert_allclose(np.diff(d.tx), 2.)
@@ -109,7 +109,7 @@ class TestPupilData(unittest.TestCase):
         np.testing.assert_allclose(b[0], b[2])
 
     def test_estimate_baseline_no_usable_samples(self):
-        d = pp.PupilData(left_pupil=np.full(1000, np.nan), sampling_rate=100)
+        d = pp.EyeData(left_pupil=np.full(1000, np.nan), sampling_rate=100)
         with self.assertRaisesRegex(ValueError, "no usable samples"):
             d.pupil_estimate_baseline(eyes="left", inplace=False)
 
@@ -166,7 +166,7 @@ class TestPupilData(unittest.TestCase):
             p[a-30:a] = np.linspace(p[a-30], 1000, 30)
             p[b:b+30] = np.linspace(1000, p[b+30], 30)
             p[a:b] = np.nan
-        d = pp.PupilData(left_pupil=p, sampling_rate=1000)
+        d = pp.EyeData(left_pupil=p, sampling_rate=1000)
         d = d.pupil_blinks_detect(apply_mask=True, inplace=False)
         self.assertEqual(len(d.get_blinks("left", "pupil")), 2)
         d = d.pupil_blinks_interpolate(inplace=False)

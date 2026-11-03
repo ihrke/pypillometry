@@ -73,7 +73,7 @@ class TestPypilview(CLITestCase):
         read.assert_called_once_with(EDF, remove_eyelink_triggers=True)
 
     def test_pickle_any_extension(self):
-        d = pp.PupilData(left_pupil=np.ones(100), sampling_rate=100, name="saved")
+        d = pp.EyeData(left_pupil=np.ones(100), sampling_rate=100, name="saved")
         for ext in (".pkl", ".pypil", ""):
             fname = os.path.join(self.tmp, "data" + ext)
             pp.write_pickle(d, fname)

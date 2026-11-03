@@ -469,7 +469,7 @@ class TestNormalizeUnit(unittest.TestCase):
         # imported here so that pytest does not collect it as a test
         from pypillometry.convenience import test_selector as select
         import pypillometry as pp
-        d = pp.PupilData(left_pupil=np.ones(100), sampling_rate=100,
+        d = pp.EyeData(left_pupil=np.ones(100), sampling_rate=100,
                          event_onsets=np.array([100., 200., 300.]),
                          event_labels=np.array(["fix_1", "stim_1", "fix_2"]))
         np.testing.assert_array_equal(select(d, lambda lab: lab.startswith("fix")),

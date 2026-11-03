@@ -12,7 +12,7 @@ from pypillometry.events import Events
 def fake_data():
     """Short recording (0-10 s) with two events."""
     tx = np.arange(0, 10000, 2.0)
-    return pp.PupilData(time=tx, left_pupil=np.ones_like(tx),
+    return pp.EyeData(time=tx, left_pupil=np.ones_like(tx),
                         event_onsets=[1000, 5000],
                         event_labels=["Start Block 1", "Start Block 2"],
                         sampling_rate=500, inplace=False)

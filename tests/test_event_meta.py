@@ -268,7 +268,7 @@ def data_with_meta():
     tx = np.arange(0, 10000, 2.0)
     ev = (trigger_events().parse_labels(r"^[FSCR]_(?P<trial>\d+)")
           .parse_labels(r"^R_\d+_(?P<reward>\d+)").fill_meta("reward"))
-    d = pp.PupilData(time=tx, left_pupil=np.ones_like(tx), sampling_rate=500,
+    d = pp.EyeData(time=tx, left_pupil=np.ones_like(tx), sampling_rate=500,
                      inplace=False)
     return d.set_events(ev)
 
