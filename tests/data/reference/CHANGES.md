@@ -393,3 +393,19 @@ Changes of the API calls alone (same numbers) need no entry.
 - **Why**: the layers say why a sample is masked, so the report does not
   have to guess (finding D1).
 - **Step**: 5, `refactor/05-mask-layers`
+
+### `downsample` after off-screen and divergence masking: per layer
+
+- **Case**: none (no reference case downsamples gaze masks)
+- **Change**: with off-screen gaze and eye divergences in two layers, the
+  ">1/2 of the window" rule of `downsample` applies to each layer: a
+  window that is 30 % off-screen and 30 % divergent is no longer masked
+  (it was, while both were in the `user` layer earlier in step 5; it was
+  not before step 5, where only fully masked windows stayed masked).
+  Real data (pavlov 10, 15 min at 1000 Hz, `mask_offscreen_coords` +
+  `mask_eye_divergences`, then `downsample(50)`): 119 of 25735 masked
+  samples of the left gaze are unmasked (9 of 25402 right). Fully masked
+  windows stay masked.
+- **Why**: decision 3 of the refactor plan (each layer bit set if it
+  covers more than half of the window).
+- **Step**: 5, `refactor/05-mask-layers`
