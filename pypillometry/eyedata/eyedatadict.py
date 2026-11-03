@@ -660,7 +660,11 @@ class EyeDataDict(MutableMapping, Stateful):
                       & ~np.isnan(self.data[key]))
             if filled.any():
                 self.set_layer(key, "user", filled)
-        i = self.layer_names.index("_nan")
+        self._drop_layer("_nan")
+
+    def _drop_layer(self, name: str) -> None:
+        """Remove layer `name` and its bit (the bits of the later layers move down)."""
+        i = self.layer_names.index(name)
         low, high = (1 << i) - 1, ~((1 << (i + 1)) - 1) & 0xFFFF
 
         def drop(arr):
