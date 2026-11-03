@@ -149,6 +149,41 @@ def _decimate_factor(fs, fsd, dsfac):
     return factor
 
 
+def _keep_dict(d, keep):
+    """EyeDataDict with the samples of `d` where `keep` is True."""
+    nd = EyeDataDict()
+    for k, v in d.items():
+        nd.set_with_mask(k, v[keep], mask=d.mask[k][keep])
+    return nd
+
+
+def _decimate_dict(d, factor):
+    """EyeDataDict with the samples of `d` decimated (see GenericEyeData._decimate)."""
+    nd = EyeDataDict()
+    for k, v in d.items():
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", RuntimeWarning)  # all-NaN windows
+            y = baseline.downsample(np.where(d.mask[k].astype(bool), np.nan, v), factor)
+            stored = baseline.downsample(v, factor)
+        allmasked = np.isnan(y)
+        y[allmasked] = stored[allmasked]
+        nd.set_with_mask(k, y, mask=allmasked.astype(int))
+    return nd
+
+
+def _insert_dict(d, n, pos, value):
+    """EyeDataDict of length `n` with the samples of `d` at `pos`; new samples
+    hold `value` and are masked."""
+    nd = EyeDataDict()
+    for k, v in d.items():
+        nv = np.full(n, value, dtype=float)
+        nm = np.ones(n, dtype=int)  # inserted = missing
+        nv[pos] = v
+        nm[pos] = d.mask[k]
+        nd.set_with_mask(k, nv, mask=nm)
+    return nd
+
+
 def _check_timebase(tx, fs, rtol=0.05):
     """
     Raise a ValueError if the sampling rate `fs` (Hz) does not fit the time
@@ -194,6 +229,9 @@ class GenericEyeData(state.VersionedState, ABC):
     # the events are stored as "event_onsets", "event_labels" and
     # "event_meta" (see _to_state)
     _STATE_EXCLUDE = ("_events",)
+    # EyeDataDicts with one value per sample; the operations that change
+    # the samples (_keep_samples, _decimate, _insert_samples) apply to all
+    _SAMPLE_ALIGNED = ("data",)
 
     def _to_state(self) -> dict:
         """State of the object (without ``format_version`` and ``class``)."""
@@ -1168,6 +1206,14 @@ class GenericEyeData(state.VersionedState, ABC):
                     store[key] = remap(iv, keep_units=False)
         self._excluded = remap(self._excluded, keep_units=True)
 
+    def _map_sample_aligned(self, fct, *args):
+        """Replace each sample-aligned EyeDataDict `d` (see `_SAMPLE_ALIGNED`)
+        by ``fct(d, *args)`` (in place)."""
+        for name in self._SAMPLE_ALIGNED:
+            d = getattr(self, name, None)
+            if d is not None:
+                setattr(self, name, fct(d, *args))
+
     def _keep_samples(self, keep, time_map=None, keep_events=None):
         """
         Keep only the samples where `keep` is True (in place).
@@ -1191,10 +1237,7 @@ class GenericEyeData(state.VersionedState, ABC):
             return [(a, b) for a, b in pairs if b > a]
 
         old = SimpleNamespace(tx=self.tx, fs=self.fs)
-        ndata = EyeDataDict()
-        for k, v in self.data.items():
-            ndata.set_with_mask(k, v[keep], mask=self.data.mask[k][keep])
-        self.data = ndata
+        self._map_sample_aligned(_keep_dict, keep)
         self._set_timebase((self.tx if time_map is None else time_map(self.tx))[keep])
         self._remap_interval_stores(old, move, time_map)
         if keep_events is not None:
@@ -1980,14 +2023,7 @@ class GenericEyeData(state.VersionedState, ABC):
         excluded periods and events stay valid.
         """
         pos=np.asarray(pos, dtype=int)
-        ndata=EyeDataDict()
-        for k,v in self.data.items():
-            nv=np.full(len(tx), value, dtype=float)
-            nm=np.ones(len(tx), dtype=int)  # inserted = missing
-            nv[pos]=v
-            nm[pos]=self.data.mask[k]
-            ndata.set_with_mask(k, nv, mask=nm)
-        self.data=ndata
+        self._map_sample_aligned(_insert_dict, len(tx), pos, value)
         old=SimpleNamespace(tx=self.tx, fs=self.fs)
         self._set_timebase(tx)
         self._remap_interval_stores(
@@ -2452,17 +2488,7 @@ class GenericEyeData(state.VersionedState, ABC):
         rescaled (starts rounded down, ends up); intervals in time units,
         excluded periods and events stay valid.
         """
-        ndata=EyeDataDict()
-        for k,v in self.data.items():
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore", RuntimeWarning)  # all-NaN windows
-                y=baseline.downsample(np.where(self.data.mask[k].astype(bool), np.nan, v), factor)
-                stored=baseline.downsample(v, factor)
-            allmasked=np.isnan(y)
-            y[allmasked]=stored[allmasked]
-            ndata.set_with_mask(k, y, mask=allmasked.astype(int))
-        self.data=ndata
-
+        self._map_sample_aligned(_decimate_dict, factor)
         old=SimpleNamespace(tx=self.tx, fs=self.fs)
         self._set_timebase(baseline.downsample(self.tx, factor), self.fs/factor)
         n=len(self.tx)
