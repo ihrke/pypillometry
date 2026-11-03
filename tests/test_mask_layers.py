@@ -102,3 +102,44 @@ class TestCompatMask:
         # unmasked samples are removed from the compat layers only
         np.testing.assert_array_equal(d.get_layer("left_pupil", "user"), [0, 1, 0, 0, 0])
         np.testing.assert_array_equal(d.get_layer("left_pupil", "blink"), [1, 1, 0, 0, 0])
+
+
+class TestSampleOperations:
+    """Layers move with the samples (_keep_samples, _insert_samples, _decimate)."""
+
+    def data(self, n=12):
+        import pypillometry as pp
+        d = pp.PupilData(left_pupil=np.arange(n, dtype=float), sampling_rate=100)
+        return d
+
+    def test_keep_samples(self):
+        d = self.data()
+        d.data.set_layer("left_pupil", "blink", np.arange(12) % 3 == 0)
+        d.crop(30, 80)  # samples 3..8
+        np.testing.assert_array_equal(d.data.get_layer("left_pupil", "blink"),
+                                      [1, 0, 0, 1, 0, 0])
+        assert d.data.layer_names == ["blink"]
+
+    def test_insert_samples(self):
+        d = self.data(4)
+        d.data.set_layer("left_pupil", "blink", [1, 1, 1, 1])
+        d._insert_samples(np.arange(6) * 10., [0, 1, 4, 5])
+        np.testing.assert_array_equal(d.data.get_layer("left_pupil", "blink"),
+                                      [1, 1, 0, 0, 1, 1])
+        # inserted samples are NaN and masked as missing (stored mask)
+        np.testing.assert_array_equal(d.data.mask["left_pupil"], [0, 0, 1, 1, 0, 0])
+
+    def test_decimate_more_than_half(self):
+        d = self.data(22)
+        # windows of 4: [0..3] 3 of 4 set, [4..7] 2 of 4, last window [20, 21] 2 of 2
+        blink = np.zeros(22, dtype=bool)
+        blink[[0, 1, 2, 4, 5, 20, 21]] = True
+        d.data.set_layer("left_pupil", "blink", blink)
+        d.data.set_layer("left_pupil", "user", np.arange(22) == 21)  # half of the last
+        d._decimate(4)
+        expected = np.zeros(6, dtype=bool)
+        expected[[0, 5]] = True
+        np.testing.assert_array_equal(d.data.get_layer("left_pupil", "blink"), expected)
+        assert not d.data.get_layer("left_pupil", "user").any()
+        # values: mean of the samples that are not masked (user is a compat layer)
+        np.testing.assert_allclose(d.data["left_pupil"][[0, 5]], [1.5, 20.])

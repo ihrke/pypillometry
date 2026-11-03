@@ -357,6 +357,12 @@ class EyeDataDict(MutableMapping, Stateful):
             self._mask[key] = np.isnan(value_float)
             self.layers[key] = np.zeros(self.shape, dtype=LAYER_DTYPE)
 
+    def _set_channel(self, key: str, values: NDArray, mask: NDArray, layers: NDArray) -> None:
+        """Set values, stored mask and layers of `key` as given (no other rules)."""
+        self.set_with_mask(key, values, mask=None)
+        self._mask[key] = np.asarray(mask, dtype=bool).copy()
+        self.layers[key] = np.asarray(layers, dtype=LAYER_DTYPE).copy()
+
     def __delitem__(self, key):
         if isinstance(key, tuple):
             key = _join_key(key)

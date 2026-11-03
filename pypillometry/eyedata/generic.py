@@ -11,7 +11,7 @@ from .. import io
 from ..convenience import sizeof_fmt, ByteSize, _round_values, requires_package, is_url, suppress_all_output, normalize_unit, _warn_if_ignores_mask
 from ..units import UNSET, _has_units, _time_values_and_units, parse_time, _ms_to_samples, _samples_to_ms
 from ..io import download
-from .eyedatadict import EyeDataDict, _join_key
+from .eyedatadict import EyeDataDict, LAYER_DTYPE, _join_key
 from .experimental_setup import ExperimentalSetup
 from ..signal import baseline
 from ..intervals import stat_event_interval, Intervals, _as_intervals
@@ -151,16 +151,20 @@ def _decimate_factor(fs, fsd, dsfac):
 
 
 def _keep_dict(d, keep):
-    """EyeDataDict with the samples of `d` where `keep` is True."""
+    """EyeDataDict with the samples of `d` where `keep` is True (values,
+    masks and layers)."""
     nd = EyeDataDict()
+    nd.layer_names = list(d.layer_names)
     for k, v in d.items():
-        nd.set_with_mask(k, v[keep], mask=d.mask[k][keep])
+        nd._set_channel(k, v[keep], d._mask[k][keep], d.layers[k][keep])
     return nd
 
 
 def _decimate_dict(d, factor):
     """EyeDataDict with the samples of `d` decimated (see GenericEyeData._decimate)."""
     nd = EyeDataDict()
+    nd.layer_names = list(d.layer_names)
+    bits = [1 << i for i in range(len(d.layer_names))]
     for k, v in d.items():
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", RuntimeWarning)  # all-NaN windows
@@ -168,20 +172,28 @@ def _decimate_dict(d, factor):
             stored = baseline.downsample(v, factor)
         allmasked = np.isnan(y)
         y[allmasked] = stored[allmasked]
-        nd.set_with_mask(k, y, mask=allmasked.astype(int))
+        layers = np.zeros(len(y), dtype=LAYER_DTYPE)
+        for bit in bits:
+            # set where the layer covers more than half of the window
+            cover = baseline.downsample(((d.layers[k] & bit) != 0).astype(float), factor)
+            layers[cover > 0.5] |= LAYER_DTYPE(bit)
+        nd._set_channel(k, y, allmasked, layers)
     return nd
 
 
 def _insert_dict(d, n, pos, value):
     """EyeDataDict of length `n` with the samples of `d` at `pos`; new samples
-    hold `value` and are masked."""
+    hold `value`, are masked and have no layers."""
     nd = EyeDataDict()
+    nd.layer_names = list(d.layer_names)
     for k, v in d.items():
         nv = np.full(n, value, dtype=float)
-        nm = np.ones(n, dtype=int)  # inserted = missing
+        nm = np.ones(n, dtype=bool)  # inserted = missing
+        nl = np.zeros(n, dtype=LAYER_DTYPE)
         nv[pos] = v
-        nm[pos] = d.mask[k]
-        nd.set_with_mask(k, nv, mask=nm)
+        nm[pos] = d._mask[k]
+        nl[pos] = d.layers[k]
+        nd._set_channel(k, nv, nm, nl)
     return nd
 
 
@@ -2081,9 +2093,9 @@ class GenericEyeData(state.VersionedState, ABC):
             the index in `tx` of each old sample (increasing)
         value : float, optional
             value of all variables at the new samples (default NaN); the
-            new samples are masked as missing
+            new samples are masked as missing and have no layers
 
-        Existing masks are kept and stored blinks in sample indices are
+        Existing masks and layers are kept and stored blinks in sample indices are
         moved to the new sample positions; intervals in time units,
         excluded periods and events stay valid.
         """
@@ -2564,7 +2576,9 @@ class GenericEyeData(state.VersionedState, ABC):
         time is the mean time of the window, and the new sampling rate is
         ``fs/factor``. A new sample is masked only if all samples in its
         window were masked; it then holds the mean of the stored values
-        (e.g., interpolated blinks). Stored blinks in sample indices are
+        (e.g., interpolated blinks). A layer (e.g., ``"blink"``) is set for
+        a new sample if it covers more than half of the samples in the
+        window. Stored blinks in sample indices are
         rescaled (starts rounded down, ends up); intervals in time units,
         excluded periods and events stay valid.
         """
