@@ -1118,15 +1118,16 @@ class GenericEyeData(state.VersionedState, ABC):
                                   units="ms", label="excluded")
         return obj
 
-    def _keep_samples(self, keep, shift=None):
+    def _keep_samples(self, keep, time_map=None):
         """
         Keep only the samples where `keep` is True (in place).
 
         Cuts all variables and masks and moves stored blinks in sample
-        indices to the new sample positions. With `shift` (ms per sample,
-        subtracted from the time vector to close gaps), blinks in time units
-        and excluded periods are moved as well; without it, they stay valid.
-        Events are left to the caller.
+        indices to the new sample positions. With `time_map` (a function
+        mapping an array of times on the old clock to the new clock, e.g.
+        to close the gaps), the time vector is mapped, and blinks in time
+        units and excluded periods are moved as well; without it, they stay
+        valid. Events are left to the caller.
         """
         keep = np.asarray(keep, dtype=bool)
         n = len(self.tx)
@@ -1141,17 +1142,17 @@ class GenericEyeData(state.VersionedState, ABC):
 
         for store in (self._blinks, self._interpolated_blinks):
             for key, iv in store.items():
-                if iv is None or (iv.units != "samples" and shift is None):
+                if iv is None or (iv.units != "samples" and time_map is None):
                     continue
                 store[key] = Intervals(move(iv), "samples", label=iv.label,
                                        data_time_range=(0, m))
-        excluded = move(self._excluded) if shift is not None else None
+        excluded = move(self._excluded) if time_map is not None else None
 
         ndata = EyeDataDict()
         for k, v in self.data.items():
             ndata.set_with_mask(k, v[keep], mask=self.data.mask[k][keep])
         self.data = ndata
-        self._set_timebase((self.tx if shift is None else self.tx - shift)[keep])
+        self._set_timebase((self.tx if time_map is None else time_map(self.tx))[keep])
         if excluded is not None:
             self._excluded = Intervals(Intervals(excluded, "samples").to_units("ms", self).intervals,
                                        "ms", label="excluded")
@@ -3269,9 +3270,6 @@ class GenericEyeData(state.VersionedState, ABC):
         # of samples (s, e) are shifted back by tx[e] - tx[s]
         runs = Intervals.from_mask(removed).intervals
         gaps = [(s, e) for s, e in runs if s > 0 and e < n]
-        shift = np.zeros(n)
-        for s, e in gaps:
-            shift[e:] += tx[e] - tx[s]
 
         def time_map(t):
             # times after the start of a removed run move back with the data
@@ -3285,7 +3283,7 @@ class GenericEyeData(state.VersionedState, ABC):
         for a, b in periods.intervals:
             in_removed |= (on >= a) & (on < b)
         obj._events = obj._events.keep(~in_removed).shift(time_map)
-        obj._keep_samples(~removed, shift=shift)
+        obj._keep_samples(~removed, time_map=time_map)
         obj.params["removed_intervals"] = obj.params.get("removed_intervals", []) + \
             [(float(a), float(b)) for a, b in periods.intervals]
         return obj
