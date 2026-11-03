@@ -297,3 +297,10 @@ class TestIncompletePlots:
         plt.figure()
         d.plot.plot_masked("right", "pupil")
         d.plot.plot_masked()
+
+
+def test_variable_lookup_uses_first_underscore():
+    d = EyeDataDict(left_pupil=np.ones(3), left_pupil_x=np.ones(3), right_x=np.ones(3))
+    assert d.get_available_eyes("x") == ["right"]
+    assert list(d.get_variable("x").data) == ["right_x"]
+    assert d.get_available_eyes("pupil_x") == ["left"]

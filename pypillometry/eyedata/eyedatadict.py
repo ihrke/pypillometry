@@ -79,7 +79,7 @@ class EyeDataDict(MutableMapping, Stateful):
             order in which they were added
         """
         if variable is not None:
-            eyes=[k.split("_")[0] for k in self.data.keys() if k.endswith("_"+variable)]
+            eyes=[k.split("_")[0] for k in self.data.keys() if k.partition("_")[2] == variable]
         else:
             eyes=[k.split("_")[0] for k in self.data.keys()]
         return list(dict.fromkeys(eyes))
@@ -138,7 +138,7 @@ class EyeDataDict(MutableMapping, Stateful):
         EyeDataDict
             A new EyeDataDict containing only data for the specified variable
         """
-        return EyeDataDict({k:v for k,v in self.data.items() if k.endswith("_"+variable)})
+        return EyeDataDict({k:v for k,v in self.data.items() if k.partition("_")[2] == variable})
 
     def select(self, eyes=None, variables=None) -> List[Tuple[str, str]]:
         """
