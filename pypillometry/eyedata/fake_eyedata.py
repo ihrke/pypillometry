@@ -15,7 +15,8 @@ class FakeEyeData(EyeData):
     - sim_fct: Reference to the function used to generate this data
     - sim_fct_name: Name of the generation function (str)
     - sim_params: Dictionary with generation parameters (excludes function reference)
-    - sim_data: EyeDataDict with ground truth time series
+    - sim_data: EyeDataDict with ground truth time series (one value per
+      sample; cut, decimated and filled in together with the data)
     
     This class enables:
 
@@ -28,6 +29,8 @@ class FakeEyeData(EyeData):
     # stored as its name ("module:qualname") and imported when loading
     _STATE_FIELDS = (("sim_fct", "function"), "sim_fct_name", "sim_params",
                      ("sim_data", "EyeDataDict"))
+    # the ground truth follows crop, downsample etc. with the data
+    _SAMPLE_ALIGNED = ("data", "sim_data")
 
     def __init__(self, 
                  time, left_x=None, left_y=None, left_pupil=None,
@@ -53,6 +56,8 @@ class FakeEyeData(EyeData):
         **kwargs : dict
             additional parameters passed to :class:`~pypillometry.EyeData`
         """
+        # set before the constructor, which may fill in time discontinuities
+        self.sim_data = sim_data if sim_data is not None else EyeDataDict()
         super().__init__(time=time, left_x=left_x, left_y=left_y, 
                         left_pupil=left_pupil, right_x=right_x, 
                         right_y=right_y, right_pupil=right_pupil, **kwargs)
@@ -60,7 +65,6 @@ class FakeEyeData(EyeData):
         self.sim_fct = sim_fct
         self.sim_fct_name = sim_fct_name or (sim_fct.__name__ if sim_fct else None)
         self.sim_params = sim_params or {}
-        self.sim_data = sim_data if sim_data is not None else EyeDataDict()
 
     def get_generation_call(self):
         """

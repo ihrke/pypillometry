@@ -134,5 +134,40 @@ class TestResetTime(unittest.TestCase):
                                               np.flatnonzero(d.data.mask["left_pupil"]))
 
 
+class TestFakeEyeDataGroundTruth(unittest.TestCase):
+
+    def make(self):
+        from pypillometry.signal.fake import generate_foreshortening_data
+        d = generate_foreshortening_data(duration=4, fs=500, seed=1)
+        # the measured pupil is the true pupil plus noise: keep the true one
+        # in the data to check the alignment
+        d.data["left_pupil"] = d.sim_data["left_A0"].copy()
+        return d
+
+    def check(self, d):
+        for k in d.sim_data.keys():
+            self.assertEqual(len(d.sim_data[k]), len(d))
+        np.testing.assert_array_equal(d.sim_data["left_A0"], d.data["left_pupil"])
+
+    def test_follows_crop_remove_downsample(self):
+        d = self.make()
+        x = d.crop(500, 2500, inplace=False)
+        self.assertEqual(len(x), 1001)
+        self.check(x)
+        self.check(d.remove_intervals([(1000, 1500)], inplace=False))
+        self.check(d.downsample(50, inplace=False))
+        self.assertEqual(len(d.sim_data["left_A0"]), 2000)  # original unchanged
+
+    def test_follows_fill_time_discontinuities(self):
+        d = self.make()
+        keep = np.ones(len(d), dtype=bool)
+        keep[500:600] = False
+        d._keep_samples(keep)  # time gap of 200 ms
+        d.fill_time_discontinuities()
+        self.assertEqual(len(d), 2000)
+        self.check(d)
+        self.assertTrue(np.isnan(d.sim_data["left_A0"][550]))
+
+
 if __name__ == "__main__":
     unittest.main()
