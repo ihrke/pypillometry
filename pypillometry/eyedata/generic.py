@@ -33,6 +33,7 @@ from io import BytesIO
 import base64
 import copy
 import pickle
+from types import SimpleNamespace
 import inspect
 import h5py
 import tempfile
@@ -1118,6 +1119,51 @@ class GenericEyeData(state.VersionedState, ABC):
                                   units="ms", label="excluded")
         return obj
 
+    def _remap_interval_stores(self, old, move=None, time_map=None):
+        """
+        Remap the stored intervals after the samples or the clock changed (in place).
+
+        Called by the operations that change the samples or the clock, after
+        the new time vector is set. Remaps the blinks, the interpolated
+        blinks and the excluded periods.
+
+        Parameters
+        ----------
+        old : object
+            the time vector `tx` and sampling rate `fs` before the change
+            (anything with these attributes, e.g. the object before the change)
+        move : callable or None
+            maps a list of ``(start, end)`` in old sample indices to the new
+            sample indices; None: the samples did not move
+        time_map : callable or None
+            maps an array of times (ms) on the old clock to the new clock;
+            None: the clock did not change, so intervals in time units
+            stay valid
+        """
+        n = len(self.tx)
+
+        def remap(iv, keep_units):
+            if iv.units == "samples":
+                if move is None:
+                    return iv
+                return Intervals(move(iv.intervals), "samples", label=iv.label,
+                                 data_time_range=(0, n))
+            if time_map is None:
+                return iv
+            # samples dropped and clock changed: go through the sample indices
+            # (blinks stay in sample indices, the excluded periods go back to ms)
+            moved = Intervals(move(iv.to_units("samples", old).intervals), "samples",
+                              label=iv.label, data_time_range=(0, n))
+            if not keep_units:
+                return moved
+            return Intervals(moved.to_units("ms", self).intervals, "ms", label=iv.label)
+
+        for store in (self._blinks, self._interpolated_blinks):
+            for key, iv in store.items():
+                if iv is not None:
+                    store[key] = remap(iv, keep_units=False)
+        self._excluded = remap(self._excluded, keep_units=True)
+
     def _keep_samples(self, keep, time_map=None):
         """
         Keep only the samples where `keep` is True (in place).
@@ -1131,31 +1177,21 @@ class GenericEyeData(state.VersionedState, ABC):
         """
         keep = np.asarray(keep, dtype=bool)
         n = len(self.tx)
-        m = int(keep.sum())
         kept_before = np.concatenate([[0], np.cumsum(keep)])
 
-        def move(iv):
-            """Intervals -> (start, end) at the new sample positions."""
+        def move(pairs):
+            """(start, end) pairs -> (start, end) at the new sample positions."""
             pairs = [(int(kept_before[min(max(a, 0), n)]), int(kept_before[min(max(b, 0), n)]))
-                     for a, b in iv.to_units("samples", self).intervals]
+                     for a, b in pairs]
             return [(a, b) for a, b in pairs if b > a]
 
-        for store in (self._blinks, self._interpolated_blinks):
-            for key, iv in store.items():
-                if iv is None or (iv.units != "samples" and time_map is None):
-                    continue
-                store[key] = Intervals(move(iv), "samples", label=iv.label,
-                                       data_time_range=(0, m))
-        excluded = move(self._excluded) if time_map is not None else None
-
+        old = SimpleNamespace(tx=self.tx, fs=self.fs)
         ndata = EyeDataDict()
         for k, v in self.data.items():
             ndata.set_with_mask(k, v[keep], mask=self.data.mask[k][keep])
         self.data = ndata
         self._set_timebase((self.tx if time_map is None else time_map(self.tx))[keep])
-        if excluded is not None:
-            self._excluded = Intervals(Intervals(excluded, "samples").to_units("ms", self).intervals,
-                                       "ms", label="excluded")
+        self._remap_interval_stores(old, move, time_map)
         return self
 
     @keephistory
@@ -1929,17 +1965,13 @@ class GenericEyeData(state.VersionedState, ABC):
             for k in nv:
                 ndata.set_with_mask(k, np.concatenate(nv[k]), mask=np.concatenate(nm[k]))
             self.data=ndata
+            old=SimpleNamespace(tx=self.tx, fs=self.fs)
             self._set_timebase(ntx)
 
             # move stored blinks in sample indices to the new sample positions
             # (blinks in time units stay valid)
-            for store in (self._blinks, self._interpolated_blinks):
-                for key, iv in store.items():
-                    if iv is None or iv.units != "samples":
-                        continue
-                    moved = [(int(newpos[on]), int(newpos[off-1])+1) for on, off in iv.intervals]
-                    store[key] = Intervals(moved, "samples", label=iv.label,
-                                           data_time_range=(0, len(ntx)))
+            self._remap_interval_stores(
+                old, lambda pairs: [(int(newpos[on]), int(newpos[off-1])+1) for on, off in pairs])
         return self
     
     def get_intervals(self,
@@ -2401,17 +2433,14 @@ class GenericEyeData(state.VersionedState, ABC):
 
         # also downsample the time-vector; the new sampling rate is the
         # actual rate of the decimated data
+        old=SimpleNamespace(tx=obj.tx, fs=obj.fs)
         obj._set_timebase(baseline.downsample(obj.tx, dsfac), obj.fs/dsfac)
 
         # rescale stored blinks in sample indices so that they still cover the
         # blinks: round starts down and ends up (blinks in time units stay valid)
         n=len(obj.tx)
-        for store in (obj._blinks, obj._interpolated_blinks):
-            for key, iv in store.items():
-                if iv is None or iv.units != "samples":
-                    continue
-                rescaled = [(int(on)//dsfac, min(int(np.ceil(off/dsfac)), n)) for on, off in iv.intervals]
-                store[key] = Intervals(rescaled, "samples", label=iv.label, data_time_range=(0, n))
+        obj._remap_interval_stores(
+            old, lambda pairs: [(int(on)//dsfac, min(int(np.ceil(off/dsfac)), n)) for on, off in pairs])
         return obj
 
     @keephistory
