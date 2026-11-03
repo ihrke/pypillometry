@@ -49,8 +49,8 @@ class TestGazeData(unittest.TestCase):
         d = pp.GazeData(sampling_rate=10, left_x=[1, 2, 3, 4], left_y=[5, 6, 7, 8])
         
         # Manually mask some points
-        d.data.mask['left_x'][1] = 1
-        d.data.mask['left_y'][2] = 1
+        d.data.add_mask('left_x', np.s_[1])
+        d.data.add_mask('left_y', np.s_[2])
         
         # Scale the data
         d_scaled = d.scale(['x', 'y'], inplace=False)
@@ -68,8 +68,8 @@ class TestGazeData(unittest.TestCase):
         d = pp.GazeData(sampling_rate=10, left_x=[1, 2, 3, 4], left_y=[5, 6, 7, 8])
         
         # Manually mask some points
-        d.data.mask['left_x'][1] = 1
-        d.data.mask['left_y'][2] = 1
+        d.data.add_mask('left_x', np.s_[1])
+        d.data.add_mask('left_y', np.s_[2])
         
         # Scale and then unscale
         d_scaled = d.scale(['x', 'y'], inplace=False)
@@ -236,8 +236,8 @@ class TestGazeData(unittest.TestCase):
         )
         
         # Manually mask some points before divergence masking
-        d.data.mask['left_x'][0] = 1
-        d.data.mask['left_y'][0] = 1
+        d.data.add_mask('left_x', np.s_[0])
+        d.data.add_mask('left_y', np.s_[0])
         
         # Apply divergence masking (with very low threshold to mask nothing new)
         d_masked = d.mask_eye_divergences(threshold=1000, thr_type="pixel", inplace=False)
@@ -260,8 +260,8 @@ class TestGazeData(unittest.TestCase):
         )
         
         # Manually add mask to simulate pre-existing masked data
-        d.data.mask['left_x'][1] = 1
-        d.data.mask['left_y'][1] = 1
+        d.data.add_mask('left_x', np.s_[1])
+        d.data.add_mask('left_y', np.s_[1])
         
         # Apply divergence masking
         d_masked = d.mask_eye_divergences(threshold=0.5, thr_type="percentile", store_as="dist", inplace=False)
@@ -513,8 +513,8 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         )
         
         # Manually mask index 1 (which is offscreen)
-        d.data.mask['left_x'][1] = 1
-        d.data.mask['left_y'][1] = 1
+        d.data.add_mask('left_x', np.s_[1])
+        d.data.add_mask('left_y', np.s_[1])
         
         # Apply offscreen masking with ignore_existing_mask=False (default)
         result = d.mask_offscreen_coords(eyes='left', ignore_existing_mask=False, 
@@ -541,8 +541,8 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         )
         
         # Manually mask index 1 (which is also offscreen)
-        d.data.mask['left_x'][1] = 1
-        d.data.mask['left_y'][1] = 1
+        d.data.add_mask('left_x', np.s_[1])
+        d.data.add_mask('left_y', np.s_[1])
         
         # Apply offscreen masking with ignore_existing_mask=True
         result = d.mask_offscreen_coords(eyes='left', ignore_existing_mask=True, 
@@ -568,8 +568,8 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         )
         
         # Manually mask some points before offscreen masking
-        d.data.mask['left_x'][0] = 1
-        d.data.mask['left_y'][0] = 1
+        d.data.add_mask('left_x', np.s_[0])
+        d.data.add_mask('left_y', np.s_[0])
         
         # Apply offscreen masking (no points should be offscreen)
         d_masked = d.mask_offscreen_coords(eyes='left', inplace=False)

@@ -254,10 +254,10 @@ class TestPlotIntervalsParameters(unittest.TestCase):
         """show_mask shades masks of all plotted variables, not only the last"""
         d = self.data.copy()
         for key in d.data:
-            d.data.mask[key][:] = 0
+            d.data.set_mask(key, np.zeros(len(d.tx)))
         intervals = d.get_intervals("F", window=(-200, 200), units="ms")
         start, end = intervals.to_intervals("samples", self.data).intervals[0]
-        d.data.mask["left_pupil"][int(start) + 10:int(start) + 50] = 1
+        d.data.add_mask("left_pupil", np.s_[int(start) + 10:int(start) + 50])
         figs = d.plot.plot_intervals(intervals, eyes=["left"],
                                      variables=["pupil", "x"], show_mask=True)
         self.assertEqual(len(figs[0].axes[0].patches), 1)

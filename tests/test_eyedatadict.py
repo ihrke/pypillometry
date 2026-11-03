@@ -42,7 +42,7 @@ class TestEyeDataDict(unittest.TestCase):
         np.testing.assert_array_equal(c.mask['left_pupil'], [0, 1, 0])
         np.testing.assert_array_equal(c.data['left_pupil'], d.data['left_pupil'])
         # independent copy
-        c.mask['left_pupil'][0] = 1
+        c.add_mask('left_pupil', np.s_[0])
         self.assertEqual(d.mask['left_pupil'][0], 0)
 
     def test_set_item(self):
@@ -179,7 +179,7 @@ class TestEyeDataDict(unittest.TestCase):
         initial_data = np.array([1.0, 2.0, 3.0, 4.0])
         initial_mask = np.array([0, 1, 0, 1])
         d['left_pupil'] = initial_data
-        d.mask['left_pupil'] = initial_mask
+        d.set_mask('left_pupil', initial_mask)
         
         # Update data while preserving mask
         new_data = np.array([10.0, 20.0, 30.0, 40.0])
@@ -198,7 +198,7 @@ class TestEyeDataDict(unittest.TestCase):
         initial_data = np.array([1.0, 2.0, 3.0, 4.0])
         initial_mask = np.array([0, 1, 0, 1])
         d['left_pupil'] = initial_data
-        d.mask['left_pupil'] = initial_mask
+        d.set_mask('left_pupil', initial_mask)
         
         # Update data with default behavior (resets mask)
         new_data = np.array([10.0, 20.0, 30.0, 40.0])

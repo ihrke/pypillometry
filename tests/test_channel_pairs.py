@@ -293,7 +293,7 @@ class TestIncompletePlots:
     def test_plot_masked(self, incomplete_eyedata):
         import matplotlib.pyplot as plt
         d = incomplete_eyedata
-        d.data.mask["right_pupil"][10:20] = 1
+        d.data.add_mask("right_pupil", np.s_[10:20])
         plt.figure()
         d.plot.plot_masked("right", "pupil")
         d.plot.plot_masked()

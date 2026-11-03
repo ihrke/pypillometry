@@ -415,8 +415,8 @@ class TestFitForeshorteningMethod:
         from loguru import logger
         data, *_ = self.create_synthetic_data(n_samples=500, fs=100.0)
         data.data["left_pupil"][100:150] = 50.0   # junk, but finite and > 0
-        data.data.mask["left_pupil"][100:150] = 1
-        data.data.mask["left_x"][300:310] = 1
+        data.data.add_mask("left_pupil", np.s_[100:150])
+        data.data.add_mask("left_x", np.s_[300:310])
         messages = []
         hid = logger.add(lambda m: messages.append(str(m)), level="INFO")
         try:

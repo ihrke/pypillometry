@@ -349,7 +349,7 @@ class TestEyeData(unittest.TestCase):
     def test_to_pupildata_keeps_masks_and_copies(self):
         """Masks and history are kept, and the original is unchanged"""
         d = self.eyedata.copy()
-        d.data.mask["left_pupil"][10:20] = 1
+        d.data.add_mask("left_pupil", np.s_[10:20])
         pd = d.to_pupildata()
         np.testing.assert_array_equal(pd.data.mask["left_pupil"],
                                       d.data.mask["left_pupil"])
@@ -503,10 +503,10 @@ class TestEyeData(unittest.TestCase):
         data = self.eyedata.copy()
         
         # Manually mask some points in both eyes
-        data.data.mask['left_pupil'][10] = 1   # Masked in left only
-        data.data.mask['left_pupil'][20] = 1   # Masked in both
-        data.data.mask['right_pupil'][15] = 1  # Masked in right only
-        data.data.mask['right_pupil'][20] = 1  # Masked in both
+        data.data.add_mask('left_pupil', np.s_[10])   # Masked in left only
+        data.data.add_mask('left_pupil', np.s_[20])   # Masked in both
+        data.data.add_mask('right_pupil', np.s_[15])  # Masked in right only
+        data.data.add_mask('right_pupil', np.s_[20])  # Masked in both
         
         # Merge eyes
         merged = data.merge_eyes(eyes=['left', 'right'], variables=['pupil'], inplace=False)
@@ -537,8 +537,8 @@ class TestEyeData(unittest.TestCase):
     def test_merge_eyes_all_masked_keeps_values(self):
         """Samples masked in all eyes stay masked but keep the mean value"""
         data = self.eyedata.copy()
-        data.data.mask['left_pupil'][20] = 1
-        data.data.mask['right_pupil'][20] = 1
+        data.data.add_mask('left_pupil', np.s_[20])
+        data.data.add_mask('right_pupil', np.s_[20])
         merged = data.merge_eyes(eyes=['left', 'right'], variables=['pupil'], inplace=False)
         self.assertEqual(merged.data.mask['mean_pupil'][20], 1)
         np.testing.assert_almost_equal(
@@ -552,9 +552,9 @@ class TestEyeData(unittest.TestCase):
         left = 1000 + 50*np.sin(t/100)
         right = left - 20
         d = pp.PupilData(left_pupil=left, right_pupil=right, sampling_rate=100)
-        d.data.mask['left_pupil'][100:150] = 1
-        d.data.mask['right_pupil'][100:150] = 1   # e.g., interpolated in both
-        d.data.mask['right_pupil'][300:350] = 1   # masked in one eye
+        d.data.add_mask('left_pupil', np.s_[100:150])
+        d.data.add_mask('right_pupil', np.s_[100:150])   # e.g., interpolated in both
+        d.data.add_mask('right_pupil', np.s_[300:350])   # masked in one eye
         d.data['right_pupil'][300:350] = np.nan
         for method in ["local_offset", "offset", "both_available"]:
             m = d.pupil_merge_eyes(method=method, inplace=False)
@@ -570,9 +570,9 @@ class TestEyeData(unittest.TestCase):
         data = self.eyedata.copy()
         
         # Manually mask some points (simulating blinks)
-        data.data.mask['left_pupil'][10] = 1
-        data.data.mask['left_pupil'][20] = 1
-        data.data.mask['right_pupil'][15] = 1
+        data.data.add_mask('left_pupil', np.s_[10])
+        data.data.add_mask('left_pupil', np.s_[20])
+        data.data.add_mask('right_pupil', np.s_[15])
         
         # Apply foreshortening correction
         corrected = data.correct_pupil_foreshortening(
@@ -595,7 +595,7 @@ class TestEyeData(unittest.TestCase):
         data = self.eyedata.copy()
         
         # Manually mask some points
-        data.data.mask['left_pupil'][10] = 1
+        data.data.add_mask('left_pupil', np.s_[10])
         
         # Apply correction and store as new variable
         corrected = data.correct_pupil_foreshortening(
@@ -1265,7 +1265,7 @@ class TestEyeData(unittest.TestCase):
         d = pp.PupilData(sampling_rate=100, left_pupil=np.full(300, 10.0))
         d.data['left_pupil'][100:150] = np.nan
         d.data['left_pupil'][150:152] = 1000.0   # artifact right after the gap
-        d.data.mask['left_pupil'][150:152] = 1
+        d.data.add_mask('left_pupil', np.s_[150:152])
         intervals = Intervals([(100, 150)], units="samples")
         res = d.interpolate_intervals(intervals, margin=(-50, 50), inplace=False)
         np.testing.assert_allclose(res.data['left_pupil'][100:150], 10.0)
@@ -1585,7 +1585,7 @@ class TestEyeDataDelitem(unittest.TestCase):
         
         # Manually mask some regions (not blinks)
         manual_mask_indices = slice(100, 120)
-        pd.data.mask['left_pupil'][manual_mask_indices] = 1
+        pd.data.add_mask('left_pupil', np.s_[manual_mask_indices])
         
         # Add some blinks (zeros) - need enough zeros to be detected as blinks
         blink_indices = slice(500, 520)  # 20 samples at 100Hz = 200ms
@@ -1628,7 +1628,7 @@ class TestEyeDataDelitem(unittest.TestCase):
         
         # Manually mask some regions
         mask_indices = slice(200, 250)
-        pd.data.mask['left_pupil'][mask_indices] = 1
+        pd.data.add_mask('left_pupil', np.s_[mask_indices])
         original_mask = pd.data.mask['left_pupil'].copy()
         
         # Apply lowpass filter
@@ -1657,7 +1657,7 @@ class TestEyeDataDelitem(unittest.TestCase):
         
         # Manually mask some regions
         mask_indices = slice(300, 350)
-        pd.data.mask['left_pupil'][mask_indices] = 1
+        pd.data.add_mask('left_pupil', np.s_[mask_indices])
         original_mask = pd.data.mask['left_pupil'].copy()
         
         # Apply smoothing
@@ -2400,7 +2400,7 @@ class TestPupilBlinksDetectZero(unittest.TestCase):
     def test_other_masks_are_not_blinks(self):
         # a masked region with valid data must not be detected by "zero"
         d = self.make(self.signal())
-        d.data.mask["left_pupil"][2000:2100] = 1
+        d.data.add_mask("left_pupil", np.s_[2000:2100])
         iv = d.pupil_blinks_detect(eyes=["left"], strategies=["zero"])
         self.assertEqual(len(iv), 0)
 
@@ -2475,7 +2475,7 @@ class TestMasksAndBlinksKept(unittest.TestCase):
     def test_downsample(self):
         d = self.make()
         d.data["left_pupil"][490:520] = 999.  # junk under the blink mask
-        d.data.mask["left_pupil"][701] = 1     # half of a window masked
+        d.data.add_mask("left_pupil", np.s_[701])     # half of a window masked
         d.data["left_pupil"][701] = 999.
         x = d.downsample(10, inplace=False)    # factor 10
         m = x.data.mask["left_pupil"]
@@ -2506,7 +2506,7 @@ class TestMasksAndBlinksKept(unittest.TestCase):
         keep = np.r_[0:550, 580:1000]
         g = pp.PupilData(left_pupil=np.full(970, 10.), time=(np.arange(1000)*10.)[keep],
                          sampling_rate=100, fill_time_discontinuities=False)
-        g.data.mask["left_pupil"][300] = 1
+        g.data.add_mask("left_pupil", np.s_[300])
         # blinks in the gapped data (570-590 = original samples 600-620)
         g.set_blinks(Intervals([(490, 520), (570, 590)], units="samples"),
                      eyes=["left"], variables=["pupil"], apply_mask=True)

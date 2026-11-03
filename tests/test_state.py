@@ -5,6 +5,7 @@ import os
 import pickle
 import tempfile
 import unittest
+from types import SimpleNamespace
 
 import numpy as np
 
@@ -256,6 +257,8 @@ class TestMigrate(unittest.TestCase):
     def test_v0_history_arguments_dropped(self):
         d = make_eyedata(keep_orig=False)
         raw = dict(vars(d))
+        # version 0 had one mask dict per EyeDataDict
+        raw["data"] = SimpleNamespace(data=d.data.data, mask=dict(d.data.mask))
         # version 0 had the events as arrays
         ev = raw.pop("_events")
         raw.update(event_onsets=ev.onsets, event_labels=ev.labels)
