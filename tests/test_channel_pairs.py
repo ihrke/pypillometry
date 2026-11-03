@@ -262,3 +262,38 @@ class TestIncompleteGazeMethods:
         assert d.data.mask["left_x"][50:60].all()
         with pytest.raises(KeyError, match="right"):
             d.mask_offscreen_coords(eyes="right")
+
+
+class TestIncompletePlots:
+    @pytest.fixture(autouse=True)
+    def agg(self):
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+        yield
+        plt.close("all")
+
+    def test_plot_intervals(self, incomplete_eyedata):
+        import pypillometry as pp
+        d = incomplete_eyedata
+        iv = pp.Intervals([(100, 200), (300, 400)], units="samples", data_time_range=(0, len(d)))
+        figs = d.plot.plot_intervals(iv, show_mask=True)
+        labels = [line.get_label() for line in figs[0].axes[0].get_lines()]
+        assert labels == ["left_x", "left_y", "left_pupil", "right_pupil"]
+
+    def test_plot_timeseries(self, incomplete_eyedata):
+        import matplotlib.pyplot as plt
+        d = incomplete_eyedata
+        plt.figure()
+        d.plot.plot_timeseries(variables=["pupil", "x"])
+        assert len(plt.gcf().axes) == 2
+        with pytest.raises(KeyError, match="right_x"):
+            d.plot.plot_timeseries(eyes=["left", "right"], variables=["x"])
+
+    def test_plot_masked(self, incomplete_eyedata):
+        import matplotlib.pyplot as plt
+        d = incomplete_eyedata
+        d.data.mask["right_pupil"][10:20] = 1
+        plt.figure()
+        d.plot.plot_masked("right", "pupil")
+        d.plot.plot_masked()
