@@ -270,6 +270,82 @@ class Events:
             meta={name: col[idx] for name, col in self.meta.items()}
         )
 
+    def shift(self, by) -> 'Events':
+        """
+        Events with shifted onsets.
+
+        Parameters
+        ----------
+        by : float or callable
+            a time offset (in the units of the events) that is added to all
+            onsets, or a time map: a function that takes an array of times
+            and returns the new times (an array of the same length)
+
+        Returns
+        -------
+        Events
+            new Events with the same labels and metadata; `data_time_range`
+            (if set) is moved in the same way
+
+        Raises
+        ------
+        ValueError
+            if the time map does not return one time per onset
+
+        Examples
+        --------
+        >>> Events([100, 500], ["A", "B"]).shift(-100).onsets
+        array([  0., 400.])
+        >>> Events([100, 500], ["A", "B"]).shift(lambda t: t * 2).onsets
+        array([ 200., 1000.])
+        """
+        if callable(by):
+            fct = by
+        else:
+            offset = float(by)
+            fct = lambda t: t + offset  # noqa: E731
+        onsets = np.asarray(fct(self.onsets), dtype=float)
+        if onsets.shape != self.onsets.shape:
+            raise ValueError(f"the time map returned {onsets.size} times for "
+                             f"{len(self)} onsets")
+        time_range = None
+        if self.data_time_range is not None:
+            time_range = tuple(float(t) for t in
+                               fct(np.asarray(self.data_time_range, dtype=float)))
+        return Events(onsets, self.labels, units=self.units,
+                      data_time_range=time_range, meta=self._meta)
+
+    def keep(self, mask) -> 'Events':
+        """
+        Events where `mask` is True.
+
+        Parameters
+        ----------
+        mask : array-like of bool
+            one value per event
+
+        Returns
+        -------
+        Events
+            new Events with the selected events (and their metadata)
+
+        Raises
+        ------
+        ValueError
+            if `mask` is not a boolean array with one value per event
+
+        Examples
+        --------
+        >>> ev = Events([100, 500, 900], ["A", "B", "C"])
+        >>> ev.keep(ev.onsets < 600).labels
+        array(['A', 'B'], dtype='<U1')
+        """
+        mask = np.asarray(mask)
+        if mask.dtype != bool or mask.shape != (len(self),):
+            raise ValueError(f"mask must be a boolean array with one value per "
+                             f"event ({len(self)}), got {mask.dtype} {mask.shape}")
+        return self._take(mask)
+
     def __len__(self) -> int:
         """Return number of events."""
         return len(self.onsets)
