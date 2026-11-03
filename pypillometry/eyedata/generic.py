@@ -1168,16 +1168,17 @@ class GenericEyeData(state.VersionedState, ABC):
                     store[key] = remap(iv, keep_units=False)
         self._excluded = remap(self._excluded, keep_units=True)
 
-    def _keep_samples(self, keep, time_map=None):
+    def _keep_samples(self, keep, time_map=None, keep_events=None):
         """
         Keep only the samples where `keep` is True (in place).
 
         Cuts all variables and masks and moves stored blinks in sample
         indices to the new sample positions. With `time_map` (a function
         mapping an array of times on the old clock to the new clock, e.g.
-        to close the gaps), the time vector is mapped, and blinks in time
-        units and excluded periods are moved as well; without it, they stay
-        valid. Events are left to the caller.
+        to close the gaps), the time vector and the event onsets are
+        mapped, and blinks in time units and excluded periods are moved as
+        well; without it, they stay valid. `keep_events` (one bool per
+        event; default: all) selects the events that are kept.
         """
         keep = np.asarray(keep, dtype=bool)
         n = len(self.tx)
@@ -1196,6 +1197,10 @@ class GenericEyeData(state.VersionedState, ABC):
         self.data = ndata
         self._set_timebase((self.tx if time_map is None else time_map(self.tx))[keep])
         self._remap_interval_stores(old, move, time_map)
+        if keep_events is not None:
+            self._events = self._events.keep(keep_events)
+        if time_map is not None:
+            self._events = self._events.shift(time_map)
         return self
 
     @keephistory
@@ -1241,9 +1246,9 @@ class GenericEyeData(state.VersionedState, ABC):
         default = normalize_unit(units)
         start = parse_time(start, default=default)
         end = parse_time(end, default=default)
-        obj._keep_samples((obj.tx >= start) & (obj.tx <= end))
         on = obj._events.onsets
-        obj._events = obj._events.keep((on >= start) & (on <= end))
+        obj._keep_samples((obj.tx >= start) & (obj.tx <= end),
+                          keep_events=(on >= start) & (on <= end))
         return obj
 
     def sub_slice(self, start: float=-np.inf, end: float=np.inf,
@@ -3315,8 +3320,7 @@ class GenericEyeData(state.VersionedState, ABC):
         in_removed = np.zeros(len(on), dtype=bool)
         for a, b in periods.intervals:
             in_removed |= (on >= a) & (on < b)
-        obj._events = obj._events.keep(~in_removed).shift(time_map)
-        obj._keep_samples(~removed, time_map=time_map)
+        obj._keep_samples(~removed, time_map=time_map, keep_events=~in_removed)
         obj.params["removed_intervals"] = obj.params.get("removed_intervals", []) + \
             [(float(a), float(b)) for a, b in periods.intervals]
         return obj
