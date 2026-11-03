@@ -479,3 +479,15 @@ Changes of the API calls alone (same numbers) need no entry.
 - **Why**: same rule for all signal processing (D2); the error message
   already asked users to bridge the gaps linearly.
 - **Step**: 7, `refactor/07-value-policy`
+
+### Response: masked samples are not used
+
+- **Case**: none (no reference case estimates the response)
+- **Change**: `pupil_estimate_response(..., policy="default")` fits only
+  the usable samples under the mask policy (before: all finite samples
+  outside the excluded periods, including masked values such as applied
+  blinks that were not interpolated); `valid` is the share of each
+  response on usable samples, `observed` the share on samples usable under
+  the `"strict"` policy (before: not in the old mask; same samples).
+- **Why**: masked values must not enter an analysis (D2).
+- **Step**: 7, `refactor/07-value-policy`

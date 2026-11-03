@@ -948,6 +948,7 @@ class PupilData(GenericEyeData):
                           verbose: int=50,
                           bounds: dict={"npar":(1,20), "tmax":(100,2000)},
                           min_valid: float=0.5,
+                          policy="default",
                           inplace=None):
         """
         Estimate pupil-response based on event-onsets, see
@@ -957,13 +958,15 @@ class PupilData(GenericEyeData):
         it is subtracted from the pupil signal before estimating the response;
         otherwise, a baseline of zero is used.
 
-        The excluded periods (see
+        Only the usable samples under the mask `policy` are used for the
+        fit: by default, NaN, masked samples (e.g., blinks applied as mask)
+        and the excluded periods (see
         :meth:`~pypillometry.GenericEyeData.exclude_intervals`, e.g., breaks)
-        and missing (NaN) samples are not used for the fit; interpolated
-        samples (e.g., blinks) are. For each event, the share of its
-        response that falls outside these periods (`valid`) and the share
-        that falls on real, not masked data (`observed`) are stored with the
-        parameters (weighted by the response, see
+        are not used, interpolated samples (e.g., blinks) are. For each
+        event, the share of its response that falls on usable samples
+        (`valid`) and the share that falls on real data (`observed`:
+        usable under the ``"strict"`` policy, i.e., not interpolated either)
+        are stored with the parameters (weighted by the response, see
         :func:`~pypillometry.signal.pupil.pupil_response_coverage`). Events
         with a `valid` share below `min_valid` are left out of the fit;
         their coefficient is NaN.
@@ -988,6 +991,9 @@ class PupilData(GenericEyeData):
             events whose share `valid` is below this are left out of the
             fit (coefficient NaN), as their amplitude cannot be estimated
             reliably; default 0.5; 0 uses all events
+        policy : str, MaskPolicy or list of str
+            mask policy that decides which samples are usable (see
+            :meth:`~pypillometry.GenericEyeData.mask`); default ``"default"``
         inplace : bool or None
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes                                        
@@ -1025,7 +1031,7 @@ class PupilData(GenericEyeData):
                 base=obj.data[eye,"baseline"]
         
             syd = obj.data[eye,"pupil"]-base
-            valid = ~obj._excluded_mask() & np.isfinite(syd)
+            valid = ~obj.mask(eye, "pupil", policy) & np.isfinite(syd)
             pred, coef, npar_est, tmax_est, x1=pupil.pupil_response(obj.tx, syd, 
                                                             obj.events.onsets, obj.fs, 
                                                             npar=npar, tmax=tmax, verbose=verbose,
@@ -1036,9 +1042,9 @@ class PupilData(GenericEyeData):
             if nout > 0:
                 logger.info(f"Eye {eye}: {nout} of {len(coef)} events left out of the "
                             f"response fit (less than {min_valid:g} of their response "
-                            "outside excluded/missing data); their coefficient is NaN")
+                            "on usable samples); their coefficient is NaN")
             share_observed = pupil.pupil_response_coverage(
-                x1, ~np.asarray(obj.data.mask[f"{eye}_pupil"], dtype=bool))
+                x1, ~obj.mask(eye, "pupil", "strict"))
             
             obj.data[eye+"_response"]=pred
 
