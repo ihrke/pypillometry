@@ -42,6 +42,73 @@ MAX_LAYERS = 16
 COMPAT_LAYERS = ("user", "interpolated", "_blink_applied")
 
 
+#: the standard layers: missing data (blink, offscreen, divergence, user),
+#: reconstructed data (interpolated) and periods outside the analysis (excluded)
+STANDARD_LAYERS = ("blink", "interpolated", "offscreen", "divergence", "user", "excluded")
+
+
+class MaskPolicy:
+    """
+    Which samples count as unusable (masked).
+
+    A sample is masked if its value is NaN (with `nan`), or if one of the
+    `layers` is set and none of the layers in `unless` is set. While the
+    old mask is still stored (see :attr:`EyeDataDict.mask`), policies with
+    `nan` also count the stored mask like a layer in `layers`.
+
+    The predefined policies are in `POLICIES`: ``"default"`` (interpolated
+    samples are used), ``"strict"`` (interpolated samples are masked) and
+    ``"raw"`` (nothing is masked).
+
+    Parameters
+    ----------
+    layers : str or list of str
+        layers that make a sample unusable
+    unless : str or list of str
+        layers that make a sample usable again (e.g., ``"interpolated"``:
+        the value was reconstructed)
+    nan : bool
+        NaN values (and the stored mask) are unusable
+    name : str, optional
+        name of the policy
+
+    Examples
+    --------
+    >>> d.mask("left", "pupil", policy=MaskPolicy(["blink"]))  # doctest: +SKIP
+    """
+
+    def __init__(self, layers=(), unless=(), nan: bool = True, name: Optional[str] = None):
+        self.layers = (layers,) if isinstance(layers, str) else tuple(layers)
+        self.unless = (unless,) if isinstance(unless, str) else tuple(unless)
+        self.nan = bool(nan)
+        self.name = name
+
+    def __repr__(self):
+        return (f"MaskPolicy(layers={list(self.layers)}, unless={list(self.unless)}, "
+                f"nan={self.nan}" + (f", name={self.name!r})" if self.name else ")"))
+
+
+_MISSING = ("blink", "offscreen", "divergence", "user", "excluded")
+#: predefined policies (see :class:`MaskPolicy`)
+POLICIES = {
+    "default": MaskPolicy(_MISSING, unless="interpolated", name="default"),
+    "strict": MaskPolicy(_MISSING + ("interpolated",), name="strict"),
+    "raw": MaskPolicy(nan=False, name="raw"),
+}
+
+
+def _as_policy(policy) -> MaskPolicy:
+    """MaskPolicy from a policy, the name of a predefined one or a list of layers."""
+    if isinstance(policy, MaskPolicy):
+        return policy
+    if isinstance(policy, str):
+        if policy not in POLICIES:
+            raise ValueError(f"unknown policy {policy!r}; predefined policies: "
+                             f"{', '.join(POLICIES)} (or a MaskPolicy or a list of layers)")
+        return POLICIES[policy]
+    return MaskPolicy(policy)
+
+
 class _CompatMask(Mapping):
     """
     Read-only mapping key -> int mask (1: masked) of an :class:`EyeDataDict`.
@@ -487,6 +554,41 @@ class EyeDataDict(MutableMapping, Stateful):
                 self.layers[key] &= ~bit
             else:
                 self.layers[key][where] &= ~bit
+
+    def get_policy_mask(self, key: str, policy="default") -> NDArray:
+        """
+        Boolean mask of `key` under `policy` (True: unusable sample).
+
+        Parameters
+        ----------
+        key : str
+            key of the data (e.g., "left_pupil")
+        policy : str, MaskPolicy or list of str
+            a predefined policy (see `POLICIES`), a :class:`MaskPolicy`, or
+            a list of layers (each of them masks a sample; NaN as well)
+
+        Raises
+        ------
+        ValueError
+            if the policy names a layer that is neither a standard layer
+            nor registered
+        """
+        policy = _as_policy(policy)
+        unknown = [name for name in policy.layers + policy.unless
+                   if name not in STANDARD_LAYERS and name not in self.layer_names]
+        if unknown:
+            raise ValueError(f"unknown layer(s) {', '.join(unknown)}; registered layers: "
+                             f"{', '.join(self.layer_names) or 'none'}")
+        layers = self.layers[key]
+        masked = (layers & self.layer_bits(policy.layers)) != 0
+        if policy.nan:
+            masked |= self._mask[key]
+        unless = self.layer_bits(policy.unless)
+        if unless:
+            masked &= (layers & unless) == 0
+        if policy.nan:
+            masked |= np.isnan(self.data[key])
+        return masked
 
     def _set_state(self, st: dict) -> None:
         """Set data, masks and layers from a state; length and shape follow from them.
