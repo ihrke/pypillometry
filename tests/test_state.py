@@ -256,6 +256,9 @@ class TestMigrate(unittest.TestCase):
     def test_v0_history_arguments_dropped(self):
         d = make_eyedata(keep_orig=False)
         raw = dict(vars(d))
+        # version 0 had the events as arrays
+        ev = raw.pop("_events")
+        raw.update(event_onsets=ev.onsets, event_labels=ev.labels)
         raw["history"] = [{"funcstring": "scale()", "funcname": "scale",
                            "args": (), "kwargs": {"eyes": [object()]}}]
         st = state.migrate(raw, "EyeData")

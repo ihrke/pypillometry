@@ -874,8 +874,8 @@ class TestEyeData(unittest.TestCase):
     def test_stat_per_event(self):
         """Test statistical analysis per event"""
         # Create some test events
-        self.eyedata.event_onsets = np.array([1000, 2000, 3000])
-        self.eyedata.event_labels = np.array(['stim1', 'stim2', 'stim3'])
+        self.eyedata.set_events(pp.Events([1000, 2000, 3000], ['stim1', 'stim2', 'stim3']),
+                                inplace=True)
         
         # Test mean pupil size in interval around events
         stats = self.eyedata.stat_per_event(
@@ -1761,13 +1761,11 @@ class TestEventsIntegration(unittest.TestCase):
             events_s.onsets, events_sec.onsets, decimal=9
         )
     
-    def test_get_events_has_time_range(self):
-        """Test that get_events includes data time range"""
-        events = self.data.get_events()
-        
-        self.assertIsNotNone(events.data_time_range)
-        self.assertAlmostEqual(events.data_time_range[0], self.data.tx[0])
-        self.assertAlmostEqual(events.data_time_range[1], self.data.tx[-1])
+    def test_events_have_no_time_range(self):
+        """The time range of the data is not stored with the events"""
+        self.assertIsNone(self.data.events.data_time_range)
+        ev = pp.Events([self.data.tx[0]], ["x"], data_time_range=(0, 1))
+        self.assertIsNone(self.data.set_events(ev).events.data_time_range)
     
     def test_set_events_round_trip(self):
         """Test that get_events -> set_events preserves data"""
