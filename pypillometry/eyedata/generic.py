@@ -481,7 +481,7 @@ class GenericEyeData(state.VersionedState, ABC):
         if isinstance(value, np.ma.MaskedArray):
             # Extract data and mask from masked array
             self.data.data[normalized_key] = value.data.astype(float)
-            self.data.mask[normalized_key] = value.mask.astype(int)
+            self.data.set_mask(normalized_key, np.ma.getmaskarray(value))
         else:
             # Regular array - let EyeDataDict handle it (creates zero mask)
             value = np.asarray(value)
@@ -1785,10 +1785,7 @@ class GenericEyeData(state.VersionedState, ABC):
         
         # Remove the keys from data and mask
         for key in keys_to_remove:
-            if key in result.data.data:
-                del result.data.data[key]
-            if key in result.data.mask:
-                del result.data.mask[key]
+            del result.data[key]
         
         # Check what remains
         remaining_vars = result.data.get_available_variables()
@@ -2958,8 +2955,10 @@ class GenericEyeData(state.VersionedState, ABC):
             if key not in obj.data.data:
                 logger.warning(f"Key '{key}' not found in data, skipping")
                 continue
+            mask = np.zeros(n, dtype=bool)
             for start, end in interval_obj.to_units("samples", obj).intervals:
-                obj.data.mask[key][min(max(int(start), 0), n):min(max(int(end), 0), n)] = 1
+                mask[min(max(int(start), 0), n):min(max(int(end), 0), n)] = True
+            obj.data.add_mask(key, mask)
         
         return obj
 
@@ -3237,8 +3236,8 @@ class GenericEyeData(state.VersionedState, ABC):
         merged = Intervals(list(obj._excluded.intervals) + new, units="ms").merge()
         obj._excluded = Intervals(merged.intervals, units="ms", label="excluded")
         excl = obj._excluded_mask()
-        for key in obj.data.mask:
-            obj.data.mask[key][excl] = 1
+        for key in obj.data.keys():
+            obj.data.add_mask(key, excl)
         obj._drop_excluded_blinks()
         return obj
 

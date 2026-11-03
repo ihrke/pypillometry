@@ -377,6 +377,25 @@ class EyeDataDict(MutableMapping, Stateful):
             raise ValueError(f"Mask must have shape {self.shape}")
         self.mask[key] = mask.astype(int)
 
+    def add_mask(self, key: str, mask: NDArray) -> None:
+        """Mask the samples of `key` where `mask` is True (existing masks are kept).
+
+        Parameters
+        ----------
+        key : str
+            Key of the data (e.g., "left_pupil")
+        mask : array-like of bool
+            one value per sample; True: mask the sample
+
+        Raises
+        ------
+        KeyError
+            if there is no data for `key`
+        """
+        if key not in self.data:
+            raise KeyError(f"No data for key {key}")
+        self.mask[key] = (self.mask[key].astype(bool) | np.asarray(mask, dtype=bool)).astype(int)
+
     def get_mask(self, key: str = None) -> NDArray:
         """Get mask for a specific key or joint mask across all keys.
         

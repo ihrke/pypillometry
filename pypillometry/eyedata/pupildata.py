@@ -425,8 +425,7 @@ class PupilData(GenericEyeData):
         merged[masked] = fill[masked]
         
         # Store merged data
-        obj.data.data["merged_pupil"] = merged
-        obj.data.mask["merged_pupil"] = merged_mask
+        obj.data.set_with_mask("merged_pupil", merged, mask=merged_mask)
         
         # Initialize blinks for merged variable
         obj._blinks["merged_pupil"] = None

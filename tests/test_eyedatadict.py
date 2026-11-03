@@ -258,6 +258,13 @@ class TestEyeDataDict(unittest.TestCase):
         # Verify mask is created as zeros (since there was no mask to preserve)
         np.testing.assert_array_equal(d.mask['left_pupil'], np.zeros(3, dtype=int))
 
+    def test_add_mask(self):
+        d = EyeDataDict(left_x=[1, np.nan, 3, 4])
+        d.add_mask("left_x", [False, False, True, False])
+        np.testing.assert_array_equal(d.mask["left_x"], [0, 1, 1, 0])
+        with self.assertRaises(KeyError):
+            d.add_mask("right_x", [True] * 4)
+
     def test_count_masked(self):
         """Test counting missing values from masks"""
         d = EyeDataDict()
