@@ -2425,32 +2425,39 @@ class GenericEyeData(state.VersionedState, ABC):
         """
         dsfac=_decimate_factor(self.fs, fsd, dsfac)
         obj = self._get_inplace(inplace)
-        # downsample all of the variables/eyes in the data; masked samples are
-        # left out of the window means, and a new sample is masked only if all
-        # samples in its window were masked; it then holds the mean of the
-        # stored values (e.g., interpolated blinks)
+        obj._decimate(dsfac)
+        return obj
+
+    def _decimate(self, factor):
+        """
+        Decimate the samples by the integer `factor` (in place).
+
+        Each window of `factor` samples becomes one sample (the last window
+        may be shorter): values are the mean of the unmasked samples, the
+        time is the mean time of the window, and the new sampling rate is
+        ``fs/factor``. A new sample is masked only if all samples in its
+        window were masked; it then holds the mean of the stored values
+        (e.g., interpolated blinks). Stored blinks in sample indices are
+        rescaled (starts rounded down, ends up); intervals in time units,
+        excluded periods and events stay valid.
+        """
         ndata=EyeDataDict()
-        for k,v in obj.data.items():
+        for k,v in self.data.items():
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", RuntimeWarning)  # all-NaN windows
-                y=baseline.downsample(np.where(obj.data.mask[k].astype(bool), np.nan, v), dsfac)
-                stored=baseline.downsample(v, dsfac)
+                y=baseline.downsample(np.where(self.data.mask[k].astype(bool), np.nan, v), factor)
+                stored=baseline.downsample(v, factor)
             allmasked=np.isnan(y)
             y[allmasked]=stored[allmasked]
             ndata.set_with_mask(k, y, mask=allmasked.astype(int))
-        obj.data=ndata
+        self.data=ndata
 
-        # also downsample the time-vector; the new sampling rate is the
-        # actual rate of the decimated data
-        old=SimpleNamespace(tx=obj.tx, fs=obj.fs)
-        obj._set_timebase(baseline.downsample(obj.tx, dsfac), obj.fs/dsfac)
-
-        # rescale stored blinks in sample indices so that they still cover the
-        # blinks: round starts down and ends up (blinks in time units stay valid)
-        n=len(obj.tx)
-        obj._remap_interval_stores(
-            old, lambda pairs: [(int(on)//dsfac, min(int(np.ceil(off/dsfac)), n)) for on, off in pairs])
-        return obj
+        old=SimpleNamespace(tx=self.tx, fs=self.fs)
+        self._set_timebase(baseline.downsample(self.tx, factor), self.fs/factor)
+        n=len(self.tx)
+        self._remap_interval_stores(
+            old, lambda pairs: [(int(on)//factor, min(int(np.ceil(off/factor)), n)) for on, off in pairs])
+        return self
 
     @keephistory
     def merge_eyes(self, eyes=[], variables=[], method="mean", keep_eyes=True, inplace=None):
