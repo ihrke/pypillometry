@@ -1,0 +1,1068 @@
+{
+ "cases": {
+  "a.blinks_detect.rlmw.default": {
+   "arrays": [
+    "mask.left_pupil",
+    "mask.left_x",
+    "mask.left_y",
+    "mask.right_pupil",
+    "mask.right_x",
+    "mask.right_y",
+    "returned.left_pupil",
+    "returned.right_pupil",
+    "stored.left_pupil",
+    "stored.right_pupil",
+    "stored_ms.left_pupil",
+    "stored_ms.right_pupil"
+   ],
+   "description": "pupil_blinks_detect() on rlmw: returned and stored blink intervals (samples, ms), masks (not applied)",
+   "params": {
+    "dataset": "rlmw",
+    "params": {}
+   },
+   "scalars": {}
+  },
+  "a.blinks_detect.rlmw.vel10": {
+   "arrays": [
+    "mask.left_pupil",
+    "mask.left_x",
+    "mask.left_y",
+    "mask.right_pupil",
+    "mask.right_x",
+    "mask.right_y",
+    "returned.left_pupil",
+    "returned.right_pupil",
+    "stored.left_pupil",
+    "stored.right_pupil",
+    "stored_ms.left_pupil",
+    "stored_ms.right_pupil"
+   ],
+   "description": "pupil_blinks_detect({'vel_onset': -10, 'min_duration': 10}) on rlmw: returned and stored blink intervals (samples, ms), masks (not applied)",
+   "params": {
+    "dataset": "rlmw",
+    "params": {
+     "min_duration": 10,
+     "vel_onset": -10
+    }
+   },
+   "scalars": {}
+  },
+  "a.blinks_detect.rlmw.zero": {
+   "arrays": [
+    "mask.left_pupil",
+    "mask.left_x",
+    "mask.left_y",
+    "mask.right_pupil",
+    "mask.right_x",
+    "mask.right_y",
+    "returned.left_pupil",
+    "returned.right_pupil",
+    "stored.left_pupil",
+    "stored.right_pupil",
+    "stored_ms.left_pupil",
+    "stored_ms.right_pupil"
+   ],
+   "description": "pupil_blinks_detect({'strategies': ['zero']}) on rlmw: returned and stored blink intervals (samples, ms), masks (not applied)",
+   "params": {
+    "dataset": "rlmw",
+    "params": {
+     "strategies": [
+      "zero"
+     ]
+    }
+   },
+   "scalars": {}
+  },
+  "a.blinks_detect.synth.default": {
+   "arrays": [
+    "mask.left_pupil",
+    "mask.left_x",
+    "mask.left_y",
+    "mask.right_pupil",
+    "mask.right_x",
+    "mask.right_y",
+    "nan_blocks.left_pupil",
+    "nan_blocks.right_pupil",
+    "returned.left_pupil",
+    "returned.right_pupil",
+    "stored.left_pupil",
+    "stored.right_pupil",
+    "stored_ms.left_pupil",
+    "stored_ms.right_pupil"
+   ],
+   "description": "pupil_blinks_detect() on synth: returned and stored blink intervals (samples, ms), masks (not applied)",
+   "params": {
+    "dataset": "synth",
+    "params": {}
+   },
+   "scalars": {}
+  },
+  "a.blinks_detect.synth.vel10": {
+   "arrays": [
+    "mask.left_pupil",
+    "mask.left_x",
+    "mask.left_y",
+    "mask.right_pupil",
+    "mask.right_x",
+    "mask.right_y",
+    "nan_blocks.left_pupil",
+    "nan_blocks.right_pupil",
+    "returned.left_pupil",
+    "returned.right_pupil",
+    "stored.left_pupil",
+    "stored.right_pupil",
+    "stored_ms.left_pupil",
+    "stored_ms.right_pupil"
+   ],
+   "description": "pupil_blinks_detect({'vel_onset': -10, 'min_duration': 10}) on synth: returned and stored blink intervals (samples, ms), masks (not applied)",
+   "params": {
+    "dataset": "synth",
+    "params": {
+     "min_duration": 10,
+     "vel_onset": -10
+    }
+   },
+   "scalars": {}
+  },
+  "a.blinks_detect.synth.zero": {
+   "arrays": [
+    "mask.left_pupil",
+    "mask.left_x",
+    "mask.left_y",
+    "mask.right_pupil",
+    "mask.right_x",
+    "mask.right_y",
+    "nan_blocks.left_pupil",
+    "nan_blocks.right_pupil",
+    "returned.left_pupil",
+    "returned.right_pupil",
+    "stored.left_pupil",
+    "stored.right_pupil",
+    "stored_ms.left_pupil",
+    "stored_ms.right_pupil"
+   ],
+   "description": "pupil_blinks_detect({'strategies': ['zero']}) on synth: returned and stored blink intervals (samples, ms), masks (not applied)",
+   "params": {
+    "dataset": "synth",
+    "params": {
+     "strategies": [
+      "zero"
+     ]
+    }
+   },
+   "scalars": {}
+  },
+  "b.blinks_interpolate.rlmw": {
+   "arrays": [
+    "blinks.left_pupil",
+    "blinks.right_pupil",
+    "interpolated.left_pupil",
+    "interpolated.right_pupil",
+    "mask.left_pupil",
+    "mask.left_x",
+    "mask.left_y",
+    "mask.right_pupil",
+    "mask.right_x",
+    "mask.right_y",
+    "pupil.left_pupil",
+    "pupil.right_pupil"
+   ],
+   "description": "pupil_blinks_detect(apply_mask=True).pupil_blinks_interpolate() on rlmw: pupil values, masks, blinks, interpolated blinks (samples)",
+   "params": {
+    "dataset": "rlmw"
+   },
+   "scalars": {}
+  },
+  "b.blinks_interpolate.synth": {
+   "arrays": [
+    "blinks.left_pupil",
+    "blinks.right_pupil",
+    "interpolated.left_pupil",
+    "interpolated.right_pupil",
+    "mask.left_pupil",
+    "mask.left_x",
+    "mask.left_y",
+    "mask.right_pupil",
+    "mask.right_x",
+    "mask.right_y",
+    "pupil.left_pupil",
+    "pupil.right_pupil"
+   ],
+   "description": "pupil_blinks_detect(apply_mask=True).pupil_blinks_interpolate() on synth: pupil values, masks, blinks, interpolated blinks (samples)",
+   "params": {
+    "dataset": "synth"
+   },
+   "scalars": {}
+  },
+  "c.lowpass.rlmw": {
+   "arrays": [
+    "mask.left_pupil",
+    "mask.right_pupil",
+    "pupil.left_pupil",
+    "pupil.right_pupil"
+   ],
+   "description": "case b, then pupil_lowpass_filter(5) on rlmw: pupil values and masks",
+   "params": {
+    "dataset": "rlmw"
+   },
+   "scalars": {}
+  },
+  "c.lowpass.synth": {
+   "arrays": [
+    "mask.left_pupil",
+    "mask.right_pupil",
+    "pupil.left_pupil",
+    "pupil.right_pupil"
+   ],
+   "description": "case b, then pupil_lowpass_filter(5) on synth: pupil values and masks",
+   "params": {
+    "dataset": "synth"
+   },
+   "scalars": {}
+  },
+  "d.divergence.rlmw.pct99": {
+   "arrays": [
+    "mask.left_pupil",
+    "mask.left_x",
+    "mask.left_y",
+    "mask.right_pupil",
+    "mask.right_x",
+    "mask.right_y",
+    "returned"
+   ],
+   "description": "mask_eye_divergences() on rlmw: returned intervals (apply_mask=False, samples) and masks (apply_mask=True)",
+   "params": {
+    "dataset": "rlmw",
+    "params": {}
+   },
+   "scalars": {}
+  },
+  "d.divergence.rlmw.px100": {
+   "arrays": [
+    "mask.left_pupil",
+    "mask.left_x",
+    "mask.left_y",
+    "mask.right_pupil",
+    "mask.right_x",
+    "mask.right_y",
+    "returned"
+   ],
+   "description": "mask_eye_divergences({'threshold': 100, 'thr_type': 'pixel'}) on rlmw: returned intervals (apply_mask=False, samples) and masks (apply_mask=True)",
+   "params": {
+    "dataset": "rlmw",
+    "params": {
+     "thr_type": "pixel",
+     "threshold": 100
+    }
+   },
+   "scalars": {}
+  },
+  "d.divergence.synth.pct99": {
+   "arrays": [
+    "mask.left_pupil",
+    "mask.left_x",
+    "mask.left_y",
+    "mask.right_pupil",
+    "mask.right_x",
+    "mask.right_y",
+    "returned"
+   ],
+   "description": "mask_eye_divergences() on synth: returned intervals (apply_mask=False, samples) and masks (apply_mask=True)",
+   "params": {
+    "dataset": "synth",
+    "params": {}
+   },
+   "scalars": {}
+  },
+  "d.divergence.synth.px100": {
+   "arrays": [
+    "mask.left_pupil",
+    "mask.left_x",
+    "mask.left_y",
+    "mask.right_pupil",
+    "mask.right_x",
+    "mask.right_y",
+    "returned"
+   ],
+   "description": "mask_eye_divergences({'threshold': 100, 'thr_type': 'pixel'}) on synth: returned intervals (apply_mask=False, samples) and masks (apply_mask=True)",
+   "params": {
+    "dataset": "synth",
+    "params": {
+     "thr_type": "pixel",
+     "threshold": 100
+    }
+   },
+   "scalars": {}
+  },
+  "d.offscreen.rlmw": {
+   "arrays": [
+    "mask.left_pupil",
+    "mask.left_x",
+    "mask.left_y",
+    "mask.right_pupil",
+    "mask.right_x",
+    "mask.right_y",
+    "returned.left",
+    "returned.right"
+   ],
+   "description": "mask_offscreen_coords() on rlmw (screen 1280x1024): returned intervals (apply_mask=False, samples) and masks (apply_mask=True)",
+   "params": {
+    "dataset": "rlmw"
+   },
+   "scalars": {}
+  },
+  "d.offscreen.synth": {
+   "arrays": [
+    "mask.left_pupil",
+    "mask.left_x",
+    "mask.left_y",
+    "mask.right_pupil",
+    "mask.right_x",
+    "mask.right_y",
+    "returned.left",
+    "returned.right"
+   ],
+   "description": "mask_offscreen_coords() on synth (screen 1280x1024): returned intervals (apply_mask=False, samples) and masks (apply_mask=True)",
+   "params": {
+    "dataset": "synth"
+   },
+   "scalars": {}
+  },
+  "e.segments.rlmw.interp": {
+   "arrays": [
+    "bc_data.left_pupil",
+    "bc_data.right_pupil",
+    "bc_mask.left_pupil",
+    "bc_mask.right_pupil",
+    "bc_mean.left_pupil",
+    "bc_mean.right_pupil",
+    "event_onsets",
+    "intervals_ms",
+    "intervals_samples",
+    "mask.left_pupil",
+    "mask.right_pupil",
+    "mean.left_pupil",
+    "mean.right_pupil",
+    "tx.left_pupil",
+    "tx.right_pupil"
+   ],
+   "description": "get_intervals('S_', window=(-200,1000)*u.ms), get_segments per pupil, baseline_correct((-200,0)) on rlmw (after case b): intervals, segment tx, masks, data, per-segment means",
+   "params": {
+    "dataset": "rlmw",
+    "preproc": true
+   },
+   "scalars": {}
+  },
+  "e.segments.rlmw.raw": {
+   "arrays": [
+    "bc_data.left_pupil",
+    "bc_data.right_pupil",
+    "bc_mask.left_pupil",
+    "bc_mask.right_pupil",
+    "bc_mean.left_pupil",
+    "bc_mean.right_pupil",
+    "event_onsets",
+    "intervals_ms",
+    "intervals_samples",
+    "mask.left_pupil",
+    "mask.right_pupil",
+    "mean.left_pupil",
+    "mean.right_pupil",
+    "tx.left_pupil",
+    "tx.right_pupil"
+   ],
+   "description": "get_intervals('S_', window=(-200,1000)*u.ms), get_segments per pupil, baseline_correct((-200,0)) on rlmw (raw data): intervals, segment tx, masks, data, per-segment means",
+   "params": {
+    "dataset": "rlmw",
+    "preproc": false
+   },
+   "scalars": {}
+  },
+  "e.segments.synth.interp": {
+   "arrays": [
+    "bc_data.left_pupil",
+    "bc_data.right_pupil",
+    "bc_mask.left_pupil",
+    "bc_mask.right_pupil",
+    "bc_mean.left_pupil",
+    "bc_mean.right_pupil",
+    "event_onsets",
+    "intervals_ms",
+    "intervals_samples",
+    "mask.left_pupil",
+    "mask.right_pupil",
+    "mean.left_pupil",
+    "mean.right_pupil",
+    "tx.left_pupil",
+    "tx.right_pupil"
+   ],
+   "description": "get_intervals('stim', window=(-200,1000)*u.ms), get_segments per pupil, baseline_correct((-200,0)) on synth (after case b): intervals, segment tx, masks, data, per-segment means",
+   "params": {
+    "dataset": "synth",
+    "preproc": true
+   },
+   "scalars": {}
+  },
+  "e.segments.synth.raw": {
+   "arrays": [
+    "bc_data.left_pupil",
+    "bc_data.right_pupil",
+    "bc_mask.left_pupil",
+    "bc_mask.right_pupil",
+    "bc_mean.left_pupil",
+    "bc_mean.right_pupil",
+    "event_onsets",
+    "intervals_ms",
+    "intervals_samples",
+    "mask.left_pupil",
+    "mask.right_pupil",
+    "mean.left_pupil",
+    "mean.right_pupil",
+    "tx.left_pupil",
+    "tx.right_pupil"
+   ],
+   "description": "get_intervals('stim', window=(-200,1000)*u.ms), get_segments per pupil, baseline_correct((-200,0)) on synth (raw data): intervals, segment tx, masks, data, per-segment means",
+   "params": {
+    "dataset": "synth",
+    "preproc": false
+   },
+   "scalars": {}
+  },
+  "e.stat_per_event.rlmw.interp": {
+   "arrays": [
+    "mean_post.left_pupil",
+    "mean_post.left_x",
+    "mean_post.left_y",
+    "mean_post.right_pupil",
+    "mean_post.right_x",
+    "mean_post.right_y",
+    "mean_pre.left_pupil",
+    "mean_pre.left_x",
+    "mean_pre.left_y",
+    "mean_pre.right_pupil",
+    "mean_pre.right_x",
+    "mean_pre.right_y",
+    "median_post.left_pupil",
+    "median_post.right_pupil"
+   ],
+   "description": "stat_per_event(window=(-200,0)/(0,1000)*u.ms, event_select='S_') mean for all variables and np.ma.median for pupil on rlmw (after case b)",
+   "params": {
+    "dataset": "rlmw",
+    "preproc": true
+   },
+   "scalars": {}
+  },
+  "e.stat_per_event.rlmw.raw": {
+   "arrays": [
+    "mean_post.left_pupil",
+    "mean_post.left_x",
+    "mean_post.left_y",
+    "mean_post.right_pupil",
+    "mean_post.right_x",
+    "mean_post.right_y",
+    "mean_pre.left_pupil",
+    "mean_pre.left_x",
+    "mean_pre.left_y",
+    "mean_pre.right_pupil",
+    "mean_pre.right_x",
+    "mean_pre.right_y",
+    "median_post.left_pupil",
+    "median_post.right_pupil"
+   ],
+   "description": "stat_per_event(window=(-200,0)/(0,1000)*u.ms, event_select='S_') mean for all variables and np.ma.median for pupil on rlmw (raw data)",
+   "params": {
+    "dataset": "rlmw",
+    "preproc": false
+   },
+   "scalars": {}
+  },
+  "e.stat_per_event.synth.interp": {
+   "arrays": [
+    "mean_post.left_pupil",
+    "mean_post.left_x",
+    "mean_post.left_y",
+    "mean_post.right_pupil",
+    "mean_post.right_x",
+    "mean_post.right_y",
+    "mean_pre.left_pupil",
+    "mean_pre.left_x",
+    "mean_pre.left_y",
+    "mean_pre.right_pupil",
+    "mean_pre.right_x",
+    "mean_pre.right_y",
+    "median_post.left_pupil",
+    "median_post.right_pupil"
+   ],
+   "description": "stat_per_event(window=(-200,0)/(0,1000)*u.ms, event_select='stim') mean for all variables and np.ma.median for pupil on synth (after case b)",
+   "params": {
+    "dataset": "synth",
+    "preproc": true
+   },
+   "scalars": {}
+  },
+  "e.stat_per_event.synth.raw": {
+   "arrays": [
+    "mean_post.left_pupil",
+    "mean_post.left_x",
+    "mean_post.left_y",
+    "mean_post.right_pupil",
+    "mean_post.right_x",
+    "mean_post.right_y",
+    "mean_pre.left_pupil",
+    "mean_pre.left_x",
+    "mean_pre.left_y",
+    "mean_pre.right_pupil",
+    "mean_pre.right_x",
+    "mean_pre.right_y",
+    "median_post.left_pupil",
+    "median_post.right_pupil"
+   ],
+   "description": "stat_per_event(window=(-200,0)/(0,1000)*u.ms, event_select='stim') mean for all variables and np.ma.median for pupil on synth (raw data)",
+   "params": {
+    "dataset": "synth",
+    "preproc": false
+   },
+   "scalars": {}
+  },
+  "f.quality.rlmw.interp": {
+   "arrays": [],
+   "description": "quality_report().to_dict(flat=True), numeric values, on rlmw (after case b)",
+   "params": {
+    "dataset": "rlmw",
+    "preproc": true
+   },
+   "scalars": {
+    "artifacts.left.gaze_masked_pct": 2.741265575372587,
+    "artifacts.left.interpolated_pct": 9.92914732470071,
+    "artifacts.left.other_pct": 2.5018323967749816,
+    "artifacts.left.pupil_masked_pct": 9.92914732470071,
+    "artifacts.right.gaze_masked_pct": 1.9008062545809918,
+    "artifacts.right.interpolated_pct": 6.0053750305399465,
+    "artifacts.right.other_pct": 1.622281944783777,
+    "artifacts.right.pupil_masked_pct": 6.0053750305399465,
+    "binocular.left/right.gaze_disparity_deg": 1.6085219969667648,
+    "binocular.left/right.pupil_correlation": 0.91444767077963,
+    "blinks.left.mean_duration": 217.14285714285714,
+    "blinks.left.n": 14,
+    "blinks.left.n_long": 1,
+    "blinks.left.rate": 20.52284387979477,
+    "blinks.left.time_pct": 7.4273149279257265,
+    "blinks.right.mean_duration": 138.0,
+    "blinks.right.n": 13,
+    "blinks.right.n_long": 0,
+    "blinks.right.rate": 19.05692645980943,
+    "blinks.right.time_pct": 4.383093085756169,
+    "gaze.left.missing_pct": 2.741265575372587,
+    "gaze.left.offscreen_pct": 0.2110128617363344,
+    "gaze.left.precision_deg": 0.020226873513395506,
+    "gaze.right.missing_pct": 1.9008062545809918,
+    "gaze.right.offscreen_pct": 0.24407252440725244,
+    "gaze.right.precision_deg": 0.020020738316925354,
+    "info.all.duration": 0.6821666666666667,
+    "info.all.n_events": 40,
+    "info.all.n_samples": 20465,
+    "info.all.sampling_rate": 500.0,
+    "info.all.time_gaps": 0,
+    "pupil.left.dropout_rate": 0.0,
+    "pupil.left.jump_rate": 0.0,
+    "pupil.left.longest_dropout": 0.0,
+    "pupil.left.missing_pct": 0.0,
+    "pupil.left.noise": 0.09368690918562782,
+    "pupil.left.noise_sd": 1.0483565137871753,
+    "pupil.right.dropout_rate": 0.0,
+    "pupil.right.jump_rate": 0.0,
+    "pupil.right.longest_dropout": 0.0,
+    "pupil.right.missing_pct": 0.0,
+    "pupil.right.noise": 0.11058613014632651,
+    "pupil.right.noise_sd": 1.0483565137871753
+   }
+  },
+  "f.quality.rlmw.raw": {
+   "arrays": [],
+   "description": "quality_report().to_dict(flat=True), numeric values, on rlmw (raw data)",
+   "params": {
+    "dataset": "rlmw",
+    "preproc": false
+   },
+   "scalars": {
+    "binocular.left/right.gaze_disparity_deg": 1.6085219969667648,
+    "binocular.left/right.pupil_correlation": 0.8662837631737503,
+    "gaze.left.missing_pct": 2.741265575372587,
+    "gaze.left.offscreen_pct": 0.2110128617363344,
+    "gaze.left.precision_deg": 0.020226873513395506,
+    "gaze.right.missing_pct": 1.9008062545809918,
+    "gaze.right.offscreen_pct": 0.24407252440725244,
+    "gaze.right.precision_deg": 0.020020738316925354,
+    "info.all.duration": 0.6821666666666667,
+    "info.all.n_events": 40,
+    "info.all.n_samples": 20465,
+    "info.all.sampling_rate": 500.0,
+    "info.all.time_gaps": 0,
+    "pupil.left.dropout_rate": 16.12509161983875,
+    "pupil.left.jump_rate": 0.0,
+    "pupil.left.longest_dropout": 0.14,
+    "pupil.left.missing_pct": 2.741265575372587,
+    "pupil.left.noise": 0.09377070785216236,
+    "pupil.left.noise_sd": 1.0483565137871753,
+    "pupil.right.dropout_rate": 14.659174199853407,
+    "pupil.right.jump_rate": 0.0,
+    "pupil.right.longest_dropout": 0.12,
+    "pupil.right.missing_pct": 1.9008062545809918,
+    "pupil.right.noise": 0.11081992746164644,
+    "pupil.right.noise_sd": 1.0483565137871753
+   }
+  },
+  "f.quality.synth.interp": {
+   "arrays": [],
+   "description": "quality_report().to_dict(flat=True), numeric values, on synth (after case b)",
+   "params": {
+    "dataset": "synth",
+    "preproc": true
+   },
+   "scalars": {
+    "artifacts.left.gaze_masked_pct": 0.0,
+    "artifacts.left.interpolated_pct": 4.76,
+    "artifacts.left.other_pct": 0.93,
+    "artifacts.left.pupil_masked_pct": 4.76,
+    "artifacts.right.gaze_masked_pct": 0.0,
+    "artifacts.right.interpolated_pct": 3.55,
+    "artifacts.right.other_pct": 0.69,
+    "artifacts.right.pupil_masked_pct": 3.55,
+    "binocular.left/right.gaze_disparity_deg": 0.07142655528481803,
+    "binocular.left/right.pupil_correlation": 0.9996523644201526,
+    "blinks.left.mean_duration": 191.5,
+    "blinks.left.n": 4,
+    "blinks.left.n_long": 0,
+    "blinks.left.rate": 12.0,
+    "blinks.left.time_pct": 3.83,
+    "blinks.right.mean_duration": 190.66666666666666,
+    "blinks.right.n": 3,
+    "blinks.right.n_long": 0,
+    "blinks.right.rate": 9.0,
+    "blinks.right.time_pct": 2.86,
+    "gaze.left.missing_pct": 0.0,
+    "gaze.left.offscreen_pct": 0.6,
+    "gaze.left.precision_deg": 0.06844712683019098,
+    "gaze.right.missing_pct": 0.0,
+    "gaze.right.offscreen_pct": 1.0,
+    "gaze.right.precision_deg": 0.06844362892857407,
+    "info.all.duration": 0.3333333333333333,
+    "info.all.n_events": 26,
+    "info.all.n_samples": 10000,
+    "info.all.sampling_rate": 500.0,
+    "info.all.time_gaps": 0,
+    "pupil.left.dropout_rate": 0.0,
+    "pupil.left.jump_rate": 0.0,
+    "pupil.left.longest_dropout": 0.0,
+    "pupil.left.missing_pct": 0.0,
+    "pupil.left.noise": 0.04701516495360106,
+    "pupil.left.noise_sd": 0.4700345329210921,
+    "pupil.right.dropout_rate": 0.0,
+    "pupil.right.jump_rate": 0.0,
+    "pupil.right.longest_dropout": 0.0,
+    "pupil.right.missing_pct": 0.0,
+    "pupil.right.noise": 0.05399428141850535,
+    "pupil.right.noise_sd": 0.4858709415580693
+   }
+  },
+  "f.quality.synth.raw": {
+   "arrays": [],
+   "description": "quality_report().to_dict(flat=True), numeric values, on synth (raw data)",
+   "params": {
+    "dataset": "synth",
+    "preproc": false
+   },
+   "scalars": {
+    "binocular.left/right.gaze_disparity_deg": 0.07142655528481803,
+    "binocular.left/right.pupil_correlation": 0.8942862005847119,
+    "gaze.left.missing_pct": 0.0,
+    "gaze.left.offscreen_pct": 0.6,
+    "gaze.left.precision_deg": 0.06844712683019098,
+    "gaze.right.missing_pct": 0.0,
+    "gaze.right.offscreen_pct": 1.0,
+    "gaze.right.precision_deg": 0.06844362892857407,
+    "info.all.duration": 0.3333333333333333,
+    "info.all.n_events": 26,
+    "info.all.n_samples": 10000,
+    "info.all.sampling_rate": 500.0,
+    "info.all.time_gaps": 0,
+    "pupil.left.dropout_rate": 12.0,
+    "pupil.left.jump_rate": 0.0,
+    "pupil.left.longest_dropout": 0.3,
+    "pupil.left.missing_pct": 2.56,
+    "pupil.left.noise": 0.050832674339968055,
+    "pupil.left.noise_sd": 0.5086089249752457,
+    "pupil.right.dropout_rate": 9.0,
+    "pupil.right.jump_rate": 0.0,
+    "pupil.right.longest_dropout": 0.2,
+    "pupil.right.missing_pct": 1.9,
+    "pupil.right.noise": 0.057279746463874626,
+    "pupil.right.noise_sd": 0.5157661442102285
+   }
+  },
+  "g.crop.rlmw": {
+   "arrays": [
+    "blinks.left_pupil",
+    "blinks.right_pupil",
+    "event_labels",
+    "event_onsets",
+    "interpolated.left_pupil",
+    "interpolated.right_pupil",
+    "mask.left_pupil",
+    "mask.left_x",
+    "mask.left_y",
+    "mask.right_pupil",
+    "mask.right_x",
+    "mask.right_y",
+    "sub.left_pupil",
+    "sub.left_x",
+    "sub.left_y",
+    "sub.right_pupil",
+    "sub.right_x",
+    "sub.right_y",
+    "tx_sub"
+   ],
+   "description": "case b on rlmw, then crop(5000, 25000) (ms): summary (time, events, data every 50th sample, masks, blinks)",
+   "params": {
+    "dataset": "rlmw"
+   },
+   "scalars": {
+    "fs": 500.0,
+    "masked.left_pupil": 1549,
+    "masked.left_x": 352,
+    "masked.left_y": 352,
+    "masked.right_pupil": 616,
+    "masked.right_x": 277,
+    "masked.right_y": 277,
+    "n": 10001,
+    "nansum.left_pupil": 11519739.635351598,
+    "nansum.left_x": 5991887.3,
+    "nansum.left_y": 5341081.300000001,
+    "nansum.right_pupil": 9723802.8494393,
+    "nansum.right_x": 6759179.4,
+    "nansum.right_y": 5284571.1,
+    "tx_first": 5000.0,
+    "tx_last": 25000.0
+   }
+  },
+  "g.downsample.rlmw.100": {
+   "arrays": [
+    "blinks.left_pupil",
+    "blinks.right_pupil",
+    "event_labels",
+    "event_onsets",
+    "interpolated.left_pupil",
+    "interpolated.right_pupil",
+    "mask.left_pupil",
+    "mask.left_x",
+    "mask.left_y",
+    "mask.right_pupil",
+    "mask.right_x",
+    "mask.right_y",
+    "sub.left_pupil",
+    "sub.left_x",
+    "sub.left_y",
+    "sub.right_pupil",
+    "sub.right_x",
+    "sub.right_y",
+    "tx_sub"
+   ],
+   "description": "case b on rlmw, then downsample(100) (integer factor): summary (data every 10th sample)",
+   "params": {
+    "dataset": "rlmw",
+    "fsd": 100
+   },
+   "scalars": {
+    "fs": 100.0,
+    "masked.left_pupil": 398,
+    "masked.left_x": 105,
+    "masked.left_y": 105,
+    "masked.right_pupil": 237,
+    "masked.right_x": 70,
+    "masked.right_y": 70,
+    "n": 4093,
+    "nansum.left_pupil": 4576817.729787578,
+    "nansum.left_x": 2543201.22,
+    "nansum.left_y": 2156929.0100000002,
+    "nansum.right_pupil": 3890614.2124309456,
+    "nansum.right_x": 2849125.173333334,
+    "nansum.right_y": 2145117.728333333,
+    "tx_first": 4.0,
+    "tx_last": 40924.0
+   }
+  },
+  "g.downsample.rlmw.250": {
+   "arrays": [
+    "blinks.left_pupil",
+    "blinks.right_pupil",
+    "event_labels",
+    "event_onsets",
+    "interpolated.left_pupil",
+    "interpolated.right_pupil",
+    "mask.left_pupil",
+    "mask.left_x",
+    "mask.left_y",
+    "mask.right_pupil",
+    "mask.right_x",
+    "mask.right_y",
+    "sub.left_pupil",
+    "sub.left_x",
+    "sub.left_y",
+    "sub.right_pupil",
+    "sub.right_x",
+    "sub.right_y",
+    "tx_sub"
+   ],
+   "description": "case b on rlmw, then downsample(250) (integer factor): summary (data every 10th sample)",
+   "params": {
+    "dataset": "rlmw",
+    "fsd": 250
+   },
+   "scalars": {
+    "fs": 250.0,
+    "masked.left_pupil": 1011,
+    "masked.left_x": 275,
+    "masked.left_y": 275,
+    "masked.right_pupil": 607,
+    "masked.right_x": 190,
+    "masked.right_y": 190,
+    "n": 10233,
+    "nansum.left_pupil": 11442589.560606904,
+    "nansum.left_x": 6350160.1,
+    "nansum.left_y": 5379201.4,
+    "nansum.right_pupil": 9727023.97439972,
+    "nansum.right_x": 7113795.1,
+    "nansum.right_y": 5347307.65,
+    "tx_first": 1.0,
+    "tx_last": 40928.0
+   }
+  },
+  "g.exclude_intervals.rlmw": {
+   "arrays": [
+    "blinks.left_pupil",
+    "blinks.right_pupil",
+    "event_labels",
+    "event_onsets",
+    "excluded_ms",
+    "excluded_samples",
+    "included_ms",
+    "included_samples",
+    "interpolated.left_pupil",
+    "interpolated.right_pupil",
+    "mask.left_pupil",
+    "mask.left_x",
+    "mask.left_y",
+    "mask.right_pupil",
+    "mask.right_x",
+    "mask.right_y",
+    "sub.left_pupil",
+    "sub.left_x",
+    "sub.left_y",
+    "sub.right_pupil",
+    "sub.right_x",
+    "sub.right_y",
+    "tx_sub"
+   ],
+   "description": "case b on rlmw, then exclude_intervals([(0,2000), (20000,22500)]) (ms): summary, get_excluded/get_included in ms and samples",
+   "params": {
+    "dataset": "rlmw"
+   },
+   "scalars": {
+    "fs": 500.0,
+    "masked.left_pupil": 3919,
+    "masked.left_x": 2744,
+    "masked.left_y": 2744,
+    "masked.right_pupil": 3376,
+    "masked.right_x": 2586,
+    "masked.right_y": 2586,
+    "n": 20465,
+    "nansum.left_pupil": 22884103.19192057,
+    "nansum.left_x": 12692805.599999998,
+    "nansum.left_y": 10745257.600000001,
+    "nansum.right_pupil": 19453053.80269292,
+    "nansum.right_x": 14220729.200000001,
+    "nansum.right_y": 10683808.399999999,
+    "tx_first": 0.0,
+    "tx_last": 40928.0
+   }
+  },
+  "g.remove_intervals.rlmw": {
+   "arrays": [
+    "blinks.left_pupil",
+    "blinks.right_pupil",
+    "event_labels",
+    "event_onsets",
+    "interpolated.left_pupil",
+    "interpolated.right_pupil",
+    "mask.left_pupil",
+    "mask.left_x",
+    "mask.left_y",
+    "mask.right_pupil",
+    "mask.right_x",
+    "mask.right_y",
+    "removed_intervals",
+    "sub.left_pupil",
+    "sub.left_x",
+    "sub.left_y",
+    "sub.right_pupil",
+    "sub.right_x",
+    "sub.right_y",
+    "tx_sub"
+   ],
+   "description": "case b on rlmw, then remove_intervals([(10000,12000), (30000,31000)]) (ms): summary and params['removed_intervals']",
+   "params": {
+    "dataset": "rlmw"
+   },
+   "scalars": {
+    "fs": 500.0,
+    "masked.left_pupil": 1519,
+    "masked.left_x": 502,
+    "masked.left_y": 502,
+    "masked.right_pupil": 1127,
+    "masked.right_x": 334,
+    "masked.right_y": 334,
+    "n": 18965,
+    "nansum.left_pupil": 21177610.54409731,
+    "nansum.left_x": 11825228.399999999,
+    "nansum.left_y": 9934021.100000001,
+    "nansum.right_pupil": 18013646.994277887,
+    "nansum.right_x": 13256461.3,
+    "nansum.right_y": 9893290.7,
+    "tx_first": 0.0,
+    "tx_last": 37928.0
+   }
+  },
+  "h.merge_eyes.rlmw": {
+   "arrays": [
+    "keys",
+    "sub.mean_pupil",
+    "sub.mean_x",
+    "sub.mean_y"
+   ],
+   "description": "case b on rlmw, then merge_eyes(): merged variables (mean, masked samples, every 50th sample)",
+   "params": {
+    "dataset": "rlmw"
+   },
+   "scalars": {
+    "masked.mean_pupil": 1007,
+    "masked.mean_x": 389,
+    "masked.mean_y": 389,
+    "mean.mean_pupil": 1029.1232141021687,
+    "mean.mean_x": 673.177099521817,
+    "mean.mean_y": 537.5112024307631,
+    "nanmean_all.mean_pupil": 1030.5180551271744,
+    "nanmean_all.mean_x": 673.177099521817,
+    "nanmean_all.mean_y": 537.5112024307631
+   }
+  },
+  "h.merge_eyes.synth": {
+   "arrays": [
+    "keys",
+    "sub.mean_pupil",
+    "sub.mean_x",
+    "sub.mean_y"
+   ],
+   "description": "case b on synth, then merge_eyes(): merged variables (mean, masked samples, every 50th sample)",
+   "params": {
+    "dataset": "synth"
+   },
+   "scalars": {
+    "masked.mean_pupil": 166,
+    "masked.mean_x": 0,
+    "masked.mean_y": 0,
+    "mean.mean_pupil": 949.4352640865709,
+    "mean.mean_x": 642.5954297360363,
+    "mean.mean_y": 511.7310734637723,
+    "nanmean_all.mean_pupil": 949.3936299774495,
+    "nanmean_all.mean_x": 642.5954297360363,
+    "nanmean_all.mean_y": 511.7310734637723
+   }
+  },
+  "h.scale.rlmw": {
+   "arrays": [],
+   "description": "case b on rlmw, then scale(): stored parameters, masked mean/std of every variable",
+   "params": {
+    "dataset": "rlmw"
+   },
+   "scalars": {
+    "mean.left_pupil": 2.9604341185035367e-16,
+    "mean.left_x": -1.2565868317300807e-16,
+    "mean.left_y": -2.855879163022911e-16,
+    "mean.right_pupil": -2.1276388843721029e-16,
+    "mean.right_x": 2.265129263232039e-16,
+    "mean.right_y": -4.870027915948883e-16,
+    "nanmean_all.left_pupil": 0.0418519742751612,
+    "nanmean_all.left_x": -1.2565868317300807e-16,
+    "nanmean_all.left_y": -2.855879163022911e-16,
+    "nanmean_all.right_pupil": 0.0036843268321372384,
+    "nanmean_all.right_x": 2.265129263232039e-16,
+    "nanmean_all.right_y": -4.870027915948883e-16,
+    "param_mean.pupil_left": 1114.6704822872023,
+    "param_mean.pupil_right": 950.2622686629237,
+    "param_mean.x_left": 637.7012459807074,
+    "param_mean.x_right": 708.3447499501892,
+    "param_mean.y_left": 539.8541800643087,
+    "param_mean.y_right": 532.1681809125324,
+    "param_sd.pupil_left": 84.49704225414985,
+    "param_sd.pupil_right": 78.73334612992974,
+    "param_sd.x_left": 252.36645871824516,
+    "param_sd.x_right": 247.41892017789715,
+    "param_sd.y_left": 86.71360180243454,
+    "param_sd.y_right": 85.00430459605491,
+    "std.left_pupil": 1.0,
+    "std.left_x": 0.9999999999999999,
+    "std.left_y": 1.0,
+    "std.right_pupil": 1.0,
+    "std.right_x": 1.0,
+    "std.right_y": 1.0
+   }
+  },
+  "h.scale.synth": {
+   "arrays": [],
+   "description": "case b on synth, then scale(): stored parameters, masked mean/std of every variable",
+   "params": {
+    "dataset": "synth"
+   },
+   "scalars": {
+    "mean.left_pupil": -6.207177196056314e-16,
+    "mean.left_x": -2.7284841053187845e-16,
+    "mean.left_y": -3.4333424991928042e-15,
+    "mean.right_pupil": 3.8543904546364375e-15,
+    "mean.right_x": 6.252776074688882e-17,
+    "mean.right_y": -3.9335645851679145e-15,
+    "nanmean_all.left_pupil": -0.008508055481486212,
+    "nanmean_all.left_x": -2.7284841053187845e-16,
+    "nanmean_all.left_y": -3.4333424991928042e-15,
+    "nanmean_all.right_pupil": -0.005477726470308016,
+    "nanmean_all.right_x": 6.252776074688882e-17,
+    "nanmean_all.right_y": -3.9335645851679145e-15,
+    "param_mean.pupil_left": 1000.2254975027749,
+    "param_mean.pupil_right": 900.1403707550312,
+    "param_mean.x_left": 644.7493928892359,
+    "param_mean.x_right": 640.4414665828368,
+    "param_mean.y_left": 511.4832899505522,
+    "param_mean.y_right": 511.97885697699263,
+    "param_sd.pupil_left": 28.914604489138217,
+    "param_sd.pupil_right": 25.89779759281653,
+    "param_sd.x_left": 57.54137564865265,
+    "param_sd.x_right": 81.57656567655047,
+    "param_sd.y_left": 22.04248152451227,
+    "param_sd.y_right": 14.271338244013343,
+    "std.left_pupil": 1.0,
+    "std.left_x": 1.0000000000000002,
+    "std.left_y": 0.9999999999999999,
+    "std.right_pupil": 1.0,
+    "std.right_x": 0.9999999999999998,
+    "std.right_y": 1.0
+   }
+  }
+ },
+ "date": "2026-11-03",
+ "description": "reference outputs of pypillometry before the 2.2 refactor (see tests/test_reference_outputs.py)",
+ "numpy_version": "2.5.4",
+ "package_modified": false,
+ "pypillometry_commit": "5e8e9bfee5df53a29d4365ff50b8c072fc7ada04",
+ "pypillometry_version": "2.1.0",
+ "python_version": "3.15.2",
+ "scipy_version": "1.18.1"
+}
