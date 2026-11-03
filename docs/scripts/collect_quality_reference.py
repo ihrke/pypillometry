@@ -83,7 +83,7 @@ def recording_info(d):
     info["serial"] = el.get("serial", "")
     info["pupil_units"] = el.get("ps_units", "")
     info["tracked_eyes"] = el.get("eye", "")
-    labels = [str(lab) for lab in getattr(d, "event_labels", [])]
+    labels = [str(lab) for lab in d.events.labels]
     for lab in labels:
         # e.g., "RECCFG CR 500 2 1 LR": mode, rate, file filter, link filter, eyes
         m = re.match(r"\s*RECCFG\s+(\S+)\s+\S+\s+(\d)\s+(\d)", lab)
