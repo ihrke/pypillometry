@@ -209,7 +209,7 @@ class TestFormatVersion0(unittest.TestCase):
         d = self.load("eyedata_v0.pkl")
         self.assertIsInstance(d, pp.EyeData)
         self.assertEqual(d.name, "fixture_eyedata")
-        self.assertEqual(d.nblinks(), {"left_pupil": 4, "right_pupil": 3})
+        self.assertEqual(d.nblinks(variables="pupil"), {"left_pupil": 4, "right_pupil": 3})
         self.assertEqual(len(d.events), 4)
         self.assertEqual(d.tx[0], 4500.0)
         self.assertIsInstance(d.original, pp.EyeData)

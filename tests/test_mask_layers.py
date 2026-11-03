@@ -368,7 +368,7 @@ class TestBlinkLayer:
         d.pupil_blinks_detect(apply_mask=True, strategies=["velocity"], min_duration=10)
         n1 = int(d.data.mask["left_pupil"].sum())
         d.pupil_blinks_detect(apply_mask=True, strategies=["velocity"], min_duration=2000)
-        assert d.nblinks() == {}
+        assert d.nblinks() == {"left_pupil": 0}
         nan = np.isnan(d.data["left_pupil"])
         np.testing.assert_array_equal(d.data.mask["left_pupil"].astype(bool), nan)
         assert n1 > nan.sum()

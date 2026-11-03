@@ -145,8 +145,8 @@ class TestIncompleteBlinkStores:
         d.pupil_blinks_detect()
         d["mean", "x"] = d.data["left_x"]  # an eye without pupil data
         stats = d.blink_stats()
-        assert stats["mean"] is None
-        assert stats["left"]["n"] >= 1 and stats["right"]["n"] >= 1
+        assert set(stats) == {"left_pupil", "right_pupil"}  # not the eye "mean"
+        assert stats["left_pupil"]["n"] >= 1 and stats["right_pupil"]["n"] >= 1
 
 
 class TestIncompleteScaleMerge:
@@ -238,7 +238,7 @@ class TestIncompletePupilMethods:
 
     def test_blinks(self, d):
         d.pupil_blinks_detect()
-        nb = d.nblinks()
+        nb = d.nblinks(variables="pupil")
         assert set(nb) == {"left_pupil", "right_pupil"}
         d.pupil_blinks_interpolate()
         assert set(d.get_interpolated_blinks(variables="pupil")) == {"left_pupil", "right_pupil"}

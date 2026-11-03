@@ -179,8 +179,12 @@ class EyeData(_GazeMethods, _PupilMethods, GenericEyeData):
         )
         if self._excluded_mask().any():
             summary["excluded_minutes"] = self.excluded_duration("min")
-        summary["nblinks"] = self.nblinks()
-        summary["blinks"] = self.blink_stats()
+        if "blink" in self.data.layer_names and "pupil" in self.variables:
+            summary["nblinks"] = self.nblinks(variables="pupil")
+            summary["blinks"] = self.blink_stats()
+        else:
+            summary["nblinks"] = {}
+            summary["blinks"] = {}
 
         return summary
 

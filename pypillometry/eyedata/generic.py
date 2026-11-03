@@ -1065,10 +1065,9 @@ class GenericEyeData(state.VersionedState, ABC):
         -------
         dict
             number of detected blinks per eye/variable, with keys like
-            "left_pupil"; combinations without blinks are left out
+            "left_pupil" (0 for combinations without blinks)
         """
-        return {key: len(iv) for key, iv in self.get_blinks(eyes, variables).items()
-                if len(iv) > 0}
+        return {key: len(iv) for key, iv in self.get_blinks(eyes, variables).items()}
 
 
     def blink_stats(self, eyes: list = [], units: str = "ms") -> dict:
@@ -1088,22 +1087,12 @@ class GenericEyeData(state.VersionedState, ABC):
         Returns
         -------
         dict
-            Dictionary mapping eye name to stats dict (number, mean, sd,
-            min, max and total duration of blinks), or None if no blinks
+            stats dict (number, mean, sd, min, max and total duration of
+            blinks; number 0 and NaN without blinks) for each eye with pupil
+            data, with keys like "left_pupil"
         """
-        eyes = list(dict.fromkeys(eye for eye, _ in self.data.select(eyes)))
-        
-        stats = dict()
-        for eye in eyes:
-            if f"{eye}_pupil" not in self.data:
-                stats[eye] = None  # no pupil data, so no blinks
-                continue
-            blinks = self.get_blinks(eye, "pupil", units=units)[f"{eye}_pupil"]
-            if len(blinks) > 0:
-                stats[eye] = blinks.stats()
-            else:
-                stats[eye] = None
-        return stats
+        return {key: blinks.stats()
+                for key, blinks in self.get_blinks(eyes, "pupil", units=units).items()}
 
 
     def quality_report(self, thresholds: Optional[dict] = None, eyes: str|list = [],
@@ -1694,17 +1683,17 @@ class GenericEyeData(state.VersionedState, ABC):
 
         if blink_stats_raw:
             counts = ", ".join(
-                f"{eye}: {stats['n']}" for eye, stats in blink_stats_raw.items() if stats
+                f"{key}: {stats['n']}" for key, stats in blink_stats_raw.items()
             )
             overview.insert(-1, ("Blinks", counts))
 
         blink_stats = []
-        for eye, stats in blink_stats_raw.items():
-            if not stats:
+        for key, stats in blink_stats_raw.items():
+            if not stats["n"]:
                 continue
             blink_stats.append(
                 {
-                    "eye": eye,
+                    "eye": key,
                     "count": stats["n"],
                     "mean_sd": f"{stats['mean']:.1f} ± {stats['sd']:.1f}",
                     "range": f"[{stats['min']:.1f}, {stats['max']:.1f}]",
