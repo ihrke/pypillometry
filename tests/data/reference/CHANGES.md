@@ -136,3 +136,38 @@ Changes of the API calls alone (same numbers) need no entry.
 - **Why**: windows are no longer clipped in `get_intervals`; the data
   within a window are used.
 - **Step**: 4, `refactor/04-epochs`
+
+### Interpolated blinks are a layer; `downsample` keeps a layer where it covers more than half of a window
+
+- **Case**: `g.downsample.rlmw.{250,100}`, keys `interpolated.*`, `mask.*`
+  (pupil) and the scalars `masked.*` (the expected values are computed in
+  `tests/test_reference_outputs.py`, `_downsampled_runs` and
+  `_downsampled_mask`, from the full-rate intervals of case
+  `b.blinks_interpolate.rlmw`)
+- **Change**: the interpolated samples are stored as the `interpolated`
+  mask layer (not as Intervals). After `downsample`, a new sample has the
+  layer if the layer covers more than half of its window (before: the
+  interpolated blinks in samples were rescaled, start rounded down and end
+  up, so every window that touched an interpolated blink was included).
+  `get_interpolated_blinks()` returns the runs of the layer. The mask is
+  set where it was set before (all samples of the window masked) and
+  where the `interpolated` layer covers more than half of the window
+  (rlmw at 100 Hz: 407 instead of 398 masked samples, left eye). The
+  values (window means of the unmasked samples) are unchanged.
+- **Why**: one store for "interpolated" (finding D1); decision 4 of the
+  refactor plan (">½ of the window").
+- **Step**: 5, `refactor/05-mask-layers`
+
+### Interpolated blinks belong to the variable that holds the interpolated data
+
+- **Case**: none (the reference cases use `store_as="pupil"`)
+- **Change**: `pupil_blinks_interpolate(store_as="pupilinterp")` sets the
+  `interpolated` layer on `<eye>_pupilinterp`, so
+  `get_interpolated_blinks(eye, "pupilinterp")` returns them (before they
+  were stored for `<eye>_pupil`, whose data were not interpolated). The new
+  variable gets the masks and layers of the pupil.
+  Calling `pupil_blinks_interpolate` again adds to the layer (before, the
+  interpolated blinks of the last call replaced the earlier ones; the
+  earlier samples stayed masked).
+- **Why**: the layer describes the samples it is stored with.
+- **Step**: 5, `refactor/05-mask-layers`

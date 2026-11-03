@@ -236,7 +236,6 @@ class GenericEyeData(state.VersionedState, ABC):
     _STATE_FIELDS = (
         "name", "fs", "tx", ("data", "EyeDataDict"),
         ("blinks", "dict:Intervals", "_blinks"),
-        ("interpolated_blinks", "dict:Intervals", "_interpolated_blinks"),
         ("excluded", "Intervals", "_excluded"),
         "params", "history", "inplace", "info", ("original", "versioned"))
     # the events are stored as "event_onsets", "event_labels" and
@@ -255,10 +254,21 @@ class GenericEyeData(state.VersionedState, ABC):
         return st
 
     def _set_state(self, st: dict):
-        """Set the attributes from a state of the current version."""
+        """Set the attributes from a state of the current version.
+
+        States written before the mask layers existed (no ``layers`` in the
+        data) store the interpolated blinks as Intervals; they become the
+        ``"interpolated"`` layer where the stored mask is set.
+        """
         super()._set_state(st)
         self._events = Events(st["event_onsets"], st["event_labels"], units="ms",
                               meta=st["event_meta"])
+        if "layers" not in st["data"]:
+            for key, ivst in (st.get("interpolated_blinks") or {}).items():
+                if ivst is not None and key in self.data:
+                    iv = Intervals._from_state(ivst)
+                    self.data.set_layer(key, "interpolated",
+                                        iv.to_mask(self).astype(bool) & self.data._mask[key])
 
     @abstractmethod
     def __init__():
@@ -801,8 +811,10 @@ class GenericEyeData(state.VersionedState, ABC):
         """
         Get interpolated blinks as Intervals object or dict of Intervals.
         
-        Interpolated blinks are the blink regions that were successfully interpolated
-        by `pupil_blinks_interpolate()`. These may differ from detected blinks because:
+        Interpolated blinks are the runs of the ``"interpolated"`` layer:
+        the blink regions that were successfully interpolated
+        by `pupil_blinks_interpolate()` (and the intervals interpolated by
+        :meth:`interpolate_intervals`). These may differ from detected blinks because:
 
         - Blink boundaries are refined using velocity thresholds
         - Some blinks may be skipped if they're too short to interpolate
@@ -839,8 +851,26 @@ class GenericEyeData(state.VersionedState, ABC):
         get_blinks : Get detected (not interpolated) blinks
         pupil_blinks_interpolate : Interpolate blinks
         """
-        return self._stored_intervals(self._interpolated_blinks, eyes, variables,
-                                      units, "interpolated_blinks")
+        return self._layer_intervals("interpolated", eyes, variables, units,
+                                     "interpolated_blinks")
+
+    def _layer_intervals(self, layer, eyes, variables, units, suffix):
+        """Runs of `layer` (e.g., interpolated blinks) for eyes/variables.
+
+        Returns an Intervals object for a single eye and variable, else a
+        dict (keys like "left_pupil") over the existing eye/variable
+        combinations.
+        """
+        pairs = self.data.select(eyes, variables)
+        eyes, variables = self._get_eye_var(eyes, variables)
+        result = {}
+        for e, v in pairs:
+            key = f"{e}_{v}"
+            result[key] = Intervals.from_mask(self.data.get_layer(key, layer), self, units,
+                                              label=f"{key}_{suffix}")
+        if len(eyes) > 1 or len(variables) > 1:
+            return result
+        return next(iter(result.values()))
 
     def _channel_key(self, eye, var):
         """Key ``"<eye>_<var>"`` of an existing channel (`var` None: `eye` is the key)."""
@@ -1015,10 +1045,8 @@ class GenericEyeData(state.VersionedState, ABC):
         """        
         ## initialize blinks (for the existing eye/variable combinations)
         self._blinks={}
-        self._interpolated_blinks={}
         for eye,variable in self.data.select(eyes, variables):
             self._blinks[f"{eye}_{variable}"] = None
-            self._interpolated_blinks[f"{eye}_{variable}"] = None        
 
     def nblinks(self, eyes=[], variables=[]) -> Dict[str, int]:
         """
@@ -1324,10 +1352,9 @@ class GenericEyeData(state.VersionedState, ABC):
                 return moved
             return Intervals(moved.to_units("ms", self).intervals, "ms", label=iv.label)
 
-        for store in (self._blinks, self._interpolated_blinks):
-            for key, iv in store.items():
-                if iv is not None:
-                    store[key] = remap(iv, keep_units=False)
+        for key, iv in self._blinks.items():
+            if iv is not None:
+                self._blinks[key] = remap(iv, keep_units=False)
         self._excluded = remap(self._excluded, keep_units=True)
 
     def _original_time(self, t):
@@ -1906,17 +1933,7 @@ class GenericEyeData(state.VersionedState, ABC):
                     blinks_to_remove.append(key)
         for key in blinks_to_remove:
             del result._blinks[key]
-            
-        # Remove interpolated blinks for dropped eyes/variables
-        interp_to_remove = []
-        for key in result._interpolated_blinks.keys():
-            parts = key.split("_", 1)
-            if len(parts) == 2:
-                eye, var = parts
-                if eye in eyes or var in variables:
-                    interp_to_remove.append(key)
-        for key in interp_to_remove:
-            del result._interpolated_blinks[key]
+
         
         return result._cast_to_data_class()
 

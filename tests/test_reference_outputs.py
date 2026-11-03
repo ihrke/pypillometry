@@ -460,16 +460,59 @@ def _segment_time_axis(stored):
     return -200. + np.arange(n) * 1000. / 500.  # both data sets at 500 Hz
 
 
+#: layers (stored in case b, as intervals) that are decimated with the
+#: ">1/2 of the window" rule and are part of the mask (step 5)
+DECIMATED_LAYERS = ("interpolated",)
+
+
+def _more_than_half(case_id, key):
+    """Layers of case b (full rate) decimated as in `downsample` (step 5): set
+    where they cover more than half of the window."""
+    from pypillometry.signal.baseline import downsample
+    factor = 500 // int(case_id.rsplit(".", 1)[1])
+    full = load_arrays("b.blinks_interpolate.rlmw")
+    n = len(full["mask.left_pupil"])
+    out = {}
+    for name in ("interpolated", "blinks"):
+        m = np.zeros(n)  # gaze: no layers
+        for on, off in full.get(f"{name}.{key}", []):
+            m[on:off] = 1
+        out[name] = downsample(m, factor) > 0.5
+    return out
+
+
+def _downsampled_runs(case_id, key, stored):
+    """Interpolated blinks after `downsample`: runs of the decimated layer."""
+    run = _more_than_half(case_id, key.partition(".")[2])["interpolated"]
+    return iv_samples(pp.Intervals.from_mask(run))
+
+
+def _downsampled_mask(case_id, key, stored):
+    """Mask after `downsample`: masked as before (all samples of the window
+    masked) or a layer covers more than half of the window."""
+    layers = _more_than_half(case_id, key.partition(".")[2])
+    return stored | np.any([layers[name] for name in DECIMATED_LAYERS], axis=0)
+
+
+def _downsampled_masked(case_id, key, stored):
+    """Number of masked samples after `downsample` (see `_downsampled_mask`)."""
+    mkey = "mask." + key.partition(".")[2]
+    return int(_downsampled_mask(case_id, mkey, load_arrays(case_id)[mkey]).sum())
+
+
 #: intended changes (see CHANGES.md): (case id prefix, result key prefix) ->
-#: function mapping the stored reference value to the expected value
-CHANGED = {("e.segments.", "tx."): _segment_time_axis}
+#: function mapping (case id, key, stored reference value) to the expected value
+CHANGED = {("e.segments.", "tx."): lambda case_id, key, stored: _segment_time_axis(stored),
+           ("g.downsample.", "interpolated."): _downsampled_runs,
+           ("g.downsample.", "mask."): _downsampled_mask,
+           ("g.downsample.", "masked."): _downsampled_masked}
 
 
 def expected_value(case_id, key, stored):
     """The stored reference value, or the corrected one for an intended change."""
     for (case_prefix, key_prefix), fct in CHANGED.items():
         if case_id.startswith(case_prefix) and key.startswith(key_prefix):
-            return fct(stored)
+            return fct(case_id, key, stored)
     return stored
 
 
@@ -487,6 +530,7 @@ def test_reference_output(case_id):
     for k in sorted(ref_arrays):
         assert_same(f"{case_id}:{k}", arrays[k], expected_value(case_id, k, ref_arrays[k]))
     for k, v in sorted(ref["scalars"].items()):
+        v = expected_value(case_id, k, v)
         if isinstance(v, float):
             assert_same(f"{case_id}:{k}", scalars[k], v)
         else:

@@ -429,7 +429,6 @@ class PupilData(GenericEyeData):
         
         # Initialize blinks for merged variable
         obj._blinks["merged_pupil"] = None
-        obj._interpolated_blinks["merged_pupil"] = None
         
         # Optionally remove original eye data
         if not keep_eyes:
@@ -437,8 +436,6 @@ class PupilData(GenericEyeData):
             del obj.data["right_pupil"]
             obj._blinks.pop("left_pupil", None)
             obj._blinks.pop("right_pupil", None)
-            obj._interpolated_blinks.pop("left_pupil", None)
-            obj._interpolated_blinks.pop("right_pupil", None)
             logger.debug("Removed original left/right pupil data")
         
         return obj
@@ -697,8 +694,9 @@ class PupilData(GenericEyeData):
         The on- and offsets of each blink are refined using the velocity profile
         before interpolating. Blinks that are so close that the anchor points
         of one fall into the other are merged and interpolated together.
-        Interpolated samples remain masked; the
-        interpolated blinks can be retrieved with
+        The interpolated samples get the ``"interpolated"`` layer (on the
+        variable they are stored in, see `store_as`) and remain masked in
+        ``data.mask``; the interpolated blinks can be retrieved with
         :meth:`~pypillometry.GenericEyeData.get_interpolated_blinks`.
 
         This procedure relies heavily on eye-balling (reconstructing visually convincing signal),
@@ -760,7 +758,7 @@ class PupilData(GenericEyeData):
         for eye in eyes:
             logger.debug(f"Interpolating blinks for eye {eye}")
             syr=obj.data[eye,"pupil"].copy() ## interpolated signal
-            mask=obj.data.mask[eye+"_pupil"].copy() # copy of mask
+            interpolated = np.zeros(len(syr), dtype=bool)  # interpolated samples
             bls = self.get_blinks(eye, "pupil")
             
             # Use raw data for velocity computation - blink_onsets_mahot handles NaN/zeros internally
@@ -802,22 +800,21 @@ class PupilData(GenericEyeData):
                 intfct=interp1d(txpts,sypts, kind=interp_type)
                 islic=slice(t2, t3)
                 syr[islic]=intfct(obj.tx[islic])
-                # mark the interpolated datapoints as masked
-                mask[islic] = 1
+                # mark the interpolated datapoints
+                interpolated[islic] = True
                 
                 # Record this successfully interpolated blink
                 interpolated_intervals.append((t2, t3))
 
-            # store interpolated data with mask preservation
-            obj.data.set_with_mask(f"{eye}_{store_as}", syr, mask=mask)
-            
-            # Store interpolated blinks as Intervals object
-            key = f"{eye}_pupil"
-            obj._interpolated_blinks[key] = Intervals(
-                intervals=interpolated_intervals,
-                units="samples",
-                label=f"{key}_interpolated_blinks")
-            logger.debug(f"Stored {len(interpolated_intervals)} interpolated blinks for {eye}")
+            # store interpolated data (with the masks and layers of the
+            # pupil) and set the interpolated layer
+            key, target = f"{eye}_pupil", f"{eye}_{store_as}"
+            if target == key:
+                obj.data.set_with_mask(key, syr, preserve_mask=True)
+            else:
+                obj.data._set_channel(target, syr, obj.data._mask[key], obj.data.layers[key])
+            obj.data.set_layer(target, "interpolated", interpolated)
+            logger.debug(f"Interpolated {len(interpolated_intervals)} blinks for {eye}")
 
         return obj
             

@@ -855,10 +855,9 @@ def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[]) -> 
                             "percentage of masked pupil samples (missing data, blinks and "
                             "other artifacts)"))
             other = m & ~nan & ~blinks_mask.get(eye, np.zeros(n_total, bool))
-            if obj._interpolated_blinks.get(key) is not None:
+            if "interpolated" in obj.data.layer_names:
                 processed = True
-                interp = (obj.get_interpolated_blinks(eye, "pupil").to_mask(obj).astype(bool)
-                          & inc).sum()
+                interp = (obj.data.get_layer(key, "interpolated") & inc).sum()
                 metrics.append(("interpolated_pct", "interpolated", _pct(interp, n),
                                 "percentage of pupil samples that were interpolated (e.g., blinks)"))
         if eye in gaze_eyes:

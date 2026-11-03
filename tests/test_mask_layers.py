@@ -205,3 +205,37 @@ class TestPolicies:
 def pp_policy(*args, **kwargs):
     import pypillometry as pp
     return pp.MaskPolicy(*args, **kwargs)
+
+
+def blink_data():
+    """PupilData (100 Hz, 10 s) with NaN blinks."""
+    import pypillometry as pp
+    n = 1000
+    t = np.arange(n) * 10.
+    p = 1000 + 20 * np.sin(2 * np.pi * t / 3000)
+    for on, off in [(200, 215), (500, 520), (800, 812)]:
+        p[on:off] = np.nan
+    return pp.PupilData(left_pupil=p, sampling_rate=100)
+
+
+class TestInterpolatedLayer:
+
+    def test_blinks_interpolate_sets_layer(self):
+        d = blink_data().pupil_blinks_detect(apply_mask=True).pupil_blinks_interpolate()
+        interp = d.data.get_layer("left_pupil", "interpolated")
+        iv = d.get_interpolated_blinks("left", "pupil")
+        assert len(iv) == 3
+        np.testing.assert_array_equal(iv.to_mask(d).astype(bool), interp)
+        # interpolated samples stay masked in the old mask, are used by default
+        assert d.data.mask["left_pupil"][interp].all()
+        assert not d.mask("left", "pupil")[interp].any()
+        assert d.mask("left", "pupil", policy="strict")[interp].all()
+
+    def test_store_as_other_variable(self):
+        d = blink_data().pupil_blinks_detect(apply_mask=True)
+        d.pupil_blinks_interpolate(store_as="pupilinterp")
+        assert not d.data.get_layer("left_pupil", "interpolated").any()
+        assert len(d.get_interpolated_blinks("left", "pupilinterp")) == 3
+        np.testing.assert_array_equal(
+            d.data.mask["left_pupilinterp"],
+            d.data.mask["left_pupil"] | d.data.get_layer("left_pupilinterp", "interpolated"))
