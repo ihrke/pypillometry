@@ -148,6 +148,26 @@ def _decimate_factor(fs, fsd, dsfac):
     return factor
 
 
+def _check_timebase(tx, fs, rtol=0.05):
+    """
+    Raise a ValueError if the sampling rate `fs` (Hz) does not fit the time
+    vector `tx` (ms).
+
+    `fs` fits if ``1000/fs`` agrees (within `rtol`) with the median or the
+    mean step of `tx`. The median is robust to gaps, the mean to time
+    stamps rounded to whole ms (e.g., 300 Hz with steps of 3 and 4 ms).
+    """
+    if isinstance(fs, bool) or not isinstance(fs, numbers.Real) or not (0 < fs < np.inf):
+        raise ValueError(f"the sampling rate must be a positive number (Hz), got {fs!r}")
+    if len(tx) < 2:
+        return
+    median = np.median(np.diff(tx))
+    mean = (tx[-1] - tx[0]) / (len(tx) - 1)
+    if not any(np.isclose(step, 1000. / fs, rtol=rtol, atol=0) for step in (median, mean)):
+        raise ValueError(f"the sampling rate ({fs:g} Hz) does not match the time vector "
+                         f"(median step {median:g} ms, i.e. {1000. / median:g} Hz)")
+
+
 class GenericEyeData(state.VersionedState, ABC):
     """
     Generic class for eyedata. 
@@ -222,15 +242,14 @@ class GenericEyeData(state.VersionedState, ABC):
 
         ## set time array and sampling rate
         if time is None:
-            self.tx=np.arange(len(self.data))*1000./sampling_rate
+            tx=np.arange(len(self.data))*1000./sampling_rate
         else:
-            self.tx=np.array(time, dtype=float)
+            tx=np.array(time, dtype=float)
 
         if sampling_rate is None:
-            self.fs=np.round(1000./np.median(np.diff(self.tx)))
-        else:
-            self.fs=sampling_rate
-            
+            sampling_rate=np.round(1000./np.median(np.diff(tx)))
+        self._set_timebase(tx, sampling_rate)
+
         if event_onsets is None:
             event_onsets = []
         if event_labels is None:
@@ -256,6 +275,32 @@ class GenericEyeData(state.VersionedState, ABC):
         ## @keephistory and keep it out of the history)
         if fill_time_discontinuities:
             type(self).fill_time_discontinuities.__wrapped__(self)
+
+    def _set_timebase(self, tx, fs=None):
+        """
+        Set the time vector `tx` (ms) and the sampling rate `fs` (Hz) (in place).
+
+        This is the only place where `tx` and `fs` are changed. `fs` must
+        fit the time vector (see :func:`_check_timebase`).
+
+        Parameters
+        ----------
+        tx : array_like
+            new time vector in ms
+        fs : float or None, optional
+            new sampling rate in Hz; None: keep the current one
+
+        Raises
+        ------
+        ValueError
+            if `fs` does not match the time vector
+        """
+        tx = np.asarray(tx, dtype=float)
+        if fs is None:
+            fs = self.fs
+        _check_timebase(tx, fs)
+        self.tx = tx
+        self.fs = fs
 
     def _samples(self, duration, units="ms", rounding="down"):
         """Number of samples in `duration` (e.g., a window size or margin).

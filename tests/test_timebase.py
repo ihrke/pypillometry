@@ -25,6 +25,28 @@ class TestConstructorTime(unittest.TestCase):
         d = pp.PupilData(left_pupil=np.ones(4), sampling_rate=300)
         np.testing.assert_allclose(d.tx, np.arange(4) * 1000. / 300)
 
+    def test_rate_must_match_time_vector(self):
+        tx = np.arange(100) * 3.  # 333.3 Hz
+        with self.assertRaisesRegex(ValueError, "does not match the time vector"):
+            pp.PupilData(left_pupil=np.ones(100), time=tx, sampling_rate=300)
+        with self.assertRaisesRegex(ValueError, "positive number"):
+            pp.PupilData(left_pupil=np.ones(100), time=tx, sampling_rate=0)
+        d = pp.PupilData(left_pupil=np.ones(100), time=tx, sampling_rate=1000. / 3)
+        self.assertAlmostEqual(d.fs, 1000. / 3)
+        # without a sampling rate, it is taken from the time vector
+        self.assertEqual(pp.PupilData(left_pupil=np.ones(100), time=tx).fs, 333.)
+
+    def test_tolerated_time_vectors(self):
+        # 300 Hz with time stamps rounded to whole ms (steps of 3 and 4 ms)
+        tx = np.floor(np.arange(300) * 1000. / 300)
+        pp.PupilData(left_pupil=np.ones(300), time=tx, sampling_rate=300)
+        # a gap in the time vector
+        tx = np.r_[0:500, 800:1000] * 2.
+        pp.PupilData(left_pupil=np.ones(700), time=tx, sampling_rate=500,
+                     fill_time_discontinuities=False)
+        # a single sample
+        pp.PupilData(left_pupil=np.ones(1), time=[0.], sampling_rate=500)
+
 
 class TestDownsampleRate(unittest.TestCase):
 
