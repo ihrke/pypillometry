@@ -10,6 +10,28 @@ from loguru import logger
 from ..convenience import ByteSize, _round_values
 from ..state import Stateful
 
+
+def _check_eye_name(eye: str) -> None:
+    """Raise a ValueError if `eye` cannot be used as an eye name.
+
+    Keys are ``"<eye>_<variable>"`` and the variable is everything after the
+    first ``_``, so eye names may not contain ``_``.
+    """
+    if not isinstance(eye, str) or eye == "" or "_" in eye:
+        raise ValueError(
+            f"Invalid eye name {eye!r}: eye names must be non-empty and may not "
+            "contain '_' (keys are '<eye>_<variable>' and the variable is "
+            "everything after the first '_')")
+
+
+def _join_key(key: Tuple[str, str]) -> str:
+    """Join an ``(eye, variable)`` tuple to a key, checking the eye name."""
+    if len(key) != 2:
+        raise ValueError("Tuple key must have exactly 2 elements (eye, variable)")
+    _check_eye_name(key[0])
+    return "_".join(key)
+
+
 class EyeDataDict(MutableMapping, Stateful):
     """
     A dictionary that contains 1-dimensional ndarrays of equal length
@@ -57,7 +79,7 @@ class EyeDataDict(MutableMapping, Stateful):
             order in which they were added
         """
         if variable is not None:
-            eyes=[k.split("_")[0] for k in self.data.keys() if k.endswith("_"+variable)]
+            eyes=[k.split("_")[0] for k in self.data.keys() if k.partition("_")[2] == variable]
         else:
             eyes=[k.split("_")[0] for k in self.data.keys()]
         return list(dict.fromkeys(eyes))
@@ -116,14 +138,77 @@ class EyeDataDict(MutableMapping, Stateful):
         EyeDataDict
             A new EyeDataDict containing only data for the specified variable
         """
-        return EyeDataDict({k:v for k,v in self.data.items() if k.endswith("_"+variable)})
+        return EyeDataDict({k:v for k,v in self.data.items() if k.partition("_")[2] == variable})
+
+    def select(self, eyes=None, variables=None) -> List[Tuple[str, str]]:
+        """
+        Return the existing (eye, variable) pairs for the given eyes and variables.
+
+        Only pairs for which data is stored are returned, so data where not
+        every eye has every variable (e.g., ``left_pupil``, ``left_x``,
+        ``right_pupil``) can be processed pair by pair.
+
+        Parameters
+        ----------
+        eyes : str or list of str, optional
+            eye(s) to select; if None or empty, all available eyes
+        variables : str or list of str, optional
+            variable(s) to select; if None or empty, all available variables
+
+        Returns
+        -------
+        list of tuple
+            ``(eye, variable)`` pairs, ordered by eye, then variable (in the
+            order given or, for all eyes/variables, the order of the data)
+
+        Raises
+        ------
+        KeyError
+            if something that was explicitly requested does not exist: a
+            pair (if both `eyes` and `variables` are given), or an eye or
+            variable without any data among the selected pairs (if only
+            one of them is given). The message lists the available channels.
+        ValueError
+            if a requested eye name contains ``_`` (eye names may not
+            contain ``_``, see :meth:`_validate_key`)
+
+        Examples
+        --------
+        >>> d = EyeDataDict(left_pupil=[1,2], left_x=[3,4], right_pupil=[5,6])
+        >>> d.select()
+        [('left', 'pupil'), ('left', 'x'), ('right', 'pupil')]
+        >>> d.select(variables="x")
+        [('left', 'x')]
+        """
+        eyes_given = eyes is not None and len(eyes) > 0
+        vars_given = variables is not None and len(variables) > 0
+        eyes = ([eyes] if isinstance(eyes, str) else list(eyes)) if eyes_given else self.eyes
+        variables = (([variables] if isinstance(variables, str) else list(variables))
+                     if vars_given else self.variables)
+
+        pairs = [(e, v) for e in eyes for v in variables if f"{e}_{v}" in self.data]
+        if eyes_given:
+            for eye in eyes:
+                _check_eye_name(eye)
+        if eyes_given and vars_given:
+            missing = [f"{e}_{v}" for e in eyes for v in variables if (e, v) not in pairs]
+        elif eyes_given:
+            missing = [e for e in eyes if not any(pe == e for pe, _ in pairs)]
+        elif vars_given:
+            missing = [v for v in variables if not any(pv == v for _, pv in pairs)]
+        else:
+            missing = []
+        if missing:
+            raise KeyError("No data for %s; available channels: %s"
+                           % (", ".join(missing), ", ".join(self.data.keys())))
+        return pairs
 
     def __contains__(self, key):
         return key in self.data
 
     def __getitem__(self, key):
         if isinstance(key, tuple):
-            key = "_".join(key)
+            key = _join_key(key)
         return self.data[key]
 
     def __setitem__(self, key: str, value: NDArray) -> None:
@@ -216,7 +301,7 @@ class EyeDataDict(MutableMapping, Stateful):
 
     def __delitem__(self, key):
         if isinstance(key, tuple):
-            key = "_".join(key)
+            key = _join_key(key)
         del self.data[key]
         del self.mask[key]
 
@@ -237,13 +322,17 @@ class EyeDataDict(MutableMapping, Stateful):
         return r
 
     def _validate_key(self, key: Union[str, Tuple[str, str]]) -> str:
-        """Validate and normalize key format."""
+        """Validate and normalize key format.
+
+        Tuple keys ``(eye, variable)`` are joined with ``_``; the eye name may
+        not contain ``_``, since the variable is everything after the first
+        ``_`` (e.g., ``("my_eye", "pupil")`` would be read back as eye
+        ``"my"``, variable ``"eye_pupil"``).
+        """
         if not isinstance(key, (str, tuple)):
             raise TypeError("Key must be string or tuple")
         if isinstance(key, tuple):
-            if len(key) != 2:
-                raise ValueError("Tuple key must have exactly 2 elements (eye, variable)")
-            key = "_".join(key)
+            key = _join_key(key)
         if "_" not in key:
             raise ValueError("Key must be in format 'eye_variable'")
         return key

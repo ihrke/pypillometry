@@ -11,7 +11,7 @@ from .. import io
 from ..convenience import sizeof_fmt, ByteSize, _round_values, requires_package, is_url, suppress_all_output, normalize_unit, _warn_if_ignores_mask
 from ..units import UNSET, _has_units, _time_values_and_units, parse_time, _ms_to_samples, _samples_to_ms
 from ..io import download
-from .eyedatadict import EyeDataDict
+from .eyedatadict import EyeDataDict, _join_key
 from .experimental_setup import ExperimentalSetup
 from ..signal import baseline
 from ..intervals import stat_event_interval, Intervals
@@ -21,7 +21,6 @@ from .. import config
 from .. import state
 
 import numpy as np
-import itertools
 import numbers
 import warnings
 from loguru import logger
@@ -109,7 +108,24 @@ def keephistory(func):
             target.add_to_history({"funcstring": fstr, "funcname": func.__name__})
         return obj
     return wrapper
-        
+
+
+def _per_pair(pairs, fct):
+    """Nested dict ``{eye: {var: fct(eye, var)}}`` for the (eye, var) `pairs`."""
+    result = {}
+    for eye, var in pairs:
+        result.setdefault(eye, {})[var] = fct(eye, var)
+    return result
+
+
+def _check_per_pair(pairs, mean, sd):
+    """Raise a ValueError if `mean` or `sd` miss a value for one of the `pairs`."""
+    for eye, var in pairs:
+        if eye not in mean or eye not in sd:
+            raise ValueError("mean and sd must be provided for each eye")
+        if var not in mean[eye] or var not in sd[eye]:
+            raise ValueError("mean and sd must be provided for each variable")
+
 
 class GenericEyeData(state.VersionedState, ABC):
     """
@@ -267,7 +283,7 @@ class GenericEyeData(state.VersionedState, ABC):
             if key[0] == "time":
                 unit = key[1] if len(key) > 1 else None
                 return self._get_time_array(unit)
-            normalized_key = "_".join(key)
+            normalized_key = _join_key(key)
 
         if isinstance(normalized_key, str):
             if normalized_key.startswith("time"):
@@ -324,7 +340,7 @@ class GenericEyeData(state.VersionedState, ABC):
                 unit = key[1] if len(key) > 1 else None
                 self._set_time_array(value, unit)
                 return
-            normalized_key = "_".join(key)
+            normalized_key = _join_key(key)
         
         # Handle string keys starting with "time"
         if isinstance(normalized_key, str):
@@ -405,7 +421,7 @@ class GenericEyeData(state.VersionedState, ABC):
                 raise KeyError("Empty key tuple")
             if key[0] == "time":
                 raise ValueError("Cannot delete time array using __delitem__")
-            normalized_key = "_".join(key)
+            normalized_key = _join_key(key)
                 
         # Delete from EyeDataDict (removes both data and mask)
         del self.data[normalized_key]
@@ -483,6 +499,20 @@ class GenericEyeData(state.VersionedState, ABC):
         logger.debug("%s(): eyes=%s, vars=%s" % (funcname, repr(eyes), repr(variables)))
         return eyes, variables
 
+    def _eyes_with(self, eyes, variables):
+        """Private helper: the eyes that have data for all `variables`.
+
+        Eyes are taken from `eyes` (all available eyes if empty); without
+        explicitly requested eyes, eyes that lack one of the variables are
+        left out. Raises a KeyError if a requested eye/variable combination
+        does not exist (see :meth:`~pypillometry.EyeDataDict.select`).
+        """
+        if isinstance(variables, str):
+            variables = [variables]
+        pairs = self.data.select(eyes, variables)
+        found = dict.fromkeys(eye for eye, _ in pairs)
+        return [eye for eye in found if all((eye, var) in pairs for var in variables)]
+
     def _get_inplace(self, inplace):
         """Private helper function.
         
@@ -557,17 +587,15 @@ class GenericEyeData(state.VersionedState, ABC):
             if intervals is not None and not isinstance(intervals, Intervals):
                 raise TypeError(f"intervals must be an Intervals object, dict, or None, got {type(intervals)}")
             
-            eyes, variables = self._get_eye_var(eyes, variables)
+            keys = [f"{eye}_{var}" for eye, var in self.data.select(eyes, variables)]
             
-            # Store for all combinations of eyes and variables
-            for eye in eyes:
-                for var in variables:
-                    key = f"{eye}_{var}"
-                    self._blinks[key] = intervals
+            # Store for all existing combinations of eyes and variables
+            for key in keys:
+                self._blinks[key] = intervals
             
             # Apply mask if requested and intervals exist
             if apply_mask and intervals is not None:
-                self.mask_intervals(intervals, eyes=eyes, variables=variables, inplace=True)
+                self.mask_intervals({key: intervals for key in keys}, inplace=True)
 
     def get_blinks(self, eyes: str|list = [], variables: str|list = [], 
                    units: str = "samples"):
@@ -594,6 +622,12 @@ class GenericEyeData(state.VersionedState, ABC):
         Intervals or dict
             If single eye and variable: returns Intervals object.
             If multiple eyes/variables: returns dict with keys like "left_pupil".
+
+        Raises
+        ------
+        KeyError
+            if a requested eye/variable combination does not exist (see
+            :meth:`~pypillometry.EyeDataDict.select`)
             
         Examples
         --------
@@ -608,11 +642,13 @@ class GenericEyeData(state.VersionedState, ABC):
         """Intervals stored in `store` (e.g., blinks) for eyes/variables.
 
         Returns an Intervals object for a single eye and variable, else a
-        dict (keys like "left_pupil"); missing entries are empty Intervals.
+        dict (keys like "left_pupil") over the existing eye/variable
+        combinations; combinations without stored intervals get empty Intervals.
         """
+        pairs = self.data.select(eyes, variables)
         eyes, variables = self._get_eye_var(eyes, variables)
         result = {}
-        for e, v in itertools.product(eyes, variables):
+        for e, v in pairs:
             key = f"{e}_{v}"
             iv = store.get(key)
             if iv is None:
@@ -654,6 +690,12 @@ class GenericEyeData(state.VersionedState, ABC):
         Intervals or dict
             If single eye and variable: returns Intervals object.
             If multiple eyes/variables: returns dict with keys like "left_pupil".
+
+        Raises
+        ------
+        KeyError
+            if a requested eye/variable combination does not exist (see
+            :meth:`~pypillometry.EyeDataDict.select`)
             
         See Also
         --------
@@ -690,6 +732,12 @@ class GenericEyeData(state.VersionedState, ABC):
         Intervals or dict
             If single eye and variable: returns Intervals object.
             If multiple eyes/variables: returns dict with keys like "left_pupil".
+
+        Raises
+        ------
+        KeyError
+            if a requested eye/variable combination does not exist (see
+            :meth:`~pypillometry.EyeDataDict.select`)
             
         Examples
         --------
@@ -697,16 +745,12 @@ class GenericEyeData(state.VersionedState, ABC):
         >>> mask_ms = data.mask_as_intervals('left', 'pupil', units='ms')
         >>> mask_dict = data.mask_as_intervals(['left', 'right'], 'pupil')
         """
+        pairs = self.data.select(eyes, variables)
         eyes, variables = self._get_eye_var(eyes, variables)
         result = {}
-        for e, v in itertools.product(eyes, variables):
+        for e, v in pairs:
             key = f"{e}_{v}"
-            if key in self.data.mask:
-                mask = self.data.mask[key]
-            elif len(eyes) > 1 or len(variables) > 1:
-                continue  # leave out combinations not in the data
-            else:
-                mask = np.zeros(len(self.tx))
+            mask = self.data.mask[key]
             result[key] = Intervals.from_mask(mask, self, units, label=label or f"{key}_mask")
         if len(eyes) > 1 or len(variables) > 1:
             return result
@@ -743,12 +787,10 @@ class GenericEyeData(state.VersionedState, ABC):
         variables: str or list
             list of variables to initialize blinks for; if empty, initialize for all
         """        
-        eyes,variables=self._get_eye_var(eyes,variables)
-
-        ## initialize blinks
+        ## initialize blinks (for the existing eye/variable combinations)
         self._blinks={}
         self._interpolated_blinks={}
-        for eye,variable in itertools.product(eyes, variables):
+        for eye,variable in self.data.select(eyes, variables):
             self._blinks[f"{eye}_{variable}"] = None
             self._interpolated_blinks[f"{eye}_{variable}"] = None        
 
@@ -771,10 +813,8 @@ class GenericEyeData(state.VersionedState, ABC):
             number of detected blinks per eye/variable, with keys like
             "left_pupil"; combinations without blinks are left out
         """
-        eyes,variables=self._get_eye_var(eyes,variables)
-        
         return {eye+"_"+var:len(self.get_blinks(eye,var)) 
-                for eye,var in itertools.product(eyes,variables)
+                for eye,var in self.data.select(eyes,variables)
                 if len(self.get_blinks(eye,var)) > 0}
 
 
@@ -798,10 +838,13 @@ class GenericEyeData(state.VersionedState, ABC):
             Dictionary mapping eye name to stats dict (number, mean, sd,
             min, max and total duration of blinks), or None if no blinks
         """
-        eyes, _ = self._get_eye_var(eyes, [])
+        eyes = list(dict.fromkeys(eye for eye, _ in self.data.select(eyes)))
         
         stats = dict()
         for eye in eyes:
+            if f"{eye}_pupil" not in self.data:
+                stats[eye] = None  # no pupil data, so no blinks
+                continue
             blinks = self.get_blinks(eye, "pupil", units=units)
             if len(blinks) > 0:
                 stats[eye] = blinks.stats()
@@ -2210,32 +2253,27 @@ class GenericEyeData(state.VersionedState, ABC):
         and are used by :meth:`unscale`.
         """
         obj = self._get_inplace(inplace)
-        eyes,variables=self._get_eye_var(eyes,variables)
+        pairs = obj.data.select(eyes, variables)
 
         if mean is None:
             # use only non-masked samples
-            mean={eye:{var:np.nanmean(obj[eye,var].compressed()) for var in variables} for eye in eyes}
+            mean = _per_pair(pairs, lambda eye, var: np.nanmean(obj[eye,var].compressed()))
         elif isinstance(mean, numbers.Real):
-            mean={eye:{var:mean for var in variables} for eye in eyes}            
+            mean = _per_pair(pairs, lambda eye, var, val=mean: val)
         elif not isinstance(mean, dict):
             raise ValueError("mean must be None, a number or dict")
 
         if sd is None:
-            sd={eye:{var:np.nanstd(obj[eye,var].compressed()) for var in variables} for eye in eyes}
+            sd = _per_pair(pairs, lambda eye, var: np.nanstd(obj[eye,var].compressed()))
         elif isinstance(sd, numbers.Real):
-            sd={eye:{var:sd for var in variables} for eye in eyes}
+            sd = _per_pair(pairs, lambda eye, var, val=sd: val)
         elif not isinstance(sd, dict):
             raise ValueError("sd must be None, a number or dict")
         logger.debug("Mean: %s" % mean)
         logger.debug("SD: %s" % sd)
 
         # check that all eye/var combinations are present in mean/sd
-        for eye in eyes:
-            if eye not in mean or eye not in sd:
-                raise ValueError("mean and sd must be provided for each eye")
-            for var in variables:
-                if var not in mean[eye] or var not in sd[eye]:
-                    raise ValueError("mean and sd must be provided for each variable")
+        _check_per_pair(pairs, mean, sd)
 
         # store scaling parameters
         obj.params["scale"]={
@@ -2243,17 +2281,12 @@ class GenericEyeData(state.VersionedState, ABC):
             "sd": sd
         }
 
-        for var in variables:
-            for eye in eyes:
-                if eye not in obj.eyes:
-                    raise ValueError("No data for eye %s available" % eye)
-                if var not in obj.variables:
-                    raise ValueError("No data for variable %s available" % var)
-                # scale the masked samples too (masked-array arithmetic
-                # would leave them unchanged), keep the mask
-                x = obj[eye, var]
-                obj[eye, var] = np.ma.array((x.data - mean[eye][var]) / sd[eye][var],
-                                            mask=np.ma.getmaskarray(x))
+        for eye, var in pairs:
+            # scale the masked samples too (masked-array arithmetic
+            # would leave them unchanged), keep the mask
+            x = obj[eye, var]
+            obj[eye, var] = np.ma.array((x.data - mean[eye][var]) / sd[eye][var],
+                                        mask=np.ma.getmaskarray(x))
         return obj
         
     @keephistory    
@@ -2291,38 +2324,30 @@ class GenericEyeData(state.VersionedState, ABC):
             the unscaled object (`self` or a copy, depending on `inplace`)
         """
         obj = self._get_inplace(inplace)
-        eyes,variables=self._get_eye_var(eyes,variables)
+        pairs = obj.data.select(eyes, variables)
 
         # if no parameters are provided, use the stored ones (normal)
         if mean is None:
             mean=obj.params["scale"]["mean"]
         elif isinstance(mean, numbers.Real):
-            mean={eye:{var:mean for var in variables} for eye in eyes}
+            mean = _per_pair(pairs, lambda eye, var, val=mean: val)
         elif not isinstance(mean, dict):
             raise ValueError("mean must be None, a number or dict")
         if sd is None:
             sd=obj.params["scale"]["sd"]
         elif isinstance(sd, numbers.Real):
-            sd={eye:{var:sd for var in variables} for eye in eyes}
+            sd = _per_pair(pairs, lambda eye, var, val=sd: val)
         elif not isinstance(sd, dict):
             raise ValueError("sd must be None, a number or dict")
         
         # check whether unscaling parameters are provided
-        for eye in eyes:
-            if eye not in mean or eye not in sd:
-                raise ValueError("mean and sd must be provided for each eye")
-            for var in variables:
-                if var not in mean[eye] or var not in sd[eye]:
-                    raise ValueError("mean and sd must be provided for each variable")
+        _check_per_pair(pairs, mean, sd)
 
-        for eye in eyes:
-            for var in variables:                
-                if var not in obj.variables:
-                    raise ValueError("No data for variable %s available" % var)
-                # unscale the masked samples too, keep the mask
-                x = obj[eye, var]
-                obj[eye, var] = np.ma.array(x.data * sd[eye][var] + mean[eye][var],
-                                            mask=np.ma.getmaskarray(x))
+        for eye, var in pairs:
+            # unscale the masked samples too, keep the mask
+            x = obj[eye, var]
+            obj[eye, var] = np.ma.array(x.data * sd[eye][var] + mean[eye][var],
+                                        mask=np.ma.getmaskarray(x))
         return obj    
 
     
@@ -2406,7 +2431,8 @@ class GenericEyeData(state.VersionedState, ABC):
         ``obj["mean", "pupil"]``). Each sample is the mean over the eyes
         in which it is not masked; it is masked in the merged data only if
         it is masked in all merged eyes (it then holds the mean of the
-        stored values, e.g., of interpolated blinks).
+        stored values, e.g., of interpolated blinks). Each variable is
+        merged over the selected eyes that have data for it.
 
         Parameters
         ----------
@@ -2431,18 +2457,13 @@ class GenericEyeData(state.VersionedState, ABC):
             the object with merged data (`self` or a copy, depending on `inplace`)
         """
         obj = self._get_inplace(inplace)
-        eyes,variables=self._get_eye_var(eyes,variables)
+        pairs = obj.data.select(eyes, variables)
 
         if method=="mean":            
-            for var in variables:
-                # Collect masked arrays from all eyes
-                eye_data = []
-                for eye in eyes:
-                    if var not in obj.variables:
-                        raise ValueError("No data for variable %s available" % var)
-                    if eye not in obj.eyes:
-                        raise ValueError("No data for eye %s available" % eye)
-                    eye_data.append(obj[eye, var])
+            for var in dict.fromkeys(v for _, v in pairs):
+                # Collect masked arrays from all eyes with this variable
+                eyes = [eye for eye, v in pairs if v == var]
+                eye_data = [obj[eye, var] for eye in eyes]
                 
                 # Mean over the unmasked eyes; masked only where all eyes
                 # are masked
@@ -2459,8 +2480,8 @@ class GenericEyeData(state.VersionedState, ABC):
                 if not keep_eyes:
                     for eye in eyes:
                         logger.debug("Dropping eye %s for variable %s" % (eye, var))
-                        del obj.data[eye+"_"+var]
                         obj.set_blinks(None, eyes=[eye], variables=[var])
+                        del obj.data[eye+"_"+var]
         else:
             raise ValueError("Method %s not implemented" % method)
 
@@ -2511,7 +2532,7 @@ class GenericEyeData(state.VersionedState, ABC):
             If apply_mask=False: returns dict of Intervals objects (one per eye/variable combination).
         """
         obj = self._get_inplace(inplace)
-        eyes, variables = obj._get_eye_var(eyes, variables)
+        pairs = obj.data.select(eyes, variables)
 
         distance_ix = obj._samples(distance, units)
 
@@ -2520,7 +2541,7 @@ class GenericEyeData(state.VersionedState, ABC):
         # Dictionary to store merged intervals
         merged_dict = {}
 
-        for eye, var in itertools.product(eyes, variables):
+        for eye, var in pairs:
             blinks = obj.get_blinks(eye, var)
             if len(blinks) == 0:
                 continue
@@ -2607,7 +2628,7 @@ class GenericEyeData(state.VersionedState, ABC):
         """
         from ..intervals import Intervals, stat_event_interval
         
-        eyes,variables=self._get_eye_var(eyes,variables)
+        pairs = self.data.select(eyes, variables)
         
         # Accept either Intervals object or old-style parameters
         if intervals is not None:
@@ -2626,7 +2647,7 @@ class GenericEyeData(state.VersionedState, ABC):
 
         _warn_if_ignores_mask(statfct, "statfct")
         stat={}
-        for eye,var in itertools.product(eyes, variables):
+        for eye,var in pairs:
             # masked array, so that masked samples are ignored
             stat[eye+"_"+var]=stat_event_interval(tx, self[eye,var], intervals_list, statfct)
 
@@ -2774,8 +2795,7 @@ class GenericEyeData(state.VersionedState, ABC):
             # one Intervals object per eye_variable
             per_key = intervals
         else:
-            eyes, variables = obj._get_eye_var(eyes, variables)
-            per_key = {f"{eye}_{var}": intervals for eye in eyes for var in variables}
+            per_key = {f"{eye}_{var}": intervals for eye, var in obj.data.select(eyes, variables)}
 
         n = len(obj.tx)
         for key, interval_obj in per_key.items():
@@ -2984,16 +3004,8 @@ class GenericEyeData(state.VersionedState, ABC):
             if not isinstance(intervals, Intervals):
                 raise TypeError(f"intervals must be Intervals or dict, got {type(intervals)}")
             
-            eyes, variables = obj._get_eye_var(eyes, variables)
-            
-            for eye in eyes:
-                for var in variables:
-                    key = f"{eye}_{var}"
-                    if key not in obj.data.data:
-                        logger.warning(f"Key '{key}' not found in data, skipping")
-                        continue
-                    
-                    interpolate_single_key(key, intervals)
+            for eye, var in obj.data.select(eyes, variables):
+                interpolate_single_key(f"{eye}_{var}", intervals)
         
         return obj
 

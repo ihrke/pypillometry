@@ -2131,9 +2131,9 @@ class TestEventsWithGetIntervals(unittest.TestCase):
         """Test mask_as_intervals with non-existent key"""
         data = self.data.copy()
         
-        # Should return empty Intervals if key doesn't exist
-        intervals = data.mask_as_intervals('nonexistent', 'variable')
-        self.assertEqual(len(intervals), 0)
+        # a key that does not exist is an error
+        with self.assertRaises(KeyError):
+            data.mask_as_intervals('nonexistent', 'variable')
         
     def test_mask_as_intervals_with_actual_mask(self):
         """Test mask_as_intervals correctly identifies masked intervals"""

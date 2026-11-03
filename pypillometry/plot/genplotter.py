@@ -1,4 +1,3 @@
-import itertools
 from typing import Iterable, Optional, Tuple, Union
 from ..eyedata import GenericEyeData
 from ..intervals import Intervals
@@ -151,7 +150,7 @@ class GenericPlotter:
         else:
             xvals = obj.tx * obj._unit_fac(intervals.units)
         
-        eyes, variables = obj._get_eye_var(eyes, variables)
+        pairs = obj.data.select(eyes, variables)
         
         # Convert Intervals to indices for data slicing
         intervals_idx = intervals.to_units("samples", obj).intervals
@@ -174,7 +173,7 @@ class GenericPlotter:
                 iinterv += 1
                 slic = slice(max(int(start), 0), max(int(end), 0))
                 ax = axs[ix]
-                for eye, var in itertools.product(eyes, variables):
+                for eye, var in pairs:
                     ax.plot(xvals[slic], obj.data[eye, var][slic], label="%s_%s" % (eye, var))
 
                 # Plot vertical line at event onset
@@ -186,7 +185,7 @@ class GenericPlotter:
                 if show_mask:
                     # union of the masks of all plotted eyes/variables
                     mask = np.zeros(slic.stop - slic.start, dtype=bool)
-                    for eye, var in itertools.product(eyes, variables):
+                    for eye, var in pairs:
                         mask |= obj.data.mask[eye + "_" + var][slic].astype(bool)
                     txm = xvals[slic]
                     mint = obj._mask_to_intervals_list(mask)
@@ -283,7 +282,9 @@ class GenericPlotter:
            >>> d.plot.plot_timeseries(plot_range=(0, 20) * u.sec, units="sec")
         """
         obj = self.obj
-        eyes,variables=obj._get_eye_var(eyes, variables)
+        pairs = obj.data.select(eyes, variables)
+        eyes = list(dict.fromkeys(eye for eye, _ in pairs))
+        variables = list(dict.fromkeys(var for _, var in pairs))
         
         # Validate plot_range
         plot_range = self._plot_range_in(plot_range, units)
@@ -592,8 +593,8 @@ class GenericPlotter:
             intervals_dict = intervals_result
         else:
             # Single Intervals object - convert to dict for uniform handling
-            eyes_list, variables_list = obj._get_eye_var(eyes, variables)
-            key = f"{eyes_list[0]}_{variables_list[0]}"
+            eye, var = obj.data.select(eyes, variables)[0]
+            key = f"{eye}_{var}"
             intervals_dict = {key: intervals_result}
         
         ax = plt.gca()

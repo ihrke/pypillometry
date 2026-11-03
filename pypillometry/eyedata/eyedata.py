@@ -248,7 +248,8 @@ class EyeData(GazeData,PupilData):
         Parameters 
         ----------
         eyes : list
-            Which eyes to correct. If empty, correct all available eyes.
+            Which eyes to correct. If empty, correct all available eyes
+            that have pupil and gaze (x, y) data.
         midpoint : tuple or None
             The center of the screen (x,y) in pixels where it is assumed that the pupil is completely circular.
             If None, the midpoint is taken to be the center of the screen as registered
@@ -274,7 +275,7 @@ class EyeData(GazeData,PupilData):
             if no experimental setup is set (see :meth:`set_experimental_setup`)
         """
         obj=self._get_inplace(inplace)
-        eyes,_=self._get_eye_var(eyes, [])
+        eyes=self._eyes_with(eyes, ["pupil", "x", "y"])
 
         if not isinstance(store_as, str):
             logger.warning("store_as must be a string; using 'pupil' instead")
