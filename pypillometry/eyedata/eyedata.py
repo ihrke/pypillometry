@@ -45,11 +45,10 @@ class EyeData(GazeData,PupilData):
         timing array (in ms) or `None`, in which case the time-array goes from [0,maxT]
         using `sampling_rate`
     left_x, left_y, left_pupil : np.ndarray or None
-        data from left eye (at least one of the eyes must be provided, both x and y)
-        pupil is optional
+        data from the left eye: gaze position (x and y, both or neither)
+        and pupil size; at least one channel of one eye must be provided
     right_x, right_y, right_pupil : np.ndarray or None
-        data from right eye (at least one of the eyes must be provided, both x and y)
-        pupil is optional
+        data from the right eye (as for the left eye)
     event_onsets : np.ndarray or None
         time-onsets of any events in the data (in ms, matched in `time` vector)
     event_labels : np.ndarray or None
@@ -111,8 +110,12 @@ class EyeData(GazeData,PupilData):
         """Constructor for the EyeData class.
         """
         logger.debug("Creating EyeData object")
-        if (left_x is None or left_y is None) and (right_x is None or right_y is None):
-            raise ValueError("At least one of the eye-traces must be provided (both x and y)")
+        if all(v is None for v in (left_x, left_y, left_pupil, right_x, right_y, right_pupil)):
+            raise ValueError("At least one channel (e.g., left_pupil, or left_x and "
+                             "left_y) must be provided")
+        for eye, x, y in (("left", left_x, left_y), ("right", right_x, right_y)):
+            if (x is None) != (y is None):
+                raise ValueError(f"{eye}_x and {eye}_y must be provided together")
         self.data=EyeDataDict(left_x=left_x, left_y=left_y, left_pupil=left_pupil,
                                 right_x=right_x, right_y=right_y, right_pupil=right_pupil)
         

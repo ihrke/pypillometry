@@ -27,3 +27,28 @@ class TestRequire(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "no x, y data; available channels: "
                                     "left_pupil, right_pupil"):
             d._require("pupil", "x", "y")
+
+
+class TestConstructor(unittest.TestCase):
+    def test_pupil_only(self):
+        d = _pupil_only()
+        self.assertIs(type(d), pp.EyeData)
+        self.assertEqual(list(d.data.keys()), ["left_pupil"])
+
+    def test_gaze_only(self):
+        d = _gaze_only()
+        self.assertIs(type(d), pp.EyeData)
+        self.assertEqual(list(d.data.keys()), ["left_x", "left_y"])
+
+    def test_mixed_eyes(self):
+        d = pp.EyeData(left_pupil=np.ones(10), right_x=np.ones(10), right_y=np.ones(10),
+                       sampling_rate=100)
+        self.assertEqual(sorted(d.data.keys()), ["left_pupil", "right_x", "right_y"])
+
+    def test_no_channel(self):
+        with self.assertRaisesRegex(ValueError, "At least one channel"):
+            pp.EyeData(sampling_rate=100)
+
+    def test_x_without_y(self):
+        with self.assertRaisesRegex(ValueError, "left_x and left_y"):
+            pp.EyeData(left_x=np.ones(10), left_pupil=np.ones(10), sampling_rate=100)
