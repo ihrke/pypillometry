@@ -894,12 +894,12 @@ class PupilData(GenericEyeData):
 
             if method=="envelope_iter_bspline_2":
                 txd,syd,base2,base1=baseline.baseline_envelope_iter_bspline(self.tx, self.data[eye,variable],
-                                                                            self.event_onsets,self.fs,**kwargs)
+                                                                            self.events.onsets,self.fs,**kwargs)
                 f=interpolate.interp1d(txd, base2, kind="cubic", bounds_error=False, fill_value="extrapolate")
                 obj.data[eye,"baseline"]=f(self.tx)
             elif method=="envelope_iter_bspline_1": 
                 txd,syd,base2,base1=baseline.baseline_envelope_iter_bspline(self.tx, self.data[eye,variable],
-                                                                            self.event_onsets,self.fs,**kwargs)
+                                                                            self.events.onsets,self.fs,**kwargs)
                 f=interpolate.interp1d(txd, base1, kind="cubic", bounds_error=False, fill_value="extrapolate")
                 obj.data[eye,"baseline"]=f(self.tx)
             else:
@@ -993,7 +993,7 @@ class PupilData(GenericEyeData):
             syd = obj.data[eye,"pupil"]-base
             valid = ~obj._excluded_mask() & np.isfinite(syd)
             pred, coef, npar_est, tmax_est, x1=pupil.pupil_response(obj.tx, syd, 
-                                                            obj.event_onsets, obj.fs, 
+                                                            obj.events.onsets, obj.fs, 
                                                             npar=npar, tmax=tmax, verbose=verbose,
                                                             bounds=bounds, valid=valid,
                                                             min_valid=min_valid)

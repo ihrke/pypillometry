@@ -115,7 +115,7 @@ class PupilPlotter(GenericPlotter):
         else:
             xlab="ms"
         tx=self.obj.tx*fac
-        evon=self.obj.event_onsets*fac
+        evon=self.obj.events.onsets*fac
 
         start,end=plot_range
         if start==-np.inf:
@@ -129,7 +129,7 @@ class PupilPlotter(GenericPlotter):
             endix=np.argmin(np.abs(tx-end))
                 
         ixx=np.logical_and(evon>=start, evon<end)
-        evlab=self.obj.event_labels[ixx]
+        evlab=self.obj.events.labels[ixx]
         evon=evon[ixx]
 
         logger.debug("Plotting from %.2f to %.2f %s, (%i to %i)"%(start,end,units,startix,endix))

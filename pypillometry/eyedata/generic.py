@@ -1336,9 +1336,7 @@ class GenericEyeData(state.VersionedState, ABC):
 
         if remove_eyelink_triggers:
             logger.info("Filtering out Eyelink triggers")
-            ev = obj.get_events()
-            evs = ev.filter(eyelink_filter_func)
-            obj = obj.set_events(evs)
+            obj = obj.set_events(obj.events.filter(eyelink_filter_func))
 
         if return_edf_obj:
             return obj, edf
@@ -1873,7 +1871,7 @@ class GenericEyeData(state.VersionedState, ABC):
         get_events : all events (e.g., ``get_events().filter(label)`` for
             labels that occur several times)
         """
-        events = self.get_events(units)
+        events = self._events.to_units(units)
         onsets = events.onsets[events.labels == label]
         if len(onsets) != 1:
             raise ValueError(f"expected one event with label '{label}', "
@@ -2080,24 +2078,24 @@ class GenericEyeData(state.VersionedState, ABC):
                 t, s = virtual[evsel]
                 return np.array([t]), np.array([s]), None, [evsel]
             if callable(evsel):
-                ix = np.array([bool(evsel(evlab, **kwargs)) for evlab in self.event_labels],
+                ix = np.array([bool(evsel(evlab, **kwargs)) for evlab in self._events.labels],
                               dtype=bool)
             elif isinstance(evsel, str):
                 ix = np.array([evlab == evsel if exact else evsel in evlab
-                               for evlab in self.event_labels], dtype=bool)
+                               for evlab in self._events.labels], dtype=bool)
             else:
                 raise ValueError("event_select must be string or function")
             if np.sum(ix)==0:
                 raise ValueError(f"no events found matching {_history_arg(evsel)}")
-            on = self.event_onsets[ix]
+            on = self._events.onsets[ix]
             return (on, np.clip(_ms_to_samples(self, on), 0, n-1), np.where(ix)[0],
-                    [self.event_labels[i] for i in np.where(ix)[0]])
+                    [self._events.labels[i] for i in np.where(ix)[0]])
 
         def meta_of(indices):
             """Metadata of the events with `indices` (None if there are none)."""
-            if indices is None or not self.event_meta:
+            if indices is None or not self._events.meta:
                 return None
-            return {name: col[indices] for name, col in self.event_meta.items()}
+            return {name: col[indices] for name, col in self._events.meta.items()}
 
         if isinstance(event_select, Events):
             # events given directly
@@ -2676,9 +2674,8 @@ class GenericEyeData(state.VersionedState, ABC):
         
         # Time vector and event arrays
         other_size += self.tx.nbytes
-        other_size += self.event_onsets.nbytes if self.event_onsets is not None else 0
-        other_size += self.event_labels.nbytes if self.event_labels is not None else 0
-        other_size += sum(col.nbytes for col in self.event_meta.values())
+        other_size += self._events.onsets.nbytes + self._events.labels.nbytes
+        other_size += sum(col.nbytes for col in self._events.meta.values())
         
         # String attributes
         other_size += sys.getsizeof(self.name) if self.name is not None else 0

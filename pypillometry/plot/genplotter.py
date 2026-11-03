@@ -292,7 +292,7 @@ class GenericPlotter:
         
         fac=obj._unit_fac(units)
         tx = obj.tx*fac
-        evon = obj.event_onsets*fac
+        evon = obj.events.onsets*fac
         xlab=units
 
         # plot_range
@@ -328,7 +328,7 @@ class GenericPlotter:
         
         tx=tx[startix:endix]
         ixx=np.logical_and(evon>=start, evon<end)
-        evlab=obj.event_labels[ixx]
+        evlab=obj.events.labels[ixx]
         evon=evon[ixx]
 
         nplots = len(variables)
@@ -675,9 +675,9 @@ class GenericPlotter:
             # Get events in appropriate units
             if normalize_unit(units) == "samples":
                 # x-axis is in sample indices
-                onsets = np.interp(obj.event_onsets, obj.tx, np.arange(len(obj.tx)))
+                onsets = np.interp(obj.events.onsets, obj.tx, np.arange(len(obj.tx)))
             else:
-                onsets = obj.get_events(units=units).onsets
+                onsets = obj.events.to_units(units).onsets
             
             # Plot vertical lines at event positions
             for ev in onsets:
