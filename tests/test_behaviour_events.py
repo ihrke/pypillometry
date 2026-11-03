@@ -126,19 +126,19 @@ class TestAddEvents(unittest.TestCase):
     def test_merge_and_sort(self):
         d = fake_data()
         d2 = d.add_events(Events([3.0, 0.5], ["stim", "stim"], units="sec"))
-        np.testing.assert_array_equal(d2.event_onsets, [500, 1000, 3000, 5000])
+        np.testing.assert_array_equal(d2.events.onsets, [500, 1000, 3000, 5000])
         np.testing.assert_array_equal(
-            d2.event_labels, ["stim", "Start Block 1", "stim", "Start Block 2"])
-        self.assertEqual(len(d.event_onsets), 2)      # copy, not in-place
+            d2.events.labels, ["stim", "Start Block 1", "stim", "Start Block 2"])
+        self.assertEqual(len(d.events), 2)      # copy, not in-place
 
     def test_inplace(self):
         d = fake_data()
         self.assertIs(d.add_events(Events([2000], ["x"]), inplace=True), d)
-        self.assertEqual(len(d.event_onsets), 3)
+        self.assertEqual(len(d.events), 3)
 
     def test_existing_first_at_same_time(self):
         d = fake_data().add_events(Events([1000], ["new"]))
-        np.testing.assert_array_equal(d.event_labels[:2], ["Start Block 1", "new"])
+        np.testing.assert_array_equal(d.events.labels[:2], ["Start Block 1", "new"])
 
     def test_errors(self):
         d = fake_data()

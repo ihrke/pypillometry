@@ -81,7 +81,7 @@ def eyedata_facts(d):
         out["data_nansum"][k] = np.nansum(v)
         out["masked"][k] = int(m.sum())
         out["masked_unexplained"][k] = int((m & ~explained).sum())
-    out["events"] = events_facts(d.event_onsets, d.event_labels, d.event_meta)
+    out["events"] = events_facts(d.events.onsets, d.events.labels, d.events.meta)
     setup = getattr(d, "experimental_setup", None)
     out["setup"] = None if setup is None else setup.to_dict()
     cal = getattr(d, "calibration", None)

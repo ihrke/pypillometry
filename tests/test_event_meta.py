@@ -277,39 +277,39 @@ class TestEyedataMeta(unittest.TestCase):
 
     def test_set_and_get(self):
         d = data_with_meta()
-        np.testing.assert_array_equal(d.event_meta["trial"], [1, 1, 1, 1, 2, 2, 2])
-        np.testing.assert_array_equal(d.get_events().meta["reward"], [15] * 4 + [0] * 3)
-        np.testing.assert_array_equal(d.get_events("sec").meta["trial"],
-                                      d.event_meta["trial"])
+        np.testing.assert_array_equal(d.events.meta["trial"], [1, 1, 1, 1, 2, 2, 2])
+        np.testing.assert_array_equal(d.events.meta["reward"], [15] * 4 + [0] * 3)
+        np.testing.assert_array_equal(d.events.to_units("sec").meta["trial"],
+                                      d.events.meta["trial"])
 
-    def test_set_event_onsets_without_meta(self):
+    def test_set_events_without_meta(self):
         d = data_with_meta()
-        d.set_event_onsets([100], ["x"])
-        self.assertEqual(d.event_meta, {})
+        d.set_events(pp.Events([100], ["x"]), inplace=True)
+        self.assertEqual(d.events.meta, {})
 
     def test_add_events(self):
         d = data_with_meta().add_events(Events([0.25], ["probe"], units="sec",
                                                meta={"answer": ["yes"]}))
-        np.testing.assert_array_equal(d.event_labels[:3], ["F_1", "probe", "S_1_3_5"])
-        np.testing.assert_array_equal(d.event_meta["trial"][:3], [1, np.nan, 1])
-        np.testing.assert_array_equal(d.event_meta["answer"][:3], ["", "yes", ""])
+        np.testing.assert_array_equal(d.events.labels[:3], ["F_1", "probe", "S_1_3_5"])
+        np.testing.assert_array_equal(d.events.meta["trial"][:3], [1, np.nan, 1])
+        np.testing.assert_array_equal(d.events.meta["answer"][:3], ["", "yes", ""])
 
     def test_crop(self):
         d = data_with_meta().crop(1000, 3500)
-        np.testing.assert_array_equal(d.event_labels, ["C_1_5_2", "R_1_15", "F_2", "S_2_6_2"])
-        np.testing.assert_array_equal(d.event_meta["trial"], [1, 1, 2, 2])
+        np.testing.assert_array_equal(d.events.labels, ["C_1_5_2", "R_1_15", "F_2", "S_2_6_2"])
+        np.testing.assert_array_equal(d.events.meta["trial"], [1, 1, 2, 2])
 
     def test_remove_intervals(self):
         d = data_with_meta().remove_intervals(Intervals([(1300, 1700)], units="ms"))
-        np.testing.assert_array_equal(d.event_meta["trial"], [1, 1, 2, 2, 2])
-        self.assertEqual(len(d.event_onsets), 5)
+        np.testing.assert_array_equal(d.events.meta["trial"], [1, 1, 2, 2, 2])
+        self.assertEqual(len(d.events), 5)
 
     def test_get_intervals_carries_meta(self):
         d = data_with_meta()
         iv = d.get_intervals("S_", window=(-100, 500), units="ms")
         np.testing.assert_array_equal(iv.event_meta["trial"], [1, 2])
         np.testing.assert_array_equal(iv.event_meta["reward"], [15, 0])
-        iv = d.get_intervals(d.get_events().filter("S_", reward=0), window=(-100, 500),
+        iv = d.get_intervals(d.events.filter("S_", reward=0), window=(-100, 500),
                              units="ms")
         np.testing.assert_array_equal(iv.event_meta["trial"], [2])
         iv = d.get_intervals(("F_", "S_"))
@@ -319,7 +319,7 @@ class TestEyedataMeta(unittest.TestCase):
 
     def test_get_intervals_without_meta(self):
         d = data_with_meta()
-        d.set_event_onsets(d.event_onsets, d.event_labels)
+        d.set_events(d.events.drop_meta(), inplace=True)
         self.assertIsNone(d.get_intervals("S_", window=(-100, 500), units="ms").event_meta)
 
     def test_segments_keep_meta(self):

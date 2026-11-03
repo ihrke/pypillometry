@@ -42,7 +42,7 @@ class TestObjects(HDF5TestCase):
         d = make_eyedata()
         d2 = self.roundtrip(d)
         self.assertEqual(d2.nblinks(), d.nblinks())
-        self.assertEqual(d2.event_labels.dtype, d.event_labels.dtype)
+        self.assertEqual(d2.events.labels.dtype, d.events.labels.dtype)
         self.assertEqual(d2.experimental_setup.screen_resolution, (1280, 1024))
         self.assertIsInstance(d2.original, pp.EyeData)
         self.assertEqual(d2.info["nested"]["b"], (1.5, "x"))
