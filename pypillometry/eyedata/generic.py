@@ -1113,7 +1113,8 @@ class GenericEyeData(state.VersionedState, ABC):
         return stats
 
 
-    def quality_report(self, thresholds: Optional[dict] = None, eyes: str|list = []):
+    def quality_report(self, thresholds: Optional[dict] = None, eyes: str|list = [],
+                       policy="default"):
         """
         Report the quality of the data.
 
@@ -1129,7 +1130,8 @@ class GenericEyeData(state.VersionedState, ABC):
 
         Further measures are added if available: blinks (after
         :meth:`~pypillometry.PupilData.pupil_blinks_detect`), masked and
-        interpolated data (after preprocessing) and calibration/validation
+        interpolated data (after preprocessing; masked: unusable under the
+        mask `policy`, see :meth:`mask`) and calibration/validation
         errors (e.g., when read from an Eyelink file).
 
         Where it makes sense, each measure is labeled as "good", "ok",
@@ -1150,6 +1152,9 @@ class GenericEyeData(state.VersionedState, ABC):
             values are better. `None` turns the label off.
         eyes : str or list of str, optional
             eye(s) to report; if empty, all available eyes
+        policy : str, MaskPolicy or list of str
+            mask policy for the masked data (see :meth:`mask`); default
+            ``"default"`` (interpolated samples are not masked)
 
         Returns
         -------
@@ -1166,7 +1171,7 @@ class GenericEyeData(state.VersionedState, ABC):
         >>> d.quality_report(thresholds={"pupil.missing_pct": (2, 10, 20)})  # doctest: +SKIP
         """
         from ..quality import _compute_quality_report
-        return _compute_quality_report(self, thresholds=thresholds, eyes=eyes)
+        return _compute_quality_report(self, thresholds=thresholds, eyes=eyes, policy=policy)
 
     @property
     def eyes(self) -> List[str]:

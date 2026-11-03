@@ -616,3 +616,11 @@ class TestConsumersUsePolicy:
         iv = pp.Intervals([(400., 700.)], "ms")  # samples 40-69
         assert d.stat_per_event(iv, eyes="left")["left_pupil"][0] == 2000. / 3
         assert d.stat_per_event(iv, eyes="left", policy="strict")["left_pupil"][0] == 1000.
+
+    def test_quality_report(self):
+        d = self.binocular()
+        art = d.quality_report().to_dict(flat=True)
+        assert art["artifacts.left.pupil_masked_pct"] == 0.
+        assert art["artifacts.right.pupil_masked_pct"] == 5.
+        art = d.quality_report(policy="strict").to_dict(flat=True)
+        assert art["artifacts.left.pupil_masked_pct"] == 5.

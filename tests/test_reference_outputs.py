@@ -504,7 +504,13 @@ def _downsampled_masked(case_id, key, stored):
 def _quality_other(case_id, key, stored):
     """`artifacts.<eye>.other_pct` after interpolation (step 5): interpolated
     samples (and blinks) are not "other artifacts". In case b, every masked
-    pupil sample is interpolated, so nothing is left."""
+    pupil sample is interpolated, so nothing is left.
+
+    `artifacts.<eye>.pupil_masked_pct` (step 7): the samples that are
+    unusable under the default policy (interpolated samples are usable)."""
+    if key.endswith(".pupil_masked_pct") and case_id.endswith(".interp"):
+        usable = _case_b(case_id.split(".")[2])[f"{key.split('.')[1]}_pupil"][1]
+        return 100.0 * (~usable).sum() / len(usable)
     if not key.endswith(".other_pct"):
         return stored
     scalars = load_reference()["cases"][case_id]["scalars"]

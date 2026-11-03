@@ -601,3 +601,19 @@ Changes of the API calls alone (same numbers) need no entry.
   `policy="strict"` gives the old values.
 - **Why**: decision 4 (interpolated samples are used).
 - **Step**: 7, `refactor/07-value-policy`
+
+### Quality report: interpolated samples are not "masked"
+
+- **Case**: `f.quality.*.interp`, `artifacts.<eye>.pupil_masked_pct`;
+  expected values derived from case b in the test
+- **Change**: `quality_report(..., policy="default")` counts the samples
+  that are unusable under the mask policy as masked
+  (`pupil_masked_pct`, `gaze_masked_pct`), so interpolated samples are
+  not masked any more (they are in `interpolated_pct`). Size: rlmw 9.93 ->
+  0.00 % (left) / 6.01 -> 0.00 % (right), synth 4.76 -> 0.00 % / 3.55 ->
+  0.00 % (every masked sample of case b is interpolated). The signal
+  measures (missing data, dropouts, noise, ...) still describe the stored
+  values. `policy="strict"` gives the old values.
+- **Why**: one rule for which samples are masked (decision 4); the totals
+  no longer count interpolation twice.
+- **Step**: 7, `refactor/07-value-policy`
