@@ -665,10 +665,10 @@ class PupilData(GenericEyeData):
                 units="samples",
                 label=f"{eye}_pupil_blinks")
             
-            # Store detected blinks internally (always)
-            key = f"{eye}_pupil"
-            detected_intervals[key] = intervals_obj
+            # Store detected blinks internally (always); return them as stored
+            # (blinks that touch are one blink)
             obj.set_blinks(intervals_obj, eyes=[eye], variables=["pupil"], apply_mask=apply_mask)
+            detected_intervals[f"{eye}_pupil"] = obj.get_blinks(eye, "pupil")
         
         # Return based on apply_mask
         if apply_mask:

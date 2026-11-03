@@ -356,3 +356,15 @@ class TestUserLayer:
         d["left_pupil"] = x
         assert not d.data.mask["left_pupil"].any()
         assert len(d.get_blinks("left", "pupil")) == 3
+
+
+def test_detect_returns_the_stored_blinks():
+    # blinks found by the two strategies can touch; they are one blink
+    from unittest import mock
+    from pypillometry.signal import preproc
+    d = blink_data()
+    with mock.patch.object(preproc, "helper_merge_blinks",
+                           return_value=np.array([[100, 109], [110, 130]])):
+        found = d.pupil_blinks_detect(min_duration=10)
+    assert found.intervals == [(100, 131)]
+    assert d.get_blinks("left", "pupil").intervals == [(100, 131)]

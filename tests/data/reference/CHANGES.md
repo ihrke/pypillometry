@@ -244,3 +244,16 @@ Changes of the API calls alone (same numbers) need no entry.
   masked). `clear_layer("user")` removes them.
 - **Why**: masks can be undone; decision 4 (">½ of the window").
 - **Step**: 5, `refactor/05-mask-layers`
+
+### `pupil_blinks_detect` returns the stored blinks
+
+- **Case**: none (in `a.blinks_detect.*` no detected blinks touch, so the
+  returned and stored blinks are the same as before)
+- **Change**: the returned Intervals are the stored blinks (runs of the
+  `blink` layer): blinks that touch (the end of one is the start of the
+  next, e.g. found by the velocity and the zero strategy) are one blink.
+  In a 55-min 1000-Hz recording, 6 of 328 detected blinks of one eye
+  touched the next one, so 322 blinks are returned and stored (the masked
+  samples are the same).
+- **Why**: the returned blinks are the blinks stored in the object.
+- **Step**: 5, `refactor/05-mask-layers`
