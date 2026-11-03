@@ -376,7 +376,7 @@ class GazePlotter(GenericPlotter):
 
         fac=obj._unit_fac(units)
         tx = obj.tx*fac
-        evon = obj.event_onsets*fac
+        evon = obj.events.onsets*fac
 
         # plot_range
         start,end=plot_range
@@ -392,7 +392,7 @@ class GazePlotter(GenericPlotter):
         
         # get events in range
         evonixx=np.logical_and(evon>=start, evon<end)
-        evlab=obj.event_labels[evonixx]
+        evlab=obj.events.labels[evonixx]
         evon=evon[evonixx]
         evontix=np.argmin(np.abs(tx-evon[:,np.newaxis]), axis=1).astype(int)
 

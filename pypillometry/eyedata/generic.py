@@ -15,7 +15,7 @@ from .eyedatadict import EyeDataDict, _join_key
 from .experimental_setup import ExperimentalSetup
 from ..signal import baseline
 from ..intervals import stat_event_interval, Intervals
-from ..events import _pair_with_next, _meta_dict
+from ..events import Events, _pair_with_next
 from ..logging import logging_get_level
 from .. import config
 from .. import state
@@ -137,19 +137,35 @@ class GenericEyeData(state.VersionedState, ABC):
     fs: float  ## sampling rate
     data: EyeDataDict ## dictionary with data (contains ndarrays)
     tx: np.ndarray ## time vector
-    event_onsets: np.ndarray ## vector with event onsets in time units
-    event_meta: dict ## metadata of the events (column name -> array)
+    _events: Events ## events (onsets in ms), see `events`
     inplace: Optional[bool] ## whether to make changes in-place (None: package default)
     info: dict ## optional info about the dataset
     params: dict ## parameters 
 
     # state (see pypillometry.state); subclasses add their own fields
     _STATE_FIELDS = (
-        "name", "fs", "tx", ("data", "EyeDataDict"), "event_onsets",
-        "event_labels", "event_meta", ("blinks", "dict:Intervals", "_blinks"),
+        "name", "fs", "tx", ("data", "EyeDataDict"),
+        ("blinks", "dict:Intervals", "_blinks"),
         ("interpolated_blinks", "dict:Intervals", "_interpolated_blinks"),
         ("excluded", "Intervals", "_excluded"),
         "params", "history", "inplace", "info", ("original", "versioned"))
+    # the events are stored as "event_onsets", "event_labels" and
+    # "event_meta" (see _to_state)
+    _STATE_EXCLUDE = ("_events",)
+
+    def _to_state(self) -> dict:
+        """State of the object (without ``format_version`` and ``class``)."""
+        st = super()._to_state()
+        st["event_onsets"] = self._events.onsets.copy()
+        st["event_labels"] = self._events.labels.copy()
+        st["event_meta"] = {name: col.copy() for name, col in self._events.meta.items()}
+        return st
+
+    def _set_state(self, st: dict):
+        """Set the attributes from a state of the current version."""
+        super()._set_state(st)
+        self._events = Events(st["event_onsets"], st["event_labels"], units="ms",
+                              meta=st["event_meta"])
 
     @abstractmethod
     def __init__():
@@ -195,7 +211,11 @@ class GenericEyeData(state.VersionedState, ABC):
         else:
             self.fs=sampling_rate
             
-        self.set_event_onsets(event_onsets, event_labels)
+        if event_onsets is None:
+            event_onsets = []
+        if event_labels is None:
+            event_labels = np.full(len(event_onsets), "")
+        self._events = self._check_events(Events(event_onsets, event_labels, units="ms"))
 
         self._init_blinks()
         self._excluded = Intervals([], units="ms", label="excluded")
@@ -481,7 +501,7 @@ class GenericEyeData(state.VersionedState, ABC):
 
     def nevents(self) -> int:
         """Return number of events in data."""
-        return self.event_onsets.size
+        return len(self._events)
 
     def _get_eye_var(self, eyes,variables):
         """Private helper function"""        
@@ -1027,16 +1047,10 @@ class GenericEyeData(state.VersionedState, ABC):
         if t0 is None:
             t0 = self.tx[0]
         obj.tx=self.tx-t0
-        obj.event_onsets=self.event_onsets-t0
+        obj._events = self._events.shift(-t0)
         obj._excluded = Intervals([(s - t0, e - t0) for s, e in self._excluded.intervals],
                                   units="ms", label="excluded")
         return obj
-
-    def _keep_events(self, keep):
-        """Keep only the events where `keep` is True (in place)."""
-        self.event_onsets = np.asarray(self.event_onsets)[keep]
-        self.event_labels = np.asarray(self.event_labels)[keep]
-        self.event_meta = {name: col[keep] for name, col in self.event_meta.items()}
 
     def _keep_samples(self, keep, shift=None):
         """
@@ -1121,7 +1135,8 @@ class GenericEyeData(state.VersionedState, ABC):
         start = parse_time(start, default=default)
         end = parse_time(end, default=default)
         obj._keep_samples((obj.tx >= start) & (obj.tx <= end))
-        obj._keep_events((obj.event_onsets >= start) & (obj.event_onsets <= end))
+        on = obj._events.onsets
+        obj._events = obj._events.keep((on >= start) & (on <= end))
         return obj
 
     def sub_slice(self, start: float=-np.inf, end: float=np.inf,
@@ -1190,7 +1205,7 @@ class GenericEyeData(state.VersionedState, ABC):
         """
         Reads an eyedata object from an Eyelink file.
 
-        All "messages" are stored as event_labels (can be filtered later) and
+        All "messages" are stored as events (can be filtered later) and
         it tries to be smart to detect different information from the EDF file.
         Spatial calibration/validation data is automatically parsed and stored
         in the `calibration` attribute as SpatialCalibration objects.
@@ -1213,7 +1228,7 @@ class GenericEyeData(state.VersionedState, ABC):
             returned by the "eyelinkio" package;
             if False (default), return only the eyedata object
         remove_eyelink_triggers : bool, optional
-            if True (default), remove all Eyelink triggers from the event_labels
+            if True (default), remove all Eyelink triggers from the events
             (related to eye-tracker settings, calibration, validation etc)
         **kwargs
             additional arguments passed to :func:`pypillometry.io.read_eyelink`
@@ -1321,9 +1336,7 @@ class GenericEyeData(state.VersionedState, ABC):
 
         if remove_eyelink_triggers:
             logger.info("Filtering out Eyelink triggers")
-            ev = obj.get_events()
-            evs = ev.filter(eyelink_filter_func)
-            obj = obj.set_events(evs)
+            obj = obj.set_events(obj.events.filter(eyelink_filter_func))
 
         if return_edf_obj:
             return obj, edf
@@ -1616,131 +1629,53 @@ class GenericEyeData(state.VersionedState, ABC):
         result.__dict__.update(self.__dict__)
         return result
 
-    @keephistory
-    def set_event_onsets(self, event_onsets: np.ndarray, event_labels: np.ndarray,
-                         event_meta: dict = None):
+    def _check_events(self, events) -> Events:
         """
-        Set onsets of events in the data (in-place).
+        `events` in ms, checked against the data.
 
-        Parameters
-        ----------
-        event_onsets : np.ndarray or None
-            array of onsets (in ms); `None` removes all events
-        event_labels : np.ndarray or None
-            array of labels (strings), same length as `event_onsets`;
-            if `None`, all labels are set to 0
-        event_meta : dict or None, optional
-            metadata of the events: column name -> values (one per event);
-            see :class:`~pypillometry.Events`
-
-        Raises
-        ------
-        ValueError
-            if any onset is outside the range of the time-vector or if
-            `event_labels`, `event_onsets` or a metadata column differ in
-            length
-
-        See Also
-        --------
-        set_events : set events from an :class:`~pypillometry.Events` object
+        Raises a TypeError if `events` is not an Events object and a
+        ValueError if an onset is outside the time range of the data.
         """
-        if event_onsets is None:
-            self.event_onsets=np.array([], dtype=float)
-        else:
-            self.event_onsets=np.array(event_onsets, dtype=float)
-            
-        # check whether onsets are in range
-        for onset in self.event_onsets:
-            if onset<self.tx.min() or onset>self.tx.max():
-                raise ValueError("some event-onsets outside data range according to time-vector")
-        
-        if event_labels is None:
-            self.event_labels=np.zeros_like(self.event_onsets)
-        else:
-            if self.event_onsets.size!=np.array(event_labels).size:
-                raise ValueError("event_labels must have same length as event_onsets")
-            self.event_labels=np.array(event_labels)
-        self.event_meta = _meta_dict(event_meta, self.event_onsets.size)
+        if not isinstance(events, Events):
+            raise TypeError(f"events must be an Events object, got {type(events)}")
+        events = events.to_units("ms")
+        on = events.onsets
+        if len(on) and (on.min() < self.tx.min() or on.max() > self.tx.max()):
+            raise ValueError("some event-onsets outside data range according to time-vector")
+        # the time range of the data is not stored with the events
+        return Events(on, events.labels, units="ms", meta=events.meta)
 
     @property
-    def events(self):
-        """Events (onsets in ms) as an :class:`~pypillometry.Events` object.
-
-        Shortcut for :meth:`get_events` with default arguments.
+    def events(self) -> Events:
         """
-        return self.get_events()
+        The events of the data (onsets in ms).
 
-    def get_events(self, units: str = "ms"):
-        """
-        Get events as an Events object.
-        
-        Returns the event onsets and labels stored in the dataset as an
-        Events object, which provides convenient filtering and display capabilities.
-        
-        Parameters
-        ----------
-        units : str, optional
-            Units for the event onsets: "ms", "sec", "min", or "h".
-            Default is "ms" (the internal storage format).
-            
-        Returns
-        -------
-        Events
-            Events object containing the event onsets and labels
-            
+        An :class:`~pypillometry.Events` object. Events are immutable: their
+        methods (e.g., :meth:`~pypillometry.Events.filter`,
+        :meth:`~pypillometry.Events.parse_labels`) return new Events, which
+        are stored with :meth:`set_events`. Operations on the data that
+        change the time (e.g., :meth:`crop`, :meth:`remove_intervals`,
+        :meth:`reset_time`) move the events with it.
+
         Examples
         --------
-        >>> events = data.get_events()
-        >>> len(events)
-        42
-        
-        >>> # Get events in seconds
-        >>> events_sec = data.get_events(units="sec")
-        
-        >>> # Filter and work with events
-        >>> stim_events = data.get_events().filter("stim")
-        
-        See Also
-        --------
-        set_events : Replace events from an Events object
-        get_intervals : Extract intervals around events
+        >>> d.events.filter("stim")  # doctest: +SKIP
+        >>> d = d.set_events(d.events.parse_labels(r"_(?P<trial>\\d+)"))  # doctest: +SKIP
         """
-        from ..events import Events
-        
-        # Normalize units (handles aliases)
-        units = normalize_unit(units) if units is not None else "ms"
-        
-        # Get data time range in ms (internal format)
-        data_time_range = (self.tx[0], self.tx[-1])
-        
-        # Create Events object (always in ms first, since that's internal format)
-        events = Events(
-            onsets=self.event_onsets.copy(),
-            labels=self.event_labels.copy(),
-            units="ms",
-            data_time_range=data_time_range,
-            meta=self.event_meta
-        )
-        
-        # Convert to requested units if different from ms
-        if units != "ms":
-            events = events.to_units(units)
-        
-        return events
-    
+        return self._events
+
     @keephistory
     def set_events(self, events, inplace=None):
         """
-        Replace event onsets, labels and metadata from an Events object.
-        
-        This method updates the internal event_onsets, event_labels and
-        event_meta from an Events object. The Events object's onsets are automatically
-        converted to milliseconds (the internal storage format) if needed.
-        
+        Replace the events of the dataset.
+
+        The onsets are converted to ms (the internal storage format) if
+        needed. The time range of the data is not stored with the events.
+
         Parameters
         ----------
         events : Events
-            Events object containing the new events to set
+            the new events (onsets, labels and metadata)
         inplace : bool or None, optional
             if `True`, make change in-place and return the object;
             if `False`, make and return copy before making changes;
@@ -1750,35 +1685,26 @@ class GenericEyeData(state.VersionedState, ABC):
         -------
         :class:`~pypillometry.GenericEyeData`
             the object with updated events (`self` or a copy, depending on `inplace`)
-            
+
+        Raises
+        ------
+        TypeError
+            if `events` is not an Events object
+        ValueError
+            if an onset is outside the time range of the data
+
         Examples
         --------
-        >>> # Filter events and set them back
-        >>> events = data.get_events()
-        >>> stim_events = events.filter("stim")
-        >>> data.set_events(stim_events)
-        
-        >>> # Modify events and update
-        >>> events = data.get_events()
-        >>> # ... filter or modify events ...
-        >>> data.set_events(events)
-        
+        >>> d = d.set_events(d.events.filter("stim"))  # doctest: +SKIP
+        >>> d = d.set_events(d.events.parse_labels(r"_(?P<trial>\\d+)"))  # doctest: +SKIP
+
         See Also
         --------
-        get_events : Get events as an Events object
-        set_event_onsets : Lower-level method to set events from arrays
+        events : the events of the dataset
+        add_events : add events to the existing ones
         """
-        from ..events import Events
-        
         obj = self._get_inplace(inplace)
-        
-        if not isinstance(events, Events):
-            raise TypeError(f"events must be an Events object, got {type(events)}")
-        
-        # internal storage is always in ms
-        events = events.to_units("ms")
-        obj.set_event_onsets(events.onsets, events.labels, events.meta)
-
+        obj._events = obj._check_events(events)
         return obj
 
     @keephistory
@@ -1823,16 +1749,10 @@ class GenericEyeData(state.VersionedState, ABC):
         --------
         set_events : replace all events
         """
-        from ..events import Events
-
         obj = self._get_inplace(inplace)
-
         if not isinstance(events, Events):
             raise TypeError(f"events must be an Events object, got {type(events)}")
-
-        merged = obj.get_events() + events
-        obj.set_event_onsets(merged.onsets, merged.labels, merged.meta)
-
+        obj._events = obj._check_events(obj._events + events)
         return obj
 
     def event_onset(self, label: str, units: str = "ms") -> float:
@@ -1863,10 +1783,10 @@ class GenericEyeData(state.VersionedState, ABC):
 
         See Also
         --------
-        get_events : all events (e.g., ``get_events().filter(label)`` for
-            labels that occur several times)
+        events : all events (e.g., ``events.filter(label)`` for labels
+            that occur several times)
         """
-        events = self.get_events(units)
+        events = self._events.to_units(units)
         onsets = events.onsets[events.labels == label]
         if len(onsets) != 1:
             raise ValueError(f"expected one event with label '{label}', "
@@ -2073,24 +1993,24 @@ class GenericEyeData(state.VersionedState, ABC):
                 t, s = virtual[evsel]
                 return np.array([t]), np.array([s]), None, [evsel]
             if callable(evsel):
-                ix = np.array([bool(evsel(evlab, **kwargs)) for evlab in self.event_labels],
+                ix = np.array([bool(evsel(evlab, **kwargs)) for evlab in self._events.labels],
                               dtype=bool)
             elif isinstance(evsel, str):
                 ix = np.array([evlab == evsel if exact else evsel in evlab
-                               for evlab in self.event_labels], dtype=bool)
+                               for evlab in self._events.labels], dtype=bool)
             else:
                 raise ValueError("event_select must be string or function")
             if np.sum(ix)==0:
                 raise ValueError(f"no events found matching {_history_arg(evsel)}")
-            on = self.event_onsets[ix]
+            on = self._events.onsets[ix]
             return (on, np.clip(_ms_to_samples(self, on), 0, n-1), np.where(ix)[0],
-                    [self.event_labels[i] for i in np.where(ix)[0]])
+                    [self._events.labels[i] for i in np.where(ix)[0]])
 
         def meta_of(indices):
             """Metadata of the events with `indices` (None if there are none)."""
-            if indices is None or not self.event_meta:
+            if indices is None or not self._events.meta:
                 return None
-            return {name: col[indices] for name, col in self.event_meta.items()}
+            return {name: col[indices] for name, col in self._events.meta.items()}
 
         if isinstance(event_select, Events):
             # events given directly
@@ -2669,9 +2589,8 @@ class GenericEyeData(state.VersionedState, ABC):
         
         # Time vector and event arrays
         other_size += self.tx.nbytes
-        other_size += self.event_onsets.nbytes if self.event_onsets is not None else 0
-        other_size += self.event_labels.nbytes if self.event_labels is not None else 0
-        other_size += sum(col.nbytes for col in self.event_meta.values())
+        other_size += self._events.onsets.nbytes + self._events.labels.nbytes
+        other_size += sum(col.nbytes for col in self._events.meta.values())
         
         # String attributes
         other_size += sys.getsizeof(self.name) if self.name is not None else 0
@@ -3281,17 +3200,22 @@ class GenericEyeData(state.VersionedState, ABC):
         runs = Intervals.from_mask(removed).intervals
         gaps = [(s, e) for s, e in runs if s > 0 and e < n]
         shift = np.zeros(n)
-        on = np.asarray(obj.event_onsets, dtype=float)
-        ev_shift = np.zeros(len(on))
         for s, e in gaps:
             shift[e:] += tx[e] - tx[s]
-            ev_shift[on >= tx[s]] += tx[e] - tx[s]
+
+        def time_map(t):
+            # times after the start of a removed run move back with the data
+            t_shift = np.zeros(len(t))
+            for s, e in gaps:
+                t_shift[t >= tx[s]] += tx[e] - tx[s]
+            return t - t_shift
+
+        on = obj._events.onsets
         in_removed = np.zeros(len(on), dtype=bool)
         for a, b in periods.intervals:
             in_removed |= (on >= a) & (on < b)
+        obj._events = obj._events.keep(~in_removed).shift(time_map)
         obj._keep_samples(~removed, shift=shift)
-        obj.event_onsets = on - ev_shift
-        obj._keep_events(~in_removed)
         obj.params["removed_intervals"] = obj.params.get("removed_intervals", []) + \
             [(float(a), float(b)) for a, b in periods.intervals]
         return obj

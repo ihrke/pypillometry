@@ -69,7 +69,7 @@ def make_eyedata(keep_orig=True):
     d = d.pupil_blinks_detect(apply_mask=True, inplace=False)
     d = d.pupil_blinks_interpolate().scale()
     # event metadata with int, float (missing), string and bool columns
-    d.set_events(d.get_events().parse_labels(r"_(?P<trial>\d+)")
+    d.set_events(d.events.parse_labels(r"_(?P<trial>\d+)")
                  .set_meta("rt", [450.5, np.nan], select="F_")
                  .set_meta("kind", ["fix", "fix", "stim"])
                  .set_meta("ok", [True, False, True]))
@@ -209,7 +209,7 @@ class TestFormatVersion0(unittest.TestCase):
         self.assertIsInstance(d, pp.EyeData)
         self.assertEqual(d.name, "fixture_eyedata")
         self.assertEqual(d.nblinks(), {"left_pupil": 4, "right_pupil": 3})
-        self.assertEqual(len(d.event_onsets), 4)
+        self.assertEqual(len(d.events), 4)
         self.assertEqual(d.tx[0], 4500.0)
         self.assertIsInstance(d.original, pp.EyeData)
         self.assertEqual(d.calibration["left"].model, "HV3")
@@ -256,6 +256,9 @@ class TestMigrate(unittest.TestCase):
     def test_v0_history_arguments_dropped(self):
         d = make_eyedata(keep_orig=False)
         raw = dict(vars(d))
+        # version 0 had the events as arrays
+        ev = raw.pop("_events")
+        raw.update(event_onsets=ev.onsets, event_labels=ev.labels)
         raw["history"] = [{"funcstring": "scale()", "funcname": "scale",
                            "args": (), "kwargs": {"eyes": [object()]}}]
         st = state.migrate(raw, "EyeData")

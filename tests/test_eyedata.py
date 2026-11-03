@@ -26,8 +26,8 @@ class TestEyeData(unittest.TestCase):
         self.right_x = self.eyedata.data['right_x']
         self.right_y = self.eyedata.data['right_y']
         self.right_pupil = self.eyedata.data['right_pupil']
-        self.event_onsets = self.eyedata.event_onsets
-        self.event_labels = self.eyedata.event_labels
+        self.event_onsets = self.eyedata.events.onsets
+        self.event_labels = self.eyedata.events.labels
 
     def test_initialization(self):
         """Test basic initialization of EyeData"""
@@ -395,29 +395,29 @@ class TestEyeData(unittest.TestCase):
         """reset_time should shift time axes in-place when inplace is None."""
         data = self.eyedata.copy()
         original_tx = data.tx.copy()
-        original_onsets = data.event_onsets.copy()
+        original_onsets = data.events.onsets.copy()
 
         result = data.reset_time()
 
         self.assertIs(result, data)
         expected_shift = original_tx[0]
         np.testing.assert_allclose(data.tx, original_tx - expected_shift)
-        np.testing.assert_allclose(data.event_onsets, original_onsets - expected_shift)
+        np.testing.assert_allclose(data.events.onsets, original_onsets - expected_shift)
         self.assertAlmostEqual(data.tx[0], 0.0)
 
     def test_reset_time_with_t0_and_copy(self):
         """reset_time should honour t0 argument and leave original untouched when inplace=False."""
         original_tx = self.eyedata.tx.copy()
-        original_onsets = self.eyedata.event_onsets.copy()
+        original_onsets = self.eyedata.events.onsets.copy()
         t0 = original_tx[10]
 
         result = self.eyedata.reset_time(t0=t0, inplace=False)
 
         self.assertIsNot(result, self.eyedata)
         np.testing.assert_array_equal(self.eyedata.tx, original_tx)
-        np.testing.assert_array_equal(self.eyedata.event_onsets, original_onsets)
+        np.testing.assert_array_equal(self.eyedata.events.onsets, original_onsets)
         np.testing.assert_allclose(result.tx, original_tx - t0)
-        np.testing.assert_allclose(result.event_onsets, original_onsets - t0)
+        np.testing.assert_allclose(result.events.onsets, original_onsets - t0)
         self.assertAlmostEqual(result.tx[0], original_tx[0] - t0)
 
     def test_plot_property(self):
@@ -874,8 +874,8 @@ class TestEyeData(unittest.TestCase):
     def test_stat_per_event(self):
         """Test statistical analysis per event"""
         # Create some test events
-        self.eyedata.event_onsets = np.array([1000, 2000, 3000])
-        self.eyedata.event_labels = np.array(['stim1', 'stim2', 'stim3'])
+        self.eyedata.set_events(pp.Events([1000, 2000, 3000], ['stim1', 'stim2', 'stim3']),
+                                inplace=True)
         
         # Test mean pupil size in interval around events
         stats = self.eyedata.stat_per_event(
@@ -1702,35 +1702,35 @@ class TestEyeDataDelitem(unittest.TestCase):
 
 
 class TestEventsIntegration(unittest.TestCase):
-    """Test get_events() and set_events() methods"""
+    """Test the events property and set_events()"""
     
     def setUp(self):
         """Set up test data"""
         self.data = get_rlmw_002_short()
         self.original_event_count = self.data.nevents()
     
-    def test_get_events_returns_events_object(self):
-        """Test that get_events returns an Events object"""
+    def test_events_returns_events_object(self):
+        """Test that events returns an Events object"""
         from pypillometry.events import Events
         
-        events = self.data.get_events()
+        events = self.data.events
         
         self.assertIsInstance(events, Events)
         self.assertEqual(len(events), self.original_event_count)
     
-    def test_get_events_default_units(self):
-        """Test that get_events defaults to ms units"""
-        events = self.data.get_events()
+    def test_events_default_units(self):
+        """Test that events defaults to ms units"""
+        events = self.data.events
         
         self.assertEqual(events.units, "ms")
-        np.testing.assert_array_equal(events.onsets, self.data.event_onsets)
-        np.testing.assert_array_equal(events.labels, self.data.event_labels)
+        np.testing.assert_array_equal(events.onsets, self.data.events.onsets)
+        np.testing.assert_array_equal(events.labels, self.data.events.labels)
     
-    def test_get_events_with_different_units(self):
-        """Test get_events with different units"""
-        events_ms = self.data.get_events(units="ms")
-        events_sec = self.data.get_events(units="sec")
-        events_min = self.data.get_events(units="min")
+    def test_events_with_different_units(self):
+        """Test events with different units"""
+        events_ms = self.data.events.to_units("ms")
+        events_sec = self.data.events.to_units("sec")
+        events_min = self.data.events.to_units("min")
         
         self.assertEqual(events_sec.units, "sec")
         self.assertEqual(events_min.units, "min")
@@ -1744,10 +1744,10 @@ class TestEventsIntegration(unittest.TestCase):
         )
         
         # Test with aliases
-        events_seconds = self.data.get_events(units="seconds")
-        events_s = self.data.get_events(units="s")
-        events_minutes = self.data.get_events(units="minutes")
-        events_hrs = self.data.get_events(units="hrs")
+        events_seconds = self.data.events.to_units("seconds")
+        events_s = self.data.events.to_units("s")
+        events_minutes = self.data.events.to_units("minutes")
+        events_hrs = self.data.events.to_units("hrs")
         
         self.assertEqual(events_seconds.units, "sec")
         self.assertEqual(events_s.units, "sec")
@@ -1761,52 +1761,50 @@ class TestEventsIntegration(unittest.TestCase):
             events_s.onsets, events_sec.onsets, decimal=9
         )
     
-    def test_get_events_has_time_range(self):
-        """Test that get_events includes data time range"""
-        events = self.data.get_events()
-        
-        self.assertIsNotNone(events.data_time_range)
-        self.assertAlmostEqual(events.data_time_range[0], self.data.tx[0])
-        self.assertAlmostEqual(events.data_time_range[1], self.data.tx[-1])
+    def test_events_have_no_time_range(self):
+        """The time range of the data is not stored with the events"""
+        self.assertIsNone(self.data.events.data_time_range)
+        ev = pp.Events([self.data.tx[0]], ["x"], data_time_range=(0, 1))
+        self.assertIsNone(self.data.set_events(ev).events.data_time_range)
     
     def test_set_events_round_trip(self):
-        """Test that get_events -> set_events preserves data"""
-        events = self.data.get_events()
-        original_onsets = self.data.event_onsets.copy()
-        original_labels = self.data.event_labels.copy()
+        """Test that events -> set_events preserves data"""
+        events = self.data.events
+        original_onsets = self.data.events.onsets.copy()
+        original_labels = self.data.events.labels.copy()
         
         # Set the same events back
         result = self.data.set_events(events)
         
-        np.testing.assert_array_equal(result.event_onsets, original_onsets)
-        np.testing.assert_array_equal(result.event_labels, original_labels)
+        np.testing.assert_array_equal(result.events.onsets, original_onsets)
+        np.testing.assert_array_equal(result.events.labels, original_labels)
         self.assertIs(result, self.data)
     
     def test_set_events_with_filtered_events(self):
         """Test setting filtered events"""
-        events = self.data.get_events()
+        events = self.data.events
         filtered = events.filter("F")
         
         result = self.data.set_events(filtered)
         
         self.assertEqual(result.nevents(), len(filtered))
-        np.testing.assert_array_equal(result.event_onsets, filtered.onsets)
-        np.testing.assert_array_equal(result.event_labels, filtered.labels)
+        np.testing.assert_array_equal(result.events.onsets, filtered.onsets)
+        np.testing.assert_array_equal(result.events.labels, filtered.labels)
         # Should return self (inplace by default)
         self.assertIs(result, self.data)
     
     def test_set_events_with_different_units(self):
         """Test that set_events handles unit conversion"""
         # Get events in seconds
-        events_sec = self.data.get_events(units="sec")
-        original_onsets_ms = self.data.event_onsets.copy()
+        events_sec = self.data.events.to_units("sec")
+        original_onsets_ms = self.data.events.onsets.copy()
         
         # Set them back (should convert to ms internally)
         result = self.data.set_events(events_sec)
         
         # Should match original (within floating point precision)
         np.testing.assert_array_almost_equal(
-            result.event_onsets, original_onsets_ms, decimal=3
+            result.events.onsets, original_onsets_ms, decimal=3
         )
         self.assertIs(result, self.data)
     
@@ -1818,8 +1816,8 @@ class TestEventsIntegration(unittest.TestCase):
         with self.assertRaises(TypeError):
             self.data.set_events({"onsets": [100, 200], "labels": ["A", "B"]})
     
-    def test_get_events_empty(self):
-        """Test get_events with no events"""
+    def test_events_empty(self):
+        """Test events with no events"""
         # Create data with no events
         data = pp.EyeData(
             left_x=[1, 2, 3],
@@ -1830,7 +1828,7 @@ class TestEventsIntegration(unittest.TestCase):
             event_labels=None
         )
         
-        events = data.get_events()
+        events = data.events
         
         self.assertEqual(len(events), 0)
         self.assertEqual(events.units, "ms")
@@ -1848,7 +1846,7 @@ class TestEventsIntegration(unittest.TestCase):
     def test_filter_and_set_workflow(self):
         """Test typical workflow: get -> filter -> set"""
         # Get events, filter them, and set back
-        events = self.data.get_events()
+        events = self.data.events
         stim_events = events.filter("F")
         
         original_count = len(events)
@@ -1862,24 +1860,24 @@ class TestEventsIntegration(unittest.TestCase):
         self.assertIs(result, self.data)
         
         # Verify all events match the filter
-        for label in result.event_labels:
+        for label in result.events.labels:
             self.assertIn("F", label)
     
-    def test_get_events_labels_preserved(self):
+    def test_events_labels_preserved(self):
         """Test that event labels are properly preserved"""
-        events = self.data.get_events()
+        events = self.data.events
         
         # All labels should be strings
         for label in events.labels:
             self.assertIsInstance(label, (str, np.str_))
         
         # Should match original labels
-        for orig_label, event_label in zip(self.data.event_labels, events.labels):
+        for orig_label, event_label in zip(self.data.events.labels, events.labels):
             self.assertEqual(str(orig_label), str(event_label))
     
     def test_set_events_inplace_parameter(self):
         """Test set_events with inplace parameter"""
-        events = self.data.get_events()
+        events = self.data.events
         filtered = events.filter("F")
         
         # Test inplace=True
@@ -1898,7 +1896,7 @@ class TestEventsIntegration(unittest.TestCase):
     
     def test_set_events_keeps_history(self):
         """Test that set_events adds to history"""
-        events = self.data.get_events()
+        events = self.data.events
         filtered = events.filter("F")
         
         original_history_len = len(self.data.history)
@@ -1921,7 +1919,7 @@ class TestEventsWithGetIntervals(unittest.TestCase):
         """Test that get_intervals accepts Events object"""
         from pypillometry.intervals import Intervals
         
-        events = self.data.get_events()
+        events = self.data.events
         intervals = self.data.get_intervals(events, window=(-200, 200), units="ms")
         
         self.assertIsInstance(intervals, Intervals)
@@ -1930,7 +1928,7 @@ class TestEventsWithGetIntervals(unittest.TestCase):
     
     def test_get_intervals_with_filtered_events(self):
         """Test get_intervals with filtered Events object"""
-        events = self.data.get_events()
+        events = self.data.events
         filtered = events.filter("F")
         
         intervals = self.data.get_intervals(filtered, window=(-200, 200), units="ms")
@@ -1944,7 +1942,7 @@ class TestEventsWithGetIntervals(unittest.TestCase):
     
     def test_get_intervals_events_vs_string(self):
         """Test that Events and string selector give same results"""
-        events = self.data.get_events()
+        events = self.data.events
         filtered = events.filter("F")
         
         intervals_events = self.data.get_intervals(filtered, window=(-200, 200), units="ms")
@@ -1958,7 +1956,7 @@ class TestEventsWithGetIntervals(unittest.TestCase):
     
     def test_get_intervals_with_events_different_units(self):
         """Test get_intervals with Events in different units"""
-        events = self.data.get_events()
+        events = self.data.events
         events_sec = events.to_units("sec")
         
         intervals = self.data.get_intervals(events_sec, window=(-0.2, 0.2), units="sec")
@@ -1968,14 +1966,14 @@ class TestEventsWithGetIntervals(unittest.TestCase):
     
     def test_get_intervals_with_events_custom_label(self):
         """Test that custom label works with Events object"""
-        events = self.data.get_events()
+        events = self.data.events
         intervals = self.data.get_intervals(events, window=(-200, 200), units="ms", label="custom_label")
         
         self.assertEqual(intervals.label, "custom_label")
     
     def test_get_intervals_with_events_automatic_label(self):
         """Test that automatic label is generated when not provided"""
-        events = self.data.get_events()
+        events = self.data.events
         filtered = events.filter("F")
         
         intervals = self.data.get_intervals(filtered, window=(-200, 200), units="ms")
@@ -1986,7 +1984,7 @@ class TestEventsWithGetIntervals(unittest.TestCase):
     
     def test_get_intervals_with_events_units_consistency(self):
         """Test that units are consistent between Events and resulting Intervals"""
-        events = self.data.get_events(units="sec")
+        events = self.data.events.to_units("sec")
         
         intervals = self.data.get_intervals(events, window=(-0.2, 0.2), units="sec")
         
@@ -1995,7 +1993,7 @@ class TestEventsWithGetIntervals(unittest.TestCase):
     
     def test_get_intervals_with_events_indices(self):
         """Test get_intervals with Events using index units"""
-        events = self.data.get_events()
+        events = self.data.events
         
         intervals = self.data.get_intervals(events, window=(-10, 10), units="samples")
         
@@ -2014,7 +2012,7 @@ class TestEventsWithGetIntervals(unittest.TestCase):
     
     def test_get_intervals_events_preserves_labels(self):
         """Test that event labels are preserved in intervals"""
-        events = self.data.get_events()
+        events = self.data.events
         filtered = events.filter("F")
         
         intervals = self.data.get_intervals(filtered, window=(-200, 200), units="ms")
@@ -2380,7 +2378,7 @@ class TestGetIntervalsBetweenEvents(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "give a window"):
             d.get_intervals("start")
         with self.assertRaisesRegex(ValueError, "give a window"):
-            d.get_intervals(d.get_events())
+            d.get_intervals(d.events)
         # unknown keyword arguments are only allowed for function selectors
         with self.assertRaisesRegex(TypeError, "interval"):
             d.get_intervals(("start", "resp"), interval=(0, 10))
@@ -2590,14 +2588,14 @@ class TestHistoryLog(unittest.TestCase):
         self.assertEqual(d.history, [])
         d["left_pupil"] = np.full(100, 2.)
         d.set_blinks(Intervals([(10, 20)], units="samples"), eyes=["left"], variables=["pupil"])
-        d.set_event_onsets(np.array([100., 200.]), np.array(["a", "b"]))
+        d.set_events(pp.Events([100., 200.], ["a", "b"]), inplace=True)
         d.set_experimental_setup(screen_resolution=(1280, 1024))
         d2 = d.drop_data(variables=["x"])
         del d2["left_y"]
         self.assertEqual([h["funcstring"] for h in d.history],
                          ["__setitem__('left_pupil',array(100,))",
                           "set_blinks(Intervals(1),eyes=['left'],variables=['pupil'])",
-                          "set_event_onsets(array(2,),array(2,))",
+                          "set_events(Events: 2 events | units=ms,inplace=True)",
                           "set_experimental_setup(screen_resolution=(1280, 1024))"])
         self.assertEqual([h["funcname"] for h in d2.history][-2:], ["drop_data", "__delitem__"])
 

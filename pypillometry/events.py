@@ -2,6 +2,7 @@
 """
 
 import re
+from types import MappingProxyType
 
 import numpy as np
 from typing import Optional, List, Tuple
@@ -161,8 +162,11 @@ class Events:
     Onsets are always times (not sample indices), so they stay valid when
     the data are sliced or resampled.
 
+    Events are immutable: onsets, labels and metadata cannot be changed in
+    place; all methods return new Events.
+
     The events of a dataset are obtained with
-    :meth:`~pypillometry.GenericEyeData.get_events`. An (e.g., filtered)
+    :attr:`~pypillometry.GenericEyeData.events`. An (e.g., filtered)
     Events object can be passed as `event_select` to
     :meth:`~pypillometry.GenericEyeData.get_intervals` or stored in a dataset
     with :meth:`~pypillometry.GenericEyeData.set_events` or added with
@@ -171,8 +175,8 @@ class Events:
     eye-tracker clock with :func:`~pypillometry.sync_clocks`.
 
     Each event can have metadata (e.g., trial, condition, reaction time),
-    stored in `meta`: a dict that maps column names to numpy arrays with one
-    value per event. Missing values are NaN in numeric columns and "" in
+    stored in `meta`: a read-only mapping of column names to numpy arrays
+    with one value per event. Missing values are NaN in numeric columns and "" in
     string columns. Metadata come from a behaviour log (see
     :meth:`from_table`), from the labels of the events (see
     :meth:`parse_labels`) or are added with :meth:`set_meta` and
@@ -239,7 +243,22 @@ class Events:
         # Validate that onsets and labels have same length
         if len(self.onsets) != len(self.labels):
             raise ValueError(f"onsets and labels must have same length, got {len(self.onsets)} and {len(self.labels)}")
-        self.meta = _meta_dict(meta, len(self.onsets))
+        self._meta = _meta_dict(meta, len(self.onsets))
+        # Events are immutable: methods return new objects
+        for arr in (self.onsets, self.labels, *self._meta.values()):
+            arr.flags.writeable = False
+
+    @property
+    def meta(self):
+        """
+        Metadata of the events (read-only).
+
+        A mapping of column name -> numpy array (one value per event). It
+        cannot be changed in place; :meth:`set_meta`, :meth:`drop_meta`,
+        :meth:`parse_labels`, :meth:`fill_meta` and :meth:`add_latency`
+        return new Events with changed metadata.
+        """
+        return MappingProxyType(self._meta)
 
     def _take(self, idx) -> 'Events':
         """New Events with the events `idx` (index array, mask or slice)."""
@@ -250,6 +269,82 @@ class Events:
             data_time_range=self.data_time_range,
             meta={name: col[idx] for name, col in self.meta.items()}
         )
+
+    def shift(self, by) -> 'Events':
+        """
+        Events with shifted onsets.
+
+        Parameters
+        ----------
+        by : float or callable
+            a time offset (in the units of the events) that is added to all
+            onsets, or a time map: a function that takes an array of times
+            and returns the new times (an array of the same length)
+
+        Returns
+        -------
+        Events
+            new Events with the same labels and metadata; `data_time_range`
+            (if set) is moved in the same way
+
+        Raises
+        ------
+        ValueError
+            if the time map does not return one time per onset
+
+        Examples
+        --------
+        >>> Events([100, 500], ["A", "B"]).shift(-100).onsets
+        array([  0., 400.])
+        >>> Events([100, 500], ["A", "B"]).shift(lambda t: t * 2).onsets
+        array([ 200., 1000.])
+        """
+        if callable(by):
+            fct = by
+        else:
+            offset = float(by)
+            fct = lambda t: t + offset  # noqa: E731
+        onsets = np.asarray(fct(self.onsets), dtype=float)
+        if onsets.shape != self.onsets.shape:
+            raise ValueError(f"the time map returned {onsets.size} times for "
+                             f"{len(self)} onsets")
+        time_range = None
+        if self.data_time_range is not None:
+            time_range = tuple(float(t) for t in
+                               fct(np.asarray(self.data_time_range, dtype=float)))
+        return Events(onsets, self.labels, units=self.units,
+                      data_time_range=time_range, meta=self._meta)
+
+    def keep(self, mask) -> 'Events':
+        """
+        Events where `mask` is True.
+
+        Parameters
+        ----------
+        mask : array-like of bool
+            one value per event
+
+        Returns
+        -------
+        Events
+            new Events with the selected events (and their metadata)
+
+        Raises
+        ------
+        ValueError
+            if `mask` is not a boolean array with one value per event
+
+        Examples
+        --------
+        >>> ev = Events([100, 500, 900], ["A", "B", "C"])
+        >>> ev.keep(ev.onsets < 600).labels
+        array(['A', 'B'], dtype='<U1')
+        """
+        mask = np.asarray(mask)
+        if mask.dtype != bool or mask.shape != (len(self),):
+            raise ValueError(f"mask must be a boolean array with one value per "
+                             f"event ({len(self)}), got {mask.dtype} {mask.shape}")
+        return self._take(mask)
 
     def __len__(self) -> int:
         """Return number of events."""
@@ -952,7 +1047,7 @@ class Events:
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
            >>> plt.figure(figsize=(10, 3))
-           >>> d.get_events().filter("S_").plot(units="sec")
+           >>> d.events.filter("S_").plot(units="sec")
         """
         import matplotlib.pyplot as plt
 
@@ -1238,7 +1333,7 @@ def sync_clocks(src, dst, src_units=UNSET, dst_units=UNSET,
         times on the source clock (e.g., from the behaviour log)
     dst : array-like, Quantity or Events
         times of the same moments on the target clock, in the same order
-        (e.g., ``d.get_events().filter("Start Block")``)
+        (e.g., ``d.events.filter("Start Block")``)
     src_units, dst_units : str or Unit, optional
         units of plain numbers in `src` and `dst` (e.g., "sec", "ms");
         needed unless the times carry units or are :class:`Events`
@@ -1264,7 +1359,7 @@ def sync_clocks(src, dst, src_units=UNSET, dst_units=UNSET,
     Examples
     --------
     >>> starts = behav.groupby("block").trialstart.min()     # in sec
-    >>> sync = pp.sync_clocks(starts, d.get_events().filter("Start Block"),
+    >>> sync = pp.sync_clocks(starts, d.events.filter("Start Block"),
     ...                       src_units="sec")
     >>> d.add_events(sync(pp.Events.from_table(behav, ["stim_on"], units="sec")))
     """

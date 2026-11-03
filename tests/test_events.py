@@ -591,6 +591,58 @@ class TestEventsPlot(unittest.TestCase):
             plt.close(fig)
 
 
+class TestEventsShiftKeep(unittest.TestCase):
+    """Test Events.shift and Events.keep"""
+
+    def setUp(self):
+        self.ev = Events([100, 500, 900], ["A", "B", "C"], units="ms",
+                         data_time_range=(0, 1000), meta={"x": [1, 2, 3]})
+
+    def test_shift_by_offset(self):
+        new = self.ev.shift(-100)
+        np.testing.assert_array_equal(new.onsets, [0, 400, 800])
+        np.testing.assert_array_equal(new.labels, ["A", "B", "C"])
+        np.testing.assert_array_equal(new.meta["x"], [1, 2, 3])
+        self.assertEqual(new.data_time_range, (-100, 900))
+        self.assertEqual(new.units, "ms")
+        # original unchanged
+        np.testing.assert_array_equal(self.ev.onsets, [100, 500, 900])
+
+    def test_shift_is_in_event_units(self):
+        new = self.ev.to_units("sec").shift(1)
+        np.testing.assert_allclose(new.onsets, [1.1, 1.5, 1.9])
+
+    def test_shift_by_time_map(self):
+        new = self.ev.shift(lambda t: np.where(t > 300, t - 200, t))
+        np.testing.assert_array_equal(new.onsets, [100, 300, 700])
+        self.assertEqual(new.data_time_range, (0, 800))
+
+    def test_shift_time_map_wrong_length_raises(self):
+        with self.assertRaises(ValueError):
+            self.ev.shift(lambda t: t[:2])
+
+    def test_shift_empty(self):
+        self.assertEqual(len(Events([], []).shift(10)), 0)
+
+    def test_keep(self):
+        new = self.ev.keep(np.array([True, False, True]))
+        np.testing.assert_array_equal(new.onsets, [100, 900])
+        np.testing.assert_array_equal(new.labels, ["A", "C"])
+        np.testing.assert_array_equal(new.meta["x"], [1, 3])
+        self.assertEqual(new.data_time_range, (0, 1000))
+        self.assertEqual(len(self.ev), 3)
+
+    def test_keep_none_and_all(self):
+        self.assertEqual(len(self.ev.keep(np.zeros(3, dtype=bool))), 0)
+        np.testing.assert_array_equal(self.ev.keep([True] * 3).onsets, self.ev.onsets)
+
+    def test_keep_invalid_mask_raises(self):
+        with self.assertRaises(ValueError):
+            self.ev.keep([True, False])
+        with self.assertRaises(ValueError):
+            self.ev.keep([0, 1, 2])
+
+
 if __name__ == '__main__':
     unittest.main()
 

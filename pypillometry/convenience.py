@@ -346,7 +346,8 @@ def test_selector(obj, selfun, **kwargs):
     """
     if not callable(selfun):
         raise ValueError("selfun must be a function")
-    return obj.event_labels[np.array([selfun(evlab, **kwargs) for evlab in obj.event_labels])]
+    labels = obj.events.labels
+    return labels[np.array([selfun(evlab, **kwargs) for evlab in labels])]
 
 def _user_cache_dir():
     """User cache directory of the package (``$XDG_CACHE_HOME/pypillometry``)."""

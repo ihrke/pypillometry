@@ -147,8 +147,8 @@ def summary(d, step=50):
     """Compact description of an object: time, events, data, masks, blinks."""
     out = {"n": int(len(d.tx)), "fs": float(d.fs), "tx_first": float(d.tx[0]),
            "tx_last": float(d.tx[-1]), "tx_sub": np.asarray(d.tx[::step], dtype=float),
-           "event_onsets": np.asarray(d.event_onsets, dtype=float),
-           "event_labels": np.asarray(d.event_labels, dtype=str)}
+           "event_onsets": np.asarray(d.events.onsets, dtype=float),
+           "event_labels": np.asarray(d.events.labels, dtype=str)}
     for k in d.data.keys():
         v = np.asarray(d.data[k], dtype=float)
         m = np.asarray(d.data.mask[k], dtype=bool)
