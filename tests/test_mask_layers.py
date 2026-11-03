@@ -6,6 +6,16 @@ from pypillometry import EyeDataDict
 from pypillometry.eyedata.eyedatadict import COMPAT_LAYERS, LAYER_DTYPE, MAX_LAYERS, NAN_LAYER
 
 
+def format2_state(d):
+    """State of `d` with the events as in format 2 (the rest as given by the test)."""
+    from pypillometry import state
+    st = state.to_state(d)
+    ev = st.pop("events")
+    st.update(format_version=2, event_onsets=ev["onsets"], event_labels=ev["labels"],
+              event_meta=ev["meta"])
+    return st
+
+
 def small_dict():
     return EyeDataDict(left_pupil=[1., 2., 3., 4., 5.], left_x=[1., 2., 3., 4., 5.])
 
@@ -371,9 +381,9 @@ class TestBlinkLayer:
         # and mask are translated so that removing the blinks unmasks them
         from pypillometry import state
         d = blink_data().pupil_blinks_detect(apply_mask=True)
-        st = state.to_state(d)
+        st = format2_state(d)
         st["data"]["mask"] = {k: np.asarray(m) for k, m in d.data.mask.items()}
-        del st["data"]["layers"], st["data"]["layer_names"]
+        del st["data"]["layers"], st["data"]["layer_names"], st["data"]["rec_layers"]
         st["blinks"] = {"left_pupil": d.get_blinks("left", "pupil")._to_state()}
         st["interpolated_blinks"] = {"left_pupil": None}
         e = state.from_state(st)
@@ -511,8 +521,8 @@ class TestNoStoredMask:
         pupil = np.arange(6, dtype=float)
         pupil[1] = np.nan
         d = pp.PupilData(left_pupil=pupil, sampling_rate=100)
-        st = state.to_state(d)
-        assert "mask" not in st["data"]
+        assert "mask" not in state.to_state(d)["data"]
+        st = format2_state(d)
         # a state with the old mask (no layers)
         st["data"] = {"values": st["data"]["values"],
                       "mask": {"left_pupil": np.array([0, 1, 1, 0, 0, 0], dtype=bool)}}

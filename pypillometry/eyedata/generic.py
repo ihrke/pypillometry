@@ -271,61 +271,11 @@ class GenericEyeData(state.VersionedState, ABC):
 
     # state (see pypillometry.state); subclasses add their own fields
     _STATE_FIELDS = (
-        "name", "fs", "tx", ("data", "EyeDataDict"),
+        "name", "fs", "tx", ("data", "EyeDataDict"), ("events", "Events", "_events"),
         "params", "history", "inplace", "info", ("original", "versioned"))
-    # the events are stored as "event_onsets", "event_labels" and
-    # "event_meta" (see _to_state)
-    _STATE_EXCLUDE = ("_events",)
     # EyeDataDicts with one value per sample; the operations that change
     # the samples (_keep_samples, _decimate, _insert_samples) apply to all
     _SAMPLE_ALIGNED = ("data",)
-
-    def _to_state(self) -> dict:
-        """State of the object (without ``format_version`` and ``class``)."""
-        st = super()._to_state()
-        st["event_onsets"] = self._events.onsets.copy()
-        st["event_labels"] = self._events.labels.copy()
-        st["event_meta"] = {name: col.copy() for name, col in self._events.meta.items()}
-        return st
-
-    def _set_state(self, st: dict):
-        """Set the attributes from a state of the current version.
-
-        States written before the mask layers existed (no ``layers`` in the
-        data) store the blinks and interpolated blinks as Intervals. The
-        blinks become the ``"blink"`` layer; where they are masked (and not
-        NaN), the mask is moved from the ``"user"`` layer (the old mask, see
-        :meth:`EyeDataDict._set_state`) to the ``"_blink_applied"`` layer, so
-        that re-detecting blinks unmasks them. The interpolated blinks become
-        the ``"interpolated"`` layer where the old mask is set. The excluded
-        periods (``excluded``, Intervals in ms) become the recording-wide
-        ``"excluded"`` layer. Both are removed from the ``"user"`` layer.
-        """
-        super()._set_state(st)
-        self._events = Events(st["event_onsets"], st["event_labels"], units="ms",
-                              meta=st["event_meta"])
-        # the old mask is in the "user" layer (where not NaN), see EyeDataDict._set_state
-        if "layers" not in st["data"]:
-            for key, ivst in (st.get("blinks") or {}).items():
-                if ivst is not None and key in self.data:
-                    blink = Intervals._from_state(ivst).to_mask(self).astype(bool)
-                    applied = blink & self.data.get_layer(key, "user")
-                    self.data.set_layer(key, "blink", blink)
-                    self.data.set_layer(key, "_blink_applied", applied)
-                    self.data.clear_layer(key, "user", where=applied)
-            for key, ivst in (st.get("interpolated_blinks") or {}).items():
-                if ivst is not None and key in self.data:
-                    iv = Intervals._from_state(ivst).to_mask(self).astype(bool)
-                    interp = iv & self.data._compat_mask(key)
-                    self.data.set_layer(key, "interpolated", interp)
-                    self.data.clear_layer(key, "user", where=interp)
-        if "rec_layers" not in st["data"] and st.get("excluded") is not None:
-            # excluded periods (ms) -> recording-wide layer
-            excl = Intervals._from_state(st["excluded"]).to_mask(self).astype(bool)
-            if excl.any():
-                self.data.set_rec_layer("excluded", excl)
-                for key in self.data.keys():
-                    self.data.clear_layer(key, "user", where=excl)
 
     @abstractmethod
     def __init__():

@@ -652,21 +652,8 @@ class EyeDataDict(MutableMapping, Stateful):
         return masked
 
     def _set_state(self, st: dict) -> None:
-        """Set data, masks and layers from a state; length and shape follow from them.
-
-        States without layers (written before the layers existed) get empty
-        layers. States with a mask (``mask``, one boolean array per key;
-        written before the masks were layers) keep it: where it is set and
-        no layer in `COMPAT_LAYERS` is, NaN values get `NAN_LAYER`, the
-        other samples the ``"user"`` layer.
-        """
-        st = dict(st)
-        st.setdefault("layers", None)
-        st.setdefault("layer_names", [])
-        st.setdefault("rec_layers", None)
+        """Set data and layers from a state; length and shape follow from them."""
         super()._set_state(st)
-        if self.layers is None:
-            self.layers = {k: np.zeros(v.shape, dtype=LAYER_DTYPE) for k, v in self.data.items()}
         self.layer_names = [str(name) for name in self.layer_names]
         first = next(iter(self.data.values()), None)
         self.length = 0 if first is None else first.shape[0]
@@ -675,13 +662,6 @@ class EyeDataDict(MutableMapping, Stateful):
             self.rec_layers = np.asarray(self.rec_layers, dtype=LAYER_DTYPE)
         elif first is not None:
             self._init_rec_layers()
-        for key, m in (st.get("mask") or {}).items():
-            m = np.asarray(m).astype(bool) & ~self._compat_mask(key)
-            nan = np.isnan(self.data[key])
-            if (m & nan).any():
-                self.set_layer(key, NAN_LAYER, m & nan)
-            if (m & ~nan).any():
-                self.set_layer(key, "user", m & ~nan)
 
     def copy(self) -> 'EyeDataDict':
         """Create a deep copy of the dictionary (data and masks)."""

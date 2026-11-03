@@ -64,9 +64,10 @@ class TestNoEventLocking:
         with pytest.raises(TypeError, match=kwarg):
             pp.Intervals([(0, 1)], units="ms", **{kwarg: (0, 1)})
 
-    def test_format2_state_keys(self):
+    def test_state_keys(self):
         st = pp.Intervals([(0, 1)], units="ms")._to_state()
-        assert st["interval_window"] is None and st["event_indices"] is None
+        assert "interval_window" not in st and "event_indices" not in st
+        assert "data_time_range" not in st
         # old states with these keys load
         iv = pp.Intervals._from_state({**st, "interval_window": (-5, 5),
                                        "event_indices": [3]})

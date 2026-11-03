@@ -67,42 +67,6 @@ def _epochs_from_spans(eyedata, intervals):
                   labels=labels, meta=intervals.event_meta, label=intervals.label)
 
 
-def _spans_to_state(spans):
-    """State of the Epochs or Intervals of a SegmentedEyeData (format 2: Intervals)."""
-    from .epochs import Epochs
-    if not isinstance(spans, Epochs):
-        return None if spans is None else spans._to_state()
-    return {"intervals": np.asarray(spans, dtype=float).reshape(-1, 2), "units": "ms",
-            "label": spans.label, "event_labels": spans.labels.copy(),
-            "event_indices": None, "event_onsets": spans.onsets.copy(),
-            "data_time_range": None, "interval_window": spans.window,
-            "event_meta": {k: v.copy() for k, v in spans.meta.items()} or None}
-
-
-def _spans_from_state(st, fs):
-    """
-    Epochs or Intervals from their state (format 2, Intervals): event-locked
-    intervals (with `interval_window`) are Epochs; onsets and window in
-    sample indices are converted to ms with the sampling rate `fs` (from the
-    first sample of the recording, whose time is unknown).
-    """
-    from .epochs import Epochs
-    from .intervals import Intervals, _MS_PER_UNIT
-    if st is None:
-        return None
-    if st.get("interval_window") is None or st.get("event_onsets") is None:
-        return Intervals._from_state(st)
-    if st["units"] == "samples":
-        logger.warning("segments made from intervals in sample indices: event onsets "
-                       "converted to ms from the first sample of the recording")
-        fac = 1000. / fs
-    else:
-        fac = _MS_PER_UNIT[st["units"]]
-    return Epochs(np.asarray(st["event_onsets"], dtype=float) * fac,
-                  tuple(np.asarray(st["interval_window"], dtype=float) * fac),
-                  labels=st["event_labels"], meta=st["event_meta"], label=st["label"])
-
-
 class SegmentedEyeData(state.VersionedState):
     """
     Class representing segmented eye data (e.g., event-related pupil dilation).
@@ -135,10 +99,9 @@ class SegmentedEyeData(state.VersionedState):
         Original sampling rate in Hz
     """
     
-    # state (see pypillometry.state); `intervals` (Epochs or Intervals) is
-    # stored as the state of an Intervals object (see _to_state)
-    _STATE_FIELDS = ("name", "variable", "tx", ("data", "masked"), "sampling_rate")
-    _STATE_EXCLUDE = ("intervals",)
+    # state (see pypillometry.state); `intervals` is Epochs or Intervals
+    _STATE_FIELDS = ("name", "variable", "tx", ("data", "masked"),
+                     ("intervals", "tagged"), "sampling_rate")
 
     def __init__(self, 
                  name: str, 
@@ -163,17 +126,6 @@ class SegmentedEyeData(state.VersionedState):
         if "_" not in variable:
             raise ValueError(f"Variable must be in 'eye_variable' format (e.g., 'left_pupil'), got '{variable}'")
     
-    def _to_state(self) -> dict:
-        """State of the object (without ``format_version`` and ``class``)."""
-        st = super()._to_state()
-        st["intervals"] = _spans_to_state(self.intervals)
-        return st
-
-    def _set_state(self, st: dict):
-        """Set the attributes from a state of the current version."""
-        super()._set_state(st)
-        self.intervals = _spans_from_state(st["intervals"], self.sampling_rate)
-
     @property
     def eye(self) -> str:
         """Return the eye part of the variable (e.g., 'left' from 'left_pupil')."""
