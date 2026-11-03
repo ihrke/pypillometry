@@ -222,8 +222,7 @@ class GenericEyeData(state.VersionedState, ABC):
 
         ## set time array and sampling rate
         if time is None:
-            maxT=len(self.data)/sampling_rate*1000.
-            self.tx=np.linspace(0,maxT, num=len(self.data))
+            self.tx=np.arange(len(self.data))*1000./sampling_rate
         else:
             self.tx=np.array(time, dtype=float)
 

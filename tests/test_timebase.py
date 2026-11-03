@@ -16,6 +16,16 @@ def actual_fs(d):
     return 1000. / np.median(np.diff(d.tx))
 
 
+class TestConstructorTime(unittest.TestCase):
+
+    def test_default_time_vector(self):
+        # without `time`, sample i is at i*1000/fs ms
+        d = pp.PupilData(left_pupil=np.ones(5), sampling_rate=1000)
+        np.testing.assert_array_equal(d.tx, [0., 1., 2., 3., 4.])
+        d = pp.PupilData(left_pupil=np.ones(4), sampling_rate=300)
+        np.testing.assert_allclose(d.tx, np.arange(4) * 1000. / 300)
+
+
 class TestDownsampleRate(unittest.TestCase):
 
     def test_integer_factor(self):
