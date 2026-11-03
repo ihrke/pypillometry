@@ -226,8 +226,9 @@ class Intervals(Stateful):
 
     Usually, Intervals objects are not created directly but returned by
     methods of the eye-data classes, e.g.,
-    :meth:`~pypillometry.GenericEyeData.get_intervals` (event-locked
-    intervals, input for :meth:`~pypillometry.GenericEyeData.get_segments`),
+    :meth:`~pypillometry.GenericEyeData.get_intervals` (spans between two
+    events; windows around single events are
+    :class:`~pypillometry.Epochs`, see :meth:`~pypillometry.Epochs.to_intervals`),
     :meth:`~pypillometry.GenericEyeData.get_blinks` or
     :meth:`~pypillometry.GenericEyeData.mask_as_intervals`.
     Detection methods such as
@@ -578,7 +579,7 @@ class Intervals(Stateful):
             
         Examples
         --------
-        >>> intervals = data.get_intervals("stim", (-200, 800), units="ms")
+        >>> intervals = data.get_intervals(("stim", "resp"), units="ms")
         >>> arr = np.array(intervals)
         """
         if copy is False:
@@ -625,7 +626,7 @@ class Intervals(Stateful):
         
         Examples
         --------
-        >>> intervals = data.get_intervals("stim", (-200, 800), units="ms")
+        >>> intervals = data.get_intervals(("stim", "resp"), units="ms")
         >>> intervals_sec = intervals.to_units("sec")
         >>> intervals_seconds = intervals.to_units("seconds")  # alias works too
         
@@ -1088,7 +1089,7 @@ class Intervals(Stateful):
            >>> from pypillometry import u
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
-           >>> intervals = d.get_intervals("S_", (-500, 2500) * u.ms, units="sec")
+           >>> intervals = d.get_intervals("S_", (-500, 2500) * u.ms).to_intervals("sec")
            >>> plt.figure(figsize=(8, 3))
            >>> intervals.plot()
         """
@@ -1188,7 +1189,7 @@ class Intervals(Stateful):
            >>> from pypillometry import u
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
-           >>> intervals = d.get_intervals("S_", (0, 1000) * u.ms, units="sec")
+           >>> intervals = d.get_intervals("S_", (0, 1000) * u.ms).to_intervals("sec")
            >>> plt.figure(figsize=(10, 3))
            >>> d.plot.pupil_plot(eyes="left", plot_range=(0, 20) * u.sec,
            ...                   show_events=False)

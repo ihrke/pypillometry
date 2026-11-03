@@ -2352,8 +2352,8 @@ class GenericEyeData(state.VersionedState, ABC):
         Examples
         --------
         >>> # Extract pupil segments around stimulus events
-        >>> intervals = data.get_intervals("stimulus", window=(-200, 800), units="ms")
-        >>> segments = data.get_segments(intervals, "left_pupil")
+        >>> epochs = data.get_intervals("stimulus", window=(-200, 800), units="ms")
+        >>> segments = data.get_segments(epochs, "left_pupil")
         >>> segments.plot()
         
         >>> # Apply baseline correction

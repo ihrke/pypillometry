@@ -111,7 +111,7 @@ class SegmentedEyeData(state.VersionedState):
     "right_x") extracted around events. Tracks masked/missing data.
 
     Usually created with :meth:`~pypillometry.GenericEyeData.get_segments`
-    from the Intervals returned by
+    from the :class:`~pypillometry.Epochs` returned by
     :meth:`~pypillometry.GenericEyeData.get_intervals`, e.g.
     ``d.get_segments(d.get_intervals("F", window=(-200, 800), units="ms"),
     "left_pupil")``. Segments of several subjects can be combined with
@@ -127,8 +127,10 @@ class SegmentedEyeData(state.VersionedState):
         Time axis relative to segment onset (in ms)
     data : np.ma.MaskedArray
         Masked array with shape (n_timepoints, n_segments)
-    intervals : Intervals, optional
-        Source Intervals object with event metadata
+    intervals : Epochs, optional
+        the epochs the segments were extracted from (event onsets, window,
+        labels and metadata); segments from old files made from intervals
+        that were not event-locked keep these Intervals
     sampling_rate : float, optional
         Original sampling rate in Hz
     """
@@ -217,8 +219,8 @@ class SegmentedEyeData(state.VersionedState):
             Time axis relative to segment onset (in ms)
         variable : str
             Variable name in "eye_variable" format
-        intervals : Intervals, optional
-            Source Intervals object with event metadata
+        intervals : Epochs, optional
+            the epochs the segments were extracted from
         name : str, optional
             Name for the dataset (default "segments")
         sampling_rate : float, optional
@@ -715,8 +717,8 @@ class GroupLevelSegmentedData(SegmentedEyeData):
         Percentage of masked data per subject at each timepoint (shape: n_timepoints)
     n_subjects : int
         Number of subjects combined
-    intervals : Intervals, optional
-        Source Intervals object
+    intervals : Epochs, optional
+        the epochs of the first segments
     sampling_rate : float, optional
         Original sampling rate in Hz
     """
