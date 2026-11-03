@@ -42,7 +42,11 @@ Version history
     value per interval)
 3
     eyedata objects store their events as one Events state (`events`:
-    `onsets` in `units`, `labels`, `data_time_range`, `meta`)
+    `onsets` in `units`, `labels`, `data_time_range`, `meta`); masks are
+    layers: EyeDataDicts have `layers` (one uint16 bit-field per key),
+    `layer_names` (layer i is bit i) and `rec_layers` (recording-wide
+    layers, e.g. excluded periods) instead of `mask`; eyedata objects have
+    no `blinks`, `interpolated_blinks` and `excluded` (they are layers)
 """
 
 import importlib
@@ -463,15 +467,146 @@ def _migrate_1_to_2(state, class_name):
     return state
 
 
+# layers that made up the mask of version 2 (the "compat" mask of version 3)
+_V2_MASK_LAYERS = ("_nan", "user", "interpolated", "_blink_applied", "excluded",
+                   "offscreen", "divergence")
+_V2_MS_PER_UNIT = {"ms": 1., "sec": 1000., "min": 60000., "h": 3600000.}
+
+
+class _V3Layers:
+    """Layers of a version-3 EyeDataDict state (`st`, changed in place)."""
+
+    def __init__(self, st):
+        self.st = st
+
+    def bit(self, name):
+        """Bit of layer `name` (registered if new)."""
+        names = self.st["layer_names"]
+        if name not in names:
+            if len(names) == 16:
+                raise ValueError("more than 16 mask layers")
+            names.append(name)
+        return np.uint16(1 << names.index(name))
+
+    def bits(self, names):
+        """Bits of the registered layers among `names`."""
+        return np.uint16(sum(1 << i for i, n in enumerate(self.st["layer_names"])
+                             if n in names))
+
+    def get(self, key, name):
+        """Layer `name` of `key` (None: the recording-wide layer) as bool array."""
+        arr = self.st["rec_layers"] if key is None else self.st["layers"][key]
+        return (arr & self.bits([name])) != 0
+
+    def set(self, key, name, where):
+        """Set layer `name` of `key` (None: recording-wide) where `where` is True."""
+        arr = self.st["rec_layers"] if key is None else self.st["layers"][key]
+        arr[where] |= self.bit(name)
+
+    def clear(self, key, name, where):
+        self.st["layers"][key][where] &= ~self.bits([name])
+
+    def mask(self, key):
+        """The mask of `key` as version 2 had it (from the layers)."""
+        bits = self.bits(_V2_MASK_LAYERS)
+        return ((self.st["layers"][key] & bits) != 0) | ((self.st["rec_layers"] & bits) != 0)
+
+
+def _v2_eyedatadict(st):
+    """Version-3 state of an EyeDataDict (version-2 state `st`), with its _V3Layers.
+
+    The mask of version 2 (``mask``) becomes layers: NaN values the ``"_nan"``
+    layer, the other masked samples the ``"user"`` layer. States written by
+    development versions between 2.1 and 3 may already have (some) layers.
+    """
+    st = dict(st)
+    values = st["values"]
+    if st.get("layers") is None:
+        st["layers"] = {k: np.zeros(np.shape(v), dtype=np.uint16) for k, v in values.items()}
+    else:
+        st["layers"] = {k: np.array(v, dtype=np.uint16) for k, v in st["layers"].items()}
+    st["layer_names"] = [str(name) for name in st.get("layer_names") or []]
+    if st.get("rec_layers") is not None:
+        st["rec_layers"] = np.array(st["rec_layers"], dtype=np.uint16)
+    elif values:
+        st["rec_layers"] = np.zeros(np.shape(next(iter(values.values()))), dtype=np.uint16)
+    else:
+        st["rec_layers"] = None
+    layers = _V3Layers(st)
+    for key, m in (st.pop("mask", None) or {}).items():
+        m = np.asarray(m).astype(bool) & ~layers.mask(key)
+        nan = np.isnan(values[key])
+        if (m & nan).any():
+            layers.set(key, "_nan", m & nan)
+        if (m & ~nan).any():
+            layers.set(key, "user", m & ~nan)
+    return st, layers
+
+
+def _v2_intervals_mask(st, tx):
+    """Samples (bool array) covered by an Intervals state `st` of version 2.
+
+    Times are converted to the first sample at or after them (as Intervals
+    did in version 2); the intervals are clipped to the recording.
+    """
+    n = len(tx)
+    out = np.zeros(n, dtype=bool)
+    ivs = np.asarray(st["intervals"], dtype=float).reshape(-1, 2)
+    if st["units"] != "samples" and n > 0:
+        tol = 1e-6 * (np.median(np.diff(tx)) if n > 1 else 1.)
+        ivs = np.searchsorted(tx, ivs * _V2_MS_PER_UNIT[st["units"]] - tol, side="left")
+    for start, end in ivs:
+        out[min(max(int(start), 0), n):min(max(int(end), 0), n)] = True
+    return out
+
+
+def _v2_eyedata_layers(state):
+    """Move the masks, blinks, interpolated blinks and excluded periods of a
+    version-2 eyedata state into the layers of its data (in place)."""
+    had_layers = "layers" in state["data"]
+    had_rec_layers = "rec_layers" in state["data"]
+    state["data"], layers = _v2_eyedatadict(state["data"])
+    values = state["data"]["values"]
+    tx = np.asarray(state["tx"], dtype=float)
+    blinks = state.pop("blinks", None) or {}
+    interpolated = state.pop("interpolated_blinks", None) or {}
+    excluded = state.pop("excluded", None)
+    if not had_layers:
+        # blinks: where masked (not NaN), they were applied as mask
+        for key, ivst in blinks.items():
+            if ivst is not None and key in values:
+                blink = _v2_intervals_mask(ivst, tx)
+                applied = blink & layers.get(key, "user")
+                layers.set(key, "blink", blink)
+                layers.set(key, "_blink_applied", applied)
+                layers.clear(key, "user", applied)
+        # interpolated blinks: only where they were (still) masked
+        for key, ivst in interpolated.items():
+            if ivst is not None and key in values:
+                interp = _v2_intervals_mask(ivst, tx) & layers.mask(key)
+                layers.set(key, "interpolated", interp)
+                layers.clear(key, "user", interp)
+    if not had_rec_layers and excluded is not None:
+        excl = _v2_intervals_mask(excluded, tx)
+        if excl.any():
+            layers.set(None, "excluded", excl)
+            for key in values:
+                layers.clear(key, "user", excl)
+    if state.get("sim_data") is not None:  # FakeEyeData
+        state["sim_data"] = _v2_eyedatadict(state["sim_data"])[0]
+
+
 def _migrate_2_to_3(state, class_name):
     """Version 2 -> 3: the events of eyedata objects are one Events state
-    (`events`) instead of `event_onsets`, `event_labels` and `event_meta`."""
+    (`events`) instead of `event_onsets`, `event_labels` and `event_meta`;
+    masks are layers (see _v2_eyedata_layers)."""
     state = dict(state)
     if class_name in _SEGMENTED_CLASSES:
         return state
     state["events"] = {"onsets": state.pop("event_onsets"),
                        "labels": state.pop("event_labels"), "units": "ms",
                        "data_time_range": None, "meta": state.pop("event_meta")}
+    _v2_eyedata_layers(state)
     return state
 
 
