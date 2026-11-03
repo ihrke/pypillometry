@@ -219,3 +219,15 @@ Changes of the API calls alone (same numbers) need no entry.
   blinks, finding 4.2).
 - **Why**: detectors replace their own layer (refactor plan 2.2).
 - **Step**: 5, `refactor/05-mask-layers`
+
+### Blinks detected without `apply_mask` are stored in the object
+
+- **Case**: none (`a.blinks_detect.*` detect in place)
+- **Change**: `pupil_blinks_detect(apply_mask=False)` (the default)
+  returns the blinks and stores them in the object it is called on, also
+  with `inplace=False` (before: in a copy that was thrown away, finding
+  4.1). The data and the mask are not changed. The call is still not
+  recorded in the history (the method returns the Intervals; step 9 makes
+  detectors return the object).
+- **Why**: the detected blinks were lost.
+- **Step**: 5, `refactor/05-mask-layers`

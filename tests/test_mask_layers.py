@@ -289,6 +289,15 @@ class TestBlinkLayer:
             assert len(d.get_blinks("left", "pupil")) == 0
             np.testing.assert_array_equal(d.data.mask["left_pupil"].astype(bool), nan)
 
+    def test_detect_without_apply_mask_stores_in_self(self):
+        # finding 4.1: the blinks were stored in a copy that was thrown away
+        d = blink_data()
+        found = d.pupil_blinks_detect(inplace=False)
+        assert len(found) == 3
+        assert d.nblinks() == {"left_pupil": 3}
+        np.testing.assert_array_equal(d.data.mask["left_pupil"].astype(bool),
+                                      np.isnan(d.data["left_pupil"]))
+
     def test_merge_close_on_runs(self):
         # finding 4.3: a blink containing another one shrank
         import pypillometry as pp

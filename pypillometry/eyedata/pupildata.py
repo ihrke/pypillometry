@@ -522,7 +522,9 @@ class PupilData(GenericEyeData):
         detection with other parameters gives the same result as running it
         once. When `apply_mask=True`,
         the blinks are also applied as masks to the data. When `apply_mask=False`
-        (default), the detected blinks are returned as Intervals objects.
+        (default), the detected blinks are returned as Intervals objects and
+        stored in the object itself (also with `inplace=False`; the data and
+        the mask are not changed).
 
         Finally, detected blinks have to be at least `min_duration` ms.
         
@@ -574,7 +576,8 @@ class PupilData(GenericEyeData):
         inplace : bool or None
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes                                                    
-            if `None`, use the object-level setting
+            if `None`, use the object-level setting;
+            only used with `apply_mask=True`
             
         Returns
         -------
@@ -584,7 +587,8 @@ class PupilData(GenericEyeData):
             If `apply_mask=False` and multiple eyes: returns dict of Intervals objects
             (keys like ``"left_pupil"``)
         """
-        obj = self._get_inplace(inplace)
+        # without apply_mask, the blinks are returned and stored in self
+        obj = self._get_inplace(inplace) if apply_mask else self
         eyes=self._eyes_with(eyes, "pupil")
 
         # Convert ms to samples
