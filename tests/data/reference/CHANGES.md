@@ -84,3 +84,55 @@ Changes of the API calls alone (same numbers) need no entry.
   to the event (finding 2.3); `get_intervals(event, window)` now returns
   `Epochs`, and `get_segments` takes the axis from their window.
 - **Step**: 4, `refactor/04-epochs`
+
+### Event-locked windows are not clipped
+
+- **Case**: none (the reference windows are in ms and within the data;
+  `e.segments.*` data and masks and `e.stat_per_event.*` are unchanged)
+- **Change**: `get_intervals(event, window)` returns `Epochs` (onsets and
+  window in ms) instead of Intervals. With a window in samples near the
+  start of the recording, the segments are no longer shifted: the event
+  stays at t = 0 and the samples before the recording are masked (they
+  were clipped to sample 0, and the segment started there; finding 2.2).
+  Between two events in samples, the intervals are no longer clipped to
+  `(0, n)` (finding 2.6). `Intervals.pad` no longer clips to the data (or
+  to sample 0), and `to_units("samples", d)` no longer clips the event
+  onsets to the samples of the data. A window in samples is converted to
+  ms with the sampling rate; each segment starts at the first sample at or
+  after `onset + window[0]` (before: the sample of the event plus the
+  window in samples; the same sample unless the time stamps are irregular).
+- **Why**: spans are never clipped silently; the parts outside the data
+  are handled where the data are read (masked in segments, ignored in
+  masks and statistics).
+- **Step**: 4, `refactor/04-epochs`
+
+### Segments from Intervals of different lengths raise
+
+- **Case**: none
+- **Change**: `get_segments(Intervals)` raises a ValueError unless all
+  intervals have the same length (between two events, it returned
+  segments with 0 time points, finding 2.1). Intervals of the same length
+  give segments with the time axis from 0 at their starts (before: the
+  absolute times of the first interval).
+- **Why**: a segment needs one time axis; event-locked segments come from
+  `Epochs`.
+- **Step**: 4, `refactor/04-epochs`
+
+### `baseline_correct` with a window outside the segments raises
+
+- **Case**: none (`e.segments.*` use `(-200, 0)`, within the segments)
+- **Change**: a baseline window (or time point) that is not within the
+  time axis of the segments raises a ValueError (before: a tuple outside
+  masked everything, a time point outside used the first or last sample,
+  a window partly outside used the part inside; finding 2.4).
+- **Step**: 4, `refactor/04-epochs`
+
+### `stat_per_event` with windows outside the data
+
+- **Case**: none (the reference windows are within the data)
+- **Change**: a window that lies entirely outside the data gives NaN
+  (before: the value of the first or last sample); a window that runs past
+  the last sample includes the last sample (it was left out).
+- **Why**: windows are no longer clipped in `get_intervals`; the data
+  within a window are used.
+- **Step**: 4, `refactor/04-epochs`
