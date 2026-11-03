@@ -11,7 +11,8 @@ from .. import io
 from ..convenience import sizeof_fmt, ByteSize, _round_values, requires_package, is_url, suppress_all_output, normalize_unit, _warn_if_ignores_mask
 from ..units import UNSET, _has_units, _time_values_and_units, parse_time, _ms_to_samples, _samples_to_ms
 from ..io import download
-from .eyedatadict import EyeDataDict, LAYER_DTYPE, REC_LAYERS, _join_key
+from .eyedatadict import (EyeDataDict, COMPAT_LAYERS, LAYER_DTYPE, NAN_LAYER, REC_LAYERS,
+                          _join_key)
 from .experimental_setup import ExperimentalSetup
 from ..signal import baseline
 from ..intervals import stat_event_interval, Intervals, _as_intervals
@@ -155,7 +156,7 @@ def _keep_dict(d, keep):
     nd = EyeDataDict()
     nd.layer_names = list(d.layer_names)
     for k, v in d.items():
-        nd._set_channel(k, v[keep], d._mask[k][keep], d.layers[k][keep])
+        nd._set_channel(k, v[keep], d.layers[k][keep])
     if d.rec_layers is not None:
         nd.rec_layers = d.rec_layers[keep].copy()
     return nd
@@ -165,16 +166,33 @@ def _decimate_dict(d, factor):
     """EyeDataDict with the samples of `d` decimated (see GenericEyeData._decimate)."""
     nd = EyeDataDict()
     nd.layer_names = list(d.layer_names)
+    compat = LAYER_DTYPE(d.layer_bits(COMPAT_LAYERS))
+    nan_bit = LAYER_DTYPE(d.layer_bits(NAN_LAYER))
+    interp_bit = LAYER_DTYPE(d.layer_bits("interpolated"))
+    rec = None if d.rec_layers is None else _decimate_layers(d.rec_layers, factor)
     for k, v in d.items():
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", RuntimeWarning)  # all-NaN windows
-            y = baseline.downsample(np.where(d.mask[k].astype(bool), np.nan, v), factor)
+            y = baseline.downsample(np.where(d._compat_mask(k), np.nan, v), factor)
             stored = baseline.downsample(v, factor)
         allmasked = np.isnan(y)
         y[allmasked] = stored[allmasked]
-        nd._set_channel(k, y, allmasked, _decimate_layers(d.layers[k], factor))
-    if d.rec_layers is not None:
-        nd.rec_layers = _decimate_layers(d.rec_layers, factor)
+        # NAN_LAYER only where the whole window is masked (below)
+        layers = _decimate_layers(d.layers[k] & ~nan_bit, factor)
+        # a window whose samples are all masked (or NaN) stays masked: if no
+        # layer covers more than half of it, it gets the compat layers of
+        # its samples except "interpolated" (NAN_LAYER if there are none)
+        todo = allmasked & ((layers & compat) == 0)
+        if rec is not None:
+            todo &= (rec & compat) == 0
+        if todo.any():
+            present = np.bitwise_or.reduceat(d.layers[k] & (compat & ~interp_bit),
+                                             np.arange(0, len(v), factor))
+            present[present == 0] = nd.layer_bits(NAN_LAYER, create=True)
+            layers[todo] |= present[todo]
+        nd._set_channel(k, y, layers)
+    if rec is not None:
+        nd.rec_layers = rec
     return nd
 
 
@@ -200,17 +218,16 @@ def _decimate_layers(layers, factor):
 
 def _insert_dict(d, n, pos, value):
     """EyeDataDict of length `n` with the samples of `d` at `pos`; new samples
-    hold `value`, are masked and have no layers."""
+    hold `value` and are masked as missing (`NAN_LAYER`, no other layers)."""
     nd = EyeDataDict()
     nd.layer_names = list(d.layer_names)
+    missing = nd.layer_bits(NAN_LAYER, create=n > len(pos))
     for k, v in d.items():
         nv = np.full(n, value, dtype=float)
-        nm = np.ones(n, dtype=bool)  # inserted = missing
-        nl = np.zeros(n, dtype=LAYER_DTYPE)
+        nl = np.full(n, missing, dtype=LAYER_DTYPE)  # inserted = missing
         nv[pos] = v
-        nm[pos] = d._mask[k]
         nl[pos] = d.layers[k]
-        nd._set_channel(k, nv, nm, nl)
+        nd._set_channel(k, nv, nl)
     if d.rec_layers is not None:
         nd.rec_layers = np.zeros(n, dtype=LAYER_DTYPE)
         nd.rec_layers[pos] = d.rec_layers
@@ -277,36 +294,38 @@ class GenericEyeData(state.VersionedState, ABC):
         States written before the mask layers existed (no ``layers`` in the
         data) store the blinks and interpolated blinks as Intervals. The
         blinks become the ``"blink"`` layer; where they are masked (and not
-        NaN), the mask is moved from the stored mask to the
-        ``"_blink_applied"`` layer, so that re-detecting blinks unmasks them.
-        The interpolated blinks become the ``"interpolated"`` layer where the
-        stored mask is set. The excluded periods (``excluded``, Intervals in
-        ms) become the recording-wide ``"excluded"`` layer and are removed
-        from the stored mask (where the value is not NaN).
+        NaN), the mask is moved from the ``"user"`` layer (the old mask, see
+        :meth:`EyeDataDict._set_state`) to the ``"_blink_applied"`` layer, so
+        that re-detecting blinks unmasks them. The interpolated blinks become
+        the ``"interpolated"`` layer where the old mask is set. The excluded
+        periods (``excluded``, Intervals in ms) become the recording-wide
+        ``"excluded"`` layer. Both are removed from the ``"user"`` layer.
         """
         super()._set_state(st)
         self._events = Events(st["event_onsets"], st["event_labels"], units="ms",
                               meta=st["event_meta"])
+        # the old mask is in the "user" layer (where not NaN), see EyeDataDict._set_state
         if "layers" not in st["data"]:
-            for key, ivst in (st.get("interpolated_blinks") or {}).items():
-                if ivst is not None and key in self.data:
-                    iv = Intervals._from_state(ivst)
-                    self.data.set_layer(key, "interpolated",
-                                        iv.to_mask(self).astype(bool) & self.data._mask[key])
             for key, ivst in (st.get("blinks") or {}).items():
                 if ivst is not None and key in self.data:
                     blink = Intervals._from_state(ivst).to_mask(self).astype(bool)
-                    applied = blink & self.data._mask[key] & ~np.isnan(self.data.data[key])
+                    applied = blink & self.data.get_layer(key, "user")
                     self.data.set_layer(key, "blink", blink)
                     self.data.set_layer(key, "_blink_applied", applied)
-                    self.data._mask[key] &= ~applied
+                    self.data.clear_layer(key, "user", where=applied)
+            for key, ivst in (st.get("interpolated_blinks") or {}).items():
+                if ivst is not None and key in self.data:
+                    iv = Intervals._from_state(ivst).to_mask(self).astype(bool)
+                    interp = iv & self.data._compat_mask(key)
+                    self.data.set_layer(key, "interpolated", interp)
+                    self.data.clear_layer(key, "user", where=interp)
         if "rec_layers" not in st["data"] and st.get("excluded") is not None:
-            # excluded periods (ms) -> recording-wide layer, out of the stored mask
+            # excluded periods (ms) -> recording-wide layer
             excl = Intervals._from_state(st["excluded"]).to_mask(self).astype(bool)
             if excl.any():
                 self.data.set_rec_layer("excluded", excl)
                 for key in self.data.keys():
-                    self.data._mask[key] &= ~(excl & ~np.isnan(self.data.data[key]))
+                    self.data.clear_layer(key, "user", where=excl)
 
     @abstractmethod
     def __init__():
@@ -473,7 +492,7 @@ class GenericEyeData(state.VersionedState, ABC):
                 if prefix == "time":
                     return self._get_time_array(suffix or None)
 
-        # Delegate to EyeDataDict and wrap using the stored mask
+        # Delegate to EyeDataDict and wrap using the mask (see EyeDataDict.mask)
         data_array = self.data[normalized_key]
         try:
             mask = self.data.mask[normalized_key]
@@ -2643,11 +2662,13 @@ class GenericEyeData(state.VersionedState, ABC):
         Each window of `factor` samples becomes one sample (the last window
         may be shorter): values are the mean of the unmasked samples, the
         time is the mean time of the window, and the new sampling rate is
-        ``fs/factor``. A new sample is masked only if all samples in its
-        window were masked; it then holds the mean of the stored values
-        (e.g., interpolated blinks). A layer (e.g., ``"blink"``) is set for
-        a new sample if it covers more than half of the samples in the
-        window (also the recording-wide layers, e.g. excluded periods).
+        ``fs/factor``. A layer (e.g., ``"blink"``) is set for a new sample
+        if it covers more than half of the samples in the window (also the
+        recording-wide layers, e.g. excluded periods). A new sample whose
+        window was masked entirely holds the mean of the stored values
+        (e.g., interpolated blinks) and stays masked: if no layer covers
+        more than half of the window, it gets the masking layers of its
+        samples (not "interpolated").
         Events stay valid.
         """
         self._map_sample_aligned(_decimate_dict, factor)
@@ -3226,7 +3247,7 @@ class GenericEyeData(state.VersionedState, ABC):
             if target_key == key:
                 obj.data.set_with_mask(key, data, preserve_mask=True)
             else:
-                obj.data._set_channel(target_key, data, obj.data._mask[key], obj.data.layers[key])
+                obj.data._set_channel(target_key, data, obj.data.layers[key])
             obj.data.set_layer(target_key, "interpolated", interpolated)
         
         # Handle dict vs single Intervals

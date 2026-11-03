@@ -3,10 +3,14 @@ import numpy as np
 import pytest
 
 from pypillometry import EyeDataDict
-from pypillometry.eyedata.eyedatadict import COMPAT_LAYERS, LAYER_DTYPE, MAX_LAYERS
+from pypillometry.eyedata.eyedatadict import COMPAT_LAYERS, LAYER_DTYPE, MAX_LAYERS, NAN_LAYER
 
 
 def small_dict():
+    return EyeDataDict(left_pupil=[1., 2., 3., 4., 5.], left_x=[1., 2., 3., 4., 5.])
+
+
+def nan_dict():
     return EyeDataDict(left_pupil=[1., np.nan, 3., 4., 5.], left_x=[1., 2., 3., 4., 5.])
 
 
@@ -66,7 +70,9 @@ class TestLayerStorage:
         d = small_dict()
         d.set_layer("left_pupil", "blink", [0, 1, 0, 0, 0])
         d["left_pupil"] = [1., 2., 3., 4., np.nan]
-        assert not d.layers["left_pupil"].any()
+        # only the NaN (internal layer, see NAN_LAYER)
+        np.testing.assert_array_equal(d.get_layer("left_pupil", NAN_LAYER), [0, 0, 0, 0, 1])
+        assert not d.get_layer("left_pupil", "blink").any()
         d.set_layer("left_pupil", "blink", [0, 1, 0, 0, 0])
         d.set_with_mask("left_pupil", np.ones(5), preserve_mask=True)
         assert d.get_layer("left_pupil", "blink").sum() == 1
@@ -123,7 +129,7 @@ class TestCompatMask:
     """`EyeDataDict.mask`: stored mask or a layer in COMPAT_LAYERS."""
 
     def test_nan_and_compat_layers(self):
-        d = small_dict()
+        d = nan_dict()
         np.testing.assert_array_equal(d.mask["left_pupil"], [0, 1, 0, 0, 0])
         d.set_layer("left_pupil", "blink", [0, 0, 1, 0, 0])  # not a compat layer
         np.testing.assert_array_equal(d.mask["left_pupil"], [0, 1, 0, 0, 0])
@@ -141,7 +147,7 @@ class TestCompatMask:
         assert "left_x" in d.mask and d.mask.get("right_x") is None
 
     def test_set_mask_makes_mask_equal(self):
-        d = small_dict()
+        d = nan_dict()
         d.set_layer("left_pupil", "user", [1, 1, 0, 0, 0])
         d.set_layer("left_pupil", "blink", [1, 1, 0, 0, 0])
         d.set_mask("left_pupil", [0, 1, 1, 0, 0])
@@ -464,3 +470,55 @@ def test_masked_array_assignment_checks_key_and_shape():
     with pytest.raises(ValueError, match="shape"):
         d["left_a"] = np.ma.ones(4)
     assert list(d.data.keys()) == ["left_pupil"]
+
+
+class TestNoStoredMask:
+    """The mask is derived from the layers only (no stored mask)."""
+
+    def test_nan_filled_by_a_filter_stays_masked(self):
+        import pypillometry as pp
+        pupil = 1000 + np.sin(np.arange(500) / 20)
+        pupil[200:220] = np.nan
+        d = pp.PupilData(left_pupil=pupil, sampling_rate=100, inplace=False)
+        f = d.pupil_lowpass_filter(5)
+        assert np.isfinite(f.data["left_pupil"]).all()
+        assert f.data.mask["left_pupil"][200:220].all()
+        assert f.mask("left", "pupil")[200:220].all()
+        assert not f.mask("left", "pupil", policy="raw").any()
+
+    def test_decimate_keeps_fully_masked_windows_masked(self):
+        import pypillometry as pp
+        d = pp.PupilData(left_pupil=np.arange(8, dtype=float), sampling_rate=100)
+        # window 0: half user, half interpolated -> no layer covers > 1/2
+        d.data.set_layer("left_pupil", "user", [1, 1, 0, 0, 0, 0, 0, 0])
+        d.data.set_layer("left_pupil", "interpolated", [0, 0, 1, 1, 0, 0, 0, 0])
+        # window 1: NaN set later (not a layer)
+        v = d.data["left_pupil"].copy()
+        v[4:8] = np.nan
+        d.data.set_with_mask("left_pupil", v, preserve_mask=True)
+        d._decimate(4)
+        np.testing.assert_array_equal(d.data.mask["left_pupil"], [1, 1])
+        assert d.data.get_layer("left_pupil", "user")[0]
+        # not "interpolated": the window stays masked under the default policy
+        assert not d.data.get_layer("left_pupil", "interpolated")[0]
+        assert d.mask("left", "pupil").all()
+        assert d.data.get_layer("left_pupil", NAN_LAYER)[1]
+        assert d.data["left_pupil"][0] == 1.5  # mean of the values
+
+    def test_state_has_no_mask_and_old_masks_are_translated(self):
+        import pypillometry as pp
+        from pypillometry import state
+        pupil = np.arange(6, dtype=float)
+        pupil[1] = np.nan
+        d = pp.PupilData(left_pupil=pupil, sampling_rate=100)
+        st = state.to_state(d)
+        assert "mask" not in st["data"]
+        # a state with the old mask (no layers)
+        st["data"] = {"values": st["data"]["values"],
+                      "mask": {"left_pupil": np.array([0, 1, 1, 0, 0, 0], dtype=bool)}}
+        r = state.from_state(st)
+        np.testing.assert_array_equal(r.data.mask["left_pupil"], [0, 1, 1, 0, 0, 0])
+        np.testing.assert_array_equal(r.data.get_layer("left_pupil", NAN_LAYER),
+                                      [0, 1, 0, 0, 0, 0])
+        np.testing.assert_array_equal(r.data.get_layer("left_pupil", "user"),
+                                      [0, 0, 1, 0, 0, 0])

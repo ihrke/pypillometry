@@ -819,7 +819,7 @@ class PupilData(GenericEyeData):
             if target == key:
                 obj.data.set_with_mask(key, syr, preserve_mask=True)
             else:
-                obj.data._set_channel(target, syr, obj.data._mask[key], obj.data.layers[key])
+                obj.data._set_channel(target, syr, obj.data.layers[key])
             obj.data.set_layer(target, "interpolated", interpolated)
             logger.debug(f"Interpolated {len(interpolated_intervals)} blinks for {eye}")
 

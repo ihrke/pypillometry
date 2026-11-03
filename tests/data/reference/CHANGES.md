@@ -349,3 +349,25 @@ Changes of the API calls alone (same numbers) need no entry.
 - **Why**: every channel is `<eye>_<variable>`; the distance belongs to
   the pair of eyes, and storing it with each eye keeps it a variable.
 - **Step**: 5, `refactor/05-mask-layers`
+
+### No stored mask: the mask is derived from the layers
+
+- **Case**: none (all masks and values are the same: `data.mask` is
+  computed from the layers and equals the old mask)
+- **Change**: the separate boolean mask per variable is gone. What it held
+  is now a layer: masks set with `set_mask`/`add_mask` (and
+  `set_with_mask(mask=...)`, e.g. `merge_masks`, `pupil_merge_eyes`) are
+  in the `user` layer, so `clear_layer("user")` removes them; NaN values
+  at assignment and the samples inserted by `fill_time_discontinuities`
+  are in the internal layer `_nan` (they stay masked when
+  `pupil_lowpass_filter` fills them with values, as before); after
+  `downsample`, a window whose samples were all masked stays masked
+  through the layers of its samples (not `interpolated`) when no layer
+  covers more than half of it. The data state has no `mask` key any more;
+  states with a `mask` (format 2 written before) are translated: where no
+  layer explains a masked sample, NaN values get `_nan`, others `user`
+  (before the blinks, interpolated blinks and excluded periods of the old
+  file are taken out of it).
+- **Why**: one store for masks (finding D1); NaN is read from the values
+  (refactor plan 2.2) except where a filter filled it (step 7).
+- **Step**: 5, `refactor/05-mask-layers`
