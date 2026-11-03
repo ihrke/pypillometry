@@ -113,15 +113,17 @@ HDF5 file instead:
 
 HDF5 files do not run code when they are read, and other programs (e.g.,
 h5py, R or MATLAB) can read them: the data are datasets (``tx``,
-``data/values/left_pupil``, ``data/mask/left_pupil``, ...), the other information
-(name, sampling rate, blinks, history, ...) is stored in groups and
-attributes. They work for eyedata objects and :class:`SegmentedEyeData`
+``data/values/left_pupil``, ``data/layers/left_pupil``, ...; the mask layers
+are bits, bit *i* is the layer ``data/layer_names[i]``, e.g. ``"blink"``), the
+other information (name, sampling rate, events, history, ...) is stored in
+groups and attributes. They work for eyedata objects and :class:`SegmentedEyeData`
 (not for arbitrary Python objects). Values in ``info`` or ``params`` that
 HDF5 cannot store are saved as text (with a warning). The loading
 functions detect the format from the file content.
 
 Both formats store a versioned description of the object. Files written
-by older versions of pypillometry are upgraded when they are loaded.
+by older versions of pypillometry are upgraded when they are loaded;
+``pypil-upgrade`` converts them once (see :doc:`/getting_started/cli`).
 
 Saved files can be inspected with ``pypilinfo`` and opened in the viewer
 with ``pypilview`` (see :doc:`/getting_started/cli`).

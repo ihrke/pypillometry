@@ -93,6 +93,7 @@ viewer is available from the command line:
 pypilview recording.edf            # view an Eyelink file or a saved object
 edf2pypil recording.edf            # convert EDF once, load much faster later
 pypilinfo data/*.pkl               # print a summary of one or more files
+pypil-upgrade -i data/             # convert files saved with older versions
 ```
 
 ![The pypilview viewer showing pupil size and gaze of both eyes](https://raw.githubusercontent.com/ihrke/pypillometry/master/docs/images/viewer_eyedata.png)
