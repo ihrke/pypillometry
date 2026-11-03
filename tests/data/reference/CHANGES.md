@@ -201,7 +201,8 @@ Changes of the API calls alone (same numbers) need no entry.
   unmasks the blinks that were set with `apply_mask=True` (before, the
   mask stayed, finding 4.2), and so does setting other blinks; NaN samples
   and other masks stay masked. Blinks removed by `exclude_intervals`
-  (touching an excluded period) keep their mask, as before. The quality
+  (touching an excluded period) keep their mask, as before (see "Blinks
+  next to an excluded period keep their layers" below). The quality
   report has the blink section for all eyes once blinks were detected
   for any eye (0 blinks for eyes without detection).
 - **Why**: one store for blinks (finding D1); the mask of the blinks can
@@ -290,4 +291,24 @@ Changes of the API calls alone (same numbers) need no entry.
   `clear_layer("excluded")` removes the excluded periods.
 - **Why**: no interval stores next to the samples (refactor plan 2.4:
   nothing else to remap).
+- **Step**: 5, `refactor/05-mask-layers`
+
+### Blinks next to an excluded period keep their layers
+
+- **Case**: none (`g.exclude_intervals.rlmw`: same blinks and masks)
+- **Change**: `exclude_intervals` no longer removes the blinks that overlap
+  or touch an excluded period from the `blink` layer. They keep their
+  layer, their mask and their interpolation; `get_blinks()` (and so
+  `blinks`, `nblinks`, `blink_stats`, the quality report, the blink plots
+  and `pupil_blinks_interpolate`) leaves them out, as before.
+  `clear_layer("excluded")` brings them back. Before, the blink was
+  removed but its mask and its interpolated blink were kept (step-0 note
+  1: in the `eyedata` fixture, the blink (2600, 2620) was gone while the
+  interpolated blink (2595, 2635) stayed). Differences: blinks detected
+  without `apply_mask` stay masked under `d.mask()` (default policy) next
+  to the excluded period; `blinks_merge_close` merges them, too (a merged
+  blink that touches an excluded period is left out by `get_blinks`).
+- **Why**: layers are independent annotations; `exclude_intervals` sets
+  only its own layer (refactor plan 2.3), and the excluded layer
+  overrides the others in the masks.
 - **Step**: 5, `refactor/05-mask-layers`

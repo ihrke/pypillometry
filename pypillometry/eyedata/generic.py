@@ -723,10 +723,10 @@ class GenericEyeData(state.VersionedState, ABC):
         -------
         dict
             dictionary with blinks (Intervals in samples) for each
-            eye/variable, keys like "left_pupil"
+            eye/variable, keys like "left_pupil" (see :meth:`get_blinks`)
         """
-        return {key: Intervals.from_mask(self.data.get_layer(key, "blink"), self,
-                                         label=f"{key}_blinks")
+        return {key: Intervals(self._layer_runs(key, "blink", skip_excluded=True).intervals,
+                               "samples", label=f"{key}_blinks")
                 for key in self.data.keys()}
 
     def _set_blink_layer(self, key, intervals, apply_mask):
@@ -795,8 +795,11 @@ class GenericEyeData(state.VersionedState, ABC):
         Get blinks as Intervals object or dict of Intervals.
 
         The blinks are the runs of the ``"blink"`` layer (blinks that
-        overlap or touch are one blink). If no blinks are stored for an
-        eye/variable, an empty Intervals object is returned for it.
+        overlap or touch are one blink), without the runs that overlap or
+        touch an excluded period (see
+        :meth:`~pypillometry.GenericEyeData.exclude_intervals`; they stay
+        in the layer). If no blinks are stored for an eye/variable, an
+        empty Intervals object is returned for it.
 
         Parameters
         ----------
@@ -829,7 +832,8 @@ class GenericEyeData(state.VersionedState, ABC):
         >>> blinks_dict = data.get_blinks(['left', 'right'], 'pupil')
         >>> blinks_idx = blinks_ms.to_units("indices", data)
         """
-        return self._layer_intervals("blink", eyes, variables, units, "blinks")
+        return self._layer_intervals("blink", eyes, variables, units, "blinks",
+                                     skip_excluded=True)
 
     def get_interpolated_blinks(self, eyes: str|list = [], variables: str|list = [], 
                                 units: str = "samples"):
@@ -879,8 +883,21 @@ class GenericEyeData(state.VersionedState, ABC):
         return self._layer_intervals("interpolated", eyes, variables, units,
                                      "interpolated_blinks")
 
-    def _layer_intervals(self, layer, eyes, variables, units, suffix):
-        """Runs of `layer` (e.g., interpolated blinks) for eyes/variables.
+    def _layer_runs(self, key, layer, skip_excluded=False):
+        """Runs of `layer` of `key` (Intervals in samples); with
+        `skip_excluded`, without the runs that overlap or touch an excluded
+        period."""
+        runs = Intervals.from_mask(self.data.get_layer(key, layer)).intervals
+        excl = self._excluded_mask()
+        if skip_excluded and excl.any():
+            n = len(excl)
+            runs = [(on, off) for on, off in runs
+                    if not excl[max(on - 1, 0):min(off + 1, n)].any()]
+        return Intervals(runs, "samples")
+
+    def _layer_intervals(self, layer, eyes, variables, units, suffix, skip_excluded=False):
+        """Runs of `layer` (e.g., interpolated blinks) for eyes/variables
+        (see `_layer_runs`).
 
         Returns an Intervals object for a single eye and variable, else a
         dict (keys like "left_pupil") over the existing eye/variable
@@ -891,8 +908,9 @@ class GenericEyeData(state.VersionedState, ABC):
         result = {}
         for e, v in pairs:
             key = f"{e}_{v}"
-            result[key] = Intervals.from_mask(self.data.get_layer(key, layer), self, units,
-                                              label=f"{key}_{suffix}")
+            runs = self._layer_runs(key, layer, skip_excluded)
+            result[key] = Intervals(runs.intervals, "samples",
+                                    label=f"{key}_{suffix}").to_units(units, self)
         if len(eyes) > 1 or len(variables) > 1:
             return result
         return next(iter(result.values()))
@@ -2754,7 +2772,8 @@ class GenericEyeData(state.VersionedState, ABC):
         merged_dict = {}
 
         for eye, var in pairs:
-            blinks = obj.get_blinks(eye, var)
+            # all runs, also those next to excluded periods (set_blinks replaces the layer)
+            blinks = obj._layer_runs(f"{eye}_{var}", "blink")
             if len(blinks) == 0:
                 continue
             logger.debug(f"Processing blinks for eye {eye} and variable {var}: {len(blinks)} blinks")
@@ -3232,18 +3251,6 @@ class GenericEyeData(state.VersionedState, ABC):
         """Boolean array that is True for the samples in an excluded period."""
         return self.data.get_rec_layer("excluded")
 
-    def _drop_excluded_blinks(self):
-        """Remove blinks (from the blink layer) that overlap or touch an
-        excluded period (their mask is kept)."""
-        excl = self._excluded_mask()
-        if not excl.any():
-            return
-        n = len(excl)
-        for key in self.data.keys():
-            for on, off in Intervals.from_mask(self.data.get_layer(key, "blink")).intervals:
-                if excl[max(on - 1, 0):min(off + 1, n)].any():
-                    self.data.clear_layer(key, "blink", where=np.s_[on:off])
-
     @keephistory
     def exclude_intervals(self, intervals, inplace=None):
         """
@@ -3256,8 +3263,9 @@ class GenericEyeData(state.VersionedState, ABC):
         ignore masked data (e.g., :meth:`scale`, :meth:`get_segments`) also
         ignore the excluded periods. Unlike other masked data (blinks,
         artifacts), excluded periods are not treated as missing data: blinks
-        that overlap or touch an excluded period are removed, and blink
-        detection ignores them as well.
+        that overlap or touch an excluded period are not counted (they are
+        left out by :meth:`get_blinks`, but keep their layer, mask and
+        interpolation), and blink detection ignores them as well.
 
         The layer moves with the samples (:meth:`crop`, :meth:`downsample`,
         :meth:`remove_intervals`, ...). Calling the method again adds to
@@ -3297,7 +3305,6 @@ class GenericEyeData(state.VersionedState, ABC):
         new = intervals.to_units("ms", obj)
         new = [(float(s), float(e)) for s, e in new.intervals if e > s]
         obj.data.set_rec_layer("excluded", Intervals(new, units="ms").to_mask(obj))
-        obj._drop_excluded_blinks()
         return obj
 
     @keephistory
