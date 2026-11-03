@@ -661,6 +661,19 @@ class GenericEyeData(state.VersionedState, ABC):
         found = dict.fromkeys(eye for eye, _ in pairs)
         return [eye for eye in found if all((eye, var) in pairs for var in variables)]
 
+    def _require(self, *variables):
+        """Private helper: raise a ValueError unless there is data for each
+        of `variables` (in at least one eye).
+
+        Used by methods that need specific data (e.g., pupil or gaze), so
+        that they fail with a clear message.
+        """
+        available = self.data.get_available_variables()
+        missing = [var for var in variables if var not in available]
+        if missing:
+            raise ValueError("no %s data; available channels: %s"
+                             % (", ".join(missing), ", ".join(self.data.keys()) or "none"))
+
     def _get_inplace(self, inplace):
         """Private helper function.
         
