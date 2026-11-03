@@ -557,17 +557,15 @@ class GenericEyeData(state.VersionedState, ABC):
             if intervals is not None and not isinstance(intervals, Intervals):
                 raise TypeError(f"intervals must be an Intervals object, dict, or None, got {type(intervals)}")
             
-            eyes, variables = self._get_eye_var(eyes, variables)
+            keys = [f"{eye}_{var}" for eye, var in self.data.select(eyes, variables)]
             
-            # Store for all combinations of eyes and variables
-            for eye in eyes:
-                for var in variables:
-                    key = f"{eye}_{var}"
-                    self._blinks[key] = intervals
+            # Store for all existing combinations of eyes and variables
+            for key in keys:
+                self._blinks[key] = intervals
             
             # Apply mask if requested and intervals exist
             if apply_mask and intervals is not None:
-                self.mask_intervals(intervals, eyes=eyes, variables=variables, inplace=True)
+                self.mask_intervals({key: intervals for key in keys}, inplace=True)
 
     def get_blinks(self, eyes: str|list = [], variables: str|list = [], 
                    units: str = "samples"):
@@ -594,6 +592,12 @@ class GenericEyeData(state.VersionedState, ABC):
         Intervals or dict
             If single eye and variable: returns Intervals object.
             If multiple eyes/variables: returns dict with keys like "left_pupil".
+
+        Raises
+        ------
+        KeyError
+            if a requested eye/variable combination does not exist (see
+            :meth:`~pypillometry.EyeDataDict.select`)
             
         Examples
         --------
@@ -608,11 +612,13 @@ class GenericEyeData(state.VersionedState, ABC):
         """Intervals stored in `store` (e.g., blinks) for eyes/variables.
 
         Returns an Intervals object for a single eye and variable, else a
-        dict (keys like "left_pupil"); missing entries are empty Intervals.
+        dict (keys like "left_pupil") over the existing eye/variable
+        combinations; combinations without stored intervals get empty Intervals.
         """
+        pairs = self.data.select(eyes, variables)
         eyes, variables = self._get_eye_var(eyes, variables)
         result = {}
-        for e, v in itertools.product(eyes, variables):
+        for e, v in pairs:
             key = f"{e}_{v}"
             iv = store.get(key)
             if iv is None:
@@ -654,6 +660,12 @@ class GenericEyeData(state.VersionedState, ABC):
         Intervals or dict
             If single eye and variable: returns Intervals object.
             If multiple eyes/variables: returns dict with keys like "left_pupil".
+
+        Raises
+        ------
+        KeyError
+            if a requested eye/variable combination does not exist (see
+            :meth:`~pypillometry.EyeDataDict.select`)
             
         See Also
         --------
@@ -690,6 +702,12 @@ class GenericEyeData(state.VersionedState, ABC):
         Intervals or dict
             If single eye and variable: returns Intervals object.
             If multiple eyes/variables: returns dict with keys like "left_pupil".
+
+        Raises
+        ------
+        KeyError
+            if a requested eye/variable combination does not exist (see
+            :meth:`~pypillometry.EyeDataDict.select`)
             
         Examples
         --------
@@ -697,16 +715,12 @@ class GenericEyeData(state.VersionedState, ABC):
         >>> mask_ms = data.mask_as_intervals('left', 'pupil', units='ms')
         >>> mask_dict = data.mask_as_intervals(['left', 'right'], 'pupil')
         """
+        pairs = self.data.select(eyes, variables)
         eyes, variables = self._get_eye_var(eyes, variables)
         result = {}
-        for e, v in itertools.product(eyes, variables):
+        for e, v in pairs:
             key = f"{e}_{v}"
-            if key in self.data.mask:
-                mask = self.data.mask[key]
-            elif len(eyes) > 1 or len(variables) > 1:
-                continue  # leave out combinations not in the data
-            else:
-                mask = np.zeros(len(self.tx))
+            mask = self.data.mask[key]
             result[key] = Intervals.from_mask(mask, self, units, label=label or f"{key}_mask")
         if len(eyes) > 1 or len(variables) > 1:
             return result
@@ -743,12 +757,10 @@ class GenericEyeData(state.VersionedState, ABC):
         variables: str or list
             list of variables to initialize blinks for; if empty, initialize for all
         """        
-        eyes,variables=self._get_eye_var(eyes,variables)
-
-        ## initialize blinks
+        ## initialize blinks (for the existing eye/variable combinations)
         self._blinks={}
         self._interpolated_blinks={}
-        for eye,variable in itertools.product(eyes, variables):
+        for eye,variable in self.data.select(eyes, variables):
             self._blinks[f"{eye}_{variable}"] = None
             self._interpolated_blinks[f"{eye}_{variable}"] = None        
 
@@ -771,10 +783,8 @@ class GenericEyeData(state.VersionedState, ABC):
             number of detected blinks per eye/variable, with keys like
             "left_pupil"; combinations without blinks are left out
         """
-        eyes,variables=self._get_eye_var(eyes,variables)
-        
         return {eye+"_"+var:len(self.get_blinks(eye,var)) 
-                for eye,var in itertools.product(eyes,variables)
+                for eye,var in self.data.select(eyes,variables)
                 if len(self.get_blinks(eye,var)) > 0}
 
 
@@ -798,10 +808,13 @@ class GenericEyeData(state.VersionedState, ABC):
             Dictionary mapping eye name to stats dict (number, mean, sd,
             min, max and total duration of blinks), or None if no blinks
         """
-        eyes, _ = self._get_eye_var(eyes, [])
+        eyes = list(dict.fromkeys(eye for eye, _ in self.data.select(eyes)))
         
         stats = dict()
         for eye in eyes:
+            if f"{eye}_pupil" not in self.data:
+                stats[eye] = None  # no pupil data, so no blinks
+                continue
             blinks = self.get_blinks(eye, "pupil", units=units)
             if len(blinks) > 0:
                 stats[eye] = blinks.stats()
@@ -2459,8 +2472,8 @@ class GenericEyeData(state.VersionedState, ABC):
                 if not keep_eyes:
                     for eye in eyes:
                         logger.debug("Dropping eye %s for variable %s" % (eye, var))
-                        del obj.data[eye+"_"+var]
                         obj.set_blinks(None, eyes=[eye], variables=[var])
+                        del obj.data[eye+"_"+var]
         else:
             raise ValueError("Method %s not implemented" % method)
 

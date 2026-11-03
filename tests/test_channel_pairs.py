@@ -89,3 +89,61 @@ class TestEyeNameValidation:
             d["my_eye", "pupil"]
         d["mean", "pupil"] = np.ones(3)
         assert "mean_pupil" in d.data
+
+
+def make_incomplete_eyedata(n=1000, fs=100):
+    """EyeData with left pupil and gaze, but only pupil for the right eye."""
+    import pypillometry as pp
+    rng = np.random.default_rng(1)
+    pupil = 5 + 0.1 * np.sin(np.arange(n) / 50)
+    left_pupil = pupil + rng.normal(0, 0.01, n)
+    right_pupil = pupil + rng.normal(0, 0.01, n)
+    for p in (left_pupil, right_pupil):
+        p[200:220] = 0  # a blink
+    d = pp.EyeData(left_x=500 + rng.normal(0, 5, n), left_y=400 + rng.normal(0, 5, n),
+                   left_pupil=left_pupil, right_pupil=right_pupil,
+                   sampling_rate=fs, event_onsets=[1000, 5000], event_labels=["a", "b"],
+                   experimental_setup=pp.ExperimentalSetup(
+                       screen_resolution=(1000, 800), physical_screen_size=("50 cm", "40 cm"),
+                       eye_to_screen_center="60 cm",
+                       camera_spherical=("20 deg", "-90 deg", "60 cm")))
+    return d
+
+
+@pytest.fixture
+def incomplete_eyedata():
+    return make_incomplete_eyedata()
+
+
+class TestIncompleteBlinkStores:
+    def test_blinks_initialised_for_existing_pairs(self, incomplete_eyedata):
+        d = incomplete_eyedata
+        assert set(d._blinks) == {"left_pupil", "left_x", "left_y", "right_pupil"}
+
+    def test_set_and_get_blinks(self, incomplete_eyedata):
+        import pypillometry as pp
+        d = incomplete_eyedata
+        iv = pp.Intervals([(10, 20)], units="samples", data_time_range=(0, len(d)))
+        d.set_blinks(iv)
+        assert set(d.get_blinks()) == {"left_pupil", "left_x", "left_y", "right_pupil"}
+        assert d.data.mask["right_pupil"][10:20].all()
+        assert d.nblinks() == {"left_pupil": 1, "left_x": 1, "left_y": 1, "right_pupil": 1}
+        assert set(d.get_blinks(variables="x")) == {"left_x"}
+        with pytest.raises(KeyError, match="right_x"):
+            d.get_blinks("right", "x")
+        with pytest.raises(KeyError, match="right_x"):
+            d.set_blinks(iv, eyes="right", variables="x")
+
+    def test_mask_as_intervals(self, incomplete_eyedata):
+        d = incomplete_eyedata
+        assert set(d.mask_as_intervals()) == {"left_pupil", "left_x", "left_y", "right_pupil"}
+        with pytest.raises(KeyError, match="available channels"):
+            d.mask_as_intervals("right", "x")
+
+    def test_blink_stats(self, incomplete_eyedata):
+        d = incomplete_eyedata
+        d.pupil_blinks_detect()
+        d["mean", "x"] = d.data["left_x"]  # an eye without pupil data
+        stats = d.blink_stats()
+        assert stats["mean"] is None
+        assert stats["left"]["n"] >= 1 and stats["right"]["n"] >= 1
