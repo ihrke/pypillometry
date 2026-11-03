@@ -164,7 +164,7 @@ class PupilData(GenericEyeData):
             end_min=self.tx.max()/1000./60.,
             params=self._strfy_params()
         )
-        if len(self._excluded) > 0:
+        if self._excluded_mask().any():
             summary["excluded_minutes"] = self.excluded_duration("min")
 
         return summary
@@ -425,21 +425,12 @@ class PupilData(GenericEyeData):
         merged[masked] = fill[masked]
         
         # Store merged data
-        obj.data.data["merged_pupil"] = merged
-        obj.data.mask["merged_pupil"] = merged_mask
-        
-        # Initialize blinks for merged variable
-        obj._blinks["merged_pupil"] = None
-        obj._interpolated_blinks["merged_pupil"] = None
+        obj.data.set_with_mask("merged_pupil", merged, mask=merged_mask)
         
         # Optionally remove original eye data
         if not keep_eyes:
             del obj.data["left_pupil"]
             del obj.data["right_pupil"]
-            obj._blinks.pop("left_pupil", None)
-            obj._blinks.pop("right_pupil", None)
-            obj._interpolated_blinks.pop("left_pupil", None)
-            obj._interpolated_blinks.pop("right_pupil", None)
             logger.debug("Removed original left/right pupil data")
         
         return obj
@@ -523,10 +514,17 @@ class PupilData(GenericEyeData):
         (f.eks., 0 or NaN). Second, blinks are defined as everything between
         two crossings of the velocity profile (from negative to positive).
         
-        Detected blinks are always stored in the object (retrieve them with
-        :meth:`~pypillometry.GenericEyeData.get_blinks`). When `apply_mask=True`,
+        Detected blinks are always stored in the object, as the ``"blink"``
+        layer of the pupil (retrieve them with
+        :meth:`~pypillometry.GenericEyeData.get_blinks`). They replace the
+        blinks detected before (and their mask), and the blinks detected
+        before are not treated as masked during detection, so re-running the
+        detection with other parameters gives the same result as running it
+        once. When `apply_mask=True`,
         the blinks are also applied as masks to the data. When `apply_mask=False`
-        (default), the detected blinks are returned as Intervals objects.
+        (default), the detected blinks are returned as Intervals objects and
+        stored in the object itself (also with `inplace=False`; the data and
+        the mask are not changed).
 
         Finally, detected blinks have to be at least `min_duration` ms.
         
@@ -578,7 +576,8 @@ class PupilData(GenericEyeData):
         inplace : bool or None
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes                                                    
-            if `None`, use the object-level setting
+            if `None`, use the object-level setting;
+            only used with `apply_mask=True`
             
         Returns
         -------
@@ -588,7 +587,8 @@ class PupilData(GenericEyeData):
             If `apply_mask=False` and multiple eyes: returns dict of Intervals objects
             (keys like ``"left_pupil"``)
         """
-        obj = self._get_inplace(inplace)
+        # without apply_mask, the blinks are returned and stored in self
+        obj = self._get_inplace(inplace) if apply_mask else self
         eyes=self._eyes_with(eyes, "pupil")
 
         # Convert ms to samples
@@ -612,11 +612,14 @@ class PupilData(GenericEyeData):
         for eye in eyes:
             logger.debug(f"Detecting blinks for eye {eye}")
             
+            # the new blinks replace the old ones, which must not mask the data
+            obj.set_blinks(None, eyes=[eye], variables=["pupil"])
+
             # Get pupil data, optionally ignoring existing mask
             if ignore_existing_mask:
-                pupil_data = self.data[eye,"pupil"]
+                pupil_data = obj.data[eye,"pupil"]
             else:
-                pupil_data = self[eye, "pupil"].filled(np.nan)
+                pupil_data = obj[eye, "pupil"].filled(np.nan)
             
             ## detect blinks with the different strategies
             if "velocity" in strategies:
@@ -634,7 +637,7 @@ class PupilData(GenericEyeData):
                 # Look for runs of NaN or `blink_val` in the raw data. Use the
                 # raw data even when `ignore_existing_mask=False`: other masks
                 # (e.g., offscreen gaze) must not be turned into blinks.
-                raw = self.data[eye, "pupil"]
+                raw = obj.data[eye, "pupil"]
                 if not np.isnan(blink_val):
                     raw = np.where(raw == blink_val, np.nan, raw)
                 blinks_zero=preproc.detect_blinks_zero(raw, 1, np.nan)
@@ -662,10 +665,10 @@ class PupilData(GenericEyeData):
                 units="samples",
                 label=f"{eye}_pupil_blinks")
             
-            # Store detected blinks internally (always)
-            key = f"{eye}_pupil"
-            detected_intervals[key] = intervals_obj
+            # Store detected blinks internally (always); return them as stored
+            # (blinks that touch are one blink)
             obj.set_blinks(intervals_obj, eyes=[eye], variables=["pupil"], apply_mask=apply_mask)
+            detected_intervals[f"{eye}_pupil"] = obj.get_blinks(eye, "pupil")
         
         # Return based on apply_mask
         if apply_mask:
@@ -698,8 +701,9 @@ class PupilData(GenericEyeData):
         The on- and offsets of each blink are refined using the velocity profile
         before interpolating. Blinks that are so close that the anchor points
         of one fall into the other are merged and interpolated together.
-        Interpolated samples remain masked; the
-        interpolated blinks can be retrieved with
+        The interpolated samples get the ``"interpolated"`` layer (on the
+        variable they are stored in, see `store_as`) and remain masked in
+        ``data.mask``; the interpolated blinks can be retrieved with
         :meth:`~pypillometry.GenericEyeData.get_interpolated_blinks`.
 
         This procedure relies heavily on eye-balling (reconstructing visually convincing signal),
@@ -761,7 +765,7 @@ class PupilData(GenericEyeData):
         for eye in eyes:
             logger.debug(f"Interpolating blinks for eye {eye}")
             syr=obj.data[eye,"pupil"].copy() ## interpolated signal
-            mask=obj.data.mask[eye+"_pupil"].copy() # copy of mask
+            interpolated = np.zeros(len(syr), dtype=bool)  # interpolated samples
             bls = self.get_blinks(eye, "pupil")
             
             # Use raw data for velocity computation - blink_onsets_mahot handles NaN/zeros internally
@@ -803,22 +807,21 @@ class PupilData(GenericEyeData):
                 intfct=interp1d(txpts,sypts, kind=interp_type)
                 islic=slice(t2, t3)
                 syr[islic]=intfct(obj.tx[islic])
-                # mark the interpolated datapoints as masked
-                mask[islic] = 1
+                # mark the interpolated datapoints
+                interpolated[islic] = True
                 
                 # Record this successfully interpolated blink
                 interpolated_intervals.append((t2, t3))
 
-            # store interpolated data with mask preservation
-            obj.data.set_with_mask(f"{eye}_{store_as}", syr, mask=mask)
-            
-            # Store interpolated blinks as Intervals object
-            key = f"{eye}_pupil"
-            obj._interpolated_blinks[key] = Intervals(
-                intervals=interpolated_intervals,
-                units="samples",
-                label=f"{key}_interpolated_blinks")
-            logger.debug(f"Stored {len(interpolated_intervals)} interpolated blinks for {eye}")
+            # store interpolated data (with the masks and layers of the
+            # pupil) and set the interpolated layer
+            key, target = f"{eye}_pupil", f"{eye}_{store_as}"
+            if target == key:
+                obj.data.set_with_mask(key, syr, preserve_mask=True)
+            else:
+                obj.data._set_channel(target, syr, obj.data.layers[key])
+            obj.data.set_layer(target, "interpolated", interpolated)
+            logger.debug(f"Interpolated {len(interpolated_intervals)} blinks for {eye}")
 
         return obj
             

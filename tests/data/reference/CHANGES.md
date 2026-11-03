@@ -136,3 +136,276 @@ Changes of the API calls alone (same numbers) need no entry.
 - **Why**: windows are no longer clipped in `get_intervals`; the data
   within a window are used.
 - **Step**: 4, `refactor/04-epochs`
+
+### Interpolated blinks are a layer; `downsample` keeps a layer where it covers more than half of a window
+
+- **Case**: `g.downsample.rlmw.{250,100}`, keys `interpolated.*`, `mask.*`
+  (pupil) and the scalars `masked.*` (the expected values are computed in
+  `tests/test_reference_outputs.py`, `_downsampled_runs` and
+  `_downsampled_mask`, from the full-rate intervals of case
+  `b.blinks_interpolate.rlmw`)
+- **Change**: the interpolated samples are stored as the `interpolated`
+  mask layer (not as Intervals). After `downsample`, a new sample has the
+  layer if the layer covers more than half of its window (before: the
+  interpolated blinks in samples were rescaled, start rounded down and end
+  up, so every window that touched an interpolated blink was included).
+  `get_interpolated_blinks()` returns the runs of the layer. The mask is
+  set where it was set before (all samples of the window masked) and
+  where the `interpolated` layer covers more than half of the window
+  (rlmw at 100 Hz: 407 instead of 398 masked samples, left eye). The
+  values (window means of the unmasked samples) are unchanged.
+- **Why**: one store for "interpolated" (finding D1); decision 4 of the
+  refactor plan (">½ of the window").
+- **Step**: 5, `refactor/05-mask-layers`
+
+### Interpolated blinks belong to the variable that holds the interpolated data
+
+- **Case**: none (the reference cases use `store_as="pupil"`)
+- **Change**: `pupil_blinks_interpolate(store_as="pupilinterp")` sets the
+  `interpolated` layer on `<eye>_pupilinterp`, so
+  `get_interpolated_blinks(eye, "pupilinterp")` returns them (before they
+  were stored for `<eye>_pupil`, whose data were not interpolated). The new
+  variable gets the masks and layers of the pupil (its blinks, too).
+  Calling `pupil_blinks_interpolate` again adds to the layer (before, the
+  interpolated blinks of the last call replaced the earlier ones; the
+  earlier samples stayed masked).
+- **Why**: the layer describes the samples it is stored with.
+- **Step**: 5, `refactor/05-mask-layers`
+
+### `interpolate_intervals` sets the `interpolated` layer
+
+- **Case**: none
+- **Change**: the samples interpolated by `interpolate_intervals` get the
+  `interpolated` layer, so `get_interpolated_blinks()` (and the
+  "interpolated" percentage of the quality report) include them (before:
+  only `pupil_blinks_interpolate` was recorded). With `store_as_suffix`,
+  the new variable gets the masks and layers of the original one.
+- **Why**: one layer for reconstructed samples (refactor plan 2.2).
+- **Step**: 5, `refactor/05-mask-layers`
+
+### Blinks are a layer: runs of the layer, `downsample` and `set_blinks`
+
+- **Case**: `g.downsample.rlmw.{250,100}`, keys `blinks.*` and, with the
+  blinks of case b being applied as mask, `mask.*` and `masked.*` (pupil)
+  (expected values: `_downsampled_runs`, `_downsampled_mask`)
+- **Change**: blinks are stored as the `blink` layer of their variable;
+  `get_blinks()` returns the runs of the layer, so blinks that overlap or
+  touch are one blink (a blink inside another one is gone, finding 4.3:
+  `blinks_merge_close` no longer shrinks it), and blinks set in time units
+  come back as sample runs converted to the requested units. After
+  `downsample`, a new sample is in a blink if blinks cover more than half
+  of its window (before: start rounded down, end up); the mask of applied
+  blinks follows the same rule. After `fill_time_discontinuities`, a blink
+  across a gap is two blinks (the inserted samples are not blinks).
+  `set_blinks` replaces the blinks *and their mask*: `set_blinks(None)`
+  unmasks the blinks that were set with `apply_mask=True` (before, the
+  mask stayed, finding 4.2), and so does setting other blinks; NaN samples
+  and other masks stay masked. Blinks removed by `exclude_intervals`
+  (touching an excluded period) keep their mask, as before (see "Blinks
+  next to an excluded period keep their layers" below). The quality
+  report has the blink section for all eyes once blinks were detected
+  for any eye (0 blinks for eyes without detection).
+- **Why**: one store for blinks (finding D1); the mask of the blinks can
+  be undone.
+- **Step**: 5, `refactor/05-mask-layers`
+
+### Re-detecting blinks replaces them
+
+- **Case**: none (the reference cases detect blinks once)
+- **Change**: `pupil_blinks_detect` removes the blinks detected before
+  (and their mask) before it detects blinks, so they do not mask the data
+  it detects blinks in, and the new blinks replace them. Re-running it
+  with other parameters gives the same blinks and mask as running it
+  once (before: the old mask stayed and the new detection skipped the old
+  blinks, finding 4.2).
+- **Why**: detectors replace their own layer (refactor plan 2.2).
+- **Step**: 5, `refactor/05-mask-layers`
+
+### Blinks detected without `apply_mask` are stored in the object
+
+- **Case**: none (`a.blinks_detect.*` detect in place)
+- **Change**: `pupil_blinks_detect(apply_mask=False)` (the default)
+  returns the blinks and stores them in the object it is called on, also
+  with `inplace=False` (before: in a copy that was thrown away, finding
+  4.1). The data and the mask are not changed. The call is still not
+  recorded in the history (the method returns the Intervals; step 9 makes
+  detectors return the object).
+- **Why**: the detected blinks were lost.
+- **Step**: 5, `refactor/05-mask-layers`
+
+### `mask_intervals` and masked-array assignment set the `user` layer
+
+- **Case**: none (the masks are the same; `d.offscreen.*` and
+  `d.divergence.*` are unchanged)
+- **Change**: `mask_intervals` (and so, until they get their own layers,
+  `mask_offscreen_coords` and `mask_eye_divergences`) and
+  `d[key] = np.ma.array(...)` record the masked samples in the `user`
+  layer. After `downsample`, these samples are masked where they cover
+  more than half of a window (before: only where the whole window was
+  masked). `clear_layer("user")` removes them.
+- **Why**: masks can be undone; decision 4 (">½ of the window").
+- **Step**: 5, `refactor/05-mask-layers`
+
+### `pupil_blinks_detect` returns the stored blinks
+
+- **Case**: none (in `a.blinks_detect.*` no detected blinks touch, so the
+  returned and stored blinks are the same as before)
+- **Change**: the returned Intervals are the stored blinks (runs of the
+  `blink` layer): blinks that touch (the end of one is the start of the
+  next, e.g. found by the velocity and the zero strategy) are one blink.
+  In a 55-min 1000-Hz recording, 6 of 328 detected blinks of one eye
+  touched the next one, so 322 blinks are returned and stored (the masked
+  samples are the same).
+- **Why**: the returned blinks are the blinks stored in the object.
+- **Step**: 5, `refactor/05-mask-layers`
+
+### Excluded periods are a recording-wide layer
+
+- **Case**: none (`g.exclude_intervals.rlmw` is not downsampled; its masks
+  and summary are unchanged)
+- **Change**: `exclude_intervals`/`keep_intervals` set the recording-wide
+  `excluded` layer instead of writing the periods into the mask of every
+  variable. Variables added later (e.g. `d["left", "baseline"] = ...`) are
+  therefore masked in the excluded periods, too (before, they were not).
+  After `downsample`, a new sample is excluded if the excluded periods
+  cover more than half of its window (before: if its time was within an
+  excluded period). Excluded samples stay masked under every policy with
+  the layer, also where they are interpolated (`unless` does not apply to
+  recording-wide layers).
+- **Why**: one store for excluded periods (finding D1); refactor plan 2.2.
+- **Step**: 5, `refactor/05-mask-layers`
+
+### `get_excluded` returns the runs of the excluded layer
+
+- **Case**: none (`g.exclude_intervals.rlmw`: the periods start and end at
+  samples, so the runs are the same)
+- **Change**: the excluded periods are no longer stored as times
+  (`_excluded`); `get_excluded()` and `get_included()` return the runs of
+  the `excluded` layer, from the time of the first sample of a run to the
+  time of the sample after its last one. A period that does not start or
+  end at a sample is returned from the first sample at or after its
+  start. Periods outside the data are gone after `crop` (before, they
+  were kept as times). After `downsample`, the runs are at the times of
+  the new samples (the window means: 1000 ms excluded at 500 Hz, then
+  `downsample(100)`, gives `(7004, 8004)` instead of `(7000, 8000)`).
+  `clear_layer("excluded")` removes the excluded periods.
+- **Why**: no interval stores next to the samples (refactor plan 2.4:
+  nothing else to remap).
+- **Step**: 5, `refactor/05-mask-layers`
+
+### Blinks next to an excluded period keep their layers
+
+- **Case**: none (`g.exclude_intervals.rlmw`: same blinks and masks)
+- **Change**: `exclude_intervals` no longer removes the blinks that overlap
+  or touch an excluded period from the `blink` layer. They keep their
+  layer, their mask and their interpolation; `get_blinks()` (and so
+  `blinks`, `nblinks`, `blink_stats`, the quality report, the blink plots
+  and `pupil_blinks_interpolate`) leaves them out, as before.
+  `clear_layer("excluded")` brings them back. Before, the blink was
+  removed but its mask and its interpolated blink were kept (step-0 note
+  1: in the `eyedata` fixture, the blink (2600, 2620) was gone while the
+  interpolated blink (2595, 2635) stayed). Differences: blinks detected
+  without `apply_mask` stay masked under `d.mask()` (default policy) next
+  to the excluded period; `blinks_merge_close` merges them, too (a merged
+  blink that touches an excluded period is left out by `get_blinks`).
+- **Why**: layers are independent annotations; `exclude_intervals` sets
+  only its own layer (refactor plan 2.3), and the excluded layer
+  overrides the others in the masks.
+- **Step**: 5, `refactor/05-mask-layers`
+
+### `mask_offscreen_coords` sets the `offscreen` layer and replaces it
+
+- **Case**: none (`d.offscreen.*` run once: same masks)
+- **Change**: the off-screen samples are stored as the `offscreen` layer
+  of x and y (before: the `user` layer, via `mask_intervals`). Running the
+  method again replaces the layer of the checked eyes (before, the masks
+  only grew, and with `ignore_existing_mask=False` the samples masked by
+  the first run were not checked again). `clear_layer("offscreen")`
+  removes the mask.
+- **Why**: detectors replace their own layer (refactor plan 2.2).
+- **Step**: 5, `refactor/05-mask-layers`
+
+### `mask_eye_divergences` sets the `divergence` layer and replaces it
+
+- **Case**: none (`d.divergence.*` run once: same masks)
+- **Change**: the divergent samples are stored as the `divergence` layer
+  of x and y of both eyes (before: the `user` layer, via
+  `mask_intervals`); running the method again replaces the layer, and
+  with `ignore_existing_mask=False` the layer of an earlier run does not
+  count as an existing mask. `clear_layer("divergence")` removes it.
+- **Why**: detectors replace their own layer (refactor plan 2.2).
+- **Step**: 5, `refactor/05-mask-layers`
+
+### `mask_eye_divergences(store_as=...)` stores the distance for both eyes
+
+- **Case**: none (the reference cases do not store the distance)
+- **Change**: `store_as="dist"` stores the distance as `left_dist` and
+  `right_dist` (the same values) instead of under the key `"dist"`, which
+  was taken for an eye (`d.eyes` was `[..., "dist"]`; `crop` and
+  `downsample` raised, finding 5.3). The stored distance is masked where
+  one of the coordinates is masked (other layers) and has the
+  `divergence` layer where the eyes diverge (before: all of it in one
+  mask). Its values are as before.
+- **Why**: every channel is `<eye>_<variable>`; the distance belongs to
+  the pair of eyes, and storing it with each eye keeps it a variable.
+- **Step**: 5, `refactor/05-mask-layers`
+
+### No stored mask: the mask is derived from the layers
+
+- **Case**: none (all masks and values are the same: `data.mask` is
+  computed from the layers and equals the old mask)
+- **Change**: the separate boolean mask per variable is gone. What it held
+  is now a layer: masks set with `set_mask`/`add_mask` (and
+  `set_with_mask(mask=...)`, e.g. `merge_masks`, `pupil_merge_eyes`) are
+  in the `user` layer, so `clear_layer("user")` removes them; NaN values
+  at assignment and the samples inserted by `fill_time_discontinuities`
+  are in the internal layer `_nan` (they stay masked when
+  `pupil_lowpass_filter` fills them with values, as before); after
+  `downsample`, a window whose samples were all masked stays masked
+  through the layers of its samples (not `interpolated`) when no layer
+  covers more than half of it. The data state has no `mask` key any more;
+  states with a `mask` (format 2 written before) are translated: where no
+  layer explains a masked sample, NaN values get `_nan`, others `user`
+  (before the blinks, interpolated blinks and excluded periods of the old
+  file are taken out of it).
+- **Why**: one store for masks (finding D1); NaN is read from the values
+  (refactor plan 2.2) except where a filter filled it (step 7).
+- **Step**: 5, `refactor/05-mask-layers`
+
+### Quality report: masked time by layer; interpolation is not "other artifacts"
+
+- **Case**: `f.quality.{rlmw,synth}.interp`, keys
+  `artifacts.{left,right}.other_pct` (expected value 0 is computed in
+  `tests/test_reference_outputs.py`, `_quality_other`: in case b every
+  masked pupil sample is interpolated): rlmw 2.50 -> 0 (left), 1.62 -> 0
+  (right); synth 0.93 -> 0, 0.69 -> 0. All other numbers are unchanged.
+- **Change**: `other_pct` counts the masked samples that are not missing
+  (NaN, or NaN before a filter filled them), not in a blink and not
+  interpolated. Before, the interpolated samples around a blink (the
+  margins of `pupil_blinks_interpolate`) were counted as other artifacts
+  (finding 5.8), and so were NaN filled by `pupil_lowpass_filter` (so a
+  report after filtering alone no longer has the artifacts section). The
+  artifacts section has new metrics for the masked time per layer, shown
+  when the layer exists: `offscreen_pct`, `divergence_pct` and
+  `user_pct` (samples where the layer is set for any variable of the eye).
+  `pupil_masked_pct`/`gaze_masked_pct` are unchanged (the mask that the
+  analyses use until step 7: interpolated samples count as masked).
+- **Why**: the layers say why a sample is masked, so the report does not
+  have to guess (finding D1).
+- **Step**: 5, `refactor/05-mask-layers`
+
+### `downsample` after off-screen and divergence masking: per layer
+
+- **Case**: none (no reference case downsamples gaze masks)
+- **Change**: with off-screen gaze and eye divergences in two layers, the
+  ">1/2 of the window" rule of `downsample` applies to each layer: a
+  window that is 30 % off-screen and 30 % divergent is no longer masked
+  (it was, while both were in the `user` layer earlier in step 5; it was
+  not before step 5, where only fully masked windows stayed masked).
+  Real data (pavlov 10, 15 min at 1000 Hz, `mask_offscreen_coords` +
+  `mask_eye_divergences`, then `downsample(50)`): 119 of 25735 masked
+  samples of the left gaze are unmasked (9 of 25402 right). Fully masked
+  windows stay masked.
+- **Why**: decision 3 of the refactor plan (each layer bit set if it
+  covers more than half of the window).
+- **Step**: 5, `refactor/05-mask-layers`

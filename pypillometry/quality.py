@@ -80,6 +80,9 @@ DEFAULT_QUALITY_THRESHOLDS = {
     "artifacts.pupil_masked_pct": (10, 20, 35),
     "artifacts.gaze_masked_pct": (10, 20, 35),
     "artifacts.interpolated_pct": (10, 20, 30),
+    "artifacts.offscreen_pct": None,
+    "artifacts.divergence_pct": None,
+    "artifacts.user_pct": None,
     "artifacts.other_pct": None,
     # calibration/validation (thresholds as used by Eyelink)
     "calibration.mean_error": (0.5, 1.0, 1.5),
@@ -821,7 +824,7 @@ def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[]) -> 
     blinks_mask = {}
     for eye in list(dict.fromkeys(pupil_eyes + gaze_eyes)):
         var = "pupil" if eye in pupil_eyes else "x"
-        if obj._blinks.get(f"{eye}_{var}") is None:
+        if "blink" not in obj.data.layer_names:  # no blink detection
             continue
         bl = obj.get_blinks(eye, var)
         blinks_mask[eye] = bl.to_mask(obj).astype(bool) & inc
@@ -843,40 +846,64 @@ def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[]) -> 
               "closures or tracking losses rather than blinks)")
 
     # --- artifacts (only if data was masked/interpolated) ---------------
+    from .eyedata.eyedatadict import NAN_LAYER
+
+    def layer(keys, name):
+        """Included samples where layer `name` is set for one of `keys`."""
+        return np.logical_or.reduce([obj.data.get_layer(k, name) for k in keys]) & inc
+
+    def missing(keys):
+        """Included samples that are NaN (or were NaN before a filter) in one of `keys`."""
+        return np.logical_or.reduce([~np.isfinite(raw[k]) | obj.data.get_layer(k, NAN_LAYER)
+                                     for k in keys]) & inc
+
     for eye in list(dict.fromkeys(pupil_eyes + gaze_eyes)):
         metrics = []
         processed = eye in blinks_mask
+        eye_keys = [k for k in (f"{eye}_pupil", f"{eye}_x", f"{eye}_y") if k in raw]
         if eye in pupil_eyes:
-            key = f"{eye}_pupil"
-            m = masks[key]
-            nan = ~np.isfinite(raw[key]) & inc
+            keys = [f"{eye}_pupil"]
+            m = masks[keys[0]]
+            nan = missing(keys)
             processed |= bool(np.any(m != nan))
             metrics.append(("pupil_masked_pct", "pupil masked", _pct(m.sum(), n),
                             "percentage of masked pupil samples (missing data, blinks and "
                             "other artifacts)"))
-            other = m & ~nan & ~blinks_mask.get(eye, np.zeros(n_total, bool))
-            if obj._interpolated_blinks.get(key) is not None:
+            if "interpolated" in obj.data.layer_names:
                 processed = True
-                interp = (obj.get_interpolated_blinks(eye, "pupil").to_mask(obj).astype(bool)
-                          & inc).sum()
+                interp = layer(keys, "interpolated").sum()
                 metrics.append(("interpolated_pct", "interpolated", _pct(interp, n),
                                 "percentage of pupil samples that were interpolated (e.g., blinks)"))
         if eye in gaze_eyes:
-            m = masks[f"{eye}_x"] | masks[f"{eye}_y"]
-            nan = ~(np.isfinite(raw[f"{eye}_x"]) & np.isfinite(raw[f"{eye}_y"])) & inc
-            processed |= bool(np.any(m != nan))
-            metrics.append(("gaze_masked_pct", "gaze masked", _pct(m.sum(), n),
+            gkeys = [f"{eye}_x", f"{eye}_y"]
+            gm = masks[gkeys[0]] | masks[gkeys[1]]
+            gnan = missing(gkeys)
+            processed |= bool(np.any(gm != gnan))
+            metrics.append(("gaze_masked_pct", "gaze masked", _pct(gm.sum(), n),
                             "percentage of masked gaze samples (missing data, blinks and other "
                             "artifacts)"))
             if eye not in pupil_eyes:
-                other = m & ~nan & ~blinks_mask.get(eye, np.zeros(n_total, bool))
+                keys, m, nan = gkeys, gm, gnan
+        # masked time split by layer (any variable of the eye)
+        for name, title, desc in (
+                ("offscreen", "masked off-screen", "gaze off the screen "
+                 "(see mask_offscreen_coords)"),
+                ("divergence", "masked divergence", "gaze positions of the eyes too far "
+                 "apart (see mask_eye_divergences)"),
+                ("user", "masked by the user", "masked with mask_intervals or by "
+                 "assigning a masked array")):
+            if name in obj.data.layer_names:
+                processed = True
+                metrics.append((f"{name}_pct", title, _pct(layer(eye_keys, name).sum(), n),
+                                f"percentage of samples masked because of {desc}"))
         if not processed:
             continue
         for name, title, value, desc in metrics:
             b.add("artifacts", eye, name, title, value, "%", desc)
+        other = m & ~nan & ~layer(keys, "blink") & ~layer(keys, "interpolated")
         b.add("artifacts", eye, "other_pct", "other artifacts", _pct(other.sum(), n), "%",
-              "percentage of samples masked for other reasons than missing data or blinks "
-              "(e.g., off-screen gaze, eye divergence)")
+              "percentage of samples masked for other reasons than missing data, blinks "
+              "or interpolation (e.g., off-screen gaze, eye divergence, user masks)")
 
     # --- calibration ----------------------------------------------------
     calibration = getattr(obj, "calibration", None)

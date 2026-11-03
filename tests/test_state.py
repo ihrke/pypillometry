@@ -5,6 +5,7 @@ import os
 import pickle
 import tempfile
 import unittest
+from types import SimpleNamespace
 
 import numpy as np
 
@@ -137,8 +138,10 @@ class TestPickleRoundTrip(unittest.TestCase):
         self.assertEqual(st["format_version"], state.FORMAT_VERSION)
         self.assertEqual(st["class"], "EyeData")
         self.assertEqual(st["original"]["class"], "EyeData")
-        self.assertEqual(st["blinks"]["left_pupil"]["intervals"].shape[1], 2)
-        self.assertIsNone(st["blinks"]["left_x"])
+        # blinks are a mask layer of the data (no separate store)
+        self.assertNotIn("blinks", st)
+        self.assertIn("blink", st["data"]["layer_names"])
+        self.assertEqual(st["data"]["layers"]["left_pupil"].dtype, np.uint16)
 
 
 class TestStateCoverage(unittest.TestCase):
@@ -155,6 +158,8 @@ class TestStateCoverage(unittest.TestCase):
             pp.GazeData(left_x=np.ones(10), left_y=np.ones(10), sampling_rate=10),
             generate_foreshortening_data(duration=1, fs=100, seed=1),
             seg, pp.group_segments([seg, seg]),
+            # nested in the state of segments that are not event-locked
+            pp.Intervals([(0, 10)], units="ms"),
         ]
 
     def stateful_objects(self, obj, seen):
@@ -256,6 +261,8 @@ class TestMigrate(unittest.TestCase):
     def test_v0_history_arguments_dropped(self):
         d = make_eyedata(keep_orig=False)
         raw = dict(vars(d))
+        # version 0 had one mask dict per EyeDataDict
+        raw["data"] = SimpleNamespace(data=d.data.data, mask=dict(d.data.mask))
         # version 0 had the events as arrays
         ev = raw.pop("_events")
         raw.update(event_onsets=ev.onsets, event_labels=ev.labels)
@@ -270,9 +277,10 @@ class TestMigrate(unittest.TestCase):
         for name, cls in [("eyedata_v1.pypil", pp.EyeData), ("eyedata_v1.h5", pp.EyeData),
                           ("segmented_v1.h5", pp.SegmentedEyeData)]:
             obj = cls.from_file(os.path.join(DATA, name))
-            # segments: event-locked intervals are loaded as Epochs (in ms)
+            # segments: event-locked intervals are loaded as Epochs (in ms);
+            # eyedata: blinks are loaded into the blink layer
             ivs = [obj.intervals.to_intervals()] if cls is pp.SegmentedEyeData else \
-                [iv for iv in obj._blinks.values() if iv is not None]
+                [iv for iv in obj.get_blinks().values() if len(iv) > 0]
             self.assertTrue(ivs)
             for iv in ivs:
                 self.assertIn(iv.units, ("samples", "ms", "sec", "min", "h"))

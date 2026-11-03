@@ -146,7 +146,7 @@ class TestResponseExcluded(unittest.TestCase):
 
     def test_observed_lower_with_blinks(self):
         d = self.d.copy()
-        d.data.mask["left_pupil"][160:200] = 1     # an interpolated blink at 1.6 s
+        d.data.add_mask("left_pupil", np.s_[160:200])     # an interpolated blink at 1.6 s
         est = d.pupil_estimate_response(eyes="left", npar=10, tmax=900, inplace=False)
         par = est.params["response"]["left"]
         self.assertLess(par["observed"][0], 1)

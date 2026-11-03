@@ -124,6 +124,25 @@ class TestQualityReport(unittest.TestCase):
         d.pupil_blinks_interpolate()
         r = d.quality_report()
         self.assertIn("interpolated_pct", r["artifacts"]["left"])
+        # the interpolation margins are not "other artifacts" (finding 5.8)
+        self.assertGreater(r["artifacts"]["left"]["interpolated_pct"].value,
+                           r["blinks"]["left"]["time_pct"].value)
+        self.assertEqual(r["artifacts"]["left"]["other_pct"].value, 0)
+
+    def test_masked_time_by_layer(self):
+        d = _make_data()
+        d.set_experimental_setup(screen_resolution=(1000, 800))
+        x = d.data["left_x"].copy()
+        x[2000:2500] = 5000  # 5 % off-screen
+        d["left_x"] = x
+        d.mask_offscreen_coords(eyes="left")
+        d.mask_intervals(pp.Intervals([(10000, 12000)], "ms"), eyes="left", variables="pupil")  # 10 %
+        a = d.quality_report()["artifacts"]["left"]
+        self.assertAlmostEqual(a["offscreen_pct"].value, 5)
+        self.assertAlmostEqual(a["user_pct"].value, 10)
+        self.assertAlmostEqual(a["other_pct"].value, 10)  # pupil: the user mask
+        self.assertAlmostEqual(a["gaze_masked_pct"].value, 5)
+        self.assertNotIn("divergence_pct", a)
 
     def test_calibration(self):
         d = _make_data()

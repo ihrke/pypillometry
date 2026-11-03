@@ -32,11 +32,11 @@ Simulation classes:
 - :class:`FakeEyeData`: Synthetic eye-tracking data for testing and validation.
 """
 
-__all__ = ["EyeDataDict", "GenericEyeData","GazeData","PupilData", "EyeData", 
+__all__ = ["EyeDataDict", "MaskPolicy", "GenericEyeData","GazeData","PupilData", "EyeData", 
            "SpatialCalibration", "ForeshorteningCalibration", "FakeEyeData",
            "ExperimentalSetup", "keephistory"]
 
-from .eyedatadict import EyeDataDict
+from .eyedatadict import EyeDataDict, MaskPolicy
 from .generic import GenericEyeData, keephistory
 from .gazedata import GazeData
 from .pupildata import PupilData

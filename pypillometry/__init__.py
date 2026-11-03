@@ -20,7 +20,7 @@ import os.path
 # Data classes
 from .eyedata import (
     GenericEyeData, EyeData, PupilData, GazeData, FakeEyeData,
-    EyeDataDict, ExperimentalSetup, SpatialCalibration,
+    EyeDataDict, MaskPolicy, ExperimentalSetup, SpatialCalibration,
     ForeshorteningCalibration, keephistory,
 )
 from .plot import EyePlotter, PupilPlotter, GazePlotter
@@ -83,7 +83,7 @@ from loguru import logger  # available as pp.logger, not part of __all__
 __all__ = [
     # data classes
     "GenericEyeData", "EyeData", "PupilData", "GazeData", "FakeEyeData",
-    "EyeDataDict", "ExperimentalSetup", "SpatialCalibration",
+    "EyeDataDict", "MaskPolicy", "ExperimentalSetup", "SpatialCalibration",
     "ForeshorteningCalibration", "keephistory",
     "EyePlotter", "PupilPlotter", "GazePlotter",
     "SegmentedEyeData", "GroupLevelSegmentedData", "group_segments",

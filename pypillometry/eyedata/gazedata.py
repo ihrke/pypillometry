@@ -146,7 +146,7 @@ class GazeData(GenericEyeData):
             end_min=self.tx.max()/1000./60.,
             params=self._strfy_params()
         )
-        if len(self._excluded) > 0:
+        if self._excluded_mask().any():
             summary["excluded_minutes"] = self.excluded_duration("min")
 
         return summary
@@ -211,7 +211,10 @@ class GazeData(GenericEyeData):
         
         This method computes the distance between corresponding (x,y) coordinates in the left
         and right eyes. Points where the distance exceeds a threshold are detected as divergences.
-        When apply_mask=True, these points are masked. When apply_mask=False, the divergences
+        When apply_mask=True, these points are masked: they replace the
+        ``"divergence"`` layer of x and y of both eyes (so running the method
+        again with another threshold gives the same result as running it
+        once). When apply_mask=False, the divergences
         are returned as Intervals objects.
         
         Parameters
@@ -226,12 +229,16 @@ class GazeData(GenericEyeData):
             - "pixel": threshold is the maximum allowed distance in pixels
         store_as : str or None, default=None
             Variable name to store the distance timeseries. If None, distance is not stored.
+            The distance is stored for both eyes (``left_<store_as>`` and
+            ``right_<store_as>``, the same values), masked where one of the
+            coordinates is masked or the eyes diverge.
         apply_mask : bool, default=True
             If True, apply detected divergences as masks to the data and return self.
             If False, return detected divergences as an Intervals object.
         ignore_existing_mask : bool, default=True
             If True (default), check all data points including those already masked (e.g., from blinks).
-            If False, only check non-masked data points for divergences.
+            If False, only check non-masked data points for divergences (the
+            divergence layer itself does not count).
         inplace : bool or None
             If True, make change in-place and return the object.
             If False, make and return copy before making changes.
@@ -286,11 +293,10 @@ class GazeData(GenericEyeData):
             right_x = obj.data['right_x']
             right_y = obj.data['right_y']
         else:
-            # Use masked data
-            left_x = obj['left_x']
-            left_y = obj['left_y']
-            right_x = obj['right_x']
-            right_y = obj['right_y']
+            # existing masks, without the divergence layer (it is replaced)
+            left_x, left_y, right_x, right_y = (
+                np.ma.masked_array(obj.data[k], obj.data._compat_mask(k, ["divergence"]))
+                for k in ("left_x", "left_y", "right_x", "right_y"))
         
         dist = np.ma.sqrt((left_x - right_x)**2 + (left_y - right_y)**2)
         
@@ -313,21 +319,17 @@ class GazeData(GenericEyeData):
         # Convert mask to intervals
         intervals_list = obj._mask_to_intervals_list(divergence_mask)
         
-        # Store distance as a timeseries if requested
+        # Store distance as a timeseries if requested: as variable `store_as`
+        # of both eyes (a key without an eye would be taken for an eye),
+        # masked where any of the coordinates is masked or the eyes diverge
         if store_as is not None:
-            dist_copy = dist.copy()
-            dist_copy.mask |= divergence_mask
-            # If we ignored existing masks for calculation, still apply them to stored result
-            if ignore_existing_mask:
-                # Combine masks from all source variables
-                original_mask = (
-                    np.ma.getmaskarray(obj['left_x']) |
-                    np.ma.getmaskarray(obj['left_y']) |
-                    np.ma.getmaskarray(obj['right_x']) |
-                    np.ma.getmaskarray(obj['right_y'])
-                )
-                dist_copy.mask |= original_mask
-            obj[store_as] = dist_copy
+            source_mask = np.logical_or.reduce(
+                [obj.data._compat_mask(k, ["divergence"])
+                 for k in ("left_x", "left_y", "right_x", "right_y")])
+            for eye in ("left", "right"):
+                key = f"{eye}_{store_as}"
+                obj.data.set_with_mask(key, np.ma.getdata(dist), mask=source_mask)
+                obj.data.set_layer(key, "divergence", divergence_mask, replace=True)
         
         # Create Intervals object for the detected divergences
         intervals_obj = Intervals(
@@ -335,9 +337,11 @@ class GazeData(GenericEyeData):
             units="samples",
             label="eye_divergences")
         
-        # Apply mask if requested
+        # Apply mask if requested: replaces the divergence layer of x and y
         if apply_mask:
-            obj.mask_intervals(intervals_obj, eyes=['left', 'right'], variables=['x', 'y'], inplace=True)
+            m = intervals_obj.to_mask(obj).astype(bool)
+            for key in ("left_x", "left_y", "right_x", "right_y"):
+                obj.data.set_layer(key, "divergence", m, replace=True)
             return obj
         else:
             return intervals_obj
@@ -349,8 +353,11 @@ class GazeData(GenericEyeData):
         Detect and mask gaze coordinates that fall outside the screen boundaries.
         
         This method identifies points where the (x,y) coordinates fall outside the 
-        defined screen limits. When apply_mask=True, these points are masked. 
-        When apply_mask=False, the offscreen periods are returned as Intervals objects.
+        defined screen limits. When apply_mask=True, these points are masked:
+        they replace the ``"offscreen"`` layer of x and y of the checked eyes
+        (so running the method again with other screen limits gives the same
+        result as running it once). When apply_mask=False, the offscreen
+        periods are returned as Intervals objects.
         
         Parameters
         ----------
@@ -362,7 +369,8 @@ class GazeData(GenericEyeData):
             If True, apply detected offscreen periods as masks to the data and return self.
             If False, return detected offscreen periods as dict of Intervals objects.
         ignore_existing_mask : bool, default=False
-            If False (default), only check non-masked data points for offscreen coordinates.
+            If False (default), only check non-masked data points for offscreen
+            coordinates (the offscreen layer itself does not count).
             If True, check all data points including those already masked (e.g., from blinks).
         inplace : bool or None
             If True, make change in-place and return the object.
@@ -420,9 +428,9 @@ class GazeData(GenericEyeData):
                 x = obj.data[vx]
                 y = obj.data[vy]
             else:
-                # Use masked arrays (respects existing masks)
-                x = obj[vx]
-                y = obj[vy]
+                # existing masks, without the offscreen layer (it is replaced)
+                x = np.ma.masked_array(obj.data[vx], obj.data._compat_mask(vx, ["offscreen"]))
+                y = np.ma.masked_array(obj.data[vy], obj.data._compat_mask(vy, ["offscreen"]))
 
             # Check all points including already masked ones
             offscreen_mask = (
@@ -449,10 +457,12 @@ class GazeData(GenericEyeData):
             
             logger.debug(f"Detected {len(intervals_obj)} offscreen intervals for {eye} eye")
         
-        # Apply mask if requested
+        # Apply mask if requested: replaces the offscreen layer of x and y
         if apply_mask:
             for eye, intervals_obj in intervals_dict.items():
-                obj.mask_intervals(intervals_obj, eyes=[eye], variables=['x', 'y'], inplace=True)
+                m = intervals_obj.to_mask(obj).astype(bool)
+                for var in ("x", "y"):
+                    obj.data.set_layer(f"{eye}_{var}", "offscreen", m, replace=True)
             return obj
         else:
             return intervals_dict

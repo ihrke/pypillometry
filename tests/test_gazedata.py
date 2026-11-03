@@ -49,8 +49,8 @@ class TestGazeData(unittest.TestCase):
         d = pp.GazeData(sampling_rate=10, left_x=[1, 2, 3, 4], left_y=[5, 6, 7, 8])
         
         # Manually mask some points
-        d.data.mask['left_x'][1] = 1
-        d.data.mask['left_y'][2] = 1
+        d.data.add_mask('left_x', np.s_[1])
+        d.data.add_mask('left_y', np.s_[2])
         
         # Scale the data
         d_scaled = d.scale(['x', 'y'], inplace=False)
@@ -68,8 +68,8 @@ class TestGazeData(unittest.TestCase):
         d = pp.GazeData(sampling_rate=10, left_x=[1, 2, 3, 4], left_y=[5, 6, 7, 8])
         
         # Manually mask some points
-        d.data.mask['left_x'][1] = 1
-        d.data.mask['left_y'][2] = 1
+        d.data.add_mask('left_x', np.s_[1])
+        d.data.add_mask('left_y', np.s_[2])
         
         # Scale and then unscale
         d_scaled = d.scale(['x', 'y'], inplace=False)
@@ -103,18 +103,16 @@ class TestGazeData(unittest.TestCase):
         # Apply divergence masking at 90th percentile with distance stored
         d_masked = d.mask_eye_divergences(threshold=0.9, thr_type="percentile", store_as="dist", inplace=False)
         
-        # Verify distance was stored
-        self.assertIn('dist', d_masked.data)
+        # Verify distance was stored for both eyes (no new eye)
+        self.assertEqual(d_masked.eyes, ["left", "right"])
         
         # Calculate expected distance
         expected_dist = np.sqrt((left_x - right_x)**2 + (left_y - right_y)**2)
         
         # Verify distance calculation
-        np.testing.assert_allclose(
-            d_masked.data['dist'],
-            expected_dist,
-            rtol=1e-5
-        )
+        for key in ('left_dist', 'right_dist'):
+            np.testing.assert_allclose(d_masked.data[key], expected_dist, rtol=1e-5)
+            self.assertEqual(d_masked.data.mask[key][8], 1)
         
         # Verify that the point with large divergence (index 8) is masked
         self.assertEqual(d_masked.data.mask['left_x'][8], 1)
@@ -177,7 +175,8 @@ class TestGazeData(unittest.TestCase):
         self.assertIs(result, d)
         
         # Verify distance was stored in original object
-        self.assertIn('mydist', d.data)
+        self.assertIn('left_mydist', d.data)
+        self.assertIn('right_mydist', d.data)
     
     def test_mask_eye_divergences_requires_both_eyes(self):
         """Test that function raises error if both eyes are not available"""
@@ -236,8 +235,8 @@ class TestGazeData(unittest.TestCase):
         )
         
         # Manually mask some points before divergence masking
-        d.data.mask['left_x'][0] = 1
-        d.data.mask['left_y'][0] = 1
+        d.data.add_mask('left_x', np.s_[0])
+        d.data.add_mask('left_y', np.s_[0])
         
         # Apply divergence masking (with very low threshold to mask nothing new)
         d_masked = d.mask_eye_divergences(threshold=1000, thr_type="pixel", inplace=False)
@@ -260,8 +259,8 @@ class TestGazeData(unittest.TestCase):
         )
         
         # Manually add mask to simulate pre-existing masked data
-        d.data.mask['left_x'][1] = 1
-        d.data.mask['left_y'][1] = 1
+        d.data.add_mask('left_x', np.s_[1])
+        d.data.add_mask('left_y', np.s_[1])
         
         # Apply divergence masking
         d_masked = d.mask_eye_divergences(threshold=0.5, thr_type="percentile", store_as="dist", inplace=False)
@@ -270,7 +269,8 @@ class TestGazeData(unittest.TestCase):
         self.assertEqual(d_masked.data.mask['left_x'][1], 1)
         
         # Distance array should also have the masked point
-        self.assertEqual(d_masked.data.mask['dist'][1], 1)
+        self.assertEqual(d_masked.data.mask['left_dist'][1], 1)
+        self.assertEqual(d_masked.data.mask['right_dist'][1], 1)
     
     def test_mask_eye_divergences_apply_mask_false(self):
         """Test mask_eye_divergences with apply_mask=False returns Intervals"""
@@ -513,8 +513,8 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         )
         
         # Manually mask index 1 (which is offscreen)
-        d.data.mask['left_x'][1] = 1
-        d.data.mask['left_y'][1] = 1
+        d.data.add_mask('left_x', np.s_[1])
+        d.data.add_mask('left_y', np.s_[1])
         
         # Apply offscreen masking with ignore_existing_mask=False (default)
         result = d.mask_offscreen_coords(eyes='left', ignore_existing_mask=False, 
@@ -541,8 +541,8 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         )
         
         # Manually mask index 1 (which is also offscreen)
-        d.data.mask['left_x'][1] = 1
-        d.data.mask['left_y'][1] = 1
+        d.data.add_mask('left_x', np.s_[1])
+        d.data.add_mask('left_y', np.s_[1])
         
         # Apply offscreen masking with ignore_existing_mask=True
         result = d.mask_offscreen_coords(eyes='left', ignore_existing_mask=True, 
@@ -568,8 +568,8 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         )
         
         # Manually mask some points before offscreen masking
-        d.data.mask['left_x'][0] = 1
-        d.data.mask['left_y'][0] = 1
+        d.data.add_mask('left_x', np.s_[0])
+        d.data.add_mask('left_y', np.s_[0])
         
         # Apply offscreen masking (no points should be offscreen)
         d_masked = d.mask_offscreen_coords(eyes='left', inplace=False)
@@ -709,3 +709,19 @@ class TestMaskOffscreenCoords(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+def test_stored_divergence_is_not_an_eye():
+    """Finding 5.3: the stored distance must not be taken for an eye."""
+    rng = np.random.default_rng(0)
+    n = 200
+    d = pp.EyeData(left_x=rng.normal(500, 5, n), left_y=rng.normal(400, 5, n),
+                   right_x=rng.normal(500, 5, n), right_y=rng.normal(400, 5, n),
+                   left_pupil=np.full(n, 1000.), right_pupil=np.full(n, 1000.),
+                   sampling_rate=100, inplace=False)
+    d = d.mask_eye_divergences(store_as="div")
+    assert d.eyes == ["left", "right"]
+    assert d.data.get_layer("left_div", "divergence").sum() == 2  # 99th percentile
+    d.pupil_blinks_detect(apply_mask=True)
+    d.merge_eyes()
+    d.crop(0, 1000)
+    d.downsample(50)

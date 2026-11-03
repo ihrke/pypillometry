@@ -118,7 +118,7 @@ def incomplete_eyedata():
 class TestIncompleteBlinkStores:
     def test_blinks_initialised_for_existing_pairs(self, incomplete_eyedata):
         d = incomplete_eyedata
-        assert set(d._blinks) == {"left_pupil", "left_x", "left_y", "right_pupil"}
+        assert set(d.blinks) == {"left_pupil", "left_x", "left_y", "right_pupil"}
 
     def test_set_and_get_blinks(self, incomplete_eyedata):
         import pypillometry as pp
@@ -175,7 +175,7 @@ class TestIncompleteScaleMerge:
         d = incomplete_eyedata
         d.merge_eyes(variables="pupil", keep_eyes=False)
         assert set(d.data.keys()) == {"left_x", "left_y", "mean_pupil"}
-        assert d._blinks.get("right_pupil") is None
+        assert set(d.blinks) == {"left_x", "left_y", "mean_pupil"}
 
     def test_scale_after_merge_eyes(self, incomplete_eyedata):
         # used to fail with KeyError: 'mean_x' (D6)
@@ -293,7 +293,7 @@ class TestIncompletePlots:
     def test_plot_masked(self, incomplete_eyedata):
         import matplotlib.pyplot as plt
         d = incomplete_eyedata
-        d.data.mask["right_pupil"][10:20] = 1
+        d.data.add_mask("right_pupil", np.s_[10:20])
         plt.figure()
         d.plot.plot_masked("right", "pupil")
         d.plot.plot_masked()

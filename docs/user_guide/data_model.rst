@@ -116,6 +116,30 @@ Detection methods return :class:`Intervals` (``apply_mask=False``, the
 default) so that you can check them before applying them with
 :meth:`~GenericEyeData.mask_intervals` (see :doc:`events_intervals`).
 
+Each variable also keeps *mask layers* that record why a sample is
+masked: ``"blink"`` (:meth:`~PupilData.pupil_blinks_detect`,
+:meth:`~GenericEyeData.set_blinks`), ``"interpolated"``
+(:meth:`~PupilData.pupil_blinks_interpolate`,
+:meth:`~GenericEyeData.interpolate_intervals`), ``"offscreen"``
+(:meth:`~GazeData.mask_offscreen_coords`), ``"divergence"``
+(:meth:`~GazeData.mask_eye_divergences`) and ``"user"``
+(:meth:`~GenericEyeData.mask_intervals`, assigning a masked array). The
+``"excluded"`` layer (see below) belongs to the whole recording, not to
+a variable. The blinks returned by :meth:`~GenericEyeData.get_blinks` are
+the stretches of the ``"blink"`` layer. Running a detector again replaces
+its layer (and its mask), and :meth:`~GenericEyeData.clear_layer` removes
+a layer. The quality report splits the masked time by layer.
+:meth:`~GenericEyeData.mask` and :meth:`~GenericEyeData.values` give the
+mask (or the values with NaN) under a :class:`MaskPolicy`; by default,
+interpolated samples count as usable:
+
+.. code-block:: python
+
+    d.mask("left", "pupil")                     # NaN, blinks, ...; not interpolated
+    d.mask("left", "pupil", policy="strict")    # interpolated samples too
+    d.values("left", "pupil")                   # values, NaN where masked
+    d.clear_layer("blink")                      # undo blink detection
+
 
 Excluded periods
 ----------------
@@ -124,7 +148,8 @@ Some parts of a recording are not part of the analysis at all, e.g., the
 calibration at the start or breaks between blocks. The data there may be
 perfectly valid, so they should not count as missing data or blinks.
 :meth:`~GenericEyeData.exclude_intervals` stores such periods with the
-object and masks all variables during them:
+object (the recording-wide ``"excluded"`` layer) and masks all variables
+during them, also variables added later:
 
 .. code-block:: python
 
@@ -145,11 +170,13 @@ everything outside the given periods, e.g., to keep only the fMRI run:
 
 Because the samples are masked, everything that ignores masked data
 (averages, :meth:`~GenericEyeData.scale`, segments, ...) also ignores the
-excluded periods. Unlike other masks, excluded periods are not blinks:
-blink detection ignores them, and blinks that overlap an excluded period
-are removed, so they are not interpolated either. The periods are stored
-as times, so they stay valid after slicing, downsampling and
-:meth:`~GenericEyeData.reset_time`, and they are saved with the object.
+excluded periods (also where the data were interpolated). Unlike other
+masks, excluded periods are not blinks: blink detection ignores them, and
+blinks that overlap or touch an excluded period are not counted (they are
+left out by :meth:`~GenericEyeData.get_blinks`), so they are not
+interpolated either. The layer moves with the samples when the data are
+sliced or downsampled, and it is saved with the object;
+``d.clear_layer("excluded")`` removes the excluded periods.
 
 :meth:`~GenericEyeData.get_included` returns the periods between them. To
 get rid of the excluded data altogether, :meth:`~GenericEyeData.split_excluded`

@@ -27,6 +27,7 @@ Base class and containers
 
    GenericEyeData
    EyeDataDict
+   MaskPolicy
    FakeEyeData
 
 .. autosummary::
