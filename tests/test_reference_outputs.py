@@ -546,6 +546,23 @@ def _merged_pupil(case_id, key, stored):
             "nanmean_all": float(np.nanmean(merged)), "masked": int(allmasked.sum())}[name]
 
 
+def _scaled_pupil(case_id, key, stored):
+    """`scale` of the pupil (step 7): mean and sd of the samples that are
+    usable under the default policy (interpolated samples are used)."""
+    name, _, k = key.partition(".")
+    # the parameter keys of the case are "<variable>_<eye>" (params["scale"]
+    # is {eye: {variable: value}})
+    k = {"pupil_left": "left_pupil", "pupil_right": "right_pupil"}.get(k, k)
+    if k not in ("left_pupil", "right_pupil"):
+        return stored  # gaze: nothing interpolated, unchanged
+    dataset = case_id.rsplit(".", 1)[1]
+    v, usable = _case_b(dataset)[k]
+    m, sd = np.mean(v[usable]), np.std(v[usable])
+    masked = load_arrays(f"b.blinks_interpolate.{dataset}")[f"mask.{k}"]
+    return {"param_mean": m, "param_sd": sd, "mean": (np.mean(v[~masked]) - m) / sd,
+            "std": np.std(v[~masked]) / sd, "nanmean_all": (np.nanmean(v) - m) / sd}[name]
+
+
 #: intended changes (see CHANGES.md): (case id prefix, result key prefix) ->
 #: function mapping (case id, key, stored reference value) to the expected value
 CHANGED = {("e.segments.", "tx."): lambda case_id, key, stored: _segment_time_axis(stored),
@@ -554,7 +571,8 @@ CHANGED = {("e.segments.", "tx."): lambda case_id, key, stored: _segment_time_ax
            ("g.downsample.", "mask."): _downsampled_mask,
            ("g.downsample.", "masked."): _downsampled_masked,
            ("f.quality.", "artifacts."): _quality_other,
-           ("h.merge_eyes.", ""): _merged_pupil}
+           ("h.merge_eyes.", ""): _merged_pupil,
+           ("h.scale.", ""): _scaled_pupil}
 
 
 def expected_value(case_id, key, stored):

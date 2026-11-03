@@ -530,3 +530,20 @@ Changes of the API calls alone (same numbers) need no entry.
   max 51 units). `policy="strict"` gives the old values.
 - **Why**: decision 4 (interpolated samples are used in analyses).
 - **Step**: 7, `refactor/07-value-policy`
+
+### `scale`: mean and sd of the usable samples
+
+- **Case**: `h.scale.*`, pupil keys (gaze unchanged: nothing interpolated);
+  expected values derived from case b in the test
+- **Change**: `scale(..., policy="default")` computes the mean and sd of
+  the samples that are usable under the mask policy, so interpolated
+  samples count (before: left out). `scale`/`unscale` change the stored
+  values and keep all layers. Size: rlmw left/right `param_mean` 1114.67
+  -> 1118.21 / 950.26 -> 950.55, `param_sd` 84.50 -> 82.73 / 78.73 ->
+  77.53; synth `param_mean` 1000.23 -> 999.98 / 900.14 -> 900.00,
+  `param_sd` 28.91 -> 28.29 / 25.90 -> 25.46. The mean of the scaled data
+  over the samples outside the old mask is no longer exactly 0 (-0.043 /
+  -0.004 rlmw), the mean over all samples is. `policy="strict"` gives the
+  old values.
+- **Why**: decision 4 (interpolated samples are used in analyses).
+- **Step**: 7, `refactor/07-value-policy`

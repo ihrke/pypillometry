@@ -2417,7 +2417,7 @@ class GenericEyeData(state.VersionedState, ABC):
 
     @keephistory
     def scale(self, variables=[], mean: Union[float,dict,None]=None, 
-              sd: Union[float,dict,None]=None, eyes=[], inplace=None):
+              sd: Union[float,dict,None]=None, eyes=[], policy="default", inplace=None):
         """
         Scale the signal by subtracting `mean` and dividing by `sd`.
         If these variables are not provided, use the signal's mean and std.
@@ -2431,18 +2431,22 @@ class GenericEyeData(state.VersionedState, ABC):
             available variables can be checked with `obj.variables`; empty list means all variables
         mean : None, float or dict, optional
             mean to subtract from signal; if `None`, use the signal's mean
-            (of the non-masked samples);
+            (of the usable samples under `policy`);
             if float, use the same value for all eyes and variables;
             if dict, provide mean for each eye and variable as
             ``{eye: {variable: value}}``
         sd : None, float or dict, optional
             sd to scale with; if `None`, use the signal's std (of the
-            non-masked samples);
+            usable samples under `policy`);
             if float, use the same value for all eyes and variables;
             if dict, provide sd for each eye and variable as
             ``{eye: {variable: value}}``
         eyes : str or list of str, optional
             eye(s) to consider; if empty, all available eyes
+        policy : str, MaskPolicy or list of str
+            mask policy that decides which samples are used for the mean
+            and sd (see :meth:`mask`); default ``"default"`` (interpolated
+            samples are used)
         inplace : bool or None, optional
             if `True`, make change in-place and return the object;
             if `False`, make and return copy before making changes;
@@ -2462,15 +2466,15 @@ class GenericEyeData(state.VersionedState, ABC):
         pairs = obj.data.select(eyes, variables)
 
         if mean is None:
-            # use only non-masked samples
-            mean = _per_pair(pairs, lambda eye, var: np.nanmean(obj[eye,var].compressed()))
+            # use only the usable samples
+            mean = _per_pair(pairs, lambda eye, var: np.nanmean(obj.values(eye, var, policy)))
         elif isinstance(mean, numbers.Real):
             mean = _per_pair(pairs, lambda eye, var, val=mean: val)
         elif not isinstance(mean, dict):
             raise ValueError("mean must be None, a number or dict")
 
         if sd is None:
-            sd = _per_pair(pairs, lambda eye, var: np.nanstd(obj[eye,var].compressed()))
+            sd = _per_pair(pairs, lambda eye, var: np.nanstd(obj.values(eye, var, policy)))
         elif isinstance(sd, numbers.Real):
             sd = _per_pair(pairs, lambda eye, var, val=sd: val)
         elif not isinstance(sd, dict):
@@ -2488,11 +2492,10 @@ class GenericEyeData(state.VersionedState, ABC):
         }
 
         for eye, var in pairs:
-            # scale the masked samples too (masked-array arithmetic
-            # would leave them unchanged), keep the mask
-            x = obj[eye, var]
-            obj[eye, var] = np.ma.array((x.data - mean[eye][var]) / sd[eye][var],
-                                        mask=np.ma.getmaskarray(x))
+            # scale the masked samples too, keep the layers
+            key = f"{eye}_{var}"
+            obj.data.set_with_mask(key, (obj.data[key] - mean[eye][var]) / sd[eye][var],
+                                   preserve_mask=True)
         return obj
         
     @keephistory    
@@ -2550,10 +2553,10 @@ class GenericEyeData(state.VersionedState, ABC):
         _check_per_pair(pairs, mean, sd)
 
         for eye, var in pairs:
-            # unscale the masked samples too, keep the mask
-            x = obj[eye, var]
-            obj[eye, var] = np.ma.array(x.data * sd[eye][var] + mean[eye][var],
-                                        mask=np.ma.getmaskarray(x))
+            # unscale the masked samples too, keep the layers
+            key = f"{eye}_{var}"
+            obj.data.set_with_mask(key, obj.data[key] * sd[eye][var] + mean[eye][var],
+                                   preserve_mask=True)
         return obj    
 
     
