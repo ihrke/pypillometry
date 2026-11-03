@@ -1,6 +1,6 @@
 from loguru import logger
 from .generic import GenericEyeData, keephistory
-from .eyedatadict import EyeDataDict
+from .eyedatadict import EyeDataDict, _without_layer
 from ..plot import GazePlotter
 from ..intervals import Intervals
 import numpy as np
@@ -237,8 +237,9 @@ class GazeData(GenericEyeData):
             If False, return detected divergences as an Intervals object.
         ignore_existing_mask : bool, default=True
             If True (default), check all data points including those already masked (e.g., from blinks).
-            If False, only check non-masked data points for divergences (the
-            divergence layer itself does not count).
+            If False, only check the data points that are usable under the
+            default mask policy for divergences (the divergence layer itself
+            does not count).
         inplace : bool or None
             If True, make change in-place and return the object.
             If False, make and return copy before making changes.
@@ -293,9 +294,11 @@ class GazeData(GenericEyeData):
             right_x = obj.data['right_x']
             right_y = obj.data['right_y']
         else:
-            # existing masks, without the divergence layer (it is replaced)
+            # unusable samples (default mask policy), without the divergence
+            # layer (it is replaced)
+            policy = _without_layer("default", "divergence")
             left_x, left_y, right_x, right_y = (
-                np.ma.masked_array(obj.data[k], obj.data._compat_mask(k, ["divergence"]))
+                np.ma.masked_array(obj.data[k], obj.data.get_policy_mask(k, policy))
                 for k in ("left_x", "left_y", "right_x", "right_y"))
         
         dist = np.ma.sqrt((left_x - right_x)**2 + (left_y - right_y)**2)
@@ -323,8 +326,9 @@ class GazeData(GenericEyeData):
         # of both eyes (a key without an eye would be taken for an eye),
         # masked where any of the coordinates is masked or the eyes diverge
         if store_as is not None:
+            policy = _without_layer("default", "divergence")
             source_mask = np.logical_or.reduce(
-                [obj.data._compat_mask(k, ["divergence"])
+                [obj.data.get_policy_mask(k, policy)
                  for k in ("left_x", "left_y", "right_x", "right_y")])
             for eye in ("left", "right"):
                 key = f"{eye}_{store_as}"
@@ -369,8 +373,9 @@ class GazeData(GenericEyeData):
             If True, apply detected offscreen periods as masks to the data and return self.
             If False, return detected offscreen periods as dict of Intervals objects.
         ignore_existing_mask : bool, default=False
-            If False (default), only check non-masked data points for offscreen
-            coordinates (the offscreen layer itself does not count).
+            If False (default), only check the data points that are usable
+            under the default mask policy for offscreen coordinates (the
+            offscreen layer itself does not count).
             If True, check all data points including those already masked (e.g., from blinks).
         inplace : bool or None
             If True, make change in-place and return the object.
@@ -428,9 +433,11 @@ class GazeData(GenericEyeData):
                 x = obj.data[vx]
                 y = obj.data[vy]
             else:
-                # existing masks, without the offscreen layer (it is replaced)
-                x = np.ma.masked_array(obj.data[vx], obj.data._compat_mask(vx, ["offscreen"]))
-                y = np.ma.masked_array(obj.data[vy], obj.data._compat_mask(vy, ["offscreen"]))
+                # unusable samples (default mask policy), without the
+                # offscreen layer (it is replaced)
+                policy = _without_layer("default", "offscreen")
+                x = np.ma.masked_array(obj.data[vx], obj.data.get_policy_mask(vx, policy))
+                y = np.ma.masked_array(obj.data[vy], obj.data.get_policy_mask(vy, policy))
 
             # Check all points including already masked ones
             offscreen_mask = (

@@ -18,13 +18,29 @@ __all__ = [
 ]
 
 
+def _bridge_gaps(signal):
+    """
+    Copy of `signal` with the NaN values replaced by a linear bridge
+    between the neighbouring valid samples (before the first and after
+    the last valid sample: its value). All-NaN signals are returned as
+    they are.
+    """
+    signal = np.asarray(signal, dtype=float)
+    valid = ~np.isnan(signal)
+    out = signal.copy()
+    if valid.any() and not valid.all():
+        idx = np.arange(len(signal))
+        out[~valid] = np.interp(idx[~valid], idx[valid], signal[valid])
+    return out
+
+
 def lowpass_filter_iterative(signal, cutoff, fs, order=2, max_iter=5):
     """
     Lowpass filter that handles NaN values via iterative interpolation.
     
-    NaN values are initially filled with the signal mean, then iteratively
-    replaced with filtered values until convergence. This avoids sharp
-    artifacts at gap boundaries that would occur with simple interpolation.
+    NaN values are initially bridged linearly between the neighbouring
+    valid samples (see :func:`_bridge_gaps`), then iteratively replaced
+    with filtered values.
     
     Parameters
     ----------
@@ -47,7 +63,7 @@ def lowpass_filter_iterative(signal, cutoff, fs, order=2, max_iter=5):
     Notes
     -----
     The iterative approach works by:
-    1. Fill NaN positions with the signal mean
+    1. Fill NaN positions by a linear bridge between the valid samples
     2. Apply lowpass filter to the filled signal
     3. Replace NaN positions with the filtered values
     4. Repeat steps 2-3 until max_iter reached
@@ -74,9 +90,9 @@ def lowpass_filter_iterative(signal, cutoff, fs, order=2, max_iter=5):
         # No NaN - just apply regular filter
         return butter_lowpass_filter(signal, cutoff, fs, order)
     
-    # Initialize: fill NaN with signal mean
-    filled = signal.copy()
-    filled[~valid] = np.nanmean(signal)
+    # Initialize: bridge the gaps linearly (starting from the global mean
+    # biases the valid samples next to the gaps, finding 3.3)
+    filled = _bridge_gaps(signal)
     
     # Iterative filtering
     for _ in range(max_iter):

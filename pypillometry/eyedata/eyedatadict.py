@@ -36,15 +36,6 @@ def _join_key(key: Tuple[str, str]) -> str:
 LAYER_DTYPE = np.uint16
 #: maximum number of layers (bits of `LAYER_DTYPE`)
 MAX_LAYERS = 16
-#: internal layer: samples that were NaN when the values were set (or
-#: inserted samples); they stay masked when a filter fills them with values
-NAN_LAYER = "_nan"
-#: layers that :attr:`EyeDataDict.mask` (the mask read by the code that does
-#: not use :meth:`~pypillometry.GenericEyeData.mask` yet) contains;
-#: ``"_blink_applied"`` marks blinks that were applied as mask (``apply_mask=True``);
-#: ``"excluded"`` is a recording-wide layer (`EyeDataDict.rec_layers`)
-COMPAT_LAYERS = (NAN_LAYER, "user", "interpolated", "_blink_applied", "excluded",
-                 "offscreen", "divergence")
 
 
 #: the standard layers: missing data (blink, offscreen, divergence, user),
@@ -59,14 +50,15 @@ class MaskPolicy:
     Which samples count as unusable (masked).
 
     A sample is masked if its value is NaN (with `nan`), or if one of the
-    `layers` is set and none of the layers in `unless` is set. Policies
-    with `nan` also count the samples that were NaN when the values were
-    set (the internal layer `NAN_LAYER`, e.g. NaN filled by a filter) like
-    a layer in `layers`.
+    `layers` is set and none of the layers in `unless` is set. Recording-wide
+    layers (e.g., ``"excluded"``) mask a sample regardless of `unless`.
 
-    The predefined policies are in `POLICIES`: ``"default"`` (interpolated
-    samples are used), ``"strict"`` (interpolated samples are masked) and
-    ``"raw"`` (nothing is masked).
+    The predefined policies are in `POLICIES`: ``"default"`` (NaN, blinks
+    applied as mask, off-screen gaze, eye divergences, user masks and
+    excluded periods are masked; interpolated samples are used),
+    ``"strict"`` (interpolated samples are masked too) and ``"raw"``
+    (nothing is masked, not even NaN). All processing and analysis methods
+    take the policy as their `policy` argument.
 
     Parameters
     ----------
@@ -76,7 +68,7 @@ class MaskPolicy:
         layers that make a sample usable again (e.g., ``"interpolated"``:
         the value was reconstructed)
     nan : bool
-        NaN values (also those filled by a filter, see `NAN_LAYER`) are unusable
+        NaN values are unusable
     name : str, optional
         name of the policy
 
@@ -96,7 +88,9 @@ class MaskPolicy:
                 f"nan={self.nan}" + (f", name={self.name!r})" if self.name else ")"))
 
 
-_MISSING = ("blink", "offscreen", "divergence", "user", "excluded")
+# blinks mask the data where they were applied as mask (``apply_mask=True``,
+# internal layer "_blink_applied")
+_MISSING = ("_blink_applied", "offscreen", "divergence", "user", "excluded")
 #: predefined policies (see :class:`MaskPolicy`)
 POLICIES = {
     "default": MaskPolicy(_MISSING, unless="interpolated", name="default"),
@@ -117,12 +111,18 @@ def _as_policy(policy) -> MaskPolicy:
     return MaskPolicy(policy)
 
 
-class _CompatMask(Mapping):
-    """
-    Read-only mapping key -> int mask (1: masked) of an :class:`EyeDataDict`.
+def _without_layer(policy, name: str) -> MaskPolicy:
+    """`policy` without the layer `name` (e.g., the layer that a detector is
+    about to replace)."""
+    policy = _as_policy(policy)
+    return MaskPolicy([n for n in policy.layers if n != name], policy.unless, policy.nan)
 
-    A sample of a key is masked if one of the layers in `COMPAT_LAYERS` is
-    set (for the key or recording-wide).
+
+class _PolicyMask(Mapping):
+    """
+    Read-only mapping key -> int mask (1: masked) of an :class:`EyeDataDict`
+    under the default mask policy (see `POLICIES`).
+
     The arrays are computed on access and are read-only; change masks with
     the methods of :class:`EyeDataDict` (e.g., `set_mask`, `add_mask`).
     """
@@ -131,7 +131,7 @@ class _CompatMask(Mapping):
         self._d = d
 
     def __getitem__(self, key):
-        out = self._d._compat_mask(key).astype(int)
+        out = self._d.get_policy_mask(key).astype(int)
         out.flags.writeable = False
         return out
 
@@ -167,7 +167,8 @@ class EyeDataDict(MutableMapping, Stateful):
     a layer gets the next free bit when it is first set. Layers that
     apply to all keys (e.g., ``"excluded"``) are stored once, in
     `rec_layers` (recording-wide layers, same registry). `mask` is the
-    mask as one 0/1 array per key (see `COMPAT_LAYERS`).
+    mask under the default mask policy as one 0/1 array per key (see
+    :class:`MaskPolicy`).
 
     The dictionary can be indexed by a string "eye_variable" or by a tuple
     ("eye", "variable") like data["left","x"] or data["left_x"].
@@ -352,7 +353,7 @@ class EyeDataDict(MutableMapping, Stateful):
         key = self._validate_key(key)  # Only validate key when setting values
 
         self.data[key] = value
-        self.layers[key] = self._fresh_layers(value)  # mask missing values
+        self.layers[key] = np.zeros(self.shape, dtype=LAYER_DTYPE)  # NaN: from the values
         self._init_rec_layers()
 
     def set_with_mask(self, key: Union[str, Tuple[str, str]], value: NDArray, 
@@ -428,15 +429,7 @@ class EyeDataDict(MutableMapping, Stateful):
             pass
         else:
             # Create new mask (default behavior, same as __setitem__)
-            self.layers[key] = self._fresh_layers(value_float)
-
-    def _fresh_layers(self, value: NDArray) -> NDArray:
-        """Layers of new values: only `NAN_LAYER`, where they are NaN."""
-        layers = np.zeros(value.shape, dtype=LAYER_DTYPE)
-        nan = np.isnan(value)
-        if nan.any():
-            layers[nan] = self.layer_bits(NAN_LAYER, create=True)
-        return layers
+            self.layers[key] = np.zeros(self.shape, dtype=LAYER_DTYPE)
 
     def _init_rec_layers(self) -> None:
         """Create empty recording-wide layers once the length is known."""
@@ -486,22 +479,14 @@ class EyeDataDict(MutableMapping, Stateful):
             raise ValueError("Key must be in format 'eye_variable'")
         return key
 
-    def _compat_mask(self, key: str, without=()) -> NDArray:
-        """Boolean mask of `key` as in `mask`, without the layers `without`
-        (e.g., the layer that a detector is about to replace)."""
-        names = [name for name in COMPAT_LAYERS if name not in without]
-        bits = self.layer_bits(names)
-        return ((self.layers[key] & bits) != 0) | ((self.rec_layers & bits) != 0)
-
     @property
     def mask(self) -> Mapping:
-        """Mask of each key (read-only mapping key -> int array, 1: masked).
+        """Mask of each key under the default mask policy (read-only
+        mapping key -> int array, 1: masked; see `get_policy_mask`).
 
-        A sample is masked if one of the layers in `COMPAT_LAYERS` is set
-        (e.g., NaN at assignment, masks set with `set_mask`/`add_mask`).
         The arrays are read-only.
         """
-        return _CompatMask(self)
+        return _PolicyMask(self)
 
     # --- layers -----------------------------------------------------------
 
@@ -634,14 +619,13 @@ class EyeDataDict(MutableMapping, Stateful):
         """
         policy = _as_policy(policy)
         unknown = [name for name in policy.layers + policy.unless
-                   if name not in STANDARD_LAYERS and name not in self.layer_names]
+                   if name not in STANDARD_LAYERS and name not in self.layer_names
+                   and not name.startswith("_")]  # internal layers
         if unknown:
             raise ValueError(f"unknown layer(s) {', '.join(unknown)}; registered layers: "
                              f"{', '.join(self.layer_names) or 'none'}")
         layers = self.layers[key]
         masked = (layers & self.layer_bits(policy.layers)) != 0
-        if policy.nan:
-            masked |= (layers & self.layer_bits(NAN_LAYER)) != 0
         unless = self.layer_bits(policy.unless)
         if unless:
             masked &= (layers & unless) == 0
@@ -662,6 +646,30 @@ class EyeDataDict(MutableMapping, Stateful):
             self.rec_layers = np.asarray(self.rec_layers, dtype=LAYER_DTYPE)
         elif first is not None:
             self._init_rec_layers()
+        if "_nan" in self.layer_names:
+            self._drop_nan_layer()
+
+    def _drop_nan_layer(self) -> None:
+        """Remove the layer ``"_nan"`` of states written by development
+        versions of 2.2 (format 3 before the mask policy was used for all
+        processing): it marked samples that were NaN when they were set.
+        Where such a sample holds a value now (filled by a filter) and is
+        not interpolated, it stays masked (``"user"`` layer)."""
+        for key, layers in self.layers.items():
+            filled = (self.get_layer(key, "_nan") & ~self.get_layer(key, "interpolated")
+                      & ~np.isnan(self.data[key]))
+            if filled.any():
+                self.set_layer(key, "user", filled)
+        i = self.layer_names.index("_nan")
+        low, high = (1 << i) - 1, ~((1 << (i + 1)) - 1) & 0xFFFF
+
+        def drop(arr):
+            return ((arr & low) | ((arr & high) >> 1)).astype(LAYER_DTYPE)
+
+        self.layers = {key: drop(arr) for key, arr in self.layers.items()}
+        if self.rec_layers is not None:
+            self.rec_layers = drop(self.rec_layers)
+        del self.layer_names[i]
 
     def copy(self) -> 'EyeDataDict':
         """Create a deep copy of the dictionary (data and masks)."""
@@ -676,11 +684,13 @@ class EyeDataDict(MutableMapping, Stateful):
     def set_mask(self, key: str, mask: NDArray, layer: str = "user") -> None:
         """Set mask for a specific key.
 
-        Afterwards, ``self.mask[key]`` equals `mask`: samples that are not
-        masked in `mask` are removed from the layers in `COMPAT_LAYERS`
-        (of the key), samples that were not masked yet are added to
-        `layer` (default ``"user"``). The recording-wide layers (e.g.,
-        excluded periods) are not changed, so their samples stay masked.
+        Afterwards, ``self.mask[key]`` (the mask under the default policy)
+        equals `mask`: samples that are not masked in `mask` are removed
+        from the layers of the key that mask them, samples that were not
+        masked yet are added to `layer` (default ``"user"``; where they are
+        interpolated, the ``"interpolated"`` layer is cleared, as it would
+        make them usable). NaN values and the recording-wide layers (e.g.,
+        excluded periods) are not changed, so these samples stay masked.
 
         Parameters
         ----------
@@ -690,8 +700,7 @@ class EyeDataDict(MutableMapping, Stateful):
             Mask array (1 for masked, 0 for valid values) with the same shape
             as the data; converted to int
         layer : str, optional
-            layer in `COMPAT_LAYERS` for the newly masked samples (default
-            ``"user"``)
+            layer for the newly masked samples (default ``"user"``)
 
         Raises
         ------
@@ -706,10 +715,13 @@ class EyeDataDict(MutableMapping, Stateful):
         if mask.shape != self.shape:
             raise ValueError(f"Mask must have shape {self.shape}")
         mask = mask.astype(bool)
-        bits = LAYER_DTYPE(self.layer_bits(COMPAT_LAYERS))
+        default = POLICIES["default"]
+        bits = LAYER_DTYPE(self.layer_bits(default.layers))
         self.layers[key][~mask] &= ~bits
-        new = mask & ~self._compat_mask(key)
+        new = mask & ~self.get_policy_mask(key)
         if new.any():
+            for name in default.unless:
+                self.clear_layer(key, name, new)
             self.set_layer(key, layer, new)
 
     def add_mask(self, key: str, where) -> None:

@@ -72,7 +72,8 @@ def eyedata_facts(d):
     out["data_nansum"], out["masked"], out["masked_unexplained"] = {}, {}, {}
     for k in d.data.keys():
         v = np.asarray(d.data[k], dtype=float)
-        m = np.asarray(d.data.mask[k], dtype=bool)
+        # the mask of format 2 is the strict mask (interpolated samples masked)
+        m = d.mask(k, policy="strict")
         explained = np.isnan(v) | excl_mask
         if k in blinks:
             explained |= intervals_mask(blinks[k], n)

@@ -124,10 +124,16 @@ def pupil_keys(d):
     return [k for k in d.data.keys() if k.endswith("_pupil")]
 
 
+def old_mask(d, k):
+    """The mask as the reference stored it: it contained the interpolated
+    samples, so it is the mask under the strict policy (step 7)."""
+    return d.mask(k, policy="strict")
+
+
 def masks(d, keys=None):
     """Mask of every variable."""
     keys = d.data.keys() if keys is None else keys
-    return {f"mask.{k}": np.asarray(d.data.mask[k], dtype=bool).copy() for k in keys}
+    return {f"mask.{k}": old_mask(d, k) for k in keys}
 
 
 def blinks(d, keys, units="samples"):
@@ -151,7 +157,7 @@ def summary(d, step=50):
            "event_labels": np.asarray(d.events.labels, dtype=str)}
     for k in d.data.keys():
         v = np.asarray(d.data[k], dtype=float)
-        m = np.asarray(d.data.mask[k], dtype=bool)
+        m = old_mask(d, k)
         out[f"nansum.{k}"] = float(np.nansum(v))
         out[f"masked.{k}"] = int(m.sum())
         out[f"sub.{k}"] = v[::step].copy()
@@ -374,7 +380,7 @@ def _scale(dataset):
             for eye, v in vals.items():
                 out[f"param_{stat}.{eye}_{var}"] = float(v)
     for k in d.data.keys():
-        x = np.ma.masked_array(d.data[k], mask=d.data.mask[k])
+        x = np.ma.masked_array(d.data[k], mask=old_mask(d, k))
         out[f"mean.{k}"] = float(masked_mean(x))
         out[f"std.{k}"] = float(np.ma.std(x))
         out[f"nanmean_all.{k}"] = float(np.nanmean(d.data[k]))
@@ -387,10 +393,10 @@ def _merge_eyes(dataset):
     for k in d.data.keys():
         if not k.startswith("mean_"):
             continue
-        x = np.ma.masked_array(d.data[k], mask=d.data.mask[k])
+        x = np.ma.masked_array(d.data[k], mask=old_mask(d, k))
         out[f"mean.{k}"] = float(masked_mean(x))
         out[f"nanmean_all.{k}"] = float(np.nanmean(d.data[k]))
-        out[f"masked.{k}"] = int(d.data.mask[k].sum())
+        out[f"masked.{k}"] = int(old_mask(d, k).sum())
         out[f"sub.{k}"] = np.asarray(d.data[k][::50], dtype=float)
     out["keys"] = np.asarray(sorted(d.data.keys()), dtype=str)
     return out
@@ -504,7 +510,13 @@ def _downsampled_masked(case_id, key, stored):
 def _quality_other(case_id, key, stored):
     """`artifacts.<eye>.other_pct` after interpolation (step 5): interpolated
     samples (and blinks) are not "other artifacts". In case b, every masked
-    pupil sample is interpolated, so nothing is left."""
+    pupil sample is interpolated, so nothing is left.
+
+    `artifacts.<eye>.pupil_masked_pct` (step 7): the samples that are
+    unusable under the default policy (interpolated samples are usable)."""
+    if key.endswith(".pupil_masked_pct") and case_id.endswith(".interp"):
+        usable = _case_b(case_id.split(".")[2])[f"{key.split('.')[1]}_pupil"][1]
+        return 100.0 * (~usable).sum() / len(usable)
     if not key.endswith(".other_pct"):
         return stored
     scalars = load_reference()["cases"][case_id]["scalars"]
@@ -513,14 +525,153 @@ def _quality_other(case_id, key, stored):
     return 0.0
 
 
+def _case_b(dataset):
+    """Pupil values of case b and the samples that are usable under the
+    default mask policy (step 7): unusable are NaN and the samples masked
+    in the old mask (the stored masks) that are not interpolated."""
+    full = load_arrays(f"b.blinks_interpolate.{dataset}")
+    out = {}
+    for key in ("left_pupil", "right_pupil"):
+        v = full[f"pupil.{key}"]
+        interp = np.zeros(len(v), dtype=bool)
+        for on, off in full[f"interpolated.{key}"]:
+            interp[on:off] = True
+        out[key] = (v, ~((full[f"mask.{key}"] & ~interp) | np.isnan(v)))
+    return out
+
+
+def _merged_pupil(case_id, key, stored):
+    """`merge_eyes` of the pupil (step 7): mean over the eyes in which a sample
+    is usable under the default policy (interpolated samples are used)."""
+    name, _, var = key.partition(".")
+    if var != "mean_pupil":
+        return stored  # gaze: nothing interpolated, unchanged
+    b = _case_b(case_id.rsplit(".", 1)[1])
+    v = np.stack([b[k][0] for k in ("left_pupil", "right_pupil")])
+    usable = np.stack([b[k][1] for k in ("left_pupil", "right_pupil")])
+    allmasked = ~usable.any(axis=0)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)
+        merged = np.where(allmasked, np.nanmean(v, axis=0),
+                          np.nansum(np.where(usable, v, 0), axis=0) / usable.sum(axis=0))
+    return {"sub": merged[::50], "mean": float(np.mean(merged[~allmasked])),
+            "nanmean_all": float(np.nanmean(merged)), "masked": int(allmasked.sum())}[name]
+
+
+def _scaled_pupil(case_id, key, stored):
+    """`scale` of the pupil (step 7): mean and sd of the samples that are
+    usable under the default policy (interpolated samples are used)."""
+    name, _, k = key.partition(".")
+    # the parameter keys of the case are "<variable>_<eye>" (params["scale"]
+    # is {eye: {variable: value}})
+    k = {"pupil_left": "left_pupil", "pupil_right": "right_pupil"}.get(k, k)
+    if k not in ("left_pupil", "right_pupil"):
+        return stored  # gaze: nothing interpolated, unchanged
+    dataset = case_id.rsplit(".", 1)[1]
+    v, usable = _case_b(dataset)[k]
+    m, sd = np.mean(v[usable]), np.std(v[usable])
+    masked = load_arrays(f"b.blinks_interpolate.{dataset}")[f"mask.{k}"]
+    return {"param_mean": m, "param_sd": sd, "mean": (np.mean(v[~masked]) - m) / sd,
+            "std": np.std(v[~masked]) / sd, "nanmean_all": (np.nanmean(v) - m) / sd}[name]
+
+
+def _segments(case_id, k, masked):
+    """Segments of pupil `k` of case b (as in case e), masked where `masked`
+    (full rate), and their baseline correction with (-200, 0) ms."""
+    arrays = load_arrays(case_id)
+    tx = _segment_time_axis(arrays[f"tx.{k}"])
+    v = _case_b(case_id.split(".")[2])[k][0]
+    ix = arrays["intervals_samples"][:, 0][None, :] + np.arange(len(tx))[:, None]
+    assert ix.min() >= 0 and ix.max() < len(v)
+    seg = np.ma.array(v[ix], mask=masked[ix])
+    b0, b1 = (np.argmin(np.abs(w - tx)) for w in (-200, 0))
+    bc = seg.copy()
+    for i in range(seg.shape[1]):
+        bc[:, i] -= np.mean(seg[b0:b1, i])
+    return {"mask": np.ma.getmaskarray(seg), "mean": masked_mean(seg, axis=0),
+            "bc_data": np.ma.getdata(bc), "bc_mask": np.ma.getmaskarray(bc),
+            "bc_mean": masked_mean(bc, axis=0)}
+
+
+def _segments_interp(case_id, key, stored):
+    """Segments after interpolation (step 7): masked where unusable under the
+    default policy (interpolated samples are used)."""
+    name, _, k = key.partition(".")
+    if name == "tx":
+        return _segment_time_axis(stored)
+    if name not in ("mask", "mean", "bc_data", "bc_mask", "bc_mean"):
+        return stored
+    return _segments(case_id, k, ~_case_b(case_id.split(".")[2])[k][1])[name]
+
+
+def _stats(case_id, k, masked):
+    """`stat_per_event` of pupil `k` of case b (as in case e), with the
+    samples where `masked` (full rate) left out."""
+    dataset = case_id.split(".")[2]
+    v = _case_b(dataset)[k][0]
+    d = get_data(dataset)
+    out = {}
+    for name, window, fct in (("mean_pre", (-200, 0), np.mean),
+                              ("mean_post", (0, 1000), np.mean),
+                              ("median_post", (0, 1000), np.median)):
+        ivs = iv_samples(d.get_intervals(EVENT[dataset], window=window * u.ms)
+                         .to_intervals("samples", d))
+        res = []
+        for start, end in ivs:
+            start, end = max(start, 0), min(end, len(v))
+            sel = v[start:max(end, start + 1)][~masked[start:max(end, start + 1)]]
+            res.append(fct(sel) if len(sel) else np.nan)
+        out[name] = np.asarray(res)
+    return out
+
+
+def _stats_interp(case_id, key, stored):
+    """`stat_per_event` after interpolation (step 7): interpolated samples are used."""
+    name, _, k = key.partition(".")
+    if k not in ("left_pupil", "right_pupil"):
+        return stored  # gaze: nothing interpolated, unchanged
+    return _stats(case_id, k, ~_case_b(case_id.split(".")[2])[k][1])[name]
+
+
+def _window_means(x, factor):
+    """Mean of the non-NaN values of `x` per window of `factor` samples (NaN
+    if there are none; the last window may be shorter)."""
+    nw = -(-len(x) // factor)
+    w = np.concatenate([x, np.full(nw * factor - len(x), np.nan)]).reshape(nw, factor)
+    n = (~np.isnan(w)).sum(axis=1)
+    return np.where(n > 0, np.nansum(w, axis=1) / np.maximum(n, 1), np.nan)
+
+
+def _downsampled_values(case_id, key, stored):
+    """Pupil values after `downsample` (step 7): window means of the samples
+    that are usable under the default policy (interpolated samples are used);
+    windows without such samples: mean of all values."""
+    name, _, k = key.partition(".")
+    if k not in ("left_pupil", "right_pupil"):
+        return stored  # gaze: nothing interpolated, unchanged
+    factor = 500 // int(case_id.rsplit(".", 1)[1])
+    v, usable = _case_b("rlmw")[k]
+    y = _window_means(np.where(usable, v, np.nan), factor)
+    y = np.where(np.isnan(y), _window_means(v, factor), y)
+    return {"sub": y[::10], "nansum": float(np.nansum(y))}[name]
+
+
 #: intended changes (see CHANGES.md): (case id prefix, result key prefix) ->
 #: function mapping (case id, key, stored reference value) to the expected value
-CHANGED = {("e.segments.", "tx."): lambda case_id, key, stored: _segment_time_axis(stored),
+CHANGED = {("e.segments.rlmw.interp", ""): _segments_interp,
+           ("e.segments.synth.interp", ""): _segments_interp,
+           ("e.stat_per_event.rlmw.interp", ""): _stats_interp,
+           ("e.stat_per_event.synth.interp", ""): _stats_interp,
+           ("e.segments.", "tx."): lambda case_id, key, stored: _segment_time_axis(stored),
            ("g.downsample.", "interpolated."): _downsampled_runs,
            ("g.downsample.", "blinks."): _downsampled_runs,
            ("g.downsample.", "mask."): _downsampled_mask,
            ("g.downsample.", "masked."): _downsampled_masked,
-           ("f.quality.", "artifacts."): _quality_other}
+           ("g.downsample.", "sub."): _downsampled_values,
+           ("g.downsample.", "nansum."): _downsampled_values,
+           ("f.quality.", "artifacts."): _quality_other,
+           ("h.merge_eyes.", ""): _merged_pupil,
+           ("h.scale.", ""): _scaled_pupil}
 
 
 def expected_value(case_id, key, stored):

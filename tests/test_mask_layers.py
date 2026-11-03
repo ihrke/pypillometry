@@ -1,9 +1,9 @@
-"""Mask layers: bit-fields per channel, registry, compat mask (step 5)."""
+"""Mask layers: bit-fields per channel, registry (step 5), mask policies (step 7)."""
 import numpy as np
 import pytest
 
 from pypillometry import EyeDataDict
-from pypillometry.eyedata.eyedatadict import COMPAT_LAYERS, LAYER_DTYPE, MAX_LAYERS, NAN_LAYER
+from pypillometry.eyedata.eyedatadict import LAYER_DTYPE, MAX_LAYERS
 
 
 def format2_state(d):
@@ -80,9 +80,9 @@ class TestLayerStorage:
         d = small_dict()
         d.set_layer("left_pupil", "blink", [0, 1, 0, 0, 0])
         d["left_pupil"] = [1., 2., 3., 4., np.nan]
-        # only the NaN (internal layer, see NAN_LAYER)
-        np.testing.assert_array_equal(d.get_layer("left_pupil", NAN_LAYER), [0, 0, 0, 0, 1])
-        assert not d.get_layer("left_pupil", "blink").any()
+        # no layers; the NaN is masked by its value
+        assert not d.layers["left_pupil"].any()
+        np.testing.assert_array_equal(d.mask["left_pupil"], [0, 0, 0, 0, 1])
         d.set_layer("left_pupil", "blink", [0, 1, 0, 0, 0])
         d.set_with_mask("left_pupil", np.ones(5), preserve_mask=True)
         assert d.get_layer("left_pupil", "blink").sum() == 1
@@ -135,17 +135,19 @@ class TestRecLayers:
         assert r.data.rec_layers.dtype == LAYER_DTYPE
 
 
-class TestCompatMask:
-    """`EyeDataDict.mask`: stored mask or a layer in COMPAT_LAYERS."""
+class TestMaskView:
+    """`EyeDataDict.mask`: the mask under the default policy."""
 
-    def test_nan_and_compat_layers(self):
+    def test_default_policy(self):
         d = nan_dict()
         np.testing.assert_array_equal(d.mask["left_pupil"], [0, 1, 0, 0, 0])
-        d.set_layer("left_pupil", "blink", [0, 0, 1, 0, 0])  # not a compat layer
+        d.set_layer("left_pupil", "blink", [0, 0, 1, 0, 0])  # not applied as mask
         np.testing.assert_array_equal(d.mask["left_pupil"], [0, 1, 0, 0, 0])
-        for i, name in enumerate(COMPAT_LAYERS):
-            d.set_layer("left_pupil", name, np.arange(5) == i + 2)
-        np.testing.assert_array_equal(d.mask["left_pupil"], [0, 1, 1, 1, 1])
+        d.set_layer("left_pupil", "user", [0, 0, 1, 1, 0])
+        d.set_layer("left_pupil", "interpolated", [0, 0, 0, 1, 0])
+        np.testing.assert_array_equal(d.mask["left_pupil"], [0, 1, 1, 0, 0])
+        np.testing.assert_array_equal(d.mask["left_pupil"].astype(bool),
+                                      d.get_policy_mask("left_pupil"))
 
     def test_read_only(self):
         d = small_dict()
@@ -160,12 +162,15 @@ class TestCompatMask:
         d = nan_dict()
         d.set_layer("left_pupil", "user", [1, 1, 0, 0, 0])
         d.set_layer("left_pupil", "blink", [1, 1, 0, 0, 0])
-        d.set_mask("left_pupil", [0, 1, 1, 0, 0])
-        np.testing.assert_array_equal(d.mask["left_pupil"], [0, 1, 1, 0, 0])
-        # unmasked samples are removed from the compat layers only; newly
-        # masked ones are added to "user"
-        np.testing.assert_array_equal(d.get_layer("left_pupil", "user"), [0, 1, 1, 0, 0])
+        d.set_layer("left_pupil", "interpolated", [0, 0, 0, 1, 0])
+        d.set_mask("left_pupil", [0, 0, 1, 1, 0])
+        # sample 1 is NaN: stays masked
+        np.testing.assert_array_equal(d.mask["left_pupil"], [0, 1, 1, 1, 0])
+        # unmasked samples are removed from the masking layers only; newly
+        # masked ones are added to "user" (and are no longer "interpolated")
+        np.testing.assert_array_equal(d.get_layer("left_pupil", "user"), [0, 0, 1, 1, 0])
         np.testing.assert_array_equal(d.get_layer("left_pupil", "blink"), [1, 1, 0, 0, 0])
+        assert not d.get_layer("left_pupil", "interpolated").any()
 
 
 class TestSampleOperations:
@@ -190,8 +195,16 @@ class TestSampleOperations:
         d._insert_samples(np.arange(6) * 10., [0, 1, 4, 5])
         np.testing.assert_array_equal(d.data.get_layer("left_pupil", "blink"),
                                       [1, 1, 0, 0, 1, 1])
-        # inserted samples are NaN and masked as missing (stored mask)
+        # inserted samples are NaN and masked as missing (by their value)
         np.testing.assert_array_equal(d.data.mask["left_pupil"], [0, 0, 1, 1, 0, 0])
+        assert np.isnan(d.data["left_pupil"][2:4]).all()
+
+    def test_insert_samples_with_a_value(self):
+        d = self.data(4)
+        d._insert_samples(np.arange(6) * 10., [0, 1, 4, 5], value=0.)
+        np.testing.assert_array_equal(d.data["left_pupil"], [0, 1, 0, 0, 2, 3])
+        np.testing.assert_array_equal(d.data.get_layer("left_pupil", "user"),
+                                      [0, 0, 1, 1, 0, 0])
 
     def test_decimate_more_than_half(self):
         d = self.data(22)
@@ -205,7 +218,7 @@ class TestSampleOperations:
         expected[[0, 5]] = True
         np.testing.assert_array_equal(d.data.get_layer("left_pupil", "blink"), expected)
         assert not d.data.get_layer("left_pupil", "user").any()
-        # values: mean of the samples that are not masked (user is a compat layer)
+        # values: mean of the samples that are not masked (user masks)
         np.testing.assert_allclose(d.data["left_pupil"][[0, 5]], [1.5, 20.])
 
 
@@ -218,7 +231,7 @@ class TestPolicies:
         pupil[0] = np.nan
         d = pp.PupilData(left_pupil=pupil, sampling_rate=100)
         dd = d.data
-        dd.set_layer("left_pupil", "blink", np.isin(np.arange(10), [2, 3, 4]))
+        d.set_blinks(pp.Intervals([(2, 5)], "samples"), apply_mask=True)
         dd.set_layer("left_pupil", "interpolated", np.isin(np.arange(10), [3, 4, 5]))
         dd.set_layer("left_pupil", "user", np.arange(10) == 8)
         return d
@@ -233,6 +246,13 @@ class TestPolicies:
         assert idx(d.mask("left", "pupil", policy=["blink"])) == [0, 2, 3, 4]
         p = pp_policy(["blink"], nan=False)
         assert idx(d.mask("left", "pupil", policy=p)) == [2, 3, 4]
+
+    def test_blinks_not_applied_are_not_masked(self):
+        import pypillometry as pp
+        d = self.data()
+        d.set_blinks(pp.Intervals([(6, 8)], "samples"), apply_mask=False)
+        assert list(np.flatnonzero(d.mask("left", "pupil"))) == [0, 8]
+        assert list(np.flatnonzero(d.mask("left", "pupil", policy=["blink"]))) == [0, 6, 7]
 
     def test_values(self):
         d = self.data()
@@ -294,8 +314,8 @@ class TestInterpolatedLayer:
         iv = d.get_interpolated_blinks("left", "pupil")
         assert len(iv) == 3
         np.testing.assert_array_equal(iv.to_mask(d).astype(bool), interp)
-        # interpolated samples stay masked in the old mask, are used by default
-        assert d.data.mask["left_pupil"][interp].all()
+        # interpolated samples are used by default
+        assert not d.data.mask["left_pupil"][interp].any()
         assert not d.mask("left", "pupil")[interp].any()
         assert d.mask("left", "pupil", policy="strict")[interp].all()
 
@@ -305,8 +325,8 @@ class TestInterpolatedLayer:
         assert not d.data.get_layer("left_pupil", "interpolated").any()
         assert len(d.get_interpolated_blinks("left", "pupilinterp")) == 3
         np.testing.assert_array_equal(
-            d.data.mask["left_pupilinterp"],
-            d.data.mask["left_pupil"] | d.data.get_layer("left_pupilinterp", "interpolated"))
+            d.mask("left", "pupilinterp", "strict"),
+            d.mask("left", "pupil") | d.data.get_layer("left_pupilinterp", "interpolated"))
 
     def test_interpolate_intervals_sets_layer(self):
         import pypillometry as pp
@@ -317,7 +337,20 @@ class TestInterpolatedLayer:
         for var in ("pupil", "pupil_lin"):
             np.testing.assert_array_equal(
                 np.asarray(d.get_interpolated_blinks("left", var).intervals), [(200, 215), (500, 520)])
-        assert d.data.mask["left_pupil"][200:215].all()
+        assert d.mask("left", "pupil", "strict")[200:215].all()
+        assert not d.mask("left", "pupil")[200:215].any()
+
+    def test_interpolate_intervals_anchors_follow_policy(self):
+        import pypillometry as pp
+        d = pp.PupilData(left_pupil=np.arange(100, dtype=float), sampling_rate=100)
+        d.data.add_mask("left_pupil", np.s_[40:50])
+        d.interpolate_intervals(pp.Intervals([(40, 50)], "samples"))
+        d.data["left_pupil"][40:50] = 1000.  # an odd reconstruction
+        # default: the interpolated samples are boundary points, strict: not
+        for policy, near_1000 in (("default", True), ("strict", False)):
+            r = d.interpolate_intervals(pp.Intervals([(50, 55)], "samples"), margin=(-15, 10),
+                                        policy=policy, inplace=False)
+            assert (r.data["left_pupil"][50] > 500) == near_1000
 
 
 class TestBlinkLayer:
@@ -415,10 +448,10 @@ class TestUserLayer:
                                       np.arange(30, 40))
         np.testing.assert_array_equal(d.data.mask["left_pupil"], np.ma.getmaskarray(x))
         assert len(d.get_blinks("left", "pupil")) == 3  # the blinks are kept
-        # unmasked samples are removed from the masks
+        # unmasked samples are removed from the masks (NaN stays masked)
         x.mask[:] = False
         d["left_pupil"] = x
-        assert not d.data.mask["left_pupil"].any()
+        np.testing.assert_array_equal(d.data.mask["left_pupil"], np.isnan(x.data))
         assert len(d.get_blinks("left", "pupil")) == 3
 
 
@@ -485,16 +518,34 @@ def test_masked_array_assignment_checks_key_and_shape():
 class TestNoStoredMask:
     """The mask is derived from the layers only (no stored mask)."""
 
-    def test_nan_filled_by_a_filter_stays_masked(self):
+    def test_filter_keeps_nan_and_masked_values(self):
         import pypillometry as pp
         pupil = 1000 + np.sin(np.arange(500) / 20)
         pupil[200:220] = np.nan
+        pupil[300:310] = 0.  # zero-coded blink, masked (finding 4.9)
         d = pp.PupilData(left_pupil=pupil, sampling_rate=100, inplace=False)
+        d.mask_intervals(pp.Intervals([(300, 310)], "samples"), inplace=True)
         f = d.pupil_lowpass_filter(5)
-        assert np.isfinite(f.data["left_pupil"]).all()
-        assert f.data.mask["left_pupil"][200:220].all()
+        assert np.isnan(f.data["left_pupil"][200:220]).all()
+        assert (f.data["left_pupil"][300:310] == 0).all()
         assert f.mask("left", "pupil")[200:220].all()
-        assert not f.mask("left", "pupil", policy="raw").any()
+        # the zeros do not enter the filter: the neighbours stay close to the signal
+        near = np.r_[290:300, 310:320]
+        np.testing.assert_allclose(f.data["left_pupil"][near], pupil[near], atol=0.1)
+
+    def test_smoothing_keeps_nan_and_masked_values(self):
+        import pypillometry as pp
+        pupil = 1000 + np.sin(np.arange(500) / 20)
+        pupil[200:220] = np.nan  # raised an error before
+        pupil[300:310] = 0.
+        d = pp.PupilData(left_pupil=pupil, sampling_rate=100, inplace=False)
+        d.mask_intervals(pp.Intervals([(300, 310)], "samples"), inplace=True)
+        f = d.pupil_smooth_window(winsize=50)
+        assert np.isnan(f.data["left_pupil"][200:220]).all()
+        assert (f.data["left_pupil"][300:310] == 0).all()
+        near = np.r_[290:300, 310:320]
+        np.testing.assert_allclose(f.data["left_pupil"][near], pupil[near], atol=0.1)
+        assert f.data.get_layer("left_pupil", "user")[300:310].all()
 
     def test_decimate_keeps_fully_masked_windows_masked(self):
         import pypillometry as pp
@@ -506,14 +557,22 @@ class TestNoStoredMask:
         v = d.data["left_pupil"].copy()
         v[4:8] = np.nan
         d.data.set_with_mask("left_pupil", v, preserve_mask=True)
-        d._decimate(4)
-        np.testing.assert_array_equal(d.data.mask["left_pupil"], [1, 1])
+        d._decimate(4, "strict")  # the interpolated samples are unusable too
+        np.testing.assert_array_equal(d.mask("left", "pupil", "strict"), [1, 1])
         assert d.data.get_layer("left_pupil", "user")[0]
-        # not "interpolated": the window stays masked under the default policy
-        assert not d.data.get_layer("left_pupil", "interpolated")[0]
-        assert d.mask("left", "pupil").all()
-        assert d.data.get_layer("left_pupil", NAN_LAYER)[1]
+        assert d.data.get_layer("left_pupil", "interpolated")[0]
+        assert np.isnan(d.data["left_pupil"][1]) and not d.data.layers["left_pupil"][1]
         assert d.data["left_pupil"][0] == 1.5  # mean of the values
+
+    def test_decimate_uses_interpolated_samples(self):
+        import pypillometry as pp
+        d = pp.PupilData(left_pupil=np.arange(8, dtype=float), sampling_rate=100)
+        # window 0: half user, half interpolated -> the interpolated samples are used
+        d.data.set_layer("left_pupil", "user", [1, 1, 0, 0, 0, 0, 0, 0])
+        d.data.set_layer("left_pupil", "interpolated", [0, 0, 1, 1, 0, 0, 0, 0])
+        d._decimate(4)
+        assert d.data["left_pupil"][0] == 2.5
+        np.testing.assert_array_equal(d.mask("left", "pupil"), [0, 0])
 
     def test_state_has_no_mask_and_old_masks_are_translated(self):
         import pypillometry as pp
@@ -528,7 +587,89 @@ class TestNoStoredMask:
                       "mask": {"left_pupil": np.array([0, 1, 1, 0, 0, 0], dtype=bool)}}
         r = state.from_state(st)
         np.testing.assert_array_equal(r.data.mask["left_pupil"], [0, 1, 1, 0, 0, 0])
-        np.testing.assert_array_equal(r.data.get_layer("left_pupil", NAN_LAYER),
-                                      [0, 1, 0, 0, 0, 0])
+        # NaN: masked by the value, no layer
         np.testing.assert_array_equal(r.data.get_layer("left_pupil", "user"),
                                       [0, 0, 1, 0, 0, 0])
+        assert r.data.layer_names == ["user"]
+
+    def test_development_states_with_the_nan_layer(self):
+        """Format-3 states written before step 7 have the layer "_nan" (NaN at
+        assignment); filled samples stay masked as "user", the bit is removed."""
+        import pypillometry as pp
+        from pypillometry import state
+        pupil = np.arange(6, dtype=float)
+        pupil[[1, 2]] = np.nan
+        d = pp.PupilData(left_pupil=pupil, sampling_rate=100)
+        d.data.set_layer("left_pupil", "blink", [0, 0, 0, 0, 1, 0])
+        st = state.to_state(d)
+        dd = st["data"]
+        # as written before: "_nan" registered between other layers
+        dd["layer_names"] = ["_nan", "blink", "interpolated"]
+        dd["values"]["left_pupil"][[1, 3]] = [10., 30.]  # 1 filled by a filter, 3 interpolated
+        dd["layers"]["left_pupil"] = np.array([0, 1, 1, 1 | 4, 2, 0], dtype=LAYER_DTYPE)
+        dd["rec_layers"] = np.array([0, 0, 0, 0, 4, 0], dtype=LAYER_DTYPE)
+        r = state.from_state(st)
+        assert r.data.layer_names == ["blink", "interpolated", "user"]
+        np.testing.assert_array_equal(np.flatnonzero(r.data.get_layer("left_pupil", "user")), [1])
+        np.testing.assert_array_equal(np.flatnonzero(r.data.get_layer("left_pupil", "blink")), [4])
+        np.testing.assert_array_equal(
+            np.flatnonzero(r.data.get_layer("left_pupil", "interpolated")), [3])
+        np.testing.assert_array_equal(np.flatnonzero(r.data.get_rec_layer("interpolated")), [4])
+        np.testing.assert_array_equal(r.mask("left", "pupil"), [0, 1, 1, 0, 0, 0])
+
+
+class TestConsumersUsePolicy:
+    """Processing and analyses read the data under a mask policy (step 7)."""
+
+    def binocular(self):
+        import pypillometry as pp
+        n = 200
+        left, right = np.full(n, 1000.), np.full(n, 900.)
+        d = pp.PupilData(left_pupil=left, right_pupil=right, sampling_rate=100)
+        d.data.add_mask("left_pupil", np.s_[50:60])
+        d.interpolate_intervals(pp.Intervals([(50, 60)], "samples"), eyes="left")
+        d.data.add_mask("right_pupil", np.s_[100:110])
+        return d
+
+    def test_pupil_merge_eyes(self):
+        d = self.binocular()
+        m = d.pupil_merge_eyes(method="both_available", inplace=False)
+        assert list(np.flatnonzero(m.mask("merged", "pupil"))) == list(range(100, 110))
+        s = d.pupil_merge_eyes(method="both_available", policy="strict", inplace=False)
+        assert list(np.flatnonzero(s.mask("merged", "pupil"))) == list(range(50, 60)) + \
+            list(range(100, 110))
+
+    def test_get_segments(self):
+        import pypillometry as pp
+        d = self.binocular()
+        ep = pp.Epochs([400.], (0, 300))  # samples 40-69
+        seg = d.get_segments(ep, "left_pupil")
+        assert not np.ma.getmaskarray(seg.data).any()
+        seg = d.get_segments(ep, "left_pupil", policy="strict")
+        assert list(np.flatnonzero(np.ma.getmaskarray(seg.data)[:, 0])) == list(range(10, 20))
+
+    def test_stat_per_event(self):
+        import pypillometry as pp
+        d = self.binocular()
+        d.data["left_pupil"][50:60] = 0.  # an odd reconstruction
+        iv = pp.Intervals([(400., 700.)], "ms")  # samples 40-69
+        assert d.stat_per_event(iv, eyes="left")["left_pupil"][0] == 2000. / 3
+        assert d.stat_per_event(iv, eyes="left", policy="strict")["left_pupil"][0] == 1000.
+
+    def test_quality_report(self):
+        d = self.binocular()
+        art = d.quality_report().to_dict(flat=True)
+        assert art["artifacts.left.pupil_masked_pct"] == 0.
+        assert art["artifacts.right.pupil_masked_pct"] == 5.
+        art = d.quality_report(policy="strict").to_dict(flat=True)
+        assert art["artifacts.left.pupil_masked_pct"] == 5.
+
+    def test_getitem(self):
+        d = self.binocular()
+        assert not np.ma.getmaskarray(d["left_pupil"]).any()
+        assert np.ma.getmaskarray(d["right", "pupil"])[100:110].all()
+
+    def test_mask_as_intervals(self):
+        d = self.binocular()
+        assert len(d.mask_as_intervals("left", "pupil")) == 0
+        assert d.mask_as_intervals("left", "pupil", policy="strict").intervals == [(50, 60)]

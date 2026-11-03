@@ -422,3 +422,240 @@ Changes of the API calls alone (same numbers) need no entry.
 - **Why**: same as "`fs` after `downsample` is the actual rate" (finding
   3.1); `fs` must fit `tx`.
 - **Step**: 6, `refactor/06-migration`
+
+### Lowpass filter: gaps bridged linearly
+
+- **Case**: none of the reference cases (`c.lowpass.*` filter after
+  interpolation, without gaps; unchanged)
+- **Change**: `lowpass_filter_iterative` (used by `pupil_lowpass_filter`,
+  `pupil_eye_offset`/`pupil_merge_eyes(method="local_offset")` and
+  `pupil_signal_quality`) starts from a linear bridge across the NaN gaps
+  instead of the global mean. Size: `rlmw_002_short`, left pupil with its
+  NaN blinks (2.7 % of the samples), `cutoff=5`: valid samples within
+  20 ms of a gap change by a median of 47 units (max 129), 20-100 ms: 4.6
+  (max 70), 100-300 ms: 0.3 (max 10), farther: < 0.2. On a synthetic
+  signal with known truth, the median error within 20 ms of a gap drops
+  from 16.3 to 1.7 units (max 56 -> 6).
+- **Why**: the global mean pulled the valid samples next to gaps towards
+  it (finding 3.3).
+- **Step**: 7, `refactor/07-value-policy`
+
+### Lowpass filter: only usable samples are filtered
+
+- **Case**: none of the reference cases (`c.lowpass.*`: after interpolation
+  every masked sample is interpolated, so all samples are usable; unchanged)
+- **Change**: `pupil_lowpass_filter(..., policy="default")` filters the
+  values under the mask policy: masked samples (and NaN) are bridged for
+  the filter and keep their stored values (NaN stays NaN; before, NaN was
+  replaced by the filtered bridge and masked values entered the filter).
+  Size: `rlmw_002_short` after `pupil_blinks_detect(apply_mask=True)` (959
+  / 508 masked non-NaN samples in the blink margins), `lowpass(5)`: 1989 /
+  2201 of the ~19000 unmasked samples per eye change by more than 1 unit,
+  up to 186 / 161 units. On zero-coded blinks the leak was up to 513 units
+  (finding 4.9).
+- **Why**: masked values (e.g., zero-coded blinks) leaked into the unmasked
+  neighbours (finding 4.9, D2); the filter must not invent values in gaps
+  that would look like data (NaN is read from the values).
+- **Step**: 7, `refactor/07-value-policy`
+
+### Smoothing: only usable samples are smoothed; NaN allowed
+
+- **Case**: none (no reference case smooths)
+- **Change**: `pupil_smooth_window(..., policy="default")` works like
+  `pupil_lowpass_filter`: the unusable samples are bridged linearly for
+  the smoothing and keep their stored values. Data with NaN no longer
+  raise an error; masked values no longer enter the window.
+- **Why**: same as for the lowpass filter (finding 4.9, D2).
+- **Step**: 7, `refactor/07-value-policy`
+
+### Baseline: unusable samples bridged linearly
+
+- **Case**: none (no reference case estimates a baseline)
+- **Change**: `pupil_estimate_baseline(..., policy="default")` fits the
+  values under the mask policy and bridges the unusable samples (NaN,
+  masked blinks, excluded periods, ...) linearly. Before, data with NaN
+  raised a ValueError and masked values (e.g., zero-coded blinks) were
+  used. Data without unusable samples give the same baseline.
+- **Why**: same rule for all signal processing (D2); the error message
+  already asked users to bridge the gaps linearly.
+- **Step**: 7, `refactor/07-value-policy`
+
+### Response: masked samples are not used
+
+- **Case**: none (no reference case estimates the response)
+- **Change**: `pupil_estimate_response(..., policy="default")` fits only
+  the usable samples under the mask policy (before: all finite samples
+  outside the excluded periods, including masked values such as applied
+  blinks that were not interpolated); `valid` is the share of each
+  response on usable samples, `observed` the share on samples usable under
+  the `"strict"` policy (before: not in the old mask; same samples).
+- **Why**: masked values must not enter an analysis (D2).
+- **Step**: 7, `refactor/07-value-policy`
+
+### `interpolate_intervals`: boundary points under the mask policy
+
+- **Case**: none (`b.*` interpolate with `pupil_blinks_interpolate`)
+- **Change**: `interpolate_intervals(..., policy="default")` takes its
+  boundary points from the samples that are usable under the policy, so
+  samples interpolated before (by an earlier call) can be boundary points
+  (before: they were masked in the old mask). `policy="strict"` gives the
+  old behaviour.
+- **Why**: one rule for which samples are used (decision 4: interpolated
+  samples are used).
+- **Step**: 7, `refactor/07-value-policy`
+
+### `merge_eyes`: interpolated samples are used
+
+- **Case**: `h.merge_eyes.*`, keys `*.mean_pupil` (gaze unchanged: nothing
+  interpolated); expected values derived from case b in the test
+- **Change**: `merge_eyes(..., policy="default")` averages the eyes in
+  which a sample is usable under the mask policy, so interpolated blinks
+  are averaged with the other eye (before: left out where the other eye
+  was valid) and a sample is masked only if it is unusable in all eyes.
+  Size: rlmw 1247 of 20465 merged samples change, by up to 141 units;
+  masked samples 1007 -> 0, masked mean 1029.12 -> 1034.38; synth 499 of
+  10000 samples, up to 51 units, masked 166 -> 0, mean 949.44 -> 949.99.
+  `policy="strict"` gives the old values.
+- **Why**: decision 4 (interpolated samples are used in analyses).
+- **Step**: 7, `refactor/07-value-policy`
+
+### `pupil_merge_eyes`: interpolated samples are used
+
+- **Case**: none (no reference case uses `pupil_merge_eyes`)
+- **Change**: `pupil_merge_eyes(..., policy="default")`: valid samples are
+  the usable samples under the mask policy, so interpolated blinks count
+  as valid (before: as missing; with "both_available" the merged sample
+  was masked, otherwise the other eye was used alone). Size: rlmw after
+  case b, default method: 1247 of 20465 merged samples change (median 18,
+  max 51 units). `policy="strict"` gives the old values.
+- **Why**: decision 4 (interpolated samples are used in analyses).
+- **Step**: 7, `refactor/07-value-policy`
+
+### `scale`: mean and sd of the usable samples
+
+- **Case**: `h.scale.*`, pupil keys (gaze unchanged: nothing interpolated);
+  expected values derived from case b in the test
+- **Change**: `scale(..., policy="default")` computes the mean and sd of
+  the samples that are usable under the mask policy, so interpolated
+  samples count (before: left out). `scale`/`unscale` change the stored
+  values and keep all layers. Size: rlmw left/right `param_mean` 1114.67
+  -> 1118.21 / 950.26 -> 950.55, `param_sd` 84.50 -> 82.73 / 78.73 ->
+  77.53; synth `param_mean` 1000.23 -> 999.98 / 900.14 -> 900.00,
+  `param_sd` 28.91 -> 28.29 / 25.90 -> 25.46. The mean of the scaled data
+  over the samples outside the old mask is no longer exactly 0 (-0.043 /
+  -0.004 rlmw), the mean over all samples is. `policy="strict"` gives the
+  old values.
+- **Why**: decision 4 (interpolated samples are used in analyses).
+- **Step**: 7, `refactor/07-value-policy`
+
+### Segment padding outside the data is NaN
+
+- **Case**: none (no reference segment reaches outside the data)
+- **Change**: the parts of segments outside the data (see "Event-locked
+  windows are not clipped") hold NaN instead of 0; they stay masked.
+- **Why**: a value that is not data should not look like data (e.g., after
+  `baseline_correct`, the padding was `-baseline`).
+- **Step**: 7, `refactor/07-value-policy`
+
+### Segments: interpolated samples are used
+
+- **Case**: `e.segments.*.interp` (mask, mean, bc_data, bc_mask, bc_mean;
+  `*.raw` unchanged); expected values derived from case b in the test
+- **Change**: `get_segments(..., policy="default")` masks the samples that
+  are unusable under the mask policy, so interpolated samples are part of
+  the segments, their means and the baseline (before: masked). Size: rlmw
+  masked segment samples 77 -> 0 (left) / 242 -> 0 (right) of 6000; the
+  mean of 2 of 10 segments changes by up to 5.2 / 5.6 units, the
+  baseline-corrected mean by up to 5.7; synth 254 -> 0 / 355 -> 0 of 7800,
+  5 / 3 of 13 segment means change by up to 3.7 / 3.8 units.
+  `policy="strict"` gives the old masks.
+- **Why**: decision 4 (interpolated samples are used in analyses; D2: users
+  who interpolate to keep trials lost them).
+- **Step**: 7, `refactor/07-value-policy`
+
+### `stat_per_event`: interpolated samples are used
+
+- **Case**: `e.stat_per_event.*.interp`, pupil keys (`*.raw` and gaze
+  unchanged); expected values derived from case b in the test
+- **Change**: `stat_per_event(..., policy="default")` leaves out only the
+  samples that are unusable under the mask policy, so interpolated samples
+  enter the statistics (before: masked). Size: rlmw 1 of 10 events per eye
+  changes (mean before the event by up to 7.2 units, mean after by 5.7,
+  median after by 15.0); synth 1-4 of 13 events per eye and statistic, by
+  up to 1.6 / 4.4 / 8.8 units. `policy="strict"` gives the old values.
+- **Why**: decision 4 (interpolated samples are used in analyses; D2).
+- **Step**: 7, `refactor/07-value-policy`
+
+### `downsample`: interpolated samples enter the window means
+
+- **Case**: `g.downsample.*`, keys `sub.*_pupil` and `nansum.*_pupil`
+  (masks and gaze unchanged); expected values derived from case b in the
+  test
+- **Change**: `downsample(..., policy="default")` averages the samples of
+  each window that are usable under the mask policy, so interpolated
+  samples enter the means (before: left out unless the whole window was
+  masked). The ">1/2 of the window" rule for the layers is unchanged; a
+  window without usable samples still holds the mean of all its values and
+  stays unusable under the policy. Size: rlmw, 10-14 of 10233 samples per
+  eye change at 250 Hz (max 3.0 units), 18-19 of 4093 at 100 Hz (max 3.8).
+  `policy="strict"` gives the old values.
+- **Why**: decision 4 (interpolated samples are used).
+- **Step**: 7, `refactor/07-value-policy`
+
+### Quality report: interpolated samples are not "masked"
+
+- **Case**: `f.quality.*.interp`, `artifacts.<eye>.pupil_masked_pct`;
+  expected values derived from case b in the test
+- **Change**: `quality_report(..., policy="default")` counts the samples
+  that are unusable under the mask policy as masked
+  (`pupil_masked_pct`, `gaze_masked_pct`), so interpolated samples are
+  not masked any more (they are in `interpolated_pct`). Size: rlmw 9.93 ->
+  0.00 % (left) / 6.01 -> 0.00 % (right), synth 4.76 -> 0.00 % / 3.55 ->
+  0.00 % (every masked sample of case b is interpolated). The signal
+  measures (missing data, dropouts, noise, ...) still describe the stored
+  values. `policy="strict"` gives the old values.
+- **Why**: one rule for which samples are masked (decision 4); the totals
+  no longer count interpolation twice.
+- **Step**: 7, `refactor/07-value-policy`
+
+### `d[key]`: masked under the default mask policy
+
+- **Case**: none (the cases read the stored values and masks directly)
+- **Change**: `d["left_pupil"]` (masked array) masks the samples that are
+  unusable under the default mask policy, so interpolated samples are not
+  masked (before: masked). Also used by `fit_foreshortening` and the
+  plots that hide masked samples.
+- **Why**: decision 4 (interpolated samples are used).
+- **Step**: 7, `refactor/07-value-policy`
+
+### `data.mask` is the mask under the default policy
+
+- **Case**: none in numbers. The reference masks (`mask.*`, `masked.*` and
+  the masked means of `h.*`) are compared with the mask under the
+  `"strict"` policy, which is what the old mask held (interpolated
+  samples masked); they are unchanged.
+- **Change**: `d.data.mask[key]` (and `get_mask`, `count_masked`,
+  `mask_as_intervals`) is the mask under the default policy: interpolated
+  samples are not masked, NaN values always are. The derived "compat"
+  mask of steps 5-6 (the old mask rebuilt from the layers) is gone.
+  `set_mask(key, mask)` makes this mask equal to `mask`, except for NaN
+  values and excluded periods (always masked); samples it masks that are
+  interpolated lose the `interpolated` layer.
+- **Why**: one mask rule for all code (D2); the old mask mixed "missing"
+  and "reconstructed".
+- **Step**: 7, `refactor/07-value-policy`
+
+### NaN is read from the values only
+
+- **Case**: none (no reference number changes)
+- **Change**: the internal layer `_nan` (samples that were NaN when they
+  were set) is gone: a sample is missing if its value is NaN. Filters no
+  longer fill NaN (see the lowpass entry), so nothing needs it.
+  `fill_time_discontinuities(yval=...)` with a value other than NaN masks
+  the inserted samples with the `user` layer. Format-2 files: NaN values
+  get no layer (before: `_nan`). Files written in format 3 by development
+  versions before this step are converted on load (filled `_nan` samples
+  that are not interpolated -> `user`; the bit is removed).
+- **Why**: NaN cannot disagree with the values (plan 2.2); the layer was a
+  shim for the filters that filled NaN (step 5).
+- **Step**: 7, `refactor/07-value-policy`

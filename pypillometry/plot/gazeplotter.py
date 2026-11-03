@@ -69,7 +69,8 @@ class GazePlotter(GenericPlotter):
             Whether to plot the screen limits (if an experimental setup is
             available). Default is True.
         show_masked : bool
-            Whether to plot the masked data (because of blinks, artifacts, ...). Default is False.
+            Whether to plot the masked data (because of blinks, artifacts, ...;
+            default mask policy). Default is False.
         rois : List[ROI], optional
             List of ROIs (:class:`~pypillometry.ROI`) to plot. Default is None.
         roi_style : dict, optional
@@ -176,9 +177,9 @@ class GazePlotter(GenericPlotter):
             if vx in obj.data.keys() and vy in obj.data.keys():
                 x_data = obj.data[vx][startix:endix]
                 y_data = obj.data[vy][startix:endix]
-                if not show_masked and vx in obj.data.mask and vy in obj.data.mask:
-                    mask = obj.data.mask[vx][startix:endix] | obj.data.mask[vy][startix:endix]
-                    mask = mask.astype(bool)
+                if not show_masked:
+                    mask = (obj.data.get_policy_mask(vx)[startix:endix]
+                            | obj.data.get_policy_mask(vy)[startix:endix])
                     x_plot = x_data[~mask]
                     y_plot = y_data[~mask]
                 else:

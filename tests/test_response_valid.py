@@ -146,11 +146,24 @@ class TestResponseExcluded(unittest.TestCase):
 
     def test_observed_lower_with_blinks(self):
         d = self.d.copy()
-        d.data.add_mask("left_pupil", np.s_[160:200])     # an interpolated blink at 1.6 s
+        # an interpolated blink at 1.6 s
+        d.interpolate_intervals(pp.Intervals([(160, 200)], "samples"), inplace=True)
         est = d.pupil_estimate_response(eyes="left", npar=10, tmax=900, inplace=False)
         par = est.params["response"]["left"]
         self.assertLess(par["observed"][0], 1)
         self.assertAlmostEqual(par["valid"][0], 1)
+
+    def test_masked_samples_not_used(self):
+        """masked values (here zeros) are not used for the fit (D2)"""
+        d = self.d.copy()
+        d.data["left_pupil"][160:200] = 0.
+        d.mask_intervals(pp.Intervals([(160, 200)], "samples"), inplace=True)
+        est = d.pupil_estimate_response(eyes="left", npar=10, tmax=900, inplace=False)
+        par = est.params["response"]["left"]
+        self.assertLess(par["valid"][0], 0.99)
+        ref = self.d.pupil_estimate_response(eyes="left", npar=10, tmax=900, inplace=False)
+        np.testing.assert_allclose(par["coef"], ref.params["response"]["left"]["coef"],
+                                   rtol=0.05)
 
 
 if __name__ == "__main__":

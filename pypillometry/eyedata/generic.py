@@ -11,8 +11,8 @@ from .. import io
 from ..convenience import sizeof_fmt, ByteSize, _round_values, requires_package, is_url, suppress_all_output, normalize_unit, _warn_if_ignores_mask
 from ..units import UNSET, _has_units, _time_values_and_units, parse_time, _ms_to_samples, _samples_to_ms
 from ..io import download
-from .eyedatadict import (EyeDataDict, COMPAT_LAYERS, LAYER_DTYPE, NAN_LAYER, REC_LAYERS,
-                          _join_key)
+from .eyedatadict import (EyeDataDict, LAYER_DTYPE, REC_LAYERS,
+                          MaskPolicy, _as_policy, _join_key)
 from .experimental_setup import ExperimentalSetup
 from ..signal import baseline
 from ..intervals import stat_event_interval, Intervals, _as_intervals
@@ -162,37 +162,32 @@ def _keep_dict(d, keep):
     return nd
 
 
-def _decimate_dict(d, factor):
+def _decimate_dict(d, factor, policy="default"):
     """EyeDataDict with the samples of `d` decimated (see GenericEyeData._decimate)."""
     nd = EyeDataDict()
     nd.layer_names = list(d.layer_names)
-    compat = LAYER_DTYPE(d.layer_bits(COMPAT_LAYERS))
-    nan_bit = LAYER_DTYPE(d.layer_bits(NAN_LAYER))
-    interp_bit = LAYER_DTYPE(d.layer_bits("interpolated"))
-    rec = None if d.rec_layers is None else _decimate_layers(d.rec_layers, factor)
+    pol = _as_policy(policy)
+    # layers that make a sample unusable under the policy
+    masking = LAYER_DTYPE(d.layer_bits(pol.layers) & ~d.layer_bits(pol.unless))
+    if d.rec_layers is not None:
+        nd.rec_layers = _decimate_layers(d.rec_layers, factor)
     for k, v in d.items():
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", RuntimeWarning)  # all-NaN windows
-            y = baseline.downsample(np.where(d._compat_mask(k), np.nan, v), factor)
+            y = baseline.downsample(np.where(d.get_policy_mask(k, policy), np.nan, v), factor)
             stored = baseline.downsample(v, factor)
         allmasked = np.isnan(y)
         y[allmasked] = stored[allmasked]
-        # NAN_LAYER only where the whole window is masked (below)
-        layers = _decimate_layers(d.layers[k] & ~nan_bit, factor)
-        # a window whose samples are all masked (or NaN) stays masked: if no
-        # layer covers more than half of it, it gets the compat layers of
-        # its samples except "interpolated" (NAN_LAYER if there are none)
-        todo = allmasked & ((layers & compat) == 0)
-        if rec is not None:
-            todo &= (rec & compat) == 0
+        nd._set_channel(k, y, _decimate_layers(d.layers[k], factor))
+        # a window whose samples are all unusable stays unusable: if the
+        # layers that cover more than half of it do not make it unusable,
+        # it gets the masking layers of its samples (if there are none,
+        # all its values are NaN, and so is the new value)
+        todo = allmasked & ~nd.get_policy_mask(k, MaskPolicy(pol.layers, pol.unless, nan=False))
         if todo.any():
-            present = np.bitwise_or.reduceat(d.layers[k] & (compat & ~interp_bit),
+            present = np.bitwise_or.reduceat(d.layers[k] & masking,
                                              np.arange(0, len(v), factor))
-            present[present == 0] = nd.layer_bits(NAN_LAYER, create=True)
-            layers[todo] |= present[todo]
-        nd._set_channel(k, y, layers)
-    if rec is not None:
-        nd.rec_layers = rec
+            nd.layers[k][todo] |= present[todo]
     return nd
 
 
@@ -218,10 +213,11 @@ def _decimate_layers(layers, factor):
 
 def _insert_dict(d, n, pos, value):
     """EyeDataDict of length `n` with the samples of `d` at `pos`; new samples
-    hold `value` and are masked as missing (`NAN_LAYER`, no other layers)."""
+    hold `value` and are masked as missing (NaN, or the ``"user"`` layer if
+    `value` is not NaN; no other layers)."""
     nd = EyeDataDict()
     nd.layer_names = list(d.layer_names)
-    missing = nd.layer_bits(NAN_LAYER, create=n > len(pos))
+    missing = 0 if np.isnan(value) else nd.layer_bits("user", create=n > len(pos))
     for k, v in d.items():
         nv = np.full(n, value, dtype=float)
         nl = np.full(n, missing, dtype=LAYER_DTYPE)  # inserted = missing
@@ -422,7 +418,10 @@ class GenericEyeData(state.VersionedState, ABC):
 
     def __getitem__(self, key):
         """
-        Provide dict-style access to data arrays, returning masked arrays.
+        Provide dict-style access to data arrays, returning masked arrays
+        (masked: unusable under the default mask policy, see :meth:`mask`;
+        e.g., interpolated samples are not masked). Use :meth:`values` or
+        :meth:`mask` for other policies.
         Supports special keys for retrieving time in different units.
         """
         normalized_key = key
@@ -442,15 +441,9 @@ class GenericEyeData(state.VersionedState, ABC):
                 if prefix == "time":
                     return self._get_time_array(suffix or None)
 
-        # Delegate to EyeDataDict and wrap using the mask (see EyeDataDict.mask)
+        # Delegate to EyeDataDict and wrap using the default mask policy
         data_array = self.data[normalized_key]
-        try:
-            mask = self.data.mask[normalized_key]
-        except KeyError:
-            # Fallback if mask not directly accessible (e.g., cached dict),
-            # letting EyeDataDict resolve the key.
-            mask = self.data.get_mask(normalized_key)
-
+        mask = self.data.get_policy_mask(self._channel_key(normalized_key, None))
         return np.ma.masked_array(data_array, mask=mask, fill_value=np.nan)
 
     @keephistory
@@ -700,7 +693,7 @@ class GenericEyeData(state.VersionedState, ABC):
 
     def _set_blink_layer(self, key, intervals, apply_mask):
         """Replace the blink layer of `key` by `intervals` (None: no blinks);
-        with `apply_mask`, the blinks are also masked in ``data.mask``."""
+        with `apply_mask`, the blinks also mask the data (see `mask`)."""
         blink = (np.zeros(len(self.tx), dtype=bool) if intervals is None
                  else intervals.to_mask(self).astype(bool))
         self.data.set_layer(key, "blink", blink, replace=True)
@@ -736,9 +729,9 @@ class GenericEyeData(state.VersionedState, ABC):
             variable(s) to set blinks for (e.g., ``["pupil", "x", "y"]``);
             if empty, all available variables. Ignored if `intervals` is a dict.
         apply_mask : bool, optional
-            If True, also apply the intervals as mask to the data
-            (``data.mask``; other masks are kept). If False, only store
-            intervals. Default is True.
+            If True, also apply the intervals as mask to the data (they
+            are masked under the mask policies, see :meth:`mask`; other
+            masks are kept). If False, only store intervals. Default is True.
         """
         # Check if intervals is a dict
         if isinstance(intervals, dict):
@@ -898,8 +891,9 @@ class GenericEyeData(state.VersionedState, ABC):
 
         A sample is unusable if its value is NaN or if one of the layers
         of the policy is set (see :class:`~pypillometry.MaskPolicy`). By
-        default, blinks, off-screen gaze, eye divergences, user masks and
-        excluded periods are masked, interpolated samples are not.
+        default, blinks (if detected with ``apply_mask=True`` or set with
+        :meth:`set_blinks`), off-screen gaze, eye divergences, user masks
+        and excluded periods are masked, interpolated samples are not.
 
         Parameters
         ----------
@@ -985,11 +979,13 @@ class GenericEyeData(state.VersionedState, ABC):
         return obj
 
     def mask_as_intervals(self, eyes: str|list = [], variables: str|list = [], 
-                          units: str = "samples", label: str|None = None):
+                          units: str = "samples", label: str|None = None,
+                          policy="default"):
         """
         Convert masks to Intervals objects.
 
-        Each contiguous run of masked samples becomes one interval.
+        Each contiguous run of masked samples (unusable under the mask
+        `policy`, see :meth:`mask`) becomes one interval.
 
         Parameters
         ----------
@@ -1005,6 +1001,8 @@ class GenericEyeData(state.VersionedState, ABC):
             sample indices (default).
         label : str, optional
             Descriptive label for the intervals. Default is None.
+        policy : str, MaskPolicy or list of str
+            mask policy (see :meth:`mask`); default ``"default"``
             
         Returns
         -------
@@ -1029,7 +1027,7 @@ class GenericEyeData(state.VersionedState, ABC):
         result = {}
         for e, v in pairs:
             key = f"{e}_{v}"
-            mask = self.data.mask[key]
+            mask = self.data.get_policy_mask(key, policy)
             result[key] = Intervals.from_mask(mask, self, units, label=label or f"{key}_mask")
         if len(eyes) > 1 or len(variables) > 1:
             return result
@@ -1113,7 +1111,8 @@ class GenericEyeData(state.VersionedState, ABC):
         return stats
 
 
-    def quality_report(self, thresholds: Optional[dict] = None, eyes: str|list = []):
+    def quality_report(self, thresholds: Optional[dict] = None, eyes: str|list = [],
+                       policy="default"):
         """
         Report the quality of the data.
 
@@ -1129,7 +1128,8 @@ class GenericEyeData(state.VersionedState, ABC):
 
         Further measures are added if available: blinks (after
         :meth:`~pypillometry.PupilData.pupil_blinks_detect`), masked and
-        interpolated data (after preprocessing) and calibration/validation
+        interpolated data (after preprocessing; masked: unusable under the
+        mask `policy`, see :meth:`mask`) and calibration/validation
         errors (e.g., when read from an Eyelink file).
 
         Where it makes sense, each measure is labeled as "good", "ok",
@@ -1150,6 +1150,9 @@ class GenericEyeData(state.VersionedState, ABC):
             values are better. `None` turns the label off.
         eyes : str or list of str, optional
             eye(s) to report; if empty, all available eyes
+        policy : str, MaskPolicy or list of str
+            mask policy for the masked data (see :meth:`mask`); default
+            ``"default"`` (interpolated samples are not masked)
 
         Returns
         -------
@@ -1166,7 +1169,7 @@ class GenericEyeData(state.VersionedState, ABC):
         >>> d.quality_report(thresholds={"pupil.missing_pct": (2, 10, 20)})  # doctest: +SKIP
         """
         from ..quality import _compute_quality_report
-        return _compute_quality_report(self, thresholds=thresholds, eyes=eyes)
+        return _compute_quality_report(self, thresholds=thresholds, eyes=eyes, policy=policy)
 
     @property
     def eyes(self) -> List[str]:
@@ -2084,7 +2087,8 @@ class GenericEyeData(state.VersionedState, ABC):
         ----------
         yval : float, optional
             value used for the data in the filled-in gaps; default NaN,
-            so the filled-in samples are masked as missing data
+            so the filled-in samples are masked as missing data (other
+            values: masked by the ``"user"`` layer)
         print_info : bool, optional
             if True (default), log the number of gaps that are filled in
 
@@ -2135,7 +2139,8 @@ class GenericEyeData(state.VersionedState, ABC):
             the index in `tx` of each old sample (increasing)
         value : float, optional
             value of all variables at the new samples (default NaN); the
-            new samples are masked as missing and have no layers
+            new samples are masked as missing (NaN, or the ``"user"`` layer
+            if `value` is not NaN)
 
         Existing masks and layers are kept at the old samples; events
         stay valid.
@@ -2365,7 +2370,7 @@ class GenericEyeData(state.VersionedState, ABC):
             event_meta=selected_meta
         )
 
-    def get_segments(self, intervals, variable: str, name: str = None):
+    def get_segments(self, intervals, variable: str, name: str = None, policy="default"):
         """
         Extract segments from data using intervals.
         
@@ -2384,6 +2389,10 @@ class GenericEyeData(state.VersionedState, ABC):
             Variable to extract in "eye_variable" format (e.g., "left_pupil", "right_x")
         name : str, optional
             Name for the segmented dataset. If None, uses intervals.label or "segments"
+        policy : str, MaskPolicy or list of str
+            mask policy of the segments: the samples that are unusable under
+            it are masked (see :meth:`mask`); default ``"default"``
+            (interpolated samples are used)
             
         Returns
         -------
@@ -2412,11 +2421,12 @@ class GenericEyeData(state.VersionedState, ABC):
         SegmentedEyeData : Class holding segmented data
         """
         from ..segmented import SegmentedEyeData
-        return SegmentedEyeData.from_eyedata(self, intervals, variable, name=name)
+        return SegmentedEyeData.from_eyedata(self, intervals, variable, name=name,
+                                             policy=policy)
 
     @keephistory
     def scale(self, variables=[], mean: Union[float,dict,None]=None, 
-              sd: Union[float,dict,None]=None, eyes=[], inplace=None):
+              sd: Union[float,dict,None]=None, eyes=[], policy="default", inplace=None):
         """
         Scale the signal by subtracting `mean` and dividing by `sd`.
         If these variables are not provided, use the signal's mean and std.
@@ -2430,18 +2440,22 @@ class GenericEyeData(state.VersionedState, ABC):
             available variables can be checked with `obj.variables`; empty list means all variables
         mean : None, float or dict, optional
             mean to subtract from signal; if `None`, use the signal's mean
-            (of the non-masked samples);
+            (of the usable samples under `policy`);
             if float, use the same value for all eyes and variables;
             if dict, provide mean for each eye and variable as
             ``{eye: {variable: value}}``
         sd : None, float or dict, optional
             sd to scale with; if `None`, use the signal's std (of the
-            non-masked samples);
+            usable samples under `policy`);
             if float, use the same value for all eyes and variables;
             if dict, provide sd for each eye and variable as
             ``{eye: {variable: value}}``
         eyes : str or list of str, optional
             eye(s) to consider; if empty, all available eyes
+        policy : str, MaskPolicy or list of str
+            mask policy that decides which samples are used for the mean
+            and sd (see :meth:`mask`); default ``"default"`` (interpolated
+            samples are used)
         inplace : bool or None, optional
             if `True`, make change in-place and return the object;
             if `False`, make and return copy before making changes;
@@ -2461,15 +2475,15 @@ class GenericEyeData(state.VersionedState, ABC):
         pairs = obj.data.select(eyes, variables)
 
         if mean is None:
-            # use only non-masked samples
-            mean = _per_pair(pairs, lambda eye, var: np.nanmean(obj[eye,var].compressed()))
+            # use only the usable samples
+            mean = _per_pair(pairs, lambda eye, var: np.nanmean(obj.values(eye, var, policy)))
         elif isinstance(mean, numbers.Real):
             mean = _per_pair(pairs, lambda eye, var, val=mean: val)
         elif not isinstance(mean, dict):
             raise ValueError("mean must be None, a number or dict")
 
         if sd is None:
-            sd = _per_pair(pairs, lambda eye, var: np.nanstd(obj[eye,var].compressed()))
+            sd = _per_pair(pairs, lambda eye, var: np.nanstd(obj.values(eye, var, policy)))
         elif isinstance(sd, numbers.Real):
             sd = _per_pair(pairs, lambda eye, var, val=sd: val)
         elif not isinstance(sd, dict):
@@ -2487,11 +2501,10 @@ class GenericEyeData(state.VersionedState, ABC):
         }
 
         for eye, var in pairs:
-            # scale the masked samples too (masked-array arithmetic
-            # would leave them unchanged), keep the mask
-            x = obj[eye, var]
-            obj[eye, var] = np.ma.array((x.data - mean[eye][var]) / sd[eye][var],
-                                        mask=np.ma.getmaskarray(x))
+            # scale the masked samples too, keep the layers
+            key = f"{eye}_{var}"
+            obj.data.set_with_mask(key, (obj.data[key] - mean[eye][var]) / sd[eye][var],
+                                   preserve_mask=True)
         return obj
         
     @keephistory    
@@ -2549,25 +2562,26 @@ class GenericEyeData(state.VersionedState, ABC):
         _check_per_pair(pairs, mean, sd)
 
         for eye, var in pairs:
-            # unscale the masked samples too, keep the mask
-            x = obj[eye, var]
-            obj[eye, var] = np.ma.array(x.data * sd[eye][var] + mean[eye][var],
-                                        mask=np.ma.getmaskarray(x))
+            # unscale the masked samples too, keep the layers
+            key = f"{eye}_{var}"
+            obj.data.set_with_mask(key, obj.data[key] * sd[eye][var] + mean[eye][var],
+                                   preserve_mask=True)
         return obj    
 
     
     @keephistory
-    def downsample(self, fsd: float, dsfac: bool=False, inplace=None):
+    def downsample(self, fsd: float, dsfac: bool=False, policy="default", inplace=None):
         """
         Simple downsampling scheme using mean within the downsampling window.
 
         All data fields and the time-vector are downsampled simultaneously.
-        See :func:`pypillometry.signal.baseline.downsample`. Masked samples are
-        left out of the window means; a new sample is masked only if all
-        samples in its window were masked. It then holds the mean of the
-        stored values (e.g., of interpolated blinks; NaN only if they are
-        NaN). Stored blinks (in sample indices) are rescaled to the new
-        sampling rate.
+        See :func:`pypillometry.signal.baseline.downsample`. The samples
+        that are unusable under the mask `policy` are left out of the window
+        means (by default, interpolated samples are used, see :meth:`mask`).
+        A layer is kept for a new sample if it covers more than half of its
+        window. A new sample whose window has no usable sample holds the
+        mean of the stored values (NaN only if they are NaN) and stays
+        unusable.
 
         The new sampling rate is ``fs/factor``, the rate of the decimated
         data. It differs from `fsd` if `fs/fsd` is not an integer
@@ -2582,6 +2596,9 @@ class GenericEyeData(state.VersionedState, ABC):
             decimate factor is ``int(fs/fsd)``; a warning is logged if
             `fs/fsd` is not an integer);
             if True, `fsd` is the decimate factor (a positive integer)
+        policy : str, MaskPolicy or list of str
+            mask policy that decides which samples are used for the window
+            means (see :meth:`mask`); default ``"default"``
         inplace : bool or None, optional
             if `True`, make change in-place and return the object;
             if `False`, make and return copy before making changes;
@@ -2602,39 +2619,43 @@ class GenericEyeData(state.VersionedState, ABC):
         """
         dsfac=_decimate_factor(self.fs, fsd, dsfac)
         obj = self._get_inplace(inplace)
-        obj._decimate(dsfac)
+        obj._decimate(dsfac, policy)
         return obj
 
-    def _decimate(self, factor):
+    def _decimate(self, factor, policy="default"):
         """
         Decimate the samples by the integer `factor` (in place).
 
         Each window of `factor` samples becomes one sample (the last window
-        may be shorter): values are the mean of the unmasked samples, the
-        time is the mean time of the window, and the new sampling rate is
-        ``fs/factor``. A layer (e.g., ``"blink"``) is set for a new sample
-        if it covers more than half of the samples in the window (also the
-        recording-wide layers, e.g. excluded periods). A new sample whose
-        window was masked entirely holds the mean of the stored values
-        (e.g., interpolated blinks) and stays masked: if no layer covers
-        more than half of the window, it gets the masking layers of its
-        samples (not "interpolated").
+        may be shorter): values are the mean of the samples that are usable
+        under the mask `policy`, the time is the mean time of the window,
+        and the new sampling rate is ``fs/factor``. A layer (e.g.,
+        ``"blink"``) is set for a new sample if it covers more than half of
+        the samples in the window (also the recording-wide layers, e.g.
+        excluded periods). A new sample whose window has no usable sample
+        holds the mean of the stored values and stays unusable: if the
+        layers that cover more than half of the window do not make it
+        unusable, it gets the layers of its samples that make them unusable
+        under `policy`.
         Events stay valid.
         """
-        self._map_sample_aligned(_decimate_dict, factor)
+        self._map_sample_aligned(_decimate_dict, factor, policy)
         self._set_timebase(baseline.downsample(self.tx, factor), self.fs/factor)
         return self
 
     @keephistory
-    def merge_eyes(self, eyes=[], variables=[], method="mean", keep_eyes=True, inplace=None):
+    def merge_eyes(self, eyes=[], variables=[], method="mean", keep_eyes=True,
+                   policy="default", inplace=None):
         """Merge data from both eyes into a single variable.
 
         The merged data is stored under the eye name "mean" (e.g.,
         ``obj["mean", "pupil"]``). Each sample is the mean over the eyes
-        in which it is not masked; it is masked in the merged data only if
-        it is masked in all merged eyes (it then holds the mean of the
-        stored values, e.g., of interpolated blinks). Each variable is
-        merged over the selected eyes that have data for it.
+        in which it is usable under the mask `policy` (by default,
+        interpolated samples are used, see :meth:`mask`); it is masked in
+        the merged data (``"user"`` layer) only if it is unusable in all
+        merged eyes (it then holds the mean of the stored values; NaN only
+        if they are NaN). Each variable is merged over the selected eyes
+        that have data for it.
 
         Parameters
         ----------
@@ -2648,6 +2669,9 @@ class GenericEyeData(state.VersionedState, ABC):
         keep_eyes : bool, optional
             keep original eye data (True, default) or drop it together
             with its stored blinks (False)
+        policy : str, MaskPolicy or list of str
+            mask policy that decides which samples are usable (see
+            :meth:`mask`); default ``"default"``
         inplace : bool or None, optional
             if `True`, make change in-place and return the object;
             if `False`, make and return copy before making changes;
@@ -2663,19 +2687,19 @@ class GenericEyeData(state.VersionedState, ABC):
 
         if method=="mean":            
             for var in dict.fromkeys(v for _, v in pairs):
-                # Collect masked arrays from all eyes with this variable
+                # stored values and unusable samples of all eyes with this variable
                 eyes = [eye for eye, v in pairs if v == var]
-                eye_data = [obj[eye, var] for eye in eyes]
-                
-                # Mean over the unmasked eyes; masked only where all eyes
-                # are masked
-                stacked = np.ma.stack(eye_data, axis=0)
-                meanval = np.ma.mean(stacked, axis=0)
+                stored = np.stack([obj.data[eye, var] for eye in eyes])
+                unusable = np.stack([obj.data.get_policy_mask(f"{eye}_{var}", policy)
+                                     for eye in eyes])
+
+                # Mean over the usable eyes; masked only where all eyes
+                # are unusable
+                meanval = np.ma.mean(np.ma.array(stored, mask=unusable), axis=0)
                 allmasked = np.ma.getmaskarray(meanval)
-                # where all eyes are masked, keep the mean of the stored
-                # values (e.g., interpolated blinks), still masked
-                raw = np.ma.masked_invalid(np.stack([obj.data[eye, var] for eye in eyes]))
-                rawmean = np.ma.mean(raw, axis=0).filled(np.nan)
+                # where all eyes are unusable, keep the mean of the stored
+                # values, still masked
+                rawmean = np.ma.mean(np.ma.masked_invalid(stored), axis=0).filled(np.nan)
                 values = np.where(allmasked, rawmean, np.ma.getdata(meanval))
                 obj["mean", var] = np.ma.array(values, mask=allmasked)
                 
@@ -2786,7 +2810,7 @@ class GenericEyeData(state.VersionedState, ABC):
                        window: Tuple[float,float]=None, event_select=None,
                        eyes: str|list=[], variables: str|list=[],                       
                        statfct: Callable=np.mean, units: str="ms",
-                       **kwargs):
+                       policy="default", **kwargs):
         """
         Return result of applying a statistical function to data in a
         given interval relative to event-onsets. For example, extract mean 
@@ -2818,6 +2842,10 @@ class GenericEyeData(state.VersionedState, ABC):
             otherwise). Intervals where all samples are masked give NaN.
         units : str, optional
             units for plain numbers in `window` (if used); default "ms"
+        policy : str, MaskPolicy or list of str
+            mask policy: the samples that are unusable under it are masked
+            (see :meth:`mask`); default ``"default"`` (interpolated samples
+            are used)
         **kwargs
             passed onto the event_select function
 
@@ -2848,8 +2876,10 @@ class GenericEyeData(state.VersionedState, ABC):
         _warn_if_ignores_mask(statfct, "statfct")
         stat={}
         for eye,var in pairs:
-            # masked array, so that masked samples are ignored
-            stat[eye+"_"+var]=stat_event_interval(tx, self[eye,var], intervals_list, statfct)
+            # masked array, so that the unusable samples are ignored
+            key = f"{eye}_{var}"
+            x = np.ma.masked_array(self.data[key], self.data.get_policy_mask(key, policy))
+            stat[key]=stat_event_interval(tx, x, intervals_list, statfct)
 
         return stat
 
@@ -2910,7 +2940,8 @@ class GenericEyeData(state.VersionedState, ABC):
         """Merge masks of all variables into a single joint mask.
         
         This function creates a joint mask by taking the logical OR of all individual masks
-        using `get_mask()`, then applies this joint mask to all variables.
+        (under the default mask policy, see `get_mask()`), then applies this joint mask to
+        all variables (the newly masked samples get the ``"user"`` layer).
         
         Parameters
         ----------
@@ -3014,17 +3045,17 @@ class GenericEyeData(state.VersionedState, ABC):
     @keephistory
     def interpolate_intervals(self, intervals, eyes=[], variables=[], 
                              method="linear", margin=(-20, 20),
-                             store_as_suffix=None, inplace=None):
+                             store_as_suffix=None, policy="default", inplace=None):
         """
         Interpolate data within specified intervals.
         
         This function replaces data within the specified intervals with interpolated
         values based on boundary points outside each interval. The
         interpolated samples get the ``"interpolated"`` layer (see
-        :meth:`get_interpolated_blinks`) and are also marked as masked in
-        ``data.mask``. Intervals without
-        valid (non-NaN) boundary points on both sides are skipped with a
-        warning.
+        :meth:`get_interpolated_blinks`), so they are used under the default
+        mask policy and masked under the ``"strict"`` one (see :meth:`mask`).
+        Intervals without usable boundary points on both sides are skipped
+        with a warning.
 
         Parameters
         ----------
@@ -3051,7 +3082,8 @@ class GenericEyeData(state.VersionedState, ABC):
             points for interpolation, relative to the start and end of each
             interval: points are taken from ``start + margin[0]`` to the start
             and from the end to ``end + margin[1]``, so `margin[0]` must be
-            <= 0 and `margin[1]` >= 0. Masked or NaN samples are not used.
+            <= 0 and `margin[1]` >= 0. Samples that are unusable under
+            `policy` (masked or NaN) are not used.
             For higher-order methods like "cubic" or "quadratic", more
             boundary points from this margin are used to fit the
             interpolation curve.
@@ -3059,6 +3091,9 @@ class GenericEyeData(state.VersionedState, ABC):
             If None, replace the original data.
             If a string, store interpolated data in a new variable with this suffix
             (e.g., "_interp" creates "left_pupil_interp").
+        policy : str, MaskPolicy or list of str
+            mask policy that decides which boundary points are usable (see
+            :meth:`mask`); default ``"default"``
         inplace : bool or None, optional
             if `True`, make change in-place and return the object;
             if `False`, make and return copy before making changes;
@@ -3111,9 +3146,9 @@ class GenericEyeData(state.VersionedState, ABC):
             # Convert to index-based intervals
             intervals_array = np.array(interval_obj.to_units("samples", obj)).astype(int)
             
-            # Get the data and mask
+            # Get the data and the unusable samples
             data = obj.data[key].copy()
-            mask = obj.data.mask[key].copy()
+            mask = obj.data.get_policy_mask(key, policy)
             interpolated = np.zeros(len(data), dtype=bool)
             
             # Interpolate each interval
@@ -3134,7 +3169,7 @@ class GenericEyeData(state.VersionedState, ABC):
                 right_margin_end = min(len(obj.tx), end_idx + margin_right_ix)
                 
                 # Get valid (non-NaN, non-masked) points from left margin;
-                # `mask` also covers intervals interpolated before
+                # `mask` also covers the intervals interpolated in this call
                 left_indices = []
                 left_times = []
                 left_values = []

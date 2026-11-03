@@ -13,6 +13,7 @@ from .generic import GenericEyeData, keephistory
 from ..signal import baseline
 from ..signal import preproc
 from ..signal import pupil
+from ..signal.pupil import _bridge_gaps
 #from .. import io
 from ..plot import PupilPlotter
 from ..intervals import Intervals
@@ -170,14 +171,19 @@ class PupilData(GenericEyeData):
         return summary
 
     @keephistory
-    def pupil_lowpass_filter(self,  cutoff: float, order: int=2, eyes=[], inplace=None):
+    def pupil_lowpass_filter(self,  cutoff: float, order: int=2, eyes=[], policy="default",
+                             inplace=None):
         """
         Lowpass-filter pupil signal using a Butterworth-filter.
         
-        Uses an iterative approach to handle NaN/masked values properly,
-        preventing NaN propagation through the filter
-        (see :func:`~pypillometry.signal.pupil.lowpass_filter_iterative`).
-        The filtered signal replaces the pupil data; the mask is preserved.
+        Only the usable samples under the mask `policy` are filtered
+        (by default, interpolated samples are used; see
+        :meth:`~pypillometry.GenericEyeData.mask`). The unusable samples
+        (masked or NaN) are bridged linearly for the filter
+        (see :func:`~pypillometry.signal.pupil.lowpass_filter_iterative`),
+        so their stored values (e.g., zeros in blinks) do not enter the
+        filter; they keep their values. The filtered samples replace the
+        pupil data; the mask layers are kept.
     
         Parameters
         ----------
@@ -187,6 +193,9 @@ class PupilData(GenericEyeData):
             filter order
         eyes : list
             list of eyes to filter; if empty, all available eyes are filtered
+        policy : str, MaskPolicy or list of str
+            mask policy that decides which samples are usable (see
+            :meth:`~pypillometry.GenericEyeData.mask`); default ``"default"``
         inplace : bool or None
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes           
@@ -203,17 +212,24 @@ class PupilData(GenericEyeData):
         eyes=self._eyes_with(eyes, "pupil")
 
         for eye in eyes:
-            # Use iterative filter that handles NaN values properly
-            filtered = lowpass_filter_iterative(obj.data[eye,"pupil"], cutoff, obj.fs, order)
-            obj.data.set_with_mask(f"{eye}_pupil", filtered, preserve_mask=True)
+            x = obj.values(eye, "pupil", policy)  # NaN: unusable
+            usable = ~np.isnan(x)
+            out = obj.data[eye, "pupil"].copy()
+            out[usable] = lowpass_filter_iterative(x, cutoff, obj.fs, order)[usable]
+            obj.data.set_with_mask(f"{eye}_pupil", out, preserve_mask=True)
         return obj
 
     @keephistory
-    def pupil_smooth_window(self, eyes=[], window: str="hanning", winsize: float=11, inplace=None):
+    def pupil_smooth_window(self, eyes=[], window: str="hanning", winsize: float=11,
+                            policy="default", inplace=None):
         """
         Apply smoothing of the signal using a moving window.
         See :func:`~pypillometry.signal.preproc.smooth_window`.
-        The smoothed signal replaces the pupil data; the mask is preserved.
+
+        Only the usable samples under the mask `policy` are smoothed; the
+        unusable samples (masked or NaN) are bridged linearly for the
+        smoothing and keep their stored values (as in
+        :meth:`pupil_lowpass_filter`). The mask layers are kept.
         
         Parameters
         ----------
@@ -224,6 +240,9 @@ class PupilData(GenericEyeData):
             flat window will produce a moving average smoothing.
         winsize : float, str or Quantity
             the length of the window in ms (or with units, e.g. ``"20 ms"``)
+        policy : str, MaskPolicy or list of str
+            mask policy that decides which samples are usable (see
+            :meth:`~pypillometry.GenericEyeData.mask`); default ``"default"``
         inplace : bool or None
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes                            
@@ -242,8 +261,14 @@ class PupilData(GenericEyeData):
 
         # process requested eyes
         for eye in eyes:
-            smoothed = preproc.smooth_window(obj.data[eye,"pupil"], winsize_ix, window)
-            obj.data.set_with_mask(f"{eye}_pupil", smoothed, preserve_mask=True)
+            x = obj.values(eye, "pupil", policy)  # NaN: unusable
+            usable = ~np.isnan(x)
+            if not usable.any():
+                continue
+            out = obj.data[eye, "pupil"].copy()
+            smoothed = preproc.smooth_window(_bridge_gaps(x), winsize_ix, window)
+            out[usable] = smoothed[usable]
+            obj.data.set_with_mask(f"{eye}_pupil", out, preserve_mask=True)
 
         return obj
 
@@ -252,6 +277,7 @@ class PupilData(GenericEyeData):
                          lowpass_cutoff: float = 0.2,
                          max_iter: int = 10,
                          keep_eyes: bool = True, 
+                         policy="default",
                          inplace: bool | None = None):
         """
         Merge pupil data from both eyes into a single "merged" variable.
@@ -259,7 +285,9 @@ class PupilData(GenericEyeData):
         This method combines left and right pupil signals, handling missing data
         (masked values) intelligently. Where both eyes are valid, the signals are
         averaged to reduce noise. Where only one eye is valid, that eye's data is
-        used (with offset correction if applicable).
+        used (with offset correction if applicable). Valid samples are the
+        usable samples under the mask `policy` (by default, interpolated
+        samples are used, see :meth:`~pypillometry.GenericEyeData.mask`).
         
         Parameters
         ----------
@@ -287,6 +315,9 @@ class PupilData(GenericEyeData):
         keep_eyes : bool, optional
             If True (default), keep the original left/right pupil data.
             If False, remove the original eye data after merging.
+        policy : str, MaskPolicy or list of str
+            mask policy that decides which samples are valid (see
+            :meth:`~pypillometry.GenericEyeData.mask`); default ``"default"``
         inplace : bool or None, optional
             If True, modify in-place. If False, return a copy.
             If None, use the object's default setting.
@@ -355,8 +386,8 @@ class PupilData(GenericEyeData):
         # get data and mask from object
         left_data = obj.data["left_pupil"]
         right_data = obj.data["right_pupil"]
-        left_mask = np.asarray(obj.data.mask["left_pupil"], dtype=bool)
-        right_mask = np.asarray(obj.data.mask["right_pupil"], dtype=bool)
+        left_mask = obj.mask("left", "pupil", policy)
+        right_mask = obj.mask("right", "pupil", policy)
         
         # Determine valid regions
         both_valid = ~left_mask & ~right_mask
@@ -572,7 +603,9 @@ class PupilData(GenericEyeData):
             if `False` (default), return detected blinks as Intervals (or dict of Intervals)
         ignore_existing_mask : bool
             if `True`, use raw data ignoring existing masks
-            if `False` (default), only detect blinks in non-masked data (already masked regions are skipped)
+            if `False` (default), only detect blinks in the usable data under
+            the default mask policy (masked regions are skipped; interpolated
+            samples are used, see :meth:`~pypillometry.GenericEyeData.mask`)
         inplace : bool or None
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes                                                    
@@ -615,11 +648,9 @@ class PupilData(GenericEyeData):
             # the new blinks replace the old ones, which must not mask the data
             obj.set_blinks(None, eyes=[eye], variables=["pupil"])
 
-            # Get pupil data, optionally ignoring existing mask
-            if ignore_existing_mask:
-                pupil_data = obj.data[eye,"pupil"]
-            else:
-                pupil_data = obj[eye, "pupil"].filled(np.nan)
+            # pupil data: unusable samples (default mask policy) are NaN,
+            # unless the existing mask is ignored
+            pupil_data = obj.values(eye, "pupil", "raw" if ignore_existing_mask else "default")
             
             ## detect blinks with the different strategies
             if "velocity" in strategies:
@@ -702,8 +733,10 @@ class PupilData(GenericEyeData):
         before interpolating. Blinks that are so close that the anchor points
         of one fall into the other are merged and interpolated together.
         The interpolated samples get the ``"interpolated"`` layer (on the
-        variable they are stored in, see `store_as`) and remain masked in
-        ``data.mask``; the interpolated blinks can be retrieved with
+        variable they are stored in, see `store_as`): they are used under the
+        default mask policy and masked under the ``"strict"`` one (see
+        :meth:`~pypillometry.GenericEyeData.mask`); the interpolated blinks
+        can be retrieved with
         :meth:`~pypillometry.GenericEyeData.get_interpolated_blinks`.
 
         This procedure relies heavily on eye-balling (reconstructing visually convincing signal),
@@ -829,15 +862,18 @@ class PupilData(GenericEyeData):
 
     @keephistory
     def pupil_estimate_baseline(self, eyes=[], variable="pupil",
-                                method: str="envelope_iter_bspline_2", inplace=None, **kwargs):
+                                method: str="envelope_iter_bspline_2", policy="default",
+                                inplace=None, **kwargs):
         """
         Apply one of the baseline-estimation methods.
 
-        The data must not contain NaN: interpolate blinks first (see
-        :meth:`pupil_blinks_interpolate`) and bridge longer gaps, e.g., the
-        excluded periods (breaks), by linear interpolation:
-        ``d.interpolate_intervals(d.get_excluded(), variables="pupil")``.
-        Interpolated samples are used for the fit like other samples.
+        The baseline is estimated from the usable samples under the mask
+        `policy` (by default, interpolated samples are used, see
+        :meth:`~pypillometry.GenericEyeData.mask`). The unusable samples
+        (masked or NaN, e.g., blinks that were not interpolated or the
+        excluded periods) are bridged linearly between their neighbours.
+        Interpolate blinks first (see :meth:`pupil_blinks_interpolate`) to
+        use a better reconstruction than a straight line.
         
         Parameters
         ----------
@@ -853,6 +889,9 @@ class PupilData(GenericEyeData):
             - "envelope_iter_bspline_2" (default):
               :func:`~pypillometry.signal.baseline.baseline_envelope_iter_bspline`
               with two iterations
+        policy : str, MaskPolicy or list of str
+            mask policy that decides which samples are usable (see
+            :meth:`~pypillometry.GenericEyeData.mask`); default ``"default"``
         inplace : bool or None
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes                                        
@@ -869,8 +908,7 @@ class PupilData(GenericEyeData):
         Raises
         ------
         ValueError
-            if `method` is unknown or the data contain NaN (interpolate
-            blinks first, see :meth:`pupil_blinks_interpolate`)
+            if `method` is unknown or no sample is usable
 
         References
         ----------
@@ -886,20 +924,23 @@ class PupilData(GenericEyeData):
 
         for eye in eyes:
             logger.debug("Estimating baseline for eye %s"%eye)
-            if np.any(np.isnan(self.data[eye,variable])):
-                raise ValueError(
-                    f"'{eye}_{variable}' contains NaN (e.g., blinks that were "
-                    "not interpolated); the baseline cannot be estimated. "
-                    "Interpolate them first, e.g., with pupil_blinks_interpolate() "
-                    "(blinks) or interpolate_intervals(d.get_excluded()) (breaks).")
+            sy = self.values(eye, variable, policy)
+            unusable = np.isnan(sy)
+            if unusable.all():
+                raise ValueError(f"'{eye}_{variable}' has no usable samples; the "
+                                 "baseline cannot be estimated")
+            if unusable.any():
+                logger.info(f"{eye}_{variable}: {unusable.sum()} unusable samples "
+                            "(masked or NaN) bridged linearly for the baseline")
+                sy = _bridge_gaps(sy)
 
             if method=="envelope_iter_bspline_2":
-                txd,syd,base2,base1=baseline.baseline_envelope_iter_bspline(self.tx, self.data[eye,variable],
+                txd,syd,base2,base1=baseline.baseline_envelope_iter_bspline(self.tx, sy,
                                                                             self.events.onsets,self.fs,**kwargs)
                 f=interpolate.interp1d(txd, base2, kind="cubic", bounds_error=False, fill_value="extrapolate")
                 obj.data[eye,"baseline"]=f(self.tx)
             elif method=="envelope_iter_bspline_1": 
-                txd,syd,base2,base1=baseline.baseline_envelope_iter_bspline(self.tx, self.data[eye,variable],
+                txd,syd,base2,base1=baseline.baseline_envelope_iter_bspline(self.tx, sy,
                                                                             self.events.onsets,self.fs,**kwargs)
                 f=interpolate.interp1d(txd, base1, kind="cubic", bounds_error=False, fill_value="extrapolate")
                 obj.data[eye,"baseline"]=f(self.tx)
@@ -915,6 +956,7 @@ class PupilData(GenericEyeData):
                           verbose: int=50,
                           bounds: dict={"npar":(1,20), "tmax":(100,2000)},
                           min_valid: float=0.5,
+                          policy="default",
                           inplace=None):
         """
         Estimate pupil-response based on event-onsets, see
@@ -924,13 +966,15 @@ class PupilData(GenericEyeData):
         it is subtracted from the pupil signal before estimating the response;
         otherwise, a baseline of zero is used.
 
-        The excluded periods (see
+        Only the usable samples under the mask `policy` are used for the
+        fit: by default, NaN, masked samples (e.g., blinks applied as mask)
+        and the excluded periods (see
         :meth:`~pypillometry.GenericEyeData.exclude_intervals`, e.g., breaks)
-        and missing (NaN) samples are not used for the fit; interpolated
-        samples (e.g., blinks) are. For each event, the share of its
-        response that falls outside these periods (`valid`) and the share
-        that falls on real, not masked data (`observed`) are stored with the
-        parameters (weighted by the response, see
+        are not used, interpolated samples (e.g., blinks) are. For each
+        event, the share of its response that falls on usable samples
+        (`valid`) and the share that falls on real data (`observed`:
+        usable under the ``"strict"`` policy, i.e., not interpolated either)
+        are stored with the parameters (weighted by the response, see
         :func:`~pypillometry.signal.pupil.pupil_response_coverage`). Events
         with a `valid` share below `min_valid` are left out of the fit;
         their coefficient is NaN.
@@ -955,6 +999,9 @@ class PupilData(GenericEyeData):
             events whose share `valid` is below this are left out of the
             fit (coefficient NaN), as their amplitude cannot be estimated
             reliably; default 0.5; 0 uses all events
+        policy : str, MaskPolicy or list of str
+            mask policy that decides which samples are usable (see
+            :meth:`~pypillometry.GenericEyeData.mask`); default ``"default"``
         inplace : bool or None
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes                                        
@@ -992,7 +1039,7 @@ class PupilData(GenericEyeData):
                 base=obj.data[eye,"baseline"]
         
             syd = obj.data[eye,"pupil"]-base
-            valid = ~obj._excluded_mask() & np.isfinite(syd)
+            valid = ~obj.mask(eye, "pupil", policy) & np.isfinite(syd)
             pred, coef, npar_est, tmax_est, x1=pupil.pupil_response(obj.tx, syd, 
                                                             obj.events.onsets, obj.fs, 
                                                             npar=npar, tmax=tmax, verbose=verbose,
@@ -1003,9 +1050,9 @@ class PupilData(GenericEyeData):
             if nout > 0:
                 logger.info(f"Eye {eye}: {nout} of {len(coef)} events left out of the "
                             f"response fit (less than {min_valid:g} of their response "
-                            "outside excluded/missing data); their coefficient is NaN")
+                            "on usable samples); their coefficient is NaN")
             share_observed = pupil.pupil_response_coverage(
-                x1, ~np.asarray(obj.data.mask[f"{eye}_pupil"], dtype=bool))
+                x1, ~obj.mask(eye, "pupil", "strict"))
             
             obj.data[eye+"_response"]=pred
 

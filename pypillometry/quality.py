@@ -672,7 +672,8 @@ def _degrees(setup, x, y):
         return None
 
 
-def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[]) -> QualityReport:
+def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[],
+                            policy="default") -> QualityReport:
     """
     Compute a :class:`QualityReport` for an eyedata object.
 
@@ -695,7 +696,7 @@ def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[]) -> 
         return np.where(inc, v, np.nan)
 
     raw = {k: included(v) for k, v in obj.data.data.items()}
-    masks = {k: obj.data.mask[k].astype(bool) & inc for k in obj.data.mask}
+    masks = {k: obj.data.get_policy_mask(k, policy) & inc for k in obj.data.keys()}
 
     if isinstance(eyes, str):
         eyes = [eyes]
@@ -846,16 +847,13 @@ def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[]) -> 
               "closures or tracking losses rather than blinks)")
 
     # --- artifacts (only if data was masked/interpolated) ---------------
-    from .eyedata.eyedatadict import NAN_LAYER
-
     def layer(keys, name):
         """Included samples where layer `name` is set for one of `keys`."""
         return np.logical_or.reduce([obj.data.get_layer(k, name) for k in keys]) & inc
 
     def missing(keys):
-        """Included samples that are NaN (or were NaN before a filter) in one of `keys`."""
-        return np.logical_or.reduce([~np.isfinite(raw[k]) | obj.data.get_layer(k, NAN_LAYER)
-                                     for k in keys]) & inc
+        """Included samples that are NaN in one of `keys`."""
+        return np.logical_or.reduce([~np.isfinite(raw[k]) for k in keys]) & inc
 
     for eye in list(dict.fromkeys(pupil_eyes + gaze_eyes)):
         metrics = []
@@ -868,7 +866,8 @@ def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[]) -> 
             processed |= bool(np.any(m != nan))
             metrics.append(("pupil_masked_pct", "pupil masked", _pct(m.sum(), n),
                             "percentage of masked pupil samples (missing data, blinks and "
-                            "other artifacts)"))
+                            "other artifacts; interpolated samples only with the 'strict' "
+                            "mask policy)"))
             if "interpolated" in obj.data.layer_names:
                 processed = True
                 interp = layer(keys, "interpolated").sum()
@@ -881,7 +880,8 @@ def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[]) -> 
             processed |= bool(np.any(gm != gnan))
             metrics.append(("gaze_masked_pct", "gaze masked", _pct(gm.sum(), n),
                             "percentage of masked gaze samples (missing data, blinks and other "
-                            "artifacts)"))
+                            "artifacts; interpolated samples only with the 'strict' mask "
+                            "policy)"))
             if eye not in pupil_eyes:
                 keys, m, nan = gkeys, gm, gnan
         # masked time split by layer (any variable of the eye)

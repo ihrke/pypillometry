@@ -21,14 +21,15 @@ __all__ = [
 ]
 
 
-def _extract_epochs(eyedata, epochs, variable):
+def _extract_epochs(eyedata, epochs, variable, policy="default"):
     """
-    Time axis and segments (masked array, time points x epochs) of `variable`.
+    Time axis and segments (masked array, time points x epochs) of `variable`,
+    masked where the samples are unusable under the mask `policy`.
 
     The length and the time axis come from the window: ``w0 + arange(n) *
     1000/fs`` ms, with ``n`` the window length in samples (rounded). Each
     segment starts at the first sample at or after ``onset + w0``. Parts
-    outside the data are masked (their values are 0).
+    outside the data are masked (their values are NaN).
     """
     w0, w1 = epochs.window
     n = eyedata._samples(w1 - w0, rounding="nearest")
@@ -36,10 +37,10 @@ def _extract_epochs(eyedata, epochs, variable):
     starts = np.atleast_1d(_ms_to_samples(eyedata, epochs.onsets + w0))
     ix = starts[None, :] + np.arange(n)[:, None]
     inside = (ix >= 0) & (ix < len(eyedata.tx))
-    values = np.zeros(ix.shape)
+    values = np.full(ix.shape, np.nan)
     mask = np.ones(ix.shape, dtype=bool)
     values[inside] = eyedata.data[variable][ix[inside]]
-    mask[inside] = eyedata.data.mask[variable][ix[inside]].astype(bool)
+    mask[inside] = eyedata.data.get_policy_mask(variable, policy)[ix[inside]]
     return tx, ma.masked_array(values, mask=mask)
 
 
@@ -206,7 +207,8 @@ class SegmentedEyeData(state.VersionedState):
                      eyedata, 
                      intervals, 
                      variable: str,
-                     name: str = None) -> 'SegmentedEyeData':
+                     name: str = None,
+                     policy="default") -> 'SegmentedEyeData':
         """
         Extract segments from a GenericEyeData object using intervals.
         
@@ -226,6 +228,10 @@ class SegmentedEyeData(state.VersionedState):
             Variable to extract in "eye_variable" format (e.g., "left_pupil")
         name : str, optional
             Name for the dataset. If None, uses intervals.label or "segments"
+        policy : str, MaskPolicy or list of str
+            mask policy of the segments: the samples that are unusable under
+            it are masked (see :meth:`~pypillometry.GenericEyeData.mask`);
+            default ``"default"`` (interpolated samples are used)
             
         Returns
         -------
@@ -251,7 +257,7 @@ class SegmentedEyeData(state.VersionedState):
             name = intervals.label if intervals.label is not None else "segments"
         if isinstance(intervals, Intervals):
             intervals = _epochs_from_spans(eyedata, intervals)
-        txw, masked_data = _extract_epochs(eyedata, intervals, variable)
+        txw, masked_data = _extract_epochs(eyedata, intervals, variable, policy)
         return cls(name=name, variable=variable, tx=txw, data=masked_data,
                    intervals=intervals, sampling_rate=eyedata.fs)
     

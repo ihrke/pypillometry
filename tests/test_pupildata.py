@@ -91,9 +91,26 @@ class TestPupilData(unittest.TestCase):
         self.assertEqual(d.data.mask["left_pupil"].sum(), 2000-len(t))
 
 
-    def test_estimate_baseline_nan_raises_clear_error(self):
+    def test_estimate_baseline_bridges_unusable_samples(self):
+        """NaN and masked samples are bridged linearly (their values are not used)"""
         d = pp.get_example_data("rlmw_002_short").crop(0, 10, units="sec")
-        with self.assertRaisesRegex(ValueError, "pupil_blinks_interpolate"):
+        x = d.data["left_pupil"].copy()
+        bridged = d.copy()
+        bridged.data["left_pupil"] = np.interp(np.arange(len(x)), np.flatnonzero(~np.isnan(x)),
+                                               x[~np.isnan(x)])
+        # zeros where masked do not matter
+        zeros = d.copy()
+        zeros.data["left_pupil"] = np.where(np.isnan(x), 0., x)
+        zeros.mask_intervals(pp.Intervals.from_mask(np.isnan(x)), inplace=True)
+        b = [o.pupil_estimate_baseline(eyes="left", inplace=False, seed=1).data["left_baseline"]
+             for o in (d, bridged, zeros)]
+        self.assertFalse(np.any(np.isnan(b[0])))
+        np.testing.assert_allclose(b[0], b[1])
+        np.testing.assert_allclose(b[0], b[2])
+
+    def test_estimate_baseline_no_usable_samples(self):
+        d = pp.PupilData(left_pupil=np.full(1000, np.nan), sampling_rate=100)
+        with self.assertRaisesRegex(ValueError, "no usable samples"):
             d.pupil_estimate_baseline(eyes="left", inplace=False)
 
     def test_estimate_baseline_after_interpolation(self):
