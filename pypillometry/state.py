@@ -46,7 +46,9 @@ Version history
     layers: EyeDataDicts have `layers` (one uint16 bit-field per key),
     `layer_names` (layer i is bit i) and `rec_layers` (recording-wide
     layers, e.g. excluded periods) instead of `mask`; eyedata objects have
-    no `blinks`, `interpolated_blinks` and `excluded` (they are layers)
+    no `blinks`, `interpolated_blinks` and `excluded` (they are layers);
+    Intervals have no `event_indices`, `data_time_range` and
+    `interval_window`
 """
 
 import importlib

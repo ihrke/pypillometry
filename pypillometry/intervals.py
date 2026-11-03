@@ -273,9 +273,7 @@ class Intervals(Stateful):
     ...     print(f"{start}-{end}")
     """
     
-    # state (see pypillometry.state); intervals as (n, 2) array; format 2
-    # also has "event_indices", "data_time_range" and "interval_window"
-    # (see _to_state)
+    # state (see pypillometry.state); intervals as (n, 2) array
     _STATE_FIELDS = (("intervals", "pairs"), "units", "label", "event_labels",
                      "event_onsets", "event_meta")
 
@@ -321,12 +319,6 @@ class Intervals(Stateful):
                       event_meta=self.event_meta)
         kwargs.update(changes)
         return Intervals(**kwargs)
-
-    def _to_state(self) -> dict:
-        """State of the object (format 2 has `event_indices`, `data_time_range`
-        and `interval_window`)."""
-        return {**super()._to_state(), "event_indices": None, "data_time_range": None,
-                "interval_window": None}
 
     def _in_own_units(self, value):
         """`value` (e.g., a duration) in the units of this object; plain numbers are unchanged."""
