@@ -33,6 +33,7 @@ from io import BytesIO
 import base64
 import copy
 import pickle
+from types import SimpleNamespace
 import inspect
 import h5py
 import tempfile
@@ -127,6 +128,82 @@ def _check_per_pair(pairs, mean, sd):
             raise ValueError("mean and sd must be provided for each variable")
 
 
+def _decimate_factor(fs, fsd, dsfac):
+    """Decimate factor for :meth:`GenericEyeData.downsample` (checks the arguments)."""
+    what = "decimate factor" if dsfac else "sampling rate in Hz"
+    if isinstance(fsd, bool) or not isinstance(fsd, numbers.Real) or not np.isfinite(fsd):
+        raise TypeError(f"fsd must be a finite number (the {what}), got {fsd!r}")
+    if dsfac:
+        if fsd < 1 or fsd != int(fsd):
+            raise ValueError(f"the decimate factor must be a positive integer, got {fsd}")
+        return int(fsd)
+    if not 0 < fsd <= fs:
+        raise ValueError(f"fsd must be a sampling rate in Hz above 0 and at most "
+                         f"the current rate ({fs} Hz), got {fsd}")
+    ratio = fs / fsd
+    if np.isclose(ratio, round(ratio)):
+        return int(round(ratio))
+    factor = int(ratio)
+    logger.warning(f"{fs} Hz is not a multiple of {fsd} Hz: decimating by {factor}, "
+                   f"the new sampling rate is {fs/factor:g} Hz")
+    return factor
+
+
+def _keep_dict(d, keep):
+    """EyeDataDict with the samples of `d` where `keep` is True."""
+    nd = EyeDataDict()
+    for k, v in d.items():
+        nd.set_with_mask(k, v[keep], mask=d.mask[k][keep])
+    return nd
+
+
+def _decimate_dict(d, factor):
+    """EyeDataDict with the samples of `d` decimated (see GenericEyeData._decimate)."""
+    nd = EyeDataDict()
+    for k, v in d.items():
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", RuntimeWarning)  # all-NaN windows
+            y = baseline.downsample(np.where(d.mask[k].astype(bool), np.nan, v), factor)
+            stored = baseline.downsample(v, factor)
+        allmasked = np.isnan(y)
+        y[allmasked] = stored[allmasked]
+        nd.set_with_mask(k, y, mask=allmasked.astype(int))
+    return nd
+
+
+def _insert_dict(d, n, pos, value):
+    """EyeDataDict of length `n` with the samples of `d` at `pos`; new samples
+    hold `value` and are masked."""
+    nd = EyeDataDict()
+    for k, v in d.items():
+        nv = np.full(n, value, dtype=float)
+        nm = np.ones(n, dtype=int)  # inserted = missing
+        nv[pos] = v
+        nm[pos] = d.mask[k]
+        nd.set_with_mask(k, nv, mask=nm)
+    return nd
+
+
+def _check_timebase(tx, fs, rtol=0.05):
+    """
+    Raise a ValueError if the sampling rate `fs` (Hz) does not fit the time
+    vector `tx` (ms).
+
+    `fs` fits if ``1000/fs`` agrees (within `rtol`) with the median or the
+    mean step of `tx`. The median is robust to gaps, the mean to time
+    stamps rounded to whole ms (e.g., 300 Hz with steps of 3 and 4 ms).
+    """
+    if isinstance(fs, bool) or not isinstance(fs, numbers.Real) or not (0 < fs < np.inf):
+        raise ValueError(f"the sampling rate must be a positive number (Hz), got {fs!r}")
+    if len(tx) < 2:
+        return
+    median = np.median(np.diff(tx))
+    mean = (tx[-1] - tx[0]) / (len(tx) - 1)
+    if not any(np.isclose(step, 1000. / fs, rtol=rtol, atol=0) for step in (median, mean)):
+        raise ValueError(f"the sampling rate ({fs:g} Hz) does not match the time vector "
+                         f"(median step {median:g} ms, i.e. {1000. / median:g} Hz)")
+
+
 class GenericEyeData(state.VersionedState, ABC):
     """
     Generic class for eyedata. 
@@ -152,6 +229,9 @@ class GenericEyeData(state.VersionedState, ABC):
     # the events are stored as "event_onsets", "event_labels" and
     # "event_meta" (see _to_state)
     _STATE_EXCLUDE = ("_events",)
+    # EyeDataDicts with one value per sample; the operations that change
+    # the samples (_keep_samples, _decimate, _insert_samples) apply to all
+    _SAMPLE_ALIGNED = ("data",)
 
     def _to_state(self) -> dict:
         """State of the object (without ``format_version`` and ``class``)."""
@@ -201,16 +281,14 @@ class GenericEyeData(state.VersionedState, ABC):
 
         ## set time array and sampling rate
         if time is None:
-            maxT=len(self.data)/sampling_rate*1000.
-            self.tx=np.linspace(0,maxT, num=len(self.data))
+            tx=np.arange(len(self.data))*1000./sampling_rate
         else:
-            self.tx=np.array(time, dtype=float)
+            tx=np.array(time, dtype=float)
 
         if sampling_rate is None:
-            self.fs=np.round(1000./np.median(np.diff(self.tx)))
-        else:
-            self.fs=sampling_rate
-            
+            sampling_rate=np.round(1000./np.median(np.diff(tx)))
+        self._set_timebase(tx, sampling_rate)
+
         if event_onsets is None:
             event_onsets = []
         if event_labels is None:
@@ -236,6 +314,32 @@ class GenericEyeData(state.VersionedState, ABC):
         ## @keephistory and keep it out of the history)
         if fill_time_discontinuities:
             type(self).fill_time_discontinuities.__wrapped__(self)
+
+    def _set_timebase(self, tx, fs=None):
+        """
+        Set the time vector `tx` (ms) and the sampling rate `fs` (Hz) (in place).
+
+        This is the only place where `tx` and `fs` are changed. `fs` must
+        fit the time vector (see :func:`_check_timebase`).
+
+        Parameters
+        ----------
+        tx : array_like
+            new time vector in ms
+        fs : float or None, optional
+            new sampling rate in Hz; None: keep the current one
+
+        Raises
+        ------
+        ValueError
+            if `fs` does not match the time vector
+        """
+        tx = np.asarray(tx, dtype=float)
+        if fs is None:
+            fs = self.fs
+        _check_timebase(tx, fs)
+        self.tx = tx
+        self.fs = fs
 
     def _samples(self, duration, units="ms", rounding="down"):
         """Number of samples in `duration` (e.g., a window size or margin).
@@ -331,7 +435,8 @@ class GenericEyeData(state.VersionedState, ABC):
         (mask and data stored separately in EyeDataDict).
         
         Special handling for "time" keys:
-        - data["time"] = array: Updates tx directly (assumes milliseconds)
+        - data["time"] = array: Updates tx (assumes milliseconds; the steps
+          must match the sampling rate `fs`)
         - data["time_sec"] = array: Converts from seconds to milliseconds
         - data["time_min"] = array: Converts from minutes to milliseconds
         - data["time_h"] = array: Converts from hours to milliseconds
@@ -397,7 +502,7 @@ class GenericEyeData(state.VersionedState, ABC):
         
         if unit is None or unit == "":
             # Already in milliseconds
-            self.tx = value.astype(float)
+            self._set_timebase(value.astype(float))
             return
         
         # Normalize unit (handles all aliases)
@@ -405,13 +510,13 @@ class GenericEyeData(state.VersionedState, ABC):
         
         if unit == "ms":
             # Already in milliseconds
-            self.tx = value.astype(float)
+            self._set_timebase(value.astype(float))
         else:
             # Convert to milliseconds
             # _unit_fac gives factor to convert FROM ms to target unit
             # So to convert TO ms, we divide by the factor
             factor = self._unit_fac(unit)
-            self.tx = (value / factor).astype(float)
+            self._set_timebase((value / factor).astype(float))
 
     @keephistory
     def __delitem__(self, key):
@@ -1026,7 +1131,9 @@ class GenericEyeData(state.VersionedState, ABC):
         """
         Resets time so that time `t0` becomes time zero.
 
-        `t0` is subtracted from the time-vector and from the event onsets.
+        `t0` is subtracted from the time-vector, the event onsets, the
+        excluded periods, blinks stored in time units and the periods in
+        ``params["removed_intervals"]`` (see :meth:`remove_intervals`).
 
         Parameters
         ----------
@@ -1046,49 +1153,149 @@ class GenericEyeData(state.VersionedState, ABC):
         obj = self._get_inplace(inplace)
         if t0 is None:
             t0 = self.tx[0]
-        obj.tx=self.tx-t0
+        obj._set_timebase(self.tx-t0)
         obj._events = self._events.shift(-t0)
-        obj._excluded = Intervals([(s - t0, e - t0) for s, e in self._excluded.intervals],
-                                  units="ms", label="excluded")
+        obj._remap_interval_stores(self, time_map=lambda t: t - t0)
+        # the original time of remove_intervals moves with the clock
+        if "removed_intervals" in obj.params:
+            obj.params["removed_intervals"] = [(a - t0, b - t0)
+                                               for a, b in obj.params["removed_intervals"]]
+        if "removed_shifts" in obj.params:
+            obj.params["removed_shifts"] = [(t - t0, sh) for t, sh in obj.params["removed_shifts"]]
         return obj
 
-    def _keep_samples(self, keep, shift=None):
+    def _remap_interval_stores(self, old, move=None, time_map=None):
+        """
+        Remap the stored intervals after the samples or the clock changed (in place).
+
+        Called by the operations that change the samples or the clock, after
+        the new time vector is set. Remaps the blinks, the interpolated
+        blinks and the excluded periods.
+
+        Parameters
+        ----------
+        old : object
+            the time vector `tx` and sampling rate `fs` before the change
+            (anything with these attributes, e.g. the object before the change)
+        move : callable or None
+            maps a list of ``(start, end)`` in old sample indices to the new
+            sample indices; None: the samples did not move
+        time_map : callable or None
+            maps an array of times (ms) on the old clock to the new clock;
+            None: the clock did not change, so intervals in time units
+            stay valid
+        """
+        n = len(self.tx)
+
+        def remap(iv, keep_units):
+            if iv.units == "samples":
+                if move is None:
+                    return iv
+                return Intervals(move(iv.intervals), "samples", label=iv.label,
+                                 data_time_range=(0, n))
+            if time_map is None:
+                return iv
+            if move is None:
+                return Intervals([tuple(time_map(np.array([a, b], dtype=float)))
+                                  for a, b in iv.to_units("ms").intervals],
+                                 "ms", label=iv.label).to_units(iv.units)
+            # samples dropped and clock changed: go through the sample indices
+            # (blinks stay in sample indices, the excluded periods go back to ms)
+            moved = Intervals(move(iv.to_units("samples", old).intervals), "samples",
+                              label=iv.label, data_time_range=(0, n))
+            if not keep_units:
+                return moved
+            return Intervals(moved.to_units("ms", self).intervals, "ms", label=iv.label)
+
+        for store in (self._blinks, self._interpolated_blinks):
+            for key, iv in store.items():
+                if iv is not None:
+                    store[key] = remap(iv, keep_units=False)
+        self._excluded = remap(self._excluded, keep_units=True)
+
+    def _original_time(self, t):
+        """
+        Original time of the times `t` (ms) on the current clock.
+
+        The original time is the clock of the data before
+        :meth:`remove_intervals` closed gaps. It is the current time plus a
+        shift that changes at the joins (``params["removed_shifts"]``: pairs
+        ``(t, shift)``, the shift from time `t` on).
+        """
+        t = np.asarray(t, dtype=float)
+        table = self.params.get("removed_shifts")
+        if not table:
+            return t.copy()
+        ts, shifts = np.asarray(table, dtype=float).T
+        return t + shifts[np.maximum(np.searchsorted(ts, t, side="right") - 1, 0)]
+
+    def _set_removed_shifts(self, orig):
+        """Store the shifts to the original time `orig` of the samples (one
+        per sample; see :meth:`_original_time`)."""
+        shifts = np.round(orig - self.tx, 6)  # without rounding errors
+        change = np.flatnonzero(np.r_[True, np.diff(shifts) != 0])
+        if len(shifts) == 0 or not shifts.any():
+            self.params.pop("removed_shifts", None)
+        else:
+            self.params["removed_shifts"] = [(float(self.tx[i]), float(shifts[i])) for i in change]
+
+    def _periods_to_original_time(self, periods):
+        """
+        Periods ``(start, end)`` (ms) on the current clock -> original time.
+
+        A period across a join of :meth:`remove_intervals` is split into
+        the parts before and after the join.
+        """
+        table = self.params.get("removed_shifts") or []
+        joins = [t for t, _ in table]
+        out = []
+        for a, b in periods:
+            cuts = [a] + [t for t in joins if a < t < b] + [b]
+            for x, y in zip(cuts[:-1], cuts[1:]):
+                shift = float(self._original_time([x])[0] - x) if table else 0.
+                out.append((x + shift, y + shift))
+        return out
+
+    def _map_sample_aligned(self, fct, *args):
+        """Replace each sample-aligned EyeDataDict `d` (see `_SAMPLE_ALIGNED`)
+        by ``fct(d, *args)`` (in place)."""
+        for name in self._SAMPLE_ALIGNED:
+            d = getattr(self, name, None)
+            if d is not None:
+                setattr(self, name, fct(d, *args))
+
+    def _keep_samples(self, keep, time_map=None, keep_events=None):
         """
         Keep only the samples where `keep` is True (in place).
 
         Cuts all variables and masks and moves stored blinks in sample
-        indices to the new sample positions. With `shift` (ms per sample,
-        subtracted from the time vector to close gaps), blinks in time units
-        and excluded periods are moved as well; without it, they stay valid.
-        Events are left to the caller.
+        indices to the new sample positions. With `time_map` (a function
+        mapping an array of times on the old clock to the new clock, e.g.
+        to close the gaps), the time vector and the event onsets are
+        mapped, and blinks in time units and excluded periods are moved as
+        well; without it, they stay valid. `keep_events` (one bool per
+        event; default: all) selects the events that are kept.
         """
         keep = np.asarray(keep, dtype=bool)
         n = len(self.tx)
-        m = int(keep.sum())
         kept_before = np.concatenate([[0], np.cumsum(keep)])
 
-        def move(iv):
-            """Intervals -> (start, end) at the new sample positions."""
+        def move(pairs):
+            """(start, end) pairs -> (start, end) at the new sample positions."""
             pairs = [(int(kept_before[min(max(a, 0), n)]), int(kept_before[min(max(b, 0), n)]))
-                     for a, b in iv.to_units("samples", self).intervals]
+                     for a, b in pairs]
             return [(a, b) for a, b in pairs if b > a]
 
-        for store in (self._blinks, self._interpolated_blinks):
-            for key, iv in store.items():
-                if iv is None or (iv.units != "samples" and shift is None):
-                    continue
-                store[key] = Intervals(move(iv), "samples", label=iv.label,
-                                       data_time_range=(0, m))
-        excluded = move(self._excluded) if shift is not None else None
-
-        ndata = EyeDataDict()
-        for k, v in self.data.items():
-            ndata.set_with_mask(k, v[keep], mask=self.data.mask[k][keep])
-        self.data = ndata
-        self.tx = (self.tx if shift is None else self.tx - shift)[keep]
-        if excluded is not None:
-            self._excluded = Intervals(Intervals(excluded, "samples").to_units("ms", self).intervals,
-                                       "ms", label="excluded")
+        old = SimpleNamespace(tx=self.tx, fs=self.fs)
+        self._map_sample_aligned(_keep_dict, keep)
+        self._set_timebase((self.tx if time_map is None else time_map(self.tx))[keep])
+        self._remap_interval_stores(old, move, time_map)
+        if time_map is not None:
+            self._set_removed_shifts(self._original_time(old.tx)[keep])
+        if keep_events is not None:
+            self._events = self._events.keep(keep_events)
+        if time_map is not None:
+            self._events = self._events.shift(time_map)
         return self
 
     @keephistory
@@ -1134,9 +1341,9 @@ class GenericEyeData(state.VersionedState, ABC):
         default = normalize_unit(units)
         start = parse_time(start, default=default)
         end = parse_time(end, default=default)
-        obj._keep_samples((obj.tx >= start) & (obj.tx <= end))
         on = obj._events.onsets
-        obj._events = obj._events.keep((on >= start) & (on <= end))
+        obj._keep_samples((obj.tx >= start) & (obj.tx <= end),
+                          keep_events=(on >= start) & (on <= end))
         return obj
 
     def sub_slice(self, start: float=-np.inf, end: float=np.inf,
@@ -1831,48 +2038,48 @@ class GenericEyeData(state.VersionedState, ABC):
             gaps_start_ix=gaps_end_ix-1
             logger.info( str(((tx[gaps_end_ix]-tx[gaps_start_ix])/1000))+ " seconds" )
             
-            ## build new time-vector and data: keep all valid segments
-            ## and insert `yval` at regularly spaced time points in each gap
+            ## build new time-vector: keep all valid segments and insert
+            ## regularly spaced time points in each gap
             bounds=np.r_[0, gaps_end_ix, n]
             ntx=[]
-            nv={k:[] for k in self.data.keys()}
-            nm={k:[] for k in self.data.keys()}
             for i in range(ngaps+1):
-                seg=slice(bounds[i], bounds[i+1])
-                ntx.append( tx[seg] )
-                for k,v in self.data.items():
-                    nv[k].append( v[seg] )
-                    nm[k].append( self.data.mask[k][seg] )
+                ntx.append( tx[bounds[i]:bounds[i+1]] )
                 if i<ngaps:
                     start,end=gaps_start_ix[i], gaps_end_ix[i]
                     nfill=int((tx[end]-tx[start])/stepsize)-1
-                    filltx=tx[start]+stepsize*np.arange(1, nfill+1)
-                    ntx.append( filltx )
-                    for k in nv:
-                        nv[k].append( yval*np.ones_like(filltx, dtype=float) )
-                        nm[k].append( np.ones(len(filltx), dtype=int) )  # filled = missing
+                    ntx.append( tx[start]+stepsize*np.arange(1, nfill+1) )
             # new position of each original sample (ntx alternates kept
             # segments and filled gaps)
             lens=[len(t) for t in ntx]
             offsets=np.cumsum([0]+lens[:-1])
             newpos=np.concatenate([offsets[2*i]+np.arange(lens[2*i]) for i in range(ngaps+1)])
-            ntx=np.concatenate(ntx)
+            self._insert_samples(np.concatenate(ntx), newpos, yval)
+        return self
 
-            ndata=EyeDataDict()
-            for k in nv:
-                ndata.set_with_mask(k, np.concatenate(nv[k]), mask=np.concatenate(nm[k]))
-            self.data=ndata
-            self.tx=ntx
+    def _insert_samples(self, tx, pos, value=np.nan):
+        """
+        Insert new samples (in place).
 
-            # move stored blinks in sample indices to the new sample positions
-            # (blinks in time units stay valid)
-            for store in (self._blinks, self._interpolated_blinks):
-                for key, iv in store.items():
-                    if iv is None or iv.units != "samples":
-                        continue
-                    moved = [(int(newpos[on]), int(newpos[off-1])+1) for on, off in iv.intervals]
-                    store[key] = Intervals(moved, "samples", label=iv.label,
-                                           data_time_range=(0, len(ntx)))
+        Parameters
+        ----------
+        tx : np.ndarray
+            the new time vector (ms), with the old and the new samples
+        pos : np.ndarray
+            the index in `tx` of each old sample (increasing)
+        value : float, optional
+            value of all variables at the new samples (default NaN); the
+            new samples are masked as missing
+
+        Existing masks are kept and stored blinks in sample indices are
+        moved to the new sample positions; intervals in time units,
+        excluded periods and events stay valid.
+        """
+        pos=np.asarray(pos, dtype=int)
+        self._map_sample_aligned(_insert_dict, len(tx), pos, value)
+        old=SimpleNamespace(tx=self.tx, fs=self.fs)
+        self._set_timebase(tx)
+        self._remap_interval_stores(
+            old, lambda pairs: [(int(pos[on]), int(pos[off-1])+1) for on, off in pairs])
         return self
     
     def get_intervals(self,
@@ -2284,14 +2491,19 @@ class GenericEyeData(state.VersionedState, ABC):
         NaN). Stored blinks (in sample indices) are rescaled to the new
         sampling rate.
 
+        The new sampling rate is ``fs/factor``, the rate of the decimated
+        data. It differs from `fsd` if `fs/fsd` is not an integer
+        (e.g., 1000 Hz with ``fsd=300`` gives factor 3 and 333.3 Hz).
+
         Parameters
         ----------
         fsd : float
             new sampling-rate (in Hz) or decimate-factor
         dsfac : bool, optional
-            if False (default), `fsd` is the new sampling rate (the decimate
-            factor is ``int(fs/fsd)``);
-            if True, `fsd` is the decimate factor
+            if False (default), `fsd` is the requested sampling rate (the
+            decimate factor is ``int(fs/fsd)``; a warning is logged if
+            `fs/fsd` is not an integer);
+            if True, `fsd` is the decimate factor (a positive integer)
         inplace : bool or None, optional
             if `True`, make change in-place and return the object;
             if `False`, make and return copy before making changes;
@@ -2301,47 +2513,40 @@ class GenericEyeData(state.VersionedState, ABC):
         -------
         :class:`~pypillometry.GenericEyeData`
             the downsampled object (`self` or a copy, depending on `inplace`)
+
+        Raises
+        ------
+        TypeError
+            if `fsd` is not a number
+        ValueError
+            if the sampling rate `fsd` is not above 0 and at most `fs`, or
+            the decimate factor is not a positive integer
         """
+        dsfac=_decimate_factor(self.fs, fsd, dsfac)
         obj = self._get_inplace(inplace)
-
-        if dsfac:
-            dsfac=fsd
-            fsd=float(obj.fs/dsfac)
-        else:
-            dsfac=int(obj.fs/fsd) # calculate downsampling factor
-            
-        dsfac=int(dsfac)
-        # downsample all of the variables/eyes in the data; masked samples are
-        # left out of the window means, and a new sample is masked only if all
-        # samples in its window were masked; it then holds the mean of the
-        # stored values (e.g., interpolated blinks)
-        ndata=EyeDataDict()
-        for k,v in obj.data.items():
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore", RuntimeWarning)  # all-NaN windows
-                y=baseline.downsample(np.where(obj.data.mask[k].astype(bool), np.nan, v), dsfac)
-                stored=baseline.downsample(v, dsfac)
-            allmasked=np.isnan(y)
-            y[allmasked]=stored[allmasked]
-            ndata.set_with_mask(k, y, mask=allmasked.astype(int))
-        obj.data=ndata
-
-        # also downsample the time-vector
-        obj.tx=baseline.downsample(obj.tx, dsfac)
-
-        # set new sampling rate
-        obj.fs=fsd
-
-        # rescale stored blinks in sample indices so that they still cover the
-        # blinks: round starts down and ends up (blinks in time units stay valid)
-        n=len(obj.tx)
-        for store in (obj._blinks, obj._interpolated_blinks):
-            for key, iv in store.items():
-                if iv is None or iv.units != "samples":
-                    continue
-                rescaled = [(int(on)//dsfac, min(int(np.ceil(off/dsfac)), n)) for on, off in iv.intervals]
-                store[key] = Intervals(rescaled, "samples", label=iv.label, data_time_range=(0, n))
+        obj._decimate(dsfac)
         return obj
+
+    def _decimate(self, factor):
+        """
+        Decimate the samples by the integer `factor` (in place).
+
+        Each window of `factor` samples becomes one sample (the last window
+        may be shorter): values are the mean of the unmasked samples, the
+        time is the mean time of the window, and the new sampling rate is
+        ``fs/factor``. A new sample is masked only if all samples in its
+        window were masked; it then holds the mean of the stored values
+        (e.g., interpolated blinks). Stored blinks in sample indices are
+        rescaled (starts rounded down, ends up); intervals in time units,
+        excluded periods and events stay valid.
+        """
+        self._map_sample_aligned(_decimate_dict, factor)
+        old=SimpleNamespace(tx=self.tx, fs=self.fs)
+        self._set_timebase(baseline.downsample(self.tx, factor), self.fs/factor)
+        n=len(self.tx)
+        self._remap_interval_stores(
+            old, lambda pairs: [(int(on)//factor, min(int(np.ceil(off/factor)), n)) for on, off in pairs])
+        return self
 
     @keephistory
     def merge_eyes(self, eyes=[], variables=[], method="mean", keep_eyes=True, inplace=None):
@@ -3134,8 +3339,11 @@ class GenericEyeData(state.VersionedState, ABC):
         after `end` is the same as :meth:`crop`. Event onsets are shifted
         with the data; events within removed periods are deleted. Stored
         blinks and excluded periods are moved to the new positions. The
-        removed periods (in the original time, within the data) are added
-        to ``params["removed_intervals"]``.
+        removed periods are added to ``params["removed_intervals"]``, in
+        the original time (the time before any periods were removed; a
+        period across a gap closed by an earlier call is split at the gap).
+        ``params["removed_shifts"]`` holds the shifts between the current
+        and the original time.
 
         To remove the periods marked with :meth:`exclude_intervals`, use
         ``d.remove_intervals(d.get_excluded())``.
@@ -3199,9 +3407,6 @@ class GenericEyeData(state.VersionedState, ABC):
         # of samples (s, e) are shifted back by tx[e] - tx[s]
         runs = Intervals.from_mask(removed).intervals
         gaps = [(s, e) for s, e in runs if s > 0 and e < n]
-        shift = np.zeros(n)
-        for s, e in gaps:
-            shift[e:] += tx[e] - tx[s]
 
         def time_map(t):
             # times after the start of a removed run move back with the data
@@ -3214,10 +3419,11 @@ class GenericEyeData(state.VersionedState, ABC):
         in_removed = np.zeros(len(on), dtype=bool)
         for a, b in periods.intervals:
             in_removed |= (on >= a) & (on < b)
-        obj._events = obj._events.keep(~in_removed).shift(time_map)
-        obj._keep_samples(~removed, shift=shift)
-        obj.params["removed_intervals"] = obj.params.get("removed_intervals", []) + \
-            [(float(a), float(b)) for a, b in periods.intervals]
+        removed_periods = obj.params.get("removed_intervals", []) + \
+            obj._periods_to_original_time(periods.intervals)
+        obj._keep_samples(~removed, time_map=time_map, keep_events=~in_removed)
+        obj.params["removed_intervals"] = [
+            (float(a), float(b)) for a, b in Intervals(removed_periods, "ms").merge().intervals]
         return obj
 
     def excluded_duration(self, units: str = "min") -> float:
