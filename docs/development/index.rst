@@ -45,8 +45,9 @@ Package architecture
 --------------------
 
 Most functionality is available as methods of the data classes
-(:class:`GenericEyeData`, :class:`PupilData`, :class:`GazeData`,
-:class:`EyeData`). This makes it easy to find functions and to chain them
+(:class:`EyeData` and its base class :class:`GenericEyeData`; the methods
+for pupil and gaze data are kept in separate modules, ``eyedata/pupildata.py``
+and ``eyedata/gazedata.py``). This makes it easy to find functions and to chain them
 into pipelines (see :doc:`/user_guide/data_model`).
 
 The computations themselves are implemented as stateless functions on

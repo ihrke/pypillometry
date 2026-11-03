@@ -16,7 +16,7 @@ together, see the :doc:`/user_guide/index`.
       :link: data
       :link-type: doc
 
-      ``EyeData``, ``PupilData``, ``GazeData`` and their shared base class.
+      ``EyeData`` and its base class.
 
    .. grid-item-card:: Events and intervals
       :link: events_intervals

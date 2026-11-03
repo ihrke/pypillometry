@@ -352,7 +352,7 @@ Gaze
     Off-screen samples come from looking away or from a calibration that is
     off, and they are usually unusable. In the reference data, the median is
     0.6% and 95% of the recordings from lab setups are below 5%. This needs
-    the screen size (see :meth:`~GazeData.set_experimental_setup`).
+    the screen size (see :meth:`~EyeData.set_experimental_setup`).
 
     .. image:: ../images/quality_ref_offscreen.png
        :alt: Off-screen gaze per recording and eye in six datasets, with the

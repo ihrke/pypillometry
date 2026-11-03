@@ -37,9 +37,9 @@ distorted as the eyelid covers the pupil.
 .. autosummary::
    :nosignatures:
 
-   PupilData.pupil_blinks_detect
+   EyeData.pupil_blinks_detect
    GenericEyeData.blinks_merge_close
-   PupilData.pupil_blinks_interpolate
+   EyeData.pupil_blinks_interpolate
    GenericEyeData.get_blinks
    GenericEyeData.get_interpolated_blinks
    GenericEyeData.blink_stats
@@ -53,11 +53,11 @@ A typical sequence is
      .blinks_merge_close(distance=100 * u.ms, apply_mask=True)\
      .pupil_blinks_interpolate()
 
-:meth:`~PupilData.pupil_blinks_detect` finds missing samples and sharp
+:meth:`~EyeData.pupil_blinks_detect` finds missing samples and sharp
 drops in the pupil's velocity profile. The detected blinks are stored in the
 object. With ``apply_mask=False`` (the default), they are also returned as
 :class:`Intervals` so that you can check them first.
-:meth:`~PupilData.pupil_blinks_interpolate` replaces the pupil size during
+:meth:`~EyeData.pupil_blinks_interpolate` replaces the pupil size during
 blinks by a smooth curve (Mathôt, 2013). Interpolated samples are used by
 all later steps (filters, segments, statistics); they keep the
 ``"interpolated"`` layer, so they can be left out with
@@ -77,11 +77,11 @@ to very different places are usually artifacts:
 .. autosummary::
    :nosignatures:
 
-   GazeData.mask_offscreen_coords
-   GazeData.mask_eye_divergences
+   EyeData.mask_offscreen_coords
+   EyeData.mask_eye_divergences
 
-:meth:`~GazeData.mask_offscreen_coords` needs the screen size (see
-:meth:`~GazeData.set_experimental_setup`).
+:meth:`~EyeData.mask_offscreen_coords` needs the screen size (see
+:meth:`~EyeData.set_experimental_setup`).
 
 Any stretch of data can be masked or interpolated from an
 :class:`Intervals` object, e.g., periods you marked as bad by hand:
@@ -105,8 +105,8 @@ reduces the amount of data, e.g., for modeling.
 .. autosummary::
    :nosignatures:
 
-   PupilData.pupil_lowpass_filter
-   PupilData.pupil_smooth_window
+   EyeData.pupil_lowpass_filter
+   EyeData.pupil_smooth_window
    GenericEyeData.downsample
 
 The filters only use the usable samples: masked samples (e.g., blinks
@@ -145,10 +145,10 @@ less noisy and has fewer gaps:
 .. autosummary::
    :nosignatures:
 
-   PupilData.pupil_merge_eyes
+   EyeData.pupil_merge_eyes
    GenericEyeData.merge_eyes
 
-:meth:`~PupilData.pupil_merge_eyes` corrects for a (slowly changing)
+:meth:`~EyeData.pupil_merge_eyes` corrects for a (slowly changing)
 difference in pupil size between the eyes and fills samples missing in one
 eye from the other. The result is stored as ``merged_pupil``.
 :meth:`~GenericEyeData.merge_eyes` simply averages any variable. See
@@ -165,8 +165,6 @@ Selecting and cleaning up data
    GenericEyeData.remove_intervals
    GenericEyeData.reset_time
    GenericEyeData.drop_data
-   EyeData.to_pupildata
-   EyeData.to_gazedata
    GenericEyeData.drop_original
    GenericEyeData.fill_time_discontinuities
    GenericEyeData.copy
@@ -178,9 +176,9 @@ in the middle, e.g., breaks, and joins the rest: the time vector and the
 events after a removed period are shifted back, so that there are no gaps.
 :meth:`~GenericEyeData.reset_time` makes the time vector start at zero
 (or at any other time).
-:meth:`~EyeData.to_pupildata` and :meth:`~EyeData.to_gazedata` turn
-:class:`EyeData` into :class:`PupilData` or :class:`GazeData` (optionally
-for some eyes only), keeping masks, blinks and all other data.
+:meth:`~GenericEyeData.drop_data` removes eyes or variables, e.g.,
+``d.drop_data(variables=["x", "y"])`` keeps only the pupil data; masks,
+blinks, events, the experimental setup and all other data are kept.
 
 
 References
