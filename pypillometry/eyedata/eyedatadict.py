@@ -96,7 +96,9 @@ class MaskPolicy:
                 f"nan={self.nan}" + (f", name={self.name!r})" if self.name else ")"))
 
 
-_MISSING = ("blink", "offscreen", "divergence", "user", "excluded")
+# blinks mask the data where they were applied as mask (``apply_mask=True``,
+# internal layer "_blink_applied")
+_MISSING = ("_blink_applied", "offscreen", "divergence", "user", "excluded")
 #: predefined policies (see :class:`MaskPolicy`)
 POLICIES = {
     "default": MaskPolicy(_MISSING, unless="interpolated", name="default"),
@@ -634,7 +636,8 @@ class EyeDataDict(MutableMapping, Stateful):
         """
         policy = _as_policy(policy)
         unknown = [name for name in policy.layers + policy.unless
-                   if name not in STANDARD_LAYERS and name not in self.layer_names]
+                   if name not in STANDARD_LAYERS and name not in self.layer_names
+                   and not name.startswith("_")]  # internal layers
         if unknown:
             raise ValueError(f"unknown layer(s) {', '.join(unknown)}; registered layers: "
                              f"{', '.join(self.layer_names) or 'none'}")

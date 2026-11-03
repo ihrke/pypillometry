@@ -218,7 +218,7 @@ class TestPolicies:
         pupil[0] = np.nan
         d = pp.PupilData(left_pupil=pupil, sampling_rate=100)
         dd = d.data
-        dd.set_layer("left_pupil", "blink", np.isin(np.arange(10), [2, 3, 4]))
+        d.set_blinks(pp.Intervals([(2, 5)], "samples"), apply_mask=True)
         dd.set_layer("left_pupil", "interpolated", np.isin(np.arange(10), [3, 4, 5]))
         dd.set_layer("left_pupil", "user", np.arange(10) == 8)
         return d
@@ -233,6 +233,13 @@ class TestPolicies:
         assert idx(d.mask("left", "pupil", policy=["blink"])) == [0, 2, 3, 4]
         p = pp_policy(["blink"], nan=False)
         assert idx(d.mask("left", "pupil", policy=p)) == [2, 3, 4]
+
+    def test_blinks_not_applied_are_not_masked(self):
+        import pypillometry as pp
+        d = self.data()
+        d.set_blinks(pp.Intervals([(6, 8)], "samples"), apply_mask=False)
+        assert list(np.flatnonzero(d.mask("left", "pupil"))) == [0, 8]
+        assert list(np.flatnonzero(d.mask("left", "pupil", policy=["blink"]))) == [0, 6, 7]
 
     def test_values(self):
         d = self.data()

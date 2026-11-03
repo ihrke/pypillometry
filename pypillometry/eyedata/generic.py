@@ -898,8 +898,9 @@ class GenericEyeData(state.VersionedState, ABC):
 
         A sample is unusable if its value is NaN or if one of the layers
         of the policy is set (see :class:`~pypillometry.MaskPolicy`). By
-        default, blinks, off-screen gaze, eye divergences, user masks and
-        excluded periods are masked, interpolated samples are not.
+        default, blinks (if detected with ``apply_mask=True`` or set with
+        :meth:`set_blinks`), off-screen gaze, eye divergences, user masks
+        and excluded periods are masked, interpolated samples are not.
 
         Parameters
         ----------
