@@ -1206,6 +1206,49 @@ class GenericEyeData(state.VersionedState, ABC):
                     store[key] = remap(iv, keep_units=False)
         self._excluded = remap(self._excluded, keep_units=True)
 
+    def _original_time(self, t):
+        """
+        Original time of the times `t` (ms) on the current clock.
+
+        The original time is the clock of the data before
+        :meth:`remove_intervals` closed gaps. It is the current time plus a
+        shift that changes at the joins (``params["removed_shifts"]``: pairs
+        ``(t, shift)``, the shift from time `t` on).
+        """
+        t = np.asarray(t, dtype=float)
+        table = self.params.get("removed_shifts")
+        if not table:
+            return t.copy()
+        ts, shifts = np.asarray(table, dtype=float).T
+        return t + shifts[np.maximum(np.searchsorted(ts, t, side="right") - 1, 0)]
+
+    def _set_removed_shifts(self, orig):
+        """Store the shifts to the original time `orig` of the samples (one
+        per sample; see :meth:`_original_time`)."""
+        shifts = np.round(orig - self.tx, 6)  # without rounding errors
+        change = np.flatnonzero(np.r_[True, np.diff(shifts) != 0])
+        if len(shifts) == 0 or not shifts.any():
+            self.params.pop("removed_shifts", None)
+        else:
+            self.params["removed_shifts"] = [(float(self.tx[i]), float(shifts[i])) for i in change]
+
+    def _periods_to_original_time(self, periods):
+        """
+        Periods ``(start, end)`` (ms) on the current clock -> original time.
+
+        A period across a join of :meth:`remove_intervals` is split into
+        the parts before and after the join.
+        """
+        table = self.params.get("removed_shifts") or []
+        joins = [t for t, _ in table]
+        out = []
+        for a, b in periods:
+            cuts = [a] + [t for t in joins if a < t < b] + [b]
+            for x, y in zip(cuts[:-1], cuts[1:]):
+                shift = float(self._original_time([x])[0] - x) if table else 0.
+                out.append((x + shift, y + shift))
+        return out
+
     def _map_sample_aligned(self, fct, *args):
         """Replace each sample-aligned EyeDataDict `d` (see `_SAMPLE_ALIGNED`)
         by ``fct(d, *args)`` (in place)."""
@@ -1240,6 +1283,8 @@ class GenericEyeData(state.VersionedState, ABC):
         self._map_sample_aligned(_keep_dict, keep)
         self._set_timebase((self.tx if time_map is None else time_map(self.tx))[keep])
         self._remap_interval_stores(old, move, time_map)
+        if time_map is not None:
+            self._set_removed_shifts(self._original_time(old.tx)[keep])
         if keep_events is not None:
             self._events = self._events.keep(keep_events)
         if time_map is not None:
@@ -3287,8 +3332,11 @@ class GenericEyeData(state.VersionedState, ABC):
         after `end` is the same as :meth:`crop`. Event onsets are shifted
         with the data; events within removed periods are deleted. Stored
         blinks and excluded periods are moved to the new positions. The
-        removed periods (in the original time, within the data) are added
-        to ``params["removed_intervals"]``.
+        removed periods are added to ``params["removed_intervals"]``, in
+        the original time (the time before any periods were removed; a
+        period across a gap closed by an earlier call is split at the gap).
+        ``params["removed_shifts"]`` holds the shifts between the current
+        and the original time.
 
         To remove the periods marked with :meth:`exclude_intervals`, use
         ``d.remove_intervals(d.get_excluded())``.
@@ -3364,9 +3412,11 @@ class GenericEyeData(state.VersionedState, ABC):
         in_removed = np.zeros(len(on), dtype=bool)
         for a, b in periods.intervals:
             in_removed |= (on >= a) & (on < b)
+        removed_periods = obj.params.get("removed_intervals", []) + \
+            obj._periods_to_original_time(periods.intervals)
         obj._keep_samples(~removed, time_map=time_map, keep_events=~in_removed)
-        obj.params["removed_intervals"] = obj.params.get("removed_intervals", []) + \
-            [(float(a), float(b)) for a, b in periods.intervals]
+        obj.params["removed_intervals"] = [
+            (float(a), float(b)) for a, b in Intervals(removed_periods, "ms").merge().intervals]
         return obj
 
     def excluded_duration(self, units: str = "min") -> float:

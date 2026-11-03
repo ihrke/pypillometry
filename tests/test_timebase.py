@@ -169,5 +169,62 @@ class TestFakeEyeDataGroundTruth(unittest.TestCase):
         self.assertTrue(np.isnan(d.sim_data["left_A0"][550]))
 
 
+class TestRemovedIntervalsClock(unittest.TestCase):
+    """params["removed_intervals"] is in the original time after several calls."""
+
+    def make(self):
+        # 100 Hz, 10 s; the pupil holds the original time of each sample
+        d = make(n=1000, fs=100.)
+        d.data["left_pupil"] = d.tx.copy()
+        return d
+
+    def check(self, d):
+        # the original time of the samples is what the data say
+        np.testing.assert_allclose(d._original_time(d.tx), d.data["left_pupil"])
+        # the removed periods are the original times without data
+        orig = np.arange(1000) * 10.
+        kept = np.isin(orig, d.data["left_pupil"])
+        removed = np.zeros(1000, dtype=bool)
+        for a, b in d.params["removed_intervals"]:
+            removed |= (orig >= a) & (orig < b)
+        np.testing.assert_array_equal(removed, ~kept)
+
+    def test_one_call(self):
+        d = self.make().remove_intervals([(2000, 3000)], inplace=False)
+        self.assertEqual(d.params["removed_intervals"], [(2000., 3000.)])
+        self.assertEqual(d.params["removed_shifts"], [(0., 0.), (2000., 1000.)])
+        self.check(d)
+
+    def test_second_call_in_original_time(self):
+        d = self.make().remove_intervals([(2000, 3000)], inplace=False)
+        d.remove_intervals([(5000, 6000)], inplace=True)
+        self.assertEqual(d.params["removed_intervals"], [(2000., 3000.), (6000., 7000.)])
+        self.check(d)
+
+    def test_period_across_a_join(self):
+        d = self.make().remove_intervals([(2000, 3000)], inplace=False)
+        d.remove_intervals([(1500, 2500)], inplace=True)
+        self.assertEqual(d.params["removed_intervals"], [(1500., 3500.)])
+        self.check(d)
+
+    def test_start_removed_after_a_join(self):
+        d = self.make().remove_intervals([(2000, 3000)], inplace=False)
+        d.remove_intervals([(0, 2500)], inplace=True)
+        self.assertEqual(d.tx[0], 2500.)  # the sample at original time 3500
+        d.remove_intervals([(4000, 4500)], inplace=True)
+        self.assertEqual(d.params["removed_intervals"], [(0., 3500.), (5000., 5500.)])
+        self.check(d)
+
+    def test_off_grid_periods(self):
+        d = self.make().remove_intervals([(2005, 3005)], inplace=False)
+        d.remove_intervals([(1995, 2003), (7001, 8001)], inplace=True)
+        self.check(d)
+
+    def test_no_shift_without_a_gap(self):
+        d = self.make().remove_intervals([(0, 2000), (9000, np.inf)], inplace=False)
+        self.assertNotIn("removed_shifts", d.params)
+        self.check(d)
+
+
 if __name__ == "__main__":
     unittest.main()
