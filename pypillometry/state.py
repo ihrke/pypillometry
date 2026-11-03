@@ -48,7 +48,9 @@ Version history
     layers, e.g. excluded periods) instead of `mask`; eyedata objects have
     no `blinks`, `interpolated_blinks` and `excluded` (they are layers);
     Intervals have no `event_indices`, `data_time_range` and
-    `interval_window`
+    `interval_window`; segments store their Epochs (`onsets` and `window`
+    in ms, `labels`, `meta`, `label`) or, if not event-locked, Intervals,
+    with the class name in ``intervals["class"]``
 """
 
 import importlib
@@ -275,7 +277,9 @@ def _nested_class(name):
     from .eyedata.experimental_setup import ExperimentalSetup
     from .eyedata.spatial_calibration import SpatialCalibration
     from .events import Events
+    from .epochs import Epochs
     return {"Intervals": Intervals, "EyeDataDict": EyeDataDict, "Events": Events,
+            "Epochs": Epochs,
             "ExperimentalSetup": ExperimentalSetup,
             "SpatialCalibration": SpatialCalibration}[name]
 
@@ -286,6 +290,15 @@ def _pairs_to_state(pairs):
 
 def _pairs_from_state(arr):
     return [tuple(row) for row in np.asarray(arr).tolist()]
+
+
+def _tagged_to_state(obj):
+    return {"class": type(obj).__name__, **obj._to_state()}
+
+
+def _tagged_from_state(st):
+    st = dict(st)
+    return _nested_class(st.pop("class"))._from_state(st)
 
 
 def _masked_to_state(arr):
@@ -306,6 +319,9 @@ _KINDS = {
     "masked": (_masked_to_state, _masked_from_state),
     # function <-> "module:qualname"
     "function": (_function_name, _import_function),
+    # object of one of the classes in _nested_class() <-> its state with
+    # its class name in "class" (for attributes that can hold several classes)
+    "tagged": (_tagged_to_state, _tagged_from_state),
 }
 
 
@@ -562,6 +578,36 @@ def _v2_intervals_mask(st, tx):
     return out
 
 
+def _v2_spans(st, fs):
+    """Version-3 state (Epochs or Intervals, with "class") of the version-2
+    Intervals state `st` of segments (sampling rate `fs`).
+
+    Event-locked intervals (with `interval_window` and `event_onsets`) become
+    Epochs (in ms); onsets in sample indices are converted with `fs` (from the
+    first sample of the recording, whose time is unknown).
+    """
+    if st is None:
+        return None
+    locked = st.get("interval_window") is not None and st.get("event_onsets") is not None
+    if locked and st["units"] == "samples" and fs is None:
+        logger.warning("segments made from intervals in sample indices without a "
+                       "sampling rate: kept as Intervals")
+        locked = False
+    if not locked:
+        keys = ("intervals", "units", "label", "event_labels", "event_onsets", "event_meta")
+        return {"class": "Intervals", **{k: st.get(k) for k in keys}}
+    if st["units"] == "samples":
+        logger.warning("segments made from intervals in sample indices: event onsets "
+                       "converted to ms from the first sample of the recording")
+        fac = 1000. / fs
+    else:
+        fac = _V2_MS_PER_UNIT[st["units"]]
+    return {"class": "Epochs", "onsets": np.asarray(st["event_onsets"], dtype=float) * fac,
+            "window": tuple(float(w) * fac for w in st["interval_window"]),
+            "labels": st["event_labels"], "meta": st.get("event_meta"),
+            "label": st.get("label")}
+
+
 def _v2_eyedata_layers(state):
     """Move the masks, blinks, interpolated blinks and excluded periods of a
     version-2 eyedata state into the layers of its data (in place)."""
@@ -601,9 +647,11 @@ def _v2_eyedata_layers(state):
 def _migrate_2_to_3(state, class_name):
     """Version 2 -> 3: the events of eyedata objects are one Events state
     (`events`) instead of `event_onsets`, `event_labels` and `event_meta`;
-    masks are layers (see _v2_eyedata_layers)."""
+    masks are layers (see _v2_eyedata_layers); segments store Epochs (see
+    _v2_spans)."""
     state = dict(state)
     if class_name in _SEGMENTED_CLASSES:
+        state["intervals"] = _v2_spans(state.get("intervals"), state.get("sampling_rate"))
         return state
     state["events"] = {"onsets": state.pop("event_onsets"),
                        "labels": state.pop("event_labels"), "units": "ms",

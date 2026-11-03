@@ -8,11 +8,12 @@ import numpy as np
 from .convenience import requires_package
 from .units import parse_time
 from .events import _meta_dict
+from .state import Stateful
 
 __all__ = ["Epochs"]
 
 
-class Epochs:
+class Epochs(Stateful):
     """
     Event-locked windows: the onsets of events and one time window around them.
 
@@ -69,6 +70,9 @@ class Epochs:
     (0.8, 1.8)
     """
 
+    # state (see pypillometry.state)
+    _STATE_FIELDS = ("onsets", "window", "labels", ("meta", None, "_meta"), "label")
+
     def __init__(self, onsets, window, labels=None, meta=None, label=None):
         onsets = np.atleast_1d(np.asarray(parse_time(onsets, to="ms"), dtype=float))
         if onsets.ndim != 1:
@@ -92,6 +96,12 @@ class Epochs:
         for col in self._meta.values():
             col.flags.writeable = False
         self.label = label
+
+    def _set_state(self, st: dict):
+        """Set the attributes from a state of the current version (checked like
+        the arguments of the constructor)."""
+        self.__init__(st["onsets"], st["window"], labels=st["labels"], meta=st["meta"],
+                      label=st["label"])
 
     @classmethod
     def from_events(cls, events, window, label=None) -> 'Epochs':
