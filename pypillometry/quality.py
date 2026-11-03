@@ -847,16 +847,13 @@ def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[],
               "closures or tracking losses rather than blinks)")
 
     # --- artifacts (only if data was masked/interpolated) ---------------
-    from .eyedata.eyedatadict import NAN_LAYER
-
     def layer(keys, name):
         """Included samples where layer `name` is set for one of `keys`."""
         return np.logical_or.reduce([obj.data.get_layer(k, name) for k in keys]) & inc
 
     def missing(keys):
-        """Included samples that are NaN (or were NaN before a filter) in one of `keys`."""
-        return np.logical_or.reduce([~np.isfinite(raw[k]) | obj.data.get_layer(k, NAN_LAYER)
-                                     for k in keys]) & inc
+        """Included samples that are NaN in one of `keys`."""
+        return np.logical_or.reduce([~np.isfinite(raw[k]) for k in keys]) & inc
 
     for eye in list(dict.fromkeys(pupil_eyes + gaze_eyes)):
         metrics = []

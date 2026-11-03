@@ -511,7 +511,7 @@ def _migrate_1_to_2(state, class_name):
 
 
 # layers that made up the mask of version 2 (the "compat" mask of version 3)
-_V2_MASK_LAYERS = ("_nan", "user", "interpolated", "_blink_applied", "excluded",
+_V2_MASK_LAYERS = ("user", "interpolated", "_blink_applied", "excluded",
                    "offscreen", "divergence")
 _V2_MS_PER_UNIT = {"ms": 1., "sec": 1000., "min": 60000., "h": 3600000.}
 
@@ -550,17 +550,19 @@ class _V3Layers:
         self.st["layers"][key][where] &= ~self.bits([name])
 
     def mask(self, key):
-        """The mask of `key` as version 2 had it (from the layers)."""
+        """The mask of `key` as version 2 had it (from the layers and NaN)."""
         bits = self.bits(_V2_MASK_LAYERS)
-        return ((self.st["layers"][key] & bits) != 0) | ((self.st["rec_layers"] & bits) != 0)
+        return (((self.st["layers"][key] & bits) != 0) | ((self.st["rec_layers"] & bits) != 0)
+                | np.isnan(self.st["values"][key]))
 
 
 def _v2_eyedatadict(st):
     """Version-3 state of an EyeDataDict (version-2 state `st`), with its _V3Layers.
 
-    The mask of version 2 (``mask``) becomes layers: NaN values the ``"_nan"``
-    layer, the other masked samples the ``"user"`` layer. States written by
-    development versions between 2.1 and 3 may already have (some) layers.
+    The mask of version 2 (``mask``) becomes layers: masked samples that are
+    not NaN the ``"user"`` layer (NaN values are masked by their value).
+    States written by development versions between 2.1 and 3 may already
+    have (some) layers.
     """
     st = dict(st)
     values = st["values"]
@@ -578,11 +580,8 @@ def _v2_eyedatadict(st):
     layers = _V3Layers(st)
     for key, m in (st.pop("mask", None) or {}).items():
         m = np.asarray(m).astype(bool) & ~layers.mask(key)
-        nan = np.isnan(values[key])
-        if (m & nan).any():
-            layers.set(key, "_nan", m & nan)
-        if (m & ~nan).any():
-            layers.set(key, "user", m & ~nan)
+        if m.any():
+            layers.set(key, "user", m)
     return st, layers
 
 

@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 
 from pypillometry import EyeDataDict
-from pypillometry.eyedata.eyedatadict import LAYER_DTYPE, MAX_LAYERS, NAN_LAYER
+from pypillometry.eyedata.eyedatadict import LAYER_DTYPE, MAX_LAYERS
 
 
 def format2_state(d):
@@ -80,9 +80,9 @@ class TestLayerStorage:
         d = small_dict()
         d.set_layer("left_pupil", "blink", [0, 1, 0, 0, 0])
         d["left_pupil"] = [1., 2., 3., 4., np.nan]
-        # only the NaN (internal layer, see NAN_LAYER)
-        np.testing.assert_array_equal(d.get_layer("left_pupil", NAN_LAYER), [0, 0, 0, 0, 1])
-        assert not d.get_layer("left_pupil", "blink").any()
+        # no layers; the NaN is masked by its value
+        assert not d.layers["left_pupil"].any()
+        np.testing.assert_array_equal(d.mask["left_pupil"], [0, 0, 0, 0, 1])
         d.set_layer("left_pupil", "blink", [0, 1, 0, 0, 0])
         d.set_with_mask("left_pupil", np.ones(5), preserve_mask=True)
         assert d.get_layer("left_pupil", "blink").sum() == 1
@@ -195,8 +195,16 @@ class TestSampleOperations:
         d._insert_samples(np.arange(6) * 10., [0, 1, 4, 5])
         np.testing.assert_array_equal(d.data.get_layer("left_pupil", "blink"),
                                       [1, 1, 0, 0, 1, 1])
-        # inserted samples are NaN and masked as missing (stored mask)
+        # inserted samples are NaN and masked as missing (by their value)
         np.testing.assert_array_equal(d.data.mask["left_pupil"], [0, 0, 1, 1, 0, 0])
+        assert np.isnan(d.data["left_pupil"][2:4]).all()
+
+    def test_insert_samples_with_a_value(self):
+        d = self.data(4)
+        d._insert_samples(np.arange(6) * 10., [0, 1, 4, 5], value=0.)
+        np.testing.assert_array_equal(d.data["left_pupil"], [0, 1, 0, 0, 2, 3])
+        np.testing.assert_array_equal(d.data.get_layer("left_pupil", "user"),
+                                      [0, 0, 1, 1, 0, 0])
 
     def test_decimate_more_than_half(self):
         d = self.data(22)
@@ -553,7 +561,7 @@ class TestNoStoredMask:
         np.testing.assert_array_equal(d.mask("left", "pupil", "strict"), [1, 1])
         assert d.data.get_layer("left_pupil", "user")[0]
         assert d.data.get_layer("left_pupil", "interpolated")[0]
-        assert d.data.get_layer("left_pupil", NAN_LAYER)[1]
+        assert np.isnan(d.data["left_pupil"][1]) and not d.data.layers["left_pupil"][1]
         assert d.data["left_pupil"][0] == 1.5  # mean of the values
 
     def test_decimate_uses_interpolated_samples(self):
@@ -579,10 +587,35 @@ class TestNoStoredMask:
                       "mask": {"left_pupil": np.array([0, 1, 1, 0, 0, 0], dtype=bool)}}
         r = state.from_state(st)
         np.testing.assert_array_equal(r.data.mask["left_pupil"], [0, 1, 1, 0, 0, 0])
-        np.testing.assert_array_equal(r.data.get_layer("left_pupil", NAN_LAYER),
-                                      [0, 1, 0, 0, 0, 0])
+        # NaN: masked by the value, no layer
         np.testing.assert_array_equal(r.data.get_layer("left_pupil", "user"),
                                       [0, 0, 1, 0, 0, 0])
+        assert r.data.layer_names == ["user"]
+
+    def test_development_states_with_the_nan_layer(self):
+        """Format-3 states written before step 7 have the layer "_nan" (NaN at
+        assignment); filled samples stay masked as "user", the bit is removed."""
+        import pypillometry as pp
+        from pypillometry import state
+        pupil = np.arange(6, dtype=float)
+        pupil[[1, 2]] = np.nan
+        d = pp.PupilData(left_pupil=pupil, sampling_rate=100)
+        d.data.set_layer("left_pupil", "blink", [0, 0, 0, 0, 1, 0])
+        st = state.to_state(d)
+        dd = st["data"]
+        # as written before: "_nan" registered between other layers
+        dd["layer_names"] = ["_nan", "blink", "interpolated"]
+        dd["values"]["left_pupil"][[1, 3]] = [10., 30.]  # 1 filled by a filter, 3 interpolated
+        dd["layers"]["left_pupil"] = np.array([0, 1, 1, 1 | 4, 2, 0], dtype=LAYER_DTYPE)
+        dd["rec_layers"] = np.array([0, 0, 0, 0, 4, 0], dtype=LAYER_DTYPE)
+        r = state.from_state(st)
+        assert r.data.layer_names == ["blink", "interpolated", "user"]
+        np.testing.assert_array_equal(np.flatnonzero(r.data.get_layer("left_pupil", "user")), [1])
+        np.testing.assert_array_equal(np.flatnonzero(r.data.get_layer("left_pupil", "blink")), [4])
+        np.testing.assert_array_equal(
+            np.flatnonzero(r.data.get_layer("left_pupil", "interpolated")), [3])
+        np.testing.assert_array_equal(np.flatnonzero(r.data.get_rec_layer("interpolated")), [4])
+        np.testing.assert_array_equal(r.mask("left", "pupil"), [0, 1, 1, 0, 0, 0])
 
 
 class TestConsumersUsePolicy:

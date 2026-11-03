@@ -644,3 +644,18 @@ Changes of the API calls alone (same numbers) need no entry.
 - **Why**: one mask rule for all code (D2); the old mask mixed "missing"
   and "reconstructed".
 - **Step**: 7, `refactor/07-value-policy`
+
+### NaN is read from the values only
+
+- **Case**: none (no reference number changes)
+- **Change**: the internal layer `_nan` (samples that were NaN when they
+  were set) is gone: a sample is missing if its value is NaN. Filters no
+  longer fill NaN (see the lowpass entry), so nothing needs it.
+  `fill_time_discontinuities(yval=...)` with a value other than NaN masks
+  the inserted samples with the `user` layer. Format-2 files: NaN values
+  get no layer (before: `_nan`). Files written in format 3 by development
+  versions before this step are converted on load (filled `_nan` samples
+  that are not interpolated -> `user`; the bit is removed).
+- **Why**: NaN cannot disagree with the values (plan 2.2); the layer was a
+  shim for the filters that filled NaN (step 5).
+- **Step**: 7, `refactor/07-value-policy`

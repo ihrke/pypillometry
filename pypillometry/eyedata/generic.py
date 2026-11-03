@@ -11,7 +11,7 @@ from .. import io
 from ..convenience import sizeof_fmt, ByteSize, _round_values, requires_package, is_url, suppress_all_output, normalize_unit, _warn_if_ignores_mask
 from ..units import UNSET, _has_units, _time_values_and_units, parse_time, _ms_to_samples, _samples_to_ms
 from ..io import download
-from .eyedatadict import (EyeDataDict, LAYER_DTYPE, NAN_LAYER, REC_LAYERS,
+from .eyedatadict import (EyeDataDict, LAYER_DTYPE, REC_LAYERS,
                           MaskPolicy, _as_policy, _join_key)
 from .experimental_setup import ExperimentalSetup
 from ..signal import baseline
@@ -168,9 +168,7 @@ def _decimate_dict(d, factor, policy="default"):
     nd.layer_names = list(d.layer_names)
     pol = _as_policy(policy)
     # layers that make a sample unusable under the policy
-    masking = LAYER_DTYPE(d.layer_bits(pol.layers + ((NAN_LAYER,) if pol.nan else ()))
-                          & ~d.layer_bits(pol.unless))
-    nan_bit = LAYER_DTYPE(d.layer_bits(NAN_LAYER))
+    masking = LAYER_DTYPE(d.layer_bits(pol.layers) & ~d.layer_bits(pol.unless))
     if d.rec_layers is not None:
         nd.rec_layers = _decimate_layers(d.rec_layers, factor)
     for k, v in d.items():
@@ -180,17 +178,15 @@ def _decimate_dict(d, factor, policy="default"):
             stored = baseline.downsample(v, factor)
         allmasked = np.isnan(y)
         y[allmasked] = stored[allmasked]
-        # NAN_LAYER only where the whole window is masked (below)
-        nd._set_channel(k, y, _decimate_layers(d.layers[k] & ~nan_bit, factor))
+        nd._set_channel(k, y, _decimate_layers(d.layers[k], factor))
         # a window whose samples are all unusable stays unusable: if the
         # layers that cover more than half of it do not make it unusable,
-        # it gets the masking layers of its samples (NAN_LAYER if there
-        # are none)
+        # it gets the masking layers of its samples (if there are none,
+        # all its values are NaN, and so is the new value)
         todo = allmasked & ~nd.get_policy_mask(k, MaskPolicy(pol.layers, pol.unless, nan=False))
         if todo.any():
             present = np.bitwise_or.reduceat(d.layers[k] & masking,
                                              np.arange(0, len(v), factor))
-            present[present == 0] = nd.layer_bits(NAN_LAYER, create=True)
             nd.layers[k][todo] |= present[todo]
     return nd
 
@@ -217,10 +213,11 @@ def _decimate_layers(layers, factor):
 
 def _insert_dict(d, n, pos, value):
     """EyeDataDict of length `n` with the samples of `d` at `pos`; new samples
-    hold `value` and are masked as missing (`NAN_LAYER`, no other layers)."""
+    hold `value` and are masked as missing (NaN, or the ``"user"`` layer if
+    `value` is not NaN; no other layers)."""
     nd = EyeDataDict()
     nd.layer_names = list(d.layer_names)
-    missing = nd.layer_bits(NAN_LAYER, create=n > len(pos))
+    missing = 0 if np.isnan(value) else nd.layer_bits("user", create=n > len(pos))
     for k, v in d.items():
         nv = np.full(n, value, dtype=float)
         nl = np.full(n, missing, dtype=LAYER_DTYPE)  # inserted = missing
@@ -2090,7 +2087,8 @@ class GenericEyeData(state.VersionedState, ABC):
         ----------
         yval : float, optional
             value used for the data in the filled-in gaps; default NaN,
-            so the filled-in samples are masked as missing data
+            so the filled-in samples are masked as missing data (other
+            values: masked by the ``"user"`` layer)
         print_info : bool, optional
             if True (default), log the number of gaps that are filled in
 
@@ -2141,7 +2139,8 @@ class GenericEyeData(state.VersionedState, ABC):
             the index in `tx` of each old sample (increasing)
         value : float, optional
             value of all variables at the new samples (default NaN); the
-            new samples are masked as missing and have no layers
+            new samples are masked as missing (NaN, or the ``"user"`` layer
+            if `value` is not NaN)
 
         Existing masks and layers are kept at the old samples; events
         stay valid.
