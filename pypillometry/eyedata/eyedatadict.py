@@ -420,8 +420,10 @@ class EyeDataDict(MutableMapping, Stateful):
             # Explicit mask provided
             self.set_mask(key, mask)
         elif mask is not None:
-            self._mask[key] = np.asarray(mask).astype(bool)
+            self._mask[key] = np.zeros(self.shape, dtype=bool)
             self.layers[key] = np.zeros(self.shape, dtype=LAYER_DTYPE)
+            if np.any(mask):
+                self.set_layer(key, "user", mask)
         elif preserve_mask and existed:
             # Preserve existing mask - do nothing
             pass
@@ -684,13 +686,13 @@ class EyeDataDict(MutableMapping, Stateful):
             new_dict.rec_layers = self.rec_layers.copy()
         return new_dict
 
-    def set_mask(self, key: str, mask: NDArray, layer: Optional[str] = None) -> None:
+    def set_mask(self, key: str, mask: NDArray, layer: str = "user") -> None:
         """Set mask for a specific key.
 
         Afterwards, ``self.mask[key]`` equals `mask`: samples that are not
         masked in `mask` are removed from the stored mask and from the layers
-        in `COMPAT_LAYERS`, samples that were not masked yet are added to the
-        stored mask (or to `layer`). The recording-wide layers (e.g.,
+        in `COMPAT_LAYERS`, samples that were not masked yet are added to
+        `layer` (default ``"user"``). The recording-wide layers (e.g.,
         excluded periods) are not changed, so their samples stay masked.
 
         Parameters
@@ -701,8 +703,8 @@ class EyeDataDict(MutableMapping, Stateful):
             Mask array (1 for masked, 0 for valid values) with the same shape
             as the data; converted to int
         layer : str, optional
-            layer in `COMPAT_LAYERS` (e.g., ``"user"``) for the newly masked
-            samples; None: the stored mask
+            layer in `COMPAT_LAYERS` for the newly masked samples (default
+            ``"user"``)
 
         Raises
         ------
@@ -724,13 +726,11 @@ class EyeDataDict(MutableMapping, Stateful):
         self.layers[key][~mask] &= ~bits
         self._mask[key] = self._mask[key] & mask
         new = mask & ~self.mask[key].astype(bool)
-        if layer is None:
-            self._mask[key] |= new
-        else:
+        if new.any():
             self.set_layer(key, layer, new)
 
     def add_mask(self, key: str, where) -> None:
-        """Mask the samples `where` of `key` (existing masks are kept).
+        """Mask the samples `where` of `key` (``"user"`` layer; existing masks are kept).
 
         Parameters
         ----------
@@ -749,7 +749,8 @@ class EyeDataDict(MutableMapping, Stateful):
             raise KeyError(f"No data for key {key}")
         mask = np.zeros(self.shape, dtype=bool)
         mask[where] = True
-        self._mask[key] = self._mask[key] | mask
+        if mask.any():
+            self.set_layer(key, "user", mask)
 
     def get_mask(self, key: str = None) -> NDArray:
         """Get mask for a specific key or joint mask across all keys.

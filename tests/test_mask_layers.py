@@ -146,8 +146,9 @@ class TestCompatMask:
         d.set_layer("left_pupil", "blink", [1, 1, 0, 0, 0])
         d.set_mask("left_pupil", [0, 1, 1, 0, 0])
         np.testing.assert_array_equal(d.mask["left_pupil"], [0, 1, 1, 0, 0])
-        # unmasked samples are removed from the compat layers only
-        np.testing.assert_array_equal(d.get_layer("left_pupil", "user"), [0, 1, 0, 0, 0])
+        # unmasked samples are removed from the compat layers only; newly
+        # masked ones are added to "user"
+        np.testing.assert_array_equal(d.get_layer("left_pupil", "user"), [0, 1, 1, 0, 0])
         np.testing.assert_array_equal(d.get_layer("left_pupil", "blink"), [1, 1, 0, 0, 0])
 
 
@@ -225,7 +226,7 @@ class TestPolicies:
         np.testing.assert_array_equal(d.values("left", "pupil", policy="raw")[1:],
                                       np.arange(1, 10))
 
-    def test_stored_mask_counts_like_a_layer(self):
+    def test_add_mask_sets_the_user_layer(self):
         d = self.data()
         d.data.add_mask("left_pupil", np.s_[5:7])
         # 5 is interpolated (usable by default), 6 is not
@@ -451,7 +452,7 @@ class TestGazeLayers:
         expected = np.arange(8) == 3
         for key in ("left_x", "left_y", "right_x", "right_y"):
             np.testing.assert_array_equal(e.data.get_layer(key, "divergence"), expected)
-        assert not e.data.get_layer("left_x", "user").any()
+        np.testing.assert_array_equal(e.data.get_layer("left_x", "user"), np.arange(8) == 0)
         assert not e.clear_layer("divergence").data.mask["right_x"].any()
 
 
