@@ -516,7 +516,11 @@ class PupilData(GenericEyeData):
         
         Detected blinks are always stored in the object, as the ``"blink"``
         layer of the pupil (retrieve them with
-        :meth:`~pypillometry.GenericEyeData.get_blinks`). When `apply_mask=True`,
+        :meth:`~pypillometry.GenericEyeData.get_blinks`). They replace the
+        blinks detected before (and their mask), and the blinks detected
+        before are not treated as masked during detection, so re-running the
+        detection with other parameters gives the same result as running it
+        once. When `apply_mask=True`,
         the blinks are also applied as masks to the data. When `apply_mask=False`
         (default), the detected blinks are returned as Intervals objects.
 
@@ -604,11 +608,14 @@ class PupilData(GenericEyeData):
         for eye in eyes:
             logger.debug(f"Detecting blinks for eye {eye}")
             
+            # the new blinks replace the old ones, which must not mask the data
+            obj.set_blinks(None, eyes=[eye], variables=["pupil"])
+
             # Get pupil data, optionally ignoring existing mask
             if ignore_existing_mask:
-                pupil_data = self.data[eye,"pupil"]
+                pupil_data = obj.data[eye,"pupil"]
             else:
-                pupil_data = self[eye, "pupil"].filled(np.nan)
+                pupil_data = obj[eye, "pupil"].filled(np.nan)
             
             ## detect blinks with the different strategies
             if "velocity" in strategies:
@@ -626,7 +633,7 @@ class PupilData(GenericEyeData):
                 # Look for runs of NaN or `blink_val` in the raw data. Use the
                 # raw data even when `ignore_existing_mask=False`: other masks
                 # (e.g., offscreen gaze) must not be turned into blinks.
-                raw = self.data[eye, "pupil"]
+                raw = obj.data[eye, "pupil"]
                 if not np.isnan(blink_val):
                     raw = np.where(raw == blink_val, np.nan, raw)
                 blinks_zero=preproc.detect_blinks_zero(raw, 1, np.nan)

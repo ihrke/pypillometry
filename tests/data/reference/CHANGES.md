@@ -207,3 +207,15 @@ Changes of the API calls alone (same numbers) need no entry.
 - **Why**: one store for blinks (finding D1); the mask of the blinks can
   be undone.
 - **Step**: 5, `refactor/05-mask-layers`
+
+### Re-detecting blinks replaces them
+
+- **Case**: none (the reference cases detect blinks once)
+- **Change**: `pupil_blinks_detect` removes the blinks detected before
+  (and their mask) before it detects blinks, so they do not mask the data
+  it detects blinks in, and the new blinks replace them. Re-running it
+  with other parameters gives the same blinks and mask as running it
+  once (before: the old mask stayed and the new detection skipped the old
+  blinks, finding 4.2).
+- **Why**: detectors replace their own layer (refactor plan 2.2).
+- **Step**: 5, `refactor/05-mask-layers`

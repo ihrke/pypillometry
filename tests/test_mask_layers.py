@@ -265,6 +265,20 @@ class TestBlinkLayer:
         assert d.data.mask["left_pupil"][blink].all()
         assert d.mask("left", "pupil")[blink].all()
 
+    def test_redetection_replaces_blinks_and_mask(self):
+        # finding 4.2: masks only grew
+        d = blink_data()
+        d.pupil_blinks_detect(apply_mask=True, strategies=["velocity"], min_duration=10)
+        n1 = int(d.data.mask["left_pupil"].sum())
+        d.pupil_blinks_detect(apply_mask=True, strategies=["velocity"], min_duration=2000)
+        assert d.nblinks() == {}
+        nan = np.isnan(d.data["left_pupil"])
+        np.testing.assert_array_equal(d.data.mask["left_pupil"].astype(bool), nan)
+        assert n1 > nan.sum()
+        # running it again with the first parameters gives the first result
+        d.pupil_blinks_detect(apply_mask=True, strategies=["velocity"], min_duration=10)
+        assert int(d.data.mask["left_pupil"].sum()) == n1
+
     def test_set_blinks_none_and_clear_layer_unmask(self):
         d = blink_data()
         nan = np.isnan(d.data["left_pupil"])
