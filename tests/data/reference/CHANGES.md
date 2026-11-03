@@ -467,3 +467,15 @@ Changes of the API calls alone (same numbers) need no entry.
   raise an error; masked values no longer enter the window.
 - **Why**: same as for the lowpass filter (finding 4.9, D2).
 - **Step**: 7, `refactor/07-value-policy`
+
+### Baseline: unusable samples bridged linearly
+
+- **Case**: none (no reference case estimates a baseline)
+- **Change**: `pupil_estimate_baseline(..., policy="default")` fits the
+  values under the mask policy and bridges the unusable samples (NaN,
+  masked blinks, excluded periods, ...) linearly. Before, data with NaN
+  raised a ValueError and masked values (e.g., zero-coded blinks) were
+  used. Data without unusable samples give the same baseline.
+- **Why**: same rule for all signal processing (D2); the error message
+  already asked users to bridge the gaps linearly.
+- **Step**: 7, `refactor/07-value-policy`

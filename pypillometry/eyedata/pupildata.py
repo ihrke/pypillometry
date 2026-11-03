@@ -854,15 +854,18 @@ class PupilData(GenericEyeData):
 
     @keephistory
     def pupil_estimate_baseline(self, eyes=[], variable="pupil",
-                                method: str="envelope_iter_bspline_2", inplace=None, **kwargs):
+                                method: str="envelope_iter_bspline_2", policy="default",
+                                inplace=None, **kwargs):
         """
         Apply one of the baseline-estimation methods.
 
-        The data must not contain NaN: interpolate blinks first (see
-        :meth:`pupil_blinks_interpolate`) and bridge longer gaps, e.g., the
-        excluded periods (breaks), by linear interpolation:
-        ``d.interpolate_intervals(d.get_excluded(), variables="pupil")``.
-        Interpolated samples are used for the fit like other samples.
+        The baseline is estimated from the usable samples under the mask
+        `policy` (by default, interpolated samples are used, see
+        :meth:`~pypillometry.GenericEyeData.mask`). The unusable samples
+        (masked or NaN, e.g., blinks that were not interpolated or the
+        excluded periods) are bridged linearly between their neighbours.
+        Interpolate blinks first (see :meth:`pupil_blinks_interpolate`) to
+        use a better reconstruction than a straight line.
         
         Parameters
         ----------
@@ -878,6 +881,9 @@ class PupilData(GenericEyeData):
             - "envelope_iter_bspline_2" (default):
               :func:`~pypillometry.signal.baseline.baseline_envelope_iter_bspline`
               with two iterations
+        policy : str, MaskPolicy or list of str
+            mask policy that decides which samples are usable (see
+            :meth:`~pypillometry.GenericEyeData.mask`); default ``"default"``
         inplace : bool or None
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes                                        
@@ -894,8 +900,7 @@ class PupilData(GenericEyeData):
         Raises
         ------
         ValueError
-            if `method` is unknown or the data contain NaN (interpolate
-            blinks first, see :meth:`pupil_blinks_interpolate`)
+            if `method` is unknown or no sample is usable
 
         References
         ----------
@@ -911,20 +916,23 @@ class PupilData(GenericEyeData):
 
         for eye in eyes:
             logger.debug("Estimating baseline for eye %s"%eye)
-            if np.any(np.isnan(self.data[eye,variable])):
-                raise ValueError(
-                    f"'{eye}_{variable}' contains NaN (e.g., blinks that were "
-                    "not interpolated); the baseline cannot be estimated. "
-                    "Interpolate them first, e.g., with pupil_blinks_interpolate() "
-                    "(blinks) or interpolate_intervals(d.get_excluded()) (breaks).")
+            sy = self.values(eye, variable, policy)
+            unusable = np.isnan(sy)
+            if unusable.all():
+                raise ValueError(f"'{eye}_{variable}' has no usable samples; the "
+                                 "baseline cannot be estimated")
+            if unusable.any():
+                logger.info(f"{eye}_{variable}: {unusable.sum()} unusable samples "
+                            "(masked or NaN) bridged linearly for the baseline")
+                sy = _bridge_gaps(sy)
 
             if method=="envelope_iter_bspline_2":
-                txd,syd,base2,base1=baseline.baseline_envelope_iter_bspline(self.tx, self.data[eye,variable],
+                txd,syd,base2,base1=baseline.baseline_envelope_iter_bspline(self.tx, sy,
                                                                             self.events.onsets,self.fs,**kwargs)
                 f=interpolate.interp1d(txd, base2, kind="cubic", bounds_error=False, fill_value="extrapolate")
                 obj.data[eye,"baseline"]=f(self.tx)
             elif method=="envelope_iter_bspline_1": 
-                txd,syd,base2,base1=baseline.baseline_envelope_iter_bspline(self.tx, self.data[eye,variable],
+                txd,syd,base2,base1=baseline.baseline_envelope_iter_bspline(self.tx, sy,
                                                                             self.events.onsets,self.fs,**kwargs)
                 f=interpolate.interp1d(txd, base1, kind="cubic", bounds_error=False, fill_value="extrapolate")
                 obj.data[eye,"baseline"]=f(self.tx)
