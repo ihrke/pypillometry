@@ -563,9 +563,40 @@ def _scaled_pupil(case_id, key, stored):
             "std": np.std(v[~masked]) / sd, "nanmean_all": (np.nanmean(v) - m) / sd}[name]
 
 
+def _segments(case_id, k, masked):
+    """Segments of pupil `k` of case b (as in case e), masked where `masked`
+    (full rate), and their baseline correction with (-200, 0) ms."""
+    arrays = load_arrays(case_id)
+    tx = _segment_time_axis(arrays[f"tx.{k}"])
+    v = _case_b(case_id.split(".")[2])[k][0]
+    ix = arrays["intervals_samples"][:, 0][None, :] + np.arange(len(tx))[:, None]
+    assert ix.min() >= 0 and ix.max() < len(v)
+    seg = np.ma.array(v[ix], mask=masked[ix])
+    b0, b1 = (np.argmin(np.abs(w - tx)) for w in (-200, 0))
+    bc = seg.copy()
+    for i in range(seg.shape[1]):
+        bc[:, i] -= np.mean(seg[b0:b1, i])
+    return {"mask": np.ma.getmaskarray(seg), "mean": masked_mean(seg, axis=0),
+            "bc_data": np.ma.getdata(bc), "bc_mask": np.ma.getmaskarray(bc),
+            "bc_mean": masked_mean(bc, axis=0)}
+
+
+def _segments_interp(case_id, key, stored):
+    """Segments after interpolation (step 7): masked where unusable under the
+    default policy (interpolated samples are used)."""
+    name, _, k = key.partition(".")
+    if name == "tx":
+        return _segment_time_axis(stored)
+    if name not in ("mask", "mean", "bc_data", "bc_mask", "bc_mean"):
+        return stored
+    return _segments(case_id, k, ~_case_b(case_id.split(".")[2])[k][1])[name]
+
+
 #: intended changes (see CHANGES.md): (case id prefix, result key prefix) ->
 #: function mapping (case id, key, stored reference value) to the expected value
-CHANGED = {("e.segments.", "tx."): lambda case_id, key, stored: _segment_time_axis(stored),
+CHANGED = {("e.segments.rlmw.interp", ""): _segments_interp,
+           ("e.segments.synth.interp", ""): _segments_interp,
+           ("e.segments.", "tx."): lambda case_id, key, stored: _segment_time_axis(stored),
            ("g.downsample.", "interpolated."): _downsampled_runs,
            ("g.downsample.", "blinks."): _downsampled_runs,
            ("g.downsample.", "mask."): _downsampled_mask,

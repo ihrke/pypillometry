@@ -556,3 +556,19 @@ Changes of the API calls alone (same numbers) need no entry.
 - **Why**: a value that is not data should not look like data (e.g., after
   `baseline_correct`, the padding was `-baseline`).
 - **Step**: 7, `refactor/07-value-policy`
+
+### Segments: interpolated samples are used
+
+- **Case**: `e.segments.*.interp` (mask, mean, bc_data, bc_mask, bc_mean;
+  `*.raw` unchanged); expected values derived from case b in the test
+- **Change**: `get_segments(..., policy="default")` masks the samples that
+  are unusable under the mask policy, so interpolated samples are part of
+  the segments, their means and the baseline (before: masked). Size: rlmw
+  masked segment samples 77 -> 0 (left) / 242 -> 0 (right) of 6000; the
+  mean of 2 of 10 segments changes by up to 5.2 / 5.6 units, the
+  baseline-corrected mean by up to 5.7; synth 254 -> 0 / 355 -> 0 of 7800,
+  5 / 3 of 13 segment means change by up to 3.7 / 3.8 units.
+  `policy="strict"` gives the old masks.
+- **Why**: decision 4 (interpolated samples are used in analyses; D2: users
+  who interpolate to keep trials lost them).
+- **Step**: 7, `refactor/07-value-policy`

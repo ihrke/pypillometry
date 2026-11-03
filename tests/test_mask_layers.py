@@ -591,3 +591,12 @@ class TestConsumersUsePolicy:
         s = d.pupil_merge_eyes(method="both_available", policy="strict", inplace=False)
         assert list(np.flatnonzero(s.mask("merged", "pupil"))) == list(range(50, 60)) + \
             list(range(100, 110))
+
+    def test_get_segments(self):
+        import pypillometry as pp
+        d = self.binocular()
+        ep = pp.Epochs([400.], (0, 300))  # samples 40-69
+        seg = d.get_segments(ep, "left_pupil")
+        assert not np.ma.getmaskarray(seg.data).any()
+        seg = d.get_segments(ep, "left_pupil", policy="strict")
+        assert list(np.flatnonzero(np.ma.getmaskarray(seg.data)[:, 0])) == list(range(10, 20))

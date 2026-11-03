@@ -2366,7 +2366,7 @@ class GenericEyeData(state.VersionedState, ABC):
             event_meta=selected_meta
         )
 
-    def get_segments(self, intervals, variable: str, name: str = None):
+    def get_segments(self, intervals, variable: str, name: str = None, policy="default"):
         """
         Extract segments from data using intervals.
         
@@ -2385,6 +2385,10 @@ class GenericEyeData(state.VersionedState, ABC):
             Variable to extract in "eye_variable" format (e.g., "left_pupil", "right_x")
         name : str, optional
             Name for the segmented dataset. If None, uses intervals.label or "segments"
+        policy : str, MaskPolicy or list of str
+            mask policy of the segments: the samples that are unusable under
+            it are masked (see :meth:`mask`); default ``"default"``
+            (interpolated samples are used)
             
         Returns
         -------
@@ -2413,7 +2417,8 @@ class GenericEyeData(state.VersionedState, ABC):
         SegmentedEyeData : Class holding segmented data
         """
         from ..segmented import SegmentedEyeData
-        return SegmentedEyeData.from_eyedata(self, intervals, variable, name=name)
+        return SegmentedEyeData.from_eyedata(self, intervals, variable, name=name,
+                                             policy=policy)
 
     @keephistory
     def scale(self, variables=[], mean: Union[float,dict,None]=None, 
