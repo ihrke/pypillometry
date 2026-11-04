@@ -617,7 +617,7 @@ class TestEyeData(unittest.TestCase):
     def test_detectors_have_no_apply_mask(self):
         """the detectors set their layer (no apply_mask argument)"""
         import inspect
-        for f in (pp.EyeData.pupil.blinks_detect, pp.EyeData.blinks_merge_close,
+        for f in (pp.EyeData.pupil.blinks_detect, pp.EyeData.pupil.blinks_merge_close,
                   pp.EyeData.gaze.mask_offscreen, pp.EyeData.gaze.mask_divergences):
             self.assertNotIn("apply_mask", inspect.signature(f).parameters)
 
@@ -630,7 +630,7 @@ class TestEyeData(unittest.TestCase):
         self.eyedata.set_blinks(intervals, eyes=['left'], variables=['pupil'])
         
         # Merge blinks that are within 100ms of each other
-        merged = self.eyedata.blinks_merge_close(eyes=['left'], variables=['pupil'], distance=100, units="ms")
+        merged = self.eyedata.pupil.blinks_merge_close(eyes=['left'], variables=['pupil'], distance=100, units="ms")
         blinks = merged.get_blinks('left', 'pupil', units="samples")['left_pupil']
         
         # blinks is now an Intervals object
@@ -645,7 +645,7 @@ class TestEyeData(unittest.TestCase):
         # Test merging with distance specified in seconds
         intervals2 = Intervals([(100, 200), (250, 350)], units="samples")
         self.eyedata.set_blinks(intervals2, eyes=['left'], variables=['pupil'])
-        merged_sec = self.eyedata.blinks_merge_close(eyes=['left'], variables=['pupil'], distance=0.1, units="sec")
+        merged_sec = self.eyedata.pupil.blinks_merge_close(eyes=['left'], variables=['pupil'], distance=0.1, units="sec")
         blinks_sec = merged_sec.get_blinks('left', 'pupil', units="samples")['left_pupil']
         blinks_ix_sec = np.array(blinks_sec.to_units("indices")).astype(int)
         self.assertEqual(blinks_ix_sec[0, 0], 100)
@@ -654,7 +654,7 @@ class TestEyeData(unittest.TestCase):
         # Ensure blinks beyond distance remain separate
         intervals3 = Intervals([(100, 200), (250, 350)], units="samples")
         self.eyedata.set_blinks(intervals3, eyes=['left'], variables=['pupil'])
-        separated = self.eyedata.blinks_merge_close(eyes=['left'], variables=['pupil'], distance=10, units="ms")
+        separated = self.eyedata.pupil.blinks_merge_close(eyes=['left'], variables=['pupil'], distance=10, units="ms")
         blinks_sep = separated.get_blinks('left', 'pupil', units="samples")['left_pupil']
         blinks_ix_sep = np.array(blinks_sep.to_units("indices")).astype(int)
         self.assertEqual(len(blinks_ix_sep), 2)
@@ -682,7 +682,7 @@ class TestEyeData(unittest.TestCase):
         # Verify no masks are applied initially (except any pre-existing ones)
         initial_mask_count = np.sum(data.data.mask['left_pupil'])
         
-        merged = data.blinks_merge_close(eyes=['left'], variables=['pupil'], 
+        merged = data.pupil.blinks_merge_close(eyes=['left'], variables=['pupil'], 
                                          distance=100, units="ms")
         
         # Should return the modified object
@@ -715,7 +715,7 @@ class TestEyeData(unittest.TestCase):
         # Get initial mask state
         initial_mask = data.data.mask['left_pupil'].copy()
         
-        copy = data.blinks_merge_close(eyes=['left'], variables=['pupil'], 
+        copy = data.pupil.blinks_merge_close(eyes=['left'], variables=['pupil'], 
                                        distance=100, units="ms", inplace=False)
         self.assertIsNot(copy, data)
         result = copy.get_blinks('left', 'pupil', units="samples")
@@ -750,7 +750,7 @@ class TestEyeData(unittest.TestCase):
         data.set_blinks(intervals_left, eyes=['left'], variables=['pupil'])
         data.set_blinks(intervals_right, eyes=['right'], variables=['pupil'])
         
-        result = data.blinks_merge_close(eyes=['left', 'right'], variables=['pupil'], 
+        result = data.pupil.blinks_merge_close(eyes=['left', 'right'], variables=['pupil'], 
                                          distance=100, units="ms").get_blinks(
                                              variables='pupil', units="samples")
         

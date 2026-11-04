@@ -409,10 +409,10 @@ class TestBlinkLayer:
         d.set_blinks(pp.Intervals([(100, 400), (150, 200), (420, 430)], units="samples"),
                      eyes="left", variables="pupil")
         assert d.get_blinks("left", "pupil", units="samples")["left_pupil"].intervals == [(100, 400), (420, 430)]
-        merged = d.blinks_merge_close(distance=10, units="samples", inplace=False)
+        merged = d.pupil.blinks_merge_close(distance=10, units="samples", inplace=False)
         assert merged.get_blinks("left", "pupil", units="samples")["left_pupil"].intervals \
             == [(100, 400), (420, 430)]
-        d.blinks_merge_close(distance=30, units="samples")
+        d.pupil.blinks_merge_close(distance=30, units="samples")
         assert d.get_blinks("left", "pupil", units="samples")["left_pupil"].intervals == [(100, 430)]
         assert d.data.mask["left_pupil"][100:430].all()
 

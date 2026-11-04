@@ -206,10 +206,10 @@ class TestIncompleteIntervals:
         d = incomplete_eyedata
         iv = pp.Intervals([(10, 20), (22, 30)], units="samples")
         d.set_blinks(iv)
-        merged = d.blinks_merge_close(distance=5, units="samples", inplace=False)
+        merged = d.pupil.blinks_merge_close(distance=5, units="samples", inplace=False)
         assert merged.nblinks() == {
             "left_pupil": 1, "left_x": 1, "left_y": 1, "right_pupil": 1}
-        d.blinks_merge_close(distance=5, units="samples")
+        d.pupil.blinks_merge_close(distance=5, units="samples")
         assert d.nblinks() == {"left_pupil": 1, "left_x": 1, "left_y": 1, "right_pupil": 1}
 
     def test_stat_per_event(self, incomplete_eyedata):

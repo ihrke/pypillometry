@@ -613,6 +613,81 @@ class PupilNamespace(Namespace):
         return obj
     
     @keephistory
+    def blinks_merge_close(
+        self,
+        eyes: list = [],
+        variables: list = [],
+        distance: float = 100,
+        units: str = "ms",
+        inplace: bool | None = None,
+    ):
+        """
+        Merge blinks that are close together.
+
+        The merged blinks replace the ``"blink"`` layer of the processed
+        variables (see :meth:`~pypillometry.GenericEyeData.set_blinks`); read them with
+        :meth:`~pypillometry.GenericEyeData.get_blinks`.
+        
+        Parameters
+        ----------
+        eyes : str or list of str, optional
+            eye(s) to process; if empty, all available eyes
+        variables : str or list of str, optional
+            variable(s) to process; if empty, all available variables
+        distance : float, str or Quantity, optional
+            Merge blinks closer than this distance, e.g. ``100 * u.ms`` or
+            ``"0.1 sec"``; plain numbers are in units given by ``units``.
+            Default 100.
+        units : str, optional
+            Units for ``distance`` if it is a plain number. Can be "ms",
+            "sec", "min", or "h". Default "ms".
+        inplace : bool or None, optional
+            if `True`, make change in-place and return the object;
+            if `False`, make and return copy before making changes;
+            if `None`, use the object-level setting (specified in the constructor).
+            
+        Returns
+        -------
+        :class:`~pypillometry.GenericEyeData`
+            the object with the merged blinks (`self` or a copy, depending
+            on `inplace`)
+        """
+        obj = self._d._get_inplace(inplace)
+        pairs = obj.data.select(eyes, variables)
+
+        distance_ix = obj._samples(distance, units)
+
+        logger.debug(f"Distance '{distance}' in index units: {distance_ix}")
+
+        for eye, var in pairs:
+            # all runs, also those next to excluded periods (set_blinks replaces the layer)
+            blinks = obj._layer_runs(f"{eye}_{var}", "blink")
+            if len(blinks) == 0:
+                continue
+            logger.debug(f"Processing blinks for eye {eye} and variable {var}: {len(blinks)} blinks")
+            blinks_array = np.array(blinks).astype(int)
+            
+            newblinks = []
+            i = 1
+            cblink = blinks_array[0, :].copy()
+            while i < blinks_array.shape[0]:
+                if (blinks_array[i, 0] - cblink[1]) <= distance_ix:
+                    cblink[1] = blinks_array[i, 1]
+                else:
+                    newblinks.append(cblink)
+                    cblink = blinks_array[i, :].copy()
+                i += 1
+            newblinks.append(cblink)
+            
+            # Store merged blinks as Intervals
+            merged_intervals = Intervals(
+                intervals=[(int(s), int(e)) for s, e in newblinks],
+                units="samples",
+                label=f"{eye}_{var}_blinks")
+            obj.set_blinks(merged_intervals, eyes=[eye], variables=[var])
+        return obj
+
+    @keephistory
     def blinks_interpolate(self, eyes: str|list=[],
                                  store_as: str="pupil", 
                                  method="mahot", winsize: float=25, 
