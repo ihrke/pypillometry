@@ -113,6 +113,9 @@ The main ones:
 - `plot_heatmap(show_masked=True)` with NaN samples
 - A `plot_range` with start after end raises an error
 - The sample at the end of `plot_range` was not plotted
+- `scale()` twice (or for different variables) then `unscale()` left the
+  data scaled or raised: the stored parameters are combined per channel,
+  and `unscale()` removes those of the channels it restores
 - `pypilview --eyes right FILE` took the file for an eye
 - `CircularROI.from_degrees`/`RectangularROI.from_degrees` read plain
   numbers as radians; they are degrees now (as in

@@ -2577,7 +2577,9 @@ class GenericEyeData(state.VersionedState, ABC):
         Notes
         -----
         Scaling-parameters are being saved in the `params["scale"]` attribute
-        and are used by :meth:`unscale`.
+        (per eye and variable) and are used by :meth:`unscale`. Scaling a
+        variable again combines the parameters, so that :meth:`unscale`
+        restores the values before the first `scale`.
         """
         obj = self._get_inplace(inplace)
         pairs = obj.data.select(eyes, variables)
@@ -2602,11 +2604,16 @@ class GenericEyeData(state.VersionedState, ABC):
         # check that all eye/var combinations are present in mean/sd
         _check_per_pair(pairs, mean, sd)
 
-        # store scaling parameters
-        obj.params["scale"]={
-            "mean": mean,
-            "sd": sd
-        }
+        # store scaling parameters (per channel; combined with those of an
+        # earlier scale() of the same channel, so that unscale() undoes both)
+        stored = obj.params.get("scale") or {}
+        smean = {eye: dict(v) for eye, v in stored.get("mean", {}).items()}
+        ssd = {eye: dict(v) for eye, v in stored.get("sd", {}).items()}
+        for eye, var in pairs:
+            m0, s0 = smean.get(eye, {}).get(var, 0.), ssd.get(eye, {}).get(var, 1.)
+            smean.setdefault(eye, {})[var] = m0 + mean[eye][var] * s0
+            ssd.setdefault(eye, {})[var] = s0 * sd[eye][var]
+        obj.params["scale"] = {"mean": smean, "sd": ssd}
 
         for eye, var in pairs:
             # scale the masked samples too, keep the layers
@@ -2622,7 +2629,8 @@ class GenericEyeData(state.VersionedState, ABC):
         Scale back to original values using either values provided as arguments
         or the values stored in `params["scale"]` by :meth:`scale`.
 
-        The signal is multiplied by `sd` and `mean` is added.
+        The signal is multiplied by `sd` and `mean` is added. The stored
+        parameters of the unscaled channels are removed.
 
         Parameters
         ----------
@@ -2675,6 +2683,15 @@ class GenericEyeData(state.VersionedState, ABC):
             key = f"{eye}_{var}"
             obj.data.set_with_mask(key, obj.data[key] * sd[eye][var] + mean[eye][var],
                                    preserve_mask=True)
+        # the unscaled channels have no scaling parameters any more
+        stored = obj.params.get("scale")
+        if stored:
+            smean = {eye: {v: x for v, x in vs.items() if (eye, v) not in pairs}
+                     for eye, vs in stored.get("mean", {}).items()}
+            ssd = {eye: {v: x for v, x in vs.items() if (eye, v) not in pairs}
+                   for eye, vs in stored.get("sd", {}).items()}
+            obj.params["scale"] = {"mean": {e: v for e, v in smean.items() if v},
+                                   "sd": {e: v for e, v in ssd.items() if v}}
         return obj    
 
     
