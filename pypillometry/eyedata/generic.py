@@ -669,7 +669,14 @@ class GenericEyeData(state.VersionedState, ABC):
         """
         Raise the AttributeError for a missing attribute, naming the new
         method if it is one of the renamed methods (``_RENAMED_METHODS``).
+
+        Python calls this only when the normal lookup fails. If an attribute
+        of the class (e.g., a property) raised the AttributeError, it is run
+        again, so that its own error is reported instead of "object has no
+        attribute".
         """
+        if any(name in vars(cls) for cls in type(self).__mro__):
+            return object.__getattribute__(self, name)
         hint = ""
         if name in _RENAMED_METHODS:
             hint = f" (renamed: use .{_RENAMED_METHODS[name]}(...))"

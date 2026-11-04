@@ -105,3 +105,14 @@ class TestRenamedMethods:
             d.plot_timeseries()
         with pytest.raises(AttributeError, match=r"has no attribute 'no_such_thing'$"):
             d.no_such_thing
+
+    def test_property_error_not_masked(self):
+        # an AttributeError inside a property is reported as it is, not as
+        # "object has no attribute '<property>'"
+        class Broken(pp.EyeData):
+            @property
+            def broken(self):
+                return self.data.no_such_field
+        d = Broken(left_pupil=np.ones(10), sampling_rate=10)
+        with pytest.raises(AttributeError, match="no_such_field"):
+            d.broken
