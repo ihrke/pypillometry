@@ -106,6 +106,9 @@ The main ones:
 - Experimental setup and calibration were lost when saving some objects
 - `plot_heatmap(show_masked=True)` with NaN samples
 - A `plot_range` with start after end raises an error
+- Re-running `pupil.blinks_detect()` after `pupil.blinks_interpolate()`
+  found no blinks (it read the interpolated values) and cleared the blink
+  layer; interpolated samples now count as missing during detection
 
 ### Upgrading code: old -> new
 

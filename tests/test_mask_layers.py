@@ -377,6 +377,23 @@ class TestBlinkLayer:
         d.pupil.blinks_detect(strategies=["velocity"], min_duration=10)
         assert int(d.data.mask["left_pupil"].sum()) == n1
 
+    def test_redetection_after_interpolation_finds_the_blinks(self):
+        # the interpolated samples count as missing, so detection does not
+        # read the reconstructed values and wipe the blink layer
+        d = blink_data().pupil.blinks_detect().pupil.blinks_interpolate()
+        interp = d.get_interpolated_blinks("left", "pupil", units="samples")["left_pupil"].intervals
+        d.pupil.blinks_detect()
+        blinks = d.get_blinks("left", "pupil", units="samples")["left_pupil"].intervals
+        assert blinks == interp
+        d.pupil.blinks_detect()
+        assert d.get_blinks("left", "pupil", units="samples")["left_pupil"].intervals == blinks
+        # still usable by default (interpolated), masked under "strict"
+        assert not d.mask("left", "pupil")[d.data.get_layer("left_pupil", "blink")].any()
+        assert d.mask("left", "pupil", "strict")[d.data.get_layer("left_pupil", "blink")].all()
+        # ignoring the mask reads the stored (interpolated) values
+        assert d.pupil.blinks_detect(ignore_existing_mask=True, inplace=False).nblinks() \
+            == {"left_pupil": 0}
+
     def test_set_blinks_none_and_clear_layer_unmask(self):
         d = blink_data()
         nan = np.isnan(d.data["left_pupil"])

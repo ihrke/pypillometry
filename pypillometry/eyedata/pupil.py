@@ -522,8 +522,11 @@ class PupilNamespace(Namespace):
         ignore_existing_mask : bool
             if `True`, use raw data ignoring existing masks
             if `False` (default), only detect blinks in the usable data under
-            the default mask policy (masked regions are skipped; interpolated
-            samples are used, see :meth:`~pypillometry.GenericEyeData.mask`)
+            the ``"strict"`` mask policy (masked regions are skipped, see
+            :meth:`~pypillometry.GenericEyeData.mask`); interpolated samples
+            count as missing, so that detection after
+            :meth:`blinks_interpolate` finds the interpolated blinks again
+            (instead of reading the reconstructed values)
         inplace : bool or None
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes                                                    
@@ -566,9 +569,13 @@ class PupilNamespace(Namespace):
             # the new blinks replace the old ones, which must not mask the data
             obj.set_blinks(None, eyes=[eye], variables=["pupil"])
 
-            # pupil data: unusable samples (default mask policy) are NaN,
-            # unless the existing mask is ignored
-            pupil_data = obj.values(eye, "pupil", "raw" if ignore_existing_mask else "default")
+            # pupil data: unusable samples are NaN, unless the existing mask
+            # is ignored; interpolated samples count as missing (they are
+            # reconstructed blinks), so re-detection after interpolation
+            # finds the blinks again
+            pupil_data = obj.values(eye, "pupil", "raw" if ignore_existing_mask else "strict")
+            interpolated = (np.zeros(len(pupil_data), dtype=bool) if ignore_existing_mask
+                            else obj.data.get_layer(f"{eye}_pupil", "interpolated"))
             
             ## detect blinks with the different strategies
             if "velocity" in strategies:
@@ -589,6 +596,7 @@ class PupilNamespace(Namespace):
                 raw = obj.data[eye, "pupil"]
                 if not np.isnan(blink_val):
                     raw = np.where(raw == blink_val, np.nan, raw)
+                raw = np.where(interpolated, np.nan, raw)
                 blinks_zero=preproc.detect_blinks_zero(raw, 1, np.nan)
                 logger.debug(f"Detected {len(blinks_zero)} blinks with zero strategy")
             else:
