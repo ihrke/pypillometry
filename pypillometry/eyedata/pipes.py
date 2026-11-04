@@ -57,7 +57,8 @@ def generic_step(method):
     Make the top-level step factory (e.g., ``pp.crop``) for a generic method.
 
     The factory has the signature (without `self` and `inplace`) and the
-    docstring of the method and returns a :class:`Step`.
+    docstring of the method (after a line that names it) and returns a
+    :class:`Step`.
 
     Parameters
     ----------
@@ -78,6 +79,9 @@ def generic_step(method):
     sig = inspect.signature(method)
     params = [p for p in list(sig.parameters.values())[1:] if p.name != "inplace"]
     factory.__signature__ = sig.replace(parameters=params)
+    factory.__doc__ = (f"Pipeline step for :meth:`~pypillometry.GenericEyeData.{method.__name__}`"
+                       f" (``d | pp.{method.__name__}(...)``).\n\n"
+                       + inspect.cleandoc(method.__doc__ or ""))
     return factory
 
 
