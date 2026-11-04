@@ -16,8 +16,8 @@ If you have not used the package before, start with the
       :link: data_model
       :link-type: doc
 
-      ``EyeData``; eyes and variables;
-      masks; pipelines, in-place operations and history.
+      ``EyeData``; channels; mask layers and policies; pipelines,
+      in-place operations and history.
 
    .. grid-item-card:: :fas:`file-import` Loading and saving data
       :link: loading_data
@@ -88,6 +88,13 @@ If you have not used the package before, start with the
       Package-wide defaults and how much the package tells you about what
       it does.
 
+   .. grid-item-card:: :fas:`arrow-up` Upgrading from 2.1
+      :link: upgrading
+      :link-type: doc
+
+      What changed in 2.2 (namespaces, pipelines, mask layers) and how to
+      update scripts and saved files.
+
 .. toctree::
    :hidden:
    :maxdepth: 2
@@ -103,3 +110,4 @@ If you have not used the package before, start with the
    modeling
    studies
    settings
+   upgrading

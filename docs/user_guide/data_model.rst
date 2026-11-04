@@ -91,6 +91,8 @@ your own arrays with ``d["left", "myvar"] = array``.
 See the tutorial :doc:`/notebooks/eyes_and_variables` for examples.
 
 
+.. _data-model-masks:
+
 Masks, layers and policies
 --------------------------
 
@@ -250,6 +252,8 @@ are no gaps):
     parts = d.split_excluded()     # list of objects, original time
     joined = d.remove_intervals(d.get_excluded())   # one object, time re-aligned
 
+
+.. _data-model-pipelines:
 
 Pipelines and history
 ---------------------
