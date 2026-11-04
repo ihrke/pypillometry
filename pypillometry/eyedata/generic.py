@@ -14,6 +14,8 @@ from ..io import download
 from .eyedatadict import (EyeDataDict, LAYER_DTYPE, REC_LAYERS,
                           MaskPolicy, _as_policy, _join_key)
 from .experimental_setup import ExperimentalSetup
+from .namespace import Namespace
+from .pipes import step, Step, Pipeline, _missing_call
 from ..signal import baseline
 from ..intervals import stat_event_interval, Intervals, _as_intervals
 from ..epochs import Epochs
@@ -29,6 +31,7 @@ from loguru import logger
 #from pytypes import typechecked
 from typing import Sequence, Union, List, TypeVar, Optional, Tuple, Callable, Dict, Any
 import functools
+import inspect
 from random import choice
 from importlib import resources
 from io import BytesIO
@@ -63,6 +66,24 @@ def _history_arg(v):
         return type(v).__name__
 
 
+#: methods renamed in version 2.2 (old name -> new name; no forwarders): the
+#: pupil and gaze methods moved into the namespaces ``d.pupil`` and ``d.gaze``
+_RENAMED_METHODS = {
+    "pupil_lowpass_filter": "pupil.lowpass_filter",
+    "pupil_smooth_window": "pupil.smooth_window",
+    "pupil_merge_eyes": "pupil.merge_eyes",
+    "pupil_blinks_detect": "pupil.blinks_detect",
+    "pupil_blinks_interpolate": "pupil.blinks_interpolate",
+    "pupil_estimate_baseline": "pupil.estimate_baseline",
+    "pupil_estimate_response": "pupil.estimate_response",
+    "blinks_merge_close": "pupil.blinks_merge_close",
+    "correct_pupil_foreshortening": "pupil.correct_foreshortening",
+    "fit_foreshortening": "pupil.fit_foreshortening",
+    "mask_offscreen_coords": "gaze.mask_offscreen",
+    "mask_eye_divergences": "gaze.mask_divergences",
+}
+
+
 # number of decorated methods currently running; only the outermost call
 # (the one made by the user) is recorded
 _history_depth = 0
@@ -77,14 +98,16 @@ def keephistory(func):
     if it returned nothing, e.g. for setters), provided that object is an
     eyedata object (i.e., has an ``add_to_history`` method).
     Calls made from inside another decorated method are not recorded, and
-    large arguments are only summarized (e.g., ``Intervals(13)``). The history
+    large arguments are only summarized (e.g., ``Intervals(13)``); the
+    `inplace` argument is left out (it does not change the result). The history
     is a log of the operations; show it with
     :meth:`~pypillometry.GenericEyeData.print_history`.
 
     Parameters
     ----------
     func : callable
-        method to wrap; its first argument must be the object (`self`)
+        method to wrap; its first argument must be the object (`self`) or a
+        :class:`~pypillometry.eyedata.namespace.Namespace` of it
 
     Returns
     -------
@@ -100,13 +123,18 @@ def keephistory(func):
         finally:
             _history_depth -= 1
         # record in the returned object, or in `self` for in-place setters
-        # that return nothing
-        target = obj if obj is not None else args[0]
+        # that return nothing; methods of a namespace (e.g., ``d.pupil``)
+        # are recorded with its name (``pupil.blinks_detect``)
+        self, name = args[0], func.__name__
+        if isinstance(self, Namespace):
+            self, name = self._d, f"{self._name}.{name}"
+        target = obj if obj is not None else self
         if _history_depth == 0 and hasattr(target, 'add_to_history'):
             allargs = [_history_arg(v) for v in args[1:]]
-            allargs += [f"{k}={_history_arg(v)}" for k, v in kwargs.items()]
-            fstr = f"{func.__name__}({','.join(allargs)})"
-            target.add_to_history({"funcstring": fstr, "funcname": func.__name__})
+            allargs += [f"{k}={_history_arg(v)}" for k, v in kwargs.items()
+                        if k != "inplace"]  # does not change the result
+            fstr = f"{name}({','.join(allargs)})"
+            target.add_to_history({"funcstring": fstr, "funcname": name})
         return obj
     return wrapper
 
@@ -355,7 +383,7 @@ class GenericEyeData(state.VersionedState, ABC):
         ## fill in time discontinuities (part of construction, so bypass
         ## @keephistory and keep it out of the history)
         if fill_time_discontinuities:
-            type(self).fill_time_discontinuities.__wrapped__(self, inplace=True)
+            inspect.unwrap(type(self).fill_time_discontinuities)(self, inplace=True)
 
     def _set_timebase(self, tx, fs=None):
         """
@@ -430,6 +458,19 @@ class GenericEyeData(state.VersionedState, ABC):
         r="{"+",".join(["%s: {...}"%k for k in ks])
         r+="}"
         return r
+
+    def __or__(self, other):
+        """
+        Apply a pipeline step or a pipeline: ``d | pp.pupil.blinks_detect()``.
+
+        Returns a processed copy; the object itself is not changed (see
+        :class:`~pypillometry.Pipeline`).
+        """
+        if isinstance(other, (Step, Pipeline)):
+            return other(self)
+        if getattr(other, "_is_step", False):
+            raise TypeError(_missing_call(other))
+        return NotImplemented
 
     def __len__(self):
         """Return number of sampling points"""
@@ -642,8 +683,11 @@ class GenericEyeData(state.VersionedState, ABC):
                 pass
         
         # If not found in plot object, raise the normal AttributeError
+        hint = ""
+        if name in _RENAMED_METHODS:
+            hint = f" (renamed: use .{_RENAMED_METHODS[name]}(...))"
         raise AttributeError(
-            f"'{type(self).__name__}' object has no attribute '{name}'"
+            f"'{type(self).__name__}' object has no attribute '{name}'{hint}"
         )
 
     def nevents(self) -> int:
@@ -711,6 +755,7 @@ class GenericEyeData(state.VersionedState, ABC):
                  else intervals.to_mask(self).astype(bool))
         self.data.set_layer(key, "blink", blink, replace=True)
     
+    @step
     @keephistory
     def set_blinks(self, intervals, eyes=[], variables=[]):
         """
@@ -814,7 +859,7 @@ class GenericEyeData(state.VersionedState, ABC):
         
         Interpolated blinks are the runs of the ``"interpolated"`` layer:
         the blink regions that were successfully interpolated
-        by `pupil_blinks_interpolate()` (and the intervals interpolated by
+        by :meth:`d.pupil.blinks_interpolate() <pypillometry.eyedata.pupil.PupilNamespace.blinks_interpolate>` (and the intervals interpolated by
         :meth:`interpolate_intervals`). These may differ from detected blinks because:
 
         - Blink boundaries are refined using velocity thresholds
@@ -849,7 +894,7 @@ class GenericEyeData(state.VersionedState, ABC):
         See Also
         --------
         get_blinks : Get detected (not interpolated) blinks
-        pupil_blinks_interpolate : Interpolate blinks
+        pypillometry.eyedata.pupil.PupilNamespace.blinks_interpolate : Interpolate blinks
         """
         return self._layer_intervals("interpolated", eyes, variables, units,
                                      "interpolated_blinks")
@@ -885,7 +930,7 @@ class GenericEyeData(state.VersionedState, ABC):
 
         Examples
         --------
-        >>> d = d.mask_offscreen_coords()  # doctest: +SKIP
+        >>> d = d.gaze.mask_offscreen()  # doctest: +SKIP
         >>> d.get_layer_intervals("offscreen", variables="x")  # doctest: +SKIP
         """
         return self._layer_intervals(name, eyes, variables, units, name)
@@ -978,6 +1023,7 @@ class GenericEyeData(state.VersionedState, ABC):
         out[self.data.get_policy_mask(key, policy)] = np.nan
         return out
 
+    @step
     @keephistory
     def clear_layer(self, name: str, eyes: str|list = [], variables: str|list = [],
                     inplace=None):
@@ -985,7 +1031,7 @@ class GenericEyeData(state.VersionedState, ABC):
         Clear a mask layer (e.g., ``"blink"``) for the selected channels.
 
         Clearing ``"blink"`` removes the blinks and their mask (e.g., to
-        undo :meth:`~pypillometry.EyeData.pupil_blinks_detect`).
+        undo :meth:`d.pupil.blinks_detect() <pypillometry.eyedata.pupil.PupilNamespace.blinks_detect>`).
         ``"excluded"`` is a recording-wide layer: clearing it removes the
         excluded periods (`eyes` and `variables` are ignored).
 
@@ -1085,7 +1131,8 @@ class GenericEyeData(state.VersionedState, ABC):
 
     def nblinks(self, eyes=[], variables=[]) -> Dict[str, int]:
         """
-        Return number of detected blinks. Should be run after `pupil_blinks_detect()`.
+        Return number of detected blinks. Should be run after
+        :meth:`d.pupil.blinks_detect() <pypillometry.eyedata.pupil.PupilNamespace.blinks_detect>`.
 
         By default, all eyes and variables are considered.
 
@@ -1146,7 +1193,7 @@ class GenericEyeData(state.VersionedState, ABC):
         - both eyes: correlation of the pupils and disparity of the gaze
 
         Further measures are added if available: blinks (after
-        :meth:`~pypillometry.EyeData.pupil_blinks_detect`), masked and
+        :meth:`d.pupil.blinks_detect() <pypillometry.eyedata.pupil.PupilNamespace.blinks_detect>`), masked and
         interpolated data (after preprocessing; masked: unusable under the
         mask `policy`, see :meth:`mask`) and calibration/validation
         errors (e.g., when read from an Eyelink file).
@@ -1257,6 +1304,7 @@ class GenericEyeData(state.VersionedState, ABC):
 
         return ''.join([choice(v if i%2 else c) for i in range(n)])
 
+    @step
     @keephistory
     def drop_original(self, inplace=None):
         """
@@ -1283,6 +1331,7 @@ class GenericEyeData(state.VersionedState, ABC):
         return obj
     
 
+    @step
     @keephistory
     def reset_time(self, t0: float|None=None, inplace=None):
         """
@@ -1412,6 +1461,7 @@ class GenericEyeData(state.VersionedState, ABC):
             self._events = self._events.shift(time_map)
         return self
 
+    @step
     @keephistory
     def crop(self,
              start: float=-np.inf,
@@ -1813,6 +1863,7 @@ class GenericEyeData(state.VersionedState, ABC):
             result.name = new_name
         return result
 
+    @step
     @keephistory
     def drop_data(self, eyes: list = [], variables: list = [], inplace=None):
         """
@@ -1927,6 +1978,61 @@ class GenericEyeData(state.VersionedState, ABC):
         """
         return self._events
 
+    @step
+    @keephistory
+    def set_experimental_setup(self, **kwargs):
+        """
+        Set or update the experimental setup geometry (in-place).
+        
+        Creates a new :class:`~pypillometry.ExperimentalSetup` or updates the
+        existing one with the provided parameters (parameters that are not
+        given are taken from the existing setup). All parameters are passed
+        through to the ExperimentalSetup constructor.
+
+        Parameters
+        ----------
+        **kwargs : dict
+            Any parameters accepted by :class:`~pypillometry.ExperimentalSetup`:
+
+            - screen_resolution: tuple (width, height) in pixels
+            - physical_screen_size: tuple (width, height) with units
+            - eye_to_screen_center: distance from the eye to the screen center
+            - screen_offset: tuple (delta_x, delta_y) - offset of screen center from eye
+            - screen_pitch: tilt angle (alpha_tilt)
+            - screen_yaw: tilt angle (beta_tilt)
+            - camera_offset: tuple (x, y, z) in eye-centric frame
+            - camera_spherical: tuple (theta, phi, r)
+            - ipd: inter-pupillary distance
+
+        Returns
+        -------
+        :class:`~pypillometry.EyeData`
+            the object itself (always modified in-place)
+        
+        Examples
+        --------
+        >>> data.set_experimental_setup(
+        ...     screen_resolution=(1920, 1080),
+        ...     physical_screen_size=("52 cm", "29 cm"),
+        ...     eye_to_screen_center="65 cm",
+        ... )
+        """
+        if self.experimental_setup is None:
+            # Create new setup
+            self.experimental_setup = ExperimentalSetup(**kwargs)
+        else:
+            # Merge with existing setup (stored values get their units
+            # back, so they are not parsed as plain numbers)
+            old = ExperimentalSetup._constructor_kwargs(self.experimental_setup.to_dict())
+            if 'camera_offset' in kwargs or 'camera_spherical' in kwargs:
+                # a new camera position replaces the old one completely
+                old['camera_offset'], old['camera_spherical'] = None, None
+            merged = {**old, **kwargs}
+
+            self.experimental_setup = ExperimentalSetup(**merged)
+        return self
+
+    @step
     @keephistory
     def set_events(self, events):
         """
@@ -1966,6 +2072,7 @@ class GenericEyeData(state.VersionedState, ABC):
         self._events = self._check_events(events)
         return self
 
+    @step
     @keephistory
     def add_events(self, events, inplace=None):
         """
@@ -2052,6 +2159,7 @@ class GenericEyeData(state.VersionedState, ABC):
                              f"found {len(onsets)}")
         return float(onsets[0])
 
+    @step
     @keephistory
     def fill_time_discontinuities(self, yval=np.nan, print_info=True, inplace=None):
         """
@@ -2411,6 +2519,7 @@ class GenericEyeData(state.VersionedState, ABC):
         return SegmentedEyeData.from_eyedata(self, intervals, variable, name=name,
                                              policy=policy)
 
+    @step
     @keephistory
     def scale(self, variables=[], mean: Union[float,dict,None]=None, 
               sd: Union[float,dict,None]=None, eyes=[], policy="default", inplace=None):
@@ -2494,6 +2603,7 @@ class GenericEyeData(state.VersionedState, ABC):
                                    preserve_mask=True)
         return obj
         
+    @step
     @keephistory    
     def unscale(self, variables=[], mean=None, sd=None, eyes=[], inplace=None):
         """
@@ -2556,6 +2666,7 @@ class GenericEyeData(state.VersionedState, ABC):
         return obj    
 
     
+    @step
     @keephistory
     def downsample(self, fsd: float, dsfac: bool=False, policy="default", inplace=None):
         """
@@ -2630,6 +2741,7 @@ class GenericEyeData(state.VersionedState, ABC):
         self._set_timebase(baseline.downsample(self.tx, factor), self.fs/factor)
         return self
 
+    @step
     @keephistory
     def merge_eyes(self, eyes=[], variables=[], method="mean", keep_eyes=True,
                    policy="default", name="mean", inplace=None):
@@ -2661,7 +2773,7 @@ class GenericEyeData(state.VersionedState, ABC):
             :meth:`mask`); default ``"default"``
         name : str, optional
             name of the new eye; default ``"mean"`` (as in
-            :meth:`~pypillometry.EyeData.pupil_merge_eyes`)
+            :meth:`d.pupil.merge_eyes() <pypillometry.eyedata.pupil.PupilNamespace.merge_eyes>`)
         inplace : bool or None, optional
             if `True`, make change in-place and return the object;
             if `False`, make and return copy before making changes;
@@ -2702,80 +2814,6 @@ class GenericEyeData(state.VersionedState, ABC):
 
         return obj
         
-    @keephistory
-    def blinks_merge_close(
-        self,
-        eyes: list = [],
-        variables: list = [],
-        distance: float = 100,
-        units: str = "ms",
-        inplace: bool | None = None,
-    ):
-        """
-        Merge blinks that are close together.
-
-        The merged blinks replace the ``"blink"`` layer of the processed
-        variables (see :meth:`set_blinks`); read them with :meth:`get_blinks`.
-        
-        Parameters
-        ----------
-        eyes : str or list of str, optional
-            eye(s) to process; if empty, all available eyes
-        variables : str or list of str, optional
-            variable(s) to process; if empty, all available variables
-        distance : float, str or Quantity, optional
-            Merge blinks closer than this distance, e.g. ``100 * u.ms`` or
-            ``"0.1 sec"``; plain numbers are in units given by ``units``.
-            Default 100.
-        units : str, optional
-            Units for ``distance`` if it is a plain number. Can be "ms",
-            "sec", "min", or "h". Default "ms".
-        inplace : bool or None, optional
-            if `True`, make change in-place and return the object;
-            if `False`, make and return copy before making changes;
-            if `None`, use the object-level setting (specified in the constructor).
-            
-        Returns
-        -------
-        :class:`~pypillometry.GenericEyeData`
-            the object with the merged blinks (`self` or a copy, depending
-            on `inplace`)
-        """
-        obj = self._get_inplace(inplace)
-        pairs = obj.data.select(eyes, variables)
-
-        distance_ix = obj._samples(distance, units)
-
-        logger.debug(f"Distance '{distance}' in index units: {distance_ix}")
-
-        for eye, var in pairs:
-            # all runs, also those next to excluded periods (set_blinks replaces the layer)
-            blinks = obj._layer_runs(f"{eye}_{var}", "blink")
-            if len(blinks) == 0:
-                continue
-            logger.debug(f"Processing blinks for eye {eye} and variable {var}: {len(blinks)} blinks")
-            blinks_array = np.array(blinks).astype(int)
-            
-            newblinks = []
-            i = 1
-            cblink = blinks_array[0, :].copy()
-            while i < blinks_array.shape[0]:
-                if (blinks_array[i, 0] - cblink[1]) <= distance_ix:
-                    cblink[1] = blinks_array[i, 1]
-                else:
-                    newblinks.append(cblink)
-                    cblink = blinks_array[i, :].copy()
-                i += 1
-            newblinks.append(cblink)
-            
-            # Store merged blinks as Intervals
-            merged_intervals = Intervals(
-                intervals=[(int(s), int(e)) for s, e in newblinks],
-                units="samples",
-                label=f"{eye}_{var}_blinks")
-            obj.set_blinks(merged_intervals, eyes=[eye], variables=[var])
-        return obj
-            
     def stat_per_event(self, 
                        intervals=None,
                        window: Tuple[float,float]=None, event_select=None,
@@ -2910,6 +2948,7 @@ class GenericEyeData(state.VersionedState, ABC):
             # For non-cached objects, return total size
             return ByteSize(data_size + other_size)
 
+    @step
     @keephistory
     def merge_masks(self, inplace=None):
         """Merge masks of all variables into a single joint mask.
@@ -2941,6 +2980,7 @@ class GenericEyeData(state.VersionedState, ABC):
             
         return obj
 
+    @step
     @keephistory
     def mask_intervals(self, intervals, eyes=[], variables=[], inplace=None):
         """Apply Intervals as masks to selected data.
@@ -2989,11 +3029,11 @@ class GenericEyeData(state.VersionedState, ABC):
         
         Chain with other operations:
         
-        >>> data.mask_intervals(blinks).pupil_lowpass_filter(cutoff=5)
+        >>> data.mask_intervals(blinks).pupil.lowpass_filter(cutoff=5)
         
         See Also
         --------
-        pupil_blinks_detect : Detect blinks with optional masking
+        pypillometry.eyedata.pupil.PupilNamespace.blinks_detect : Detect blinks
         get_blinks : Retrieve stored blink intervals
         """
         obj = self._get_inplace(inplace)
@@ -3017,6 +3057,7 @@ class GenericEyeData(state.VersionedState, ABC):
         
         return obj
 
+    @step
     @keephistory
     def interpolate_intervals(self, intervals, eyes=[], variables=[], 
                              method="linear", margin=(-20, 20),
@@ -3232,6 +3273,7 @@ class GenericEyeData(state.VersionedState, ABC):
         """Boolean array that is True for the samples in an excluded period."""
         return self.data.get_rec_layer("excluded")
 
+    @step
     @keephistory
     def exclude_intervals(self, intervals, inplace=None):
         """
@@ -3288,6 +3330,7 @@ class GenericEyeData(state.VersionedState, ABC):
         obj.data.set_rec_layer("excluded", Intervals(new, units="ms").to_mask(obj))
         return obj
 
+    @step
     @keephistory
     def keep_intervals(self, intervals, inplace=None):
         """
@@ -3393,6 +3436,7 @@ class GenericEyeData(state.VersionedState, ABC):
                                    inplace=False))
         return parts
 
+    @step
     @keephistory
     def remove_intervals(self, intervals, inplace=None):
         """

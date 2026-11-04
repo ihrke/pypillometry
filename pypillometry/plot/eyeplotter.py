@@ -400,7 +400,7 @@ class EyePlotter(GazePlotter,PupilPlotter):
            >>> d.plot.plot_experimental_setup()
 
         To show fitted angles, pass the result of
-        :meth:`~pypillometry.EyeData.fit_foreshortening` as ``calibration=``, or
+        :meth:`d.pupil.fit_foreshortening() <pypillometry.eyedata.pupil.PupilNamespace.fit_foreshortening>` as ``calibration=``, or
         set ``theta``/``phi`` directly.
         """
         obj = self.obj

@@ -167,7 +167,7 @@ More options:
 Files that are already up to date are not written (also not to ``-o``).
 Loading may print warnings about what was changed, e.g. a sampling rate
 that did not fit the time vector. Some information of old files cannot be
-kept: masks set by ``mask_offscreen_coords``, ``mask_eye_divergences`` or
+kept: masks set by ``mask_offscreen_coords``, ``mask_eye_divergences`` (2.1) or
 by hand become the ``"user"`` mask layer (see the masks in
 :doc:`/user_guide/data_model`).
 As with all pickle files, only convert files you trust.

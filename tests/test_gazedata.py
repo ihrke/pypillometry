@@ -101,7 +101,7 @@ class TestGazeData(unittest.TestCase):
         orig_left_x_mask = d.data.mask['left_x'].copy()
         
         # Apply divergence masking at 90th percentile with distance stored
-        d_masked = d.mask_eye_divergences(threshold=0.9, thr_type="percentile", store_as="dist", inplace=False)
+        d_masked = d.gaze.mask_divergences(threshold=0.9, thr_type="percentile", store_as="dist", inplace=False)
         
         # Verify distance was stored for both eyes (no new eye)
         self.assertEqual(d_masked.eyes, ["left", "right"])
@@ -138,7 +138,7 @@ class TestGazeData(unittest.TestCase):
         )
         
         # Apply divergence masking at 10 pixels threshold
-        d_masked = d.mask_eye_divergences(threshold=10, thr_type="pixel", store_as=None, inplace=False)
+        d_masked = d.gaze.mask_divergences(threshold=10, thr_type="pixel", store_as=None, inplace=False)
         
         # Verify distance was NOT stored (store_as=None)
         self.assertNotIn('dist', d_masked.data)
@@ -169,7 +169,7 @@ class TestGazeData(unittest.TestCase):
         )
         
         # Apply in-place
-        result = d.mask_eye_divergences(threshold=0.9, thr_type="percentile", store_as="mydist", inplace=True)
+        result = d.gaze.mask_divergences(threshold=0.9, thr_type="percentile", store_as="mydist", inplace=True)
         
         # Result should be the same object
         self.assertIs(result, d)
@@ -189,7 +189,7 @@ class TestGazeData(unittest.TestCase):
         
         # Should raise ValueError
         with self.assertRaises(ValueError) as cm:
-            d.mask_eye_divergences(threshold=0.9, thr_type="percentile")
+            d.gaze.mask_divergences(threshold=0.9, thr_type="percentile")
         
         self.assertIn("Both left and right eye data are required", str(cm.exception))
     
@@ -203,7 +203,7 @@ class TestGazeData(unittest.TestCase):
         
         # Should raise ValueError
         with self.assertRaises(ValueError) as cm:
-            d.mask_eye_divergences(threshold=0.9, thr_type="invalid")
+            d.gaze.mask_divergences(threshold=0.9, thr_type="invalid")
         
         self.assertIn("thr_type must be 'percentile' or 'pixel'", str(cm.exception))
     
@@ -217,7 +217,7 @@ class TestGazeData(unittest.TestCase):
         
         # Should raise ValueError for threshold > 1
         with self.assertRaises(ValueError) as cm:
-            d.mask_eye_divergences(threshold=99, thr_type="percentile")
+            d.gaze.mask_divergences(threshold=99, thr_type="percentile")
         
         self.assertIn("threshold must be between 0 and 1", str(cm.exception))
     
@@ -239,7 +239,7 @@ class TestGazeData(unittest.TestCase):
         d.data.add_mask('left_y', np.s_[0])
         
         # Apply divergence masking (with very low threshold to mask nothing new)
-        d_masked = d.mask_eye_divergences(threshold=1000, thr_type="pixel", inplace=False)
+        d_masked = d.gaze.mask_divergences(threshold=1000, thr_type="pixel", inplace=False)
         
         # Original manual mask should still be there
         self.assertEqual(d_masked.data.mask['left_x'][0], 1)
@@ -263,7 +263,7 @@ class TestGazeData(unittest.TestCase):
         d.data.add_mask('left_y', np.s_[1])
         
         # Apply divergence masking
-        d_masked = d.mask_eye_divergences(threshold=0.5, thr_type="percentile", store_as="dist", inplace=False)
+        d_masked = d.gaze.mask_divergences(threshold=0.5, thr_type="percentile", store_as="dist", inplace=False)
         
         # Original masked point should still be masked
         self.assertEqual(d_masked.data.mask['left_x'][1], 1)
@@ -285,7 +285,7 @@ class TestGazeData(unittest.TestCase):
             sampling_rate=1000
         )
         
-        result = d.mask_eye_divergences(threshold=0.5, thr_type="percentile", 
+        result = d.gaze.mask_divergences(threshold=0.5, thr_type="percentile", 
                                         inplace=False)
         result = result.get_layer_intervals("divergence", variables="x", units="samples")
         self.assertEqual(set(result), {"left_x", "right_x"})
@@ -309,7 +309,7 @@ class TestGazeData(unittest.TestCase):
             sampling_rate=1000
         )
         
-        result = d.mask_eye_divergences(threshold=0.5, thr_type="percentile", 
+        result = d.gaze.mask_divergences(threshold=0.5, thr_type="percentile", 
                                        inplace=False)
         
         # Should return the EyeData object (self)
@@ -340,7 +340,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         orig_mask = d.data.mask['left_x'].copy()
         
         # Apply offscreen masking
-        d_masked = d.mask_offscreen_coords(eyes='left', inplace=False)
+        d_masked = d.gaze.mask_offscreen(eyes='left', inplace=False)
         
         # Verify that offscreen points are masked
         self.assertEqual(d_masked.data.mask['left_x'][3], 1)  # x=1500 > 1280
@@ -368,7 +368,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         )
         
         # Mask both eyes
-        d_masked = d.mask_offscreen_coords(inplace=False)
+        d_masked = d.gaze.mask_offscreen(inplace=False)
         
         # Verify left eye masking
         self.assertEqual(d_masked.data.mask['left_x'][2], 1)  # left_x=1500 offscreen
@@ -389,7 +389,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
             experimental_setup=ExperimentalSetup(screen_resolution=(1280, 1024))
         )
         
-        result = d.mask_offscreen_coords(inplace=False).get_layer_intervals("offscreen", units="samples")
+        result = d.gaze.mask_offscreen(inplace=False).get_layer_intervals("offscreen", units="samples")
         self.assertEqual(set(result), {"left_x", "left_y"})
         self.assertIsInstance(result['left_x'], Intervals)
         self.assertGreater(len(result['left_x']), 0)
@@ -407,7 +407,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
             experimental_setup=ExperimentalSetup(screen_resolution=(1280, 1024))
         )
         
-        result = d.mask_offscreen_coords(eyes='left', inplace=False)
+        result = d.gaze.mask_offscreen(eyes='left', inplace=False)
         
         # Should return the EyeData object
         self.assertIsInstance(result, pp.EyeData)
@@ -429,7 +429,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         )
         
         # Apply in-place
-        result = d.mask_offscreen_coords(eyes='left', inplace=True)
+        result = d.gaze.mask_offscreen(eyes='left', inplace=True)
         
         # Result should be the same object
         self.assertIs(result, d)
@@ -448,7 +448,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         
         # Should raise ValueError when experimental_setup is not set
         with self.assertRaises(ValueError) as cm:
-            d.mask_offscreen_coords(eyes='left')
+            d.gaze.mask_offscreen(eyes='left')
         
         self.assertIn("experimental_setup not set", str(cm.exception))
     
@@ -465,7 +465,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         )
         
         # Apply offscreen masking
-        d_masked = d.mask_offscreen_coords(eyes='left', inplace=False)
+        d_masked = d.gaze.mask_offscreen(eyes='left', inplace=False)
         
         # No points should be masked
         self.assertEqual(np.sum(d_masked.data.mask['left_x']), 0)
@@ -484,7 +484,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         )
         
         # Apply offscreen masking
-        d_masked = d.mask_offscreen_coords(eyes='left', inplace=False)
+        d_masked = d.gaze.mask_offscreen(eyes='left', inplace=False)
         
         # Verify negative coordinates are masked
         self.assertEqual(d_masked.data.mask['left_x'][0], 1)  # x=-10 < 0
@@ -507,7 +507,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         d.data.add_mask('left_y', np.s_[1])
         
         # Apply offscreen masking with ignore_existing_mask=False (default)
-        result = d.mask_offscreen_coords(eyes='left', ignore_existing_mask=False, 
+        result = d.gaze.mask_offscreen(eyes='left', ignore_existing_mask=False, 
                                         inplace=False)
         
         # Index 3 should be detected as offscreen (x=1600)
@@ -535,7 +535,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         d.data.add_mask('left_y', np.s_[1])
         
         # Apply offscreen masking with ignore_existing_mask=True
-        result = d.mask_offscreen_coords(eyes='left', ignore_existing_mask=True, 
+        result = d.gaze.mask_offscreen(eyes='left', ignore_existing_mask=True, 
                                         inplace=False)
         
         # Both index 1 and 3 should be detected as offscreen
@@ -562,7 +562,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         d.data.add_mask('left_y', np.s_[0])
         
         # Apply offscreen masking (no points should be offscreen)
-        d_masked = d.mask_offscreen_coords(eyes='left', inplace=False)
+        d_masked = d.gaze.mask_offscreen(eyes='left', inplace=False)
         
         # Original manual mask should still be there
         self.assertEqual(d_masked.data.mask['left_x'][0], 1)
@@ -583,7 +583,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         )
         
         # Mask only left eye
-        d_masked = d.mask_offscreen_coords(eyes='left', inplace=False)
+        d_masked = d.gaze.mask_offscreen(eyes='left', inplace=False)
         
         # Left eye offscreen point should be masked
         self.assertEqual(d_masked.data.mask['left_x'][1], 1)
@@ -606,7 +606,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         )
         
         # Mask both eyes using list
-        d_masked = d.mask_offscreen_coords(eyes=['left', 'right'], inplace=False)
+        d_masked = d.gaze.mask_offscreen(eyes=['left', 'right'], inplace=False)
         
         # Both eyes' offscreen points should be masked
         self.assertEqual(d_masked.data.mask['left_x'][1], 1)
@@ -627,7 +627,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         )
         
         # Call with empty eyes parameter
-        d_masked = d.mask_offscreen_coords(eyes=[], inplace=False)
+        d_masked = d.gaze.mask_offscreen(eyes=[], inplace=False)
         
         # Both eyes should be processed
         self.assertEqual(d_masked.data.mask['left_x'][1], 1)
@@ -647,7 +647,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         
         # Chain operations
         d_processed = (d
-            .mask_offscreen_coords(eyes='left', inplace=False)
+            .gaze.mask_offscreen(eyes='left', inplace=False)
             .scale(['x', 'y'])
         )
         
@@ -671,7 +671,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
             experimental_setup=ExperimentalSetup(screen_resolution=(1280, 1024))
         )
         
-        d_masked = d.mask_offscreen_coords(eyes='left', inplace=False)
+        d_masked = d.gaze.mask_offscreen(eyes='left', inplace=False)
         
         # Coordinates at 0, 1280, 1024 should NOT be masked (at boundary)
         self.assertEqual(d_masked.data.mask['left_x'][0], 0)  # x=0
@@ -708,10 +708,10 @@ def test_stored_divergence_is_not_an_eye():
                    right_x=rng.normal(500, 5, n), right_y=rng.normal(400, 5, n),
                    left_pupil=np.full(n, 1000.), right_pupil=np.full(n, 1000.),
                    sampling_rate=100, inplace=False)
-    d = d.mask_eye_divergences(store_as="div")
+    d = d.gaze.mask_divergences(store_as="div")
     assert d.eyes == ["left", "right"]
     assert d.data.get_layer("left_div", "divergence").sum() == 2  # 99th percentile
-    d.pupil_blinks_detect()
+    d.pupil.blinks_detect()
     d.merge_eyes()
     d.crop(0, 1000)
     d.downsample(50)

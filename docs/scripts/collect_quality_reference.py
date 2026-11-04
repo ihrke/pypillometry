@@ -21,8 +21,8 @@ grouped directly, e.g., with pandas::
     df = pd.read_csv("quality.csv")
     df[df.metric == "noise"].groupby("note").value.describe()
 
-By default, blinks are detected first (``pupil_blinks_detect`` with its
-default settings and ``apply_mask=True``), so that the blink and artifact
+By default, blinks are detected first (``d.pupil.blinks_detect()`` with its
+default settings), so that the blink and artifact
 measures are included as well. This only masks the blinks and does not
 change the raw values, so the other measures are the same as for the raw
 data. Use --raw-only to skip it (e.g., for data that were already
@@ -97,9 +97,9 @@ def recording_info(d):
 
 def rows_for(source, note, raw_only=False):
     d, fmt, _ = _read_file(source, keep_triggers=True)  # keep RECCFG etc.
-    detect = not raw_only and hasattr(d, "pupil_blinks_detect")
+    detect = not raw_only and "pupil" in d.variables
     if detect:
-        d.pupil_blinks_detect(apply_mask=True)
+        d.pupil.blinks_detect()
     report = d.quality_report()
     base = {
         "file": os.path.basename(source), "path": source, "format": fmt,

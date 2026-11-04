@@ -16,7 +16,14 @@ together, see the :doc:`/user_guide/index`.
       :link: data
       :link-type: doc
 
-      ``EyeData`` and its base class.
+      ``EyeData``, its base class, and the pupil and gaze methods
+      (``d.pupil``, ``d.gaze``).
+
+   .. grid-item-card:: Pipelines
+      :link: pipelines
+      :link-type: doc
+
+      Processing steps for ``d | pp.pupil.blinks_detect() | ...``.
 
    .. grid-item-card:: Events and intervals
       :link: events_intervals
@@ -72,6 +79,7 @@ together, see the :doc:`/user_guide/index`.
    :hidden:
 
    data
+   pipelines
    events_intervals
    segments
    plotting

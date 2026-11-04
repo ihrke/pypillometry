@@ -25,6 +25,11 @@ INTERNAL = {
         "nprange", "p_asym_laplac", "p_asym_laplac_kappa", "trans_logistic_vec",
     },
     "pypillometry.example_data": {"DatasetDict"},
+    # namespaces: used as d.pupil / pp.pupil, documented in their modules
+    "pypillometry.eyedata.namespace": {"Namespace", "accessor"},
+    "pypillometry.eyedata.pupil": {"PupilNamespace"},
+    "pypillometry.eyedata.gaze": {"GazeNamespace"},
+    "pypillometry.eyedata.pipes": {"step", "generic_step"},
     "pypillometry.intervals": {"stat_event_interval"},
     "pypillometry.io": {"is_ssh_url"},
     "pypillometry.plot.genplotter": {"GenericPlotter"},
@@ -40,6 +45,14 @@ INTERNAL = {
         "LODLine", "DynamicMaskRegions", "DynamicEventMarkers",
         "SelectionRegion", "HighlightRegion",
     },
+}
+
+# Names in a submodule's __all__ that the top level uses for something else:
+# the low-level function stays in its submodule (e.g. pp.signal.downsample),
+# pp.<name> is the pipeline step.
+SHADOWED = {
+    "pypillometry.signal": {"downsample"},
+    "pypillometry.signal.baseline": {"downsample"},
 }
 
 # Modules that are not imported by the package (legacy code).
@@ -73,10 +86,17 @@ class TestPublicAPI(unittest.TestCase):
 
     def test_submodule_all_is_exported(self):
         for module in _package_modules():
+            shadowed = SHADOWED.get(module.__name__, set())
             for name in getattr(module, "__all__", []):
                 with self.subTest(module=module.__name__, name=name):
                     self.assertIn(name, pp.__all__,
                                   "add it to pypillometry/__init__.py")
+                    if name in shadowed:
+                        self.assertIsNot(getattr(pp, name), getattr(module, name))
+                    elif not isinstance(getattr(module, name), types.ModuleType):
+                        # (pypillometry.viewer.tweak is also a submodule)
+                        self.assertIs(getattr(pp, name), getattr(module, name),
+                                      "same name, different object: add to SHADOWED")
 
     def test_top_level_all_is_clean(self):
         self.assertEqual(len(pp.__all__), len(set(pp.__all__)),

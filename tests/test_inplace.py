@@ -64,12 +64,12 @@ class TestInplaceDefault(unittest.TestCase):
         x = np.array([100., 200, 300, 1500, 500])
         d = pp.EyeData(sampling_rate=10, left_x=x, left_y=x, right_x=x, right_y=x,
                         experimental_setup=ExperimentalSetup(screen_resolution=(1280, 1024)))
-        r = d.mask_offscreen_coords(eyes="left")
+        r = d.gaze.mask_offscreen(eyes="left")
         self.assertIsNot(r, d)
         self.assertEqual(r.data.mask["left_x"][3], 1)
         self.assertEqual(d.data.mask["left_x"][3], 0)
         d.data["right_x"] = x + np.array([0., 0, 0, 0, 900])
-        r = d.mask_eye_divergences(threshold=.5)
+        r = d.gaze.mask_divergences(threshold=.5)
         self.assertGreater(r.data.mask["left_x"].sum(), 0)
         self.assertEqual(d.data.mask["left_x"].sum(), 0)
 

@@ -589,7 +589,7 @@ class GenericPlotter:
            >>> from pypillometry import u
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
-           >>> d.pupil_blinks_detect()
+           >>> d.pupil.blinks_detect()
            >>> plt.figure(figsize=(8, 4))
            >>> d.plot.plot_masked(variables="pupil", units="sec")
 

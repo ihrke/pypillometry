@@ -310,7 +310,7 @@ def blink_data():
 class TestInterpolatedLayer:
 
     def test_blinks_interpolate_sets_layer(self):
-        d = blink_data().pupil_blinks_detect().pupil_blinks_interpolate()
+        d = blink_data().pupil.blinks_detect().pupil.blinks_interpolate()
         interp = d.data.get_layer("left_pupil", "interpolated")
         iv = d.get_interpolated_blinks("left", "pupil", units="samples")["left_pupil"]
         assert len(iv) == 3
@@ -321,8 +321,8 @@ class TestInterpolatedLayer:
         assert d.mask("left", "pupil", policy="strict")[interp].all()
 
     def test_store_as_other_variable(self):
-        d = blink_data().pupil_blinks_detect()
-        d.pupil_blinks_interpolate(store_as="pupilinterp")
+        d = blink_data().pupil.blinks_detect()
+        d.pupil.blinks_interpolate(store_as="pupilinterp")
         assert not d.data.get_layer("left_pupil", "interpolated").any()
         assert len(d.get_interpolated_blinks("left", "pupilinterp", units="samples")["left_pupilinterp"]) == 3
         np.testing.assert_array_equal(
@@ -357,7 +357,7 @@ class TestInterpolatedLayer:
 class TestBlinkLayer:
 
     def test_detect_sets_layer_and_mask(self):
-        d = blink_data().pupil_blinks_detect()
+        d = blink_data().pupil.blinks_detect()
         blink = d.data.get_layer("left_pupil", "blink")
         np.testing.assert_array_equal(d.get_blinks("left", "pupil", units="samples")["left_pupil"].to_mask(d).astype(bool), blink)
         assert d.data.mask["left_pupil"][blink].all()
@@ -366,15 +366,15 @@ class TestBlinkLayer:
     def test_redetection_replaces_blinks_and_mask(self):
         # finding 4.2: masks only grew
         d = blink_data()
-        d.pupil_blinks_detect(strategies=["velocity"], min_duration=10)
+        d.pupil.blinks_detect(strategies=["velocity"], min_duration=10)
         n1 = int(d.data.mask["left_pupil"].sum())
-        d.pupil_blinks_detect(strategies=["velocity"], min_duration=2000)
+        d.pupil.blinks_detect(strategies=["velocity"], min_duration=2000)
         assert d.nblinks() == {"left_pupil": 0}
         nan = np.isnan(d.data["left_pupil"])
         np.testing.assert_array_equal(d.data.mask["left_pupil"].astype(bool), nan)
         assert n1 > nan.sum()
         # running it again with the first parameters gives the first result
-        d.pupil_blinks_detect(strategies=["velocity"], min_duration=10)
+        d.pupil.blinks_detect(strategies=["velocity"], min_duration=10)
         assert int(d.data.mask["left_pupil"].sum()) == n1
 
     def test_set_blinks_none_and_clear_layer_unmask(self):
@@ -382,7 +382,7 @@ class TestBlinkLayer:
         nan = np.isnan(d.data["left_pupil"])
         for undo in (lambda d: d.set_blinks(None, eyes="left", variables="pupil"),
                      lambda d: d.clear_layer("blink")):
-            d.pupil_blinks_detect()
+            d.pupil.blinks_detect()
             assert d.data.mask["left_pupil"].sum() > nan.sum()
             undo(d)
             assert len(d.get_blinks("left", "pupil", units="samples")["left_pupil"]) == 0
@@ -392,12 +392,12 @@ class TestBlinkLayer:
         # finding 4.1: the blinks were stored in a copy that was thrown away,
         # without a history entry
         orig = blink_data()
-        d = orig.pupil_blinks_detect(inplace=False)
+        d = orig.pupil.blinks_detect(inplace=False)
         assert d is not orig
         assert orig.nblinks() == {"left_pupil": 0}
         assert d.nblinks() == {"left_pupil": 3}
-        assert d.history[-1]["funcname"] == "pupil_blinks_detect"
-        assert not orig.history or orig.history[-1]["funcname"] != "pupil_blinks_detect"
+        assert d.history[-1]["funcname"] == "pupil.blinks_detect"
+        assert not orig.history or orig.history[-1]["funcname"] != "pupil.blinks_detect"
         np.testing.assert_array_equal(d.data.mask["left_pupil"].astype(bool),
                                       np.isnan(d.data["left_pupil"])
                                       | d.data.get_layer("left_pupil", "blink"))
@@ -409,10 +409,10 @@ class TestBlinkLayer:
         d.set_blinks(pp.Intervals([(100, 400), (150, 200), (420, 430)], units="samples"),
                      eyes="left", variables="pupil")
         assert d.get_blinks("left", "pupil", units="samples")["left_pupil"].intervals == [(100, 400), (420, 430)]
-        merged = d.blinks_merge_close(distance=10, units="samples", inplace=False)
+        merged = d.pupil.blinks_merge_close(distance=10, units="samples", inplace=False)
         assert merged.get_blinks("left", "pupil", units="samples")["left_pupil"].intervals \
             == [(100, 400), (420, 430)]
-        d.blinks_merge_close(distance=30, units="samples")
+        d.pupil.blinks_merge_close(distance=30, units="samples")
         assert d.get_blinks("left", "pupil", units="samples")["left_pupil"].intervals == [(100, 430)]
         assert d.data.mask["left_pupil"][100:430].all()
 
@@ -420,7 +420,7 @@ class TestBlinkLayer:
         # a state without layers (format 2 as written before step 5): blinks
         # and mask are translated so that removing the blinks unmasks them
         from pypillometry import state
-        d = blink_data().pupil_blinks_detect()
+        d = blink_data().pupil.blinks_detect()
         st = format2_state(d)
         st["data"]["mask"] = {k: np.asarray(m) for k, m in d.data.mask.items()}
         del st["data"]["layers"], st["data"]["layer_names"], st["data"]["rec_layers"]
@@ -447,7 +447,7 @@ class TestUserLayer:
         assert not d.data.mask["left_pupil"][10:20].any()
 
     def test_masked_array_assignment(self):
-        d = blink_data().pupil_blinks_detect()
+        d = blink_data().pupil.blinks_detect()
         x = d["left_pupil"]
         x.mask[30:40] = True
         d["left_pupil"] = x * 2
@@ -470,7 +470,7 @@ def test_detect_returns_the_stored_blinks():
     d = blink_data()
     with mock.patch.object(preproc, "helper_merge_blinks",
                            return_value=np.array([[100, 109], [110, 130]])):
-        d.pupil_blinks_detect(min_duration=10)
+        d.pupil.blinks_detect(min_duration=10)
     assert d.get_blinks("left", "pupil", units="samples")["left_pupil"].intervals == [(100, 131)]
 
 
@@ -486,7 +486,7 @@ class TestGazeLayers:
         return d
 
     def test_offscreen_layer_replaced(self):
-        d = self.gaze().mask_offscreen_coords()
+        d = self.gaze().gaze.mask_offscreen()
         expected = np.isin(np.arange(8), [2, 6])
         for key in ("left_x", "left_y", "right_x", "right_y"):
             np.testing.assert_array_equal(d.data.get_layer(key, "offscreen"), expected)
@@ -494,7 +494,7 @@ class TestGazeLayers:
         assert not d.data.get_layer("left_x", "user").any()
         # running again (smaller screen) replaces the layer
         d.set_experimental_setup(screen_resolution=(400, 800))
-        e = d.mask_offscreen_coords()
+        e = d.gaze.mask_offscreen()
         np.testing.assert_array_equal(e.data.get_layer("left_x", "offscreen"),
                                       np.isin(np.arange(8), [1, 2, 3, 4, 5, 6, 7]))
         assert not e.clear_layer("offscreen").data.mask["left_x"].any()
@@ -504,7 +504,7 @@ class TestGazeLayers:
         d.data.set_layer("right_x", "divergence", np.ones(8, dtype=bool))  # stale
         d.data.add_mask("left_x", np.s_[0:1])
         d["right_x"] = d.data["right_x"] + np.where(np.arange(8) == 3, 300, 0)
-        e = d.mask_eye_divergences(threshold=100, thr_type="pixel", ignore_existing_mask=False)
+        e = d.gaze.mask_divergences(threshold=100, thr_type="pixel", ignore_existing_mask=False)
         expected = np.arange(8) == 3
         for key in ("left_x", "left_y", "right_x", "right_y"):
             np.testing.assert_array_equal(e.data.get_layer(key, "divergence"), expected)
@@ -532,7 +532,7 @@ class TestNoStoredMask:
         pupil[300:310] = 0.  # zero-coded blink, masked (finding 4.9)
         d = pp.EyeData(left_pupil=pupil, sampling_rate=100, inplace=False)
         d.mask_intervals(pp.Intervals([(300, 310)], "samples"), inplace=True)
-        f = d.pupil_lowpass_filter(5)
+        f = d.pupil.lowpass_filter(5)
         assert np.isnan(f.data["left_pupil"][200:220]).all()
         assert (f.data["left_pupil"][300:310] == 0).all()
         assert f.mask("left", "pupil")[200:220].all()
@@ -547,7 +547,7 @@ class TestNoStoredMask:
         pupil[300:310] = 0.
         d = pp.EyeData(left_pupil=pupil, sampling_rate=100, inplace=False)
         d.mask_intervals(pp.Intervals([(300, 310)], "samples"), inplace=True)
-        f = d.pupil_smooth_window(winsize=50)
+        f = d.pupil.smooth_window(winsize=50)
         assert np.isnan(f.data["left_pupil"][200:220]).all()
         assert (f.data["left_pupil"][300:310] == 0).all()
         near = np.r_[290:300, 310:320]
@@ -640,9 +640,9 @@ class TestConsumersUsePolicy:
 
     def test_pupil_merge_eyes(self):
         d = self.binocular()
-        m = d.pupil_merge_eyes(method="both_available", inplace=False)
+        m = d.pupil.merge_eyes(method="both_available", inplace=False)
         assert list(np.flatnonzero(m.mask("mean", "pupil"))) == list(range(100, 110))
-        s = d.pupil_merge_eyes(method="both_available", policy="strict", inplace=False)
+        s = d.pupil.merge_eyes(method="both_available", policy="strict", inplace=False)
         assert list(np.flatnonzero(s.mask("mean", "pupil"))) == list(range(50, 60)) + \
             list(range(100, 110))
 

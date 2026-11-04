@@ -232,7 +232,7 @@ class Intervals(Stateful):
     :meth:`~pypillometry.GenericEyeData.get_blinks` or
     :meth:`~pypillometry.GenericEyeData.mask_as_intervals`.
     Detection methods such as
-    :meth:`~pypillometry.EyeData.pupil_blinks_detect` store their results
+    :meth:`d.pupil.blinks_detect() <pypillometry.eyedata.pupil.PupilNamespace.blinks_detect>` store their results
     as Intervals. Several Intervals can be combined with ``+`` or
     :func:`~pypillometry.merge_intervals` and subtracted with ``-``.
 

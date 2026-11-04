@@ -9,7 +9,7 @@ Geometry and gaze
    Most classes on this page belong to the
    :doc:`experimental features </experimental/index>`. Their API may
    change. :class:`ExperimentalSetup` is also used by stable functions,
-   e.g., :meth:`EyeData.mask_offscreen_coords`.
+   e.g., :meth:`EyeData.gaze.mask_offscreen`.
 
 Experimental setup and calibration
 ----------------------------------

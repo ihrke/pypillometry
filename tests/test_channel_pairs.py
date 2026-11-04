@@ -142,7 +142,7 @@ class TestIncompleteBlinkStores:
 
     def test_blink_stats(self, incomplete_eyedata):
         d = incomplete_eyedata
-        d.pupil_blinks_detect()
+        d.pupil.blinks_detect()
         d["mean", "x"] = d.data["left_x"]  # an eye without pupil data
         stats = d.blink_stats()
         assert set(stats) == {"left_pupil", "right_pupil"}  # not the eye "mean"
@@ -206,11 +206,11 @@ class TestIncompleteIntervals:
         d = incomplete_eyedata
         iv = pp.Intervals([(10, 20), (22, 30)], units="samples")
         d.set_blinks(iv)
-        merged = d.blinks_merge_close(distance=5, units="samples", inplace=False)
-        assert merged.nblinks() == {
-            "left_pupil": 1, "left_x": 1, "left_y": 1, "right_pupil": 1}
-        d.blinks_merge_close(distance=5, units="samples")
-        assert d.nblinks() == {"left_pupil": 1, "left_x": 1, "left_y": 1, "right_pupil": 1}
+        merged = d.pupil.blinks_merge_close(distance=5, units="samples", inplace=False)
+        assert merged.nblinks() == {   # pupil channels only
+            "left_pupil": 1, "left_x": 2, "left_y": 2, "right_pupil": 1}
+        d.pupil.blinks_merge_close(distance=5, units="samples")
+        assert d.nblinks() == {"left_pupil": 1, "left_x": 2, "left_y": 2, "right_pupil": 1}
 
     def test_stat_per_event(self, incomplete_eyedata):
         import pypillometry as pp
@@ -231,16 +231,16 @@ class TestIncompletePupilMethods:
         return d
 
     def test_filters_skip_eyes_without_pupil(self, d):
-        d.pupil_lowpass_filter(cutoff=5)
-        d.pupil_smooth_window(winsize=50)
+        d.pupil.lowpass_filter(cutoff=5)
+        d.pupil.smooth_window(winsize=50)
         with pytest.raises(KeyError, match="extra"):
-            d.pupil_lowpass_filter(cutoff=5, eyes="extra")
+            d.pupil.lowpass_filter(cutoff=5, eyes="extra")
 
     def test_blinks(self, d):
-        d.pupil_blinks_detect()
+        d.pupil.blinks_detect()
         nb = d.nblinks(variables="pupil")
         assert set(nb) == {"left_pupil", "right_pupil"}
-        d.pupil_blinks_interpolate()
+        d.pupil.blinks_interpolate()
         assert set(d.get_interpolated_blinks(variables="pupil")) == {"left_pupil", "right_pupil"}
         assert np.all(d.data["right_pupil"][200:220] > 4)
 
@@ -249,19 +249,19 @@ class TestIncompleteGazeMethods:
     def test_correct_pupil_foreshortening(self, incomplete_eyedata):
         d = incomplete_eyedata
         right = d.data["right_pupil"].copy()
-        d.correct_pupil_foreshortening(store_as="pupilc")
+        d.pupil.correct_foreshortening(store_as="pupilc")
         assert "left_pupilc" in d.data and "right_pupilc" not in d.data
         np.testing.assert_array_equal(d.data["right_pupil"], right)
         with pytest.raises(KeyError, match="right_x"):
-            d.correct_pupil_foreshortening(eyes="right")
+            d.pupil.correct_foreshortening(eyes="right")
 
     def test_mask_offscreen_coords(self, incomplete_eyedata):
         d = incomplete_eyedata
         d.data["left_x"][50:60] = 5000
-        d.mask_offscreen_coords()
+        d.gaze.mask_offscreen()
         assert d.data.mask["left_x"][50:60].all()
         with pytest.raises(KeyError, match="right"):
-            d.mask_offscreen_coords(eyes="right")
+            d.gaze.mask_offscreen(eyes="right")
 
 
 class TestIncompletePlots:

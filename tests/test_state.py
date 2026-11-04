@@ -67,8 +67,8 @@ def make_eyedata(keep_orig=True):
                                                 err, (1280, 1024))},
         name="test", keep_orig=keep_orig,
         info={"subject": "s1", "nested": {"a": [1, 2], "b": (1.5, "x")}})
-    d = d.pupil_blinks_detect(inplace=False)
-    d = d.pupil_blinks_interpolate().scale()
+    d = d.pupil.blinks_detect(inplace=False)
+    d = d.pupil.blinks_interpolate().scale()
     # event metadata with int, float (missing), string and bool columns
     d.set_events(d.events.parse_labels(r"_(?P<trial>\d+)")
                  .set_meta("rt", [450.5, np.nan], select="F_")
@@ -219,7 +219,7 @@ class TestFormatVersion0(unittest.TestCase):
         self.assertEqual(d.history[-1]["funcname"], "pupil_lowpass_filter")
         self.assertIn("scale", d.params)
         # the restored object works and saves in the current version
-        d.pupil_blinks_interpolate(inplace=False)
+        d.pupil.blinks_interpolate(inplace=False)
         st = state.to_state(pickle.loads(pickle.dumps(d)))
         self.assertEqual(st["format_version"], state.FORMAT_VERSION)
 

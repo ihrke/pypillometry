@@ -539,7 +539,7 @@ class SegmentedEyeData(state.VersionedState):
            >>> from pypillometry import u
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
-           >>> d.pupil_blinks_detect().pupil_blinks_interpolate()
+           >>> d = d | pp.pupil.blinks_detect() | pp.pupil.blinks_interpolate()
            >>> intervals = d.get_intervals("S_", (-500, 2500) * u.ms)
            >>> erpd = d.get_segments(intervals, "left_pupil").baseline_correct((-500, 0))
            >>> erpd.plot()

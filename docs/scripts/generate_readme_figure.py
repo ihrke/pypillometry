@@ -32,9 +32,9 @@ def main():
     pp.logging_set_level("ERROR")
     d = pp.get_example_data("rlmw_002")
     raw = d.copy()
-    d.pupil_blinks_detect(apply_mask=True)
-    d.pupil_blinks_interpolate()
-    d.pupil_lowpass_filter(cutoff=4)
+    d = (d | pp.pupil.blinks_detect()
+           | pp.pupil.blinks_interpolate()
+           | pp.pupil.lowpass_filter(cutoff=4))
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4),
                                    gridspec_kw={"width_ratios": [1.6, 1]})

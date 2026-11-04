@@ -57,9 +57,9 @@ import pypillometry as pp
 from pypillometry import u
 
 d = pp.get_example_data("rlmw_002")     # or: pp.EyeData.from_eyelink("recording.edf")
-d.pupil_blinks_detect(apply_mask=True)  # detect and mask blinks
-d.pupil_blinks_interpolate()            # interpolate them
-d.pupil_lowpass_filter(cutoff=4)        # 4 Hz low-pass filter
+d = (d | pp.pupil.blinks_detect()       # detect and mask blinks
+       | pp.pupil.blinks_interpolate()  # interpolate them
+       | pp.pupil.lowpass_filter(cutoff=4))  # 4 Hz low-pass filter
 
 # pupil response from 500 ms before to 2.5 s after each stimulus
 intervals = d.get_intervals("S_", (-500, 2500) * u.ms)

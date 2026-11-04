@@ -887,9 +887,9 @@ def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[],
         # masked time split by layer (any variable of the eye)
         for name, title, desc in (
                 ("offscreen", "masked off-screen", "gaze off the screen "
-                 "(see mask_offscreen_coords)"),
+                 "(see d.gaze.mask_offscreen)"),
                 ("divergence", "masked divergence", "gaze positions of the eyes too far "
-                 "apart (see mask_eye_divergences)"),
+                 "apart (see d.gaze.mask_divergences)"),
                 ("user", "masked by the user", "masked with mask_intervals or by "
                  "assigning a masked array")):
             if name in obj.data.layer_names:

@@ -415,7 +415,7 @@ class ForeshorteningCalibration:
     This class stores the fitted camera geometry and temporal pupil model
     needed to correct pupil size measurements for viewing angle effects.
     It is usually created by
-    :meth:`~pypillometry.EyeData.fit_foreshortening`.
+    :meth:`~pypillometry.eyedata.pupil.PupilNamespace.fit_foreshortening`.
     
     Parameters
     ----------
@@ -439,7 +439,7 @@ class ForeshorteningCalibration:
     fit_intervals : Intervals, optional
         Intervals used for fitting, if any
     fit_metrics : dict, optional
-        Fit quality metrics; :meth:`~pypillometry.EyeData.fit_foreshortening`
+        Fit quality metrics; :meth:`~pypillometry.eyedata.pupil.PupilNamespace.fit_foreshortening`
         stores 'r2', 'rmse', 'n_samples', 'loss', 'n_iterations' and
         'converged'. Default is an empty dict.
     
@@ -607,7 +607,7 @@ class ForeshorteningCalibration:
             If True (default), x and y are in pixels and are converted to mm
             with :meth:`~pypillometry.ExperimentalSetup.pixels_to_mm`
             (centered, positive y = up; as in
-            :meth:`~pypillometry.EyeData.fit_foreshortening`).
+            :meth:`~pypillometry.eyedata.pupil.PupilNamespace.fit_foreshortening`).
             If False, x and y are already in mm relative to screen center.
             Requires experimental_setup to have screen info when True.
         

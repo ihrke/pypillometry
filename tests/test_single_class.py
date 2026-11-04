@@ -62,10 +62,10 @@ class TestMissingChannels(unittest.TestCase):
 
     def test_pupil_methods_on_gaze_only(self):
         d = _gaze_only()
-        calls = [lambda: d.pupil_lowpass_filter(5), lambda: d.pupil_smooth_window(),
-                 lambda: d.pupil_merge_eyes(), lambda: d.pupil_blinks_detect(),
-                 lambda: d.pupil_blinks_interpolate(), lambda: d.pupil_estimate_baseline(),
-                 lambda: d.pupil_estimate_response(),
+        calls = [lambda: d.pupil.lowpass_filter(5), lambda: d.pupil.smooth_window(),
+                 lambda: d.pupil.merge_eyes(), lambda: d.pupil.blinks_detect(),
+                 lambda: d.pupil.blinks_interpolate(), lambda: d.pupil.estimate_baseline(),
+                 lambda: d.pupil.estimate_response(),
                  lambda: d.plot.pupil_plot(), lambda: d.plot.pupil_plot_segments()]
         for call in calls:
             with self.subTest(call=call):
@@ -75,9 +75,9 @@ class TestMissingChannels(unittest.TestCase):
 
     def test_gaze_methods_on_pupil_only(self):
         d = _pupil_only()
-        calls = [lambda: d.mask_eye_divergences(), lambda: d.mask_offscreen_coords(),
-                 lambda: d.correct_pupil_foreshortening(),
-                 lambda: d.fit_foreshortening("left"),
+        calls = [lambda: d.gaze.mask_divergences(), lambda: d.gaze.mask_offscreen(),
+                 lambda: d.pupil.correct_foreshortening(),
+                 lambda: d.pupil.fit_foreshortening("left"),
                  lambda: d.plot.plot_heatmap(), lambda: d.plot.plot_scanpath(),
                  lambda: d.plot.plot_pupil_foreshortening_error_surface()]
         for call in calls:

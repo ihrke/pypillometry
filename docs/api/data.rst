@@ -15,6 +15,22 @@ Main classes
 
    EyeData
 
+Pupil and gaze methods
+----------------------
+
+The methods for pupil data are used as ``d.pupil.<method>(...)``, those
+for gaze data as ``d.gaze.<method>(...)``. As pipeline steps, the same
+methods are ``pp.pupil.<method>(...)`` and ``pp.gaze.<method>(...)`` (see
+:doc:`pipelines`).
+
+.. autosummary::
+   :toctree: generated
+   :template: class.rst
+   :nosignatures:
+
+   eyedata.pupil.PupilNamespace
+   eyedata.gaze.GazeNamespace
+
 Base class and containers
 -------------------------
 

@@ -11,12 +11,12 @@ two:
 .. autosummary::
    :nosignatures:
 
-   EyeData.pupil_estimate_baseline
-   EyeData.pupil_estimate_response
+   EyeData.pupil.estimate_baseline
+   EyeData.pupil.estimate_response
 
-:meth:`~EyeData.pupil_estimate_baseline` estimates the baseline as the
+:meth:`~EyeData.pupil.estimate_baseline` estimates the baseline as the
 lower envelope of the signal, fitted with B-splines through the troughs
-between events. :meth:`~EyeData.pupil_estimate_response`
+between events. :meth:`~EyeData.pupil.estimate_response`
 then fits a pupil response function (Hoeks & Levelt, 1993) to every event
 in the signal that remains. Both store their results as new variables
 (``baseline`` and ``response``) next to the pupil data.

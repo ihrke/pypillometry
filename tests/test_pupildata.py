@@ -102,7 +102,7 @@ class TestPupilData(unittest.TestCase):
         zeros = d.copy()
         zeros.data["left_pupil"] = np.where(np.isnan(x), 0., x)
         zeros.mask_intervals(pp.Intervals.from_mask(np.isnan(x)), inplace=True)
-        b = [o.pupil_estimate_baseline(eyes="left", inplace=False, seed=1).data["left_baseline"]
+        b = [o.pupil.estimate_baseline(eyes="left", inplace=False, seed=1).data["left_baseline"]
              for o in (d, bridged, zeros)]
         self.assertFalse(np.any(np.isnan(b[0])))
         np.testing.assert_allclose(b[0], b[1])
@@ -111,22 +111,22 @@ class TestPupilData(unittest.TestCase):
     def test_estimate_baseline_no_usable_samples(self):
         d = pp.EyeData(left_pupil=np.full(1000, np.nan), sampling_rate=100)
         with self.assertRaisesRegex(ValueError, "no usable samples"):
-            d.pupil_estimate_baseline(eyes="left", inplace=False)
+            d.pupil.estimate_baseline(eyes="left", inplace=False)
 
     def test_estimate_baseline_after_interpolation(self):
         d = pp.get_example_data("rlmw_002_short").crop(0, 10, units="sec")
-        d = d.pupil_blinks_detect(eyes="left", inplace=False)
-        d = d.pupil_blinks_interpolate(eyes="left", inplace=False)
-        d = d.pupil_estimate_baseline(eyes="left", inplace=False)
+        d = d.pupil.blinks_detect(eyes="left", inplace=False)
+        d = d.pupil.blinks_interpolate(eyes="left", inplace=False)
+        d = d.pupil.estimate_baseline(eyes="left", inplace=False)
         self.assertFalse(np.any(np.isnan(d.data["left", "baseline"])))
 
     def test_estimate_baseline_seed(self):
         """same seed gives the same baseline"""
         d = pp.get_example_data("rlmw_002_short").crop(0, 10, units="sec")
-        d = d.pupil_blinks_detect(eyes="left", inplace=False)
-        d = d.pupil_blinks_interpolate(eyes="left", inplace=False)
-        b1 = d.pupil_estimate_baseline(eyes="left", inplace=False, seed=1)
-        b2 = d.pupil_estimate_baseline(eyes="left", inplace=False, seed=1)
+        d = d.pupil.blinks_detect(eyes="left", inplace=False)
+        d = d.pupil.blinks_interpolate(eyes="left", inplace=False)
+        b1 = d.pupil.estimate_baseline(eyes="left", inplace=False, seed=1)
+        b2 = d.pupil.estimate_baseline(eyes="left", inplace=False, seed=1)
         np.testing.assert_array_equal(b1.data["left", "baseline"], b2.data["left", "baseline"])
 
     def test_stan_model_cached(self):
@@ -167,9 +167,9 @@ class TestPupilData(unittest.TestCase):
             p[b:b+30] = np.linspace(1000, p[b+30], 30)
             p[a:b] = np.nan
         d = pp.EyeData(left_pupil=p, sampling_rate=1000)
-        d = d.pupil_blinks_detect(inplace=False)
+        d = d.pupil.blinks_detect(inplace=False)
         self.assertEqual(len(d.get_blinks("left", "pupil")["left_pupil"]), 2)
-        d = d.pupil_blinks_interpolate(inplace=False)
+        d = d.pupil.blinks_interpolate(inplace=False)
         self.assertEqual(np.isnan(d.data["left", "pupil"]).sum(), 0)
         self.assertEqual(len(d.get_interpolated_blinks("left", "pupil")["left_pupil"]), 1)
 
@@ -178,7 +178,7 @@ if __name__ == '__main__':
 
 class TestMergeBlinkWindows(unittest.TestCase):
     def merge(self, blinks, n=10000):
-        from pypillometry.eyedata.pupildata import _merge_overlapping_blink_windows
+        from pypillometry.eyedata.pupil import _merge_overlapping_blink_windows
         return _merge_overlapping_blink_windows(blinks, n)
 
     def test_separate_blinks(self):
@@ -203,7 +203,7 @@ def test_blinks_interpolate_without_onset_crossing():
     """all blinks of the example data are interpolated, no NaN left (bug 1.1)"""
     import pypillometry as pp
     d = pp.get_example_data("rlmw_002_short")
-    d = d.pupil_blinks_detect().pupil_blinks_interpolate()
+    d = d.pupil.blinks_detect().pupil.blinks_interpolate()
     for eye in d.eyes:
         assert not np.isnan(d.data[eye, "pupil"]).any()
-    d.pupil_estimate_baseline()
+    d.pupil.estimate_baseline()

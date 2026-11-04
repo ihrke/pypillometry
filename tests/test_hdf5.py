@@ -48,7 +48,7 @@ class TestObjects(HDF5TestCase):
         self.assertEqual(d2.info["nested"]["b"], (1.5, "x"))
         self.assertEqual(list(d2.data.keys()), list(d.data.keys()))
         # the restored object can be processed further
-        d2.pupil_lowpass_filter(cutoff=5, inplace=False)
+        d2.pupil.lowpass_filter(cutoff=5, inplace=False)
 
     def test_pupil_only_and_gaze_only(self):
         d = make_eyedata(keep_orig=False)

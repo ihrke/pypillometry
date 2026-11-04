@@ -1,13 +1,15 @@
 """
-pupildata.py
-============
+pupil.py
+========
 
 Methods of :class:`~pypillometry.EyeData` for pupil data.
 """
 
 import itertools
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 from .generic import keephistory
+from .namespace import Namespace
+from .pipes import step
 #from .. import convenience
 from ..signal import baseline
 from ..signal import preproc
@@ -15,6 +17,16 @@ from ..signal import pupil
 from ..signal.pupil import _bridge_gaps
 #from .. import io
 from ..intervals import Intervals
+from ..units import parse_distance, parse_angle
+from .foreshortening_calibration import (
+    ForeshorteningCalibration,
+    _determine_knots,
+    _create_bspline_basis,
+    _objective_function,
+    _objective_gradient,
+    _split_params
+)
+from ..signal.baseline import butter_lowpass_filter, downsample
 
 import json
 from loguru import logger
@@ -22,6 +34,7 @@ import numpy as np
 from scipy.interpolate import interp1d
 from scipy import interpolate
 import scipy
+from scipy import optimize
 
 
 def _merge_overlapping_blink_windows(blinks, n):
@@ -56,16 +69,21 @@ def _merge_overlapping_blink_windows(blinks, n):
         out.append((t1, on, off, t4))
     return out
 
-class _PupilMethods:
+class PupilNamespace(Namespace):
     """
-    Methods of :class:`~pypillometry.EyeData` for pupil data.
+    Methods for pupil data, accessed as ``d.pupil`` (e.g.,
+    ``d.pupil.blinks_detect()``).
 
-    Internal: not a data class (no state and no constructor). The methods
-    need pupil data and raise a ValueError if there is none.
+    The methods need pupil data and raise a ValueError if there is none.
+    The transforming methods return the data object (see
+    :class:`~pypillometry.eyedata.namespace.Namespace`).
     """
 
+    _name = "pupil"
+
+    @step
     @keephistory
-    def pupil_lowpass_filter(self,  cutoff: float, order: int=2, eyes=[], policy="default",
+    def lowpass_filter(self,  cutoff: float, order: int=2, eyes=[], policy="default",
                              inplace=None):
         """
         Lowpass-filter pupil signal using a Butterworth-filter.
@@ -102,9 +120,9 @@ class _PupilMethods:
         """
         from ..signal.pupil import lowpass_filter_iterative
         
-        self._require("pupil")
-        obj = self._get_inplace(inplace)
-        eyes=self._eyes_with(eyes, "pupil")
+        self._d._require("pupil")
+        obj = self._d._get_inplace(inplace)
+        eyes=self._d._eyes_with(eyes, "pupil")
 
         for eye in eyes:
             x = obj.values(eye, "pupil", policy)  # NaN: unusable
@@ -114,8 +132,9 @@ class _PupilMethods:
             obj.data.set_with_mask(f"{eye}_pupil", out, preserve_mask=True)
         return obj
 
+    @step
     @keephistory
-    def pupil_smooth_window(self, eyes=[], window: str="hanning", winsize: float=11,
+    def smooth_window(self, eyes=[], window: str="hanning", winsize: float=11,
                             policy="default", inplace=None):
         """
         Apply smoothing of the signal using a moving window.
@@ -124,7 +143,7 @@ class _PupilMethods:
         Only the usable samples under the mask `policy` are smoothed; the
         unusable samples (masked or NaN) are bridged linearly for the
         smoothing and keep their stored values (as in
-        :meth:`pupil_lowpass_filter`). The mask layers are kept.
+        :meth:`lowpass_filter`). The mask layers are kept.
         
         Parameters
         ----------
@@ -148,12 +167,12 @@ class _PupilMethods:
         EyeData
             the object with the smoothed pupil data
         """
-        self._require("pupil")
-        obj = self._get_inplace(inplace)
-        eyes=self._eyes_with(eyes, "pupil")
+        self._d._require("pupil")
+        obj = self._d._get_inplace(inplace)
+        eyes=self._d._eyes_with(eyes, "pupil")
 
         # convert winsize to index based on sampling rate
-        winsize_ix=self._samples(winsize, rounding="up")
+        winsize_ix=self._d._samples(winsize, rounding="up")
 
         # process requested eyes
         for eye in eyes:
@@ -168,8 +187,9 @@ class _PupilMethods:
 
         return obj
 
+    @step
     @keephistory
-    def pupil_merge_eyes(self, method: str = "local_offset", 
+    def merge_eyes(self, method: str = "local_offset", 
                          lowpass_cutoff: float = 0.2,
                          max_iter: int = 10,
                          keep_eyes: bool = True, 
@@ -253,25 +273,25 @@ class _PupilMethods:
         Examples
         --------
         >>> # Default: local offset correction
-        >>> data.pupil_merge_eyes()
+        >>> data.pupil.merge_eyes()
         >>> merged = data["mean", "pupil"]
         
         >>> # Use global offset (simpler, assumes no drift)
-        >>> data.pupil_merge_eyes(method="offset")
+        >>> data.pupil.merge_eyes(method="offset")
         
         >>> # Only use timepoints where both eyes are valid
-        >>> data.pupil_merge_eyes(method="both_available")
+        >>> data.pupil.merge_eyes(method="both_available")
         
         >>> # Remove original eye data after merging
-        >>> data.pupil_merge_eyes(keep_eyes=False)
+        >>> data.pupil.merge_eyes(keep_eyes=False)
         
         See Also
         --------
         merge_eyes : Generic merge method in GenericEyeData (masks if all eyes invalid)
         pypillometry.signal.pupil.pupil_eye_offset : Compute local offset between eyes
         """
-        self._require("pupil")
-        obj = self._get_inplace(inplace)
+        self._d._require("pupil")
+        obj = self._d._get_inplace(inplace)
         
         # Check that we have both eyes
         available_eyes = obj.data.get_available_eyes(variable="pupil")
@@ -420,7 +440,7 @@ class _PupilMethods:
             logger.debug(f"vel_onset {vel_onset} -> {vel_onset_samples:.4f} (percentile)")
         else:
             # Convert from per-ms to per-sample
-            vel_onset_samples = float(vel_onset) * (1000 / self.fs)
+            vel_onset_samples = float(vel_onset) * (1000 / self._d.fs)
             logger.debug(f"vel_onset {vel_onset}/ms -> {vel_onset_samples:.4f}/sample")
         
         # Convert offset threshold
@@ -429,13 +449,14 @@ class _PupilMethods:
             logger.debug(f"vel_offset {vel_offset} -> {vel_offset_samples:.4f} (percentile)")
         else:
             # Convert from per-ms to per-sample
-            vel_offset_samples = float(vel_offset) * (1000 / self.fs)
+            vel_offset_samples = float(vel_offset) * (1000 / self._d.fs)
             logger.debug(f"vel_offset {vel_offset}/ms -> {vel_offset_samples:.4f}/sample")
         
         return vel_onset_samples, vel_offset_samples
 
+    @step
     @keephistory
-    def pupil_blinks_detect(self, eyes=[], min_duration:float=20, blink_val:float=0,
+    def blinks_detect(self, eyes=[], min_duration:float=20, blink_val:float=0,
                       winsize: float=11, vel_onset=-5.0, vel_offset=5.0, 
                       vel_onset_min_duration: float=5.0, vel_offset_min_duration: float=5.0,
                       max_duration: float=1000,
@@ -516,22 +537,22 @@ class _PupilMethods:
 
         Examples
         --------
-        >>> d = d.pupil_blinks_detect()  # doctest: +SKIP
+        >>> d = d.pupil.blinks_detect()  # doctest: +SKIP
         >>> d.get_blinks(variables="pupil", units="ms")  # doctest: +SKIP
         """
-        self._require("pupil")
-        obj = self._get_inplace(inplace)
-        eyes=self._eyes_with(eyes, "pupil")
+        self._d._require("pupil")
+        obj = self._d._get_inplace(inplace)
+        eyes=self._d._eyes_with(eyes, "pupil")
 
         # Convert ms to samples
-        winsize_ix=self._samples(winsize)
+        winsize_ix=self._d._samples(winsize)
         if winsize_ix % 2==0:
             winsize_ix += 1
-        min_duration_ix=self._samples(min_duration)
-        vel_onset_min_samples = max(1, self._samples(vel_onset_min_duration))
-        vel_offset_min_samples = max(1, self._samples(vel_offset_min_duration))
+        min_duration_ix=self._d._samples(min_duration)
+        vel_onset_min_samples = max(1, self._d._samples(vel_onset_min_duration))
+        vel_offset_min_samples = max(1, self._d._samples(vel_offset_min_duration))
         max_duration_ix = (None if max_duration is None
-                           else self._samples(max_duration))
+                           else self._d._samples(max_duration))
 
         
         # check for unknown strategies
@@ -596,8 +617,83 @@ class _PupilMethods:
             obj.set_blinks(intervals_obj, eyes=[eye], variables=["pupil"])
         return obj
     
+    @step
     @keephistory
-    def pupil_blinks_interpolate(self, eyes: str|list=[],
+    def blinks_merge_close(
+        self,
+        eyes: list = [],
+        distance: float = 100,
+        units: str = "ms",
+        inplace: bool | None = None,
+    ):
+        """
+        Merge blinks that are close together.
+
+        The merged blinks replace the ``"blink"`` layer of the pupil
+        (see :meth:`~pypillometry.GenericEyeData.set_blinks`); read them with
+        :meth:`~pypillometry.GenericEyeData.get_blinks`.
+        
+        Parameters
+        ----------
+        eyes : str or list of str, optional
+            eye(s) to process; if empty, all eyes with pupil data
+        distance : float, str or Quantity, optional
+            Merge blinks closer than this distance, e.g. ``100 * u.ms`` or
+            ``"0.1 sec"``; plain numbers are in units given by ``units``.
+            Default 100.
+        units : str, optional
+            Units for ``distance`` if it is a plain number. Can be "ms",
+            "sec", "min", or "h". Default "ms".
+        inplace : bool or None, optional
+            if `True`, make change in-place and return the object;
+            if `False`, make and return copy before making changes;
+            if `None`, use the object-level setting (specified in the constructor).
+            
+        Returns
+        -------
+        :class:`~pypillometry.GenericEyeData`
+            the object with the merged blinks (`self` or a copy, depending
+            on `inplace`)
+        """
+        self._d._require("pupil")
+        obj = self._d._get_inplace(inplace)
+        pairs = obj.data.select(eyes, "pupil")
+
+        distance_ix = obj._samples(distance, units)
+
+        logger.debug(f"Distance '{distance}' in index units: {distance_ix}")
+
+        for eye, var in pairs:
+            # all runs, also those next to excluded periods (set_blinks replaces the layer)
+            blinks = obj._layer_runs(f"{eye}_{var}", "blink")
+            if len(blinks) == 0:
+                continue
+            logger.debug(f"Processing blinks for eye {eye} and variable {var}: {len(blinks)} blinks")
+            blinks_array = np.array(blinks).astype(int)
+            
+            newblinks = []
+            i = 1
+            cblink = blinks_array[0, :].copy()
+            while i < blinks_array.shape[0]:
+                if (blinks_array[i, 0] - cblink[1]) <= distance_ix:
+                    cblink[1] = blinks_array[i, 1]
+                else:
+                    newblinks.append(cblink)
+                    cblink = blinks_array[i, :].copy()
+                i += 1
+            newblinks.append(cblink)
+            
+            # Store merged blinks as Intervals
+            merged_intervals = Intervals(
+                intervals=[(int(s), int(e)) for s, e in newblinks],
+                units="samples",
+                label=f"{eye}_{var}_blinks")
+            obj.set_blinks(merged_intervals, eyes=[eye], variables=[var])
+        return obj
+
+    @step
+    @keephistory
+    def blinks_interpolate(self, eyes: str|list=[],
                                  store_as: str="pupil", 
                                  method="mahot", winsize: float=25, 
                                  vel_onset=-5.0, vel_offset=5.0, 
@@ -613,7 +709,7 @@ class _PupilMethods:
         https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001.
 
         The blinks to interpolate are taken from the blinks stored in the object,
-        so blinks have to be detected first (e.g., using :meth:`pupil_blinks_detect`).
+        so blinks have to be detected first (e.g., using :meth:`blinks_detect`).
         The on- and offsets of each blink are refined using the velocity profile
         before interpolating. Blinks that are so close that the anchor points
         of one fall into the other are merged and interpolated together.
@@ -670,14 +766,14 @@ class _PupilMethods:
         EyeData
             the object with the interpolated pupil data
         """
-        self._require("pupil")
-        obj = self._get_inplace(inplace)
-        eyes=self._eyes_with(eyes, "pupil")
+        self._d._require("pupil")
+        obj = self._d._get_inplace(inplace)
+        eyes=self._d._eyes_with(eyes, "pupil")
 
         # parameters in sampling units (from ms)
-        winsize_ix=self._samples(winsize, rounding="up")
-        margin_ix=self._samples(margin, rounding="up")
-        blinkwindow_ix=self._samples(blinkwindow)
+        winsize_ix=self._d._samples(winsize, rounding="up")
+        margin_ix=self._d._samples(margin, rounding="up")
+        blinkwindow_ix=self._d._samples(blinkwindow)
         if winsize_ix % 2==0: ## ensure smoothing window is odd
             winsize_ix+=1 
 
@@ -685,7 +781,7 @@ class _PupilMethods:
             logger.debug(f"Interpolating blinks for eye {eye}")
             syr=obj.data[eye,"pupil"].copy() ## interpolated signal
             interpolated = np.zeros(len(syr), dtype=bool)  # interpolated samples
-            bls = self.get_blinks(eye, "pupil", units="samples")[f"{eye}_pupil"]
+            bls = self._d.get_blinks(eye, "pupil", units="samples")[f"{eye}_pupil"]
             
             # Use raw data for velocity computation - blink_onsets_mahot handles NaN/zeros internally
             # Don't use mask-applied data here because the mask includes blink regions,
@@ -703,7 +799,7 @@ class _PupilMethods:
             logger.debug(f"Refined {len(blink_onsets)} blink boundaries")
             # the anchor points of a blink must not fall into a neighbouring
             # blink (they would be NaN), so merge blinks with overlapping windows
-            blink_onsets = _merge_overlapping_blink_windows(blink_onsets, len(self))
+            blink_onsets = _merge_overlapping_blink_windows(blink_onsets, len(self._d))
 
             # Collect successfully interpolated blinks
             interpolated_intervals = []
@@ -746,8 +842,9 @@ class _PupilMethods:
             
 
 
+    @step
     @keephistory
-    def pupil_estimate_baseline(self, eyes=[], variable="pupil",
+    def estimate_baseline(self, eyes=[], variable="pupil",
                                 method: str="envelope_iter_bspline_2", policy="default",
                                 inplace=None, **kwargs):
         """
@@ -758,7 +855,7 @@ class _PupilMethods:
         :meth:`~pypillometry.GenericEyeData.mask`). The unusable samples
         (masked or NaN, e.g., blinks that were not interpolated or the
         excluded periods) are bridged linearly between their neighbours.
-        Interpolate blinks first (see :meth:`pupil_blinks_interpolate`) to
+        Interpolate blinks first (see :meth:`blinks_interpolate`) to
         use a better reconstruction than a straight line.
         
         Parameters
@@ -802,16 +899,16 @@ class _PupilMethods:
         phasic pupil dynamics in humans. *Behavior Research Methods*, 57(9), 233.
         https://doi.org/10.3758/s13428-025-02755-7
         """
-        self._require(variable)
-        obj = self._get_inplace(inplace)
+        self._d._require(variable)
+        obj = self._d._get_inplace(inplace)
         if not isinstance(variable, str):
             logger.warning("variable must be a string; using default 'pupil'")
             variable="pupil"
-        eyes=self._eyes_with(eyes, variable)
+        eyes=self._d._eyes_with(eyes, variable)
 
         for eye in eyes:
             logger.debug("Estimating baseline for eye %s"%eye)
-            sy = self.values(eye, variable, policy)
+            sy = self._d.values(eye, variable, policy)
             unusable = np.isnan(sy)
             if unusable.all():
                 raise ValueError(f"'{eye}_{variable}' has no usable samples; the "
@@ -822,22 +919,23 @@ class _PupilMethods:
                 sy = _bridge_gaps(sy)
 
             if method=="envelope_iter_bspline_2":
-                txd,syd,base2,base1=baseline.baseline_envelope_iter_bspline(self.tx, sy,
-                                                                            self.events.onsets,self.fs,**kwargs)
+                txd,syd,base2,base1=baseline.baseline_envelope_iter_bspline(self._d.tx, sy,
+                                                                            self._d.events.onsets,self._d.fs,**kwargs)
                 f=interpolate.interp1d(txd, base2, kind="cubic", bounds_error=False, fill_value="extrapolate")
-                obj.data[eye,"baseline"]=f(self.tx)
+                obj.data[eye,"baseline"]=f(self._d.tx)
             elif method=="envelope_iter_bspline_1": 
-                txd,syd,base2,base1=baseline.baseline_envelope_iter_bspline(self.tx, sy,
-                                                                            self.events.onsets,self.fs,**kwargs)
+                txd,syd,base2,base1=baseline.baseline_envelope_iter_bspline(self._d.tx, sy,
+                                                                            self._d.events.onsets,self._d.fs,**kwargs)
                 f=interpolate.interp1d(txd, base1, kind="cubic", bounds_error=False, fill_value="extrapolate")
-                obj.data[eye,"baseline"]=f(self.tx)
+                obj.data[eye,"baseline"]=f(self._d.tx)
             else:
                 raise ValueError("Undefined method for baseline estimation: %s"%method)         
             
         return obj
         
+    @step
     @keephistory
-    def pupil_estimate_response(self, 
+    def estimate_response(self, 
                           eyes=[], 
                           npar: str|float="free", tmax: str|float="free", 
                           verbose: int=50,
@@ -849,7 +947,7 @@ class _PupilMethods:
         Estimate pupil-response based on event-onsets, see
         :func:`~pypillometry.signal.pupil.pupil_response`.
 
-        If a baseline has been estimated (see :meth:`pupil_estimate_baseline`),
+        If a baseline has been estimated (see :meth:`estimate_baseline`),
         it is subtracted from the pupil signal before estimating the response;
         otherwise, a baseline of zero is used.
 
@@ -913,9 +1011,9 @@ class _PupilMethods:
         phasic pupil dynamics in humans. *Behavior Research Methods*, 57(9), 233.
         https://doi.org/10.3758/s13428-025-02755-7
         """
-        self._require("pupil")
-        obj = self._get_inplace(inplace)
-        eyes=self._eyes_with(eyes, "pupil")
+        self._d._require("pupil")
+        obj = self._d._get_inplace(inplace)
+        eyes=self._d._eyes_with(eyes, "pupil")
 
         obj.params["response"]=dict()
         for eye in eyes:
@@ -957,3 +1055,474 @@ class _PupilMethods:
         
         return obj
     
+
+    @step
+    @keephistory
+    def correct_foreshortening(self, eyes=[], midpoint=None, store_as="pupil", inplace=None):
+        r"""Correct pupil data using a simple algorithm to correct for foreshortening effects.
+
+        Correct the pupil data for foreshortening effects caused
+        by saccades/eye movements. This method is based on a simple algorithm
+        that assumes the pupil appears perfectly circular when fixating `midpoint`:
+        for each sample, the distance :math:`\Delta` (in mm) of the gaze position
+        from `midpoint` is computed and the pupil signal is multiplied by the
+        correction factor :math:`\sqrt{1+\Delta^2/d^2}`, where :math:`d` is the
+        eye-to-screen distance from the experimental setup.
+        For a more complete model that also estimates the camera position,
+        see :meth:`fit_foreshortening`.
+
+        Relevant publication (not the description of the algorithm used here):    
+        https://link.springer.com/article/10.3758/s13428-015-0588-x
+
+        - [ ] TODO: when using interpolated pupil data, x/y data may still be missing. Make sure that the 
+          pupil data is not touched where x/y is missing
+
+        Parameters 
+        ----------
+        eyes : list
+            Which eyes to correct. If empty, correct all available eyes
+            that have pupil and gaze (x, y) data.
+        midpoint : tuple or None
+            The center of the screen (x,y) in pixels where it is assumed that the pupil is completely circular.
+            If None, the midpoint is taken to be the center of the screen as registered
+            in the experimental_setup. 
+        store_as : str
+            name of the variable in which to store the corrected pupil data
+            (as ``data[eye, store_as]``); the default "pupil" replaces the
+            original pupil data
+        inplace : bool or None
+            Whether to modify the object in place or return a new object.
+            `true`: modify in place
+            `false`: return a new object
+            `None`: use the object's default setting (initialized in __init__)
+
+        Returns
+        -------
+        EyeData
+            An EyeData object with the corrected pupil
+
+        Raises
+        ------
+        ValueError
+            if no experimental setup is set (see :meth:`~pypillometry.GenericEyeData.set_experimental_setup`)
+        """
+        self._d._require("pupil", "x", "y")
+        obj=self._d._get_inplace(inplace)
+        eyes=self._d._eyes_with(eyes, ["pupil", "x", "y"])
+
+        if not isinstance(store_as, str):
+            logger.warning("store_as must be a string; using 'pupil' instead")
+            store_as="pupil"
+
+        # Require experimental_setup for this correction
+        if self._d.experimental_setup is None:
+            raise ValueError(
+                "Cannot correct pupil foreshortening: experimental_setup not set. "
+                "Use set_experimental_setup() to configure it."
+            )
+        setup = self._d.experimental_setup
+
+        if midpoint is None:
+            midpoint = (setup.screen_width / 2, setup.screen_height / 2)
+        
+        scaling_factor_x = setup.mm_per_pixel_x
+        scaling_factor_y = setup.mm_per_pixel_y
+
+        # calculate distance of x,y from midpoint
+        for eye in eyes:
+            vx="_".join([eye, "x"])
+            vy="_".join([eye, "y"])
+            xdist = np.abs(self._d.data[vx] - midpoint[0]) * scaling_factor_x
+            ydist = np.abs(self._d.data[vy] - midpoint[1]) * scaling_factor_y
+            dist = np.sqrt(xdist**2 + ydist**2)
+            corr = np.sqrt((dist**2) / (setup.d**2) + 1)  # correction factor
+            # correct the masked samples too and keep the layers of the
+            # pupil (NaN gaze gives NaN)
+            corrected = self._d.data[eye, "pupil"] * corr
+            key, target = f"{eye}_pupil", f"{eye}_{store_as}"
+            if target == key:
+                obj.data.set_with_mask(key, corrected, preserve_mask=True)
+            else:
+                obj.data._set_channel(target, corrected, obj.data.layers[key])
+
+        return obj
+
+    def fit_foreshortening(
+        self,
+        eye: str,
+        r: Optional[Union[float, str]] = None,
+        d: Optional[Union[float, str]] = None,
+        intervals: Optional[Intervals] = None,
+        target_fs: float = 50.0,
+        lowpass_freq: float = 4.0,
+        lambda_smooth: float = 1.0,
+        knots_per_second: float = 1.0,
+        initial_theta: Optional[Union[float, str]] = None,
+        initial_phi: Optional[Union[float, str]] = None,
+        verbose: bool = True
+    ) -> ForeshorteningCalibration:
+        """
+        Fit foreshortening correction model to estimate camera geometry and true pupil size.
+        
+        This method implements Stage 1 of the foreshortening correction algorithm,
+        which jointly estimates the camera position (theta, phi) and the temporal
+        dynamics of true pupil size A0(t) using B-splines. The data is automatically
+        preprocessed (filtered and downsampled) before fitting.
+        
+        Parameters
+        ----------
+        eye : str
+            Which eye to fit ('left' or 'right')
+        r : float, str, or Quantity, optional
+            Eye-to-camera distance. If not provided, uses the 
+            `r` from experimental_setup.
+
+            - Plain number: assumed to be mm (with warning)
+            - String: e.g., "600 mm", "60 cm"
+            - Quantity: e.g., 600 * u.mm
+        d : float, str, or Quantity, optional
+            Eye-to-screen distance. If not provided, uses the 
+            `d` from experimental_setup.
+
+            - Plain number: assumed to be mm (with warning)
+            - String: e.g., "700 mm", "70 cm"
+            - Quantity: e.g., 700 * u.mm
+        intervals : Intervals, optional
+            Time intervals to use for fitting. If None, uses all available data.
+            Useful for fitting only on calibration periods. Intervals in any
+            time units or in sample indices (``units="samples"``) are accepted; a
+            plain list of `(start, end)` tuples is taken as ms. Intervals are
+            end-exclusive.
+        target_fs : float, default 50.0
+            Target sampling rate in Hz after downsampling for efficiency.
+            Pupil dynamics are typically well-preserved at 50 Hz.
+        lowpass_freq : float, default 4.0
+            Lowpass filter cutoff frequency in Hz. Removes high-frequency noise
+            before downsampling. Should be below target_fs/2 (Nyquist).
+        lambda_smooth : float, default 1.0
+            Smoothness regularization weight. Higher values produce smoother
+            A0(t) estimates. Tune via cross-validation if needed.
+        knots_per_second : float, default 1.0
+            Number of B-spline knots per second. Controls temporal resolution
+            of A0(t) model. Typical values: 0.5-2.0.
+        initial_theta : float, str, or Quantity, optional
+            Initial guess for camera polar angle. If None, uses
+            pi/2 (horizontal) as starting point.
+
+            - Plain number: assumed to be radians (with warning)
+            - String: e.g., "20 degrees", "0.349 radians"
+            - Quantity: e.g., 20 * u.deg
+        initial_phi : float, str, or Quantity, optional
+            Initial guess for camera azimuthal angle. If None,
+            uses 0 (camera on x-axis) as starting point.
+
+            - Plain number: assumed to be radians (with warning)
+            - String: e.g., "-90 degrees", "-1.57 radians"
+            - Quantity: e.g., -90 * u.deg
+        verbose : bool, default True
+            Print optimization progress and fit statistics.
+        
+        Returns
+        -------
+        calibration : ForeshorteningCalibration
+            Fitted calibration object containing camera geometry (theta, phi),
+            spline coefficients for A0(t), and fit quality metrics.
+        
+        Raises
+        ------
+        ValueError
+            If specified eye doesn't exist or lacks gaze/pupil data, if the
+            experimental setup is not set or lacks required information, if
+            `lowpass_freq` is not below the Nyquist frequency or if fewer
+            than 100 valid samples are available.
+        
+        Notes
+        -----
+        The model is:
+            A_measured(x,y,t) = A0(t) * cos(alpha(x,y; theta, phi))
+        
+        where:
+
+        - A0(t) = sum_k a_k * B_k(t) is modeled with B-splines
+        - cos(alpha) is the foreshortening factor depending on viewing angle
+        - theta, phi parameterize camera position in spherical coordinates
+        
+        The optimization minimizes:
+            sum_i (A_i - A_pred_i)^2 + lambda_smooth * sum_k (a_{k+1} - a_k)^2
+        
+        Examples
+        --------
+        >>> import pypillometry as pp
+        >>> data = pp.EyeData.from_eyelink('recording.edf')  # doctest: +SKIP
+        >>> 
+        >>> # Set experimental setup
+        >>> data.set_experimental_setup(  # doctest: +SKIP
+        ...     screen_resolution=(1920, 1080),
+        ...     physical_screen_size=("52 cm", "29 cm"),
+        ...     eye_to_screen_center="65 cm",
+        ...     camera_offset=("0 cm", "-30 cm", "0 cm"),
+        ... )
+        >>> 
+        >>> # Fit on calibration period (first 2 minutes)
+        >>> cal_intervals = pp.Intervals([(0, 120000)], units="ms")  # doctest: +SKIP
+        >>> calib = data.pupil.fit_foreshortening(  # doctest: +SKIP
+        ...     eye='left',
+        ...     intervals=cal_intervals
+        ... )
+        >>> 
+        >>> # Or provide r and d explicitly
+        >>> calib = data.pupil.fit_foreshortening(  # doctest: +SKIP
+        ...     eye='left',
+        ...     r="60 cm",
+        ...     d="70 cm",
+        ...     intervals=cal_intervals
+        ... )
+        >>> 
+        >>> # Inspect fit quality
+        >>> print(calib)  # doctest: +SKIP
+        >>> print(f"R² = {calib.fit_metrics['r2']:.3f}")  # doctest: +SKIP
+        >>> 
+        >>> # Compute correction for all data
+        >>> correction_factor = calib.get_correction_factor(  # doctest: +SKIP
+        ...     data['left', 'x'], 
+        ...     data['left', 'y']
+        ... )
+        >>> corrected_pupil = data['left', 'pupil'] * correction_factor  # doctest: +SKIP
+        
+        See Also
+        --------
+        ForeshorteningCalibration : Container for fitted parameters
+        correct_foreshortening : Simple foreshortening correction method
+        """
+        # Validate eye
+        self._d._require("pupil", "x", "y")
+        if not isinstance(eye, str):
+            raise TypeError(f"eye must be the name of one eye (e.g., 'left'), got {eye!r}")
+        if eye not in self._d.eyes:
+            raise ValueError(f"Eye '{eye}' not found in dataset. Available: {self._d.eyes}")
+        
+        # Check for required data
+        x_var = f"{eye}_x"
+        y_var = f"{eye}_y"
+        pupil_var = f"{eye}_pupil"
+        
+        if x_var not in self._d.data or y_var not in self._d.data:
+            raise ValueError(f"Gaze data (x, y) not available for {eye} eye")
+        if pupil_var not in self._d.data:
+            raise ValueError(f"Pupil data not available for {eye} eye")
+        
+        # Require experimental_setup for screen dimensions
+        if self._d.experimental_setup is None:
+            raise ValueError(
+                "Cannot fit foreshortening: experimental_setup not set. "
+                "Use set_experimental_setup() to configure it."
+            )
+        setup = self._d.experimental_setup
+        
+        # Get geometric parameters from experimental_setup or explicit args
+        if r is None:
+            if not setup.has_camera_position():
+                raise ValueError(
+                    "Camera position not set in experimental_setup. "
+                    "Either provide r explicitly or set camera_offset in experimental_setup."
+                )
+            r = setup.r
+            if verbose:
+                logger.info(f"Using camera distance from experimental_setup: {r:.1f} mm")
+        else:
+            r = parse_distance(r)
+        
+        if d is None:
+            if not setup.has_eye_distance():
+                raise ValueError(
+                    "Eye-to-screen distance not set in experimental_setup. "
+                    "Either provide d explicitly or set eye_to_screen_center in experimental_setup."
+                )
+            d = setup.d
+            if verbose:
+                logger.info(f"Using screen distance from experimental_setup: {d:.1f} mm")
+        else:
+            d = parse_distance(d)
+        
+        # Parse angle parameters if provided
+        if initial_theta is not None:
+            initial_theta = parse_angle(initial_theta)
+        
+        if initial_phi is not None:
+            initial_phi = parse_angle(initial_phi)
+        
+        # Validate geometric parameters
+        if r <= 0:
+            raise ValueError(f"Eye-to-camera distance r must be positive, got {r}")
+        if d <= 0:
+            raise ValueError(f"Eye-to-screen distance d must be positive, got {d}")
+        
+        if verbose:
+            logger.info(f"Eye-to-camera distance: {r} mm")
+            logger.info(f"Eye-to-screen distance: {d} mm")
+        
+        # Extract data (using masked array access to exclude blinks/artifacts)
+        time = self._d["time_ms"].copy()
+        x_gaze = self._d[eye, 'x'].copy()
+        y_gaze = self._d[eye, 'y'].copy()
+        pupil = self._d[eye, 'pupil'].copy()
+        
+        # Apply interval mask if provided
+        if intervals is not None:
+            if not isinstance(intervals, Intervals):
+                intervals = Intervals(intervals, units="ms")  # plain list in ms
+            mask = intervals.to_mask(self._d).astype(bool)
+            
+            time = time[mask]
+            x_gaze = x_gaze[mask]
+            y_gaze = y_gaze[mask]
+            pupil = pupil[mask]
+            
+            if verbose:
+                logger.info(f"Using {np.sum(mask)} samples from specified intervals")
+        
+        # mm relative to screen center, positive y = up
+        x_gaze_mm, y_gaze_mm = setup.pixels_to_mm(x_gaze, y_gaze, centered=True)
+        
+        # Remove invalid samples (masked, NaN, pupil <= 0); the masks must be
+        # checked explicitly, comparisons on masked arrays keep masked samples
+        masked = (np.ma.getmaskarray(x_gaze_mm) | np.ma.getmaskarray(y_gaze_mm)
+                  | np.ma.getmaskarray(pupil))
+        x_gaze_mm = np.ma.getdata(x_gaze_mm)
+        y_gaze_mm = np.ma.getdata(y_gaze_mm)
+        pupil = np.ma.getdata(pupil)
+        valid = (~masked & np.isfinite(x_gaze_mm) & np.isfinite(y_gaze_mm)
+                 & np.isfinite(pupil) & (pupil > 0))
+
+        time = time[valid]
+        x_gaze_mm = x_gaze_mm[valid]
+        y_gaze_mm = y_gaze_mm[valid]
+        pupil = pupil[valid]
+        
+        n_valid = len(time)
+        if n_valid < 100:
+            raise ValueError(f"Insufficient valid samples for fitting: {n_valid} < 100")
+        
+        if verbose:
+            logger.info(f"Valid samples after preprocessing: {n_valid}")
+        
+        # Preprocessing: lowpass filter
+        if verbose:
+            logger.info(f"Applying {lowpass_freq} Hz lowpass filter")
+        
+        nyquist = self._d.fs / 2
+        if lowpass_freq >= nyquist:
+            raise ValueError(f"Lowpass frequency ({lowpass_freq} Hz) must be < Nyquist ({nyquist} Hz)")
+        
+        # Apply Butterworth lowpass filter (order 3)
+        pupil_filt = butter_lowpass_filter(pupil, cutoff=lowpass_freq, fs=self._d.fs, order=3)
+        
+        # Downsample
+        if self._d.fs > target_fs:
+            downsample_factor = int(np.round(self._d.fs / target_fs))
+            
+            if verbose:
+                logger.info(f"Downsampling by factor {downsample_factor}: {self._d.fs} Hz → {self._d.fs/downsample_factor:.1f} Hz")
+            
+            time = downsample(time, downsample_factor)
+            x_gaze_mm = downsample(x_gaze_mm, downsample_factor)
+            y_gaze_mm = downsample(y_gaze_mm, downsample_factor)
+            pupil_filt = downsample(pupil_filt, downsample_factor)
+        
+        n_samples = len(time)
+        
+        # Setup B-spline basis
+        t_min, t_max = time[0], time[-1]
+        duration_sec = (t_max - t_min) / 1000.0
+        
+        knots = _determine_knots(t_min, t_max, knots_per_second)
+        basis_matrix = _create_bspline_basis(time, knots, degree=3)
+        n_basis = basis_matrix.shape[1]
+        
+        if verbose:
+            logger.info(f"B-spline basis: {n_basis} functions over {duration_sec:.1f} seconds")
+        
+        # Initialize parameters
+        # Spline coefficients: initialize to mean pupil size
+        a_init = np.full(n_basis, np.mean(pupil_filt))
+        
+        # Camera angles: use provided or default
+        theta_init = initial_theta if initial_theta is not None else np.pi / 2  # Horizontal
+        phi_init = initial_phi if initial_phi is not None else 0.0  # x-axis
+        
+        params_init = np.concatenate([a_init, [theta_init, phi_init]])
+        
+        # Setup bounds for L-BFGS-B
+        bounds = [(0.1 * np.mean(pupil_filt), 10 * np.mean(pupil_filt))] * n_basis  # Spline coeffs > 0
+        bounds += [(0, np.pi/2)]  # theta: polar angle from z-axis, camera must be forward of eye (0=on-axis, π/2=perpendicular)
+        bounds += [(-np.pi, np.pi)]  # phi: azimuthal in x-y plane (-π/2=below, 0=right, π/2=above, ±π=left)
+        
+        # check that the initial values are within the bounds
+        for i, (lb, ub) in enumerate(bounds):
+            if params_init[i] < lb or params_init[i] > ub:
+                logger.warning(f"Initial parameter {i} is out of bounds: {params_init[i]} not in [{lb}, {ub}]")
+                params_init[i] = (lb + ub) / 2
+
+        # Run optimization
+        if verbose:
+            logger.info("Starting optimization...")
+        
+        result = optimize.minimize(
+            fun=_objective_function,
+            x0=params_init,
+            args=(x_gaze_mm, y_gaze_mm, time, pupil_filt, basis_matrix, r, d, lambda_smooth, 0.0),
+            method='L-BFGS-B',
+            bounds=bounds,
+            jac=_objective_gradient,
+            options={'maxiter': 500}
+        )
+        
+        if not result.success:
+            logger.warning(f"Optimization did not converge: {result.message}")
+        elif verbose:
+            logger.info(f"Optimization converged in {result.nit} iterations")
+        
+        # Extract fitted parameters
+        params_opt = result.x
+        spline_coeffs_opt, theta_opt, phi_opt = _split_params(params_opt, n_basis)
+        
+        # Compute fit metrics
+        from .foreshortening_calibration import _compute_cos_alpha_vectorized
+        
+        A0_fit = basis_matrix @ spline_coeffs_opt
+        cos_alpha_fit = _compute_cos_alpha_vectorized(x_gaze_mm, y_gaze_mm, theta_opt, phi_opt, r, d, 0.0)
+        pupil_pred = A0_fit * cos_alpha_fit
+        
+        residuals = pupil_filt - pupil_pred
+        ss_res = np.sum(residuals ** 2)
+        ss_tot = np.sum((pupil_filt - np.mean(pupil_filt)) ** 2)
+        r2 = 1 - ss_res / ss_tot
+        rmse = np.sqrt(np.mean(residuals ** 2))
+        
+        fit_metrics = {
+            'r2': r2,
+            'rmse': rmse,
+            'n_samples': n_samples,
+            'loss': result.fun,
+            'n_iterations': result.nit,
+            'converged': result.success
+        }
+        
+        if verbose:
+            logger.info(f"Fit quality: R² = {r2:.4f}, RMSE = {rmse:.4f}")
+            logger.info(f"Camera position: theta = {np.degrees(theta_opt):.1f}°, phi = {np.degrees(phi_opt):.1f}°")
+        
+        # Create ForeshorteningCalibration object
+        calibration = ForeshorteningCalibration(
+            eye=eye,
+            theta=theta_opt,
+            phi=phi_opt,
+            experimental_setup=setup,
+            spline_coeffs=spline_coeffs_opt,
+            spline_knots=knots,
+            spline_degree=3,
+            fit_intervals=intervals,
+            fit_metrics=fit_metrics
+        )
+        
+        return calibration

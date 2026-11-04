@@ -106,9 +106,9 @@ class TestResponseExcluded(unittest.TestCase):
         d.data["left_pupil"][2700:3300] = 0.
         d = d.exclude_intervals([(27000, 33000)])
         d = d.interpolate_intervals(d.get_excluded(), variables="pupil")
-        d = d.pupil_estimate_baseline(eyes="left", seed=1)
+        d = d.pupil.estimate_baseline(eyes="left", seed=1)
         cls.d = d
-        cls.est = d.pupil_estimate_response(eyes="left", npar=10, tmax=900, inplace=False)
+        cls.est = d.pupil.estimate_response(eyes="left", npar=10, tmax=900, inplace=False)
 
     def test_bridged_linearly(self):
         y = self.d.data["left", "pupil"]
@@ -122,7 +122,7 @@ class TestResponseExcluded(unittest.TestCase):
         self.assertEqual(par["min_valid"], 0.5)
         # no huge values in the predicted response
         self.assertLess(np.max(self.est.data["left", "response"]), 1000)
-        est0 = self.d.pupil_estimate_response(eyes="left", npar=10, tmax=900,
+        est0 = self.d.pupil.estimate_response(eyes="left", npar=10, tmax=900,
                                               min_valid=0, inplace=False)
         self.assertFalse(np.isnan(est0.params["response"]["left"]["coef"]).any())
 
@@ -140,7 +140,7 @@ class TestResponseExcluded(unittest.TestCase):
     def test_excluded_not_used(self):
         d = self.d.copy()
         d.data["left_pupil"][2700:3300] += 1e5
-        est = d.pupil_estimate_response(eyes="left", npar=10, tmax=900, inplace=False)
+        est = d.pupil.estimate_response(eyes="left", npar=10, tmax=900, inplace=False)
         np.testing.assert_allclose(est.params["response"]["left"]["coef"],
                                    self.est.params["response"]["left"]["coef"])
 
@@ -148,7 +148,7 @@ class TestResponseExcluded(unittest.TestCase):
         d = self.d.copy()
         # an interpolated blink at 1.6 s
         d.interpolate_intervals(pp.Intervals([(160, 200)], "samples"), inplace=True)
-        est = d.pupil_estimate_response(eyes="left", npar=10, tmax=900, inplace=False)
+        est = d.pupil.estimate_response(eyes="left", npar=10, tmax=900, inplace=False)
         par = est.params["response"]["left"]
         self.assertLess(par["observed"][0], 1)
         self.assertAlmostEqual(par["valid"][0], 1)
@@ -158,10 +158,10 @@ class TestResponseExcluded(unittest.TestCase):
         d = self.d.copy()
         d.data["left_pupil"][160:200] = 0.
         d.mask_intervals(pp.Intervals([(160, 200)], "samples"), inplace=True)
-        est = d.pupil_estimate_response(eyes="left", npar=10, tmax=900, inplace=False)
+        est = d.pupil.estimate_response(eyes="left", npar=10, tmax=900, inplace=False)
         par = est.params["response"]["left"]
         self.assertLess(par["valid"][0], 0.99)
-        ref = self.d.pupil_estimate_response(eyes="left", npar=10, tmax=900, inplace=False)
+        ref = self.d.pupil.estimate_response(eyes="left", npar=10, tmax=900, inplace=False)
         np.testing.assert_allclose(par["coef"], ref.params["response"]["left"]["coef"],
                                    rtol=0.05)
 

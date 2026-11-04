@@ -1,78 +1,31 @@
 from loguru import logger
 from .generic import keephistory
+from .namespace import Namespace
+from .pipes import step
 from .eyedatadict import _without_layer
 import numpy as np
 import json
-from .experimental_setup import ExperimentalSetup
 
 
-class _GazeMethods:
+class GazeNamespace(Namespace):
     """
-    Methods of :class:`~pypillometry.EyeData` for gaze data.
+    Methods for gaze data, accessed as ``d.gaze`` (e.g.,
+    ``d.gaze.mask_offscreen()``).
 
-    Internal: not a data class (no state and no constructor). The methods
-    that need gaze data (x and y) raise a ValueError if there is none.
+    The methods need gaze data (x and y) and raise a ValueError if there is
+    none. The transforming methods return the data object (see
+    :class:`~pypillometry.eyedata.namespace.Namespace`).
     """
 
-    @keephistory
-    def set_experimental_setup(self, **kwargs):
-        """
-        Set or update the experimental setup geometry (in-place).
-        
-        Creates a new :class:`~pypillometry.ExperimentalSetup` or updates the
-        existing one with the provided parameters (parameters that are not
-        given are taken from the existing setup). All parameters are passed
-        through to the ExperimentalSetup constructor.
-
-        Parameters
-        ----------
-        **kwargs : dict
-            Any parameters accepted by :class:`~pypillometry.ExperimentalSetup`:
-
-            - screen_resolution: tuple (width, height) in pixels
-            - physical_screen_size: tuple (width, height) with units
-            - eye_to_screen_center: distance from the eye to the screen center
-            - screen_offset: tuple (delta_x, delta_y) - offset of screen center from eye
-            - screen_pitch: tilt angle (alpha_tilt)
-            - screen_yaw: tilt angle (beta_tilt)
-            - camera_offset: tuple (x, y, z) in eye-centric frame
-            - camera_spherical: tuple (theta, phi, r)
-            - ipd: inter-pupillary distance
-
-        Returns
-        -------
-        :class:`~pypillometry.EyeData`
-            the object itself (always modified in-place)
-        
-        Examples
-        --------
-        >>> data.set_experimental_setup(
-        ...     screen_resolution=(1920, 1080),
-        ...     physical_screen_size=("52 cm", "29 cm"),
-        ...     eye_to_screen_center="65 cm",
-        ... )
-        """
-        if self.experimental_setup is None:
-            # Create new setup
-            self.experimental_setup = ExperimentalSetup(**kwargs)
-        else:
-            # Merge with existing setup (stored values get their units
-            # back, so they are not parsed as plain numbers)
-            old = ExperimentalSetup._constructor_kwargs(self.experimental_setup.to_dict())
-            if 'camera_offset' in kwargs or 'camera_spherical' in kwargs:
-                # a new camera position replaces the old one completely
-                old['camera_offset'], old['camera_spherical'] = None, None
-            merged = {**old, **kwargs}
-
-            self.experimental_setup = ExperimentalSetup(**merged)
-        return self
+    _name = "gaze"
 
     # =========================================================================
     # Methods
     # =========================================================================
 
+    @step
     @keephistory
-    def mask_eye_divergences(self, threshold: float = .99, thr_type: str = "percentile", 
+    def mask_divergences(self, threshold: float = .99, thr_type: str = "percentile", 
                            store_as: str|None = None,
                            ignore_existing_mask: bool = True, inplace=None):
         """
@@ -126,24 +79,24 @@ class _GazeMethods:
         Examples
         --------
         >>> # Mask divergences at 99th percentile
-        >>> gaze_data = gaze_data.mask_eye_divergences(threshold=0.99, thr_type="percentile")
+        >>> gaze_data = gaze_data.gaze.mask_divergences(threshold=0.99, thr_type="percentile")
         
         >>> # The detected divergences (in ms)
         >>> divergences = gaze_data.get_layer_intervals("divergence", "left", "x", units="ms")
         
         >>> # Mask divergences beyond 100 pixels
-        >>> gaze_data = gaze_data.mask_eye_divergences(threshold=100, thr_type="pixel")
+        >>> gaze_data = gaze_data.gaze.mask_divergences(threshold=100, thr_type="pixel")
         
         >>> # Only check non-masked data points
-        >>> gaze_data = gaze_data.mask_eye_divergences(ignore_existing_mask=False)
+        >>> gaze_data = gaze_data.gaze.mask_divergences(ignore_existing_mask=False)
         """
-        self._require("x", "y")
-        obj = self._get_inplace(inplace)
+        self._d._require("x", "y")
+        obj = self._d._get_inplace(inplace)
         
         # Check that both eyes are available
         if 'left' not in obj.eyes or 'right' not in obj.eyes:
             raise ValueError(
-                "Both left and right eye data are required for mask_eye_divergences. "
+                "Both left and right eye data are required for gaze.mask_divergences. "
                 f"Available eyes: {obj.eyes}"
             )
         
@@ -204,8 +157,9 @@ class _GazeMethods:
             obj.data.set_layer(key, "divergence", divergence_mask, replace=True)
         return obj
     
+    @step
     @keephistory
-    def mask_offscreen_coords(self, eyes: str|list = [],
+    def mask_offscreen(self, eyes: str|list = [],
                              ignore_existing_mask: bool = False, inplace=None):
         """
         Detect and mask gaze coordinates that fall outside the screen boundaries.
@@ -243,19 +197,19 @@ class _GazeMethods:
         Examples
         --------
         >>> # Mask offscreen coordinates for all eyes
-        >>> gaze_data = gaze_data.mask_offscreen_coords()
+        >>> gaze_data = gaze_data.gaze.mask_offscreen()
         
         >>> # The detected off-screen periods (in ms)
         >>> offscreen = gaze_data.get_layer_intervals("offscreen", variables="x", units="ms")
         
         >>> # Mask offscreen coordinates for left eye only
-        >>> gaze_data = gaze_data.mask_offscreen_coords(eyes='left')
+        >>> gaze_data = gaze_data.gaze.mask_offscreen(eyes='left')
         
         >>> # Check all data including already masked points (e.g., during blinks)
-        >>> gaze_data = gaze_data.mask_offscreen_coords(ignore_existing_mask=True)
+        >>> gaze_data = gaze_data.gaze.mask_offscreen(ignore_existing_mask=True)
         """
-        self._require("x", "y")
-        obj = self._get_inplace(inplace)
+        self._d._require("x", "y")
+        obj = self._d._get_inplace(inplace)
         
         # Require experimental_setup for screen limits
         if obj.experimental_setup is None:

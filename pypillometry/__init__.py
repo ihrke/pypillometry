@@ -23,6 +23,18 @@ from .eyedata import (
     EyeDataDict, MaskPolicy, ExperimentalSetup, SpatialCalibration,
     ForeshorteningCalibration, keephistory,
 )
+from .eyedata.pipes import Step, Pipeline
+
+# ---------------------------------------------------------------------------
+# Pipeline steps: d | pp.pupil.blinks_detect() | pp.crop(...) | ...
+from .eyedata.steps import (
+    pupil, gaze,
+    crop, downsample, scale, unscale, merge_eyes, reset_time,
+    mask_intervals, interpolate_intervals, exclude_intervals, keep_intervals,
+    remove_intervals, merge_masks, clear_layer, set_blinks, set_events,
+    add_events, set_experimental_setup, drop_data, drop_original,
+    fill_time_discontinuities,
+)
 from .plot import EyePlotter, PupilPlotter, GazePlotter
 from .segmented import (
     SegmentedEyeData, GroupLevelSegmentedData, group_segments,
@@ -49,7 +61,7 @@ from .example_data import (
 # Signal processing
 from .signal import (
     # baseline
-    bspline, butter_lowpass, butter_lowpass_filter, downsample,
+    bspline, butter_lowpass, butter_lowpass_filter,
     baseline_envelope, baseline_envelope_iter_bspline, baseline_pupil_model,
     # preprocessing
     smooth_window, velocity_savgol, detect_blinks_velocity,
@@ -84,7 +96,14 @@ __all__ = [
     # data classes
     "GenericEyeData", "EyeData", "FakeEyeData",
     "EyeDataDict", "MaskPolicy", "ExperimentalSetup", "SpatialCalibration",
-    "ForeshorteningCalibration", "keephistory",
+    "ForeshorteningCalibration", "keephistory", "Step", "Pipeline",
+    # pipeline steps
+    "pupil", "gaze",
+    "crop", "downsample", "scale", "unscale", "merge_eyes", "reset_time",
+    "mask_intervals", "interpolate_intervals", "exclude_intervals",
+    "keep_intervals", "remove_intervals", "merge_masks", "clear_layer",
+    "set_blinks", "set_events", "add_events", "set_experimental_setup",
+    "drop_data", "drop_original", "fill_time_discontinuities",
     "EyePlotter", "PupilPlotter", "GazePlotter",
     "SegmentedEyeData", "GroupLevelSegmentedData", "group_segments",
     "Events", "ClockSync", "sync_clocks",
@@ -98,7 +117,7 @@ __all__ = [
     "get_available_datasets", "get_example_data", "get_rlmw_002",
     "get_rlmw_002_short", "get_rlmw_010_edf",
     # signal processing
-    "bspline", "butter_lowpass", "butter_lowpass_filter", "downsample",
+    "bspline", "butter_lowpass", "butter_lowpass_filter",
     "baseline_envelope", "baseline_envelope_iter_bspline",
     "baseline_pupil_model",
     "smooth_window", "velocity_savgol", "detect_blinks_velocity",
