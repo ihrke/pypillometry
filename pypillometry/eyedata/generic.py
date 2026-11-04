@@ -14,6 +14,7 @@ from ..io import download
 from .eyedatadict import (EyeDataDict, LAYER_DTYPE, REC_LAYERS,
                           MaskPolicy, _as_policy, _join_key)
 from .experimental_setup import ExperimentalSetup
+from .namespace import Namespace
 from ..signal import baseline
 from ..intervals import stat_event_interval, Intervals, _as_intervals
 from ..epochs import Epochs
@@ -84,7 +85,8 @@ def keephistory(func):
     Parameters
     ----------
     func : callable
-        method to wrap; its first argument must be the object (`self`)
+        method to wrap; its first argument must be the object (`self`) or a
+        :class:`~pypillometry.eyedata.namespace.Namespace` of it
 
     Returns
     -------
@@ -100,13 +102,17 @@ def keephistory(func):
         finally:
             _history_depth -= 1
         # record in the returned object, or in `self` for in-place setters
-        # that return nothing
-        target = obj if obj is not None else args[0]
+        # that return nothing; methods of a namespace (e.g., ``d.pupil``)
+        # are recorded with its name (``pupil.blinks_detect``)
+        self, name = args[0], func.__name__
+        if isinstance(self, Namespace):
+            self, name = self._d, f"{self._name}.{name}"
+        target = obj if obj is not None else self
         if _history_depth == 0 and hasattr(target, 'add_to_history'):
             allargs = [_history_arg(v) for v in args[1:]]
             allargs += [f"{k}={_history_arg(v)}" for k, v in kwargs.items()]
-            fstr = f"{func.__name__}({','.join(allargs)})"
-            target.add_to_history({"funcstring": fstr, "funcname": func.__name__})
+            fstr = f"{name}({','.join(allargs)})"
+            target.add_to_history({"funcstring": fstr, "funcname": name})
         return obj
     return wrapper
 
