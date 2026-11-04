@@ -74,6 +74,8 @@ tables below for every changed call.
 - `pp.Epochs` (event-locked windows)
 - `pypil-upgrade`: converts saved files to the current format
 - Experimental setup and calibration are kept and saved for every object
+- `d.plot.plot_masked(policy=...)`, e.g. `policy="strict"` to show the
+  interpolated stretches
 
 ### Changed results
 

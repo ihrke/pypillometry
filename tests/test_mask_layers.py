@@ -320,6 +320,22 @@ class TestInterpolatedLayer:
         assert not d.mask("left", "pupil")[interp].any()
         assert d.mask("left", "pupil", policy="strict")[interp].all()
 
+    def test_plot_masked_policy(self):
+        # after interpolation, the default policy masks nothing; "strict"
+        # shows the interpolated stretches
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+        d = blink_data().pupil.blinks_detect().pupil.blinks_interpolate()
+        try:
+            for policy, nlines in (("default", 0), ("strict", 3), (["interpolated"], 3)):
+                plt.figure()
+                d.plot.plot_masked(policy=policy)
+                assert len(plt.gca().lines) == nlines
+                plt.close("all")
+        finally:
+            plt.close("all")
+
     def test_store_as_other_variable(self):
         d = blink_data().pupil.blinks_detect()
         d.pupil.blinks_interpolate(store_as="pupilinterp")
