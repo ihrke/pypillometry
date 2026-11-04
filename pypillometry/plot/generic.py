@@ -489,7 +489,7 @@ class GenericPlots(Namespace):
            >>> from pypillometry import u
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
-           >>> figs = d.plot.plot_timeseries_segments(interv=10, units="sec",
+           >>> figs = d.plot.plot_timeseries_segments(interv=10 * u.sec, units="sec",
            ...                                        variables="pupil", figsize=(10, 3))
            >>> for f in figs[1:]:
            ...     plt.close(f)
