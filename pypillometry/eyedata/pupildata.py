@@ -174,9 +174,10 @@ class _PupilMethods:
                          max_iter: int = 10,
                          keep_eyes: bool = True, 
                          policy="default",
+                         name: str = "mean",
                          inplace: bool | None = None):
         """
-        Merge pupil data from both eyes into a single "merged" variable.
+        Merge pupil data from both eyes into a new eye (default ``"mean"``).
         
         This method combines left and right pupil signals, handling missing data
         (masked values) intelligently. Where both eyes are valid, the signals are
@@ -214,6 +215,10 @@ class _PupilMethods:
         policy : str, MaskPolicy or list of str
             mask policy that decides which samples are valid (see
             :meth:`~pypillometry.GenericEyeData.mask`); default ``"default"``
+        name : str, optional
+            name of the new eye (default ``"mean"``, as in
+            :meth:`~pypillometry.GenericEyeData.merge_eyes`); the merged
+            pupil is stored as ``"<name>_pupil"``
         inplace : bool or None, optional
             If True, modify in-place. If False, return a copy.
             If None, use the object's default setting.
@@ -221,7 +226,7 @@ class _PupilMethods:
         Returns
         -------
         EyeData
-            The object with merged pupil data stored as "merged_pupil".
+            The object with merged pupil data stored as "mean_pupil".
             
         Raises
         ------
@@ -231,8 +236,8 @@ class _PupilMethods:
             
         Notes
         -----
-        The merged signal is stored as "merged_pupil" and can be accessed via
-        `data["merged", "pupil"]` or `data["merged_pupil"]`.
+        The merged signal is stored as "mean_pupil" (with the default `name`)
+        and can be accessed via `data["mean", "pupil"]` or `data["mean_pupil"]`.
         
         The mask for the merged signal reflects which timepoints have valid data:
         - For "local_offset" and "offset": masked only where BOTH eyes are masked
@@ -249,7 +254,7 @@ class _PupilMethods:
         --------
         >>> # Default: local offset correction
         >>> data.pupil_merge_eyes()
-        >>> merged = data["merged", "pupil"]
+        >>> merged = data["mean", "pupil"]
         
         >>> # Use global offset (simpler, assumes no drift)
         >>> data.pupil_merge_eyes(method="offset")
@@ -353,7 +358,7 @@ class _PupilMethods:
         merged[masked] = fill[masked]
         
         # Store merged data
-        obj.data.set_with_mask("merged_pupil", merged, mask=merged_mask)
+        obj.data.set_with_mask((name, "pupil"), merged, mask=merged_mask)
         
         # Optionally remove original eye data
         if not keep_eyes:

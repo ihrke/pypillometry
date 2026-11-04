@@ -160,3 +160,11 @@ class TestMs:
                 f(interv=1)  # 1 ms, not 1 min
         assert len(data.plot.plot_timeseries_segments(interv="5 sec")) == 2
         plt.close("all")
+
+
+class TestMergedEyeName:
+    def test_mean_and_name(self, data):
+        assert "mean_pupil" in data.merge_eyes(variables="pupil").data
+        assert "mean_pupil" in data.pupil_merge_eyes(method="offset").data
+        assert "avg_pupil" in data.pupil_merge_eyes(method="offset", name="avg").data
+        assert "avg_x" in data.merge_eyes(variables="x", name="avg").data

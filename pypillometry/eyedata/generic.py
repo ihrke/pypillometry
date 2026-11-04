@@ -2628,11 +2628,11 @@ class GenericEyeData(state.VersionedState, ABC):
 
     @keephistory
     def merge_eyes(self, eyes=[], variables=[], method="mean", keep_eyes=True,
-                   policy="default", inplace=None):
+                   policy="default", name="mean", inplace=None):
         """Merge data from both eyes into a single variable.
 
-        The merged data is stored under the eye name "mean" (e.g.,
-        ``obj["mean", "pupil"]``). Each sample is the mean over the eyes
+        The merged data is stored under the eye name `name` (default
+        "mean", e.g., ``obj["mean", "pupil"]``). Each sample is the mean over the eyes
         in which it is usable under the mask `policy` (by default,
         interpolated samples are used, see :meth:`mask`); it is masked in
         the merged data (``"user"`` layer) only if it is unusable in all
@@ -2655,6 +2655,9 @@ class GenericEyeData(state.VersionedState, ABC):
         policy : str, MaskPolicy or list of str
             mask policy that decides which samples are usable (see
             :meth:`mask`); default ``"default"``
+        name : str, optional
+            name of the new eye; default ``"mean"`` (as in
+            :meth:`~pypillometry.EyeData.pupil_merge_eyes`)
         inplace : bool or None, optional
             if `True`, make change in-place and return the object;
             if `False`, make and return copy before making changes;
@@ -2684,7 +2687,7 @@ class GenericEyeData(state.VersionedState, ABC):
                 # values, still masked
                 rawmean = np.ma.mean(np.ma.masked_invalid(stored), axis=0).filled(np.nan)
                 values = np.where(allmasked, rawmean, np.ma.getdata(meanval))
-                obj["mean", var] = np.ma.array(values, mask=allmasked)
+                obj[name, var] = np.ma.array(values, mask=allmasked)
                 
                 if not keep_eyes:
                     for eye in eyes:

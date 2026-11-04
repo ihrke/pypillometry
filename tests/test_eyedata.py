@@ -554,8 +554,8 @@ class TestEyeData(unittest.TestCase):
         d.data['right_pupil'][300:350] = np.nan
         for method in ["local_offset", "offset", "both_available"]:
             m = d.pupil_merge_eyes(method=method, inplace=False)
-            merged = m.data['merged_pupil']
-            mask = m.data.mask['merged_pupil']
+            merged = m.data['mean_pupil']
+            mask = m.data.mask['mean_pupil']
             self.assertTrue(np.all(mask[100:150] == 1), method)
             np.testing.assert_allclose(merged[100:150], left[100:150] - 10, err_msg=method)
             self.assertFalse(np.any(np.isnan(merged)), method)

@@ -641,9 +641,9 @@ class TestConsumersUsePolicy:
     def test_pupil_merge_eyes(self):
         d = self.binocular()
         m = d.pupil_merge_eyes(method="both_available", inplace=False)
-        assert list(np.flatnonzero(m.mask("merged", "pupil"))) == list(range(100, 110))
+        assert list(np.flatnonzero(m.mask("mean", "pupil"))) == list(range(100, 110))
         s = d.pupil_merge_eyes(method="both_available", policy="strict", inplace=False)
-        assert list(np.flatnonzero(s.mask("merged", "pupil"))) == list(range(50, 60)) + \
+        assert list(np.flatnonzero(s.mask("mean", "pupil"))) == list(range(50, 60)) + \
             list(range(100, 110))
 
     def test_get_segments(self):
