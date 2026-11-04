@@ -614,11 +614,11 @@ class TestEyeData(unittest.TestCase):
         hint = typing.get_type_hints(pp.EyeData.nblinks)["return"]
         self.assertIs(typing.get_origin(hint), dict)
 
-    def test_apply_mask_defaults_consistent(self):
-        """pupil_blinks_detect and blinks_merge_close default to apply_mask=False"""
+    def test_detectors_have_no_apply_mask(self):
+        """the detectors set their layer (no apply_mask argument)"""
         import inspect
-        for f in (pp.EyeData.pupil_blinks_detect, pp.EyeData.blinks_merge_close):
-            self.assertIs(inspect.signature(f).parameters["apply_mask"].default, False)
+        for f in (pp.EyeData.pupil_blinks_detect,):
+            self.assertNotIn("apply_mask", inspect.signature(f).parameters)
 
     def test_blinks_merge_close(self):
         """Test merging of close blinks"""
@@ -781,7 +781,7 @@ class TestEyeData(unittest.TestCase):
         data_copy.data['left_pupil'][100:150] = 0.0
         data_copy.data['left_pupil'][300:360] = 0.0
 
-        result = data_copy.pupil_blinks_detect(eyes=['left'], blink_val=0.0, apply_mask=True)
+        result = data_copy.pupil_blinks_detect(eyes=['left'], blink_val=0.0)
 
         blinks = result.get_blinks('left', 'pupil')['left_pupil']
         self.assertGreater(len(blinks), 0)
@@ -1302,8 +1302,8 @@ class TestEyeData(unittest.TestCase):
         self.assertFalse(np.any(np.isnan(result.data['left_pupil'][100:150])))
         self.assertFalse(np.any(np.isnan(result.data['right_pupil'][100:150])))
         
-    def test_pupil_blinks_detect_apply_mask_false(self):
-        """Test pupil_blinks_detect with apply_mask=False returns Intervals"""
+    def test_pupil_blinks_detect_stores_blinks(self):
+        """pupil_blinks_detect returns the object with the blinks"""
         from pypillometry.intervals import Intervals
         
         # Create artificial signal with blinks
@@ -1311,18 +1311,17 @@ class TestEyeData(unittest.TestCase):
         data_copy.data['left_pupil'][:] = 1.0
         data_copy.data['left_pupil'][100:150] = 0.0
         
-        # Detect without applying mask (default behavior)
         result = data_copy.pupil_blinks_detect(eyes=['left'], blink_val=0.0)
-        
-        # Should return Intervals object (single eye)
-        self.assertIsInstance(result, Intervals)
-        self.assertGreater(len(result), 0)
+        self.assertIs(result, data_copy)
+        blinks = result.get_blinks('left', 'pupil')['left_pupil']
+        self.assertIsInstance(blinks, Intervals)
+        self.assertGreater(len(blinks), 0)
         
         # the stored blinks mask the data
         self.assertTrue(np.all(data_copy.data.mask['left_pupil'][100:150] == 1))
         
-    def test_pupil_blinks_detect_apply_mask_false_multiple_eyes(self):
-        """Test pupil_blinks_detect with apply_mask=False and multiple eyes returns dict"""
+    def test_pupil_blinks_detect_multiple_eyes(self):
+        """pupil_blinks_detect stores the blinks of both eyes"""
         from pypillometry.intervals import Intervals
         
         # Create artificial signal with blinks
@@ -1332,10 +1331,8 @@ class TestEyeData(unittest.TestCase):
         data_copy.data['right_pupil'][:] = 1.0
         data_copy.data['right_pupil'][200:250] = 0.0
         
-        # Detect without applying mask (default behavior)
         result = data_copy.pupil_blinks_detect(eyes=['left', 'right'], blink_val=0.0)
-        
-        # Should return dict of Intervals
+        result = result.get_blinks(variables='pupil')
         self.assertIsInstance(result, dict)
         self.assertIn('left_pupil', result)
         self.assertIn('right_pupil', result)
@@ -1593,7 +1590,7 @@ class TestEyeDataDelitem(unittest.TestCase):
         original_mask = pd.data.mask['left_pupil'].copy()
         
         # First detect blinks, then interpolate
-        pd = pd.pupil_blinks_detect(eyes=['left'], min_duration=50, apply_mask=True, inplace=True)
+        pd = pd.pupil_blinks_detect(eyes=['left'], min_duration=50, inplace=True)
         pd_interp = pd.pupil_blinks_interpolate(eyes=['left'], store_as='pupil', inplace=False)
         
         # Verify manual mask is preserved (strict policy: interpolated
@@ -2017,7 +2014,7 @@ class TestEventsWithGetIntervals(unittest.TestCase):
     def test_mask_as_intervals_single_eye_variable(self):
         """Test mask_as_intervals with single eye/variable"""
         data = self.data.copy()
-        data.pupil_blinks_detect(apply_mask=True)
+        data.pupil_blinks_detect()
         
         # Test single eye/variable returns Intervals object
         intervals = data.mask_as_intervals('left', 'pupil')['left_pupil']
@@ -2028,7 +2025,7 @@ class TestEventsWithGetIntervals(unittest.TestCase):
     def test_mask_as_intervals_multiple_eyes(self):
         """Test mask_as_intervals with multiple eyes returns dict"""
         data = self.data.copy()
-        data.pupil_blinks_detect(apply_mask=True)
+        data.pupil_blinks_detect()
         
         # Test multiple eyes returns dict
         intervals_dict = data.mask_as_intervals(['left', 'right'], 'pupil')
@@ -2044,7 +2041,7 @@ class TestEventsWithGetIntervals(unittest.TestCase):
     def test_mask_as_intervals_multiple_variables(self):
         """Test mask_as_intervals with multiple variables returns dict"""
         data = self.data.copy()
-        data.pupil_blinks_detect(apply_mask=True)
+        data.pupil_blinks_detect()
         
         # Test multiple variables returns dict
         intervals_dict = data.mask_as_intervals('left', ['pupil', 'x'])
@@ -2055,7 +2052,7 @@ class TestEventsWithGetIntervals(unittest.TestCase):
     def test_mask_as_intervals_with_units_ms(self):
         """Test mask_as_intervals with units='ms'"""
         data = self.data.copy()
-        data.pupil_blinks_detect(apply_mask=True)
+        data.pupil_blinks_detect()
         
         intervals = data.mask_as_intervals('left', 'pupil', units='ms')['left_pupil']
         self.assertEqual(intervals.units, 'ms')
@@ -2070,7 +2067,7 @@ class TestEventsWithGetIntervals(unittest.TestCase):
     def test_mask_as_intervals_with_units_sec(self):
         """Test mask_as_intervals with units='sec'"""
         data = self.data.copy()
-        data.pupil_blinks_detect(apply_mask=True)
+        data.pupil_blinks_detect()
         
         intervals = data.mask_as_intervals('left', 'pupil', units='sec')['left_pupil']
         self.assertEqual(intervals.units, 'sec')
@@ -2078,7 +2075,7 @@ class TestEventsWithGetIntervals(unittest.TestCase):
     def test_mask_as_intervals_with_custom_label(self):
         """Test mask_as_intervals with custom label"""
         data = self.data.copy()
-        data.pupil_blinks_detect(apply_mask=True)
+        data.pupil_blinks_detect()
         
         intervals = data.mask_as_intervals('left', 'pupil', label='my_custom_label')['left_pupil']
         self.assertEqual(intervals.label, 'my_custom_label')
@@ -2130,7 +2127,7 @@ class TestEventsWithGetIntervals(unittest.TestCase):
     def test_mask_as_intervals_multiple_eyes_with_units(self):
         """Test mask_as_intervals with multiple eyes and units"""
         data = self.data.copy()
-        data.pupil_blinks_detect(apply_mask=True)
+        data.pupil_blinks_detect()
         
         intervals_dict = data.mask_as_intervals(['left', 'right'], 'pupil', units='ms')
         
@@ -2141,7 +2138,7 @@ class TestEventsWithGetIntervals(unittest.TestCase):
     def test_mask_as_intervals_all_eyes_all_variables(self):
         """Test mask_as_intervals with default (all eyes and variables)"""
         data = self.data.copy()
-        data.pupil_blinks_detect(apply_mask=True)
+        data.pupil_blinks_detect()
         
         # Empty lists should get all available eyes and variables
         intervals_dict = data.mask_as_intervals([], [])
@@ -2377,32 +2374,32 @@ class TestPupilBlinksDetectZero(unittest.TestCase):
 
     def test_zero_coded_blink(self):
         p = self.signal(); p[1000:1100] = 0
-        iv = self.make(p).pupil_blinks_detect(eyes=["left"], strategies=["zero"])
+        iv = self.make(p).pupil_blinks_detect(eyes=["left"], strategies=["zero"]).get_blinks("left", "pupil")["left_pupil"]
         self.assertEqual(list(iv.intervals), [(1000, 1100)])
 
     def test_nan_coded_blink(self):
         p = self.signal(); p[3000:3080] = np.nan
         for bv in (0, np.nan):
-            iv = self.make(p).pupil_blinks_detect(eyes=["left"], strategies=["zero"], blink_val=bv)
+            iv = self.make(p).pupil_blinks_detect(eyes=["left"], strategies=["zero"], blink_val=bv).get_blinks("left", "pupil")["left_pupil"]
             self.assertEqual(list(iv.intervals), [(3000, 3080)])
 
     def test_custom_blink_val(self):
         p = self.signal(); p[1000:1100] = -1; p[3000:3080] = np.nan
-        iv = self.make(p).pupil_blinks_detect(eyes=["left"], strategies=["zero"], blink_val=-1)
+        iv = self.make(p).pupil_blinks_detect(eyes=["left"], strategies=["zero"], blink_val=-1).get_blinks("left", "pupil")["left_pupil"]
         self.assertEqual(list(iv.intervals), [(1000, 1100), (3000, 3080)])
 
     def test_same_with_ignore_existing_mask(self):
         p = self.signal(); p[1000:1100] = 0
         for ign in (False, True):
             iv = self.make(p).pupil_blinks_detect(eyes=["left"], strategies=["zero"],
-                                                  ignore_existing_mask=ign)
+                                                  ignore_existing_mask=ign).get_blinks("left", "pupil")["left_pupil"]
             self.assertEqual(list(iv.intervals), [(1000, 1100)])
 
     def test_other_masks_are_not_blinks(self):
         # a masked region with valid data must not be detected by "zero"
         d = self.make(self.signal())
         d.data.add_mask("left_pupil", np.s_[2000:2100])
-        iv = d.pupil_blinks_detect(eyes=["left"], strategies=["zero"])
+        iv = d.pupil_blinks_detect(eyes=["left"], strategies=["zero"]).get_blinks("left", "pupil")["left_pupil"]
         self.assertEqual(len(iv), 0)
 
 
@@ -2532,7 +2529,7 @@ class TestHistoryLog(unittest.TestCase):
 
     def test_nested_calls_not_recorded(self):
         d = self.make()
-        d.pupil_blinks_detect(apply_mask=True, inplace=True)
+        d.pupil_blinks_detect(inplace=True)
         names = [h["funcname"] for h in d.history]
         self.assertEqual(names[-1], "pupil_blinks_detect")
         self.assertNotIn("mask_intervals", names)  # called internally

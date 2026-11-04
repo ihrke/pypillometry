@@ -2939,12 +2939,12 @@ class GenericEyeData(state.VersionedState, ABC):
         --------
         Apply blinks from a single Intervals object to left eye pupil data:
         
-        >>> blinks = data.pupil_blinks_detect(apply_mask=False)
+        >>> blinks = data.get_blinks()
         >>> data.mask_intervals(blinks['left_pupil'], eyes=['left'], variables=['pupil'])
         
         Apply a dict of intervals (one per eye/variable):
         
-        >>> blinks = data.pupil_blinks_detect(apply_mask=False)
+        >>> blinks = data.get_blinks()
         >>> data.mask_intervals(blinks)  # eyes and variables ignored
         
         Chain with other operations:

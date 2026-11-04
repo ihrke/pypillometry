@@ -67,7 +67,7 @@ def make_eyedata(keep_orig=True):
                                                 err, (1280, 1024))},
         name="test", keep_orig=keep_orig,
         info={"subject": "s1", "nested": {"a": [1, 2], "b": (1.5, "x")}})
-    d = d.pupil_blinks_detect(apply_mask=True, inplace=False)
+    d = d.pupil_blinks_detect(inplace=False)
     d = d.pupil_blinks_interpolate().scale()
     # event metadata with int, float (missing), string and bool columns
     d.set_events(d.events.parse_labels(r"_(?P<trial>\d+)")

@@ -456,9 +456,9 @@ def test_blink_parameters_with_units(eyedata):
     ref = eyedata.pupil_blinks_detect(min_duration=20, winsize=11, inplace=False)
     res = eyedata.pupil_blinks_detect(min_duration=20 * u.ms, winsize="11 ms",
                                       inplace=False)
-    assert {k: v.intervals for k, v in ref.items()} == \
-        {k: v.intervals for k, v in res.items()}
-    d = eyedata.pupil_blinks_detect(apply_mask=True, inplace=False)
+    assert {k: v.intervals for k, v in ref.get_blinks().items()} == \
+        {k: v.intervals for k, v in res.get_blinks().items()}
+    d = eyedata.pupil_blinks_detect(inplace=False)
     ref = d.blinks_merge_close(distance=100)
     res = d.blinks_merge_close(distance=0.1 * u.sec)
     assert {k: v.intervals for k, v in ref.items()} == \

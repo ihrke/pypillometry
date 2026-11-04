@@ -30,7 +30,7 @@ class TestDictReturns:
         assert isinstance(res["left_pupil"], pp.Intervals)
 
     def test_nblinks_includes_zero(self, data):
-        d = data.pupil_blinks_detect(apply_mask=True, strategies=["zero"])
+        d = data.pupil_blinks_detect(strategies=["zero"])
         assert d.nblinks(variables="pupil") == {"left_pupil": 1, "right_pupil": 0}
         stats = d.blink_stats()
         assert set(stats) == {"left_pupil", "right_pupil"}
