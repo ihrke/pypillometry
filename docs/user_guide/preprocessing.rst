@@ -49,9 +49,9 @@ A typical sequence is
 
 .. code-block:: python
 
-    d = d | pp.pupil.blinks_detect() \
-          | pp.pupil.blinks_merge_close(distance=100 * u.ms) \
-          | pp.pupil.blinks_interpolate()
+    d = d | (pp.pupil.blinks_detect()
+             | pp.pupil.blinks_merge_close(distance=100 * u.ms)
+             | pp.pupil.blinks_interpolate())
 
 :meth:`~EyeData.pupil.blinks_detect` finds missing samples and sharp
 drops in the pupil's velocity profile. The detected blinks are stored in the

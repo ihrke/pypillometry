@@ -5,11 +5,12 @@ Pipelines
 
 Processing steps are combined with ``|``::
 
-    d = d | pp.pupil.blinks_detect() | pp.pupil.lowpass_filter(5) | pp.downsample(50)
+    d = d | (pp.pupil.blinks_detect() | pp.pupil.lowpass_filter(5) | pp.downsample(50))
 
 ``d | step`` returns a processed copy of ``d``. Steps combine into a
-:class:`Pipeline`, a value that can be applied to several datasets; see
-:doc:`/user_guide/data_model`.
+:class:`Pipeline`, a value that can be applied to several datasets and
+copies the data only once (``d | a | b`` copies at each ``|``); see
+:ref:`data-model-pipelines`.
 
 Steps for pupil and gaze data
 -----------------------------
