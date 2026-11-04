@@ -94,3 +94,14 @@ class TestRenamedMethods:
         flat = [n for n in dir(pp.EyeData)
                 if n.startswith(("pupil_", "gaze_", "mask_offscreen", "mask_eye"))]
         assert flat == []
+
+    def test_no_plot_forwarding(self):
+        # the plots are only in d.plot; d.pupil_plot() was a short form
+        d = pp.EyeData(left_pupil=np.ones(10), sampling_rate=10)
+        assert callable(d.plot.pupil_plot)
+        assert not hasattr(d, "pupil_plot")
+        assert not hasattr(d, "obj")  # the plotter's back-reference
+        with pytest.raises(AttributeError, match=r"renamed: use \.plot\.plot_timeseries"):
+            d.plot_timeseries()
+        with pytest.raises(AttributeError, match=r"has no attribute 'no_such_thing'$"):
+            d.no_such_thing

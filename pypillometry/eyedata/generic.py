@@ -67,7 +67,9 @@ def _history_arg(v):
 
 
 #: methods renamed in version 2.2 (old name -> new name; no forwarders): the
-#: pupil and gaze methods moved into the namespaces ``d.pupil`` and ``d.gaze``
+#: pupil and gaze methods moved into the namespaces ``d.pupil`` and ``d.gaze``;
+#: the plots are only available in ``d.plot`` (``d.pupil_plot()`` was a short
+#: form of ``d.plot.pupil_plot()``)
 _RENAMED_METHODS = {
     "pupil_lowpass_filter": "pupil.lowpass_filter",
     "pupil_smooth_window": "pupil.smooth_window",
@@ -81,6 +83,12 @@ _RENAMED_METHODS = {
     "fit_foreshortening": "pupil.fit_foreshortening",
     "mask_offscreen_coords": "gaze.mask_offscreen",
     "mask_eye_divergences": "gaze.mask_divergences",
+    **{name: f"plot.{name}" for name in [
+        "plot_timeseries", "plot_timeseries_segments", "plot_intervals",
+        "plot_masked", "plot_experimental_setup", "pupil_plot",
+        "pupil_plot_segments", "plot_blinks",
+        "plot_pupil_foreshortening_error_surface", "plot_heatmap",
+        "plot_scanpath", "plot_calibration"]},
 }
 
 
@@ -659,30 +667,9 @@ class GenericEyeData(state.VersionedState, ABC):
 
     def __getattr__(self, name):
         """
-        Delegate unknown attribute access to the plot object.
-        
-        This allows calling plot methods directly on the data object:
-        
-        Examples
-        --------
-        >>> data.plot_timeseries()  # instead of data.plot.plot_timeseries()
-        >>> data.plot_intervals(intervals)
-        >>> data.pupil_plot(plot_range=(0, 1000))
-        
-        The original syntax still works:
-        >>> data.plot.plot_timeseries()  # this still works too
+        Raise the AttributeError for a missing attribute, naming the new
+        method if it is one of the renamed methods (``_RENAMED_METHODS``).
         """
-        # Avoid infinite recursion - only delegate if 'plot' property exists
-        if name != 'plot':
-            try:
-                # Use object.__getattribute__ to avoid recursion
-                plot_obj = object.__getattribute__(self, 'plot')
-                if hasattr(plot_obj, name):
-                    return getattr(plot_obj, name)
-            except AttributeError:
-                pass
-        
-        # If not found in plot object, raise the normal AttributeError
         hint = ""
         if name in _RENAMED_METHODS:
             hint = f" (renamed: use .{_RENAMED_METHODS[name]}(...))"
