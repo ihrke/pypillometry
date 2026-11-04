@@ -114,7 +114,7 @@ class PupilPlots(GenericPlots):
         if end==np.inf:
             endix=tx.size
         else:
-            endix=np.argmin(np.abs(tx-end))
+            endix=np.argmin(np.abs(tx-end)) + 1  # the end sample is plotted too
                 
         ixx=np.logical_and(evon>=start, evon<end)
         evlab=self._d.events.labels[ixx]
@@ -480,7 +480,7 @@ class PupilPlots(GenericPlots):
         if end == np.inf:
             endix = tx.size
         else:
-            endix = np.argmin(np.abs(tx - end))
+            endix = np.argmin(np.abs(tx - end)) + 1  # the end sample is plotted too
         
         # Use current figure or create new one if none exists
         nplots = len(eyes)

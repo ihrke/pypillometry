@@ -112,6 +112,7 @@ The main ones:
 - Experimental setup and calibration were lost when saving some objects
 - `plot_heatmap(show_masked=True)` with NaN samples
 - A `plot_range` with start after end raises an error
+- The sample at the end of `plot_range` was not plotted
 - `pupil.estimate_response(eyes=...)` removed the stored parameters of the
   other eyes
 - `pupil.estimate_response()` on data without events raises a `ValueError`

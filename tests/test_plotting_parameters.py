@@ -367,3 +367,19 @@ class TestSegmentPlotParameters(unittest.TestCase):
 if __name__ == '__main__':
     unittest.main()
 
+
+
+def test_plot_range_includes_end_sample():
+    # the sample at the end of plot_range was left out
+    d = pp.EyeData(left_pupil=np.arange(100.), left_x=np.arange(100.),
+                   left_y=np.arange(100.), sampling_rate=100)
+    try:
+        for plot in (d.plot.plot_timeseries, d.plot.pupil_plot):
+            plt.figure()
+            plot(plot_range=(100, 500), units="ms")
+            xs = [line.get_xdata() for ax in plt.gcf().axes for line in ax.lines
+                  if len(line.get_xdata()) > 2]
+            assert xs and all(x[0] == 100 and x[-1] == 500 for x in xs), plot
+            plt.close("all")
+    finally:
+        plt.close("all")

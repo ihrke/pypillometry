@@ -327,7 +327,7 @@ class GenericPlots(Namespace):
         if end==np.inf:
             endix=tx.size
         else:
-            endix=np.argmin(np.abs(tx-end))
+            endix=np.argmin(np.abs(tx-end)) + 1  # the end sample is plotted too
         
         # which data to plot
 
