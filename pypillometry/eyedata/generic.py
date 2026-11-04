@@ -1842,6 +1842,8 @@ class GenericEyeData(state.VersionedState, ABC):
             
         Raises
         ------
+        KeyError
+            If an eye or variable does not exist.
         ValueError
             If dropping would result in no data remaining.
             
@@ -1861,6 +1863,12 @@ class GenericEyeData(state.VersionedState, ABC):
             eyes = [eyes]
         if isinstance(variables, str):
             variables = [variables]
+        # unknown names raise (each is checked on its own)
+        for eye in eyes or []:
+            self.data.select(eyes=eye)
+        for var in variables or []:
+            self.data.select(variables=var)
+        eyes, variables = eyes or [], variables or []
             
         # Get current keys
         keys_to_remove = []
@@ -2818,6 +2826,10 @@ class GenericEyeData(state.VersionedState, ABC):
         pairs = self.data.select(eyes, variables)
         
         # Accept either Intervals object or old-style parameters
+        if isinstance(intervals, str):
+            raise TypeError(f"intervals must be Intervals or Epochs, got the string "
+                            f"{intervals!r}; to select events by their label, use "
+                            f"event_select={intervals!r} (and window=...)")
         if intervals is not None:
             intervs = _as_intervals(intervals)
         else:

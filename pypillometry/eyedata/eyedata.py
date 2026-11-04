@@ -427,6 +427,8 @@ class EyeData(_GazeMethods, _PupilMethods, GenericEyeData):
         """
         # Validate eye
         self._require("pupil", "x", "y")
+        if not isinstance(eye, str):
+            raise TypeError(f"eye must be the name of one eye (e.g., 'left'), got {eye!r}")
         if eye not in self.eyes:
             raise ValueError(f"Eye '{eye}' not found in dataset. Available: {self.eyes}")
         

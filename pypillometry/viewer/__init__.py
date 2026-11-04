@@ -340,6 +340,9 @@ def view(data, variables=None, eyes=None, time=None,
     
     # Create the viewer based on mode
     if mode == 'eyedata':
+        if eyes:
+            # unknown eyes raise a KeyError (with the available channels)
+            eyes = list(dict.fromkeys(e for e, _ in plot_spec.data.select(eyes)))
         canvas = ViewerCanvas(
             plot_spec,  # EyeData object
             mode='eyedata',

@@ -108,3 +108,24 @@ class TestEyesVariables:
                 call(data, "lft")
         finally:
             plt.close("all")
+
+    def test_drop_data_unknown_names(self, data):
+        with pytest.raises(KeyError, match="lft"):
+            data.drop_data(eyes=["lft"])
+        with pytest.raises(KeyError, match="pupl"):
+            data.drop_data(variables="pupl")
+        assert set(data.drop_data(eyes=[], variables="x").variables) == {"pupil", "y"}
+
+    def test_informative_type_errors(self, data):
+        with pytest.raises(TypeError, match="event_select='a'"):
+            data.stat_per_event("a", window=(0, 100))
+        with pytest.raises(TypeError, match="one eye"):
+            data.fit_foreshortening(["left"])
+
+    def test_view_unknown_eye(self, data):
+        pytest.importorskip("vispy")
+        from unittest import mock
+        with mock.patch("pypillometry.viewer.canvas.ViewerCanvas") as canvas:
+            with pytest.raises(KeyError, match="lft"):
+                pp.view(data, eyes=["lft"])
+            canvas.assert_not_called()
