@@ -289,6 +289,15 @@ class TestPlottingGaze(unittest.TestCase):
         titles = [ax.get_title() for ax in plt.gcf().axes if ax.get_title()]
         self.assertEqual(titles, ["left"])
 
+    def test_plot_heatmap_show_masked_with_nan(self):
+        """show_masked=True leaves out NaN samples (finding 5.1)"""
+        self.data.data["left", "x"][10:20] = np.nan
+        for smooth in [None, 1]:
+            plt.figure()
+            self.data.plot.plot_heatmap(eyes="left", show_masked=True, smooth=smooth)
+            self.assertTrue(np.isfinite(plt.gcf().axes[0].get_xlim()).all())
+            plt.close("all")
+
     def test_plot_scanpath_single_eye_string(self):
         """eyes="left" plots the left eye only"""
         self.data.plot.plot_scanpath(eyes="left")

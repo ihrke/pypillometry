@@ -170,6 +170,9 @@ class GazePlots(GenericPlots):
                 else:
                     x_plot = x_data
                     y_plot = y_data
+                # samples without a position (NaN, e.g. in blinks) cannot be binned
+                finite = np.isfinite(x_plot) & np.isfinite(y_plot)
+                x_plot, y_plot = x_plot[finite], y_plot[finite]
                 
                 # Determine limits
                 if limits is not None:
