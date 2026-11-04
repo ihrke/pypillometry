@@ -143,10 +143,7 @@ class GazePlotter(GenericPlotter):
             endix=np.argmin(np.abs(tx-end))    
         
         # which eyes to plot
-        if isinstance(eyes, str):
-            eyes=[eyes]
-        if len(eyes)==0:
-            eyes=obj.eyes
+        eyes = obj._eyes_with(eyes, ["x", "y"])
 
         # choose gridsize
         if gridsize=="auto":
@@ -401,10 +398,7 @@ class GazePlotter(GenericPlotter):
         evontix=np.argmin(np.abs(tx-evon[:,np.newaxis]), axis=1).astype(int)
 
         # which eyes to plot
-        if isinstance(eyes, str):
-            eyes=[eyes]
-        if len(eyes)==0:
-            eyes=obj.eyes
+        eyes = obj._eyes_with(eyes, ["x", "y"])
 
         fig, ax = plt.subplots(1,1)
         fig.set_figheight(figsize[1])

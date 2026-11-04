@@ -698,8 +698,8 @@ def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[],
     raw = {k: included(v) for k, v in obj.data.data.items()}
     masks = {k: obj.data.get_policy_mask(k, policy) & inc for k in obj.data.keys()}
 
-    if isinstance(eyes, str):
-        eyes = [eyes]
+    # the requested eyes (None or []: all); unknown eyes raise a KeyError
+    eyes = list(dict.fromkeys(eye for eye, _ in obj.data.select(eyes))) if eyes else []
     pupil_eyes = obj.data.get_available_eyes("pupil")
     gaze_eyes = [e for e in obj.data.get_available_eyes("x") if f"{e}_y" in raw]
     if eyes:

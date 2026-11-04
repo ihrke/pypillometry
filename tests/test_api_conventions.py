@@ -85,3 +85,26 @@ class TestInplace:
         np.testing.assert_array_equal(seg.data, orig)
         assert seg.baseline_correct((-100, 0), inplace=True) is seg
         np.testing.assert_allclose(seg.data, bc.data)
+
+
+class TestEyesVariables:
+    """Rule 5: None or [] means all; str or list; unknown names raise."""
+
+    @pytest.mark.parametrize("call", [
+        lambda d, e: d.quality_report(eyes=e),
+        lambda d, e: d.plot.pupil_plot(eyes=e),
+        lambda d, e: d.plot.plot_timeseries(eyes=e),
+        lambda d, e: d.plot.plot_heatmap(eyes=e),
+        lambda d, e: d.plot.plot_scanpath(eyes=e),
+        lambda d, e: d.pupil_lowpass_filter(5, eyes=e),
+        lambda d, e: d.merge_eyes(eyes=e),
+        lambda d, e: d.get_blinks(eyes=e)])
+    def test_eyes(self, data, call):
+        import matplotlib.pyplot as plt
+        try:
+            for eyes in (None, [], "left", ["left", "right"]):
+                call(data, eyes)
+            with pytest.raises(KeyError, match="available channels"):
+                call(data, "lft")
+        finally:
+            plt.close("all")

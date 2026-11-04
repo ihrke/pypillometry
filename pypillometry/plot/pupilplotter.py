@@ -96,10 +96,7 @@ class PupilPlotter(GenericPlotter):
            >>> d.plot.pupil_plot(plot_range=(0, 20) * u.sec)
         """
         self.obj._require("pupil")
-        if not isinstance(eyes, list):
-            eyes=[eyes]
-        if len(eyes)==0:
-            eyes=self.obj.data.get_available_eyes(variable="pupil")
+        eyes = self.obj._eyes_with(eyes, "pupil")
         logger.debug("Plotting eyes %s"%eyes)
 
         # Validate plot_range
