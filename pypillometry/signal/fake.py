@@ -61,6 +61,7 @@ def fake_pupil_baseline(duration, fs, mean=750, amplitude=100,
     --------
     >>> t, pupil, params = fake_pupil_baseline(duration=10, fs=1000, seed=42)
     >>> print(f"Mean: {pupil.mean():.2f}, Std: {pupil.std():.2f}")
+    Mean: 743.57, Std: 100.00
     """
     rng = np.random.RandomState(seed)
     n_samples = int(duration * fs)
@@ -361,6 +362,7 @@ def fake_gaze_fixations(duration, fs, fixation_duration_mean=300,
     --------
     >>> t, x, y, info, params = fake_gaze_fixations(duration=10, fs=1000, seed=42)
     >>> print(f"Number of fixations: {len(info['fixation_times'])}")
+    Number of fixations: 34
     """
     rng = np.random.RandomState(seed)
     n_samples = int(duration * fs)

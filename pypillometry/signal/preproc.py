@@ -53,13 +53,15 @@ def smooth_window(x, window_len=11, window='hanning', direction='center'):
         
     Examples
     --------
+    >>> rng = np.random.default_rng(0)
+    >>> signal = np.sin(np.linspace(0, 10, 200)) + rng.normal(0, 0.1, 200)
     >>> # Standard centered smoothing
     >>> smoothed = smooth_window(signal, window_len=11, window='hanning')
-    >>> 
+    >>> smoothed.shape
+    (200,)
     >>> # Backward-looking for onset detection
     >>> smoothed_back = smooth_window(signal, window_len=11, direction='backward')
-    >>> 
-    >>> # Forward-looking for offset detection  
+    >>> # Forward-looking for offset detection
     >>> smoothed_fwd = smooth_window(signal, window_len=11, direction='forward')
     """
     x = np.asarray(x, dtype=float)
@@ -141,13 +143,15 @@ def velocity_savgol(x, window_len=11, polyorder=2, direction='center'):
         
     Examples
     --------
+    >>> rng = np.random.default_rng(0)
+    >>> signal = np.sin(np.linspace(0, 10, 200)) + rng.normal(0, 0.1, 200)
     >>> # Standard centered velocity
     >>> vel = velocity_savgol(signal, window_len=11)
-    >>> 
+    >>> vel.shape
+    (200,)
     >>> # Backward-looking for onset detection
     >>> vel_back = velocity_savgol(signal, window_len=11, direction='backward')
-    >>> 
-    >>> # Forward-looking for offset detection  
+    >>> # Forward-looking for offset detection
     >>> vel_fwd = velocity_savgol(signal, window_len=11, direction='forward')
     """
     x = np.asarray(x, dtype=float)

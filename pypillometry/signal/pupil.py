@@ -73,8 +73,11 @@ def lowpass_filter_iterative(signal, cutoff, fs, order=2, max_iter=5):
     
     Examples
     --------
-    >>> signal = np.array([1, 2, np.nan, np.nan, 5, 6])
+    >>> signal = np.sin(np.arange(1000) / 100)
+    >>> signal[300:320] = np.nan  # a gap
     >>> filtered = lowpass_filter_iterative(signal, cutoff=2.0, fs=100)
+    >>> bool(np.isnan(filtered).any())
+    False
     """
     valid = ~np.isnan(signal)
     n_valid = np.sum(valid)
@@ -168,17 +171,21 @@ def pupil_signal_quality(signal, fs, mask=None, lowpass_cutoff=4.0,
     
     Examples
     --------
+    >>> rng = np.random.default_rng(0)
+    >>> pupil = 4000 + 100 * np.sin(np.arange(5000) / 500) + rng.normal(0, 10, 5000)
+    >>> pupil[1000:1100] = 0  # a blink
     >>> # With explicit mask
     >>> mask = pupil == 0  # e.g., blinks marked as 0
     >>> snr = pupil_signal_quality(pupil, fs=500, mask=mask, metric="snr")
-    >>> 
+
     >>> # With masked array
     >>> pupil_ma = np.ma.array(pupil, mask=(pupil == 0))
     >>> snr = pupil_signal_quality(pupil_ma, fs=500, metric="snr")
-    >>> 
-    >>> # Get noise as coefficient of variation (percentage)
+
+    >>> # Get noise as coefficient of variation (fraction)
     >>> noise_cv = pupil_signal_quality(pupil, fs=500, mask=mask, metric="noise_cv")
-    >>> print(f"Average noise level: {np.mean(noise_cv[~mask])*100:.1f}%")
+    >>> bool(np.mean(noise_cv[~mask]) < 0.01)  # below 1% noise
+    True
     """
     valid_metrics = ["snr", "snr_db", "noise_power", "noise_cv"]
     if metric not in valid_metrics:
@@ -732,14 +739,25 @@ def pupil_eye_offset(left, right, fs, left_mask=None, right_mask=None,
     
     Examples
     --------
+    >>> rng = np.random.default_rng(0)
+    >>> left = 4000 + 100 * np.sin(np.arange(5000) / 500) + rng.normal(0, 10, 5000)
+    >>> right = left - 200 + rng.normal(0, 10, 5000)
+    >>> left_mask = np.zeros(5000, dtype=bool)
+    >>> left_mask[1000:1100] = True
+    >>> right_mask = np.zeros(5000, dtype=bool)
+    >>> right_mask[3000:3100] = True
+    >>> left_ma = np.ma.array(left, mask=left_mask)
+    >>> right_ma = np.ma.array(right, mask=right_mask)
     >>> # With masked arrays
     >>> offset = pupil_eye_offset(left_ma, right_ma, fs=500)
     >>> right_corrected = right_ma + offset
-    >>> 
+    >>> round(float(np.mean(offset)), -1)
+    200.0
+
     >>> # With explicit masks
     >>> offset = pupil_eye_offset(left, right, fs=500, 
     ...                           left_mask=left_mask, right_mask=right_mask)
-    >>> 
+
     >>> # Merge eyes using the offset
     >>> both_valid = ~left_mask & ~right_mask
     >>> merged = np.where(both_valid, 
