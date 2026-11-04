@@ -113,6 +113,9 @@ The main ones:
 - `plot_heatmap(show_masked=True)` with NaN samples
 - A `plot_range` with start after end raises an error
 - The sample at the end of `plot_range` was not plotted
+- `ExperimentalSetup`: a negative `eye_to_screen_center` lost its sign;
+  non-positive distances and resolutions that are not two whole numbers
+  raise a `ValueError`
 - `pypillometry.viewer.tweak` (the function) was replaced by its submodule
   once the tweak viewer had been used; the submodule is now
   `pypillometry.viewer.tweak_canvas`
