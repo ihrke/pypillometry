@@ -215,6 +215,9 @@ Calls whose arguments or results changed:
 | `d.to_pupildata()` | `d.drop_data(variables=["x", "y"], inplace=False)` |
 | `d.to_gazedata()` | `d.drop_data(variables="pupil", inplace=False)` |
 | `pp.downsample(x, factor)` (array) | `pp.signal.downsample(x, factor)` |
+| `d.params["response"]["left"]` | `d.params["response"]["left_pupil"]` |
+| `iv.as_pandas()["event_label"]`, `["event_onset"]` | `iv.as_pandas()["label"]`, `["onset"]` |
+| `CircularROI.from_degrees((0.087, 0), 0.035, s)` (radians) | `CircularROI.from_degrees((5, 0), 2, s)` (degrees) |
 | history `pupil_blinks_detect(..., inplace=True)` | history `pupil.blinks_detect(...)` |
 
 ## 2.1.0 (2026-11-02)
