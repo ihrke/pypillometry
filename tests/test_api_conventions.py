@@ -13,9 +13,8 @@ def data():
     chans = {f"{eye}_{var}": 500 + rng.normal(0, 1, n)
              for eye in ("left", "right") for var in ("pupil", "x", "y")}
     chans["left_pupil"][300:320] = np.nan
-    with pp.nologging():
-        return pp.EyeData(sampling_rate=fs, name="conv", inplace=False,
-                          event_onsets=[1000., 5000.], event_labels=["a", "b"], **chans)
+    return pp.EyeData(sampling_rate=fs, name="conv", inplace=False,
+                      event_onsets=[1000., 5000.], event_labels=["a", "b"], **chans)
 
 
 class TestDictReturns:
