@@ -1,6 +1,7 @@
 import unittest
 import sys
 import numpy as np
+import pytest
 import scipy.optimize
 import pypillometry as pp
 from pypillometry.signal.pupil import (
@@ -283,3 +284,11 @@ class TestNNLSGram(unittest.TestCase):
         coef, sse = _nnls_gram(np.zeros((0, 500)), self.y)
         self.assertEqual(len(coef), 0)
         self.assertAlmostEqual(sse, np.sum(self.y ** 2))
+
+
+@pytest.mark.parametrize("cutoff", [0, -1, 50, 300])
+def test_lowpass_cutoff_outside_range_raises(cutoff):
+    # finding 3.4: raw scipy message ("critical frequencies must be 0 < Wn < 1")
+    d = pp.EyeData(left_pupil=np.random.default_rng(1).normal(size=500), sampling_rate=100)
+    with pytest.raises(ValueError, match="fs/2 = 50 Hz"):
+        d.pupil.lowpass_filter(cutoff)
