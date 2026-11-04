@@ -168,3 +168,14 @@ class TestMergedEyeName:
         assert "mean_pupil" in data.pupil_merge_eyes(method="offset").data
         assert "avg_pupil" in data.pupil_merge_eyes(method="offset", name="avg").data
         assert "avg_x" in data.merge_eyes(variables="x", name="avg").data
+
+
+class TestConstructorEvents:
+    def test_events_object(self):
+        ev = pp.Events([100., 200.], ["a", "b"], meta={"cond": ["x", "y"]})
+        d = pp.EyeData(left_pupil=np.ones(100), sampling_rate=100, events=ev)
+        assert list(d.events.labels) == ["a", "b"]
+        assert list(d.events.meta["cond"]) == ["x", "y"]
+        with pytest.raises(ValueError, match="either events"):
+            pp.EyeData(left_pupil=np.ones(100), sampling_rate=100, events=ev,
+                       event_onsets=[100.])

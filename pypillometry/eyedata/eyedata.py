@@ -21,6 +21,7 @@ from .foreshortening_calibration import (
     _split_params
 )
 from ..intervals import Intervals
+from ..events import Events
 from scipy import optimize
 from ..signal.baseline import butter_lowpass_filter, downsample
 
@@ -57,6 +58,9 @@ class EyeData(_GazeMethods, _PupilMethods, GenericEyeData):
         time-onsets of any events in the data (in ms, matched in `time` vector)
     event_labels : np.ndarray or None
         for each event in `event_onsets`, provide a label
+    events : Events or None
+        the events as an :class:`~pypillometry.Events` object (e.g., with
+        metadata); instead of `event_onsets` and `event_labels`
     sampling_rate : float or None
         sampling-rate of the signal in Hz; if `None`, it is estimated from
         the median difference in `time` (either `time` or `sampling_rate`
@@ -103,6 +107,7 @@ class EyeData(_GazeMethods, _PupilMethods, GenericEyeData):
                     right_pupil: np.ndarray = None,
                     event_onsets: np.ndarray = None,
                     event_labels: np.ndarray = None,
+                    events: Optional[Events] = None,
                     sampling_rate: float = None,
                     experimental_setup: Optional[ExperimentalSetup] = None,
                     name: str = None,
@@ -124,12 +129,15 @@ class EyeData(_GazeMethods, _PupilMethods, GenericEyeData):
                                 right_x=right_x, right_y=right_y, right_pupil=right_pupil)
         
         
+        if events is not None:
+            if event_onsets is not None or event_labels is not None:
+                raise ValueError("give either events or event_onsets/event_labels, not both")
         self._init_common(time, sampling_rate, 
                           event_onsets, event_labels, 
                           name, fill_time_discontinuities, 
                           info=info, inplace=inplace,
                           experimental_setup=experimental_setup,
-                          calibration=calibration)
+                          calibration=calibration, events=events)
 
         self.original=None
         if keep_orig: 

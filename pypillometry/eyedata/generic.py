@@ -296,7 +296,8 @@ class GenericEyeData(state.VersionedState, ABC):
                     inplace: Optional[bool],
                     info: dict = None,
                     experimental_setup: Optional[ExperimentalSetup] = None,
-                    calibration: Optional[dict] = None):
+                    calibration: Optional[dict] = None,
+                    events: Optional[Events] = None):
         """
         Common code for the child-classes of GenericEyeData.
         Assumes that self.data is already set and filled.
@@ -326,11 +327,14 @@ class GenericEyeData(state.VersionedState, ABC):
             sampling_rate=np.round(1000./np.median(np.diff(tx)))
         self._set_timebase(tx, sampling_rate)
 
-        if event_onsets is None:
-            event_onsets = []
-        if event_labels is None:
-            event_labels = np.full(len(event_onsets), "")
-        self._events = self._check_events(Events(event_onsets, event_labels, units="ms"))
+        if events is not None:
+            self._events = self._check_events(events)
+        else:
+            if event_onsets is None:
+                event_onsets = []
+            if event_labels is None:
+                event_labels = np.full(len(event_onsets), "")
+            self._events = self._check_events(Events(event_onsets, event_labels, units="ms"))
 
         ## empty parameter dict
         self.params = dict()
