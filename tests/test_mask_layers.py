@@ -312,7 +312,7 @@ class TestInterpolatedLayer:
     def test_blinks_interpolate_sets_layer(self):
         d = blink_data().pupil_blinks_detect().pupil_blinks_interpolate()
         interp = d.data.get_layer("left_pupil", "interpolated")
-        iv = d.get_interpolated_blinks("left", "pupil")["left_pupil"]
+        iv = d.get_interpolated_blinks("left", "pupil", units="samples")["left_pupil"]
         assert len(iv) == 3
         np.testing.assert_array_equal(iv.to_mask(d).astype(bool), interp)
         # interpolated samples are used by default
@@ -324,7 +324,7 @@ class TestInterpolatedLayer:
         d = blink_data().pupil_blinks_detect()
         d.pupil_blinks_interpolate(store_as="pupilinterp")
         assert not d.data.get_layer("left_pupil", "interpolated").any()
-        assert len(d.get_interpolated_blinks("left", "pupilinterp")["left_pupilinterp"]) == 3
+        assert len(d.get_interpolated_blinks("left", "pupilinterp", units="samples")["left_pupilinterp"]) == 3
         np.testing.assert_array_equal(
             d.mask("left", "pupilinterp", "strict"),
             d.mask("left", "pupil") | d.data.get_layer("left_pupilinterp", "interpolated"))
@@ -337,7 +337,7 @@ class TestInterpolatedLayer:
         d.interpolate_intervals(iv)
         for var in ("pupil", "pupil_lin"):
             np.testing.assert_array_equal(
-                np.asarray(d.get_interpolated_blinks("left", var)[f"left_{var}"].intervals), [(200, 215), (500, 520)])
+                np.asarray(d.get_interpolated_blinks("left", var, units="samples")[f"left_{var}"].intervals), [(200, 215), (500, 520)])
         assert d.mask("left", "pupil", "strict")[200:215].all()
         assert not d.mask("left", "pupil")[200:215].any()
 
@@ -359,7 +359,7 @@ class TestBlinkLayer:
     def test_detect_sets_layer_and_mask(self):
         d = blink_data().pupil_blinks_detect()
         blink = d.data.get_layer("left_pupil", "blink")
-        np.testing.assert_array_equal(d.get_blinks("left", "pupil")["left_pupil"].to_mask(d).astype(bool), blink)
+        np.testing.assert_array_equal(d.get_blinks("left", "pupil", units="samples")["left_pupil"].to_mask(d).astype(bool), blink)
         assert d.data.mask["left_pupil"][blink].all()
         assert d.mask("left", "pupil")[blink].all()
 
@@ -385,7 +385,7 @@ class TestBlinkLayer:
             d.pupil_blinks_detect()
             assert d.data.mask["left_pupil"].sum() > nan.sum()
             undo(d)
-            assert len(d.get_blinks("left", "pupil")["left_pupil"]) == 0
+            assert len(d.get_blinks("left", "pupil", units="samples")["left_pupil"]) == 0
             np.testing.assert_array_equal(d.data.mask["left_pupil"].astype(bool), nan)
 
     def test_detect_with_inplace_false_returns_a_copy(self):
@@ -408,12 +408,12 @@ class TestBlinkLayer:
         d = blink_data()
         d.set_blinks(pp.Intervals([(100, 400), (150, 200), (420, 430)], units="samples"),
                      eyes="left", variables="pupil")
-        assert d.get_blinks("left", "pupil")["left_pupil"].intervals == [(100, 400), (420, 430)]
+        assert d.get_blinks("left", "pupil", units="samples")["left_pupil"].intervals == [(100, 400), (420, 430)]
         merged = d.blinks_merge_close(distance=10, units="samples", inplace=False)
         assert merged.get_blinks("left", "pupil", units="samples")["left_pupil"].intervals \
             == [(100, 400), (420, 430)]
         d.blinks_merge_close(distance=30, units="samples")
-        assert d.get_blinks("left", "pupil")["left_pupil"].intervals == [(100, 430)]
+        assert d.get_blinks("left", "pupil", units="samples")["left_pupil"].intervals == [(100, 430)]
         assert d.data.mask["left_pupil"][100:430].all()
 
     def test_format2_blinks_are_translated(self):
@@ -424,11 +424,11 @@ class TestBlinkLayer:
         st = format2_state(d)
         st["data"]["mask"] = {k: np.asarray(m) for k, m in d.data.mask.items()}
         del st["data"]["layers"], st["data"]["layer_names"], st["data"]["rec_layers"]
-        st["blinks"] = {"left_pupil": d.get_blinks("left", "pupil")["left_pupil"]._to_state()}
+        st["blinks"] = {"left_pupil": d.get_blinks("left", "pupil", units="samples")["left_pupil"]._to_state()}
         st["interpolated_blinks"] = {"left_pupil": None}
         e = state.from_state(st)
         np.testing.assert_array_equal(e.data.mask["left_pupil"], d.data.mask["left_pupil"])
-        assert e.get_blinks("left", "pupil")["left_pupil"].intervals == d.get_blinks("left", "pupil")["left_pupil"].intervals
+        assert e.get_blinks("left", "pupil", units="samples")["left_pupil"].intervals == d.get_blinks("left", "pupil", units="samples")["left_pupil"].intervals
         e.clear_layer("blink")
         np.testing.assert_array_equal(e.data.mask["left_pupil"].astype(bool),
                                       np.isnan(e.data["left_pupil"]))
@@ -454,7 +454,7 @@ class TestUserLayer:
         np.testing.assert_array_equal(np.flatnonzero(d.data.get_layer("left_pupil", "user")),
                                       np.arange(30, 40))
         np.testing.assert_array_equal(d.data.mask["left_pupil"], np.ma.getmaskarray(x))
-        assert len(d.get_blinks("left", "pupil")["left_pupil"]) == 3  # the blinks are kept
+        assert len(d.get_blinks("left", "pupil", units="samples")["left_pupil"]) == 3  # the blinks are kept
         # unmasked samples are removed from the masks, also from the blink
         # layer (NaN stays masked)
         x.mask[:] = False
@@ -471,7 +471,7 @@ def test_detect_returns_the_stored_blinks():
     with mock.patch.object(preproc, "helper_merge_blinks",
                            return_value=np.array([[100, 109], [110, 130]])):
         d.pupil_blinks_detect(min_duration=10)
-    assert d.get_blinks("left", "pupil")["left_pupil"].intervals == [(100, 131)]
+    assert d.get_blinks("left", "pupil", units="samples")["left_pupil"].intervals == [(100, 131)]
 
 
 class TestGazeLayers:
@@ -678,5 +678,5 @@ class TestConsumersUsePolicy:
 
     def test_mask_as_intervals(self):
         d = self.binocular()
-        assert len(d.mask_as_intervals("left", "pupil")["left_pupil"]) == 0
-        assert d.mask_as_intervals("left", "pupil", policy="strict")["left_pupil"].intervals == [(50, 60)]
+        assert len(d.mask_as_intervals("left", "pupil", units="samples")["left_pupil"]) == 0
+        assert d.mask_as_intervals("left", "pupil", policy="strict", units="samples")["left_pupil"].intervals == [(50, 60)]

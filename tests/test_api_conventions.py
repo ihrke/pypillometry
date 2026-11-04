@@ -38,10 +38,10 @@ class TestDictReturns:
     def test_get_layer_intervals(self, data):
         data.data.set_layer("left_x", "offscreen", np.arange(1000) // 10 == 5)
         data = data.exclude_intervals([(0, 100)])
-        iv = data.get_layer_intervals("offscreen", variables="x")
+        iv = data.get_layer_intervals("offscreen", variables="x", units="samples")
         assert set(iv) == {"left_x", "right_x"}
         assert iv["left_x"].intervals == [(50, 60)] and len(iv["right_x"]) == 0
-        assert data.get_layer_intervals("excluded", "left", "pupil")["left_pupil"].intervals \
+        assert data.get_layer_intervals("excluded", "left", "pupil", units="samples")["left_pupil"].intervals \
             == [(0, 10)]
 
 
@@ -129,3 +129,21 @@ class TestEyesVariables:
             with pytest.raises(KeyError, match="lft"):
                 pp.view(data, eyes=["lft"])
             canvas.assert_not_called()
+
+
+class TestMs:
+    """Rule 4: plain numbers (and default units) are ms."""
+
+    def test_interval_getters_in_ms(self, data):
+        d = data.pupil_blinks_detect(strategies=["zero"])
+        assert d.get_blinks("left", "pupil")["left_pupil"].intervals == [(3000., 3200.)]
+        assert d.blinks["left_pupil"].units == "ms"
+        assert d.get_interpolated_blinks()["left_pupil"].units == "ms"
+        assert d.mask_as_intervals("left", "pupil")["left_pupil"].intervals == [(3000., 3200.)]
+        assert d.get_layer_intervals("blink", "left", "pupil")["left_pupil"].units == "ms"
+
+    def test_get_intervals_window(self, data):
+        ep = data.get_intervals("a", window=(-200, 800))
+        assert ep.window == (-200, 800)
+        iv = data.get_intervals(("a", "b"))
+        assert iv.units == "ms" and iv.intervals == [(1000., 5000.)]

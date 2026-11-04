@@ -680,7 +680,7 @@ class _PupilMethods:
             logger.debug(f"Interpolating blinks for eye {eye}")
             syr=obj.data[eye,"pupil"].copy() ## interpolated signal
             interpolated = np.zeros(len(syr), dtype=bool)  # interpolated samples
-            bls = self.get_blinks(eye, "pupil")[f"{eye}_pupil"]
+            bls = self.get_blinks(eye, "pupil", units="samples")[f"{eye}_pupil"]
             
             # Use raw data for velocity computation - blink_onsets_mahot handles NaN/zeros internally
             # Don't use mask-applied data here because the mask includes blink regions,

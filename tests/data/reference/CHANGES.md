@@ -690,3 +690,13 @@ Changes of the API calls alone (same numbers) need no entry.
 - **Why**: one rule for plain numbers (plan 2.8, rule 4; finding 2.5):
   `stat_per_event`, `crop`, `baseline_correct` already used ms.
 - **Step**: 9, `refactor/09-api-conventions`
+
+### Blink and mask intervals are returned in ms
+
+- **Case**: none in numbers (the cases ask for `units="samples"` or
+  `units="ms"` explicitly)
+- **Change**: `get_blinks()`, `get_interpolated_blinks()`,
+  `mask_as_intervals()`, `get_layer_intervals()` and the `blinks` property
+  return Intervals in ms by default (before: sample indices).
+- **Why**: one rule for time values (plan 2.8, rule 4).
+- **Step**: 9, `refactor/09-api-conventions`

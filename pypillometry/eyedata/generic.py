@@ -696,12 +696,10 @@ class GenericEyeData(state.VersionedState, ABC):
         Returns
         -------
         dict
-            dictionary with blinks (Intervals in samples) for each
-            eye/variable, keys like "left_pupil" (see :meth:`get_blinks`)
+            dictionary with blinks (Intervals in ms) for each
+            eye/variable, keys like "left_pupil" (same as :meth:`get_blinks`)
         """
-        return {key: Intervals(self._layer_runs(key, "blink", skip_excluded=True).intervals,
-                               "samples", label=f"{key}_blinks")
-                for key in self.data.keys()}
+        return self.get_blinks()
 
     def _set_blink_layer(self, key, intervals):
         """Replace the blink layer of `key` by `intervals` (None: no blinks)."""
@@ -762,7 +760,7 @@ class GenericEyeData(state.VersionedState, ABC):
         return self
 
     def get_blinks(self, eyes: str|list = [], variables: str|list = [], 
-                   units: str = "samples"):
+                   units: str = "ms"):
         """
         Get blinks as a dict of Intervals (one per eye/variable).
 
@@ -780,8 +778,8 @@ class GenericEyeData(state.VersionedState, ABC):
         variables : str or list of str, optional
             Variable(s) to get blinks for; if empty, all available variables.
         units : str, optional
-            Units for intervals: "ms", "sec", "min", "h", or "samples" for
-            sample indices (default)
+            Units for intervals: "ms" (default), "sec", "min", "h", or
+            "samples" for sample indices
             
         Returns
         -------
@@ -806,7 +804,7 @@ class GenericEyeData(state.VersionedState, ABC):
                                      skip_excluded=True)
 
     def get_interpolated_blinks(self, eyes: str|list = [], variables: str|list = [], 
-                                units: str = "samples"):
+                                units: str = "ms"):
         """
         Get interpolated blinks as a dict of Intervals (one per eye/variable).
         
@@ -829,8 +827,8 @@ class GenericEyeData(state.VersionedState, ABC):
             Variable(s) to get interpolated blinks for; if empty, all available
             variables.
         units : str, optional
-            Units for intervals: "ms", "sec", "min", "h", or "samples" for
-            sample indices (default)
+            Units for intervals: "ms" (default), "sec", "min", "h", or
+            "samples" for sample indices
             
         Returns
         -------
@@ -853,7 +851,7 @@ class GenericEyeData(state.VersionedState, ABC):
                                      "interpolated_blinks")
 
     def get_layer_intervals(self, name: str, eyes: str|list = [],
-                            variables: str|list = [], units: str = "samples"):
+                            variables: str|list = [], units: str = "ms"):
         """
         Get the runs of a mask layer (e.g., ``"offscreen"``) as a dict of Intervals.
 
@@ -872,8 +870,8 @@ class GenericEyeData(state.VersionedState, ABC):
         variables : str or list of str, optional
             variable(s); if empty, all available variables
         units : str, optional
-            units of the intervals: "ms", "sec", "min", "h", or "samples"
-            for sample indices (default)
+            units of the intervals: "ms" (default), "sec", "min", "h", or
+            "samples" for sample indices
 
         Returns
         -------
@@ -1014,7 +1012,7 @@ class GenericEyeData(state.VersionedState, ABC):
         return obj
 
     def mask_as_intervals(self, eyes: str|list = [], variables: str|list = [], 
-                          units: str = "samples", label: str|None = None,
+                          units: str = "ms", label: str|None = None,
                           policy="default"):
         """
         Convert masks to Intervals objects.
@@ -1030,8 +1028,8 @@ class GenericEyeData(state.VersionedState, ABC):
             Variable(s) to get masks for; if empty, all available variables
             (combinations not present in the data are left out).
         units : str, optional
-            Units for intervals: "ms", "sec", "min", "h", or "samples" for
-            sample indices (default).
+            Units for intervals: "ms" (default), "sec", "min", "h", or
+            "samples" for sample indices.
         label : str, optional
             Descriptive label for the intervals. Default is None.
         policy : str, MaskPolicy or list of str

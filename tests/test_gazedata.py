@@ -287,7 +287,7 @@ class TestGazeData(unittest.TestCase):
         
         result = d.mask_eye_divergences(threshold=0.5, thr_type="percentile", 
                                         inplace=False)
-        result = result.get_layer_intervals("divergence", variables="x")
+        result = result.get_layer_intervals("divergence", variables="x", units="samples")
         self.assertEqual(set(result), {"left_x", "right_x"})
         result = result["left_x"]
         self.assertIsInstance(result, Intervals)
@@ -389,7 +389,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
             experimental_setup=ExperimentalSetup(screen_resolution=(1280, 1024))
         )
         
-        result = d.mask_offscreen_coords(inplace=False).get_layer_intervals("offscreen")
+        result = d.mask_offscreen_coords(inplace=False).get_layer_intervals("offscreen", units="samples")
         self.assertEqual(set(result), {"left_x", "left_y"})
         self.assertIsInstance(result['left_x'], Intervals)
         self.assertGreater(len(result['left_x']), 0)
@@ -512,7 +512,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         
         # Index 3 should be detected as offscreen (x=1600)
         # Index 1 should NOT be in the intervals since it was already masked
-        intervals = result.get_layer_intervals("offscreen", "left", "x")["left_x"].intervals
+        intervals = result.get_layer_intervals("offscreen", "left", "x", units="samples")["left_x"].intervals
         
         # Should detect index 3 as offscreen
         offscreen_indices = [idx for start, end in intervals for idx in range(start, end)]
@@ -539,7 +539,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
                                         inplace=False)
         
         # Both index 1 and 3 should be detected as offscreen
-        intervals = result.get_layer_intervals("offscreen", "left", "x")["left_x"].intervals
+        intervals = result.get_layer_intervals("offscreen", "left", "x", units="samples")["left_x"].intervals
         offscreen_indices = [idx for start, end in intervals for idx in range(start, end)]
         
         self.assertIn(1, offscreen_indices)  # Previously masked but still detected

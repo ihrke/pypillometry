@@ -146,7 +146,7 @@ def blinks(d, keys, units="samples"):
 
 def interpolated_blinks(d, keys):
     return {f"interpolated.{k}": iv_samples(iv)
-            for k, iv in d.get_interpolated_blinks().items() if k in keys}
+            for k, iv in d.get_interpolated_blinks(units="samples").items() if k in keys}
 
 
 def summary(d, step=50):
