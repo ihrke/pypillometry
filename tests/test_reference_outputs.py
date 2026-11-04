@@ -287,7 +287,7 @@ def _segments(dataset, preproc):
     for k in pupil_keys(d):
         seg = d.get_segments(ep, k)
         with pp.nologging():
-            bc = seg.baseline_correct((-200, 0))
+            bc = seg.baseline_correct((-200, 0), inplace=False)
         out[f"tx.{k}"] = np.asarray(seg.tx, dtype=float)
         out[f"mask.{k}"] = np.ma.getmaskarray(seg.data).copy()
         out[f"mean.{k}"] = masked_mean(seg.data, axis=0)

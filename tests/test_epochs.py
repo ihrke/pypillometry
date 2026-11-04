@@ -280,7 +280,7 @@ class TestSegmentsFromIntervals:
         assert s.intervals.meta["t"].tolist() == [1, 2]
         assert s.name == "x"
         repr(s)
-        s.baseline_correct((0, 10))
+        s.baseline_correct((0, 10), inplace=False)
 
     def test_same_length_in_samples(self):
         d = self.make()
@@ -319,19 +319,19 @@ class TestBaselineWindow:
     ])
     def test_outside_raises(self, window, msg):
         with pytest.raises(ValueError, match=msg):
-            self.segments().baseline_correct(window)
+            self.segments().baseline_correct(window, inplace=False)
 
     @pytest.mark.parametrize("window", [(-200, 0), (0, 800), -200, 790, 0, (-200, 800)])
     def test_within(self, window):
-        s = self.segments().baseline_correct(window)
+        s = self.segments().baseline_correct(window, inplace=False)
         assert not np.ma.getmaskarray(s.data).all()
 
     def test_values(self):
         s = self.segments()
-        b = s.baseline_correct((-200, 0))
+        b = s.baseline_correct((-200, 0), inplace=False)
         # mean of the 20 samples before the event: 280 ... 299
         np.testing.assert_allclose(b.data[20, 0], 300 - 289.5)
-        np.testing.assert_allclose(s.baseline_correct(0).data[20, :], 0)
+        np.testing.assert_allclose(s.baseline_correct(0, inplace=False).data[20, :], 0)
 
 
 def test_plot_intervals_past_the_end():

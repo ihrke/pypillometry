@@ -75,3 +75,13 @@ class TestInplace:
         lambda d: d.set_experimental_setup(screen_resolution=(1280, 1024))])
     def test_setters_return_the_object(self, data, call):
         assert call(data) is data
+
+    def test_baseline_correct(self, data):
+        seg = data.get_segments(data.get_intervals("a", window=(-100, 200) * pp.u.ms),
+                                "right_pupil")
+        orig = seg.data.copy()
+        bc = seg.baseline_correct((-100, 0), inplace=False)
+        assert bc is not seg
+        np.testing.assert_array_equal(seg.data, orig)
+        assert seg.baseline_correct((-100, 0), inplace=True) is seg
+        np.testing.assert_allclose(seg.data, bc.data)
