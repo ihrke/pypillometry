@@ -3,10 +3,11 @@
 Plotting
 ========
 
-Every data object has a ``plot`` attribute with the plotting functions
-(an :class:`EyePlotter`, which has the functions of :class:`PupilPlotter`
-and :class:`GazePlotter`). Pupil plots need pupil data and gaze plots need
-gaze data; they raise an error if the data are missing. All plots use
+Every data object has a ``plot`` namespace with the plotting functions
+(:class:`~pypillometry.plot.PlotNamespace`), e.g. ``d.plot.pupil_plot()``;
+``dir(d.plot)`` lists them. Pupil plots need pupil data and gaze plots need
+gaze data; they raise an error if the data are missing. Gaze plots draw the
+screen as it is seen: pixel y increases downward. All plots use
 :mod:`matplotlib`, so they can be adjusted and saved as usual. Most
 functions take ``eyes=``, ``variables=``, ``plot_range=`` and ``units=``
 arguments. Plain numbers in ``plot_range`` are ms (e.g.,
@@ -36,11 +37,11 @@ Time series
 .. autosummary::
    :nosignatures:
 
-   PupilPlotter.pupil_plot
-   PupilPlotter.plot_timeseries
-   PupilPlotter.plot_masked
+   EyeData.plot.pupil_plot
+   EyeData.plot.plot_timeseries
+   EyeData.plot.plot_masked
 
-:meth:`~PupilPlotter.pupil_plot` shows the pupil size of all eyes in one
+:meth:`~EyeData.plot.pupil_plot` shows the pupil size of all eyes in one
 plot, with blinks (red) and events (grey lines):
 
 .. plot::
@@ -49,7 +50,7 @@ plot, with blinks (red) and events (grey lines):
    plt.figure(figsize=(10, 3))
    d.plot.pupil_plot(plot_range=(0, 20) * u.sec)
 
-:meth:`~PupilPlotter.plot_timeseries` plots each variable (here: gaze and
+:meth:`~EyeData.plot.plot_timeseries` plots each variable (here: gaze and
 pupil) in its own panel:
 
 .. plot::
@@ -73,8 +74,8 @@ multi-page PDF file with ``pdf_file=``. For interactive browsing, the
 .. autosummary::
    :nosignatures:
 
-   PupilPlotter.plot_timeseries_segments
-   PupilPlotter.pupil_plot_segments
+   EyeData.plot.plot_timeseries_segments
+   EyeData.plot.pupil_plot_segments
 
 
 Blinks and intervals
@@ -83,13 +84,13 @@ Blinks and intervals
 .. autosummary::
    :nosignatures:
 
-   PupilPlotter.plot_blinks
-   PupilPlotter.plot_intervals
+   EyeData.plot.plot_blinks
+   EyeData.plot.plot_intervals
    Intervals.plot
    Intervals.plot_highlight
    Events.plot
 
-:meth:`~PupilPlotter.plot_blinks` draws one small plot per blink, e.g., to
+:meth:`~EyeData.plot.plot_blinks` draws one small plot per blink, e.g., to
 check blink detection and interpolation:
 
 .. plot::
@@ -98,7 +99,7 @@ check blink detection and interpolation:
    d.plot.plot_blinks(eyes="left", nrow=3, ncol=5, figsize=(12, 6),
                       units="sec")
 
-:meth:`~PupilPlotter.plot_intervals` does the same for any
+:meth:`~EyeData.plot.plot_intervals` does the same for any
 :class:`Intervals`, here the three seconds around each stimulus:
 
 .. plot::
@@ -149,9 +150,9 @@ Gaze
 .. autosummary::
    :nosignatures:
 
-   GazePlotter.plot_heatmap
-   GazePlotter.plot_scanpath
-   GazePlotter.plot_calibration
+   EyeData.plot.plot_heatmap
+   EyeData.plot.plot_scanpath
+   EyeData.plot.plot_calibration
 
 .. plot::
    :context: close-figs
@@ -159,7 +160,7 @@ Gaze
    d.plot.plot_heatmap(eyes="left")
    d.plot.plot_scanpath(plot_range=(10, 12) * u.sec, eyes="left")
 
-:meth:`~GazePlotter.plot_calibration` shows the calibration and validation
+:meth:`~EyeData.plot.plot_calibration` shows the calibration and validation
 results of the eye tracker (see :doc:`/experimental/spatial_calibration`).
 Regions of interest can be drawn on top of heatmaps and scan paths (see
 :doc:`/experimental/gaze_rois`).

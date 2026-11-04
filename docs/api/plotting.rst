@@ -3,14 +3,13 @@
 Plotting
 ========
 
-Each data object has a ``plot`` attribute holding one of these classes (see
-:doc:`/user_guide/plotting`). You do not create them yourself.
+Each data object has a ``plot`` namespace with the plotting functions, e.g.
+``d.plot.pupil_plot()`` (see :doc:`/user_guide/plotting`). You do not create
+it yourself.
 
 .. autosummary::
    :toctree: generated
    :template: class.rst
    :nosignatures:
 
-   EyePlotter
-   PupilPlotter
-   GazePlotter
+   plot.PlotNamespace

@@ -334,7 +334,7 @@ Many methods of the data objects take intervals as input:
    GenericEyeData.stat_per_event
    GenericEyeData.mask_intervals
    GenericEyeData.interpolate_intervals
-   PupilPlotter.plot_intervals
+   EyeData.plot.plot_intervals
 
 Tutorial: :doc:`/notebooks/intervals`.
 
