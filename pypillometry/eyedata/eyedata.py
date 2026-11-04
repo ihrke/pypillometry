@@ -22,12 +22,15 @@ class EyeData(GenericEyeData):
     position (x, y) of one or two eyes.
 
     The object can hold any of these channels (e.g., only pupil data, only
-    gaze data, or both). Methods that need pupil data (``pupil_*``) or gaze
-    data (e.g., :meth:`mask_offscreen_coords`) raise a ValueError if the
-    object has none. The pupil and gaze methods are defined in separate
-    modules (:mod:`pypillometry.eyedata.pupil` and
-    :mod:`pypillometry.eyedata.gaze`); the methods here need both (e.g.,
-    foreshortening correction).
+    gaze data, or both). The methods for pupil data are in the namespace
+    ``d.pupil`` (:class:`~pypillometry.eyedata.pupil.PupilNamespace`, e.g.
+    ``d.pupil.blinks_detect()``), those for gaze data in ``d.gaze``
+    (:class:`~pypillometry.eyedata.gaze.GazeNamespace`); they raise a
+    ValueError if the object has no such data. The generic methods (e.g.,
+    :meth:`~pypillometry.GenericEyeData.crop`) are methods of the object.
+    All transforming methods can also be used as pipeline steps, e.g.
+    ``d | pp.pupil.blinks_detect() | pp.crop(0, "10 min")`` (see
+    :class:`~pypillometry.Pipeline`).
 
     Properties such as :attr:`~pypillometry.GenericEyeData.eyes` and
     :attr:`~pypillometry.GenericEyeData.variables` are inherited from

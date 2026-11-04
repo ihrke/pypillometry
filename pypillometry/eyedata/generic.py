@@ -859,7 +859,7 @@ class GenericEyeData(state.VersionedState, ABC):
         
         Interpolated blinks are the runs of the ``"interpolated"`` layer:
         the blink regions that were successfully interpolated
-        by `pupil_blinks_interpolate()` (and the intervals interpolated by
+        by :meth:`d.pupil.blinks_interpolate() <pypillometry.eyedata.pupil.PupilNamespace.blinks_interpolate>` (and the intervals interpolated by
         :meth:`interpolate_intervals`). These may differ from detected blinks because:
 
         - Blink boundaries are refined using velocity thresholds
@@ -894,7 +894,7 @@ class GenericEyeData(state.VersionedState, ABC):
         See Also
         --------
         get_blinks : Get detected (not interpolated) blinks
-        pupil_blinks_interpolate : Interpolate blinks
+        pypillometry.eyedata.pupil.PupilNamespace.blinks_interpolate : Interpolate blinks
         """
         return self._layer_intervals("interpolated", eyes, variables, units,
                                      "interpolated_blinks")
@@ -930,7 +930,7 @@ class GenericEyeData(state.VersionedState, ABC):
 
         Examples
         --------
-        >>> d = d.mask_offscreen_coords()  # doctest: +SKIP
+        >>> d = d.gaze.mask_offscreen()  # doctest: +SKIP
         >>> d.get_layer_intervals("offscreen", variables="x")  # doctest: +SKIP
         """
         return self._layer_intervals(name, eyes, variables, units, name)
@@ -1031,7 +1031,7 @@ class GenericEyeData(state.VersionedState, ABC):
         Clear a mask layer (e.g., ``"blink"``) for the selected channels.
 
         Clearing ``"blink"`` removes the blinks and their mask (e.g., to
-        undo :meth:`~pypillometry.EyeData.pupil_blinks_detect`).
+        undo :meth:`d.pupil.blinks_detect() <pypillometry.eyedata.pupil.PupilNamespace.blinks_detect>`).
         ``"excluded"`` is a recording-wide layer: clearing it removes the
         excluded periods (`eyes` and `variables` are ignored).
 
@@ -1131,7 +1131,8 @@ class GenericEyeData(state.VersionedState, ABC):
 
     def nblinks(self, eyes=[], variables=[]) -> Dict[str, int]:
         """
-        Return number of detected blinks. Should be run after `pupil_blinks_detect()`.
+        Return number of detected blinks. Should be run after
+        :meth:`d.pupil.blinks_detect() <pypillometry.eyedata.pupil.PupilNamespace.blinks_detect>`.
 
         By default, all eyes and variables are considered.
 
@@ -1192,7 +1193,7 @@ class GenericEyeData(state.VersionedState, ABC):
         - both eyes: correlation of the pupils and disparity of the gaze
 
         Further measures are added if available: blinks (after
-        :meth:`~pypillometry.EyeData.pupil_blinks_detect`), masked and
+        :meth:`d.pupil.blinks_detect() <pypillometry.eyedata.pupil.PupilNamespace.blinks_detect>`), masked and
         interpolated data (after preprocessing; masked: unusable under the
         mask `policy`, see :meth:`mask`) and calibration/validation
         errors (e.g., when read from an Eyelink file).
@@ -2772,7 +2773,7 @@ class GenericEyeData(state.VersionedState, ABC):
             :meth:`mask`); default ``"default"``
         name : str, optional
             name of the new eye; default ``"mean"`` (as in
-            :meth:`~pypillometry.EyeData.pupil_merge_eyes`)
+            :meth:`d.pupil.merge_eyes() <pypillometry.eyedata.pupil.PupilNamespace.merge_eyes>`)
         inplace : bool or None, optional
             if `True`, make change in-place and return the object;
             if `False`, make and return copy before making changes;
@@ -3028,11 +3029,11 @@ class GenericEyeData(state.VersionedState, ABC):
         
         Chain with other operations:
         
-        >>> data.mask_intervals(blinks).pupil_lowpass_filter(cutoff=5)
+        >>> data.mask_intervals(blinks).pupil.lowpass_filter(cutoff=5)
         
         See Also
         --------
-        pupil_blinks_detect : Detect blinks with optional masking
+        pypillometry.eyedata.pupil.PupilNamespace.blinks_detect : Detect blinks
         get_blinks : Retrieve stored blink intervals
         """
         obj = self._get_inplace(inplace)

@@ -537,7 +537,7 @@ def tweak(data, func, params, variable=None, time=None):
     >>> eyedata = pp.get_example_data("rlmw_002_short")  # doctest: +SKIP
     >>> 
     >>> def smooth(d, lp=5):
-    ...     return d.pupil_lowpass_filter(cutoff=lp, inplace=False)
+    ...     return d.pupil.lowpass_filter(cutoff=lp, inplace=False)
     >>> 
     >>> # Tweak lowpass filter cutoff, display left_pupil
     >>> params = pp.tweak(eyedata, smooth, {'lp': 5}, variable='left_pupil')  # doctest: +SKIP
