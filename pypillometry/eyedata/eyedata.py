@@ -1,7 +1,7 @@
 from .generic import GenericEyeData, keephistory
 from .gaze import GazeNamespace
 from .eyedatadict import EyeDataDict
-from ..plot import EyePlotter
+from ..plot import PlotNamespace
 import numpy as np
 from loguru import logger
 
@@ -91,6 +91,7 @@ class EyeData(GenericEyeData):
     """
     pupil = accessor(PupilNamespace)
     gaze = accessor(GazeNamespace)
+    plot = accessor(PlotNamespace)
 
     def __init__(self, 
                     time: np.ndarray = None,
@@ -137,11 +138,6 @@ class EyeData(GenericEyeData):
         self.original=None
         if keep_orig: 
             self.original=self.copy()
-
-    @property
-    def plot(self):
-        """Plotting functions for this object (a :class:`~pypillometry.EyePlotter`)."""
-        return EyePlotter(self)
 
 
     def summary(self):

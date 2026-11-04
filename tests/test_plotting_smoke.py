@@ -13,7 +13,7 @@ import numpy as np
 
 
 class TestPlottingSmokeGeneric(unittest.TestCase):
-    """Smoke tests for GenericPlotter methods"""
+    """Smoke tests for the generic plots"""
     
     def setUp(self):
         """Create test data once for all tests"""
@@ -55,7 +55,7 @@ class TestPlottingSmokeGeneric(unittest.TestCase):
 
 
 class TestPlottingSmokePupil(unittest.TestCase):
-    """Smoke tests for PupilPlotter methods"""
+    """Smoke tests for the pupil plots"""
     
     def setUp(self):
         """Create test data once for all tests"""
@@ -267,7 +267,7 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
 
 
 class TestPlottingGaze(unittest.TestCase):
-    """Smoke tests for GazePlotter methods"""
+    """Smoke tests for the gaze plots"""
 
     def setUp(self):
         rng = np.random.default_rng(1)

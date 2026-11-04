@@ -1,5 +1,5 @@
 from typing import Iterable, Optional, Tuple, Union
-from ..eyedata import GenericEyeData
+from ..eyedata.namespace import Namespace
 from ..intervals import Intervals, _as_intervals
 from ..units import parse_time, normalize_unit, parse_angle, u
 import numpy as np
@@ -13,11 +13,12 @@ import matplotlib as mpl
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.backends.backend_pdf import PdfPages
 
-class GenericPlotter:
+class GenericPlots(Namespace):
     """
-    Abstract Class for plotting eye data. This class is not meant to be used directly.
+    Plots for any channels (time series, intervals, masks) and for the
+    experimental setup; part of the plotting namespace ``d.plot``
+    (:class:`~pypillometry.plot.PlotNamespace`).
     """
-    obj: GenericEyeData # link to the data object
 
     #: most figures a ``*_segments`` plot makes (a plain-number `interv` is ms)
     MAX_SEGMENTS = 500
@@ -61,10 +62,10 @@ class GenericPlotter:
             return
         
         # Get data time range in the specified units
-        fac = self.obj._unit_fac(units)
+        fac = self._d._unit_fac(units)
         
-        data_start = float(np.min(self.obj.tx) * fac)
-        data_end = float(np.max(self.obj.tx) * fac)
+        data_start = float(np.min(self._d.tx) * fac)
+        data_end = float(np.max(self._d.tx) * fac)
         
         # Replace infinite bounds with data bounds for comparison
         eff_start = data_start if start == -np.inf else start
@@ -156,7 +157,7 @@ class GenericPlotter:
         """
         intervals = _as_intervals(intervals)
         
-        obj = self.obj  # EyeData object
+        obj = self._d  # EyeData object
         nsubplots = nrow * ncol  # number of subplots per figure
         
         # x-axis in the units of the Intervals (sample numbers for indices)
@@ -299,7 +300,7 @@ class GenericPlotter:
            >>> plt.figure(figsize=(10, 6))
            >>> d.plot.plot_timeseries(plot_range=(0, 20) * u.sec, units="sec")
         """
-        obj = self.obj
+        obj = self._d
         pairs = obj.data.select(eyes, variables)
         eyes = list(dict.fromkeys(eye for eye, _ in pairs))
         variables = list(dict.fromkeys(var for _, var in pairs))
@@ -326,7 +327,6 @@ class GenericPlotter:
             endix=np.argmin(np.abs(tx-end))
         
         # which data to plot
-        variables = [v for v in variables if v not in getattr(self, 'ignore_vars', [])]
 
         # how to plot onsets
         if show_onsets=="line":
@@ -496,7 +496,7 @@ class GenericPlotter:
         """
 
         # Calculate start and end times in the specified units
-        obj=self.obj
+        obj=self._d
         fac=obj._unit_fac(units)
         interv = parse_time(interv, to=units, default="ms")
         stime = obj.tx.min() * fac
@@ -598,7 +598,7 @@ class GenericPlotter:
         """
         from ..intervals import merge_intervals
         
-        obj = self.obj
+        obj = self._d
         
         # Get masked intervals for specified eyes/variables
         intervals_dict = obj.mask_as_intervals(eyes, variables, units=units)
@@ -770,7 +770,7 @@ class GenericPlotter:
         :meth:`d.pupil.fit_foreshortening() <pypillometry.eyedata.pupil.PupilNamespace.fit_foreshortening>` as ``calibration=``, or
         set ``theta``/``phi`` directly.
         """
-        obj = self.obj
+        obj = self._d
         setup = obj.experimental_setup
         
         if setup is None:

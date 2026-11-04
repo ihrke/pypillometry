@@ -8,7 +8,7 @@ from pypillometry.eyedata import ExperimentalSetup
 sys.path.insert(0,"..")
 import pypillometry as pp
 from pypillometry.example_data import get_rlmw_002_short
-from pypillometry.plot import EyePlotter
+from pypillometry.plot import PlotNamespace
 import pytest
 from loguru import logger
 
@@ -419,8 +419,10 @@ class TestEyeData(unittest.TestCase):
     def test_plot_property(self):
         """Test the plot property"""
         plotter = self.eyedata.plot
-        self.assertEqual(plotter.__class__, EyePlotter)
-        self.assertEqual(plotter.obj, self.eyedata)  # Updated to use obj instead of data
+        self.assertEqual(plotter.__class__, PlotNamespace)
+        self.assertIs(plotter._d, self.eyedata)
+        self.assertIs(type(self.eyedata).plot, PlotNamespace)
+        self.assertNotIn("plot", vars(self.eyedata))  # a view, not stored
 
     def test_scale_and_unscale(self):
         """Test scaling and unscaling of data"""

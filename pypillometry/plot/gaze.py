@@ -1,5 +1,4 @@
-from ..eyedata import GenericEyeData
-from .generic import GenericPlotter
+from .generic import GenericPlots
 import numpy as np
 from collections.abc import Iterable
 from typing import List, Union, Optional, Tuple
@@ -14,27 +13,13 @@ from ..roi import ROI
 from loguru import logger
 from scipy.ndimage import gaussian_filter
 
-class GazePlotter(GenericPlotter):
+class GazePlots(GenericPlots):
     """
-    Class for plotting gaze data. The class is initialized with a GenericEyeData
-    object and provides methods to plot the data in various ways.
-
-    It is usually not created directly; instead, it is available as the `plot`
-    attribute of an :class:`~pypillometry.EyeData` object (as part of
-    :class:`~pypillometry.EyePlotter`), e.g.
+    Plots of gaze data (heatmap, scanpath, calibration); part of the plotting
+    namespace ``d.plot`` (:class:`~pypillometry.plot.PlotNamespace`), e.g.
     ``d.plot.plot_heatmap()``.
-
-    Parameters
-    ----------
-    obj : GenericEyeData
-        the data object to plot (stored as `obj`)
     """
-    obj: GenericEyeData # link to the data object
 
-    def __init__(self, obj: GenericEyeData):
-        self.ignore_vars = [] #["blinkmask", "pupilinterpolated"]
-        self.obj = obj
-    
     def plot_heatmap(
         self,
         plot_range: tuple = (-np.inf, +np.inf),
@@ -121,8 +106,8 @@ class GazePlotter(GenericPlotter):
            >>> d = pp.get_example_data("rlmw_002_short")
            >>> d.plot.plot_heatmap(eyes="left")
         """
-        self.obj._require("x", "y")
-        obj = self.obj
+        self._d._require("x", "y")
+        obj = self._d
         
         # Validate plot_range
         plot_range = self._plot_range_in(plot_range, units)
@@ -369,8 +354,8 @@ class GazePlotter(GenericPlotter):
            >>> d = pp.get_example_data("rlmw_002_short")
            >>> d.plot.plot_scanpath(plot_range=(10, 12) * u.sec, eyes="left")
         """
-        self.obj._require("x", "y")
-        obj = self.obj
+        self._d._require("x", "y")
+        obj = self._d
 
         # Validate plot_range
         plot_range = self._plot_range_in(plot_range, units)
@@ -485,7 +470,7 @@ class GazePlotter(GenericPlotter):
         >>> # Plot specific eyes
         >>> fig, axes = data.plot.plot_calibration(eyes=['left', 'right'])  # doctest: +SKIP
         """
-        obj = self.obj
+        obj = self._d
         
         # Check if calibration data exists
         if not hasattr(obj, 'calibration') or obj.calibration is None:

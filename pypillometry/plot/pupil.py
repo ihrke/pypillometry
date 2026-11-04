@@ -1,6 +1,5 @@
 import itertools
-from ..eyedata import GenericEyeData
-from .generic import GenericPlotter
+from .generic import GenericPlots
 from ..intervals import Intervals
 from ..units import parse_time
 import numpy as np
@@ -19,26 +18,13 @@ from matplotlib.backends.backend_pdf import PdfPages
 from scipy.ndimage import gaussian_filter
 from scipy.stats import binned_statistic_2d
 
-class PupilPlotter(GenericPlotter):
+class PupilPlots(GenericPlots):
     """
-    Class for plotting pupil data. The class is initialized with a GenericEyeData object
-    and provides methods to plot the data in various ways.
-
-    It is usually not created directly; instead, it is available as the `plot`
-    attribute of an :class:`~pypillometry.EyeData` object (as part of
-    :class:`~pypillometry.EyePlotter`), e.g.
-    ``d.plot.pupil_plot()``.
-
-    Parameters
-    ----------
-    obj : GenericEyeData
-        the data object to plot (stored as `obj`)
+    Plots of pupil data (pupil size, blinks, foreshortening); part of the
+    plotting namespace ``d.plot`` (:class:`~pypillometry.plot.PlotNamespace`),
+    e.g. ``d.plot.pupil_plot()``.
     """
-    obj: GenericEyeData # link to the data object
 
-    def __init__(self, obj: GenericEyeData):
-        self.obj = obj
-    
     def pupil_plot(self, 
                    plot_range: Tuple[float,float]=(-np.inf, +np.inf),
                    eyes: str|list=[],
@@ -98,15 +84,15 @@ class PupilPlotter(GenericPlotter):
            >>> plt.figure(figsize=(10, 3))
            >>> d.plot.pupil_plot(plot_range=(0, 20) * u.sec)
         """
-        self.obj._require("pupil")
-        eyes = self.obj._eyes_with(eyes, "pupil")
+        self._d._require("pupil")
+        eyes = self._d._eyes_with(eyes, "pupil")
         logger.debug("Plotting eyes %s"%eyes)
 
         # Validate plot_range
         plot_range = self._plot_range_in(plot_range, units)
         self._validate_plot_range(plot_range, units)
 
-        fac=self.obj._unit_fac(units)
+        fac=self._d._unit_fac(units)
         logger.debug("Plotting in units %s (fac=%f)"%(units, fac))
         if units=="sec":
             xlab="seconds"
@@ -116,8 +102,8 @@ class PupilPlotter(GenericPlotter):
             xlab="hours"
         else:
             xlab="ms"
-        tx=self.obj.tx*fac
-        evon=self.obj.events.onsets*fac
+        tx=self._d.tx*fac
+        evon=self._d.events.onsets*fac
 
         start,end=plot_range
         if start==-np.inf:
@@ -131,7 +117,7 @@ class PupilPlotter(GenericPlotter):
             endix=np.argmin(np.abs(tx-end))
                 
         ixx=np.logical_and(evon>=start, evon<end)
-        evlab=self.obj.events.labels[ixx]
+        evlab=self._d.events.labels[ixx]
         evon=evon[ixx]
 
         logger.debug("Plotting from %.2f to %.2f %s, (%i to %i)"%(start,end,units,startix,endix))
@@ -176,7 +162,7 @@ class PupilPlotter(GenericPlotter):
                 # No style provided but multiple eyes: use default colors with varied linestyles
                 plot_kwargs['linestyle'] = linestyles[idx % len(linestyles)]
             
-            plt.plot(tx, self.obj.data[eye,"pupil"][startix:endix], **plot_kwargs)
+            plt.plot(tx, self._d.data[eye,"pupil"][startix:endix], **plot_kwargs)
 
         # plot grey lines for events
         if show_events:
@@ -190,9 +176,9 @@ class PupilPlotter(GenericPlotter):
         if show_blinks:
             ax = plt.gca()
             for eye in eyes:
-                if f"{eye}_pupil" not in self.obj.data:
+                if f"{eye}_pupil" not in self._d.data:
                     continue
-                mask = self.obj.data.get_policy_mask(f"{eye}_pupil", "strict")
+                mask = self._d.data.get_policy_mask(f"{eye}_pupil", "strict")
                 masked_segment = mask[startix:endix]
                 blink_spans = []
                 in_blink = False
@@ -269,8 +255,8 @@ class PupilPlotter(GenericPlotter):
         instead.
         """
 
-        self.obj._require("pupil")
-        obj = self.obj
+        self._d._require("pupil")
+        obj = self._d
         unit_factor = obj._unit_fac(units)
         interv = parse_time(interv, to=units, default="ms")
         start_unit = float(np.min(obj.tx) * unit_factor)
@@ -366,7 +352,7 @@ class PupilPlotter(GenericPlotter):
            ...                    units="sec")
         """
         # Get blinks for specified eyes and variables (in ms for consistent padding)
-        blinks_result = self.obj.get_blinks(eyes=eyes, variables=variables, units="ms")
+        blinks_result = self._d.get_blinks(eyes=eyes, variables=variables, units="ms")
         
         # Merge all blinks from dict
         from ..intervals import merge_intervals
@@ -380,7 +366,7 @@ class PupilPlotter(GenericPlotter):
         padded_blinks = blinks.pad(left=pre_blink, right=post_blink)
         
         # Convert to desired display units
-        intervals = padded_blinks.to_units(units, self.obj)
+        intervals = padded_blinks.to_units(units, self._d)
         
         return self.plot_intervals(intervals, eyes, variables,
                                   pdf_file, nrow, ncol, figsize, show_index=show_index)
@@ -462,8 +448,8 @@ class PupilPlotter(GenericPlotter):
         ``vmin``/``vmax`` set the color range, ``min_samples`` hides bins with
         few samples and ``smooth`` applies Gaussian smoothing.
         """
-        self.obj._require("pupil", "x", "y")
-        obj = self.obj
+        self._d._require("pupil", "x", "y")
+        obj = self._d
         
         # Handle eyes parameter
         if len(eyes) == 0:
