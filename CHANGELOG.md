@@ -124,6 +124,8 @@ The main ones:
   parameters (was the string `'{...}'`)
 - `pupil.blinks_detect()` with an unknown strategy (e.g. `"zeros"`) raises a
   `ValueError` (it only logged a warning and found no blinks)
+- `crop()` with start after end or outside the data raises a `ValueError`
+  (it returned an empty object)
 - Re-running `pupil.blinks_detect()` after `pupil.blinks_interpolate()`
   found no blinks (it read the interpolated values) and cleared the blink
   layer; interpolated samples now count as missing during detection

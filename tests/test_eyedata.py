@@ -2460,6 +2460,15 @@ class TestMasksAndBlinksKept(unittest.TestCase):
         # the call is recorded in the history
         self.assertEqual(s.history[-1]["funcname"], "crop")
 
+    def test_crop_to_nothing_raises(self):
+        # finding 4.7: an empty object, which then crashed in repr etc.
+        d = self.make()
+        for start, end in [(20000, 30000), (5000, 1000), (5001, 5009)]:
+            with self.assertRaises(ValueError):
+                d.crop(start, end)
+        self.assertEqual(len(d), 1000)
+        self.assertEqual(len(d.crop(5000, 5000, inplace=False)), 1)
+
     def test_downsample(self):
         d = self.make()
         d.data["left_pupil"][490:520] = 999.  # junk under the blink mask

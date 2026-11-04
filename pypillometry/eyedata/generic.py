@@ -1495,17 +1495,27 @@ class GenericEyeData(state.VersionedState, ABC):
         :class:`~pypillometry.GenericEyeData`
             the shortened object (`self` or a copy, depending on `inplace`)
 
+        Raises
+        ------
+        ValueError
+            if `start` is after `end` or there are no samples between them
+
         See Also
         --------
         remove_intervals : remove periods (e.g., breaks) and join the rest
         """
-        obj = self._get_inplace(inplace)
         default = normalize_unit(units)
         start = parse_time(start, default=default)
         end = parse_time(end, default=default)
+        if start > end:
+            raise ValueError(f"crop(): start ({start:g} ms) is after end ({end:g} ms)")
+        keep = (self.tx >= start) & (self.tx <= end)
+        if not keep.any():
+            raise ValueError(f"crop(): no samples between {start:g} and {end:g} ms "
+                             f"(the data are from {self.tx[0]:g} to {self.tx[-1]:g} ms)")
+        obj = self._get_inplace(inplace)
         on = obj._events.onsets
-        obj._keep_samples((obj.tx >= start) & (obj.tx <= end),
-                          keep_events=(on >= start) & (on <= end))
+        obj._keep_samples(keep, keep_events=(on >= start) & (on <= end))
         return obj
 
     def sub_slice(self, start: float=-np.inf, end: float=np.inf,
