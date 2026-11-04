@@ -216,6 +216,9 @@ class Events(Stateful):
     3
     >>> for onset, label in events:
     ...     print(f"{label} at {onset}")
+    A at 100.0
+    B at 500.0
+    C at 1000.0
     >>> events = Events([100, 500], ["stim", "resp"],
     ...                 meta={"trial": [1, 1], "cond": ["easy", "easy"]})
     >>> events.meta["cond"]
@@ -1058,10 +1061,9 @@ class Events(Stateful):
         .. plot::
 
            >>> import pypillometry as pp
-           >>> from pypillometry import u
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
-           >>> plt.figure(figsize=(10, 3))
+           >>> fig = plt.figure(figsize=(10, 3))
            >>> d.events.filter("S_").plot(units="sec")
         """
         import matplotlib.pyplot as plt
@@ -1296,7 +1298,7 @@ class ClockSync:
     --------
     >>> sync = sync_clocks([10, 70, 130], [5000, 65000.6, 125001.2],
     ...                    src_units="sec", dst_units="ms")
-    >>> sync(100.0)
+    >>> round(sync(100.0), 1)
     95000.9
     """
 
@@ -1391,10 +1393,15 @@ def sync_clocks(src, dst, src_units=UNSET, dst_units=UNSET,
 
     Examples
     --------
-    >>> starts = behav.groupby("block").trialstart.min()     # in sec
+    Map the stimulus times of a behaviour log ``behav`` (a table with
+    times in sec) onto the eye-tracker clock of ``d``, using the start
+    of each block (a "Start Block" event in ``d``) as the common moments:
+
+    >>> starts = behav.groupby("block").trialstart.min()  # doctest: +SKIP
     >>> sync = pp.sync_clocks(starts, d.events.filter("Start Block"),
-    ...                       src_units="sec")
-    >>> d.add_events(sync(pp.Events.from_table(behav, ["stim_on"], units="sec")))
+    ...                       src_units="sec")  # doctest: +SKIP
+    >>> d.add_events(sync(pp.Events.from_table(behav, ["stim_on"],
+    ...                                        units="sec")))  # doctest: +SKIP
     """
     def values(times, units, name):
         if isinstance(times, Events):

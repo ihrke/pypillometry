@@ -105,10 +105,11 @@ def get_available_datasets():
     Examples
     --------
     >>> datasets = get_available_datasets()
-    >>> # In Jupyter, this displays as a nice DataFrame
-    >>> datasets
-    >>> # But you can still use it like a normal dict
-    >>> datasets['rlmw_002']
+    >>> datasets  # in Jupyter, this displays as a table  # doctest: +SKIP
+    >>> "rlmw_002_short" in datasets  # but it is a normal dict
+    True
+    >>> datasets["rlmw_002"]["description"][:30]
+    'Binocular data from a 20-minut'
     """
     return DatasetDict(example_datasets)
 

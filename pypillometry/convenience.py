@@ -28,10 +28,13 @@ def change_dir(path: Union[str]):
         
     Examples
     --------
-    >>> with change_dir("/path/to/dir"):
-    ...     # do something in that directory
-    ...     pass
-    >>> # back in original directory
+    >>> import os, tempfile
+    >>> before = os.getcwd()
+    >>> with tempfile.TemporaryDirectory() as tmp:
+    ...     with change_dir(tmp):
+    ...         pass  # do something in that directory
+    >>> os.getcwd() == before
+    True
     """
     old_dir = os.getcwd()
     try:
