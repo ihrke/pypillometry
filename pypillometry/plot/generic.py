@@ -1,7 +1,7 @@
 from typing import Iterable, Optional, Tuple, Union
 from ..eyedata import GenericEyeData
 from ..intervals import Intervals, _as_intervals
-from ..units import parse_time, normalize_unit
+from ..units import parse_time, normalize_unit, parse_angle, u
 import numpy as np
 from loguru import logger
 from pathlib import Path
@@ -699,3 +699,104 @@ class GenericPlotter:
             ax.set_xlabel(f'Time ({units})')
         else:
             ax.set_xlabel('Samples')
+
+    def plot_experimental_setup(
+        self,
+        theta: Optional[float] = None,
+        phi: Optional[float] = None,
+        calibration = None,
+        show_gaze_samples: bool = True,
+        n_gaze_samples: int = 9,
+        ax: Optional[plt.Axes] = None,
+        viewing_angle: tuple = None,
+        projection: str = '2d'
+    ) -> tuple:
+        """
+        Plot visualization of eye-tracking experimental setup geometry.
+        
+        Shows the spatial relationship between eye, camera, and screen using
+        the experimental parameters stored in the EyeData object. Delegates
+        to ExperimentalSetup.plot().
+        
+        Parameters
+        ----------
+        theta : float or str, optional
+            Camera polar angle; a float is interpreted as radians, a string
+            can carry units (e.g., "20 deg"). If None, uses calibration's theta
+            (if `calibration` is given), else setup's theta.
+        phi : float or str, optional
+            Camera azimuthal angle; a float is interpreted as radians, a string
+            can carry units (e.g., "-90 deg"). If None, uses calibration's phi
+            (if `calibration` is given), else setup's phi.
+        calibration : ForeshorteningCalibration, optional
+            Fitted calibration object containing theta and phi.
+        show_gaze_samples : bool, default True
+            Show sample gaze vectors to screen positions
+        n_gaze_samples : int, default 9
+            Number of sample gaze positions
+        ax : matplotlib axis, optional
+            Existing axis to plot on (only for '3d' projection)
+        viewing_angle : tuple, optional
+            Viewing angle for 3D projection (elev, azim) or (elev, azim, roll).
+            Plain numbers are in degrees (as in matplotlib's ``view_init``);
+            strings with units (e.g., ``("30 deg", "-60 deg")``) are parsed.
+        projection : str, default '2d'
+            '2d' for three orthogonal views, '3d' for interactive 3D view
+
+        Returns
+        -------
+        fig : matplotlib Figure
+        ax : matplotlib axis or array of axes
+
+        Raises
+        ------
+        ValueError
+            if the data object has no `experimental_setup`
+
+        Examples
+        --------
+        Camera geometry from the experimental setup:
+
+        .. plot::
+
+           >>> import pypillometry as pp
+           >>> from pypillometry import u
+           >>> import matplotlib.pyplot as plt
+           >>> d = pp.get_example_data("rlmw_002_short")
+           >>> d.set_experimental_setup(camera_spherical=("20 deg", "-90 deg", "70 cm"))
+           >>> d.plot.plot_experimental_setup()
+
+        To show fitted angles, pass the result of
+        :meth:`d.pupil.fit_foreshortening() <pypillometry.eyedata.pupil.PupilNamespace.fit_foreshortening>` as ``calibration=``, or
+        set ``theta``/``phi`` directly.
+        """
+        obj = self.obj
+        setup = obj.experimental_setup
+        
+        if setup is None:
+            raise ValueError("experimental_setup is not set on this EyeData object")
+        
+        # Get theta and phi from calibration if provided
+        if calibration is not None:
+            if theta is None:
+                theta = calibration.theta * u.rad  # fitted angles are in radians
+                logger.info(f"Using theta={np.degrees(calibration.theta):.1f}° from calibration")
+            if phi is None:
+                phi = calibration.phi * u.rad
+                logger.info(f"Using phi={np.degrees(calibration.phi):.1f}° from calibration")
+        
+        # Parse angles if provided as strings
+        if theta is not None:
+            theta = parse_angle(theta)
+        if phi is not None:
+            phi = parse_angle(phi)
+        
+        return setup.plot(
+            theta=theta,
+            phi=phi,
+            projection=projection,
+            show_gaze_samples=show_gaze_samples,
+            n_gaze_samples=n_gaze_samples,
+            ax=ax,
+            viewing_angle=viewing_angle,
+        )
