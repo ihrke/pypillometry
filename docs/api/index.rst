@@ -16,8 +16,21 @@ together, see the :doc:`/user_guide/index`.
       :link: data
       :link-type: doc
 
-      ``EyeData``, its base class, and the pupil and gaze methods
-      (``d.pupil``, ``d.gaze``).
+      ``EyeData`` and its generic methods, channels, mask layers and
+      policies.
+
+   .. grid-item-card:: Pupil methods
+      :link: pupil
+      :link-type: doc
+
+      ``d.pupil``: blinks, filters, merging the eyes, baseline and
+      response models.
+
+   .. grid-item-card:: Gaze methods
+      :link: gaze
+      :link-type: doc
+
+      ``d.gaze``: off-screen samples and eye divergences.
 
    .. grid-item-card:: Pipelines
       :link: pipelines
@@ -41,7 +54,7 @@ together, see the :doc:`/user_guide/index`.
       :link: plotting
       :link-type: doc
 
-      The plotting functions available under ``d.plot``.
+      ``d.plot``: the plotting functions.
 
    .. grid-item-card:: Reading and writing data
       :link: io
@@ -79,6 +92,8 @@ together, see the :doc:`/user_guide/index`.
    :hidden:
 
    data
+   pupil
+   gaze
    pipelines
    events_intervals
    segments
