@@ -122,6 +122,8 @@ The main ones:
 - `summary()`, `Intervals.stats()` and the segment summary return Python
   numbers (not `np.float64`); `summary()["params"]` is the dict of
   parameters (was the string `'{...}'`)
+- `pupil.blinks_detect()` with an unknown strategy (e.g. `"zeros"`) raises a
+  `ValueError` (it only logged a warning and found no blinks)
 - Re-running `pupil.blinks_detect()` after `pupil.blinks_interpolate()`
   found no blinks (it read the interpolated values) and cleared the blink
   layer; interpolated samples now count as missing during detection

@@ -410,6 +410,14 @@ class TestBlinkLayer:
         assert d.pupil.blinks_detect(ignore_existing_mask=True, inplace=False).nblinks() \
             == {"left_pupil": 0}
 
+    def test_unknown_strategy_raises(self):
+        # finding 4.8: a typo only logged a warning and found 0 blinks
+        d = blink_data()
+        for strategies in (["zeros"], ["zero", "vel"], []):
+            with pytest.raises(ValueError, match="strategies"):
+                d.pupil.blinks_detect(strategies=strategies)
+        assert d.pupil.blinks_detect(strategies="zero").nblinks() == {"left_pupil": 3}
+
     def test_set_blinks_none_and_clear_layer_unmask(self):
         d = blink_data()
         nan = np.isnan(d.data["left_pupil"])

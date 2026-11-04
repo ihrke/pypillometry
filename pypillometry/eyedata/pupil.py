@@ -519,6 +519,7 @@ class PupilNamespace(Namespace):
         strategies : list
             list of strategies to use;
             so far, use a list containing any combination of "zero" and "velocity"
+            (other names raise a ValueError)
         ignore_existing_mask : bool
             if `True`, use raw data ignoring existing masks
             if `False` (default), only detect blinks in the usable data under
@@ -559,9 +560,11 @@ class PupilNamespace(Namespace):
 
         
         # check for unknown strategies
-        for strat in strategies:
-            if strat not in ["zero", "velocity"]:
-                logger.warning("Strategy '%s' unknown"%strat)
+        if isinstance(strategies, str):
+            strategies = [strategies]
+        if not strategies or any(strat not in ("zero", "velocity") for strat in strategies):
+            raise ValueError("strategies must be a non-empty list of 'zero' and/or "
+                             f"'velocity', got {strategies!r}")
         
         for eye in eyes:
             logger.debug(f"Detecting blinks for eye {eye}")
