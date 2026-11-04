@@ -1,6 +1,6 @@
 import itertools
 from ..eyedata import GenericEyeData
-from .genplotter import GenericPlotter
+from .generic import GenericPlotter
 from ..intervals import Intervals
 from ..units import parse_time
 import numpy as np

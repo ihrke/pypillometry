@@ -1,5 +1,5 @@
 from ..eyedata import GenericEyeData
-from .genplotter import GenericPlotter
+from .generic import GenericPlotter
 import numpy as np
 from collections.abc import Iterable
 from typing import List, Union, Optional, Tuple

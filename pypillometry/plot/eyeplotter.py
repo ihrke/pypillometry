@@ -1,5 +1,5 @@
-from ..plot.gazeplotter import GazePlotter
-from ..plot.pupilplotter import PupilPlotter
+from .gaze import GazePlotter
+from .pupil import PupilPlotter
 from ..units import parse_angle, u
 import numpy as np
 import matplotlib.pyplot as plt

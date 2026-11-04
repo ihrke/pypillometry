@@ -8,6 +8,6 @@ so that plotting methods are called as, e.g., ``d.plot.plot_timeseries()``.
 """
 __all__=["GazePlotter","EyePlotter","PupilPlotter"]
 
-from .gazeplotter import GazePlotter
+from .gaze import GazePlotter
 from .eyeplotter import EyePlotter
-from .pupilplotter import PupilPlotter
+from .pupil import PupilPlotter

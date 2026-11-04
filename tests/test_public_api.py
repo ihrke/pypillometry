@@ -32,7 +32,7 @@ INTERNAL = {
     "pypillometry.eyedata.pipes": {"step", "generic_step"},
     "pypillometry.intervals": {"stat_event_interval"},
     "pypillometry.io": {"is_ssh_url"},
-    "pypillometry.plot.genplotter": {"GenericPlotter"},
+    "pypillometry.plot.generic": {"GenericPlotter"},
     "pypillometry.units": {"normalize_unit"},
     "pypillometry.signal.preproc": {"helper_merge_blinks"},
     "pypillometry.state": {"to_state", "from_state", "migrate", "Field",
