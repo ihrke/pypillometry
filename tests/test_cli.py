@@ -57,6 +57,20 @@ class TestPypilview(CLITestCase):
         read.assert_called_once_with(EDF, remove_eyelink_triggers=False)
         view.assert_called_once_with("data", eyes=["left"], variables=["pupil", "x"])
 
+    def test_file_after_list_options(self):
+        # finding 5.9: --eyes took the file as an eye, then "file" was missing
+        for argv, eyes, variables in [
+                (["--eyes", "right", EDF], ["right"], None),
+                (["--variables", "pupil", "--eyes", "left", "right", EDF], ["left", "right"], ["pupil"]),
+                (["--eyes", "left", "--variables", "x", EDF], ["left"], ["x"]),
+                (["--eye", "left", EDF], ["left"], None)]:
+            _, read, view = self.run_main(argv)
+            read.assert_called_once_with(EDF, remove_eyelink_triggers=True)
+            view.assert_called_once_with("data", eyes=eyes, variables=variables)
+        self.assert_exits(["--eyes", "left"])
+        self.assert_exits(["--eyes", EDF])
+        self.assert_exits(["--variables", "pupil", "foo", EDF])
+
     def test_edf_detected_by_content(self):
         fname = os.path.join(self.tmp, "recording.dat")
         shutil.copy(EDF, fname)
