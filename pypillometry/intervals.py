@@ -877,11 +877,11 @@ class Intervals(Stateful):
             }
         return {
             "n": len(self.intervals),
-            "mean": np.mean(durations),
-            "sd": np.std(durations),
-            "min": np.min(durations),
-            "max": np.max(durations),
-            "total_duration": np.sum(durations),
+            "mean": float(np.mean(durations)),
+            "sd": float(np.std(durations)),
+            "min": float(np.min(durations)),
+            "max": float(np.max(durations)),
+            "total_duration": float(np.sum(durations)),
             "units": self.units
         }
 
@@ -1024,10 +1024,12 @@ class Intervals(Stateful):
         Returns
         -------
         pandas.DataFrame
-            DataFrame with columns ``start``, ``end``, and ``duration``. When metadata
-            is available, columns ``event_label`` and ``event_onset``
-            are included, and the column ``units`` gives the units. The
-            metadata of the events (`event_meta`) are added as columns.
+            DataFrame with columns ``start``, ``end``, ``duration`` and
+            ``units``. When metadata is available, the columns ``label`` and
+            ``onset`` (from `event_labels` and `event_onsets`, named as in
+            :meth:`Epochs.as_pandas` and :meth:`Events.to_table`) are
+            included, and the metadata of the events (`event_meta`) are
+            added as columns.
 
         Raises
         ------
@@ -1045,9 +1047,9 @@ class Intervals(Stateful):
             }
             record["units"] = self.units
             if self.event_labels is not None and idx < len(self.event_labels):
-                record["event_label"] = self.event_labels[idx]
+                record["label"] = self.event_labels[idx]
             if self.event_onsets is not None and idx < len(self.event_onsets):
-                record["event_onset"] = self.event_onsets[idx]
+                record["onset"] = self.event_onsets[idx]
             for name, col in (self.event_meta or {}).items():
                 record[name] = col[idx].item()
             records.append(record)

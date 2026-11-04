@@ -157,8 +157,8 @@ class TestMethodsAcceptEpochs:
         plt.close("all")
 
     def test_type_error(self):
-        with pytest.raises(TypeError, match="must be Intervals or Epochs, got list"):
-            self.make().mask_intervals([(0, 100)])
+        with pytest.raises(TypeError, match="must be Intervals, Epochs or a list"):
+            self.make().mask_intervals({(0, 100)})
 
 
 class TestSegmentsFromEpochs:
@@ -238,6 +238,8 @@ class TestGetIntervals:
         iv = self.make().get_intervals(("ev", "x"), units="ms")
         assert isinstance(iv, pp.Intervals)
         assert iv.intervals == [(1500., 2900.)]
+        assert iv.label == "ev to x"
+        assert list(iv.event_labels) == ["ev to x"]
 
     def test_not_clipped_in_samples(self):
         # findings 2.2/2.6: windows in samples near the start are not clipped,

@@ -185,6 +185,10 @@ class TestQualityReport(unittest.TestCase):
             d.quality_report(thresholds={"pupil.missing_pct": (1, 2)})
         with self.assertRaises(ValueError):
             d.quality_report(thresholds={"pupil.missing_pct": (1, 5, 2)})
+        # a single number (was a TypeError "'int' object is not iterable")
+        for bad in (5, "5", ("a", 1, 2)):
+            with self.assertRaisesRegex(ValueError, "pupil.missing_pct"):
+                d.quality_report(thresholds={"pupil.missing_pct": bad})
 
     def test_representations(self):
         d = _make_data(missing=[(1000, 4000)])

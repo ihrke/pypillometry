@@ -43,7 +43,7 @@ INTERNAL = {
     "pypillometry.hdf5": {"write_state", "read_state", "is_hdf5"},
     "pypillometry.viewer.canvas": {"ViewerCanvas"},
     "pypillometry.viewer.navigation": {"NavigationHandler"},
-    "pypillometry.viewer.tweak": {"TweakCanvas", "TweakViewer"},
+    "pypillometry.viewer.tweak_canvas": {"TweakCanvas", "TweakViewer"},
     "pypillometry.viewer.visuals": {
         "LODLine", "DynamicMaskRegions", "DynamicEventMarkers",
         "SelectionRegion", "HighlightRegion",
@@ -96,10 +96,16 @@ class TestPublicAPI(unittest.TestCase):
                                   "add it to pypillometry/__init__.py")
                     if name in shadowed:
                         self.assertIsNot(getattr(pp, name), getattr(module, name))
-                    elif not isinstance(getattr(module, name), types.ModuleType):
-                        # (pypillometry.viewer.tweak is also a submodule)
+                    else:
                         self.assertIs(getattr(pp, name), getattr(module, name),
                                       "same name, different object: add to SHADOWED")
+
+    def test_viewer_tweak_is_the_function(self):
+        # the submodule viewer/tweak.py shadowed the function once imported
+        import pypillometry.viewer as viewer
+        import pypillometry.viewer.tweak_canvas  # noqa: F401
+        self.assertTrue(callable(viewer.tweak))
+        self.assertIs(viewer.tweak, pp.tweak)
 
     def test_top_level_all_is_clean(self):
         self.assertEqual(len(pp.__all__), len(set(pp.__all__)),

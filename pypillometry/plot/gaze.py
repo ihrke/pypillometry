@@ -127,7 +127,7 @@ class GazePlots(GenericPlots):
         if end==np.inf:
             endix=tx.size
         else:
-            endix=np.argmin(np.abs(tx-end))    
+            endix=np.argmin(np.abs(tx-end)) + 1  # the end sample is plotted too
         
         # which eyes to plot
         eyes = obj._eyes_with(eyes, ["x", "y"])
@@ -380,7 +380,7 @@ class GazePlots(GenericPlots):
         if end==np.inf:
             endix=tx.size
         else:
-            endix=np.argmin(np.abs(tx-end))    
+            endix=np.argmin(np.abs(tx-end)) + 1  # the end sample is plotted too
         
         # get events in range
         evonixx=np.logical_and(evon>=start, evon<end)

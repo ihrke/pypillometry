@@ -114,8 +114,8 @@ class TestIntervalsClass(unittest.TestCase):
         self.assertEqual(len(df), 2)
         self.assertTrue((df["start"].values == np.array([0, 200])).all())
         self.assertTrue((df["duration"].values == np.array([100, 60])).all())
-        self.assertTrue((df["event_label"].values == np.array(event_labels)).all())
-        self.assertTrue((df["event_onset"].values == np.array(event_onsets)).all())
+        self.assertTrue((df["label"].values == np.array(event_labels)).all())
+        self.assertTrue((df["onset"].values == np.array(event_onsets)).all())
 
         empty_df = Intervals([], units="ms").as_pandas()
         self.assertTrue(empty_df.empty)

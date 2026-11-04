@@ -155,6 +155,20 @@ class TestEyeDataDict(unittest.TestCase):
         self.assertIn('left_pupil', pupil_data)
         self.assertIn('right_pupil', pupil_data)
 
+    def test_get_eye_and_variable_keep_layers(self):
+        """the subsets keep masks and layers (they were dropped)"""
+        d = EyeDataDict(**self.test_data)
+        blink = np.zeros(d.shape, dtype=bool)
+        blink[2:4] = True
+        d.set_layer("left_pupil", "blink", blink)
+        d.set_rec_layer("excluded", np.arange(d.length) == 0)
+        for sub in (d.get_eye("left"), d.get_variable("pupil")):
+            np.testing.assert_array_equal(sub.get_layer("left_pupil", "blink"), blink)
+            np.testing.assert_array_equal(sub.get_policy_mask("left_pupil"),
+                                          d.get_policy_mask("left_pupil"))
+            sub["left_pupil"][0] = -1.  # a copy
+        self.assertNotEqual(d["left_pupil"][0], -1.)
+
     def test_set_with_mask_explicit(self):
         """Test set_with_mask with explicit mask provided"""
         d = EyeDataDict()

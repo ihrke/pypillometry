@@ -349,6 +349,20 @@ class TestPlottingGaze(unittest.TestCase):
         d.plot.plot_pupil_foreshortening_error_surface(min_samples=1)
         self.assertTrue(plt.gcf().axes[0].yaxis_inverted())
 
+    def test_foreshortening_surface_only_eyes_with_data(self):
+        """eyes=[]: only eyes with pupil and gaze get a panel"""
+        rng = np.random.default_rng(2)
+        d = pp.EyeData(sampling_rate=100, left_pupil=rng.normal(5, 1, 500),
+                       left_x=rng.normal(500, 50, 500), left_y=rng.normal(500, 50, 500),
+                       right_pupil=rng.normal(5, 1, 500))
+        plt.figure()
+        d.plot.plot_pupil_foreshortening_error_surface(min_samples=1)
+        self.assertEqual([ax.get_title() for ax in plt.gcf().axes if ax.get_title()],
+                         ["left eye"])
+        plt.close("all")
+        with self.assertRaises(KeyError):
+            d.plot.plot_pupil_foreshortening_error_surface(eyes="right")
+
     def test_plot_scanpath_single_eye_string(self):
         """eyes="left" plots the left eye only"""
         self.data.plot.plot_scanpath(eyes="left")

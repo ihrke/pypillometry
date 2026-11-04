@@ -519,11 +519,15 @@ class PupilNamespace(Namespace):
         strategies : list
             list of strategies to use;
             so far, use a list containing any combination of "zero" and "velocity"
+            (other names raise a ValueError)
         ignore_existing_mask : bool
             if `True`, use raw data ignoring existing masks
             if `False` (default), only detect blinks in the usable data under
-            the default mask policy (masked regions are skipped; interpolated
-            samples are used, see :meth:`~pypillometry.GenericEyeData.mask`)
+            the ``"strict"`` mask policy (masked regions are skipped, see
+            :meth:`~pypillometry.GenericEyeData.mask`); interpolated samples
+            count as missing, so that detection after
+            :meth:`blinks_interpolate` finds the interpolated blinks again
+            (instead of reading the reconstructed values)
         inplace : bool or None
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes                                                    
@@ -556,9 +560,11 @@ class PupilNamespace(Namespace):
 
         
         # check for unknown strategies
-        for strat in strategies:
-            if strat not in ["zero", "velocity"]:
-                logger.warning("Strategy '%s' unknown"%strat)
+        if isinstance(strategies, str):
+            strategies = [strategies]
+        if not strategies or any(strat not in ("zero", "velocity") for strat in strategies):
+            raise ValueError("strategies must be a non-empty list of 'zero' and/or "
+                             f"'velocity', got {strategies!r}")
         
         for eye in eyes:
             logger.debug(f"Detecting blinks for eye {eye}")
@@ -566,9 +572,13 @@ class PupilNamespace(Namespace):
             # the new blinks replace the old ones, which must not mask the data
             obj.set_blinks(None, eyes=[eye], variables=["pupil"])
 
-            # pupil data: unusable samples (default mask policy) are NaN,
-            # unless the existing mask is ignored
-            pupil_data = obj.values(eye, "pupil", "raw" if ignore_existing_mask else "default")
+            # pupil data: unusable samples are NaN, unless the existing mask
+            # is ignored; interpolated samples count as missing (they are
+            # reconstructed blinks), so re-detection after interpolation
+            # finds the blinks again
+            pupil_data = obj.values(eye, "pupil", "raw" if ignore_existing_mask else "strict")
+            interpolated = (np.zeros(len(pupil_data), dtype=bool) if ignore_existing_mask
+                            else obj.data.get_layer(f"{eye}_pupil", "interpolated"))
             
             ## detect blinks with the different strategies
             if "velocity" in strategies:
@@ -589,6 +599,7 @@ class PupilNamespace(Namespace):
                 raw = obj.data[eye, "pupil"]
                 if not np.isnan(blink_val):
                     raw = np.where(raw == blink_val, np.nan, raw)
+                raw = np.where(interpolated, np.nan, raw)
                 blinks_zero=preproc.detect_blinks_zero(raw, 1, np.nan)
                 logger.debug(f"Detected {len(blinks_zero)} blinks with zero strategy")
             else:
@@ -947,6 +958,11 @@ class PupilNamespace(Namespace):
         Estimate pupil-response based on event-onsets, see
         :func:`~pypillometry.signal.pupil.pupil_response`.
 
+        The model has one response per event in ``d.events``: *all* events
+        are used, whatever their label. To use only some of them, set the
+        events first, e.g. ``d.set_events(d.events.filter("stim"))`` on a
+        copy of the data.
+
         If a baseline has been estimated (see :meth:`estimate_baseline`),
         it is subtracted from the pupil signal before estimating the response;
         otherwise, a baseline of zero is used.
@@ -997,11 +1013,17 @@ class PupilNamespace(Namespace):
         EyeData
             the object with the estimated response
 
+        Raises
+        ------
+        ValueError
+            if the object has no events
+
         Notes
         -----
         The predicted response is stored in ``data[eye, "response"]``; the
         estimated parameters (`npar`, `tmax`, the coefficients `coef` and the
-        `bounds`) are stored in ``params["response"][eye]``, together with
+        `bounds`) are stored in ``params["response"]["<eye>_pupil"]`` (e.g.,
+        ``params["response"]["left_pupil"]``), together with
         the shares `valid` and `observed` (0-1, one per event; NaN for
         events without response in the data, e.g., at the very end).
 
@@ -1015,7 +1037,11 @@ class PupilNamespace(Namespace):
         obj = self._d._get_inplace(inplace)
         eyes=self._d._eyes_with(eyes, "pupil")
 
-        obj.params["response"]=dict()
+        if len(obj.events) == 0:
+            raise ValueError("estimate_response needs events (one response per event); "
+                             "the object has none (see set_events)")
+        # replace the parameters of the processed eyes only
+        obj.params["response"] = dict(obj.params.get("response", {}))
         for eye in eyes:
             logger.debug("Estimating response for eye %s"%eye)
             if not eye+"_baseline" in obj.data.keys():
@@ -1042,7 +1068,7 @@ class PupilNamespace(Namespace):
             
             obj.data[eye+"_response"]=pred
 
-            obj.params["response"][eye]={"npar":npar_est,
+            obj.params["response"][f"{eye}_pupil"]={"npar":npar_est,
                                 "npar_free":True if npar=="free" else False,
                                 "tmax":tmax_est,
                                 "tmax_free":True if tmax=="free" else False,

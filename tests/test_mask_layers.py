@@ -320,6 +320,22 @@ class TestInterpolatedLayer:
         assert not d.mask("left", "pupil")[interp].any()
         assert d.mask("left", "pupil", policy="strict")[interp].all()
 
+    def test_plot_masked_policy(self):
+        # after interpolation, the default policy masks nothing; "strict"
+        # shows the interpolated stretches
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+        d = blink_data().pupil.blinks_detect().pupil.blinks_interpolate()
+        try:
+            for policy, nlines in (("default", 0), ("strict", 3), (["interpolated"], 3)):
+                plt.figure()
+                d.plot.plot_masked(policy=policy)
+                assert len(plt.gca().lines) == nlines
+                plt.close("all")
+        finally:
+            plt.close("all")
+
     def test_store_as_other_variable(self):
         d = blink_data().pupil.blinks_detect()
         d.pupil.blinks_interpolate(store_as="pupilinterp")
@@ -376,6 +392,31 @@ class TestBlinkLayer:
         # running it again with the first parameters gives the first result
         d.pupil.blinks_detect(strategies=["velocity"], min_duration=10)
         assert int(d.data.mask["left_pupil"].sum()) == n1
+
+    def test_redetection_after_interpolation_finds_the_blinks(self):
+        # the interpolated samples count as missing, so detection does not
+        # read the reconstructed values and wipe the blink layer
+        d = blink_data().pupil.blinks_detect().pupil.blinks_interpolate()
+        interp = d.get_interpolated_blinks("left", "pupil", units="samples")["left_pupil"].intervals
+        d.pupil.blinks_detect()
+        blinks = d.get_blinks("left", "pupil", units="samples")["left_pupil"].intervals
+        assert blinks == interp
+        d.pupil.blinks_detect()
+        assert d.get_blinks("left", "pupil", units="samples")["left_pupil"].intervals == blinks
+        # still usable by default (interpolated), masked under "strict"
+        assert not d.mask("left", "pupil")[d.data.get_layer("left_pupil", "blink")].any()
+        assert d.mask("left", "pupil", "strict")[d.data.get_layer("left_pupil", "blink")].all()
+        # ignoring the mask reads the stored (interpolated) values
+        assert d.pupil.blinks_detect(ignore_existing_mask=True, inplace=False).nblinks() \
+            == {"left_pupil": 0}
+
+    def test_unknown_strategy_raises(self):
+        # finding 4.8: a typo only logged a warning and found 0 blinks
+        d = blink_data()
+        for strategies in (["zeros"], ["zero", "vel"], []):
+            with pytest.raises(ValueError, match="strategies"):
+                d.pupil.blinks_detect(strategies=strategies)
+        assert d.pupil.blinks_detect(strategies="zero").nblinks() == {"left_pupil": 3}
 
     def test_set_blinks_none_and_clear_layer_unmask(self):
         d = blink_data()
@@ -435,6 +476,20 @@ class TestBlinkLayer:
 
 
 class TestUserLayer:
+
+
+    def test_lists_of_tuples(self):
+        # like exclude_intervals: (start, end) in ms
+        import pypillometry as pp
+        d = blink_data()
+        a = d.mask_intervals([(1000, 1100)], inplace=False)
+        b = d.mask_intervals(pp.Intervals([(1000, 1100)], units="ms"), inplace=False)
+        np.testing.assert_array_equal(a.mask("left", "pupil"), b.mask("left", "pupil"))
+        a = d.interpolate_intervals([(2000, 2150)], inplace=False)
+        b = d.interpolate_intervals(pp.Intervals([(2000, 2150)], units="ms"), inplace=False)
+        np.testing.assert_array_equal(a.data["left_pupil"], b.data["left_pupil"])
+        with pytest.raises(TypeError, match="list of"):
+            d.mask_intervals("blinks")
 
     def test_mask_intervals(self):
         import pypillometry as pp

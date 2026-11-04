@@ -28,7 +28,7 @@ from imageio import imwrite
 
 import pypillometry as pp
 from pypillometry.viewer.canvas import ViewerCanvas
-from pypillometry.viewer.tweak import TweakCanvas, TweakViewer
+from pypillometry.viewer.tweak_canvas import TweakCanvas, TweakViewer
 
 # Import Qt for window screenshots
 try:

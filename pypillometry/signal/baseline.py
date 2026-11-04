@@ -119,8 +119,16 @@ def butter_lowpass(cutoff, fs, order=5):
     b, a : np.ndarray
         numerator and denominator filter coefficients
         (see :func:`scipy.signal.butter`)
+
+    Raises
+    ------
+    ValueError
+        if `cutoff` is not between 0 and the Nyquist frequency (`fs`/2)
     """
     nyq = 0.5 * fs
+    if not 0 < cutoff < nyq:
+        raise ValueError(f"lowpass cutoff must be between 0 and fs/2 = {nyq:g} Hz "
+                         f"(sampling rate {fs:g} Hz), got {cutoff!r}")
     normal_cutoff = cutoff / nyq
     b, a = signal.butter(order, normal_cutoff, btype='low', analog=False)
     return b, a

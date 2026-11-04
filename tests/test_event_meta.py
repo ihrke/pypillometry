@@ -175,6 +175,12 @@ class TestFromTableMeta(unittest.TestCase):
         self.assertEqual(list(ev.meta), ["difficulty", "x"])
         np.testing.assert_array_equal(ev.meta["x"], [7, 8, 9])
 
+    def test_non_numeric_column_names_it(self):
+        with self.assertRaisesRegex(ValueError, "column 'cond'"):
+            Events.from_table(self.behav, ["stim", "cond"])
+        with self.assertRaisesRegex(ValueError, "times for 'resp'"):
+            Events.from_table(self.behav, {"resp": ["a", "b", "c"]})
+
     def test_row_name_conflict(self):
         with self.assertRaises(ValueError):
             Events.from_table(self.behav, ["stim"], meta={"row": "trial"})
@@ -213,6 +219,13 @@ class TestFilterMeta(unittest.TestCase):
     def test_unknown_column(self):
         with self.assertRaises(KeyError):
             self.ev.filter(nope=1)
+
+    def test_wrong_type_raises(self):
+        # finding 4.8: trial="1" for numbers matched nothing, silently
+        with self.assertRaisesRegex(TypeError, "trial='1'"):
+            self.ev.filter(trial="1")
+        with self.assertRaisesRegex(TypeError, "cond=1"):
+            self.ev.filter(cond=[1, "a"])
 
     def test_filter_keeps_meta(self):
         np.testing.assert_array_equal(self.ev.filter("stim").meta["trial"], [1, 2, 3])

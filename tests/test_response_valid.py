@@ -3,6 +3,7 @@ Tests for the response estimation with excluded periods and missing samples.
 """
 import unittest
 import numpy as np
+import pytest
 import pypillometry as pp
 from pypillometry.signal.pupil import (pupil_response, pupil_response_coverage,
                                        pupil_build_design_matrix, pupil_kernel)
@@ -116,7 +117,7 @@ class TestResponseExcluded(unittest.TestCase):
         self.assertTrue(self.d.data.mask["left_pupil"][2700:3300].all())
 
     def test_events_in_break_left_out(self):
-        par = self.est.params["response"]["left"]
+        par = self.est.params["response"]["left_pupil"]
         np.testing.assert_array_equal(np.isnan(par["coef"]), par["valid"] < 0.5)
         self.assertTrue(np.isnan(par["coef"][self.est.events.onsets == 28500][0]))
         self.assertEqual(par["min_valid"], 0.5)
@@ -124,10 +125,10 @@ class TestResponseExcluded(unittest.TestCase):
         self.assertLess(np.max(self.est.data["left", "response"]), 1000)
         est0 = self.d.pupil.estimate_response(eyes="left", npar=10, tmax=900,
                                               min_valid=0, inplace=False)
-        self.assertFalse(np.isnan(est0.params["response"]["left"]["coef"]).any())
+        self.assertFalse(np.isnan(est0.params["response"]["left_pupil"]["coef"]).any())
 
     def test_shares(self):
-        par = self.est.params["response"]["left"]
+        par = self.est.params["response"]["left_pupil"]
         onsets = self.est.events.onsets
         self.assertEqual(len(par["valid"]), len(onsets))
         np.testing.assert_allclose(par["valid"][onsets < 20000], 1)
@@ -141,15 +142,15 @@ class TestResponseExcluded(unittest.TestCase):
         d = self.d.copy()
         d.data["left_pupil"][2700:3300] += 1e5
         est = d.pupil.estimate_response(eyes="left", npar=10, tmax=900, inplace=False)
-        np.testing.assert_allclose(est.params["response"]["left"]["coef"],
-                                   self.est.params["response"]["left"]["coef"])
+        np.testing.assert_allclose(est.params["response"]["left_pupil"]["coef"],
+                                   self.est.params["response"]["left_pupil"]["coef"])
 
     def test_observed_lower_with_blinks(self):
         d = self.d.copy()
         # an interpolated blink at 1.6 s
         d.interpolate_intervals(pp.Intervals([(160, 200)], "samples"), inplace=True)
         est = d.pupil.estimate_response(eyes="left", npar=10, tmax=900, inplace=False)
-        par = est.params["response"]["left"]
+        par = est.params["response"]["left_pupil"]
         self.assertLess(par["observed"][0], 1)
         self.assertAlmostEqual(par["valid"][0], 1)
 
@@ -159,11 +160,29 @@ class TestResponseExcluded(unittest.TestCase):
         d.data["left_pupil"][160:200] = 0.
         d.mask_intervals(pp.Intervals([(160, 200)], "samples"), inplace=True)
         est = d.pupil.estimate_response(eyes="left", npar=10, tmax=900, inplace=False)
-        par = est.params["response"]["left"]
+        par = est.params["response"]["left_pupil"]
         self.assertLess(par["valid"][0], 0.99)
         ref = self.d.pupil.estimate_response(eyes="left", npar=10, tmax=900, inplace=False)
-        np.testing.assert_allclose(par["coef"], ref.params["response"]["left"]["coef"],
+        np.testing.assert_allclose(par["coef"], ref.params["response"]["left_pupil"]["coef"],
                                    rtol=0.05)
+
+
+def test_response_of_one_eye_keeps_the_other():
+    # finding 5.4: estimating one eye wiped the parameters of the other
+    d = fake_pupil(duration=20)
+    d.data["right_pupil"] = d.data["left_pupil"] + 10
+    d.pupil.estimate_response(npar=10, tmax=900, inplace=True)
+    left = d.params["response"]["left_pupil"]["coef"].copy()
+    d.pupil.estimate_response(eyes="right", npar=10, tmax=900, inplace=True)
+    assert sorted(d.params["response"]) == ["left_pupil", "right_pupil"]
+    np.testing.assert_array_equal(d.params["response"]["left_pupil"]["coef"], left)
+
+
+def test_response_without_events_raises():
+    d = fake_pupil(duration=20)
+    d.set_events(pp.Events([], [], units="ms"))
+    with pytest.raises(ValueError, match="needs events"):
+        d.pupil.estimate_response(npar=10, tmax=900)
 
 
 if __name__ == "__main__":

@@ -8,7 +8,7 @@ All other eyedata classes should inherit from this class.
 
 from collections.abc import Iterable
 from .. import io
-from ..convenience import sizeof_fmt, ByteSize, _round_values, requires_package, is_url, suppress_all_output, normalize_unit, _warn_if_ignores_mask
+from ..convenience import sizeof_fmt, ByteSize, _round_values, _plain_values, requires_package, is_url, suppress_all_output, normalize_unit, _warn_if_ignores_mask
 from ..units import UNSET, _has_units, _time_values_and_units, parse_time, _ms_to_samples, _samples_to_ms
 from ..io import download
 from .eyedatadict import (EyeDataDict, LAYER_DTYPE, REC_LAYERS,
@@ -145,6 +145,12 @@ def keephistory(func):
             target.add_to_history({"funcstring": fstr, "funcname": name})
         return obj
     return wrapper
+
+
+def _some(values, n=10):
+    """The first `n` of `values` as a list for messages (``[1.0, 2.0, ...]``)."""
+    values = list(np.asarray(values).tolist())
+    return str(values) if len(values) <= n else str(values[:n])[:-1] + ", ...]"
 
 
 def _per_pair(pairs, fct):
@@ -698,9 +704,13 @@ class GenericEyeData(state.VersionedState, ABC):
         """
         if isinstance(variables, str):
             variables = [variables]
-        pairs = self.data.select(eyes, variables)
+        pairs = self.data._select(eyes, variables)
         found = dict.fromkeys(eye for eye, _ in pairs)
-        return [eye for eye in found if all((eye, var) in pairs for var in variables)]
+        eyes = [eye for eye in found if all((eye, var) in pairs for var in variables)]
+        # name the channels in the log of the calling method
+        logger.opt(depth=1).debug("channels: %s" % ", ".join(
+            f"{eye}_{var}" for eye in eyes for var in variables))
+        return eyes
 
     def _require(self, *variables):
         """Private helper: raise a ValueError unless there is data for each
@@ -1372,6 +1382,9 @@ class GenericEyeData(state.VersionedState, ABC):
         """
         if isinstance(intervals, (Intervals, Epochs)):
             return _as_intervals(intervals)
+        if not isinstance(intervals, (list, tuple, np.ndarray)):
+            raise TypeError("intervals must be Intervals, Epochs or a list of (start, end) "
+                            f"tuples, got {type(intervals).__name__}")
         bounds = {-np.inf: float(self.tx[0]),
                   np.inf: float(_samples_to_ms(self, len(self.tx)))}
 
@@ -1491,17 +1504,27 @@ class GenericEyeData(state.VersionedState, ABC):
         :class:`~pypillometry.GenericEyeData`
             the shortened object (`self` or a copy, depending on `inplace`)
 
+        Raises
+        ------
+        ValueError
+            if `start` is after `end` or there are no samples between them
+
         See Also
         --------
         remove_intervals : remove periods (e.g., breaks) and join the rest
         """
-        obj = self._get_inplace(inplace)
         default = normalize_unit(units)
         start = parse_time(start, default=default)
         end = parse_time(end, default=default)
+        if start > end:
+            raise ValueError(f"crop(): start ({start:g} ms) is after end ({end:g} ms)")
+        keep = (self.tx >= start) & (self.tx <= end)
+        if not keep.any():
+            raise ValueError(f"crop(): no samples between {start:g} and {end:g} ms "
+                             f"(the data are from {self.tx[0]:g} to {self.tx[-1]:g} ms)")
+        obj = self._get_inplace(inplace)
         on = obj._events.onsets
-        obj._keep_samples((obj.tx >= start) & (obj.tx <= end),
-                          keep_events=(on >= start) & (on <= end))
+        obj._keep_samples(keep, keep_events=(on >= start) & (on <= end))
         return obj
 
     def sub_slice(self, start: float=-np.inf, end: float=np.inf,
@@ -1714,6 +1737,8 @@ class GenericEyeData(state.VersionedState, ABC):
         """Return a string-representation of the dataset."""
         pars=self.summary()
         del pars["name"]
+        if "params" in pars:
+            pars["params"] = self._strfy_params()  # short form
         size = self.get_size()
         s="{cname}({name}, {size}):\n".format(cname=self.__class__.__name__,
                                               name=self.name, 
@@ -2313,7 +2338,9 @@ class GenericEyeData(state.VersionedState, ABC):
             onsets (ms) of the selected events, the window (in ms), their
             labels and metadata (see :class:`~pypillometry.Events`).
             For two events (tuple): Intervals with the spans between them
-            (in `units`) and, per interval, the label ``"<first>_to_<second>"``,
+            (in `units`; the label of the Intervals is ``"<first> to <second>"``
+            for two strings) and, per interval, the label
+            ``"<first label> to <second label>"``,
             the onset of the first event and the metadata of the first event
             (of the second one if the first is ``"<start>"``).
             Windows that extend beyond the data are not clipped.
@@ -2402,11 +2429,11 @@ class GenericEyeData(state.VersionedState, ABC):
                 logger.warning(
                     f"get_intervals(): skipped {len(skip_a)} {name_a} event(s) with no "
                     f"{name_b} event after them (before the next {name_a} event or "
-                    f"the end), at {on_a[skip_a].tolist()} ms")
+                    f"the end), at {_some(on_a[skip_a])} ms")
             if skip_b and i_a is not None:
                 logger.warning(
                     f"get_intervals(): skipped {len(skip_b)} {name_b} event(s) with no "
-                    f"{name_a} event before them, at {on_b[skip_b].tolist()} ms")
+                    f"{name_a} event before them, at {_some(on_b[skip_b])} ms")
             if not pairs:
                 raise ValueError(f"no {name_a} event is followed by a {name_b} event")
             pa = np.array([p[0] for p in pairs])
@@ -2415,10 +2442,10 @@ class GenericEyeData(state.VersionedState, ABC):
             eix1, eix2 = s_a[pa], s_b[pb]
             if label is None:
                 if isinstance(event_select[0], str) and isinstance(event_select[1], str):
-                    label = f"{event_select[0]}_to_{event_select[1]}"
+                    label = f"{event_select[0]} to {event_select[1]}"
                 else:
                     label = "between_events"
-            selected_labels = [f"{l_a[i]}_to_{l_b[j]}" for i, j in pairs]
+            selected_labels = [f"{l_a[i]} to {l_b[j]}" for i, j in pairs]
             selected_indices = None if i_a is None else i_a[pa]
             selected_meta = meta_of(selected_indices) if i_a is not None \
                 else meta_of(None if i_b is None else i_b[pb])
@@ -2559,7 +2586,9 @@ class GenericEyeData(state.VersionedState, ABC):
         Notes
         -----
         Scaling-parameters are being saved in the `params["scale"]` attribute
-        and are used by :meth:`unscale`.
+        (per eye and variable) and are used by :meth:`unscale`. Scaling a
+        variable again combines the parameters, so that :meth:`unscale`
+        restores the values before the first `scale`.
         """
         obj = self._get_inplace(inplace)
         pairs = obj.data.select(eyes, variables)
@@ -2578,17 +2607,22 @@ class GenericEyeData(state.VersionedState, ABC):
             sd = _per_pair(pairs, lambda eye, var, val=sd: val)
         elif not isinstance(sd, dict):
             raise ValueError("sd must be None, a number or dict")
-        logger.debug("Mean: %s" % mean)
-        logger.debug("SD: %s" % sd)
+        logger.debug("Mean: %s" % _plain_values(mean))
+        logger.debug("SD: %s" % _plain_values(sd))
 
         # check that all eye/var combinations are present in mean/sd
         _check_per_pair(pairs, mean, sd)
 
-        # store scaling parameters
-        obj.params["scale"]={
-            "mean": mean,
-            "sd": sd
-        }
+        # store scaling parameters (per channel; combined with those of an
+        # earlier scale() of the same channel, so that unscale() undoes both)
+        stored = obj.params.get("scale") or {}
+        smean = {eye: dict(v) for eye, v in stored.get("mean", {}).items()}
+        ssd = {eye: dict(v) for eye, v in stored.get("sd", {}).items()}
+        for eye, var in pairs:
+            m0, s0 = smean.get(eye, {}).get(var, 0.), ssd.get(eye, {}).get(var, 1.)
+            smean.setdefault(eye, {})[var] = m0 + mean[eye][var] * s0
+            ssd.setdefault(eye, {})[var] = s0 * sd[eye][var]
+        obj.params["scale"] = {"mean": smean, "sd": ssd}
 
         for eye, var in pairs:
             # scale the masked samples too, keep the layers
@@ -2604,7 +2638,8 @@ class GenericEyeData(state.VersionedState, ABC):
         Scale back to original values using either values provided as arguments
         or the values stored in `params["scale"]` by :meth:`scale`.
 
-        The signal is multiplied by `sd` and `mean` is added.
+        The signal is multiplied by `sd` and `mean` is added. The stored
+        parameters of the unscaled channels are removed.
 
         Parameters
         ----------
@@ -2657,6 +2692,15 @@ class GenericEyeData(state.VersionedState, ABC):
             key = f"{eye}_{var}"
             obj.data.set_with_mask(key, obj.data[key] * sd[eye][var] + mean[eye][var],
                                    preserve_mask=True)
+        # the unscaled channels have no scaling parameters any more
+        stored = obj.params.get("scale")
+        if stored:
+            smean = {eye: {v: x for v, x in vs.items() if (eye, v) not in pairs}
+                     for eye, vs in stored.get("mean", {}).items()}
+            ssd = {eye: {v: x for v, x in vs.items() if (eye, v) not in pairs}
+                   for eye, vs in stored.get("sd", {}).items()}
+            obj.params["scale"] = {"mean": {e: v for e, v in smean.items() if v},
+                                   "sd": {e: v for e, v in ssd.items() if v}}
         return obj    
 
     
@@ -2985,10 +3029,11 @@ class GenericEyeData(state.VersionedState, ABC):
 
         Parameters
         ----------
-        intervals : Intervals, Epochs or dict
+        intervals : Intervals, Epochs, list of tuple or dict
             Either:
 
-            - A single Intervals (or :class:`~pypillometry.Epochs`) object:
+            - A single Intervals (or :class:`~pypillometry.Epochs`) object
+              or a list of ``(start, end)`` tuples (in ms, or with units):
               applied to all specified eyes/variables
             - A dict of Intervals (or Epochs): keys like "left_pupil",
               "right_x", etc. When dict is provided, `eyes` and `variables`
@@ -3036,6 +3081,7 @@ class GenericEyeData(state.VersionedState, ABC):
             # one Intervals object per eye_variable
             per_key = intervals
         else:
+            intervals = obj._as_spans(intervals)
             per_key = {f"{eye}_{var}": intervals for eye, var in obj.data.select(eyes, variables)}
 
         n = len(obj.tx)
@@ -3069,10 +3115,11 @@ class GenericEyeData(state.VersionedState, ABC):
 
         Parameters
         ----------
-        intervals : Intervals, Epochs or dict
+        intervals : Intervals, Epochs, list of tuple or dict
             Either:
 
-            - A single Intervals (or :class:`~pypillometry.Epochs`) object:
+            - A single Intervals (or :class:`~pypillometry.Epochs`) object
+              or a list of ``(start, end)`` tuples (in ms, or with units):
               applied to all specified eyes/variables
             - A dict of Intervals (or Epochs): keys like "left_pupil",
               "right_x", etc. When dict is provided, `eyes` and `variables`
@@ -3255,7 +3302,7 @@ class GenericEyeData(state.VersionedState, ABC):
                 
                 interpolate_single_key(key, interval_obj)
         else:
-            intervals = _as_intervals(intervals)
+            intervals = obj._as_spans(intervals)
             for eye, var in obj.data.select(eyes, variables):
                 interpolate_single_key(f"{eye}_{var}", intervals)
         

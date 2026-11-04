@@ -2255,6 +2255,15 @@ class TestGetIntervalsBetweenEvents(unittest.TestCase):
         self.assertIn("1 'resp' event(s) with no 'start' event before them", msgs[1])
         self.assertIn("[500.0]", msgs[1])
 
+    def test_skipped_events_listed_up_to_ten(self):
+        # the warning listed every skipped onset (1071 on real data)
+        d = self.make(list(range(100, 2500, 100)), ["start"] * 23 + ["resp"])
+        _, msgs = self.warnings_of(
+            lambda: d.get_intervals(("start", "resp"), window=(0, 0), units="ms"))
+        self.assertIn("22 'start' event(s)", msgs[0])
+        self.assertIn("at [100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, "
+                      "1000.0, ...] ms", msgs[0])
+
     def test_no_warning_without_skipped_events(self):
         d = self.make([1000, 2000, 5000, 6000], ["start", "resp"] * 2)
         _, msgs = self.warnings_of(lambda: d.get_intervals(("start", "resp"), (0, 0), units="samples"))
@@ -2265,7 +2274,7 @@ class TestGetIntervalsBetweenEvents(unittest.TestCase):
                       ["Start Block", "End Block"] * 3)
         iv = d.get_intervals(("End Block", "Start Block"), (0, 0), units="ms")
         self.assertEqual(iv.intervals, [(2000.0, 3000.0), (4000.0, 5000.0)])
-        self.assertEqual(iv.event_labels, ["End Block_to_Start Block"] * 2)
+        self.assertEqual(iv.event_labels, ["End Block to Start Block"] * 2)
         self.assertEqual(list(iv.event_onsets), [2000.0, 4000.0])
 
     def test_closest_first_event_used(self):
@@ -2299,7 +2308,7 @@ class TestGetIntervalsBetweenEvents(unittest.TestCase):
         iv, msgs = self.warnings_of(
             lambda: d.get_intervals(("<start>", "Start Block"), (0, 0), units="ms"))
         self.assertEqual(iv.intervals, [(0.0, 1000.0)])
-        self.assertEqual(iv.event_labels, ["<start>_to_Start Block"])
+        self.assertEqual(iv.event_labels, ["<start> to Start Block"])
         self.assertEqual(msgs, [])
 
     def test_recording_end(self):
@@ -2459,6 +2468,15 @@ class TestMasksAndBlinksKept(unittest.TestCase):
         self.assertEqual(list(s.get_blinks("left", "pupil", units="samples")["left_pupil"].intervals), [])
         # the call is recorded in the history
         self.assertEqual(s.history[-1]["funcname"], "crop")
+
+    def test_crop_to_nothing_raises(self):
+        # finding 4.7: an empty object, which then crashed in repr etc.
+        d = self.make()
+        for start, end in [(20000, 30000), (5000, 1000), (5001, 5009)]:
+            with self.assertRaises(ValueError):
+                d.crop(start, end)
+        self.assertEqual(len(d), 1000)
+        self.assertEqual(len(d.crop(5000, 5000, inplace=False)), 1)
 
     def test_downsample(self):
         d = self.make()

@@ -12,6 +12,7 @@ Command-line programs of pypillometry.
 """
 import argparse
 import os
+import sys
 
 # entry points of the command-line programs, not exported at the top level
 __all__ = []
@@ -89,19 +90,43 @@ def _pypilview_parser():
                     "an eyedata object saved with pp.write_pickle() (e.g., "
                     ".pkl, .pypil or .h5). The format is detected from the file "
                     "content. Press H in the viewer for the keyboard controls.")
-    parser.add_argument("file",
+    # `file` is optional for argparse so that it may follow --eyes/--variables
+    # (which take several values), see _file_after_list_option
+    parser.add_argument("file", nargs="?",
                         help="local file, HTTP(S) URL or SSH URL "
                              "(ssh://server/folder/file.edf)")
     parser.add_argument("--eyes", nargs="+", metavar="EYE",
                         help="eyes to show (e.g., left right); default: all")
     parser.add_argument("--variables", nargs="+", metavar="VAR",
-                        choices=["pupil", "x", "y"],
                         help="variables to show (pupil, x, y); default: all")
     parser.add_argument("--keep-triggers", action="store_true",
                         help="EDF only: keep Eyelink triggers (calibration, "
                              "validation etc.) in the events")
     _add_verbosity(parser)
     return parser
+
+
+_VIEW_VARIABLES = ("pupil", "x", "y")
+
+
+def _file_after_list_option(parser, args, argv):
+    """pypilview: take the file from the end of --eyes/--variables if it was
+    given after them (``pypilview --eyes right FILE``), check the variables."""
+    if args.file is None:
+        # (argparse also accepts abbreviations, e.g. --eye)
+        given = [(i, opt) for i, a in enumerate(argv)
+                 for opt in ("eyes", "variables")
+                 if len(a) > 3 and f"--{opt}".startswith(a)]
+        values = getattr(args, max(given)[1]) if given else None
+        if not values:
+            parser.error("the following arguments are required: file")
+        args.file = values.pop()
+        if not values:
+            parser.error(f"--{max(given)[1]} needs at least one value before the file")
+    bad = [v for v in args.variables or [] if v not in _VIEW_VARIABLES]
+    if bad:
+        parser.error(f"argument --variables: invalid choice: {', '.join(map(repr, bad))} "
+                     f"(choose from {', '.join(_VIEW_VARIABLES)})")
 
 
 def pypilview_main(argv=None):
@@ -127,7 +152,9 @@ def pypilview_main(argv=None):
         exit status (0 on success)
     """
     parser = _pypilview_parser()
+    argv = sys.argv[1:] if argv is None else list(argv)
     args = parser.parse_args(argv)
+    _file_after_list_option(parser, args, argv)
     _set_verbosity(args)
 
     is_url = "://" in args.file

@@ -44,6 +44,20 @@ class TestGazeData(unittest.TestCase):
         self.assertEqual(d.data["left","x"].mean(), 1.5)
         self.assertEqual(d.data["left","y"].mean(), 3.5)
     
+    def test_repeated_scale_unscale(self):
+        # finding 4.6: the second scale() replaced the stored parameters
+        x, y = np.array([1., 2, 1, 4]), np.array([3., 4, 3, 9])
+        d = pp.EyeData(sampling_rate=10, left_x=x, left_y=y)
+        d.scale("x").scale("y").unscale("x")
+        np.testing.assert_allclose(d.data["left_x"], x)
+        self.assertEqual(list(d.params["scale"]["mean"]["left"]), ["y"])
+        d.unscale("y")
+        np.testing.assert_allclose(d.data["left_y"], y)
+        self.assertEqual(d.params["scale"], {"mean": {}, "sd": {}})
+        d.scale().scale(mean=1., sd=2.).unscale()
+        np.testing.assert_allclose(d.data["left_x"], x)
+        np.testing.assert_allclose(d.data["left_y"], y)
+
     def test_scale_preserves_mask(self):
         """Test that scale() preserves existing masks"""
         d = pp.EyeData(sampling_rate=10, left_x=[1, 2, 3, 4], left_y=[5, 6, 7, 8])

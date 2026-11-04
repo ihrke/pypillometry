@@ -24,20 +24,27 @@ __all__ = [
 cmdstanpy_logger = logging.getLogger("cmdstanpy")
 cmdstanpy_logger.disabled = True
 
+# whether logging is enabled (see logging_enable/logging_disable)
+_enabled = True
+
 
 def logging_disable():
     """
     Disable logging for all pypillometry submodules.
     """
+    global _enabled
     logger.disable("pypillometry")
     cmdstanpy_logger.disabled = True
+    _enabled = False
 
 
 def logging_enable():
     """
     Enable logging for all pypillometry submodules.
     """
+    global _enabled
     logger.enable("pypillometry")
+    _enabled = True
 
 
 def logging_set_level(level="INFO"):
@@ -132,7 +139,7 @@ def nologging():
     ...     pass
     >>> # Logging is re-enabled
     """
-    was_enabled = logger._core.enabled
+    was_enabled = _enabled
     logging_disable()
     try:
         yield

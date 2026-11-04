@@ -327,7 +327,7 @@ class GenericPlots(Namespace):
         if end==np.inf:
             endix=tx.size
         else:
-            endix=np.argmin(np.abs(tx-end))
+            endix=np.argmin(np.abs(tx-end)) + 1  # the end sample is plotted too
         
         # which data to plot
 
@@ -547,7 +547,8 @@ class GenericPlots(Namespace):
 
     def plot_masked(self, eyes: str|list = [], variables: str|list = [], 
                     units: str = "min", merge: bool = False, 
-                    show_labels: bool = True, show_events: bool = False, **kwargs):
+                    show_labels: bool = True, show_events: bool = False,
+                    policy="default", **kwargs):
         """
         Plot masked intervals for specified eyes and variables.
         
@@ -574,6 +575,11 @@ class GenericPlots(Namespace):
             Whether to show labels for each interval group. Default is True.
         show_events : bool, optional
             Whether to show vertical grey stripes at event positions. Default is False.
+        policy : str, MaskPolicy or list of str
+            mask policy that decides which samples are masked (see
+            :meth:`~pypillometry.GenericEyeData.mask_as_intervals`); e.g.,
+            ``"strict"`` also shows the interpolated samples, ``["interpolated"]``
+            only those. Default ``"default"``.
         **kwargs : dict
             Additional keyword arguments passed to matplotlib plot()
             
@@ -604,7 +610,7 @@ class GenericPlots(Namespace):
         obj = self._d
         
         # Get masked intervals for specified eyes/variables
-        intervals_dict = obj.mask_as_intervals(eyes, variables, units=units)
+        intervals_dict = obj.mask_as_intervals(eyes, variables, units=units, policy=policy)
         
         # Handle empty result
         if len(intervals_dict) == 0:

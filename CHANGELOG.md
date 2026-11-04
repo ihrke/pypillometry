@@ -32,7 +32,9 @@ tables below for every changed call.
   `units=` of the plots is only the unit of the time axis
 - Results per channel are dicts keyed like the data (`"left_pupil"`):
   `get_blinks`, `get_interpolated_blinks`, `mask_as_intervals`, `nblinks`,
-  `blink_stats`; `nblinks()` includes channels without blinks (0)
+  `blink_stats`; `nblinks()` includes channels without blinks (0); the
+  parameters of `pupil.estimate_response()` are in
+  `params["response"]["left_pupil"]` (saved files are converted)
 - `eyes`/`variables`: `None` or `[]` means all existing channels; unknown
   names raise a `KeyError` that lists the channels
 - Every transforming method takes `inplace` (default: in place, see
@@ -51,6 +53,8 @@ tables below for every changed call.
   `get_segments()` with `Intervals` needs intervals of equal length
 - The merged eye of `pupil.merge_eyes()` is always `"mean"` (`mean_pupil`);
   choose another name with `name=`
+- `Intervals.as_pandas()`: the columns `event_label`/`event_onset` are
+  `label`/`onset` (as in `Epochs.as_pandas()` and `Events.to_table()`)
 - `pp.downsample` is the pipeline step for `d.downsample()`; the array
   function is `pp.signal.downsample`
 - `downsample()` stores the actual sampling rate (`fs/factor`)
@@ -74,6 +78,8 @@ tables below for every changed call.
 - `pp.Epochs` (event-locked windows)
 - `pypil-upgrade`: converts saved files to the current format
 - Experimental setup and calibration are kept and saved for every object
+- `d.plot.plot_masked(policy=...)`, e.g. `policy="strict"` to show the
+  interpolated stretches
 
 ### Changed results
 
@@ -106,6 +112,44 @@ The main ones:
 - Experimental setup and calibration were lost when saving some objects
 - `plot_heatmap(show_masked=True)` with NaN samples
 - A `plot_range` with start after end raises an error
+- The sample at the end of `plot_range` was not plotted
+- `mask_intervals` and `interpolate_intervals` accept a list of
+  `(start, end)` tuples in ms, like `exclude_intervals`
+- `Events.filter(trial="1")` on a numeric metadata column (or a number on
+  a column of strings) matched nothing silently; it raises a `TypeError`
+- `scale()` twice (or for different variables) then `unscale()` left the
+  data scaled or raised: the stored parameters are combined per channel,
+  and `unscale()` removes those of the channels it restores
+- `pypilview --eyes right FILE` took the file for an eye
+- `CircularROI.from_degrees`/`RectangularROI.from_degrees` read plain
+  numbers as radians; they are degrees now (as in
+  `ExperimentalSetup.degrees_to_pixels`)
+- `load_study_local`/`load_study_osf`: `subjects="001"` loaded subject
+  `"1"` (the string was iterated); unknown subjects raise a `ValueError`
+  (they were skipped)
+- `ExperimentalSetup`: a negative `eye_to_screen_center` lost its sign;
+  non-positive distances and resolutions that are not two whole numbers
+  raise a `ValueError`
+- `pypillometry.viewer.tweak` (the function) was replaced by its submodule
+  once the tweak viewer had been used; the submodule is now
+  `pypillometry.viewer.tweak_canvas`
+- `pupil.estimate_response(eyes=...)` removed the stored parameters of the
+  other eyes
+- `pupil.estimate_response()` on data without events raises a `ValueError`
+  (it returned the start parameters)
+- `pp.nologging()` could leave logging disabled after the `with` block
+- Labels of `get_intervals(("F_", "R_"))`: `"F_ to R_"` (was `"F__to_R_"`),
+  per interval e.g. `"F_1 to R_1"`
+- `summary()`, `Intervals.stats()` and the segment summary return Python
+  numbers (not `np.float64`); `summary()["params"]` is the dict of
+  parameters (was the string `'{...}'`)
+- `pupil.blinks_detect()` with an unknown strategy (e.g. `"zeros"`) raises a
+  `ValueError` (it only logged a warning and found no blinks)
+- `crop()` with start after end or outside the data raises a `ValueError`
+  (it returned an empty object)
+- Re-running `pupil.blinks_detect()` after `pupil.blinks_interpolate()`
+  found no blinks (it read the interpolated values) and cleared the blink
+  layer; interpolated samples now count as missing during detection
 
 ### Upgrading code: old -> new
 
@@ -171,6 +215,9 @@ Calls whose arguments or results changed:
 | `d.to_pupildata()` | `d.drop_data(variables=["x", "y"], inplace=False)` |
 | `d.to_gazedata()` | `d.drop_data(variables="pupil", inplace=False)` |
 | `pp.downsample(x, factor)` (array) | `pp.signal.downsample(x, factor)` |
+| `d.params["response"]["left"]` | `d.params["response"]["left_pupil"]` |
+| `iv.as_pandas()["event_label"]`, `["event_onset"]` | `iv.as_pandas()["label"]`, `["onset"]` |
+| `CircularROI.from_degrees((0.087, 0), 0.035, s)` (radians) | `CircularROI.from_degrees((5, 0), 2, s)` (degrees) |
 | history `pupil_blinks_detect(..., inplace=True)` | history `pupil.blinks_detect(...)` |
 
 ## 2.1.0 (2026-11-02)

@@ -239,6 +239,18 @@ def sizeof_fmt(num, suffix='B'):
     return "%.1f%s%s" % (num, 'Yi', suffix)
 
 
+def _plain_values(value):
+    """numpy scalars (also in nested dicts, lists and tuples) as Python
+    numbers, e.g. for summaries (``500.0``, not ``np.float64(500.0)``)."""
+    if isinstance(value, dict):
+        return {k: _plain_values(v) for k, v in value.items()}
+    if isinstance(value, (list, tuple)):
+        return type(value)(_plain_values(v) for v in value)
+    if isinstance(value, np.generic):
+        return value.item()
+    return value
+
+
 def _round_values(value, decimals=4):
     """Round floats (also in nested dicts, lists and tuples) for printing.
 

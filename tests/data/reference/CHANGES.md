@@ -700,3 +700,19 @@ Changes of the API calls alone (same numbers) need no entry.
   return Intervals in ms by default (before: sample indices).
 - **Why**: one rule for time values (plan 2.8, rule 4).
 - **Step**: 9, `refactor/09-api-conventions`
+
+### Not a change: `fit_foreshortening` in the foreshortening tutorial
+
+- **Case**: none (no reference case covers `fit_foreshortening`)
+- **Change**: none from the refactor. The re-executed tutorial
+  (`docs/experimental/foreshortening.ipynb`) shows theta 16.1 deg and a
+  fitted RMSE of 18.7 instead of 16.4 deg and 17.8 in its 2.1 output. In the
+  same environment, master 5e8e9bf, the commit that executed the 2.1 output
+  (9401bc6) and the refactored code give the same fit (theta 16.147 deg,
+  phi -89.521 deg, RMSE 18.675; same simulated data), so the difference
+  comes from the environment (numpy/scipy/BLAS versions): the optimizer
+  stops at `maxiter=500` without converging, and even the number of BLAS
+  threads moves the result (4 threads: theta 16.171 deg, RMSE 18.581).
+- **Why**: recorded so that the different tutorial numbers are not taken
+  for a regression.
+- **Step**: 13, `refactor/13-fixes`

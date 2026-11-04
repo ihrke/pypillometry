@@ -51,7 +51,8 @@ Version history
     Intervals have no `event_indices`, `data_time_range` and
     `interval_window`; segments store their Epochs (`onsets` and `window`
     in ms, `labels`, `meta`, `label`) or, if not event-locked, Intervals,
-    with the class name in ``intervals["class"]``
+    with the class name in ``intervals["class"]``; the response parameters
+    (``params["response"]``) are keyed by channel (``"left_pupil"``)
 """
 
 import contextlib
@@ -695,13 +696,25 @@ def _v2_eyedata_layers(state):
         state["sim_data"] = _v2_eyedatadict(state["sim_data"])[0]
 
 
+def _v2_params(state):
+    """Key the response parameters of a version-2 eyedata state by channel
+    (``params["response"]["left"]`` -> ``["left_pupil"]``; replaces
+    `state["params"]` by a new dict)."""
+    params = state.get("params")
+    if isinstance(params, dict) and isinstance(params.get("response"), dict):
+        response = {(k if "_" in k else f"{k}_pupil"): v
+                    for k, v in params["response"].items()}
+        state["params"] = {**params, "response": response}
+
+
 def _migrate_2_to_3(state, class_name):
     """Version 2 -> 3: the events of eyedata objects are one Events state
     (`events`) instead of `event_onsets`, `event_labels` and `event_meta`;
     masks are layers (see _v2_eyedata_layers); segments store Epochs (see
     _v2_spans); a sampling rate that does not fit the time vector is
     corrected (see _v2_fix_fs); all eyedata objects have an experimental
-    setup and calibration (None for PupilData)."""
+    setup and calibration (None for PupilData); the response parameters are
+    keyed by channel (see _v2_params)."""
     state = dict(state)
     if class_name in _SEGMENTED_CLASSES:
         state["intervals"] = _v2_spans(state.get("intervals"), state.get("sampling_rate"))
@@ -711,6 +724,7 @@ def _migrate_2_to_3(state, class_name):
                        "data_time_range": None, "meta": state.pop("event_meta")}
     _v2_fix_fs(state)
     _v2_eyedata_layers(state)
+    _v2_params(state)
     # PupilData had no experimental setup and calibration
     state.setdefault("experimental_setup", None)
     state.setdefault("calibration", None)

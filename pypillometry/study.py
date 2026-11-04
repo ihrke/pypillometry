@@ -117,6 +117,23 @@ def get_osf_project_files(osf_id: str, session: Optional[requests.Session] = Non
 
 
 
+def _select_subjects(subjects, raw_data) -> list:
+    """The subject IDs to load: all in `raw_data` if `subjects` is None, else
+    `subjects` (one ID as a string, or a list); raises a ValueError for IDs
+    that are not in `raw_data`."""
+    if subjects is None:
+        logger.info(f"Loading all {len(raw_data)} subjects")
+        return list(raw_data.keys())
+    if isinstance(subjects, str):
+        subjects = [subjects]
+    missing = [sid for sid in subjects if sid not in raw_data]
+    if missing:
+        raise ValueError(f"Subjects not found in the study: {', '.join(map(str, missing))}; "
+                         f"available: {', '.join(map(str, raw_data))}")
+    logger.info(f"Loading {len(subjects)} specified subjects")
+    return list(subjects)
+
+
 def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_download: bool = False, config_file: str = "pypillometry_conf.py", session: Optional[requests.Session] = None):
     """
     Read a study from OSF using the configuration file.
@@ -135,9 +152,9 @@ def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_dow
         The OSF project ID
     path : str
         Local path where files should be downloaded/stored
-    subjects : list[str], optional
-        List of subject IDs to load. If None, all subjects will be loaded.
-        If a subject ID is provided that doesn't exist in the data, it will be skipped.
+    subjects : str or list[str], optional
+        Subject ID or list of subject IDs to load. If None, all subjects will
+        be loaded. IDs that are not in the study raise a ValueError.
     force_download : bool, optional
         If True, force re-download (including the file listing) even if
         files exist locally. Default False.
@@ -198,14 +215,7 @@ def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_dow
     spec.loader.exec_module(config)
     
     # Filter subjects if specified
-    subject_ids = list(config.raw_data.keys())
-    if subjects is not None:
-        subject_ids = [sid for sid in subjects if sid in config.raw_data]
-        if not subject_ids:
-            raise ValueError("None of the specified subjects were found in the data")
-        logger.info(f"Loading {len(subject_ids)} specified subjects")
-    else:
-        logger.info(f"Loading all {len(subject_ids)} subjects")
+    subject_ids = _select_subjects(subjects, config.raw_data)
     
     # Find raw data files that need to be downloaded
     to_download = []
@@ -297,9 +307,9 @@ def load_study_local(path: str, config_file: str = "pypillometry_conf.py", subje
         Name of the configuration file. Default is "pypillometry_conf.py".
         It is first looked up in the current working directory and, if
         not found there, in `path`.
-    subjects : list[str], optional
-        List of subject IDs to load. If None, all subjects will be loaded.
-        If a subject ID is provided that doesn't exist in the data, it will be skipped.
+    subjects : str or list[str], optional
+        Subject ID or list of subject IDs to load. If None, all subjects will
+        be loaded. IDs that are not in the study raise a ValueError.
     cache_dir : str, optional
         only for SSH URLs: directory to download the files to; if None, a
         temporary directory is used
@@ -366,14 +376,7 @@ def load_study_local(path: str, config_file: str = "pypillometry_conf.py", subje
         spec.loader.exec_module(config)
 
         # Filter subjects if specified
-        subject_ids = list(config.raw_data.keys())
-        if subjects is not None:
-            subject_ids = [sid for sid in subjects if sid in config.raw_data]
-            if not subject_ids:
-                raise ValueError("None of the specified subjects were found in the data")
-            logger.info(f"Loading {len(subject_ids)} specified subjects")
-        else:
-            logger.info(f"Loading all {len(subject_ids)} subjects")
+        subject_ids = _select_subjects(subjects, config.raw_data)
 
         # Load the data using the read_subject function from the config module
         study_data = {}
