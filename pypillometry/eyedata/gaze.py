@@ -78,17 +78,21 @@ class GazeNamespace(Namespace):
         
         Examples
         --------
+        >>> import pypillometry as pp
+        >>> d = pp.get_example_data("rlmw_002_short")
         >>> # Mask divergences at 99th percentile
-        >>> gaze_data = gaze_data.gaze.mask_divergences(threshold=0.99, thr_type="percentile")
-        
+        >>> d = d.gaze.mask_divergences(threshold=0.99, thr_type="percentile")
+
         >>> # The detected divergences (in ms)
-        >>> divergences = gaze_data.get_layer_intervals("divergence", "left", "x", units="ms")
-        
+        >>> divergences = d.get_layer_intervals("divergence", "left", "x", units="ms")
+        >>> list(divergences)
+        ['left_x']
+
         >>> # Mask divergences beyond 100 pixels
-        >>> gaze_data = gaze_data.gaze.mask_divergences(threshold=100, thr_type="pixel")
-        
+        >>> d = d.gaze.mask_divergences(threshold=100, thr_type="pixel")
+
         >>> # Only check non-masked data points
-        >>> gaze_data = gaze_data.gaze.mask_divergences(ignore_existing_mask=False)
+        >>> d = d.gaze.mask_divergences(ignore_existing_mask=False)
         """
         self._d._require("x", "y")
         obj = self._d._get_inplace(inplace)
@@ -196,17 +200,21 @@ class GazeNamespace(Namespace):
         
         Examples
         --------
+        >>> import pypillometry as pp
+        >>> d = pp.get_example_data("rlmw_002_short")  # has a setup
         >>> # Mask offscreen coordinates for all eyes
-        >>> gaze_data = gaze_data.gaze.mask_offscreen()
-        
+        >>> d = d.gaze.mask_offscreen()
+
         >>> # The detected off-screen periods (in ms)
-        >>> offscreen = gaze_data.get_layer_intervals("offscreen", variables="x", units="ms")
-        
+        >>> offscreen = d.get_layer_intervals("offscreen", variables="x", units="ms")
+        >>> list(offscreen)
+        ['left_x', 'right_x']
+
         >>> # Mask offscreen coordinates for left eye only
-        >>> gaze_data = gaze_data.gaze.mask_offscreen(eyes='left')
-        
+        >>> d = d.gaze.mask_offscreen(eyes="left")
+
         >>> # Check all data including already masked points (e.g., during blinks)
-        >>> gaze_data = gaze_data.gaze.mask_offscreen(ignore_existing_mask=True)
+        >>> d = d.gaze.mask_offscreen(ignore_existing_mask=True)
         """
         self._d._require("x", "y")
         obj = self._d._get_inplace(inplace)

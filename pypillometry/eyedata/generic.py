@@ -548,9 +548,14 @@ class GenericEyeData(state.VersionedState, ABC):
         
         Examples
         --------
-        >>> data["left_x"] = np.array([1, 2, 3])
-        >>> data["left", "pupil"] = np.ma.masked_array([10, 20, 30], mask=[0, 1, 0])
-        >>> data["time_sec"] = np.array([0, 0.1, 0.2])  # Converts to ms
+        >>> import pypillometry as pp
+        >>> d = pp.EyeData(time=[0, 10, 20], left_x=[1., 2., 3.],
+        ...                left_y=[1., 2., 3.], left_pupil=[5., 5., 5.])
+        >>> d["left_x"] = np.array([1, 2, 3])
+        >>> d["left", "pupil"] = np.ma.masked_array([10, 20, 30], mask=[0, 1, 0])
+        >>> d["time_sec"] = np.array([0, 0.01, 0.02])  # converted to ms
+        >>> d.tx
+        array([ 0., 10., 20.])
         """
         normalized_key = key
         
@@ -627,8 +632,13 @@ class GenericEyeData(state.VersionedState, ABC):
         
         Examples
         --------
-        >>> del data["left_x"]
-        >>> del data["left", "pupil"]
+        >>> import pypillometry as pp
+        >>> d = pp.EyeData(time=[0, 10, 20], left_x=[1., 2., 3.],
+        ...                left_y=[1., 2., 3.], left_pupil=[5., 5., 5.])
+        >>> del d["left_x"]
+        >>> del d["left", "pupil"]
+        >>> list(d.data.keys())
+        ['left_y']
         
         Raises
         ------
@@ -848,10 +858,14 @@ class GenericEyeData(state.VersionedState, ABC):
             
         Examples
         --------
-        >>> blinks = data.get_blinks('left', 'pupil')["left_pupil"]
-        >>> blinks_ms = data.get_blinks('left', 'pupil', units="ms")["left_pupil"]
-        >>> blinks_dict = data.get_blinks(['left', 'right'], 'pupil')
-        >>> blinks_idx = blinks_ms.to_units("indices", data)
+        >>> import pypillometry as pp
+        >>> d = pp.get_example_data("rlmw_002_short").pupil.blinks_detect()
+        >>> blinks = d.get_blinks("left", "pupil")["left_pupil"]
+        >>> blinks_sec = d.get_blinks("left", "pupil", units="sec")["left_pupil"]
+        >>> blinks_dict = d.get_blinks(["left", "right"], "pupil")
+        >>> list(blinks_dict)
+        ['left_pupil', 'right_pupil']
+        >>> blinks_idx = blinks.to_units("indices", d)
         """
         return self._layer_intervals("blink", eyes, variables, units, "blinks",
                                      skip_excluded=True)
@@ -1103,9 +1117,13 @@ class GenericEyeData(state.VersionedState, ABC):
             
         Examples
         --------
-        >>> mask_intervals = data.mask_as_intervals('left', 'pupil')["left_pupil"]
-        >>> mask_ms = data.mask_as_intervals('left', 'pupil', units='ms')["left_pupil"]
-        >>> mask_dict = data.mask_as_intervals(['left', 'right'], 'pupil')
+        >>> import pypillometry as pp
+        >>> d = pp.get_example_data("rlmw_002_short").pupil.blinks_detect()
+        >>> masked = d.mask_as_intervals("left", "pupil")["left_pupil"]
+        >>> masked_sec = d.mask_as_intervals("left", "pupil", units="sec")["left_pupil"]
+        >>> mask_dict = d.mask_as_intervals(["left", "right"], "pupil")
+        >>> list(mask_dict)
+        ['left_pupil', 'right_pupil']
         """
         result = {}
         for e, v in self.data.select(eyes, variables):
@@ -1921,14 +1939,18 @@ class GenericEyeData(state.VersionedState, ABC):
             
         Examples
         --------
+        >>> import pypillometry as pp
+        >>> d = pp.get_example_data("rlmw_002_short")
         >>> # Drop left eye data
-        >>> right_only = data.drop_data(eyes=['left'], inplace=False)
-        >>> 
+        >>> right_only = d.drop_data(eyes=["left"], inplace=False)
+        >>> right_only.eyes
+        ['right']
         >>> # Drop pupil data, keep only gaze
-        >>> gaze_only = data.drop_data(variables=['pupil'], inplace=False)
-        >>> 
+        >>> gaze_only = d.drop_data(variables=["pupil"], inplace=False)
         >>> # Drop right eye and pupil data
-        >>> left_gaze = data.drop_data(eyes=['right'], variables=['pupil'], inplace=False)
+        >>> left_gaze = d.drop_data(eyes=["right"], variables=["pupil"], inplace=False)
+        >>> sorted(left_gaze.data.keys())
+        ['left_x', 'left_y']
         """
         # Normalize inputs to lists
         if isinstance(eyes, str):
@@ -2030,7 +2052,9 @@ class GenericEyeData(state.VersionedState, ABC):
         
         Examples
         --------
-        >>> data.set_experimental_setup(
+        >>> import pypillometry as pp
+        >>> d = pp.get_example_data("rlmw_002_short")
+        >>> d = d.set_experimental_setup(
         ...     screen_resolution=(1920, 1080),
         ...     physical_screen_size=("52 cm", "29 cm"),
         ...     eye_to_screen_center="65 cm",
@@ -2127,8 +2151,12 @@ class GenericEyeData(state.VersionedState, ABC):
 
         Examples
         --------
-        >>> ev = pp.Events.from_table(behav, ["stim_on", "response"], units="sec")
-        >>> d.add_events(ev)
+        Events from a behaviour log ``behav`` (a table with times in sec,
+        already on the eye-tracker clock, see :func:`~pypillometry.sync_clocks`):
+
+        >>> ev = pp.Events.from_table(behav, ["stim_on", "response"],
+        ...                           units="sec")  # doctest: +SKIP
+        >>> d = d.add_events(ev)  # doctest: +SKIP
 
         See Also
         --------
@@ -2163,8 +2191,10 @@ class GenericEyeData(state.VersionedState, ABC):
 
         Examples
         --------
-        >>> d.event_onset("Start Block 2", units="sec")
-        312.5
+        >>> import pypillometry as pp
+        >>> d = pp.get_example_data("rlmw_002_short")
+        >>> d.event_onset("F_2", units="sec")
+        8.776
 
         See Also
         --------
@@ -2523,11 +2553,13 @@ class GenericEyeData(state.VersionedState, ABC):
             
         Examples
         --------
-        >>> # Extract pupil segments around stimulus events
-        >>> epochs = data.get_intervals("stimulus", window=(-200, 800), units="ms")
-        >>> segments = data.get_segments(epochs, "left_pupil")
-        >>> segments.plot()
-        
+        >>> import pypillometry as pp
+        >>> d = pp.get_example_data("rlmw_002_short")
+        >>> # Extract pupil segments around the feedback events
+        >>> epochs = d.get_intervals("F_", window=(-200, 800), units="ms")
+        >>> segments = d.get_segments(epochs, "left_pupil")
+        >>> segments.plot()  # doctest: +SKIP
+
         >>> # Apply baseline correction
         >>> segments_bc = segments.baseline_correct(window=(-200, 0))
         
@@ -3058,17 +3090,18 @@ class GenericEyeData(state.VersionedState, ABC):
         --------
         Apply blinks from a single Intervals object to left eye pupil data:
         
-        >>> blinks = data.get_blinks()
-        >>> data.mask_intervals(blinks['left_pupil'], eyes=['left'], variables=['pupil'])
-        
+        >>> import pypillometry as pp
+        >>> d = pp.get_example_data("rlmw_002_short").pupil.blinks_detect()
+        >>> blinks = d.get_blinks()
+        >>> d = d.mask_intervals(blinks["left_pupil"], eyes=["left"], variables=["pupil"])
+
         Apply a dict of intervals (one per eye/variable):
-        
-        >>> blinks = data.get_blinks()
-        >>> data.mask_intervals(blinks)  # eyes and variables ignored
-        
+
+        >>> d = d.mask_intervals(blinks)  # eyes and variables ignored
+
         Chain with other operations:
-        
-        >>> data.mask_intervals(blinks).pupil.lowpass_filter(cutoff=5)
+
+        >>> d = d.mask_intervals(blinks).pupil.lowpass_filter(cutoff=5)
         
         See Also
         --------
@@ -3165,22 +3198,28 @@ class GenericEyeData(state.VersionedState, ABC):
         --------
         Interpolate blinks for left eye pupil data:
         
-        >>> blinks = data.get_blinks(eyes='left', variables='pupil')["left_pupil"]
-        >>> data.interpolate_intervals(blinks, eyes=['left'], variables=['pupil'])
-        
+        >>> import pypillometry as pp
+        >>> d = pp.get_example_data("rlmw_002_short").pupil.blinks_detect()
+        >>> blinks = d.get_blinks(eyes="left", variables="pupil")["left_pupil"]
+        >>> d1 = d.interpolate_intervals(blinks, eyes=["left"], variables=["pupil"],
+        ...                              inplace=False)
+
         Interpolate using a dict of intervals:
-        
-        >>> blinks = data.get_blinks()  # returns dict
-        >>> data.interpolate_intervals(blinks)
-        
+
+        >>> blinks = d.get_blinks()  # returns dict
+        >>> d2 = d.interpolate_intervals(blinks, inplace=False)
+
         Store interpolated data in a new variable:
-        
-        >>> data.interpolate_intervals(blinks, store_as_suffix="_interp")
-        >>> # Access via data['left', 'pupil_interp']
-        
+
+        >>> d3 = d.interpolate_intervals(blinks, store_as_suffix="_interp",
+        ...                              inplace=False)
+        >>> "left_pupil_interp" in d3.data
+        True
+
         Use cubic interpolation with wider margin:
-        
-        >>> data.interpolate_intervals(blinks, method="cubic", margin=(-50, 50))
+
+        >>> d4 = d.interpolate_intervals(blinks, method="cubic", margin=(-50, 50),
+        ...                              inplace=False)
         
         See Also
         --------

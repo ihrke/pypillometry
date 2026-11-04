@@ -77,9 +77,10 @@ class FakeEyeData(EyeData):
         
         Examples
         --------
-        >>> data = generate_foreshortening_data(duration=60, seed=42)
-        >>> print(data.get_generation_call())
-        generate_foreshortening_data(duration=60, fs=1000, eye='left', ...)
+        >>> import pypillometry as pp
+        >>> data = pp.generate_foreshortening_data(duration=10, seed=42)
+        >>> print(data.get_generation_call())  # doctest: +ELLIPSIS
+        generate_foreshortening_data(experimental_setup={...}, duration=10, fs=1000, eye='left', ...)
         """
         if not self.sim_fct_name:
             return "Unknown generation function"
@@ -109,10 +110,12 @@ class FakeEyeData(EyeData):
         
         Examples
         --------
-        >>> setup = ExperimentalSetup(...)
-        >>> data = generate_foreshortening_data(setup, duration=60, seed=42)
-        >>> data2 = data.regenerate(seed=43)  # Same params, different seed
-        >>> data3 = data.regenerate(duration=120, seed=44)  # Different duration
+        >>> import pypillometry as pp
+        >>> data = pp.generate_foreshortening_data(duration=10, seed=42)
+        >>> data2 = data.regenerate(seed=43)  # same parameters, different seed
+        >>> data3 = data.regenerate(duration=20, seed=44)  # different duration
+        >>> len(data3)
+        20000
         """
         if self.sim_fct is None:
             raise ValueError("Cannot regenerate: sim_fct is None")

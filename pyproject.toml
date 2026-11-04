@@ -62,4 +62,6 @@ pypillometry = ["templates/*.html"]
 "pypillometry.stan" = ["*.stan"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+# tests/ and the docstring examples of the package (tests/data: fixture scripts)
+testpaths = ["tests", "pypillometry"]
+addopts = "--doctest-modules --ignore=tests/data"

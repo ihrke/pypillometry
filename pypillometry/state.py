@@ -376,7 +376,6 @@ def _convert(kind, value, direction):
 # must not change when the classes change later.
 # --------------------------------------------------------------------------
 
-_EYEDATA_CLASSES = ("PupilData", "GazeData", "EyeData", "FakeEyeData")
 _SEGMENTED_CLASSES = ("SegmentedEyeData", "GroupLevelSegmentedData")
 
 

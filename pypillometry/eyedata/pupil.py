@@ -231,7 +231,8 @@ class PupilNamespace(Namespace):
             Default is 10.
         keep_eyes : bool, optional
             If True (default), keep the original left/right pupil data.
-            If False, remove the original eye data after merging.
+            If False, remove the original left/right pupil data after merging
+            (gaze data are kept).
         policy : str, MaskPolicy or list of str
             mask policy that decides which samples are valid (see
             :meth:`~pypillometry.GenericEyeData.mask`); default ``"default"``
@@ -272,18 +273,22 @@ class PupilNamespace(Namespace):
         
         Examples
         --------
+        >>> import pypillometry as pp
+        >>> d = pp.get_example_data("rlmw_002_short")
         >>> # Default: local offset correction
-        >>> data.pupil.merge_eyes()
-        >>> merged = data["mean", "pupil"]
-        
+        >>> d1 = d.pupil.merge_eyes(inplace=False)
+        >>> merged = d1["mean", "pupil"]
+
         >>> # Use global offset (simpler, assumes no drift)
-        >>> data.pupil.merge_eyes(method="offset")
-        
+        >>> d2 = d.pupil.merge_eyes(method="offset", inplace=False)
+
         >>> # Only use timepoints where both eyes are valid
-        >>> data.pupil.merge_eyes(method="both_available")
-        
-        >>> # Remove original eye data after merging
-        >>> data.pupil.merge_eyes(keep_eyes=False)
+        >>> d3 = d.pupil.merge_eyes(method="both_available", inplace=False)
+
+        >>> # Remove the original pupil data after merging (gaze is kept)
+        >>> d4 = d.pupil.merge_eyes(keep_eyes=False, inplace=False)
+        >>> list(d4.data.keys())
+        ['left_x', 'left_y', 'right_x', 'right_y', 'mean_pupil']
         
         See Also
         --------

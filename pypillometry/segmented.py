@@ -413,10 +413,15 @@ class SegmentedEyeData(state.VersionedState):
 
         Examples
         --------
+        >>> import pypillometry as pp
+        >>> from pypillometry import u
+        >>> d = pp.get_example_data("rlmw_002_short")
+        >>> intervals = d.get_intervals("S_", (-500, 2500) * u.ms)
+        >>> segments = d.get_segments(intervals, "left_pupil")
         >>> # Use pre-event period as baseline
         >>> segments_bc = segments.baseline_correct(window=(-200, 0), inplace=False)
         >>> segments = segments.baseline_correct(window=(-200, 0) * u.ms)
-        
+
         >>> # Use single time point as baseline
         >>> segments = segments.baseline_correct(window=-100)
         """
@@ -542,13 +547,13 @@ class SegmentedEyeData(state.VersionedState):
            >>> d = d | pp.pupil.blinks_detect() | pp.pupil.blinks_interpolate()
            >>> intervals = d.get_intervals("S_", (-500, 2500) * u.ms)
            >>> erpd = d.get_segments(intervals, "left_pupil").baseline_correct((-500, 0))
-           >>> erpd.plot()
+           >>> ax = erpd.plot()
            >>> # overlay two eyes
            >>> right = d.get_segments(intervals, "right_pupil").baseline_correct((-500, 0))
            >>> fig, ax = plt.subplots()
-           >>> erpd.plot(ax=ax, label="left eye")
-           >>> right.plot(ax=ax, label="right eye")
-           >>> ax.legend()
+           >>> ax = erpd.plot(ax=ax, label="left eye")
+           >>> ax = right.plot(ax=ax, label="right eye")
+           >>> legend = ax.legend()
         """
         import matplotlib.pyplot as plt
         
@@ -745,11 +750,24 @@ class GroupLevelSegmentedData(SegmentedEyeData):
             
         Examples
         --------
+        One SegmentedEyeData per subject (here: the example recording twice):
+
+        >>> import pypillometry as pp
+        >>> from pypillometry import u
+        >>> d = pp.get_example_data("rlmw_002_short")
+        >>> intervals = d.get_intervals("S_", (-500, 2500) * u.ms)
+        >>> subj1 = d.get_segments(intervals, "left_pupil", name="S01")
+        >>> subj2 = d.get_segments(intervals, "left_pupil", name="S02")
+
         >>> # Aggregate within subjects, then combine
-        >>> group = GroupLevelSegmentedData.from_segments([subj1, subj2, subj3])
-        
+        >>> group = pp.GroupLevelSegmentedData.from_segments([subj1, subj2])
+        >>> group.data.shape  # (time points, subjects)
+        (1500, 2)
+
         >>> # Stack all trials from all subjects
-        >>> group = GroupLevelSegmentedData.from_segments([subj1, subj2, subj3], meanfct=None)
+        >>> group = pp.GroupLevelSegmentedData.from_segments([subj1, subj2], meanfct=None)
+        >>> group.data.shape  # (time points, trials)
+        (1500, 20)
         """
         if not segments:
             raise ValueError("segments list cannot be empty")
@@ -1050,14 +1068,22 @@ def group_segments(segments, meanfct=np.mean, name: str = None) -> GroupLevelSeg
         
     Examples
     --------
+    One SegmentedEyeData per subject (here: the example recording twice):
+
     >>> import pypillometry as pp
+    >>> from pypillometry import u
+    >>> d = pp.get_example_data("rlmw_002_short")
+    >>> intervals = d.get_intervals("S_", (-500, 2500) * u.ms)
+    >>> subj1_seg = d.get_segments(intervals, "left_pupil", name="S01")
+    >>> subj2_seg = d.get_segments(intervals, "left_pupil", name="S02")
+
     >>> # From a list
-    >>> group = pp.group_segments([subj1_seg, subj2_seg, subj3_seg])
-    
+    >>> group = pp.group_segments([subj1_seg, subj2_seg])
+
     >>> # From a dict
     >>> segments = {"S01": subj1_seg, "S02": subj2_seg}
     >>> group = pp.group_segments(segments)
-    
+
     >>> # Stack all trials instead of averaging
     >>> group = pp.group_segments(segments, meanfct=None)
     """

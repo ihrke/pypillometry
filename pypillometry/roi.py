@@ -334,8 +334,8 @@ class CircularROI(ROI):
            >>> right = pp.RectangularROI((850, 350), (1150, 650), name="right stimulus")
            >>> d.plot.plot_heatmap(eyes="left")
            >>> ax = plt.gcf().axes[0]  # the heatmap (axes[1] is the colorbar)
-           >>> left.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)
-           >>> right.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)
+           >>> patch = left.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)
+           >>> patch = right.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)
 
         :meth:`d.plot.plot_heatmap() <pypillometry.plot.PlotNamespace.plot_heatmap>` and
         :meth:`d.plot.plot_scanpath() <pypillometry.plot.PlotNamespace.plot_scanpath>` can also draw them
@@ -578,8 +578,8 @@ class RectangularROI(ROI):
            >>> right = pp.RectangularROI((850, 350), (1150, 650), name="right stimulus")
            >>> d.plot.plot_heatmap(eyes="left")
            >>> ax = plt.gcf().axes[0]  # the heatmap (axes[1] is the colorbar)
-           >>> left.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)
-           >>> right.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)
+           >>> patch = left.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)
+           >>> patch = right.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)
 
         :meth:`d.plot.plot_heatmap() <pypillometry.plot.PlotNamespace.plot_heatmap>` and
         :meth:`d.plot.plot_scanpath() <pypillometry.plot.PlotNamespace.plot_scanpath>` can also draw them

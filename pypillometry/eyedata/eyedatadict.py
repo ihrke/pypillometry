@@ -400,14 +400,17 @@ class EyeDataDict(MutableMapping, Stateful):
         
         Examples
         --------
-        >>> # Set data and preserve existing mask
-        >>> data_dict.set_with_mask("left_pupil", new_values, preserve_mask=True)
-        
-        >>> # Set data with explicit mask
-        >>> data_dict.set_with_mask("left_pupil", new_values, mask=new_mask)
-        
-        >>> # Set data with fresh zero mask (same as __setitem__)
-        >>> data_dict.set_with_mask("left_pupil", new_values)
+        >>> d = EyeDataDict(left_pupil=[1., 2., 3.])
+        >>> d.set_mask("left_pupil", [0, 1, 0])
+        >>> d.set_with_mask("left_pupil", [4., 5., 6.], preserve_mask=True)
+        >>> d.mask["left_pupil"]
+        array([0, 1, 0])
+        >>> d.set_with_mask("left_pupil", [4., 5., 6.], mask=[1, 0, 0])
+        >>> d.mask["left_pupil"]
+        array([1, 0, 0])
+        >>> d.set_with_mask("left_pupil", [4., np.nan, 6.])  # fresh mask
+        >>> d.mask["left_pupil"]
+        array([0, 1, 0])
         """
         if value is None or len(value) == 0:
             return

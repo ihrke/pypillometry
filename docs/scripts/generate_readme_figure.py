@@ -25,7 +25,7 @@ OUTPUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))
                       "images", "readme_overview.png")
 
 EYE = "left"
-WINDOW = (124, 140)   # seconds shown in the left panel
+WINDOW = (124, 140) * u.sec   # shown in the left panel
 
 
 def main():
