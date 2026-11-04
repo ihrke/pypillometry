@@ -2265,7 +2265,7 @@ class TestGetIntervalsBetweenEvents(unittest.TestCase):
                       ["Start Block", "End Block"] * 3)
         iv = d.get_intervals(("End Block", "Start Block"), (0, 0), units="ms")
         self.assertEqual(iv.intervals, [(2000.0, 3000.0), (4000.0, 5000.0)])
-        self.assertEqual(iv.event_labels, ["End Block_to_Start Block"] * 2)
+        self.assertEqual(iv.event_labels, ["End Block to Start Block"] * 2)
         self.assertEqual(list(iv.event_onsets), [2000.0, 4000.0])
 
     def test_closest_first_event_used(self):
@@ -2299,7 +2299,7 @@ class TestGetIntervalsBetweenEvents(unittest.TestCase):
         iv, msgs = self.warnings_of(
             lambda: d.get_intervals(("<start>", "Start Block"), (0, 0), units="ms"))
         self.assertEqual(iv.intervals, [(0.0, 1000.0)])
-        self.assertEqual(iv.event_labels, ["<start>_to_Start Block"])
+        self.assertEqual(iv.event_labels, ["<start> to Start Block"])
         self.assertEqual(msgs, [])
 
     def test_recording_end(self):

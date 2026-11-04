@@ -117,6 +117,8 @@ The main ones:
 - `pupil.estimate_response()` on data without events raises a `ValueError`
   (it returned the start parameters)
 - `pp.nologging()` could leave logging disabled after the `with` block
+- Labels of `get_intervals(("F_", "R_"))`: `"F_ to R_"` (was `"F__to_R_"`),
+  per interval e.g. `"F_1 to R_1"`
 - `summary()`, `Intervals.stats()` and the segment summary return Python
   numbers (not `np.float64`); `summary()["params"]` is the dict of
   parameters (was the string `'{...}'`)

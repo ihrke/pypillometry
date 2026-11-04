@@ -2319,7 +2319,9 @@ class GenericEyeData(state.VersionedState, ABC):
             onsets (ms) of the selected events, the window (in ms), their
             labels and metadata (see :class:`~pypillometry.Events`).
             For two events (tuple): Intervals with the spans between them
-            (in `units`) and, per interval, the label ``"<first>_to_<second>"``,
+            (in `units`; the label of the Intervals is ``"<first> to <second>"``
+            for two strings) and, per interval, the label
+            ``"<first label> to <second label>"``,
             the onset of the first event and the metadata of the first event
             (of the second one if the first is ``"<start>"``).
             Windows that extend beyond the data are not clipped.
@@ -2421,10 +2423,10 @@ class GenericEyeData(state.VersionedState, ABC):
             eix1, eix2 = s_a[pa], s_b[pb]
             if label is None:
                 if isinstance(event_select[0], str) and isinstance(event_select[1], str):
-                    label = f"{event_select[0]}_to_{event_select[1]}"
+                    label = f"{event_select[0]} to {event_select[1]}"
                 else:
                     label = "between_events"
-            selected_labels = [f"{l_a[i]}_to_{l_b[j]}" for i, j in pairs]
+            selected_labels = [f"{l_a[i]} to {l_b[j]}" for i, j in pairs]
             selected_indices = None if i_a is None else i_a[pa]
             selected_meta = meta_of(selected_indices) if i_a is not None \
                 else meta_of(None if i_b is None else i_b[pb])
