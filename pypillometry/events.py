@@ -1148,6 +1148,7 @@ class Events(Stateful):
         Filter events and return a new Events object.
         
         This method supports multiple types of selectors for flexible filtering:
+
         - String: matches labels containing the substring (or equal to
           it, if `exact` is True)
         - Callable: applies function to each label, keeps events where it returns True
