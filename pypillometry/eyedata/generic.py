@@ -2654,11 +2654,13 @@ class GenericEyeData(state.VersionedState, ABC):
         variables: list = [],
         distance: float = 100,
         units: str = "ms",
-        apply_mask: bool = False,
         inplace: bool | None = None,
     ):
         """
         Merge blinks that are close together.
+
+        The merged blinks replace the ``"blink"`` layer of the processed
+        variables (see :meth:`set_blinks`); read them with :meth:`get_blinks`.
         
         Parameters
         ----------
@@ -2673,23 +2675,16 @@ class GenericEyeData(state.VersionedState, ABC):
         units : str, optional
             Units for ``distance`` if it is a plain number. Can be "ms",
             "sec", "min", or "h". Default "ms".
-        apply_mask : bool, default=False
-            If True, store the merged blinks, apply them as masks to the data
-            and return the object.
-            If False, return merged blinks as dict of Intervals objects without
-            storing them or applying masks (same default as
-            :meth:`~pypillometry.EyeData.pupil_blinks_detect`).
         inplace : bool or None, optional
             if `True`, make change in-place and return the object;
             if `False`, make and return copy before making changes;
             if `None`, use the object-level setting (specified in the constructor).
-            Only relevant when apply_mask=True.
             
         Returns
         -------
-        GenericEyeData or dict of Intervals
-            If apply_mask=True: returns modified object for chaining.
-            If apply_mask=False: returns dict of Intervals objects (one per eye/variable combination).
+        :class:`~pypillometry.GenericEyeData`
+            the object with the merged blinks (`self` or a copy, depending
+            on `inplace`)
         """
         obj = self._get_inplace(inplace)
         pairs = obj.data.select(eyes, variables)
@@ -2697,9 +2692,6 @@ class GenericEyeData(state.VersionedState, ABC):
         distance_ix = obj._samples(distance, units)
 
         logger.debug(f"Distance '{distance}' in index units: {distance_ix}")
-
-        # Dictionary to store merged intervals
-        merged_dict = {}
 
         for eye, var in pairs:
             # all runs, also those next to excluded periods (set_blinks replaces the layer)
@@ -2726,19 +2718,8 @@ class GenericEyeData(state.VersionedState, ABC):
                 intervals=[(int(s), int(e)) for s, e in newblinks],
                 units="samples",
                 label=f"{eye}_{var}_blinks")
-            
-            key = f"{eye}_{var}"
-            merged_dict[key] = merged_intervals
-            
-            # Apply mask if requested
-            if apply_mask:
-                obj.set_blinks(merged_intervals, eyes=[eye], variables=[var])
-
-        # Return appropriate result
-        if apply_mask:
-            return obj
-        else:
-            return merged_dict    
+            obj.set_blinks(merged_intervals, eyes=[eye], variables=[var])
+        return obj
             
     def stat_per_event(self, 
                        intervals=None,

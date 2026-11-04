@@ -459,10 +459,10 @@ def test_blink_parameters_with_units(eyedata):
     assert {k: v.intervals for k, v in ref.get_blinks().items()} == \
         {k: v.intervals for k, v in res.get_blinks().items()}
     d = eyedata.pupil_blinks_detect(inplace=False)
-    ref = d.blinks_merge_close(distance=100)
-    res = d.blinks_merge_close(distance=0.1 * u.sec)
-    assert {k: v.intervals for k, v in ref.items()} == \
-        {k: v.intervals for k, v in res.items()}
+    ref = d.blinks_merge_close(distance=100, inplace=False)
+    res = d.blinks_merge_close(distance=0.1 * u.sec, inplace=False)
+    assert {k: v.intervals for k, v in ref.get_blinks().items()} == \
+        {k: v.intervals for k, v in res.get_blinks().items()}
 
 
 def test_plot_range_with_units(eyedata):

@@ -617,7 +617,7 @@ class TestEyeData(unittest.TestCase):
     def test_detectors_have_no_apply_mask(self):
         """the detectors set their layer (no apply_mask argument)"""
         import inspect
-        for f in (pp.EyeData.pupil_blinks_detect,):
+        for f in (pp.EyeData.pupil_blinks_detect, pp.EyeData.blinks_merge_close):
             self.assertNotIn("apply_mask", inspect.signature(f).parameters)
 
     def test_blinks_merge_close(self):
@@ -629,7 +629,7 @@ class TestEyeData(unittest.TestCase):
         self.eyedata.set_blinks(intervals, eyes=['left'], variables=['pupil'])
         
         # Merge blinks that are within 100ms of each other
-        merged = self.eyedata.blinks_merge_close(eyes=['left'], variables=['pupil'], distance=100, units="ms", apply_mask=True)
+        merged = self.eyedata.blinks_merge_close(eyes=['left'], variables=['pupil'], distance=100, units="ms")
         blinks = merged.get_blinks('left', 'pupil')['left_pupil']
         
         # blinks is now an Intervals object
@@ -644,7 +644,7 @@ class TestEyeData(unittest.TestCase):
         # Test merging with distance specified in seconds
         intervals2 = Intervals([(100, 200), (250, 350)], units="samples")
         self.eyedata.set_blinks(intervals2, eyes=['left'], variables=['pupil'])
-        merged_sec = self.eyedata.blinks_merge_close(eyes=['left'], variables=['pupil'], distance=0.1, units="sec", apply_mask=True)
+        merged_sec = self.eyedata.blinks_merge_close(eyes=['left'], variables=['pupil'], distance=0.1, units="sec")
         blinks_sec = merged_sec.get_blinks('left', 'pupil')['left_pupil']
         blinks_ix_sec = np.array(blinks_sec.to_units("indices")).astype(int)
         self.assertEqual(blinks_ix_sec[0, 0], 100)
@@ -653,7 +653,7 @@ class TestEyeData(unittest.TestCase):
         # Ensure blinks beyond distance remain separate
         intervals3 = Intervals([(100, 200), (250, 350)], units="samples")
         self.eyedata.set_blinks(intervals3, eyes=['left'], variables=['pupil'])
-        separated = self.eyedata.blinks_merge_close(eyes=['left'], variables=['pupil'], distance=10, units="ms", apply_mask=True)
+        separated = self.eyedata.blinks_merge_close(eyes=['left'], variables=['pupil'], distance=10, units="ms")
         blinks_sep = separated.get_blinks('left', 'pupil')['left_pupil']
         blinks_ix_sep = np.array(blinks_sep.to_units("indices")).astype(int)
         self.assertEqual(len(blinks_ix_sep), 2)
@@ -668,8 +668,8 @@ class TestEyeData(unittest.TestCase):
         self.assertEqual(len(blinks_end), 1)
         self.assertLessEqual(blinks_end.intervals[0][1], self.eyedata.tx[-1])
 
-    def test_blinks_merge_close_apply_mask_true(self):
-        """Test that blinks_merge_close with apply_mask=True applies masks to data"""
+    def test_blinks_merge_close_masks(self):
+        """Test that blinks_merge_close stores the merged blinks (they mask the data)"""
         from pypillometry.intervals import Intervals
         
         data = self.eyedata.copy()
@@ -681,9 +681,8 @@ class TestEyeData(unittest.TestCase):
         # Verify no masks are applied initially (except any pre-existing ones)
         initial_mask_count = np.sum(data.data.mask['left_pupil'])
         
-        # Merge blinks with apply_mask=True
         merged = data.blinks_merge_close(eyes=['left'], variables=['pupil'], 
-                                         distance=100, units="ms", apply_mask=True)
+                                         distance=100, units="ms")
         
         # Should return the modified object
         self.assertIs(merged, data)
@@ -702,8 +701,8 @@ class TestEyeData(unittest.TestCase):
         self.assertEqual(blinks_ix[0, 0], 100)
         self.assertEqual(blinks_ix[0, 1], 350)
 
-    def test_blinks_merge_close_apply_mask_false(self):
-        """Test that blinks_merge_close with apply_mask=False returns Intervals without applying masks"""
+    def test_blinks_merge_close_inplace_false(self):
+        """Test that blinks_merge_close with inplace=False leaves the object unchanged"""
         from pypillometry.intervals import Intervals
         
         data = self.eyedata.copy()
@@ -715,11 +714,10 @@ class TestEyeData(unittest.TestCase):
         # Get initial mask state
         initial_mask = data.data.mask['left_pupil'].copy()
         
-        # Merge blinks with apply_mask=False
-        result = data.blinks_merge_close(eyes=['left'], variables=['pupil'], 
-                                         distance=100, units="ms", apply_mask=False)
-        
-        # Should return a dictionary of Intervals
+        copy = data.blinks_merge_close(eyes=['left'], variables=['pupil'], 
+                                       distance=100, units="ms", inplace=False)
+        self.assertIsNot(copy, data)
+        result = copy.get_blinks('left', 'pupil', units="samples")
         self.assertIsInstance(result, dict)
         self.assertIn('left_pupil', result)
         self.assertIsInstance(result['left_pupil'], Intervals)
@@ -738,8 +736,8 @@ class TestEyeData(unittest.TestCase):
         stored_blinks = data.get_blinks('left', 'pupil')['left_pupil']
         self.assertEqual(len(stored_blinks), 2)  # Original two blinks still there
 
-    def test_blinks_merge_close_multiple_eyes_apply_mask_false(self):
-        """Test that apply_mask=False returns correct dictionary for multiple eyes"""
+    def test_blinks_merge_close_multiple_eyes(self):
+        """Test blinks_merge_close for multiple eyes"""
         from pypillometry.intervals import Intervals
         
         data = self.eyedata.copy()
@@ -751,9 +749,9 @@ class TestEyeData(unittest.TestCase):
         data.set_blinks(intervals_left, eyes=['left'], variables=['pupil'])
         data.set_blinks(intervals_right, eyes=['right'], variables=['pupil'])
         
-        # Merge blinks for both eyes with apply_mask=False
         result = data.blinks_merge_close(eyes=['left', 'right'], variables=['pupil'], 
-                                         distance=100, units="ms", apply_mask=False)
+                                         distance=100, units="ms").get_blinks(
+                                             variables='pupil', units="samples")
         
         # Should have both eyes in the result
         self.assertIn('left_pupil', result)
