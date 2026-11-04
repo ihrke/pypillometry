@@ -238,6 +238,7 @@ class EyeDataDict(MutableMapping, Stateful):
         -------
         EyeDataDict
             A new EyeDataDict containing only data for the specified eye
+            (copies, with their masks and layers)
         
         Examples
         --------
@@ -246,7 +247,7 @@ class EyeDataDict(MutableMapping, Stateful):
         >>> print(left_data.data.keys())
         dict_keys(['left_x', 'left_y'])
         """
-        return EyeDataDict({k:v for k,v in self.data.items() if k.startswith(eye+"_")})
+        return self._subset([k for k in self.data if k.startswith(eye+"_")])
     
     def get_variable(self, variable):
         """
@@ -261,8 +262,20 @@ class EyeDataDict(MutableMapping, Stateful):
         -------
         EyeDataDict
             A new EyeDataDict containing only data for the specified variable
+            (copies, with their masks and layers)
         """
-        return EyeDataDict({k:v for k,v in self.data.items() if k.partition("_")[2] == variable})
+        return self._subset([k for k in self.data if k.partition("_")[2] == variable])
+
+    def _subset(self, keys) -> 'EyeDataDict':
+        """Copy of the channels `keys` with their layers (and the
+        recording-wide layers)."""
+        new_dict = EyeDataDict()
+        new_dict.layer_names = list(self.layer_names)
+        for key in keys:
+            new_dict._set_channel(key, self.data[key].copy(), self.layers[key])
+        if keys and self.rec_layers is not None:
+            new_dict.rec_layers = self.rec_layers.copy()
+        return new_dict
 
     def select(self, eyes=None, variables=None) -> List[Tuple[str, str]]:
         """
@@ -687,13 +700,7 @@ class EyeDataDict(MutableMapping, Stateful):
 
     def copy(self) -> 'EyeDataDict':
         """Create a deep copy of the dictionary (data and masks)."""
-        new_dict = EyeDataDict()
-        new_dict.layer_names = list(self.layer_names)
-        for key, value in self.data.items():
-            new_dict._set_channel(key, value.copy(), self.layers[key])
-        if self.rec_layers is not None:
-            new_dict.rec_layers = self.rec_layers.copy()
-        return new_dict
+        return self._subset(list(self.data))
 
     def set_mask(self, key: str, mask: NDArray, layer: str = "user") -> None:
         """Set mask for a specific key.
