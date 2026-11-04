@@ -676,7 +676,7 @@ class TestEyeData(unittest.TestCase):
         
         # Create artificial blinks that are close together
         intervals = Intervals([(100, 200), (250, 350)], units="samples")
-        data.set_blinks(intervals, eyes=['left'], variables=['pupil'], apply_mask=False)
+        data.set_blinks(intervals, eyes=['left'], variables=['pupil'])
         
         # Verify no masks are applied initially (except any pre-existing ones)
         initial_mask_count = np.sum(data.data.mask['left_pupil'])
@@ -710,7 +710,7 @@ class TestEyeData(unittest.TestCase):
         
         # Create artificial blinks that are close together
         intervals = Intervals([(100, 200), (250, 350)], units="samples")
-        data.set_blinks(intervals, eyes=['left'], variables=['pupil'], apply_mask=False)
+        data.set_blinks(intervals, eyes=['left'], variables=['pupil'])
         
         # Get initial mask state
         initial_mask = data.data.mask['left_pupil'].copy()
@@ -748,8 +748,8 @@ class TestEyeData(unittest.TestCase):
         intervals_left = Intervals([(100, 200), (250, 350)], units="samples")
         intervals_right = Intervals([(150, 250), (400, 500)], units="samples")
         
-        data.set_blinks(intervals_left, eyes=['left'], variables=['pupil'], apply_mask=False)
-        data.set_blinks(intervals_right, eyes=['right'], variables=['pupil'], apply_mask=False)
+        data.set_blinks(intervals_left, eyes=['left'], variables=['pupil'])
+        data.set_blinks(intervals_right, eyes=['right'], variables=['pupil'])
         
         # Merge blinks for both eyes with apply_mask=False
         result = data.blinks_merge_close(eyes=['left', 'right'], variables=['pupil'], 
@@ -1318,8 +1318,8 @@ class TestEyeData(unittest.TestCase):
         self.assertIsInstance(result, Intervals)
         self.assertGreater(len(result), 0)
         
-        # Mask should NOT be applied yet
-        self.assertFalse(np.all(data_copy.data.mask['left_pupil'][100:150] == 1))
+        # the stored blinks mask the data
+        self.assertTrue(np.all(data_copy.data.mask['left_pupil'][100:150] == 1))
         
     def test_pupil_blinks_detect_apply_mask_false_multiple_eyes(self):
         """Test pupil_blinks_detect with apply_mask=False and multiple eyes returns dict"""
@@ -2455,7 +2455,7 @@ class TestMasksAndBlinksKept(unittest.TestCase):
         p[400:410] = np.nan
         d = pp.EyeData(left_pupil=p, time=t, sampling_rate=100)
         blinks = Intervals([(490, 520), (600, 620)], units="samples")
-        d.set_blinks(blinks, eyes=["left"], variables=["pupil"], apply_mask=True)
+        d.set_blinks(blinks, eyes=["left"], variables=["pupil"])
         return d
 
     def test_crop(self):
@@ -2510,7 +2510,7 @@ class TestMasksAndBlinksKept(unittest.TestCase):
         g.data.add_mask("left_pupil", np.s_[300])
         # blinks in the gapped data (570-590 = original samples 600-620)
         g.set_blinks(Intervals([(490, 520), (570, 590)], units="samples"),
-                     eyes=["left"], variables=["pupil"], apply_mask=True)
+                     eyes=["left"], variables=["pupil"])
         g.fill_time_discontinuities()
         self.assertEqual(len(g.tx), 1000)
         m = g.data.mask["left_pupil"]

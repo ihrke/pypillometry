@@ -659,3 +659,23 @@ Changes of the API calls alone (same numbers) need no entry.
 - **Why**: NaN cannot disagree with the values (plan 2.2); the layer was a
   shim for the filters that filled NaN (step 5).
 - **Step**: 7, `refactor/07-value-policy`
+
+### Stored blinks always mask the data
+
+- **Case**: `a.blinks_detect.*.default` and `a.blinks_detect.*.vel10`,
+  `mask.<eye>_pupil`; expected values derived in the test (stored mask
+  or the stored blinks). `a.blinks_detect.*.zero` is unchanged (its
+  blinks are the NaN runs).
+- **Change**: the `blink` layer masks the data under the mask policies
+  wherever it is set, also after `pupil_blinks_detect()` without
+  `apply_mask=True` and `set_blinks(..., apply_mask=False)` (before: only
+  blinks applied as mask, the internal layer `_blink_applied`). Size,
+  masked samples (left/right pupil): rlmw default 561 -> 1520 / 389 -> 897,
+  rlmw vel10 561 -> 882 / 389 -> 621, synth default 256 -> 383 /
+  190 -> 286, synth vel10 256 -> 256 / 190 -> 221 (of 20465 / 10000).
+  Format-2 files: blinks that were stored but not applied as mask mask the
+  data after loading. Format-3 files of development versions: the layer
+  `_blink_applied` is removed on load (all their blinks mask the data).
+- **Why**: setting the layer is masking (plan 2.8, rule 2); one blink
+  store and one meaning.
+- **Step**: 9, `refactor/09-api-conventions`

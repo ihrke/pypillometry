@@ -131,17 +131,39 @@ class TestMigratedState:
         assert not d.data.get_layer("right_pupil", "user").any()
 
     def test_applied_blinks(self):
-        """Blinks applied as mask (where not NaN) are `_blink_applied`, so
+        """Blinks applied as mask are the blink layer only (not "user"), so
         that removing the blink layer unmasks them."""
         d = state.from_state(format2_state("pupildata.h5"))
+        assert "_blink_applied" not in d.data.layer_names
         for key in ("left_pupil", "right_pupil"):
             blink = d.data.get_layer(key, "blink")
-            applied = d.data.get_layer(key, "_blink_applied")
             assert blink.any()
-            np.testing.assert_array_equal(applied, blink & ~np.isnan(d.data[key].data))
+            assert not (d.data.get_layer(key, "user") & blink).any()
+            assert d.mask(key, policy="strict")[blink].all()  # some are interpolated
         d.clear_layer("blink")
         for key in ("left_pupil", "right_pupil"):
-            assert not d.data.get_layer(key, "_blink_applied").any()
+            np.testing.assert_array_equal(
+                d.mask(key), np.isnan(d.data[key]) | d.data.get_rec_layer("excluded"))
+
+    def test_blinks_not_applied_mask_the_data(self):
+        """Blinks stored without applying them as mask mask the data after loading."""
+        old = format2_state("pupildata.h5")
+        old["data"]["mask"] = {k: np.zeros_like(m) for k, m in old["data"]["mask"].items()}
+        d = state.from_state(old)
+        for key in ("left_pupil", "right_pupil"):
+            blink = d.data.get_layer(key, "blink")
+            assert blink.any() and d.mask(key)[blink].all()
+            assert not d.data.get_layer(key, "user").any()
+
+    def test_development_layer_blink_applied(self):
+        """Format-3 files of development versions with the layer `_blink_applied`."""
+        d = pp.EyeData(left_pupil=np.arange(6.), sampling_rate=100)
+        d.data.set_layer("left_pupil", "_blink_applied", [0, 1, 0, 0, 0, 0])
+        d.data.set_layer("left_pupil", "blink", [0, 1, 1, 0, 0, 0])
+        d.data.set_layer("left_pupil", "user", [0, 0, 0, 0, 1, 0])
+        r = state.from_state(state.to_state(d))
+        assert r.data.layer_names == ["blink", "user"]
+        np.testing.assert_array_equal(r.mask("left", "pupil"), [0, 1, 1, 0, 1, 0])
 
     def test_excluded_is_recording_wide(self):
         old = format2_state("eyedata.h5")

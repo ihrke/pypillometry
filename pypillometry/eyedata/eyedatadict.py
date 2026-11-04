@@ -53,8 +53,8 @@ class MaskPolicy:
     `layers` is set and none of the layers in `unless` is set. Recording-wide
     layers (e.g., ``"excluded"``) mask a sample regardless of `unless`.
 
-    The predefined policies are in `POLICIES`: ``"default"`` (NaN, blinks
-    applied as mask, off-screen gaze, eye divergences, user masks and
+    The predefined policies are in `POLICIES`: ``"default"`` (NaN, blinks,
+    off-screen gaze, eye divergences, user masks and
     excluded periods are masked; interpolated samples are used),
     ``"strict"`` (interpolated samples are masked too) and ``"raw"``
     (nothing is masked, not even NaN). All processing and analysis methods
@@ -88,9 +88,8 @@ class MaskPolicy:
                 f"nan={self.nan}" + (f", name={self.name!r})" if self.name else ")"))
 
 
-# blinks mask the data where they were applied as mask (``apply_mask=True``,
-# internal layer "_blink_applied")
-_MISSING = ("_blink_applied", "offscreen", "divergence", "user", "excluded")
+# the layers of missing data
+_MISSING = ("blink", "offscreen", "divergence", "user", "excluded")
 #: predefined policies (see :class:`MaskPolicy`)
 POLICIES = {
     "default": MaskPolicy(_MISSING, unless="interpolated", name="default"),
@@ -648,6 +647,10 @@ class EyeDataDict(MutableMapping, Stateful):
             self._init_rec_layers()
         if "_nan" in self.layer_names:
             self._drop_nan_layer()
+        if "_blink_applied" in self.layer_names:
+            # development versions of 2.2 (format 3) masked a blink only if
+            # it was applied as mask; now every blink masks the data
+            self._drop_layer("_blink_applied")
 
     def _drop_nan_layer(self) -> None:
         """Remove the layer ``"_nan"`` of states written by development

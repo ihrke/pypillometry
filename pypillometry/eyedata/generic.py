@@ -703,24 +703,20 @@ class GenericEyeData(state.VersionedState, ABC):
                                "samples", label=f"{key}_blinks")
                 for key in self.data.keys()}
 
-    def _set_blink_layer(self, key, intervals, apply_mask):
-        """Replace the blink layer of `key` by `intervals` (None: no blinks);
-        with `apply_mask`, the blinks also mask the data (see `mask`)."""
+    def _set_blink_layer(self, key, intervals):
+        """Replace the blink layer of `key` by `intervals` (None: no blinks)."""
         blink = (np.zeros(len(self.tx), dtype=bool) if intervals is None
                  else intervals.to_mask(self).astype(bool))
         self.data.set_layer(key, "blink", blink, replace=True)
-        if apply_mask:
-            self.data.set_layer(key, "_blink_applied", blink, replace=True)
-        else:
-            self.data.clear_layer(key, "_blink_applied")
     
     @keephistory
-    def set_blinks(self, intervals, eyes=[], variables=[], apply_mask=True):
+    def set_blinks(self, intervals, eyes=[], variables=[]):
         """
         Set blinks for specified eyes and variables (in-place).
 
         The blinks replace the ``"blink"`` layer of the selected variables
-        (and the mask of the blinks set before).
+        (and the mask of the blinks set before). Blinks are masked under
+        the mask policies (see :meth:`mask`).
 
         Parameters
         ----------
@@ -740,10 +736,6 @@ class GenericEyeData(state.VersionedState, ABC):
         variables : str or list of str, optional
             variable(s) to set blinks for (e.g., ``["pupil", "x", "y"]``);
             if empty, all available variables. Ignored if `intervals` is a dict.
-        apply_mask : bool, optional
-            If True, also apply the intervals as mask to the data (they
-            are masked under the mask policies, see :meth:`mask`; other
-            masks are kept). If False, only store intervals. Default is True.
         """
         # Check if intervals is a dict
         if isinstance(intervals, dict):
@@ -761,7 +753,7 @@ class GenericEyeData(state.VersionedState, ABC):
             if key not in self.data:
                 logger.warning(f"Key '{key}' not found in data, skipping")
                 continue
-            self._set_blink_layer(key, interval_obj, apply_mask)
+            self._set_blink_layer(key, interval_obj)
 
     def get_blinks(self, eyes: str|list = [], variables: str|list = [], 
                    units: str = "samples"):
@@ -893,8 +885,7 @@ class GenericEyeData(state.VersionedState, ABC):
 
         A sample is unusable if its value is NaN or if one of the layers
         of the policy is set (see :class:`~pypillometry.MaskPolicy`). By
-        default, blinks (if detected with ``apply_mask=True`` or set with
-        :meth:`set_blinks`), off-screen gaze, eye divergences, user masks
+        default, blinks, off-screen gaze, eye divergences, user masks
         and excluded periods are masked, interpolated samples are not.
 
         Parameters
@@ -970,14 +961,11 @@ class GenericEyeData(state.VersionedState, ABC):
             the object without the layer (`self` or a copy, depending on `inplace`)
         """
         obj = self._get_inplace(inplace)
-        # the mask of applied blinks goes with the blinks
-        names = [name, "_blink_applied"] if name == "blink" else [name]
         if name in REC_LAYERS:
             obj.data.clear_rec_layer(name)
             return obj
         for eye, var in obj.data.select(eyes, variables):
-            for n in names:
-                obj.data.clear_layer(f"{eye}_{var}", n)
+            obj.data.clear_layer(f"{eye}_{var}", name)
         return obj
 
     def mask_as_intervals(self, eyes: str|list = [], variables: str|list = [], 
@@ -2744,7 +2732,7 @@ class GenericEyeData(state.VersionedState, ABC):
             
             # Apply mask if requested
             if apply_mask:
-                obj.set_blinks(merged_intervals, eyes=[eye], variables=[var], apply_mask=True)
+                obj.set_blinks(merged_intervals, eyes=[eye], variables=[var])
 
         # Return appropriate result
         if apply_mask:

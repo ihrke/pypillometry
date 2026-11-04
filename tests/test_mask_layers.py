@@ -141,8 +141,8 @@ class TestMaskView:
     def test_default_policy(self):
         d = nan_dict()
         np.testing.assert_array_equal(d.mask["left_pupil"], [0, 1, 0, 0, 0])
-        d.set_layer("left_pupil", "blink", [0, 0, 1, 0, 0])  # not applied as mask
-        np.testing.assert_array_equal(d.mask["left_pupil"], [0, 1, 0, 0, 0])
+        d.set_layer("left_pupil", "blink", [0, 0, 1, 0, 0])
+        np.testing.assert_array_equal(d.mask["left_pupil"], [0, 1, 1, 0, 0])
         d.set_layer("left_pupil", "user", [0, 0, 1, 1, 0])
         d.set_layer("left_pupil", "interpolated", [0, 0, 0, 1, 0])
         np.testing.assert_array_equal(d.mask["left_pupil"], [0, 1, 1, 0, 0])
@@ -169,7 +169,7 @@ class TestMaskView:
         # unmasked samples are removed from the masking layers only; newly
         # masked ones are added to "user" (and are no longer "interpolated")
         np.testing.assert_array_equal(d.get_layer("left_pupil", "user"), [0, 0, 1, 1, 0])
-        np.testing.assert_array_equal(d.get_layer("left_pupil", "blink"), [1, 1, 0, 0, 0])
+        assert not d.get_layer("left_pupil", "blink").any()  # a masking layer too
         assert not d.get_layer("left_pupil", "interpolated").any()
 
 
@@ -191,9 +191,9 @@ class TestSampleOperations:
 
     def test_insert_samples(self):
         d = self.data(4)
-        d.data.set_layer("left_pupil", "blink", [1, 1, 1, 1])
+        d.data.set_layer("left_pupil", "interpolated", [1, 1, 1, 1])
         d._insert_samples(np.arange(6) * 10., [0, 1, 4, 5])
-        np.testing.assert_array_equal(d.data.get_layer("left_pupil", "blink"),
+        np.testing.assert_array_equal(d.data.get_layer("left_pupil", "interpolated"),
                                       [1, 1, 0, 0, 1, 1])
         # inserted samples are NaN and masked as missing (by their value)
         np.testing.assert_array_equal(d.data.mask["left_pupil"], [0, 0, 1, 1, 0, 0])
@@ -218,8 +218,9 @@ class TestSampleOperations:
         expected[[0, 5]] = True
         np.testing.assert_array_equal(d.data.get_layer("left_pupil", "blink"), expected)
         assert not d.data.get_layer("left_pupil", "user").any()
-        # values: mean of the samples that are not masked (user masks)
-        np.testing.assert_allclose(d.data["left_pupil"][[0, 5]], [1.5, 20.])
+        # values: mean of the samples that are not masked (blink and user
+        # masks); all masked: mean of all samples
+        np.testing.assert_allclose(d.data["left_pupil"][[0, 5]], [3., 20.5])
 
 
 class TestPolicies:
@@ -231,7 +232,7 @@ class TestPolicies:
         pupil[0] = np.nan
         d = pp.EyeData(left_pupil=pupil, sampling_rate=100)
         dd = d.data
-        d.set_blinks(pp.Intervals([(2, 5)], "samples"), apply_mask=True)
+        d.set_blinks(pp.Intervals([(2, 5)], "samples"))
         dd.set_layer("left_pupil", "interpolated", np.isin(np.arange(10), [3, 4, 5]))
         dd.set_layer("left_pupil", "user", np.arange(10) == 8)
         return d
@@ -247,11 +248,11 @@ class TestPolicies:
         p = pp_policy(["blink"], nan=False)
         assert idx(d.mask("left", "pupil", policy=p)) == [2, 3, 4]
 
-    def test_blinks_not_applied_are_not_masked(self):
+    def test_new_blinks_replace_the_mask(self):
         import pypillometry as pp
         d = self.data()
-        d.set_blinks(pp.Intervals([(6, 8)], "samples"), apply_mask=False)
-        assert list(np.flatnonzero(d.mask("left", "pupil"))) == [0, 8]
+        d.set_blinks(pp.Intervals([(6, 8)], "samples"))
+        assert list(np.flatnonzero(d.mask("left", "pupil"))) == [0, 6, 7, 8]
         assert list(np.flatnonzero(d.mask("left", "pupil", policy=["blink"]))) == [0, 6, 7]
 
     def test_values(self):
@@ -394,7 +395,8 @@ class TestBlinkLayer:
         assert len(found) == 3
         assert d.nblinks() == {"left_pupil": 3}
         np.testing.assert_array_equal(d.data.mask["left_pupil"].astype(bool),
-                                      np.isnan(d.data["left_pupil"]))
+                                      np.isnan(d.data["left_pupil"])
+                                      | d.data.get_layer("left_pupil", "blink"))
 
     def test_merge_close_on_runs(self):
         # finding 4.3: a blink containing another one shrank
@@ -448,11 +450,12 @@ class TestUserLayer:
                                       np.arange(30, 40))
         np.testing.assert_array_equal(d.data.mask["left_pupil"], np.ma.getmaskarray(x))
         assert len(d.get_blinks("left", "pupil")["left_pupil"]) == 3  # the blinks are kept
-        # unmasked samples are removed from the masks (NaN stays masked)
+        # unmasked samples are removed from the masks, also from the blink
+        # layer (NaN stays masked)
         x.mask[:] = False
         d["left_pupil"] = x
         np.testing.assert_array_equal(d.data.mask["left_pupil"], np.isnan(x.data))
-        assert len(d.get_blinks("left", "pupil")["left_pupil"]) == 3
+        assert not (d.data.get_layer("left_pupil", "blink") & ~np.isnan(x.data)).any()
 
 
 def test_detect_returns_the_stored_blinks():
@@ -615,7 +618,7 @@ class TestNoStoredMask:
         np.testing.assert_array_equal(
             np.flatnonzero(r.data.get_layer("left_pupil", "interpolated")), [3])
         np.testing.assert_array_equal(np.flatnonzero(r.data.get_rec_layer("interpolated")), [4])
-        np.testing.assert_array_equal(r.mask("left", "pupil"), [0, 1, 1, 0, 0, 0])
+        np.testing.assert_array_equal(r.mask("left", "pupil"), [0, 1, 1, 0, 1, 0])
 
 
 class TestConsumersUsePolicy:

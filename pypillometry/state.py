@@ -518,7 +518,7 @@ def _migrate_1_to_2(state, class_name):
 
 
 # layers that made up the mask of version 2 (the "compat" mask of version 3)
-_V2_MASK_LAYERS = ("user", "interpolated", "_blink_applied", "excluded",
+_V2_MASK_LAYERS = ("user", "interpolated", "blink", "excluded",
                    "offscreen", "divergence")
 _V2_MS_PER_UNIT = {"ms": 1., "sec": 1000., "min": 60000., "h": 3600000.}
 
@@ -670,18 +670,19 @@ def _v2_eyedata_layers(state):
     interpolated = state.pop("interpolated_blinks", None) or {}
     excluded = state.pop("excluded", None)
     if not had_layers:
-        # blinks: where masked (not NaN), they were applied as mask
+        # the mask of version 2 (all in the user layer so far)
+        v2_mask = {key: layers.mask(key) for key in values}
+        # blinks mask the data (also those that were not applied as mask in
+        # version 2); the blink layer replaces the user layer there
         for key, ivst in blinks.items():
             if ivst is not None and key in values:
                 blink = _v2_intervals_mask(ivst, tx)
-                applied = blink & layers.get(key, "user")
                 layers.set(key, "blink", blink)
-                layers.set(key, "_blink_applied", applied)
-                layers.clear(key, "user", applied)
+                layers.clear(key, "user", blink)
         # interpolated blinks: only where they were (still) masked
         for key, ivst in interpolated.items():
             if ivst is not None and key in values:
-                interp = _v2_intervals_mask(ivst, tx) & layers.mask(key)
+                interp = _v2_intervals_mask(ivst, tx) & v2_mask[key]
                 layers.set(key, "interpolated", interp)
                 layers.clear(key, "user", interp)
     if not had_rec_layers and excluded is not None:

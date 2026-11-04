@@ -448,11 +448,10 @@ class _PupilMethods:
         blinks detected before (and their mask), and the blinks detected
         before are not treated as masked during detection, so re-running the
         detection with other parameters gives the same result as running it
-        once. When `apply_mask=True`,
-        the blinks are also applied as masks to the data. When `apply_mask=False`
+        once. The blinks are masked under the mask policies (see
+        :meth:`~pypillometry.GenericEyeData.mask`). When `apply_mask=False`
         (default), the detected blinks are returned as Intervals objects and
-        stored in the object itself (also with `inplace=False`; the data and
-        the mask are not changed).
+        stored in the object itself (also with `inplace=False`).
 
         Finally, detected blinks have to be at least `min_duration` ms.
         
@@ -596,7 +595,7 @@ class _PupilMethods:
             
             # Store detected blinks internally (always); return them as stored
             # (blinks that touch are one blink)
-            obj.set_blinks(intervals_obj, eyes=[eye], variables=["pupil"], apply_mask=apply_mask)
+            obj.set_blinks(intervals_obj, eyes=[eye], variables=["pupil"])
             detected_intervals.update(obj.get_blinks(eye, "pupil"))
         
         # Return based on apply_mask

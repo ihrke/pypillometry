@@ -656,6 +656,18 @@ def _downsampled_values(case_id, key, stored):
     return {"sub": y[::10], "nansum": float(np.nansum(y))}[name]
 
 
+def _blinks_masked(case_id, key, stored):
+    """Mask after `pupil_blinks_detect` (step 9): the stored blinks mask the
+    data (before only with ``apply_mask=True``)."""
+    k = key.partition(".")[2]
+    if not k.endswith("_pupil"):
+        return stored
+    blink = np.zeros(len(stored), dtype=bool)
+    for on, off in load_arrays(case_id)[f"stored.{k}"]:
+        blink[on:off] = True
+    return stored | blink
+
+
 #: intended changes (see CHANGES.md): (case id prefix, result key prefix) ->
 #: function mapping (case id, key, stored reference value) to the expected value
 CHANGED = {("e.segments.rlmw.interp", ""): _segments_interp,
@@ -671,7 +683,8 @@ CHANGED = {("e.segments.rlmw.interp", ""): _segments_interp,
            ("g.downsample.", "nansum."): _downsampled_values,
            ("f.quality.", "artifacts."): _quality_other,
            ("h.merge_eyes.", ""): _merged_pupil,
-           ("h.scale.", ""): _scaled_pupil}
+           ("h.scale.", ""): _scaled_pupil,
+           ("a.blinks_detect.", "mask."): _blinks_masked}
 
 
 def expected_value(case_id, key, stored):

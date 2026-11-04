@@ -118,7 +118,7 @@ class TestResetTime(unittest.TestCase):
         d = make(n=2000)
         d["time"] = d.tx + 1000.
         iv = Intervals([(300, 320)], units="samples").to_units(units, d)
-        d.set_blinks(iv, eyes=["left"], variables=["pupil"], apply_mask=True)
+        d.set_blinks(iv, eyes=["left"], variables=["pupil"])
         return d
 
     def test_blinks_follow_the_clock(self):
@@ -256,8 +256,8 @@ class TestChains(unittest.TestCase):
                          event_onsets=self.EVENTS,
                          event_labels=[str(t) for t in self.EVENTS])
         blinks = Intervals(self.BLINKS, units="ms")
-        d.set_blinks(blinks.to_units("samples", d), eyes="left", apply_mask=False)
-        d.set_blinks(blinks, eyes="right", apply_mask=False)
+        d.set_blinks(blinks.to_units("samples", d), eyes="left")
+        d.set_blinks(blinks, eyes="right")
         d.exclude_intervals(self.EXCLUDED, inplace=True)
         return d
 
@@ -285,7 +285,8 @@ class TestChains(unittest.TestCase):
         np.testing.assert_array_equal(d.get_excluded().to_mask(d).astype(bool),
                                       self.inside(orig, self.EXCLUDED))
         np.testing.assert_array_equal(d.data.mask["left_pupil"].astype(bool),
-                                      self.inside(orig, self.EXCLUDED) | ~valid)
+                                      self.inside(orig, self.EXCLUDED) | ~valid
+                                      | self.inside(orig, self.BLINKS))
 
     def test_chain(self):
         d = self.make()
