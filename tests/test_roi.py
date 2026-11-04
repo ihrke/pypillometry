@@ -137,3 +137,20 @@ class TestRectangularROI(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main() 
+
+def test_from_degrees_plain_numbers_are_degrees():
+    # finding 5.6: plain numbers were radians (unlike degrees_to_pixels)
+    import numpy as np
+    import pypillometry as pp
+    setup = pp.ExperimentalSetup(screen_resolution=(1920, 1080),
+                                 physical_screen_size=("52 cm", "29 cm"),
+                                 eye_to_screen_center="60 cm")
+    plain = pp.CircularROI.from_degrees((5, 0), 2, setup)
+    deg = pp.CircularROI.from_degrees(("5 deg", "0 deg"), "2 deg", setup)
+    np.testing.assert_allclose(plain.center, deg.center)
+    assert plain.radius == deg.radius
+    np.testing.assert_allclose(plain.center, setup.degrees_to_pixels(5, 0))
+    r1 = pp.RectangularROI.from_degrees((-5, -2.5), (5, 2.5), setup)
+    r2 = pp.RectangularROI.from_degrees(("-5 deg", "-2.5 deg"), ("5 deg", "2.5 deg"), setup)
+    np.testing.assert_allclose(r1.min_coords, r2.min_coords)
+    np.testing.assert_allclose(r1.max_coords, r2.max_coords)

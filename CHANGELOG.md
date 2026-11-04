@@ -113,6 +113,9 @@ The main ones:
 - `plot_heatmap(show_masked=True)` with NaN samples
 - A `plot_range` with start after end raises an error
 - The sample at the end of `plot_range` was not plotted
+- `CircularROI.from_degrees`/`RectangularROI.from_degrees` read plain
+  numbers as radians; they are degrees now (as in
+  `ExperimentalSetup.degrees_to_pixels`)
 - `load_study_local`/`load_study_osf`: `subjects="001"` loaded subject
   `"1"` (the string was iterated); unknown subjects raise a `ValueError`
   (they were skipped)
