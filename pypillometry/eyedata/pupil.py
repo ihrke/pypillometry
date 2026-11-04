@@ -1023,7 +1023,8 @@ class PupilNamespace(Namespace):
         obj = self._d._get_inplace(inplace)
         eyes=self._d._eyes_with(eyes, "pupil")
 
-        obj.params["response"]=dict()
+        # replace the parameters of the processed eyes only
+        obj.params["response"] = dict(obj.params.get("response", {}))
         for eye in eyes:
             logger.debug("Estimating response for eye %s"%eye)
             if not eye+"_baseline" in obj.data.keys():

@@ -166,5 +166,16 @@ class TestResponseExcluded(unittest.TestCase):
                                    rtol=0.05)
 
 
+def test_response_of_one_eye_keeps_the_other():
+    # finding 5.4: estimating one eye wiped the parameters of the other
+    d = fake_pupil(duration=20)
+    d.data["right_pupil"] = d.data["left_pupil"] + 10
+    d.pupil.estimate_response(npar=10, tmax=900, inplace=True)
+    left = d.params["response"]["left"]["coef"].copy()
+    d.pupil.estimate_response(eyes="right", npar=10, tmax=900, inplace=True)
+    assert sorted(d.params["response"]) == ["left", "right"]
+    np.testing.assert_array_equal(d.params["response"]["left"]["coef"], left)
+
+
 if __name__ == "__main__":
     unittest.main()
