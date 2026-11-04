@@ -1009,7 +1009,8 @@ class PupilNamespace(Namespace):
         -----
         The predicted response is stored in ``data[eye, "response"]``; the
         estimated parameters (`npar`, `tmax`, the coefficients `coef` and the
-        `bounds`) are stored in ``params["response"][eye]``, together with
+        `bounds`) are stored in ``params["response"]["<eye>_pupil"]`` (e.g.,
+        ``params["response"]["left_pupil"]``), together with
         the shares `valid` and `observed` (0-1, one per event; NaN for
         events without response in the data, e.g., at the very end).
 
@@ -1051,7 +1052,7 @@ class PupilNamespace(Namespace):
             
             obj.data[eye+"_response"]=pred
 
-            obj.params["response"][eye]={"npar":npar_est,
+            obj.params["response"][f"{eye}_pupil"]={"npar":npar_est,
                                 "npar_free":True if npar=="free" else False,
                                 "tmax":tmax_est,
                                 "tmax_free":True if tmax=="free" else False,

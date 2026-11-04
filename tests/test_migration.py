@@ -90,6 +90,16 @@ class TestMigratedState:
         for key in old["data"]["values"]:
             np.testing.assert_array_equal(st["data"]["values"][key], old["data"]["values"][key])
 
+    def test_response_params_by_channel(self):
+        old = format2_state("eyedata.h5")
+        old["params"] = {"response": {"left": {"npar": 10.}, "right": {"npar": 11.}},
+                         "scale": {"mean": {"left": {"pupil": 1.}}}}
+        st = state.migrate(old, "EyeData")
+        assert st["params"]["response"] == {"left_pupil": {"npar": 10.},
+                                            "right_pupil": {"npar": 11.}}
+        assert st["params"]["scale"] == old["params"]["scale"]
+        assert sorted(old["params"]["response"]) == ["left", "right"]
+
     def test_input_not_changed(self):
         old = format2_state("eyedata.h5")
         state.migrate(old, "EyeData")

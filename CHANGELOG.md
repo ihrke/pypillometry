@@ -32,7 +32,9 @@ tables below for every changed call.
   `units=` of the plots is only the unit of the time axis
 - Results per channel are dicts keyed like the data (`"left_pupil"`):
   `get_blinks`, `get_interpolated_blinks`, `mask_as_intervals`, `nblinks`,
-  `blink_stats`; `nblinks()` includes channels without blinks (0)
+  `blink_stats`; `nblinks()` includes channels without blinks (0); the
+  parameters of `pupil.estimate_response()` are in
+  `params["response"]["left_pupil"]` (saved files are converted)
 - `eyes`/`variables`: `None` or `[]` means all existing channels; unknown
   names raise a `KeyError` that lists the channels
 - Every transforming method takes `inplace` (default: in place, see
