@@ -29,7 +29,7 @@ class TestDictReturns:
         assert isinstance(res["left_pupil"], pp.Intervals)
 
     def test_nblinks_includes_zero(self, data):
-        d = data.pupil_blinks_detect(strategies=["zero"])
+        d = data.pupil.blinks_detect(strategies=["zero"])
         assert d.nblinks(variables="pupil") == {"left_pupil": 1, "right_pupil": 0}
         stats = d.blink_stats()
         assert set(stats) == {"left_pupil", "right_pupil"}
@@ -96,7 +96,7 @@ class TestEyesVariables:
         lambda d, e: d.plot.plot_timeseries(eyes=e),
         lambda d, e: d.plot.plot_heatmap(eyes=e),
         lambda d, e: d.plot.plot_scanpath(eyes=e),
-        lambda d, e: d.pupil_lowpass_filter(5, eyes=e),
+        lambda d, e: d.pupil.lowpass_filter(5, eyes=e),
         lambda d, e: d.merge_eyes(eyes=e),
         lambda d, e: d.get_blinks(eyes=e)])
     def test_eyes(self, data, call):
@@ -135,7 +135,7 @@ class TestMs:
     """Rule 4: plain numbers (and default units) are ms."""
 
     def test_interval_getters_in_ms(self, data):
-        d = data.pupil_blinks_detect(strategies=["zero"])
+        d = data.pupil.blinks_detect(strategies=["zero"])
         assert d.get_blinks("left", "pupil")["left_pupil"].intervals == [(3000., 3200.)]
         assert d.blinks["left_pupil"].units == "ms"
         assert d.get_interpolated_blinks()["left_pupil"].units == "ms"
@@ -165,8 +165,8 @@ class TestMs:
 class TestMergedEyeName:
     def test_mean_and_name(self, data):
         assert "mean_pupil" in data.merge_eyes(variables="pupil").data
-        assert "mean_pupil" in data.pupil_merge_eyes(method="offset").data
-        assert "avg_pupil" in data.pupil_merge_eyes(method="offset", name="avg").data
+        assert "mean_pupil" in data.pupil.merge_eyes(method="offset").data
+        assert "avg_pupil" in data.pupil.merge_eyes(method="offset", name="avg").data
         assert "avg_x" in data.merge_eyes(variables="x", name="avg").data
 
 

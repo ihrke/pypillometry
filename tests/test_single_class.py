@@ -62,10 +62,10 @@ class TestMissingChannels(unittest.TestCase):
 
     def test_pupil_methods_on_gaze_only(self):
         d = _gaze_only()
-        calls = [lambda: d.pupil_lowpass_filter(5), lambda: d.pupil_smooth_window(),
-                 lambda: d.pupil_merge_eyes(), lambda: d.pupil_blinks_detect(),
-                 lambda: d.pupil_blinks_interpolate(), lambda: d.pupil_estimate_baseline(),
-                 lambda: d.pupil_estimate_response(),
+        calls = [lambda: d.pupil.lowpass_filter(5), lambda: d.pupil.smooth_window(),
+                 lambda: d.pupil.merge_eyes(), lambda: d.pupil.blinks_detect(),
+                 lambda: d.pupil.blinks_interpolate(), lambda: d.pupil.estimate_baseline(),
+                 lambda: d.pupil.estimate_response(),
                  lambda: d.plot.pupil_plot(), lambda: d.plot.pupil_plot_segments()]
         for call in calls:
             with self.subTest(call=call):

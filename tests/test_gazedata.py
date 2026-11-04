@@ -711,7 +711,7 @@ def test_stored_divergence_is_not_an_eye():
     d = d.mask_eye_divergences(store_as="div")
     assert d.eyes == ["left", "right"]
     assert d.data.get_layer("left_div", "divergence").sum() == 2  # 99th percentile
-    d.pupil_blinks_detect()
+    d.pupil.blinks_detect()
     d.merge_eyes()
     d.crop(0, 1000)
     d.downsample(50)

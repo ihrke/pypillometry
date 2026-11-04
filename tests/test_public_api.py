@@ -25,6 +25,9 @@ INTERNAL = {
         "nprange", "p_asym_laplac", "p_asym_laplac_kappa", "trans_logistic_vec",
     },
     "pypillometry.example_data": {"DatasetDict"},
+    # namespaces: used as d.pupil / pp.pupil, documented in their modules
+    "pypillometry.eyedata.namespace": {"Namespace", "accessor"},
+    "pypillometry.eyedata.pupil": {"PupilNamespace"},
     "pypillometry.intervals": {"stat_event_interval"},
     "pypillometry.io": {"is_ssh_url"},
     "pypillometry.plot.genplotter": {"GenericPlotter"},

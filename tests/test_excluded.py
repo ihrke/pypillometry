@@ -75,22 +75,22 @@ class TestExcluded(unittest.TestCase):
 
     def test_blinks(self):
         d = _make_data()
-        n_all = d.pupil_blinks_detect().nblinks()["left_pupil"]
+        n_all = d.pupil.blinks_detect().nblinks()["left_pupil"]
         self.assertEqual(n_all, 4)
         # blink at samples 3000-3100 (11000-11200 ms) is excluded
         e = d.exclude_intervals([(10900, 11500)])
-        e = e.pupil_blinks_detect()
+        e = e.pupil.blinks_detect()
         self.assertEqual(len(e.get_blinks("left", "pupil", units="samples")["left_pupil"]), 3)
         # excluding after detection removes the stored blink, also one that
         # only touches the excluded period
-        f = d.pupil_blinks_detect()
+        f = d.pupil.blinks_detect()
         on, off = f.get_blinks("left", "pupil", units="samples")["left_pupil"].intervals[1]
         f = f.exclude_intervals(pp.Intervals([(off, off + 50)], "samples"))
         self.assertEqual(len(f.get_blinks("left", "pupil", units="samples")["left_pupil"]), 3)
         self.assertEqual(f.nblinks()["left_pupil"], 3)
 
     def test_blink_next_to_excluded_keeps_its_layers(self):
-        d = _make_data().pupil_blinks_detect().pupil_blinks_interpolate()
+        d = _make_data().pupil.blinks_detect().pupil.blinks_interpolate()
         on, off = d.get_blinks("left", "pupil", units="samples")["left_pupil"].intervals[1]
         interp = d.get_interpolated_blinks("left", "pupil", units="samples")["left_pupil"].intervals
         mask = d.data.mask["left_pupil"].copy()
@@ -107,7 +107,7 @@ class TestExcluded(unittest.TestCase):
     def test_interpolation_leaves_excluded(self):
         d = _make_data().exclude_intervals([(10900, 11500)])
         before = d.data["left_pupil"].copy()
-        d = d.pupil_blinks_detect().pupil_blinks_interpolate()
+        d = d.pupil.blinks_detect().pupil.blinks_interpolate()
         excl = d._excluded_mask()
         np.testing.assert_array_equal(d.data["left_pupil"][excl], before[excl])
         self.assertTrue(np.isnan(d.data["left_pupil"][3000:3100]).all())
@@ -170,7 +170,7 @@ class TestIncludedSplitRemove(unittest.TestCase):
         d = _make_data()
         d.set_events(pp.Events([6000, 7500, 9000, 12500, 20000],
                                ["a", "x", "b", "y", "c"]))
-        d = d.pupil_blinks_detect()
+        d = d.pupil.blinks_detect()
         return d.exclude_intervals([(7000, 8000), (12000, 13000)])
 
     def test_get_included(self):

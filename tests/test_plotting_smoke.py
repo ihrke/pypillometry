@@ -143,7 +143,7 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
     
     def test_plot_masked_single_eye_variable(self):
         """Test plot_masked with single eye and variable"""
-        self.data.pupil_blinks_detect()
+        self.data.pupil.blinks_detect()
         fig = plt.figure()
         result = self.data.plot.plot_masked('left', 'pupil')
         self.assertIsNone(result)  # Should return None
@@ -151,7 +151,7 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
     
     def test_plot_masked_multiple_eyes_no_merge(self):
         """Test plot_masked with multiple eyes without merging"""
-        self.data.pupil_blinks_detect()
+        self.data.pupil.blinks_detect()
         # Only check if there are actual intervals
         intervals = self.data.mask_as_intervals(['left', 'right'], 'pupil')
         if sum(len(iv) for iv in intervals.values()) > 0:
@@ -171,7 +171,7 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
     
     def test_plot_masked_multiple_eyes_with_merge(self):
         """Test plot_masked with multiple eyes with merging"""
-        self.data.pupil_blinks_detect()
+        self.data.pupil.blinks_detect()
         fig = plt.figure()
         result = self.data.plot.plot_masked(['left', 'right'], 'pupil', merge=True)
         self.assertIsNone(result)
@@ -179,7 +179,7 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
     
     def test_plot_masked_with_units_ms(self):
         """Test plot_masked with milliseconds units"""
-        self.data.pupil_blinks_detect()
+        self.data.pupil.blinks_detect()
         # Check if there are intervals before checking labels
         intervals = self.data.mask_as_intervals('left', 'pupil')['left_pupil']
         fig = plt.figure()
@@ -193,7 +193,7 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
     
     def test_plot_masked_with_units_sec(self):
         """Test plot_masked with seconds units"""
-        self.data.pupil_blinks_detect()
+        self.data.pupil.blinks_detect()
         # Check if there are intervals before checking labels
         intervals = self.data.mask_as_intervals('left', 'pupil')['left_pupil']
         fig = plt.figure()
@@ -207,7 +207,7 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
     
     def test_plot_masked_with_units_none(self):
         """Test plot_masked with indices (units="samples")"""
-        self.data.pupil_blinks_detect()
+        self.data.pupil.blinks_detect()
         # Check if there are intervals before checking labels
         intervals = self.data.mask_as_intervals('left', 'pupil')['left_pupil']
         fig = plt.figure()
@@ -221,7 +221,7 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
     
     def test_plot_masked_no_labels(self):
         """Test plot_masked with show_labels=False"""
-        self.data.pupil_blinks_detect()
+        self.data.pupil.blinks_detect()
         fig = plt.figure()
         self.data.plot.plot_masked(['left', 'right'], 'pupil', show_labels=False)
         self.assertIsNotNone(plt.gcf())
@@ -241,14 +241,14 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
     
     def test_plot_masked_all_eyes_all_variables(self):
         """Test plot_masked with default parameters (all eyes and variables)"""
-        self.data.pupil_blinks_detect()
+        self.data.pupil.blinks_detect()
         fig = plt.figure()
         self.data.plot.plot_masked([], [], merge=False)
         self.assertIsNotNone(plt.gcf())
     
     def test_plot_masked_with_kwargs(self):
         """Test plot_masked accepts additional kwargs for matplotlib"""
-        self.data.pupil_blinks_detect()
+        self.data.pupil.blinks_detect()
         fig = plt.figure()
         self.data.plot.plot_masked('left', 'pupil', linewidth=5, alpha=0.5)
         self.assertIsNotNone(plt.gcf())

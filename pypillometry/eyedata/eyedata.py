@@ -6,7 +6,8 @@ from ..units import parse_distance, parse_angle
 import numpy as np
 from loguru import logger
 
-from .pupil import _PupilMethods
+from .pupil import PupilNamespace
+from .namespace import accessor
 import numpy as np
 from collections.abc import Iterable
 from typing import Optional, Dict, Union
@@ -27,7 +28,7 @@ from ..signal.baseline import butter_lowpass_filter, downsample
 
 
 
-class EyeData(_GazeMethods, _PupilMethods, GenericEyeData):
+class EyeData(_GazeMethods, GenericEyeData):
     """
     Class for eye-tracking and pupillometric data: pupil size and/or gaze
     position (x, y) of one or two eyes.
@@ -97,6 +98,8 @@ class EyeData(_GazeMethods, _PupilMethods, GenericEyeData):
     ...         left_y=np.random.randn(1000))
     >>> print(d)
     """
+    pupil = accessor(PupilNamespace)
+
     def __init__(self, 
                     time: np.ndarray = None,
                     left_x: np.ndarray = None,

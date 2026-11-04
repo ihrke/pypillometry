@@ -142,7 +142,7 @@ class TestIncompleteBlinkStores:
 
     def test_blink_stats(self, incomplete_eyedata):
         d = incomplete_eyedata
-        d.pupil_blinks_detect()
+        d.pupil.blinks_detect()
         d["mean", "x"] = d.data["left_x"]  # an eye without pupil data
         stats = d.blink_stats()
         assert set(stats) == {"left_pupil", "right_pupil"}  # not the eye "mean"
@@ -231,16 +231,16 @@ class TestIncompletePupilMethods:
         return d
 
     def test_filters_skip_eyes_without_pupil(self, d):
-        d.pupil_lowpass_filter(cutoff=5)
-        d.pupil_smooth_window(winsize=50)
+        d.pupil.lowpass_filter(cutoff=5)
+        d.pupil.smooth_window(winsize=50)
         with pytest.raises(KeyError, match="extra"):
-            d.pupil_lowpass_filter(cutoff=5, eyes="extra")
+            d.pupil.lowpass_filter(cutoff=5, eyes="extra")
 
     def test_blinks(self, d):
-        d.pupil_blinks_detect()
+        d.pupil.blinks_detect()
         nb = d.nblinks(variables="pupil")
         assert set(nb) == {"left_pupil", "right_pupil"}
-        d.pupil_blinks_interpolate()
+        d.pupil.blinks_interpolate()
         assert set(d.get_interpolated_blinks(variables="pupil")) == {"left_pupil", "right_pupil"}
         assert np.all(d.data["right_pupil"][200:220] > 4)
 

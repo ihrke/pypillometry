@@ -103,7 +103,7 @@ def get_data(dataset):
 
 def preprocessed(dataset):
     """Data with blinks detected (masked) and interpolated (case b)."""
-    return get_data(dataset).pupil_blinks_detect().pupil_blinks_interpolate()
+    return get_data(dataset).pupil.blinks_detect().pupil.blinks_interpolate()
 
 
 # ---------------------------------------------------------------------------
@@ -195,7 +195,7 @@ BLINK_PARAMS = {"default": {}, "zero": {"strategies": ["zero"]},
 
 def _blinks_detect(dataset, params):
     d = get_data(dataset)
-    d.pupil_blinks_detect(**params)
+    d.pupil.blinks_detect(**params)
     # the returned blinks (before step 9) are the stored ones
     out = {f"returned.{k}": iv_samples(iv) for k, iv in
            d.get_blinks(variables="pupil", units="samples").items()}
@@ -228,7 +228,7 @@ def _blinks_interpolate(dataset):
 
 
 def _lowpass(dataset):
-    d = preprocessed(dataset).pupil_lowpass_filter(5)
+    d = preprocessed(dataset).pupil.lowpass_filter(5)
     out = {f"pupil.{k}": np.asarray(d.data[k], dtype=float).copy() for k in pupil_keys(d)}
     out.update(masks(d, pupil_keys(d)))
     return out

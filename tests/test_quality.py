@@ -115,13 +115,13 @@ class TestQualityReport(unittest.TestCase):
 
     def test_preprocessing_measures(self):
         d = _make_data(missing=[(1000, 1100), (5000, 5100)])
-        d.pupil_blinks_detect()
+        d.pupil.blinks_detect()
         r = d.quality_report()
         self.assertIn("blinks", r)
         self.assertEqual(r["blinks"]["left"]["n"].value, len(d.get_blinks("left", "pupil")["left_pupil"]))
         self.assertIn("artifacts", r)
         self.assertGreaterEqual(r["artifacts"]["left"]["pupil_masked_pct"].value, 2.0)
-        d.pupil_blinks_interpolate()
+        d.pupil.blinks_interpolate()
         r = d.quality_report()
         self.assertIn("interpolated_pct", r["artifacts"]["left"])
         # the interpolation margins are not "other artifacts" (finding 5.8)
@@ -232,7 +232,7 @@ class TestQualityReport(unittest.TestCase):
         d.calibration = {"left": pp.SpatialCalibration(
             "left", "HV9", np.zeros((9, 2)), np.zeros((9, 2)),
             np.c_[np.full(9, 0.3), np.zeros((9, 2))])}
-        d.pupil_blinks_detect()
+        d.pupil.blinks_detect()
         r = d.quality_report()
         for section, group, m in r.metrics():
             self.assertTrue(m.description, f"{section}.{m.name} has no description")
@@ -298,7 +298,7 @@ class TestExcludedPeriods(unittest.TestCase):
         self.assertAlmostEqual(left["longest_dropout"].value, 100 / 500)
         self.assertAlmostEqual(left["dropout_rate"].value, 1 / (16 / 60))
         # the excluded samples are masked, but not counted as artifacts
-        e.pupil_blinks_detect(inplace=True)
+        e.pupil.blinks_detect(inplace=True)
         r = e.quality_report()
         self.assertAlmostEqual(r["blinks"]["left"]["rate"].value,
                                len(e.get_blinks("left", "pupil")["left_pupil"]) / (16 / 60))

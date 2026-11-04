@@ -8,6 +8,7 @@ Methods of :class:`~pypillometry.EyeData` for pupil data.
 import itertools
 from typing import Optional, Tuple
 from .generic import keephistory
+from .namespace import Namespace
 #from .. import convenience
 from ..signal import baseline
 from ..signal import preproc
@@ -56,16 +57,20 @@ def _merge_overlapping_blink_windows(blinks, n):
         out.append((t1, on, off, t4))
     return out
 
-class _PupilMethods:
+class PupilNamespace(Namespace):
     """
-    Methods of :class:`~pypillometry.EyeData` for pupil data.
+    Methods for pupil data, accessed as ``d.pupil`` (e.g.,
+    ``d.pupil.blinks_detect()``).
 
-    Internal: not a data class (no state and no constructor). The methods
-    need pupil data and raise a ValueError if there is none.
+    The methods need pupil data and raise a ValueError if there is none.
+    The transforming methods return the data object (see
+    :class:`~pypillometry.eyedata.namespace.Namespace`).
     """
+
+    _name = "pupil"
 
     @keephistory
-    def pupil_lowpass_filter(self,  cutoff: float, order: int=2, eyes=[], policy="default",
+    def lowpass_filter(self,  cutoff: float, order: int=2, eyes=[], policy="default",
                              inplace=None):
         """
         Lowpass-filter pupil signal using a Butterworth-filter.
@@ -102,9 +107,9 @@ class _PupilMethods:
         """
         from ..signal.pupil import lowpass_filter_iterative
         
-        self._require("pupil")
-        obj = self._get_inplace(inplace)
-        eyes=self._eyes_with(eyes, "pupil")
+        self._d._require("pupil")
+        obj = self._d._get_inplace(inplace)
+        eyes=self._d._eyes_with(eyes, "pupil")
 
         for eye in eyes:
             x = obj.values(eye, "pupil", policy)  # NaN: unusable
@@ -115,7 +120,7 @@ class _PupilMethods:
         return obj
 
     @keephistory
-    def pupil_smooth_window(self, eyes=[], window: str="hanning", winsize: float=11,
+    def smooth_window(self, eyes=[], window: str="hanning", winsize: float=11,
                             policy="default", inplace=None):
         """
         Apply smoothing of the signal using a moving window.
@@ -124,7 +129,7 @@ class _PupilMethods:
         Only the usable samples under the mask `policy` are smoothed; the
         unusable samples (masked or NaN) are bridged linearly for the
         smoothing and keep their stored values (as in
-        :meth:`pupil_lowpass_filter`). The mask layers are kept.
+        :meth:`lowpass_filter`). The mask layers are kept.
         
         Parameters
         ----------
@@ -148,12 +153,12 @@ class _PupilMethods:
         EyeData
             the object with the smoothed pupil data
         """
-        self._require("pupil")
-        obj = self._get_inplace(inplace)
-        eyes=self._eyes_with(eyes, "pupil")
+        self._d._require("pupil")
+        obj = self._d._get_inplace(inplace)
+        eyes=self._d._eyes_with(eyes, "pupil")
 
         # convert winsize to index based on sampling rate
-        winsize_ix=self._samples(winsize, rounding="up")
+        winsize_ix=self._d._samples(winsize, rounding="up")
 
         # process requested eyes
         for eye in eyes:
@@ -169,7 +174,7 @@ class _PupilMethods:
         return obj
 
     @keephistory
-    def pupil_merge_eyes(self, method: str = "local_offset", 
+    def merge_eyes(self, method: str = "local_offset", 
                          lowpass_cutoff: float = 0.2,
                          max_iter: int = 10,
                          keep_eyes: bool = True, 
@@ -253,25 +258,25 @@ class _PupilMethods:
         Examples
         --------
         >>> # Default: local offset correction
-        >>> data.pupil_merge_eyes()
+        >>> data.pupil.merge_eyes()
         >>> merged = data["mean", "pupil"]
         
         >>> # Use global offset (simpler, assumes no drift)
-        >>> data.pupil_merge_eyes(method="offset")
+        >>> data.pupil.merge_eyes(method="offset")
         
         >>> # Only use timepoints where both eyes are valid
-        >>> data.pupil_merge_eyes(method="both_available")
+        >>> data.pupil.merge_eyes(method="both_available")
         
         >>> # Remove original eye data after merging
-        >>> data.pupil_merge_eyes(keep_eyes=False)
+        >>> data.pupil.merge_eyes(keep_eyes=False)
         
         See Also
         --------
         merge_eyes : Generic merge method in GenericEyeData (masks if all eyes invalid)
         pypillometry.signal.pupil.pupil_eye_offset : Compute local offset between eyes
         """
-        self._require("pupil")
-        obj = self._get_inplace(inplace)
+        self._d._require("pupil")
+        obj = self._d._get_inplace(inplace)
         
         # Check that we have both eyes
         available_eyes = obj.data.get_available_eyes(variable="pupil")
@@ -420,7 +425,7 @@ class _PupilMethods:
             logger.debug(f"vel_onset {vel_onset} -> {vel_onset_samples:.4f} (percentile)")
         else:
             # Convert from per-ms to per-sample
-            vel_onset_samples = float(vel_onset) * (1000 / self.fs)
+            vel_onset_samples = float(vel_onset) * (1000 / self._d.fs)
             logger.debug(f"vel_onset {vel_onset}/ms -> {vel_onset_samples:.4f}/sample")
         
         # Convert offset threshold
@@ -429,13 +434,13 @@ class _PupilMethods:
             logger.debug(f"vel_offset {vel_offset} -> {vel_offset_samples:.4f} (percentile)")
         else:
             # Convert from per-ms to per-sample
-            vel_offset_samples = float(vel_offset) * (1000 / self.fs)
+            vel_offset_samples = float(vel_offset) * (1000 / self._d.fs)
             logger.debug(f"vel_offset {vel_offset}/ms -> {vel_offset_samples:.4f}/sample")
         
         return vel_onset_samples, vel_offset_samples
 
     @keephistory
-    def pupil_blinks_detect(self, eyes=[], min_duration:float=20, blink_val:float=0,
+    def blinks_detect(self, eyes=[], min_duration:float=20, blink_val:float=0,
                       winsize: float=11, vel_onset=-5.0, vel_offset=5.0, 
                       vel_onset_min_duration: float=5.0, vel_offset_min_duration: float=5.0,
                       max_duration: float=1000,
@@ -516,22 +521,22 @@ class _PupilMethods:
 
         Examples
         --------
-        >>> d = d.pupil_blinks_detect()  # doctest: +SKIP
+        >>> d = d.pupil.blinks_detect()  # doctest: +SKIP
         >>> d.get_blinks(variables="pupil", units="ms")  # doctest: +SKIP
         """
-        self._require("pupil")
-        obj = self._get_inplace(inplace)
-        eyes=self._eyes_with(eyes, "pupil")
+        self._d._require("pupil")
+        obj = self._d._get_inplace(inplace)
+        eyes=self._d._eyes_with(eyes, "pupil")
 
         # Convert ms to samples
-        winsize_ix=self._samples(winsize)
+        winsize_ix=self._d._samples(winsize)
         if winsize_ix % 2==0:
             winsize_ix += 1
-        min_duration_ix=self._samples(min_duration)
-        vel_onset_min_samples = max(1, self._samples(vel_onset_min_duration))
-        vel_offset_min_samples = max(1, self._samples(vel_offset_min_duration))
+        min_duration_ix=self._d._samples(min_duration)
+        vel_onset_min_samples = max(1, self._d._samples(vel_onset_min_duration))
+        vel_offset_min_samples = max(1, self._d._samples(vel_offset_min_duration))
         max_duration_ix = (None if max_duration is None
-                           else self._samples(max_duration))
+                           else self._d._samples(max_duration))
 
         
         # check for unknown strategies
@@ -597,7 +602,7 @@ class _PupilMethods:
         return obj
     
     @keephistory
-    def pupil_blinks_interpolate(self, eyes: str|list=[],
+    def blinks_interpolate(self, eyes: str|list=[],
                                  store_as: str="pupil", 
                                  method="mahot", winsize: float=25, 
                                  vel_onset=-5.0, vel_offset=5.0, 
@@ -613,7 +618,7 @@ class _PupilMethods:
         https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001.
 
         The blinks to interpolate are taken from the blinks stored in the object,
-        so blinks have to be detected first (e.g., using :meth:`pupil_blinks_detect`).
+        so blinks have to be detected first (e.g., using :meth:`blinks_detect`).
         The on- and offsets of each blink are refined using the velocity profile
         before interpolating. Blinks that are so close that the anchor points
         of one fall into the other are merged and interpolated together.
@@ -670,14 +675,14 @@ class _PupilMethods:
         EyeData
             the object with the interpolated pupil data
         """
-        self._require("pupil")
-        obj = self._get_inplace(inplace)
-        eyes=self._eyes_with(eyes, "pupil")
+        self._d._require("pupil")
+        obj = self._d._get_inplace(inplace)
+        eyes=self._d._eyes_with(eyes, "pupil")
 
         # parameters in sampling units (from ms)
-        winsize_ix=self._samples(winsize, rounding="up")
-        margin_ix=self._samples(margin, rounding="up")
-        blinkwindow_ix=self._samples(blinkwindow)
+        winsize_ix=self._d._samples(winsize, rounding="up")
+        margin_ix=self._d._samples(margin, rounding="up")
+        blinkwindow_ix=self._d._samples(blinkwindow)
         if winsize_ix % 2==0: ## ensure smoothing window is odd
             winsize_ix+=1 
 
@@ -685,7 +690,7 @@ class _PupilMethods:
             logger.debug(f"Interpolating blinks for eye {eye}")
             syr=obj.data[eye,"pupil"].copy() ## interpolated signal
             interpolated = np.zeros(len(syr), dtype=bool)  # interpolated samples
-            bls = self.get_blinks(eye, "pupil", units="samples")[f"{eye}_pupil"]
+            bls = self._d.get_blinks(eye, "pupil", units="samples")[f"{eye}_pupil"]
             
             # Use raw data for velocity computation - blink_onsets_mahot handles NaN/zeros internally
             # Don't use mask-applied data here because the mask includes blink regions,
@@ -703,7 +708,7 @@ class _PupilMethods:
             logger.debug(f"Refined {len(blink_onsets)} blink boundaries")
             # the anchor points of a blink must not fall into a neighbouring
             # blink (they would be NaN), so merge blinks with overlapping windows
-            blink_onsets = _merge_overlapping_blink_windows(blink_onsets, len(self))
+            blink_onsets = _merge_overlapping_blink_windows(blink_onsets, len(self._d))
 
             # Collect successfully interpolated blinks
             interpolated_intervals = []
@@ -747,7 +752,7 @@ class _PupilMethods:
 
 
     @keephistory
-    def pupil_estimate_baseline(self, eyes=[], variable="pupil",
+    def estimate_baseline(self, eyes=[], variable="pupil",
                                 method: str="envelope_iter_bspline_2", policy="default",
                                 inplace=None, **kwargs):
         """
@@ -758,7 +763,7 @@ class _PupilMethods:
         :meth:`~pypillometry.GenericEyeData.mask`). The unusable samples
         (masked or NaN, e.g., blinks that were not interpolated or the
         excluded periods) are bridged linearly between their neighbours.
-        Interpolate blinks first (see :meth:`pupil_blinks_interpolate`) to
+        Interpolate blinks first (see :meth:`blinks_interpolate`) to
         use a better reconstruction than a straight line.
         
         Parameters
@@ -802,16 +807,16 @@ class _PupilMethods:
         phasic pupil dynamics in humans. *Behavior Research Methods*, 57(9), 233.
         https://doi.org/10.3758/s13428-025-02755-7
         """
-        self._require(variable)
-        obj = self._get_inplace(inplace)
+        self._d._require(variable)
+        obj = self._d._get_inplace(inplace)
         if not isinstance(variable, str):
             logger.warning("variable must be a string; using default 'pupil'")
             variable="pupil"
-        eyes=self._eyes_with(eyes, variable)
+        eyes=self._d._eyes_with(eyes, variable)
 
         for eye in eyes:
             logger.debug("Estimating baseline for eye %s"%eye)
-            sy = self.values(eye, variable, policy)
+            sy = self._d.values(eye, variable, policy)
             unusable = np.isnan(sy)
             if unusable.all():
                 raise ValueError(f"'{eye}_{variable}' has no usable samples; the "
@@ -822,22 +827,22 @@ class _PupilMethods:
                 sy = _bridge_gaps(sy)
 
             if method=="envelope_iter_bspline_2":
-                txd,syd,base2,base1=baseline.baseline_envelope_iter_bspline(self.tx, sy,
-                                                                            self.events.onsets,self.fs,**kwargs)
+                txd,syd,base2,base1=baseline.baseline_envelope_iter_bspline(self._d.tx, sy,
+                                                                            self._d.events.onsets,self._d.fs,**kwargs)
                 f=interpolate.interp1d(txd, base2, kind="cubic", bounds_error=False, fill_value="extrapolate")
-                obj.data[eye,"baseline"]=f(self.tx)
+                obj.data[eye,"baseline"]=f(self._d.tx)
             elif method=="envelope_iter_bspline_1": 
-                txd,syd,base2,base1=baseline.baseline_envelope_iter_bspline(self.tx, sy,
-                                                                            self.events.onsets,self.fs,**kwargs)
+                txd,syd,base2,base1=baseline.baseline_envelope_iter_bspline(self._d.tx, sy,
+                                                                            self._d.events.onsets,self._d.fs,**kwargs)
                 f=interpolate.interp1d(txd, base1, kind="cubic", bounds_error=False, fill_value="extrapolate")
-                obj.data[eye,"baseline"]=f(self.tx)
+                obj.data[eye,"baseline"]=f(self._d.tx)
             else:
                 raise ValueError("Undefined method for baseline estimation: %s"%method)         
             
         return obj
         
     @keephistory
-    def pupil_estimate_response(self, 
+    def estimate_response(self, 
                           eyes=[], 
                           npar: str|float="free", tmax: str|float="free", 
                           verbose: int=50,
@@ -849,7 +854,7 @@ class _PupilMethods:
         Estimate pupil-response based on event-onsets, see
         :func:`~pypillometry.signal.pupil.pupil_response`.
 
-        If a baseline has been estimated (see :meth:`pupil_estimate_baseline`),
+        If a baseline has been estimated (see :meth:`estimate_baseline`),
         it is subtracted from the pupil signal before estimating the response;
         otherwise, a baseline of zero is used.
 
@@ -913,9 +918,9 @@ class _PupilMethods:
         phasic pupil dynamics in humans. *Behavior Research Methods*, 57(9), 233.
         https://doi.org/10.3758/s13428-025-02755-7
         """
-        self._require("pupil")
-        obj = self._get_inplace(inplace)
-        eyes=self._eyes_with(eyes, "pupil")
+        self._d._require("pupil")
+        obj = self._d._get_inplace(inplace)
+        eyes=self._d._eyes_with(eyes, "pupil")
 
         obj.params["response"]=dict()
         for eye in eyes:
