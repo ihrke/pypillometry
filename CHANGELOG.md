@@ -116,6 +116,7 @@ The main ones:
   other eyes
 - `pupil.estimate_response()` on data without events raises a `ValueError`
   (it returned the start parameters)
+- `pp.nologging()` could leave logging disabled after the `with` block
 - Re-running `pupil.blinks_detect()` after `pupil.blinks_interpolate()`
   found no blinks (it read the interpolated values) and cleared the blink
   layer; interpolated samples now count as missing during detection
