@@ -180,15 +180,22 @@ Tests
 -----
 
 Tests are in the ``tests/`` folder and run with `pytest
-<https://docs.pytest.org/>`_:
+<https://docs.pytest.org/>`_. The examples in the docstrings are run as
+well (doctests):
 
 .. code-block:: bash
 
-    pytest tests/
+    pytest                # tests/ and docstring examples
+    pytest tests/         # tests only
+    pytest pypillometry/  # docstring examples only
 
-Run pytest on ``tests/`` only; the repository root contains scripts that
-are not tests. The tests run automatically for every push and pull request
-on GitHub. New functions should come with tests: at a minimum, call them
+Examples should run as written (use the bundled
+``pp.get_example_data("rlmw_002_short")`` for data). Mark single lines
+with ``# doctest: +SKIP`` only if they need data that are not available
+(e.g., a user's file) or give output that varies between runs. Run pytest
+from the repository root without other paths; the root contains scripts
+that are not tests. The tests run automatically for every push and pull
+request on GitHub. New functions should come with tests: at a minimum, call them
 with reasonable arguments; better, compare the result to the expected
 output.
 
