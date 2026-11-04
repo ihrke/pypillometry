@@ -616,7 +616,6 @@ class PupilNamespace(Namespace):
     def blinks_merge_close(
         self,
         eyes: list = [],
-        variables: list = [],
         distance: float = 100,
         units: str = "ms",
         inplace: bool | None = None,
@@ -624,16 +623,14 @@ class PupilNamespace(Namespace):
         """
         Merge blinks that are close together.
 
-        The merged blinks replace the ``"blink"`` layer of the processed
-        variables (see :meth:`~pypillometry.GenericEyeData.set_blinks`); read them with
+        The merged blinks replace the ``"blink"`` layer of the pupil
+        (see :meth:`~pypillometry.GenericEyeData.set_blinks`); read them with
         :meth:`~pypillometry.GenericEyeData.get_blinks`.
         
         Parameters
         ----------
         eyes : str or list of str, optional
-            eye(s) to process; if empty, all available eyes
-        variables : str or list of str, optional
-            variable(s) to process; if empty, all available variables
+            eye(s) to process; if empty, all eyes with pupil data
         distance : float, str or Quantity, optional
             Merge blinks closer than this distance, e.g. ``100 * u.ms`` or
             ``"0.1 sec"``; plain numbers are in units given by ``units``.
@@ -652,8 +649,9 @@ class PupilNamespace(Namespace):
             the object with the merged blinks (`self` or a copy, depending
             on `inplace`)
         """
+        self._d._require("pupil")
         obj = self._d._get_inplace(inplace)
-        pairs = obj.data.select(eyes, variables)
+        pairs = obj.data.select(eyes, "pupil")
 
         distance_ix = obj._samples(distance, units)
 
