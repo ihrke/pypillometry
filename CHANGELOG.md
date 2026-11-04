@@ -80,6 +80,7 @@ tables below for every changed call.
 - Experimental setup and calibration are kept and saved for every object
 - `d.plot.plot_masked(policy=...)`, e.g. `policy="strict"` to show the
   interpolated stretches
+- `pytest` also runs the examples in the docstrings (doctests)
 
 ### Changed results
 
@@ -150,6 +151,9 @@ The main ones:
 - Re-running `pupil.blinks_detect()` after `pupil.blinks_interpolate()`
   found no blinks (it read the interpolated values) and cleared the blink
   layer; interpolated samples now count as missing during detection
+- The source distribution contains all test data (`MANIFEST.in`)
+- Docstring examples run as written (several used undefined names or
+  outdated calls)
 
 ### Upgrading code: old -> new
 
