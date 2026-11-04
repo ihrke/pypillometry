@@ -53,9 +53,12 @@ class GenericPlots(Namespace):
         Raises
         ------
         ValueError
-            If plot_range does not overlap with data time range
+            If plot_range does not overlap with data time range or if its
+            start is not before its end
         """
         start, end = plot_range
+        if not start < end:
+            raise ValueError(f"plot_range ({start}, {end}): start must be before end")
         
         # Handle infinite bounds (always valid)
         if start == -np.inf and end == np.inf:

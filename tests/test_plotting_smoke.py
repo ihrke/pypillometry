@@ -266,6 +266,20 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
         np.testing.assert_allclose(xs, [100, 400])
 
 
+class TestPlotRange(unittest.TestCase):
+    """plot_range is checked in all plots that take it"""
+
+    def test_reversed_plot_range_raises(self):
+        d = pp.EyeData(sampling_rate=100, left_pupil=np.ones(500),
+                       left_x=np.ones(500), left_y=np.ones(500))
+        for name in ["plot_timeseries", "pupil_plot", "plot_heatmap", "plot_scanpath",
+                     "plot_pupil_foreshortening_error_surface"]:
+            with self.subTest(plot=name):
+                with self.assertRaisesRegex(ValueError, "start must be before end"):
+                    getattr(d.plot, name)(plot_range=(4000, 1000))
+                plt.close("all")
+
+
 class TestPlottingGaze(unittest.TestCase):
     """Smoke tests for the gaze plots"""
 
