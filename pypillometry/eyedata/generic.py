@@ -698,9 +698,13 @@ class GenericEyeData(state.VersionedState, ABC):
         """
         if isinstance(variables, str):
             variables = [variables]
-        pairs = self.data.select(eyes, variables)
+        pairs = self.data._select(eyes, variables)
         found = dict.fromkeys(eye for eye, _ in pairs)
-        return [eye for eye in found if all((eye, var) in pairs for var in variables)]
+        eyes = [eye for eye in found if all((eye, var) in pairs for var in variables)]
+        # name the channels in the log of the calling method
+        logger.opt(depth=1).debug("channels: %s" % ", ".join(
+            f"{eye}_{var}" for eye in eyes for var in variables))
+        return eyes
 
     def _require(self, *variables):
         """Private helper: raise a ValueError unless there is data for each

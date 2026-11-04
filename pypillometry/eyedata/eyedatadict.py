@@ -304,6 +304,13 @@ class EyeDataDict(MutableMapping, Stateful):
         >>> d.select(variables="x")
         [('left', 'x')]
         """
+        pairs = self._select(eyes, variables)
+        # name the channels in the log of the calling method
+        logger.opt(depth=1).debug("channels: %s" % ", ".join(f"{e}_{v}" for e, v in pairs))
+        return pairs
+
+    def _select(self, eyes=None, variables=None) -> List[Tuple[str, str]]:
+        """:meth:`select` without the debug log."""
         eyes_given = eyes is not None and len(eyes) > 0
         vars_given = variables is not None and len(variables) > 0
         eyes = ([eyes] if isinstance(eyes, str) else list(eyes)) if eyes_given else self.eyes

@@ -40,3 +40,13 @@ def test_nologging_restores_logging():
         with logged() as records:
             warn(d)
         assert records, "logging not restored after nologging()"
+
+
+def test_debug_log_names_channels():
+    d = pp.EyeData(left_pupil=np.arange(100.), right_pupil=np.arange(100.),
+                   sampling_rate=100)
+    with pp.loglevel("DEBUG"), logged("DEBUG") as records:
+        d.scale(eyes="right")
+        d.pupil.lowpass_filter(3, eyes="left")
+    assert ("scale", "channels: right_pupil") in records
+    assert ("lowpass_filter", "channels: left_pupil") in records
