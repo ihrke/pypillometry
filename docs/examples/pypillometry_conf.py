@@ -298,21 +298,10 @@ def read_subject(info):
                             "right_x", "right_y", "right_p"])
 
     ## Eyelink tracker puts "   ." when no data is available for x/y coordinates
-    left_x=df.left_x.values
-    left_x[left_x=="   ."] = np.nan
-    left_x = left_x.astype(float)
-
-    left_y=df.left_y.values
-    left_y[left_y=="   ."] = np.nan
-    left_y = left_y.astype(float)
-
-    right_x=df.right_x.values
-    right_x[right_x=="   ."] = np.nan
-    right_x = right_x.astype(float)
-
-    right_y=df.right_y.values
-    right_y[right_y=="   ."] = np.nan
-    right_y = right_y.astype(float)
+    left_x = df.left_x.replace("   .", np.nan).to_numpy(dtype=float)
+    left_y = df.left_y.replace("   .", np.nan).to_numpy(dtype=float)
+    right_x = df.right_x.replace("   .", np.nan).to_numpy(dtype=float)
+    right_y = df.right_y.replace("   .", np.nan).to_numpy(dtype=float)
 
     ## Eyelink tracker codes missing pupil data (e.g., blinks) as 0
     left_p = np.where(df.left_p == 0, np.nan, df.left_p)
