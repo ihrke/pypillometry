@@ -19,7 +19,7 @@ class GenericPlotter:
     """
     obj: GenericEyeData # link to the data object
 
-    #: most figures a *_segments plot makes (a plain-number `interv` is ms)
+    #: most figures a ``*_segments`` plot makes (a plain-number `interv` is ms)
     MAX_SEGMENTS = 500
 
     @classmethod
