@@ -87,11 +87,15 @@ class EyeData(GenericEyeData):
     Examples
     --------
     >>> import numpy as np
-    >>> from pypillometry.eyedata import EyeData
-    >>> d=EyeData(time=np.arange(0, 1000, 1),
-    ...         left_x=np.random.randn(1000),
-    ...         left_y=np.random.randn(1000))
-    >>> print(d)
+    >>> import pypillometry as pp
+    >>> rng = np.random.default_rng(1)
+    >>> d = pp.EyeData(time=np.arange(0, 1000, 1),
+    ...                left_x=rng.normal(size=1000),
+    ...                left_y=rng.normal(size=1000),
+    ...                left_pupil=rng.normal(5, 0.1, size=1000))
+    >>> d.eyes, d.variables, len(d)
+    (['left'], ['x', 'y', 'pupil'], 1000)
+    >>> print(d)  # summary of the data  # doctest: +SKIP
     """
     pupil = accessor(PupilNamespace)
     gaze = accessor(GazeNamespace)
