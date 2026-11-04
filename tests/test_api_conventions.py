@@ -147,3 +147,8 @@ class TestMs:
         assert ep.window == (-200, 800)
         iv = data.get_intervals(("a", "b"))
         assert iv.units == "ms" and iv.intervals == [(1000., 5000.)]
+
+    def test_durations(self, data):
+        assert data.get_duration() == 10000.
+        assert data.get_duration("min") == pytest.approx(1 / 6)
+        assert data.exclude_intervals([(0, 500)]).excluded_duration() == 500.

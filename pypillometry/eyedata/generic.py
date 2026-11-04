@@ -1200,13 +1200,13 @@ class GenericEyeData(state.VersionedState, ABC):
         """
         return self.data.get_available_variables()
 
-    def get_duration(self, units="min"):
+    def get_duration(self, units="ms"):
         """Return duration of the dataset in units specified.
 
         Parameters
         ----------
         units : str, optional
-            unit one of "min", "sec", "h", by default "min"
+            unit one of "ms" (default), "sec", "min", "h"
 
         Returns
         -------
@@ -3486,14 +3486,14 @@ class GenericEyeData(state.VersionedState, ABC):
             (float(a), float(b)) for a, b in Intervals(removed_periods, "ms").merge().intervals]
         return obj
 
-    def excluded_duration(self, units: str = "min") -> float:
+    def excluded_duration(self, units: str = "ms") -> float:
         """
         Total duration of the excluded periods within the data.
 
         Parameters
         ----------
         units : str, optional
-            units of the result ("ms", "sec", "min" (default), "h")
+            units of the result ("ms" (default), "sec", "min", "h")
 
         Returns
         -------
