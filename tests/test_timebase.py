@@ -118,7 +118,7 @@ class TestResetTime(unittest.TestCase):
         d = make(n=2000)
         d["time"] = d.tx + 1000.
         iv = Intervals([(300, 320)], units="samples").to_units(units, d)
-        d.set_blinks(iv, eyes=["left"], variables=["pupil"], apply_mask=True)
+        d.set_blinks(iv, eyes=["left"], variables=["pupil"])
         return d
 
     def test_blinks_follow_the_clock(self):
@@ -126,7 +126,7 @@ class TestResetTime(unittest.TestCase):
             with self.subTest(units=units):
                 d = self.make(units).reset_time(inplace=False)
                 self.assertEqual(d.tx[0], 0.)
-                b = d.get_blinks("left", "pupil")
+                b = d.get_blinks("left", "pupil")["left_pupil"]
                 self.assertEqual(list(b.intervals), [(300, 320)])
                 # blinks and mask agree
                 np.testing.assert_array_equal(np.flatnonzero(b.to_mask(d)),
@@ -256,8 +256,8 @@ class TestChains(unittest.TestCase):
                          event_onsets=self.EVENTS,
                          event_labels=[str(t) for t in self.EVENTS])
         blinks = Intervals(self.BLINKS, units="ms")
-        d.set_blinks(blinks.to_units("samples", d), eyes="left", apply_mask=False)
-        d.set_blinks(blinks, eyes="right", apply_mask=False)
+        d.set_blinks(blinks.to_units("samples", d), eyes="left")
+        d.set_blinks(blinks, eyes="right")
         d.exclude_intervals(self.EXCLUDED, inplace=True)
         return d
 
@@ -281,11 +281,12 @@ class TestChains(unittest.TestCase):
         # blinks (stored in samples and in ms) and excluded periods
         for eye in ("left", "right"):
             np.testing.assert_array_equal(
-                d.get_blinks(eye, "pupil").to_mask(d).astype(bool), self.inside(orig, self.BLINKS))
+                d.get_blinks(eye, "pupil")[f"{eye}_pupil"].to_mask(d).astype(bool), self.inside(orig, self.BLINKS))
         np.testing.assert_array_equal(d.get_excluded().to_mask(d).astype(bool),
                                       self.inside(orig, self.EXCLUDED))
         np.testing.assert_array_equal(d.data.mask["left_pupil"].astype(bool),
-                                      self.inside(orig, self.EXCLUDED) | ~valid)
+                                      self.inside(orig, self.EXCLUDED) | ~valid
+                                      | self.inside(orig, self.BLINKS))
 
     def test_chain(self):
         d = self.make()
@@ -321,8 +322,8 @@ class TestChains(unittest.TestCase):
                                    [float(l) for l in x.events.labels])
         # blinks still cover the blinks
         for eye in ("left", "right"):
-            ds = d.get_blinks(eye, "pupil").to_mask(d).astype(bool)
-            xs = x.get_blinks(eye, "pupil").to_mask(x).astype(bool)
+            ds = d.get_blinks(eye, "pupil")[f"{eye}_pupil"].to_mask(d).astype(bool)
+            xs = x.get_blinks(eye, "pupil")[f"{eye}_pupil"].to_mask(x).astype(bool)
             self.assertTrue(np.all(xs[np.flatnonzero(ds) // 2]))
 
 

@@ -32,7 +32,7 @@ processing step is recorded in the object's history.
    from pypillometry import u
 
    d = pp.EyeData.from_eyelink("recording.edf")   # read an Eyelink file
-   d.pupil_blinks_detect(apply_mask=True)           # detect and mask blinks
+   d.pupil_blinks_detect()                          # detect and mask blinks
    d.pupil_blinks_interpolate()                     # interpolate them
    d.pupil_lowpass_filter(cutoff=4)                 # 4 Hz low-pass filter
 

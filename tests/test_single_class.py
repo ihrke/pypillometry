@@ -26,7 +26,7 @@ class TestRequire(unittest.TestCase):
         d._require("x", "y", "pupil")
 
     def test_missing_lists_channels(self):
-        d = pp.get_rlmw_002_short().drop_data(variables=["x", "y"])
+        d = pp.get_rlmw_002_short().drop_data(variables=["x", "y"], inplace=False)
         with self.assertRaisesRegex(ValueError, "no x, y data; available channels: "
                                     "left_pupil, right_pupil"):
             d._require("pupil", "x", "y")
@@ -114,7 +114,7 @@ class TestSetupAndCalibration(unittest.TestCase):
         self.assertEqual(d.experimental_setup.screen_resolution, (1280, 1024))
 
     def test_kept_without_gaze_on_save(self):
-        p = self.d.drop_data(variables=["x", "y"])
+        p = self.d.drop_data(variables=["x", "y"], inplace=False)
         for ext in (".pypil", ".h5"):
             with self.subTest(ext=ext), tempfile.TemporaryDirectory() as tmp:
                 fname = os.path.join(tmp, "d" + ext)
@@ -138,7 +138,7 @@ class TestDropData(unittest.TestCase):
     def test_keeps_class_and_attributes(self):
         from pypillometry.signal.fake import generate_foreshortening_data
         f = generate_foreshortening_data(duration=1, fs=100, seed=1)
-        p = f.drop_data(variables=["x", "y"])
+        p = f.drop_data(variables=["x", "y"], inplace=False)
         self.assertIs(type(p), pp.FakeEyeData)
         self.assertEqual(p.variables, ["pupil"])
         self.assertIs(p.sim_fct, f.sim_fct)
@@ -170,7 +170,7 @@ class TestOldClassesLoad(unittest.TestCase):
         d = pp.get_rlmw_002_short().crop(0, 1000, inplace=False)
         for old, keep in (("PupilData", ["x", "y"]), ("GazeData", ["pupil"])):
             with self.subTest(old=old):
-                st = state.to_state(d.drop_data(variables=keep))
+                st = state.to_state(d.drop_data(variables=keep, inplace=False))
                 st["class"] = old
                 if old == "PupilData":
                     del st["experimental_setup"], st["calibration"]

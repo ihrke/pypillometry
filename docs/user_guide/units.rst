@@ -38,10 +38,11 @@ Available units:
 Aliases such as ``u.seconds``, ``u.s`` or ``u.degree`` work as well.
 
 Internally, everything is stored in ms, mm and radians. Plain numbers
-(without units) are interpreted as described in each function's
-documentation, usually ms for times. Many functions also take a ``units=``
-argument that says how plain numbers should be read, or in which units a
-result should be returned:
+(without units) for times are ms everywhere (windows, durations,
+``plot_range``), and returned times are in ms unless asked otherwise. Many
+functions also take a ``units=`` argument that says how plain numbers
+should be read, or in which units a result should be returned (in plotting
+functions, ``units=`` is only the unit of the time axis):
 
 .. code-block:: python
 

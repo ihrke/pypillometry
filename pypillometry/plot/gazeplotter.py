@@ -61,7 +61,7 @@ class GazePlotter(GenericPlotter):
         Parameters
         ----------
         plot_range : tuple
-            The time range to plot (in `units`, or with units, e.g.
+            The time range to plot (in ms, or with units, e.g.
             ``(3, 5) * u.min``). Default is (-np.inf, +np.inf), i.e. all data.
         eyes : str or list
             The eyes to plot. Default is [], which means all available data ("left", "right",
@@ -86,7 +86,8 @@ class GazePlotter(GenericPlotter):
                 }
 
         units : str
-            The units of `plot_range` ("ms", "sec", "min", "h"). Default is "sec".
+            The units in which `plot_range` is reported in messages ("ms", "sec",
+            "min", "h"); plain numbers in `plot_range` are ms. Default is "sec".
         cmap : str
             The colormap to use. Default is "jet".
         gridsize : int or str
@@ -143,10 +144,7 @@ class GazePlotter(GenericPlotter):
             endix=np.argmin(np.abs(tx-end))    
         
         # which eyes to plot
-        if isinstance(eyes, str):
-            eyes=[eyes]
-        if len(eyes)==0:
-            eyes=obj.eyes
+        eyes = obj._eyes_with(eyes, ["x", "y"])
 
         # choose gridsize
         if gridsize=="auto":
@@ -322,7 +320,7 @@ class GazePlotter(GenericPlotter):
         Parameters
         ----------
         plot_range : tuple
-            The time range to plot (in `units`, or with units, e.g.
+            The time range to plot (in ms, or with units, e.g.
             ``(3, 5) * u.min``). Default is (-np.inf, +np.inf), i.e. all data.
         eyes : str or list
             The eyes to plot. Default is [], which means all available data ("left", "right",
@@ -349,7 +347,7 @@ class GazePlotter(GenericPlotter):
         title : str
             The title of the plot. Default is "".
         units : str
-            The units of `plot_range` ("ms", "sec", "min", "h"). Default "ms"
+            The units of the time axis ("ms", "sec", "min", "h"). Default "ms"
             (the units of the time vector).
         figsize : tuple
             The figure size (width, height) in inches. Default is (10,10).
@@ -401,10 +399,7 @@ class GazePlotter(GenericPlotter):
         evontix=np.argmin(np.abs(tx-evon[:,np.newaxis]), axis=1).astype(int)
 
         # which eyes to plot
-        if isinstance(eyes, str):
-            eyes=[eyes]
-        if len(eyes)==0:
-            eyes=obj.eyes
+        eyes = obj._eyes_with(eyes, ["x", "y"])
 
         fig, ax = plt.subplots(1,1)
         fig.set_figheight(figsize[1])

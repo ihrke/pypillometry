@@ -61,54 +61,53 @@ class TestExcluded(unittest.TestCase):
 
     def test_intervals_from_events(self):
         d = _make_data()
-        d.set_events(pp.Events([7000, 12000], ["break", "break"]), inplace=True)
+        d.set_events(pp.Events([7000, 12000], ["break", "break"]))
         iv = d.get_intervals("break", window=(0, 1000), units="ms")
         d = d.exclude_intervals(iv)
         np.testing.assert_array_equal(d.get_excluded().intervals,
                                       [(7000, 8000), (12000, 13000)])
         # periods between two events
         d = _make_data()
-        d.set_events(pp.Events([7000, 9000], ["break_start", "break_end"]),
-                     inplace=True)
+        d.set_events(pp.Events([7000, 9000], ["break_start", "break_end"]))
         d = d.exclude_intervals(d.get_intervals(("break_start", "break_end"),
                                                 window=(0, 0), units="ms"))
         np.testing.assert_array_equal(d.get_excluded().intervals, [(7000, 9000)])
 
     def test_blinks(self):
         d = _make_data()
-        n_all = len(d.pupil_blinks_detect())
+        n_all = d.pupil_blinks_detect().nblinks()["left_pupil"]
         self.assertEqual(n_all, 4)
         # blink at samples 3000-3100 (11000-11200 ms) is excluded
         e = d.exclude_intervals([(10900, 11500)])
-        e = e.pupil_blinks_detect(apply_mask=True)
-        self.assertEqual(len(e.get_blinks("left", "pupil")), 3)
+        e = e.pupil_blinks_detect()
+        self.assertEqual(len(e.get_blinks("left", "pupil", units="samples")["left_pupil"]), 3)
         # excluding after detection removes the stored blink, also one that
         # only touches the excluded period
-        f = d.pupil_blinks_detect(apply_mask=True)
-        on, off = f.get_blinks("left", "pupil").intervals[1]
+        f = d.pupil_blinks_detect()
+        on, off = f.get_blinks("left", "pupil", units="samples")["left_pupil"].intervals[1]
         f = f.exclude_intervals(pp.Intervals([(off, off + 50)], "samples"))
-        self.assertEqual(len(f.get_blinks("left", "pupil")), 3)
+        self.assertEqual(len(f.get_blinks("left", "pupil", units="samples")["left_pupil"]), 3)
         self.assertEqual(f.nblinks()["left_pupil"], 3)
 
     def test_blink_next_to_excluded_keeps_its_layers(self):
-        d = _make_data().pupil_blinks_detect(apply_mask=True).pupil_blinks_interpolate()
-        on, off = d.get_blinks("left", "pupil").intervals[1]
-        interp = d.get_interpolated_blinks("left", "pupil").intervals
+        d = _make_data().pupil_blinks_detect().pupil_blinks_interpolate()
+        on, off = d.get_blinks("left", "pupil", units="samples")["left_pupil"].intervals[1]
+        interp = d.get_interpolated_blinks("left", "pupil", units="samples")["left_pupil"].intervals
         mask = d.data.mask["left_pupil"].copy()
         e = d.exclude_intervals(pp.Intervals([(off, off + 50)], "samples"))
         # not counted as a blink, but still a blink, masked and interpolated
-        self.assertEqual(len(e.get_blinks("left", "pupil")), 3)
+        self.assertEqual(len(e.get_blinks("left", "pupil", units="samples")["left_pupil"]), 3)
         self.assertEqual(len(e.blinks["left_pupil"]), 3)
         self.assertTrue(e.data.get_layer("left_pupil", "blink")[on:off].all())
-        self.assertEqual(e.get_interpolated_blinks("left", "pupil").intervals, interp)
+        self.assertEqual(e.get_interpolated_blinks("left", "pupil", units="samples")["left_pupil"].intervals, interp)
         self.assertTrue(e.data.mask["left_pupil"][mask.astype(bool)].all())
         # without the excluded period, it is counted again
-        self.assertEqual(len(e.clear_layer("excluded").get_blinks("left", "pupil")), 4)
+        self.assertEqual(len(e.clear_layer("excluded").get_blinks("left", "pupil", units="samples")["left_pupil"]), 4)
 
     def test_interpolation_leaves_excluded(self):
         d = _make_data().exclude_intervals([(10900, 11500)])
         before = d.data["left_pupil"].copy()
-        d = d.pupil_blinks_detect(apply_mask=True).pupil_blinks_interpolate()
+        d = d.pupil_blinks_detect().pupil_blinks_interpolate()
         excl = d._excluded_mask()
         np.testing.assert_array_equal(d.data["left_pupil"][excl], before[excl])
         self.assertTrue(np.isnan(d.data["left_pupil"][3000:3100]).all())
@@ -155,10 +154,10 @@ class TestExcluded(unittest.TestCase):
 
     def test_drop_data_and_summary(self):
         d = _make_data().exclude_intervals([(7000, 8000)])
-        p = d.drop_data(eyes="right", variables=["x", "y"])
+        p = d.drop_data(variables=["x", "y"], inplace=False)
         np.testing.assert_array_equal(p.get_excluded().intervals, [(7000, 8000)])
         self.assertTrue(p.data.mask["left_pupil"][1000:1500].all())
-        g = d.drop_data(eyes="right", variables="pupil")
+        g = d.drop_data(variables="pupil", inplace=False)
         np.testing.assert_array_equal(g.get_excluded().intervals, [(7000, 8000)])
         self.assertAlmostEqual(d.summary()["excluded_minutes"], 1 / 60)
         self.assertNotIn("excluded_minutes", _make_data().summary())
@@ -170,8 +169,8 @@ class TestIncludedSplitRemove(unittest.TestCase):
         # 20 s at 500 Hz from 5000 ms; excluded 7-8 s and 12-13 s
         d = _make_data()
         d.set_events(pp.Events([6000, 7500, 9000, 12500, 20000],
-                               ["a", "x", "b", "y", "c"]), inplace=True)
-        d = d.pupil_blinks_detect(apply_mask=True)
+                               ["a", "x", "b", "y", "c"]))
+        d = d.pupil_blinks_detect()
         return d.exclude_intervals([(7000, 8000), (12000, 13000)])
 
     def test_get_included(self):
@@ -188,8 +187,8 @@ class TestIncludedSplitRemove(unittest.TestCase):
         self.assertEqual([len(p) for p in parts], [1000, 2000, 6000])
         self.assertEqual([p.tx[0] for p in parts], [5000., 8000., 13000.])
         self.assertEqual([list(p.events.labels) for p in parts], [["a"], ["b"], ["c"]])
-        self.assertEqual(sum(len(p.get_blinks("left", "pupil")) for p in parts),
-                         len(d.get_blinks("left", "pupil")))
+        self.assertEqual(sum(len(p.get_blinks("left", "pupil", units="samples")["left_pupil"]) for p in parts),
+                         len(d.get_blinks("left", "pupil", units="samples")["left_pupil"]))
         for p in parts:
             self.assertEqual(p.excluded_duration(), 0)
         self.assertEqual(len(d), 10000)  # not changed
@@ -206,8 +205,8 @@ class TestIncludedSplitRemove(unittest.TestCase):
         np.testing.assert_allclose(r.events.onsets, [6000, 8000, 18000])
         # data and blinks at their new positions
         np.testing.assert_array_equal(r.data["left_x"][1000:3000], d.data["left_x"][1500:3500])
-        bl_d = d.get_blinks("left", "pupil").to_units("ms", d).intervals
-        bl_r = r.get_blinks("left", "pupil").to_units("ms", r).intervals
+        bl_d = d.get_blinks("left", "pupil", units="samples")["left_pupil"].to_units("ms", d).intervals
+        bl_r = r.get_blinks("left", "pupil", units="samples")["left_pupil"].to_units("ms", r).intervals
         self.assertEqual(len(bl_r), len(bl_d))
         self.assertEqual(bl_r[-1], (bl_d[-1][0] - 2000, bl_d[-1][1] - 2000))
         # nothing excluded or masked for exclusion any more
@@ -231,7 +230,7 @@ class TestIncludedSplitRemove(unittest.TestCase):
         np.testing.assert_array_equal(r2.tx, r.tx)
         # removing the beginning and end does not shift: same as crop()
         e = _make_data()
-        e.set_events(pp.Events([6000, 9000, 20000], ["a", "b", "c"]), inplace=True)
+        e.set_events(pp.Events([6000, 9000, 20000], ["a", "b", "c"]))
         r = e.remove_intervals([(-np.inf, 7000), (15000, np.inf)], inplace=False)
         c = e.crop(7000, 15000 - 2, inplace=False)
         np.testing.assert_array_equal(r.tx, c.tx)
@@ -264,7 +263,7 @@ class TestKeepIntervals(unittest.TestCase):
     def test_keep_blocks_from_events(self):
         d = _make_data()
         d.set_events(pp.Events([7000, 9000, 12000, 15000],
-                               ["Start Block", "End Block"] * 2), inplace=True)
+                               ["Start Block", "End Block"] * 2))
         blocks = d.get_intervals(("Start Block", "End Block"), window=(0, 0))
         d = d.keep_intervals(blocks)  # in sample indices
         np.testing.assert_array_equal(d.get_included().intervals,

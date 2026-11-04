@@ -259,11 +259,11 @@ come from several places:
    * - spans between two events
      - ``d.get_intervals(("trial_start", "response"))``
    * - detected blinks
-     - ``d.get_blinks("left", "pupil")``
+     - ``d.get_blinks("left", "pupil")["left_pupil"]``
    * - other detection methods
-     - ``d.mask_offscreen_coords(apply_mask=False)``
+     - ``d.mask_offscreen_coords().get_layer_intervals("offscreen")``
    * - masked samples
-     - ``d.mask_as_intervals("left", "pupil")``
+     - ``d.mask_as_intervals("left", "pupil")["left_pupil"]``
    * - your own
      - ``pp.Intervals([(0, 100), (200, 300)] * u.ms)``
 
@@ -299,8 +299,9 @@ Sample indices and time
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 Intervals are either in time units ("ms", "sec", "min", "h") or in sample
-indices (``units="samples"``, e.g., blinks; plain numbers in the window of
-:meth:`~GenericEyeData.get_intervals` are sample indices, too). Intervals are
+indices (``units="samples"``; plain numbers in the window of
+:meth:`~GenericEyeData.get_intervals` are ms, sample indices need
+``units="samples"``). Intervals are
 end-exclusive: ``(start, end)`` covers the samples with
 ``start <= t < end``.
 
@@ -313,7 +314,7 @@ time takes the data object and uses its time vector:
 
 .. code-block:: python
 
-    blinks = d.get_blinks("left", "pupil")      # sample indices
+    blinks = d.get_blinks("left", "pupil", units="samples")["left_pupil"]
     blinks.to_units("ms", d)                    # times of these samples
     trials.to_units("samples", d)               # first sample at or after each time
     mask = trials.to_mask(d)                    # one entry per sample of d

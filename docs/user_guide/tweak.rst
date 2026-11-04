@@ -84,12 +84,12 @@ Another common use case is tuning blink detection parameters. Functions can retu
 
     # Define a function that detects blinks and returns intervals
     def detect_blinks(data, vel_onset=-5.0, vel_offset=5.0):
-        blinks = data.pupil_blinks_detect(
-            apply_mask=False,
+        d = data.pupil_blinks_detect(
             vel_onset=vel_onset,
-            vel_offset=vel_offset
+            vel_offset=vel_offset,
+            inplace=False,
         )
-        return blinks.get('left_pupil')  # Returns Intervals
+        return d.get_blinks("left", "pupil")["left_pupil"]  # Returns Intervals
 
     # Tweak the velocity thresholds
     final_params = pp.tweak(
@@ -145,7 +145,7 @@ Example returning multiple outputs:
         filtered_signal = np.array(filtered['left_pupil'])
         
         # Detect blinks
-        blinks = data.pupil_blinks_detect(apply_mask=False, vel_onset=vel_onset)
+        blinks = data.pupil_blinks_detect(vel_onset=vel_onset, inplace=False).get_blinks()
         
         # Return both
         return {

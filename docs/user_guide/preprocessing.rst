@@ -49,14 +49,16 @@ A typical sequence is
 
 .. code-block:: python
 
-    d.pupil_blinks_detect(apply_mask=True)\
-     .blinks_merge_close(distance=100 * u.ms, apply_mask=True)\
+    d.pupil_blinks_detect()\
+     .blinks_merge_close(distance=100 * u.ms)\
      .pupil_blinks_interpolate()
 
 :meth:`~EyeData.pupil_blinks_detect` finds missing samples and sharp
 drops in the pupil's velocity profile. The detected blinks are stored in the
-object. With ``apply_mask=False`` (the default), they are also returned as
-:class:`Intervals` so that you can check them first.
+object (the ``"blink"`` layer, which masks them) and the object is
+returned, so the steps can be chained. Check them with
+:meth:`~GenericEyeData.get_blinks` (a dict with one :class:`Intervals`
+per channel, in ms); ``d.clear_layer("blink")`` removes them again.
 :meth:`~EyeData.pupil_blinks_interpolate` replaces the pupil size during
 blinks by a smooth curve (Mathôt, 2013). Interpolated samples are used by
 all later steps (filters, segments, statistics); they keep the
@@ -150,7 +152,8 @@ less noisy and has fewer gaps:
 
 :meth:`~EyeData.pupil_merge_eyes` corrects for a (slowly changing)
 difference in pupil size between the eyes and fills samples missing in one
-eye from the other. The result is stored as ``merged_pupil``.
+eye from the other. The result is stored as ``mean_pupil`` (eye ``"mean"``;
+another name with ``name=``).
 :meth:`~GenericEyeData.merge_eyes` simply averages any variable. See
 :doc:`/notebooks/eyes_and_variables`.
 
@@ -178,7 +181,9 @@ events after a removed period are shifted back, so that there are no gaps.
 (or at any other time).
 :meth:`~GenericEyeData.drop_data` removes eyes or variables, e.g.,
 ``d.drop_data(variables=["x", "y"])`` keeps only the pupil data; masks,
-blinks, events, the experimental setup and all other data are kept.
+blinks, events, the experimental setup and all other data are kept. Like
+all transforming methods, it works in place unless ``inplace=False`` is
+given (or set as the default, see :doc:`settings`).
 
 
 References

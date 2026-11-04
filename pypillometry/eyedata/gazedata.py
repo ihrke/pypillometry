@@ -1,7 +1,6 @@
 from loguru import logger
 from .generic import keephistory
 from .eyedatadict import _without_layer
-from ..intervals import Intervals
 import numpy as np
 import json
 from .experimental_setup import ExperimentalSetup
@@ -39,6 +38,11 @@ class _GazeMethods:
             - camera_offset: tuple (x, y, z) in eye-centric frame
             - camera_spherical: tuple (theta, phi, r)
             - ipd: inter-pupillary distance
+
+        Returns
+        -------
+        :class:`~pypillometry.EyeData`
+            the object itself (always modified in-place)
         
         Examples
         --------
@@ -61,6 +65,7 @@ class _GazeMethods:
             merged = {**old, **kwargs}
 
             self.experimental_setup = ExperimentalSetup(**merged)
+        return self
 
     # =========================================================================
     # Methods
@@ -68,18 +73,18 @@ class _GazeMethods:
 
     @keephistory
     def mask_eye_divergences(self, threshold: float = .99, thr_type: str = "percentile", 
-                           store_as: str|None = None, apply_mask: bool = True, 
+                           store_as: str|None = None,
                            ignore_existing_mask: bool = True, inplace=None):
         """
         Calculate Euclidean distance between left and right eye coordinates and detect divergences.
         
         This method computes the distance between corresponding (x,y) coordinates in the left
-        and right eyes. Points where the distance exceeds a threshold are detected as divergences.
-        When apply_mask=True, these points are masked: they replace the
+        and right eyes. Points where the distance exceeds a threshold are detected as divergences
+        and masked: they replace the
         ``"divergence"`` layer of x and y of both eyes (so running the method
         again with another threshold gives the same result as running it
-        once). When apply_mask=False, the divergences
-        are returned as Intervals objects.
+        once; ``clear_layer("divergence")`` removes them). Read the
+        divergences with ``get_layer_intervals("divergence")``.
         
         Parameters
         ----------
@@ -96,9 +101,6 @@ class _GazeMethods:
             The distance is stored for both eyes (``left_<store_as>`` and
             ``right_<store_as>``, the same values), masked where one of the
             coordinates is masked or the eyes diverge.
-        apply_mask : bool, default=True
-            If True, apply detected divergences as masks to the data and return self.
-            If False, return detected divergences as an Intervals object.
         ignore_existing_mask : bool, default=True
             If True (default), check all data points including those already masked (e.g., from blinks).
             If False, only check the data points that are usable under the
@@ -111,9 +113,9 @@ class _GazeMethods:
         
         Returns
         -------
-        EyeData or Intervals
-            If apply_mask=True: returns the object for chaining.
-            If apply_mask=False: returns Intervals object containing detected divergence intervals.
+        :class:`~pypillometry.EyeData`
+            the object with the divergences masked (`self` or a copy,
+            depending on `inplace`)
         
         Raises
         ------
@@ -126,8 +128,8 @@ class _GazeMethods:
         >>> # Mask divergences at 99th percentile
         >>> gaze_data = gaze_data.mask_eye_divergences(threshold=0.99, thr_type="percentile")
         
-        >>> # Detect divergences without masking
-        >>> divergences = gaze_data.mask_eye_divergences(threshold=0.99, apply_mask=False)
+        >>> # The detected divergences (in ms)
+        >>> divergences = gaze_data.get_layer_intervals("divergence", "left", "x", units="ms")
         
         >>> # Mask divergences beyond 100 pixels
         >>> gaze_data = gaze_data.mask_eye_divergences(threshold=100, thr_type="pixel")
@@ -184,9 +186,6 @@ class _GazeMethods:
         # Create a mask for divergent points (where distance exceeds threshold)
         divergence_mask = (dist > thr).filled(False)
         
-        # Convert mask to intervals
-        intervals_list = obj._mask_to_intervals_list(divergence_mask)
-        
         # Store distance as a timeseries if requested: as variable `store_as`
         # of both eyes (a key without an eye would be taken for an eye),
         # masked where any of the coordinates is masked or the eyes diverge
@@ -200,33 +199,24 @@ class _GazeMethods:
                 obj.data.set_with_mask(key, np.ma.getdata(dist), mask=source_mask)
                 obj.data.set_layer(key, "divergence", divergence_mask, replace=True)
         
-        # Create Intervals object for the detected divergences
-        intervals_obj = Intervals(
-            intervals=intervals_list,
-            units="samples",
-            label="eye_divergences")
-        
-        # Apply mask if requested: replaces the divergence layer of x and y
-        if apply_mask:
-            m = intervals_obj.to_mask(obj).astype(bool)
-            for key in ("left_x", "left_y", "right_x", "right_y"):
-                obj.data.set_layer(key, "divergence", m, replace=True)
-            return obj
-        else:
-            return intervals_obj
+        # replace the divergence layer of x and y
+        for key in ("left_x", "left_y", "right_x", "right_y"):
+            obj.data.set_layer(key, "divergence", divergence_mask, replace=True)
+        return obj
     
     @keephistory
-    def mask_offscreen_coords(self, eyes: str|list = [], apply_mask: bool = True, 
+    def mask_offscreen_coords(self, eyes: str|list = [],
                              ignore_existing_mask: bool = False, inplace=None):
         """
         Detect and mask gaze coordinates that fall outside the screen boundaries.
         
         This method identifies points where the (x,y) coordinates fall outside the 
-        defined screen limits. When apply_mask=True, these points are masked:
+        defined screen limits. These points are masked:
         they replace the ``"offscreen"`` layer of x and y of the checked eyes
         (so running the method again with other screen limits gives the same
-        result as running it once). When apply_mask=False, the offscreen
-        periods are returned as Intervals objects.
+        result as running it once; ``clear_layer("offscreen")`` removes
+        them). Read the off-screen periods with
+        ``get_layer_intervals("offscreen")``.
         
         Parameters
         ----------
@@ -234,9 +224,6 @@ class _GazeMethods:
             Eye(s) to check for offscreen coordinates. If empty, checks all available eyes
             that have x and y data.
             Can be a single eye name (e.g., "left") or a list (e.g., ["left", "right"]).
-        apply_mask : bool, default=True
-            If True, apply detected offscreen periods as masks to the data and return self.
-            If False, return detected offscreen periods as dict of Intervals objects.
         ignore_existing_mask : bool, default=False
             If False (default), only check the data points that are usable
             under the default mask policy for offscreen coordinates (the
@@ -249,18 +236,17 @@ class _GazeMethods:
         
         Returns
         -------
-        EyeData or dict of Intervals
-            If apply_mask=True: returns self for chaining.
-            If apply_mask=False: returns dict of Intervals objects (one per eye) containing 
-            detected offscreen intervals.
+        :class:`~pypillometry.EyeData`
+            the object with the off-screen samples masked (`self` or a copy,
+            depending on `inplace`)
         
         Examples
         --------
         >>> # Mask offscreen coordinates for all eyes
         >>> gaze_data = gaze_data.mask_offscreen_coords()
         
-        >>> # Detect offscreen periods without masking
-        >>> offscreen = gaze_data.mask_offscreen_coords(apply_mask=False)
+        >>> # The detected off-screen periods (in ms)
+        >>> offscreen = gaze_data.get_layer_intervals("offscreen", variables="x", units="ms")
         
         >>> # Mask offscreen coordinates for left eye only
         >>> gaze_data = gaze_data.mask_offscreen_coords(eyes='left')
@@ -280,9 +266,6 @@ class _GazeMethods:
         
         # Get eyes to check
         eyes_list = obj._eyes_with(eyes, ["x", "y"])
-        
-        # Dictionary to store intervals per eye
-        intervals_dict = {}
         
         # Get screen limits from experimental_setup
         xlim = obj.experimental_setup.screen_xlim
@@ -316,26 +299,9 @@ class _GazeMethods:
             # Convert masked array to regular boolean array if needed
             if isinstance(offscreen_mask, np.ma.MaskedArray):
                 offscreen_mask = offscreen_mask.filled(False)
+            logger.debug(f"Detected {offscreen_mask.sum()} offscreen samples for {eye} eye")
 
-            # Convert mask to intervals
-            intervals_list = obj._mask_to_intervals_list(offscreen_mask)
-            
-            # Create Intervals object for this eye
-            intervals_obj = Intervals(
-                intervals=intervals_list,
-                units="samples",
-                label=f"{eye}_offscreen")
-            
-            intervals_dict[eye] = intervals_obj
-            
-            logger.debug(f"Detected {len(intervals_obj)} offscreen intervals for {eye} eye")
-        
-        # Apply mask if requested: replaces the offscreen layer of x and y
-        if apply_mask:
-            for eye, intervals_obj in intervals_dict.items():
-                m = intervals_obj.to_mask(obj).astype(bool)
-                for var in ("x", "y"):
-                    obj.data.set_layer(f"{eye}_{var}", "offscreen", m, replace=True)
-            return obj
-        else:
-            return intervals_dict
+            # replace the offscreen layer of x and y
+            for var in ("x", "y"):
+                obj.data.set_layer(f"{eye}_{var}", "offscreen", offscreen_mask, replace=True)
+        return obj

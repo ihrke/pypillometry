@@ -103,7 +103,7 @@ def get_data(dataset):
 
 def preprocessed(dataset):
     """Data with blinks detected (masked) and interpolated (case b)."""
-    return get_data(dataset).pupil_blinks_detect(apply_mask=True).pupil_blinks_interpolate()
+    return get_data(dataset).pupil_blinks_detect().pupil_blinks_interpolate()
 
 
 # ---------------------------------------------------------------------------
@@ -146,7 +146,7 @@ def blinks(d, keys, units="samples"):
 
 def interpolated_blinks(d, keys):
     return {f"interpolated.{k}": iv_samples(iv)
-            for k, iv in d.get_interpolated_blinks().items() if k in keys}
+            for k, iv in d.get_interpolated_blinks(units="samples").items() if k in keys}
 
 
 def summary(d, step=50):
@@ -195,8 +195,10 @@ BLINK_PARAMS = {"default": {}, "zero": {"strategies": ["zero"]},
 
 def _blinks_detect(dataset, params):
     d = get_data(dataset)
-    found = d.pupil_blinks_detect(**params)  # apply_mask=False: returns the blinks
-    out = {f"returned.{k}": iv_samples(iv) for k, iv in found.items()}
+    d.pupil_blinks_detect(**params)
+    # the returned blinks (before step 9) are the stored ones
+    out = {f"returned.{k}": iv_samples(iv) for k, iv in
+           d.get_blinks(variables="pupil", units="samples").items()}
     out.update({f"stored.{k}": iv_samples(iv) for k, iv in
                 d.get_blinks(units="samples").items() if k in pupil_keys(d)})
     out.update({f"stored_ms.{k}": iv_float(iv) for k, iv in
@@ -234,7 +236,7 @@ def _lowpass(dataset):
 
 for _ds in DATASETS:
     case(f"b.blinks_interpolate.{_ds}",
-         f"pupil_blinks_detect(apply_mask=True).pupil_blinks_interpolate() on {_ds}: "
+         f"pupil_blinks_detect().pupil_blinks_interpolate() on {_ds}: "
          "pupil values, masks, blinks, interpolated blinks (samples)",
          dataset=_ds)(_blinks_interpolate)
     case(f"c.lowpass.{_ds}",
@@ -244,17 +246,21 @@ for _ds in DATASETS:
 
 def _offscreen(dataset):
     d = get_data(dataset)
-    found = d.mask_offscreen_coords(apply_mask=False)
-    out = {f"returned.{eye}": iv_samples(iv) for eye, iv in found.items()}
-    out.update(masks(d.mask_offscreen_coords()))
+    d.mask_offscreen_coords()
+    # returned before step 9: the runs per eye (the same for x and y)
+    found = d.get_layer_intervals("offscreen", variables="x", units="samples")
+    out = {f"returned.{key.partition('_')[0]}": iv_samples(iv) for key, iv in found.items()}
+    out.update(masks(d))
     return out
 
 
 def _divergence(dataset, params):
     d = get_data(dataset)
-    found = d.mask_eye_divergences(apply_mask=False, **params)
-    out = {"returned": iv_samples(found)}
-    out.update(masks(d.mask_eye_divergences(**params)))
+    d.mask_eye_divergences(**params)
+    # returned before step 9: the runs (the same for all gaze variables)
+    out = {"returned": iv_samples(
+        d.get_layer_intervals("divergence", "left", "x", units="samples")["left_x"])}
+    out.update(masks(d))
     return out
 
 
@@ -281,7 +287,7 @@ def _segments(dataset, preproc):
     for k in pupil_keys(d):
         seg = d.get_segments(ep, k)
         with pp.nologging():
-            bc = seg.baseline_correct((-200, 0))
+            bc = seg.baseline_correct((-200, 0), inplace=False)
         out[f"tx.{k}"] = np.asarray(seg.tx, dtype=float)
         out[f"mask.{k}"] = np.ma.getmaskarray(seg.data).copy()
         out[f"mean.{k}"] = masked_mean(seg.data, axis=0)
@@ -656,6 +662,18 @@ def _downsampled_values(case_id, key, stored):
     return {"sub": y[::10], "nansum": float(np.nansum(y))}[name]
 
 
+def _blinks_masked(case_id, key, stored):
+    """Mask after `pupil_blinks_detect` (step 9): the stored blinks mask the
+    data (before only with ``apply_mask=True``)."""
+    k = key.partition(".")[2]
+    if not k.endswith("_pupil"):
+        return stored
+    blink = np.zeros(len(stored), dtype=bool)
+    for on, off in load_arrays(case_id)[f"stored.{k}"]:
+        blink[on:off] = True
+    return stored | blink
+
+
 #: intended changes (see CHANGES.md): (case id prefix, result key prefix) ->
 #: function mapping (case id, key, stored reference value) to the expected value
 CHANGED = {("e.segments.rlmw.interp", ""): _segments_interp,
@@ -671,7 +689,8 @@ CHANGED = {("e.segments.rlmw.interp", ""): _segments_interp,
            ("g.downsample.", "nansum."): _downsampled_values,
            ("f.quality.", "artifacts."): _quality_other,
            ("h.merge_eyes.", ""): _merged_pupil,
-           ("h.scale.", ""): _scaled_pupil}
+           ("h.scale.", ""): _scaled_pupil,
+           ("a.blinks_detect.", "mask."): _blinks_masked}
 
 
 def expected_value(case_id, key, stored):

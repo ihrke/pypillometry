@@ -698,8 +698,8 @@ def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[],
     raw = {k: included(v) for k, v in obj.data.data.items()}
     masks = {k: obj.data.get_policy_mask(k, policy) & inc for k in obj.data.keys()}
 
-    if isinstance(eyes, str):
-        eyes = [eyes]
+    # the requested eyes (None or []: all); unknown eyes raise a KeyError
+    eyes = list(dict.fromkeys(eye for eye, _ in obj.data.select(eyes))) if eyes else []
     pupil_eyes = obj.data.get_available_eyes("pupil")
     gaze_eyes = [e for e in obj.data.get_available_eyes("x") if f"{e}_y" in raw]
     if eyes:
@@ -827,7 +827,7 @@ def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[],
         var = "pupil" if eye in pupil_eyes else "x"
         if "blink" not in obj.data.layer_names:  # no blink detection
             continue
-        bl = obj.get_blinks(eye, var)
+        bl = obj.get_blinks(eye, var, units="samples")[f"{eye}_{var}"]
         blinks_mask[eye] = bl.to_mask(obj).astype(bool) & inc
         dur_ms = np.array([(e - s) for s, e in bl.intervals], dtype=float) / fs * 1000
         b.add("blinks", eye, "n", "number", int(len(bl)), "", "number of detected blinks")

@@ -67,14 +67,14 @@ class TestSetEvents(unittest.TestCase):
     def test_replaces_events(self):
         d = make_data()
         ev = d.events.filter("b")
-        d2 = d.set_events(ev, inplace=False)
+        d2 = d.copy().set_events(ev)
         np.testing.assert_array_equal(d2.events.labels, ["b"])
         np.testing.assert_array_equal(d2.events.meta["k"], [2])
         self.assertEqual(len(d.events), 5)
 
     def test_converts_to_ms(self):
         d = make_data()
-        d.set_events(pp.Events([2, 3], ["x", "y"], units="sec"), inplace=True)
+        d.set_events(pp.Events([2, 3], ["x", "y"], units="sec"))
         self.assertEqual(d.events.units, "ms")
         np.testing.assert_allclose(d.events.onsets, [2000, 3000])
 

@@ -54,7 +54,7 @@ class PupilPlotter(GenericPlotter):
         Parameters
         ----------
         plot_range : tuple (start,end)
-            plot from start to end (in units of `units`, or with units, e.g.
+            plot from start to end (in ms, or with units, e.g.
             ``(3, 5) * u.min``)
         eyes : str or list
             eye(s) to plot; if empty, all eyes with pupil data are plotted
@@ -64,7 +64,8 @@ class PupilPlotter(GenericPlotter):
             highlight masked or interpolated regions of the pupil data (e.g.,
             detected blinks; the ``"strict"`` mask policy) with a red background
         units : str
-            one of "sec"=seconds (default), "ms"=millisec, "min"=minutes, "h"=hours
+            units of the time axis: one of "sec"=seconds (default),
+            "ms"=millisec, "min"=minutes, "h"=hours
         label_prefix : str
             Prefix to add to labels in the legend. Useful for overlaying multiple datasets.
             Default is "" (no prefix).
@@ -91,15 +92,12 @@ class PupilPlotter(GenericPlotter):
            >>> from pypillometry import u
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
-           >>> d.pupil_blinks_detect(apply_mask=True)
+           >>> d.pupil_blinks_detect()
            >>> plt.figure(figsize=(10, 3))
            >>> d.plot.pupil_plot(plot_range=(0, 20) * u.sec)
         """
         self.obj._require("pupil")
-        if not isinstance(eyes, list):
-            eyes=[eyes]
-        if len(eyes)==0:
-            eyes=self.obj.data.get_available_eyes(variable="pupil")
+        eyes = self.obj._eyes_with(eyes, "pupil")
         logger.debug("Plotting eyes %s"%eyes)
 
         # Validate plot_range
@@ -218,7 +216,7 @@ class PupilPlotter(GenericPlotter):
     def pupil_plot_segments(
         self,
         pdf_file: Optional[str] = None,
-        interv: float = 1,
+        interv: float = "1 min",
         figsize=(15, 5),
         ylim=None,
         units: str = "min",
@@ -232,14 +230,14 @@ class PupilPlotter(GenericPlotter):
         pdf_file : str or None
             file name to store the PDF; if None, no PDF is written
         interv : float, str or Quantity
-            duration of each of the segments to be plotted (in units specified
-            by ``units``, or with units, e.g. ``"2 min"``)
+            duration of each of the segments to be plotted (in ms, or with
+            units, e.g. ``"2 min"``); default 1 min
         figsize : Tuple[int,int]
             dimensions of the figures
         ylim : Tuple[float,float] or None
             y-axis limits for the plots; if None, matplotlib's automatic limits are used
         units : str, optional
-            Time units for segment boundaries passed to :meth:`pupil_plot`. Default "min".
+            Units of the time axis, passed to :meth:`pupil_plot`. Default "min".
         **kwargs
             arguments passed to :meth:`pupil_plot`
 
@@ -259,7 +257,7 @@ class PupilPlotter(GenericPlotter):
            >>> from pypillometry import u
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
-           >>> d.pupil_blinks_detect(apply_mask=True)
+           >>> d.pupil_blinks_detect()
            >>> figs = d.plot.pupil_plot_segments(interv=10 * u.sec, units="sec",
            ...                                   figsize=(10, 3))
            >>> for f in figs[1:]:
@@ -272,9 +270,10 @@ class PupilPlotter(GenericPlotter):
         self.obj._require("pupil")
         obj = self.obj
         unit_factor = obj._unit_fac(units)
-        interv = parse_time(interv, to=units, default=units)
+        interv = parse_time(interv, to=units, default="ms")
         start_unit = float(np.min(obj.tx) * unit_factor)
         end_unit = float(np.max(obj.tx) * unit_factor)
+        self._check_nsegments(end_unit - start_unit, interv)
 
         segments=[]
         cstart=start_unit
@@ -288,7 +287,8 @@ class PupilPlotter(GenericPlotter):
 
         for start,end in segments:
             fig = plt.figure(figsize=figsize)
-            self.pupil_plot(plot_range=(start, end), units=units, **kwargs)
+            self.pupil_plot(plot_range=(start / unit_factor, end / unit_factor), units=units,
+                            **kwargs)
             if ylim is not None:
                 for ax in fig.axes:
                     ax.set_ylim(*ylim)
@@ -359,28 +359,20 @@ class PupilPlotter(GenericPlotter):
            >>> from pypillometry import u
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
-           >>> d.pupil_blinks_detect(apply_mask=True)
+           >>> d.pupil_blinks_detect()
            >>> d.plot.plot_blinks(eyes="left", nrow=3, ncol=5, figsize=(12, 6),
            ...                    units="sec")
         """
         # Get blinks for specified eyes and variables (in ms for consistent padding)
         blinks_result = self.obj.get_blinks(eyes=eyes, variables=variables, units="ms")
         
-        # Handle dict or single Intervals
-        if isinstance(blinks_result, dict):
-            # Merge all blinks from dict
-            from ..intervals import merge_intervals
-            all_blinks_list = [b for b in blinks_result.values() if len(b) > 0]
-            if not all_blinks_list:
-                logger.warning("No blinks to plot")
-                return []
-            blinks = merge_intervals(*all_blinks_list)
-        else:
-            blinks = blinks_result
-        
-        if len(blinks) == 0:
+        # Merge all blinks from dict
+        from ..intervals import merge_intervals
+        all_blinks_list = [b for b in blinks_result.values() if len(b) > 0]
+        if not all_blinks_list:
             logger.warning("No blinks to plot")
             return []
+        blinks = merge_intervals(*all_blinks_list)
         
         # Pad blinks with pre/post time (pre_blink and post_blink are in ms)
         padded_blinks = blinks.pad(left=pre_blink, right=post_blink)

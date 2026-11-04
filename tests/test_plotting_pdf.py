@@ -45,7 +45,7 @@ class TestPlottingPDFGeneration(unittest.TestCase):
         
         figs = self.data.plot.plot_timeseries_segments(
             pdf_file=pdf_path, 
-            interv=1.0
+            interv="1 min"
         )
         
         self.assertTrue(os.path.exists(pdf_path))
@@ -57,7 +57,7 @@ class TestPlottingPDFGeneration(unittest.TestCase):
         
         figs = self.data.plot.pupil_plot_segments(
             pdf_file=pdf_path, 
-            interv=1.0
+            interv="1 min"
         )
         
         self.assertTrue(os.path.exists(pdf_path))
@@ -115,7 +115,7 @@ class TestPlottingPDFDirectoryCreation(unittest.TestCase):
         
         figs = self.data.plot.plot_timeseries_segments(
             pdf_file=pdf_path, 
-            interv=1.0
+            interv="1 min"
         )
         
         self.assertTrue(os.path.exists(os.path.dirname(pdf_path)))
@@ -129,7 +129,7 @@ class TestPlottingPDFDirectoryCreation(unittest.TestCase):
         
         figs = self.data.plot.pupil_plot_segments(
             pdf_file=pdf_path, 
-            interv=1.0
+            interv="1 min"
         )
         
         self.assertTrue(os.path.exists(os.path.dirname(pdf_path)))
@@ -172,7 +172,7 @@ class TestPlottingPDFNoDisplay(unittest.TestCase):
         
         figs = self.data.plot.plot_timeseries_segments(
             pdf_file=pdf_path, 
-            interv=1.0
+            interv="1 min"
         )
         
         n_figs_after = len(plt.get_fignums())

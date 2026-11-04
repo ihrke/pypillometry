@@ -67,7 +67,7 @@ def make_eyedata(keep_orig=True):
                                                 err, (1280, 1024))},
         name="test", keep_orig=keep_orig,
         info={"subject": "s1", "nested": {"a": [1, 2], "b": (1.5, "x")}})
-    d = d.pupil_blinks_detect(apply_mask=True, inplace=False)
+    d = d.pupil_blinks_detect(inplace=False)
     d = d.pupil_blinks_interpolate().scale()
     # event metadata with int, float (missing), string and bool columns
     d.set_events(d.events.parse_labels(r"_(?P<trial>\d+)")
@@ -98,8 +98,8 @@ class TestPickleRoundTrip(unittest.TestCase):
 
     def test_pupil_only_and_gaze_only(self):
         d = make_eyedata(keep_orig=False)
-        self.roundtrip(d.drop_data(variables=["x", "y"]))
-        self.roundtrip(d.drop_data(variables=["pupil"]))
+        self.roundtrip(d.drop_data(variables=["x", "y"], inplace=False))
+        self.roundtrip(d.drop_data(variables=["pupil"], inplace=False))
 
     def test_fakeeyedata(self):
         f = generate_foreshortening_data(duration=1, fs=100, seed=1)
@@ -153,7 +153,7 @@ class TestStateCoverage(unittest.TestCase):
         seg = d.get_segments(d.get_intervals("F_", window=(-200, 800), units="ms"),
                              "left_pupil")
         return [
-            d, d.drop_data(variables=["x", "y"]), d.drop_data(variables=["pupil"]),
+            d, d.drop_data(variables=["x", "y"], inplace=False), d.drop_data(variables=["pupil"], inplace=False),
             pp.EyeData(left_pupil=np.ones(10), sampling_rate=10),
             pp.EyeData(left_x=np.ones(10), left_y=np.ones(10), sampling_rate=10),
             generate_foreshortening_data(duration=1, fs=100, seed=1),
@@ -209,7 +209,7 @@ class TestFormatVersion0(unittest.TestCase):
         d = self.load("eyedata_v0.pkl")
         self.assertIsInstance(d, pp.EyeData)
         self.assertEqual(d.name, "fixture_eyedata")
-        self.assertEqual(d.nblinks(), {"left_pupil": 4, "right_pupil": 3})
+        self.assertEqual(d.nblinks(variables="pupil"), {"left_pupil": 4, "right_pupil": 3})
         self.assertEqual(len(d.events), 4)
         self.assertEqual(d.tx[0], 4500.0)
         self.assertIsInstance(d.original, pp.EyeData)

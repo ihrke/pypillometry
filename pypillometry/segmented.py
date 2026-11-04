@@ -12,7 +12,7 @@ from loguru import logger
 import scipy.stats
 
 from .io import write_pickle, read_pickle
-from . import state
+from . import config, state
 from .units import parse_time, _ms_to_samples
 from .convenience import _warn_if_ignores_mask, _check_accepts_axis
 
@@ -371,7 +371,8 @@ class SegmentedEyeData(state.VersionedState):
         return html
     
     def baseline_correct(self, 
-                         window: Union[Tuple[float, float], float, None] = 0) -> 'SegmentedEyeData':
+                         window: Union[Tuple[float, float], float, None] = 0,
+                         inplace: Optional[bool] = None) -> 'SegmentedEyeData':
         """
         Apply baseline correction to the segments.
         
@@ -392,12 +393,17 @@ class SegmentedEyeData(state.VersionedState):
             Default is 0 (baseline at event onset).
 
             The window must be within the time axis of the segments.
+        inplace : bool or None, optional
+            if `True`, make change in-place and return the object;
+            if `False`, return a new object with the corrected data;
+            if `None`, use the package-level setting (see
+            :func:`~pypillometry.set_default_inplace`)
 
         Returns
         -------
         SegmentedEyeData
-            New instance with baseline-corrected data (the object itself if
-            `window` is None)
+            the baseline-corrected segments (`self` or a new object,
+            depending on `inplace`; `self` if `window` is None)
 
         Raises
         ------
@@ -408,11 +414,11 @@ class SegmentedEyeData(state.VersionedState):
         Examples
         --------
         >>> # Use pre-event period as baseline
-        >>> segments_bc = segments.baseline_correct(window=(-200, 0))
-        >>> segments_bc = segments.baseline_correct(window=(-200, 0) * u.ms)
+        >>> segments_bc = segments.baseline_correct(window=(-200, 0), inplace=False)
+        >>> segments = segments.baseline_correct(window=(-200, 0) * u.ms)
         
         >>> # Use single time point as baseline
-        >>> segments_bc = segments.baseline_correct(window=-100)
+        >>> segments = segments.baseline_correct(window=-100)
         """
         if window is None:
             logger.warning("No baseline correction applied")
@@ -437,7 +443,12 @@ class SegmentedEyeData(state.VersionedState):
                 corrected_data[:, i] -= baseline
         
         logger.info(f"Baseline correction applied using window {window}")
-        
+
+        if inplace is None:
+            inplace = config.get_default_inplace()
+        if inplace:
+            self.data = corrected_data
+            return self
         return SegmentedEyeData(
             name=self.name,
             variable=self.variable,
@@ -528,7 +539,7 @@ class SegmentedEyeData(state.VersionedState):
            >>> from pypillometry import u
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
-           >>> d.pupil_blinks_detect(apply_mask=True).pupil_blinks_interpolate()
+           >>> d.pupil_blinks_detect().pupil_blinks_interpolate()
            >>> intervals = d.get_intervals("S_", (-500, 2500) * u.ms)
            >>> erpd = d.get_segments(intervals, "left_pupil").baseline_correct((-500, 0))
            >>> erpd.plot()

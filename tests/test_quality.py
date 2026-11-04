@@ -115,10 +115,10 @@ class TestQualityReport(unittest.TestCase):
 
     def test_preprocessing_measures(self):
         d = _make_data(missing=[(1000, 1100), (5000, 5100)])
-        d.pupil_blinks_detect(apply_mask=True)
+        d.pupil_blinks_detect()
         r = d.quality_report()
         self.assertIn("blinks", r)
-        self.assertEqual(r["blinks"]["left"]["n"].value, len(d.get_blinks("left", "pupil")))
+        self.assertEqual(r["blinks"]["left"]["n"].value, len(d.get_blinks("left", "pupil")["left_pupil"]))
         self.assertIn("artifacts", r)
         self.assertGreaterEqual(r["artifacts"]["left"]["pupil_masked_pct"].value, 2.0)
         d.pupil_blinks_interpolate()
@@ -155,7 +155,7 @@ class TestQualityReport(unittest.TestCase):
 
     def test_pupil_only_and_gaze_only(self):
         d = _make_data()
-        r = d.drop_data(eyes="right", variables=["x", "y"]).quality_report()
+        r = d.drop_data(eyes="right", variables=["x", "y"], inplace=False).quality_report()
         self.assertIn("pupil", r)
         self.assertNotIn("gaze", r)
         self.assertNotIn("binocular", r)
@@ -232,7 +232,7 @@ class TestQualityReport(unittest.TestCase):
         d.calibration = {"left": pp.SpatialCalibration(
             "left", "HV9", np.zeros((9, 2)), np.zeros((9, 2)),
             np.c_[np.full(9, 0.3), np.zeros((9, 2))])}
-        d.pupil_blinks_detect(apply_mask=True)
+        d.pupil_blinks_detect()
         r = d.quality_report()
         for section, group, m in r.metrics():
             self.assertTrue(m.description, f"{section}.{m.name} has no description")
@@ -298,9 +298,9 @@ class TestExcludedPeriods(unittest.TestCase):
         self.assertAlmostEqual(left["longest_dropout"].value, 100 / 500)
         self.assertAlmostEqual(left["dropout_rate"].value, 1 / (16 / 60))
         # the excluded samples are masked, but not counted as artifacts
-        e.pupil_blinks_detect(apply_mask=True, inplace=True)
+        e.pupil_blinks_detect(inplace=True)
         r = e.quality_report()
         self.assertAlmostEqual(r["blinks"]["left"]["rate"].value,
-                               len(e.get_blinks("left", "pupil")) / (16 / 60))
+                               len(e.get_blinks("left", "pupil")["left_pupil"]) / (16 / 60))
         self.assertLess(r["artifacts"]["right"]["pupil_masked_pct"].value, 1)
         self.assertLess(r["artifacts"]["right"]["other_pct"].value, 1)

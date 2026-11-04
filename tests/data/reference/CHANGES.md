@@ -659,3 +659,44 @@ Changes of the API calls alone (same numbers) need no entry.
 - **Why**: NaN cannot disagree with the values (plan 2.2); the layer was a
   shim for the filters that filled NaN (step 5).
 - **Step**: 7, `refactor/07-value-policy`
+
+### Stored blinks always mask the data
+
+- **Case**: `a.blinks_detect.*.default` and `a.blinks_detect.*.vel10`,
+  `mask.<eye>_pupil`; expected values derived in the test (stored mask
+  or the stored blinks). `a.blinks_detect.*.zero` is unchanged (its
+  blinks are the NaN runs).
+- **Change**: the `blink` layer masks the data under the mask policies
+  wherever it is set, also after `pupil_blinks_detect()` without
+  `apply_mask=True` and `set_blinks(..., apply_mask=False)` (before: only
+  blinks applied as mask, the internal layer `_blink_applied`). Size,
+  masked samples (left/right pupil): rlmw default 561 -> 1520 / 389 -> 897,
+  rlmw vel10 561 -> 882 / 389 -> 621, synth default 256 -> 383 /
+  190 -> 286, synth vel10 256 -> 256 / 190 -> 221 (of 20465 / 10000).
+  Format-2 files: blinks that were stored but not applied as mask mask the
+  data after loading. Format-3 files of development versions: the layer
+  `_blink_applied` is removed on load (all their blinks mask the data).
+- **Why**: setting the layer is masking (plan 2.8, rule 2); one blink
+  store and one meaning.
+- **Step**: 9, `refactor/09-api-conventions`
+
+### Plain numbers are ms: `get_intervals` windows
+
+- **Case**: none (the cases give windows with units, `(-200, 1000) * u.ms`)
+- **Change**: `get_intervals(event, window=(-200, 800))` reads plain numbers
+  as ms (before: sample indices, so at 500 Hz the window was 2 s long); also
+  between two events, where the returned Intervals are now in ms. Sample
+  indices need `units="samples"`.
+- **Why**: one rule for plain numbers (plan 2.8, rule 4; finding 2.5):
+  `stat_per_event`, `crop`, `baseline_correct` already used ms.
+- **Step**: 9, `refactor/09-api-conventions`
+
+### Blink and mask intervals are returned in ms
+
+- **Case**: none in numbers (the cases ask for `units="samples"` or
+  `units="ms"` explicitly)
+- **Change**: `get_blinks()`, `get_interpolated_blinks()`,
+  `mask_as_intervals()`, `get_layer_intervals()` and the `blinks` property
+  return Intervals in ms by default (before: sample indices).
+- **Why**: one rule for time values (plan 2.8, rule 4).
+- **Step**: 9, `refactor/09-api-conventions`

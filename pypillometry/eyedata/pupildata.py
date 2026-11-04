@@ -174,9 +174,10 @@ class _PupilMethods:
                          max_iter: int = 10,
                          keep_eyes: bool = True, 
                          policy="default",
+                         name: str = "mean",
                          inplace: bool | None = None):
         """
-        Merge pupil data from both eyes into a single "merged" variable.
+        Merge pupil data from both eyes into a new eye (default ``"mean"``).
         
         This method combines left and right pupil signals, handling missing data
         (masked values) intelligently. Where both eyes are valid, the signals are
@@ -214,6 +215,10 @@ class _PupilMethods:
         policy : str, MaskPolicy or list of str
             mask policy that decides which samples are valid (see
             :meth:`~pypillometry.GenericEyeData.mask`); default ``"default"``
+        name : str, optional
+            name of the new eye (default ``"mean"``, as in
+            :meth:`~pypillometry.GenericEyeData.merge_eyes`); the merged
+            pupil is stored as ``"<name>_pupil"``
         inplace : bool or None, optional
             If True, modify in-place. If False, return a copy.
             If None, use the object's default setting.
@@ -221,7 +226,7 @@ class _PupilMethods:
         Returns
         -------
         EyeData
-            The object with merged pupil data stored as "merged_pupil".
+            The object with merged pupil data stored as "mean_pupil".
             
         Raises
         ------
@@ -231,8 +236,8 @@ class _PupilMethods:
             
         Notes
         -----
-        The merged signal is stored as "merged_pupil" and can be accessed via
-        `data["merged", "pupil"]` or `data["merged_pupil"]`.
+        The merged signal is stored as "mean_pupil" (with the default `name`)
+        and can be accessed via `data["mean", "pupil"]` or `data["mean_pupil"]`.
         
         The mask for the merged signal reflects which timepoints have valid data:
         - For "local_offset" and "offset": masked only where BOTH eyes are masked
@@ -249,7 +254,7 @@ class _PupilMethods:
         --------
         >>> # Default: local offset correction
         >>> data.pupil_merge_eyes()
-        >>> merged = data["merged", "pupil"]
+        >>> merged = data["mean", "pupil"]
         
         >>> # Use global offset (simpler, assumes no drift)
         >>> data.pupil_merge_eyes(method="offset")
@@ -353,7 +358,7 @@ class _PupilMethods:
         merged[masked] = fill[masked]
         
         # Store merged data
-        obj.data.set_with_mask("merged_pupil", merged, mask=merged_mask)
+        obj.data.set_with_mask((name, "pupil"), merged, mask=merged_mask)
         
         # Optionally remove original eye data
         if not keep_eyes:
@@ -435,24 +440,22 @@ class _PupilMethods:
                       vel_onset_min_duration: float=5.0, vel_offset_min_duration: float=5.0,
                       max_duration: float=1000,
                       strategies: list=["zero","velocity"],
-                      apply_mask=False, ignore_existing_mask=False, inplace=None):
+                      ignore_existing_mask=False, inplace=None):
         """
         Detect blinks in the pupillary signal using several strategies.
         First, blinks are detected as consecutive sequence of `blink_val` 
         (f.eks., 0 or NaN). Second, blinks are defined as everything between
         two crossings of the velocity profile (from negative to positive).
         
-        Detected blinks are always stored in the object, as the ``"blink"``
+        Detected blinks are stored in the object, as the ``"blink"``
         layer of the pupil (retrieve them with
-        :meth:`~pypillometry.GenericEyeData.get_blinks`). They replace the
+        :meth:`~pypillometry.GenericEyeData.get_blinks`), and are masked
+        under the mask policies (see
+        :meth:`~pypillometry.GenericEyeData.mask`). They replace the
         blinks detected before (and their mask), and the blinks detected
         before are not treated as masked during detection, so re-running the
         detection with other parameters gives the same result as running it
-        once. When `apply_mask=True`,
-        the blinks are also applied as masks to the data. When `apply_mask=False`
-        (default), the detected blinks are returned as Intervals objects and
-        stored in the object itself (also with `inplace=False`; the data and
-        the mask are not changed).
+        once (``clear_layer("blink")`` removes them).
 
         Finally, detected blinks have to be at least `min_duration` ms.
         
@@ -495,9 +498,6 @@ class _PupilMethods:
         strategies : list
             list of strategies to use;
             so far, use a list containing any combination of "zero" and "velocity"
-        apply_mask : bool
-            if `True`, apply detected blinks as masks to the data and return the object
-            if `False` (default), return detected blinks as Intervals (or dict of Intervals)
         ignore_existing_mask : bool
             if `True`, use raw data ignoring existing masks
             if `False` (default), only detect blinks in the usable data under
@@ -506,20 +506,21 @@ class _PupilMethods:
         inplace : bool or None
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes                                                    
-            if `None`, use the object-level setting;
-            only used with `apply_mask=True`
+            if `None`, use the object-level setting
             
         Returns
         -------
-        EyeData or Intervals or dict
-            If `apply_mask=True`: returns the object (for chaining)
-            If `apply_mask=False` and single eye: returns Intervals object
-            If `apply_mask=False` and multiple eyes: returns dict of Intervals objects
-            (keys like ``"left_pupil"``)
+        :class:`~pypillometry.EyeData`
+            the object with the blinks (`self` or a copy, depending on
+            `inplace`)
+
+        Examples
+        --------
+        >>> d = d.pupil_blinks_detect()  # doctest: +SKIP
+        >>> d.get_blinks(variables="pupil", units="ms")  # doctest: +SKIP
         """
-        # without apply_mask, the blinks are returned and stored in self
         self._require("pupil")
-        obj = self._get_inplace(inplace) if apply_mask else self
+        obj = self._get_inplace(inplace)
         eyes=self._eyes_with(eyes, "pupil")
 
         # Convert ms to samples
@@ -537,8 +538,6 @@ class _PupilMethods:
         for strat in strategies:
             if strat not in ["zero", "velocity"]:
                 logger.warning("Strategy '%s' unknown"%strat)
-        
-        detected_intervals = {}
         
         for eye in eyes:
             logger.debug(f"Detecting blinks for eye {eye}")
@@ -594,20 +593,8 @@ class _PupilMethods:
                 units="samples",
                 label=f"{eye}_pupil_blinks")
             
-            # Store detected blinks internally (always); return them as stored
-            # (blinks that touch are one blink)
-            obj.set_blinks(intervals_obj, eyes=[eye], variables=["pupil"], apply_mask=apply_mask)
-            detected_intervals[f"{eye}_pupil"] = obj.get_blinks(eye, "pupil")
-        
-        # Return based on apply_mask
-        if apply_mask:
-            return obj
-        else:
-            # Return single Intervals or dict depending on number of eyes
-            if len(eyes) == 1:
-                return detected_intervals[f"{eyes[0]}_pupil"]
-            else:
-                return detected_intervals    
+            obj.set_blinks(intervals_obj, eyes=[eye], variables=["pupil"])
+        return obj
     
     @keephistory
     def pupil_blinks_interpolate(self, eyes: str|list=[],
@@ -698,7 +685,7 @@ class _PupilMethods:
             logger.debug(f"Interpolating blinks for eye {eye}")
             syr=obj.data[eye,"pupil"].copy() ## interpolated signal
             interpolated = np.zeros(len(syr), dtype=bool)  # interpolated samples
-            bls = self.get_blinks(eye, "pupil")
+            bls = self.get_blinks(eye, "pupil", units="samples")[f"{eye}_pupil"]
             
             # Use raw data for velocity computation - blink_onsets_mahot handles NaN/zeros internally
             # Don't use mask-applied data here because the mask includes blink regions,

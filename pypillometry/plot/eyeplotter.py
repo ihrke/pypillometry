@@ -55,11 +55,11 @@ class EyePlotter(GazePlotter,PupilPlotter):
             Which eye(s) to plot: "left", "right", "average", or a list of these.
             Default is [] which plots all available eyes.
         plot_range : tuple, optional
-            The time range to include in the analysis (in `units`, or with
+            The time range to include in the analysis (in ms, or with
             units, e.g. ``(3, 5) * u.min``). Default is (-np.inf, +np.inf),
             i.e. all data.
         units : str, optional
-            Time units for plot_range. Default is "sec".
+            Time units of the plot. Default is "sec".
         show_screen : bool, optional
             Whether to plot the screen limits. Default is True.
         cmap : str, optional

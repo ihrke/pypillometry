@@ -59,12 +59,12 @@ class TestPlottingReturnValues(unittest.TestCase):
     
     def test_plot_timeseries_segments_returns_list(self):
         """Test that plot_timeseries_segments returns a list"""
-        figs = self.data.plot.plot_timeseries_segments(interv=1.0)
+        figs = self.data.plot.plot_timeseries_segments(interv="1 min")
         self.assertIsInstance(figs, list)
     
     def test_plot_timeseries_segments_returns_figures(self):
         """Test that plot_timeseries_segments returns Figure objects"""
-        figs = self.data.plot.plot_timeseries_segments(interv=1.0)
+        figs = self.data.plot.plot_timeseries_segments(interv="1 min")
         for fig in figs:
             self.assertIsInstance(fig, plt.Figure)
     
@@ -76,17 +76,17 @@ class TestPlottingReturnValues(unittest.TestCase):
         interv = 1.0  # minutes
         expected_figs = int(np.ceil(duration_min / interv))
         
-        figs = self.data.plot.plot_timeseries_segments(interv=interv)
+        figs = self.data.plot.plot_timeseries_segments(interv=f"{interv} min")
         self.assertEqual(len(figs), expected_figs)
     
     def test_pupil_plot_segments_returns_list(self):
         """Test that pupil_plot_segments returns a list"""
-        figs = self.data.plot.pupil_plot_segments(interv=1.0)
+        figs = self.data.plot.pupil_plot_segments(interv="1 min")
         self.assertIsInstance(figs, list)
     
     def test_pupil_plot_segments_returns_figures(self):
         """Test that pupil_plot_segments returns Figure objects"""
-        figs = self.data.plot.pupil_plot_segments(interv=1.0)
+        figs = self.data.plot.pupil_plot_segments(interv="1 min")
         for fig in figs:
             self.assertIsInstance(fig, plt.Figure)
     
