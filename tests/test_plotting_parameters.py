@@ -292,7 +292,7 @@ class TestSegmentPlotParameters(unittest.TestCase):
     
     def test_segments_different_intervals(self):
         """Test plot_timeseries_segments with different interval sizes"""
-        for interv in [0.5, 1.0, 2.0]:
+        for interv in ["0.5 min", 60000, 2 * pp.u.min]:
             figs = self.data.plot.plot_timeseries_segments(interv=interv)
             self.assertIsNotNone(figs)
             self.assertGreater(len(figs), 0)
@@ -300,7 +300,7 @@ class TestSegmentPlotParameters(unittest.TestCase):
     
     def test_segments_interv_with_units(self):
         """interv with units gives the same segments as plain numbers (bug 1.8)"""
-        ref = self.data.plot.plot_timeseries_segments(interv=10, units="sec")
+        ref = self.data.plot.plot_timeseries_segments(interv=10000, units="sec")
         n = len(ref)
         plt.close('all')
         for interv in [10 * pp.u.sec, "10 sec", 1 / 6 * pp.u.min]:
@@ -310,24 +310,24 @@ class TestSegmentPlotParameters(unittest.TestCase):
 
     def test_segments_with_ylim(self):
         """Test plot_timeseries_segments with ylim parameter"""
-        figs = self.data.plot.plot_timeseries_segments(interv=1.0, ylim=(0, 10))
+        figs = self.data.plot.plot_timeseries_segments(interv="1 min", ylim=(0, 10))
         self.assertIsNotNone(figs)
 
     def test_segments_ylim_all_subplots(self):
         """ylim is applied to all subplots, not only the last one"""
         figs = self.data.plot.plot_timeseries_segments(
-            interv=1.0, ylim=(0, 10), variables=["pupil", "x"])
+            interv="1 min", ylim=(0, 10), variables=["pupil", "x"])
         self.assertEqual(len(figs[0].axes), 2)
         for ax in figs[0].axes:
             self.assertEqual(ax.get_ylim(), (0, 10))
-        figs = self.data.plot.pupil_plot_segments(interv=1.0, ylim=(0, 10))
+        figs = self.data.plot.pupil_plot_segments(interv="1 min", ylim=(0, 10))
         for ax in figs[0].axes:
             self.assertEqual(ax.get_ylim(), (0, 10))
     
     def test_segments_different_figsize(self):
         """Test plot_timeseries_segments with different figure sizes"""
         figs = self.data.plot.plot_timeseries_segments(
-            interv=1.0, 
+            interv="1 min", 
             figsize=(20, 10)
         )
         self.assertIsNotNone(figs)
@@ -335,7 +335,7 @@ class TestSegmentPlotParameters(unittest.TestCase):
     def test_segments_with_eyes(self):
         """Test plot_timeseries_segments with specific eyes"""
         figs = self.data.plot.plot_timeseries_segments(
-            interv=1.0,
+            interv="1 min",
             eyes=["left"]
         )
         self.assertIsNotNone(figs)
@@ -346,7 +346,7 @@ class TestSegmentPlotParameters(unittest.TestCase):
         available_vars = list(set([k.split('_')[1] for k in self.data.data.keys() if '_' in k]))
         if len(available_vars) > 0:
             figs = self.data.plot.plot_timeseries_segments(
-                interv=1.0,
+                interv="1 min",
                 variables=[available_vars[0]]
             )
             self.assertIsNotNone(figs)
@@ -354,7 +354,7 @@ class TestSegmentPlotParameters(unittest.TestCase):
     def test_segments_with_units(self):
         """Test plot_timeseries_segments with different units"""
         # Use appropriate interval values for each unit
-        units_intervals = [("sec", 1.0), ("ms", 1000.0), ("min", 1.0)]
+        units_intervals = [("sec", "10 sec"), ("ms", 10000.0), ("min", "1 min")]
         for units, interv in units_intervals:
             figs = self.data.plot.plot_timeseries_segments(
                 interv=interv,

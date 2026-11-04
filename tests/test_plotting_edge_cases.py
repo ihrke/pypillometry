@@ -40,7 +40,7 @@ class TestPlottingEdgeCases(unittest.TestCase):
     def test_pupil_plot_very_short_range(self):
         """Test pupil_plot with very short time range"""
         fig = plt.figure()
-        self.data.plot.pupil_plot(plot_range=(0, 0.001), units="sec")
+        self.data.plot.pupil_plot(plot_range=(0, 1), units="sec")
         self.assertIsNotNone(plt.gcf())
     
     def test_pupil_plot_full_range(self):

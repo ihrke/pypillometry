@@ -19,10 +19,23 @@ class GenericPlotter:
     """
     obj: GenericEyeData # link to the data object
 
+    #: most figures a *_segments plot makes (a plain-number `interv` is ms)
+    MAX_SEGMENTS = 500
+
+    @classmethod
+    def _check_nsegments(cls, duration, interv):
+        """Raise a ValueError if `duration` / `interv` (same units) gives too many figures."""
+        if not interv > 0:
+            raise ValueError(f"interv must be positive, got {interv}")
+        n = int(np.ceil(duration / interv))
+        if n > cls.MAX_SEGMENTS:
+            raise ValueError(f"interv gives {n} figures (at most {cls.MAX_SEGMENTS}); "
+                             "plain numbers are ms, e.g. use interv='1 min'")
+
     @staticmethod
     def _plot_range_in(plot_range, units: str = "ms") -> tuple:
-        """`plot_range` in `units`; plain numbers are already in `units`."""
-        start, end = parse_time(plot_range, to=units, default=units)
+        """`plot_range` in `units` (the units of the time axis); plain numbers are ms."""
+        start, end = parse_time(plot_range, to=units, default="ms")
         return float(start), float(end)
 
     def _validate_plot_range(self, plot_range: tuple, units: str = "ms") -> None:
@@ -245,7 +258,7 @@ class GenericPlotter:
             The eyes to plot. Default is [], which means all available data ("left", "right",
             "average", "regression", ...)
         units : str
-            The units of `plot_range` and the time axis ("ms", "sec", "min", "h").
+            The units of the time axis ("ms", "sec", "min", "h").
             Default "ms" (the units of the time vector).
         show_onsets : str
             Whether to plot markers for the event onsets. One of "line" (vertical lines),
@@ -431,7 +444,7 @@ class GenericPlotter:
         plt.legend()
         plt.xlabel(xlab)
         
-    def plot_timeseries_segments(self, pdf_file: str=None, interv: float=1, figsize=(15,5), 
+    def plot_timeseries_segments(self, pdf_file: str=None, interv: float="1 min", figsize=(15,5), 
                                   ylim=None, eyes: list=[], variables: list=[], 
                                   units: str="min", **kwargs):
         """
@@ -442,8 +455,8 @@ class GenericPlotter:
         pdf_file : str or None
             file name to store the PDF; if None, no PDF is written
         interv : float, str or Quantity
-            duration of each of the segments to be plotted (in the units
-            specified by `units`, or with units, e.g. ``10 * u.sec``)
+            duration of each of the segments to be plotted (in ms, or with
+            units, e.g. ``10 * u.sec``); default 1 min
         figsize : Tuple[int,int]
             dimensions of the figures
         ylim : Tuple[float,float] or None
@@ -454,7 +467,6 @@ class GenericPlotter:
             list of variables to plot; if empty, all available variables are plotted
         units : str
             units for the time axis; default is "min" (minutes).
-            The `interv` parameter is also interpreted in these units.
         **kwargs
             additional arguments passed to :meth:`plot_timeseries`
 
@@ -486,9 +498,10 @@ class GenericPlotter:
         # Calculate start and end times in the specified units
         obj=self.obj
         fac=obj._unit_fac(units)
-        interv = parse_time(interv, to=units, default=units)
+        interv = parse_time(interv, to=units, default="ms")
         stime = obj.tx.min() * fac
         etime = obj.tx.max() * fac
+        self._check_nsegments(etime - stime, interv)
         
         # Create segments
         segments=[]
@@ -504,7 +517,7 @@ class GenericPlotter:
         for start,end in segments:
             # Create a new figure for each segment
             fig = plt.figure(figsize=figsize)
-            self.plot_timeseries(plot_range=(start,end), units=units, 
+            self.plot_timeseries(plot_range=(start/fac, end/fac), units=units, 
                                eyes=eyes, variables=variables, **kwargs)
             if ylim is not None:
                 for ax in fig.axes:

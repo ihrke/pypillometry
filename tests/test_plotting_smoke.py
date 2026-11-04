@@ -50,7 +50,7 @@ class TestPlottingSmokeGeneric(unittest.TestCase):
     
     def test_plot_timeseries_segments_runs(self):
         """Test that plot_timeseries_segments completes without error"""
-        figs = self.data.plot.plot_timeseries_segments(interv=0.5)
+        figs = self.data.plot.plot_timeseries_segments(interv="0.5 min")
         self.assertIsNotNone(figs)
 
 
@@ -104,7 +104,7 @@ class TestPlottingSmokePupil(unittest.TestCase):
     
     def test_pupil_plot_segments_runs(self):
         """Test that pupil_plot_segments completes without error"""
-        figs = self.data.plot.pupil_plot_segments(interv=0.5)
+        figs = self.data.plot.pupil_plot_segments(interv="0.5 min")
         self.assertIsNotNone(figs)
     
     def test_plot_blinks_runs(self):
