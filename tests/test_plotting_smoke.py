@@ -312,6 +312,22 @@ class TestPlottingGaze(unittest.TestCase):
             self.assertTrue(np.isfinite(plt.gcf().axes[0].get_xlim()).all())
             plt.close("all")
 
+    def test_gaze_plots_y_points_down(self):
+        """pixel y increases downward, as in plot_calibration"""
+        for smooth in [None, 1]:
+            plt.figure()
+            self.data.plot.plot_heatmap(eyes="left", smooth=smooth)
+            self.assertTrue(plt.gcf().axes[0].yaxis_inverted())
+            plt.close("all")
+        self.data.plot.plot_scanpath(eyes="left")
+        self.assertTrue(plt.gca().yaxis_inverted())
+        plt.close("all")
+        d = pp.EyeData(sampling_rate=100, left_pupil=np.random.default_rng(2).normal(5, 1, 500),
+                       left_x=self.data.data["left", "x"], left_y=self.data.data["left", "y"])
+        plt.figure()
+        d.plot.plot_pupil_foreshortening_error_surface(min_samples=1)
+        self.assertTrue(plt.gcf().axes[0].yaxis_inverted())
+
     def test_plot_scanpath_single_eye_string(self):
         """eyes="left" plots the left eye only"""
         self.data.plot.plot_scanpath(eyes="left")

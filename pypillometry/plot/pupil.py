@@ -662,7 +662,7 @@ class PupilPlots(GenericPlots):
             
             # Set axis limits
             ax.set_xlim(xmin, xmax)
-            ax.set_ylim(ymin, ymax)
+            ax.set_ylim(ymax, ymin)  # pixel y points down, as on the screen
             
             # Plot screen boundaries
             if show_screen and obj.experimental_setup is not None and obj.experimental_setup.has_screen_info():

@@ -41,7 +41,8 @@ class GazePlots(GenericPlots):
         To plot a scanpath, use :meth:`.plot_scanpath()` instead.
         Each eye is plotted in a separate subplot of the current figure
         (a new figure is created if none exists); the colorbar shows the
-        number of samples per bin.
+        number of samples per bin. The y-axis points down (screen pixel
+        coordinates, as in :meth:`plot_calibration`).
 
         Parameters
         ----------
@@ -238,7 +239,7 @@ class GazePlots(GenericPlots):
                     
                     # Set axis limits
                     ax.set_xlim(xmin, xmax)
-                    ax.set_ylim(ymin, ymax)
+                    ax.set_ylim(ymax, ymin)  # pixel y points down, as on the screen
                 else:
                     # Determine min_samples threshold
                     if min_samples is None:
@@ -264,7 +265,7 @@ class GazePlots(GenericPlots):
                     
                     # Set axis limits for hexbin too
                     ax.set_xlim(xmin, xmax)
-                    ax.set_ylim(ymin, ymax)
+                    ax.set_ylim(ymax, ymin)  # pixel y points down, as on the screen
                 
                 divider = make_axes_locatable(ax)
                 cax = divider.append_axes('right', size='5%', pad=0.05)
@@ -303,7 +304,8 @@ class GazePlots(GenericPlots):
         If several eyes are available, they are plotted in the same figure
         in different colors. You can choose between them using the `eyes`
         parameter. The samples are drawn as dots colored by time.
-        A new figure is created for the plot.
+        A new figure is created for the plot. The y-axis points down (screen
+        pixel coordinates, as in :meth:`plot_calibration`).
 
         Parameters
         ----------
@@ -408,6 +410,7 @@ class GazePlots(GenericPlots):
                             fontsize=12, ha="center", va="center")
 
         ax.set_aspect("equal")
+        ax.invert_yaxis()  # pixel y points down, as on the screen
         #fig.colorbar()
         if show_screen and obj.experimental_setup is not None:
             setup = obj.experimental_setup
