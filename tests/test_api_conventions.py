@@ -35,3 +35,12 @@ class TestDictReturns:
         stats = d.blink_stats()
         assert set(stats) == {"left_pupil", "right_pupil"}
         assert stats["right_pupil"]["n"] == 0
+
+    def test_get_layer_intervals(self, data):
+        data.data.set_layer("left_x", "offscreen", np.arange(1000) // 10 == 5)
+        data = data.exclude_intervals([(0, 100)])
+        iv = data.get_layer_intervals("offscreen", variables="x")
+        assert set(iv) == {"left_x", "right_x"}
+        assert iv["left_x"].intervals == [(50, 60)] and len(iv["right_x"]) == 0
+        assert data.get_layer_intervals("excluded", "left", "pupil")["left_pupil"].intervals \
+            == [(0, 10)]

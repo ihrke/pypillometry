@@ -846,11 +846,50 @@ class GenericEyeData(state.VersionedState, ABC):
         return self._layer_intervals("interpolated", eyes, variables, units,
                                      "interpolated_blinks")
 
+    def get_layer_intervals(self, name: str, eyes: str|list = [],
+                            variables: str|list = [], units: str = "samples"):
+        """
+        Get the runs of a mask layer (e.g., ``"offscreen"``) as a dict of Intervals.
+
+        Each contiguous run of samples in which the layer is set becomes
+        one interval. See :meth:`get_blinks` for the blinks (without those
+        next to excluded periods) and :meth:`get_excluded` for the excluded
+        periods.
+
+        Parameters
+        ----------
+        name : str
+            name of the layer (e.g., ``"blink"``, ``"interpolated"``,
+            ``"offscreen"``, ``"divergence"``, ``"user"``)
+        eyes : str or list of str, optional
+            eye(s); if empty, all available eyes
+        variables : str or list of str, optional
+            variable(s); if empty, all available variables
+        units : str, optional
+            units of the intervals: "ms", "sec", "min", "h", or "samples"
+            for sample indices (default)
+
+        Returns
+        -------
+        dict
+            one Intervals object per existing eye/variable combination, keys
+            like "left_x" (empty Intervals where the layer is not set)
+
+        Examples
+        --------
+        >>> d = d.mask_offscreen_coords()  # doctest: +SKIP
+        >>> d.get_layer_intervals("offscreen", variables="x")  # doctest: +SKIP
+        """
+        return self._layer_intervals(name, eyes, variables, units, name)
+
     def _layer_runs(self, key, layer, skip_excluded=False):
         """Runs of `layer` of `key` (Intervals in samples); with
         `skip_excluded`, without the runs that overlap or touch an excluded
         period."""
-        runs = Intervals.from_mask(self.data.get_layer(key, layer)).intervals
+        if layer in REC_LAYERS:
+            runs = Intervals.from_mask(self.data.get_rec_layer(layer)).intervals
+        else:
+            runs = Intervals.from_mask(self.data.get_layer(key, layer)).intervals
         excl = self._excluded_mask()
         if skip_excluded and excl.any():
             n = len(excl)
