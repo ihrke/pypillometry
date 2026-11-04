@@ -1,5 +1,5 @@
 from .generic import GenericEyeData, keephistory
-from .gaze import _GazeMethods
+from .gaze import GazeNamespace
 from .eyedatadict import EyeDataDict
 from ..plot import EyePlotter
 from ..units import parse_distance, parse_angle
@@ -28,7 +28,7 @@ from ..signal.baseline import butter_lowpass_filter, downsample
 
 
 
-class EyeData(_GazeMethods, GenericEyeData):
+class EyeData(GenericEyeData):
     """
     Class for eye-tracking and pupillometric data: pupil size and/or gaze
     position (x, y) of one or two eyes.
@@ -99,6 +99,7 @@ class EyeData(_GazeMethods, GenericEyeData):
     >>> print(d)
     """
     pupil = accessor(PupilNamespace)
+    gaze = accessor(GazeNamespace)
 
     def __init__(self, 
                     time: np.ndarray = None,

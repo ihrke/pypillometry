@@ -258,10 +258,10 @@ class TestIncompleteGazeMethods:
     def test_mask_offscreen_coords(self, incomplete_eyedata):
         d = incomplete_eyedata
         d.data["left_x"][50:60] = 5000
-        d.mask_offscreen_coords()
+        d.gaze.mask_offscreen()
         assert d.data.mask["left_x"][50:60].all()
         with pytest.raises(KeyError, match="right"):
-            d.mask_offscreen_coords(eyes="right")
+            d.gaze.mask_offscreen(eyes="right")
 
 
 class TestIncompletePlots:

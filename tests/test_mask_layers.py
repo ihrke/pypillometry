@@ -486,7 +486,7 @@ class TestGazeLayers:
         return d
 
     def test_offscreen_layer_replaced(self):
-        d = self.gaze().mask_offscreen_coords()
+        d = self.gaze().gaze.mask_offscreen()
         expected = np.isin(np.arange(8), [2, 6])
         for key in ("left_x", "left_y", "right_x", "right_y"):
             np.testing.assert_array_equal(d.data.get_layer(key, "offscreen"), expected)
@@ -494,7 +494,7 @@ class TestGazeLayers:
         assert not d.data.get_layer("left_x", "user").any()
         # running again (smaller screen) replaces the layer
         d.set_experimental_setup(screen_resolution=(400, 800))
-        e = d.mask_offscreen_coords()
+        e = d.gaze.mask_offscreen()
         np.testing.assert_array_equal(e.data.get_layer("left_x", "offscreen"),
                                       np.isin(np.arange(8), [1, 2, 3, 4, 5, 6, 7]))
         assert not e.clear_layer("offscreen").data.mask["left_x"].any()
@@ -504,7 +504,7 @@ class TestGazeLayers:
         d.data.set_layer("right_x", "divergence", np.ones(8, dtype=bool))  # stale
         d.data.add_mask("left_x", np.s_[0:1])
         d["right_x"] = d.data["right_x"] + np.where(np.arange(8) == 3, 300, 0)
-        e = d.mask_eye_divergences(threshold=100, thr_type="pixel", ignore_existing_mask=False)
+        e = d.gaze.mask_divergences(threshold=100, thr_type="pixel", ignore_existing_mask=False)
         expected = np.arange(8) == 3
         for key in ("left_x", "left_y", "right_x", "right_y"):
             np.testing.assert_array_equal(e.data.get_layer(key, "divergence"), expected)

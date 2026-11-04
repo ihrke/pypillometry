@@ -246,7 +246,7 @@ for _ds in DATASETS:
 
 def _offscreen(dataset):
     d = get_data(dataset)
-    d.mask_offscreen_coords()
+    d.gaze.mask_offscreen()
     # returned before step 9: the runs per eye (the same for x and y)
     found = d.get_layer_intervals("offscreen", variables="x", units="samples")
     out = {f"returned.{key.partition('_')[0]}": iv_samples(iv) for key, iv in found.items()}
@@ -256,7 +256,7 @@ def _offscreen(dataset):
 
 def _divergence(dataset, params):
     d = get_data(dataset)
-    d.mask_eye_divergences(**params)
+    d.gaze.mask_divergences(**params)
     # returned before step 9: the runs (the same for all gaze variables)
     out = {"returned": iv_samples(
         d.get_layer_intervals("divergence", "left", "x", units="samples")["left_x"])}

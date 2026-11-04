@@ -135,7 +135,7 @@ class TestQualityReport(unittest.TestCase):
         x = d.data["left_x"].copy()
         x[2000:2500] = 5000  # 5 % off-screen
         d["left_x"] = x
-        d.mask_offscreen_coords(eyes="left")
+        d.gaze.mask_offscreen(eyes="left")
         d.mask_intervals(pp.Intervals([(10000, 12000)], "ms"), eyes="left", variables="pupil")  # 10 %
         a = d.quality_report()["artifacts"]["left"]
         self.assertAlmostEqual(a["offscreen_pct"].value, 5)

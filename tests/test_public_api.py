@@ -28,6 +28,7 @@ INTERNAL = {
     # namespaces: used as d.pupil / pp.pupil, documented in their modules
     "pypillometry.eyedata.namespace": {"Namespace", "accessor"},
     "pypillometry.eyedata.pupil": {"PupilNamespace"},
+    "pypillometry.eyedata.gaze": {"GazeNamespace"},
     "pypillometry.intervals": {"stat_event_interval"},
     "pypillometry.io": {"is_ssh_url"},
     "pypillometry.plot.genplotter": {"GenericPlotter"},
