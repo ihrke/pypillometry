@@ -734,7 +734,7 @@ def tweak(data, func, params, variable=None, time=None):
                 continue
     
     from vispy import app
-    from .tweak import TweakCanvas, TweakViewer
+    from .tweak_canvas import TweakCanvas, TweakViewer
     
     # Compute initial overlay - pass full data to function
     current_params = dict(params)

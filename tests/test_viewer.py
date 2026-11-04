@@ -58,7 +58,7 @@ class TestTweakKeys(unittest.TestCase):
         from types import SimpleNamespace
         from unittest import mock
         from vispy.util import keys
-        from pypillometry.viewer.tweak import TweakCanvas
+        from pypillometry.viewer.tweak_canvas import TweakCanvas
         canvas = mock.Mock()
         canvas.navigation.handle_key_press.return_value = None
         event = SimpleNamespace(key=keys.Key(key), text=text, modifiers=[])
