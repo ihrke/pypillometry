@@ -73,7 +73,7 @@ left empty, all eyes and variables are processed:
 
 New eyes and variables can be added. For example,
 :meth:`~EyeData.pupil_merge_eyes` combines the pupils of both eyes into
-``merged_pupil`` (eye ``merged``, variable ``pupil``), and you can store
+``mean_pupil`` (eye ``mean``, variable ``pupil``), and you can store
 your own arrays with ``d["left", "myvar"] = array``.
 
 See the tutorial :doc:`/notebooks/eyes_and_variables` for examples.
@@ -92,14 +92,17 @@ default: they are used like other samples (see the mask policies below).
 
 .. code-block:: python
 
-    d.pupil_blinks_detect(apply_mask=True)      # mask blinks
+    d.pupil_blinks_detect()                     # detect and mask blinks
     d.data.count_masked()                       # number of masked samples
-    d.mask_as_intervals("left", "pupil")        # masked stretches as Intervals
+    d.mask_as_intervals("left", "pupil")        # masked stretches (dict of Intervals)
     d.plot.plot_masked()                        # where is data masked?
 
-Detection methods return :class:`Intervals` (``apply_mask=False``, the
-default) so that you can check them before applying them with
-:meth:`~GenericEyeData.mask_intervals` (see :doc:`events_intervals`).
+Detection methods store what they find as a mask layer (e.g.,
+``"blink"``), which masks the data, and return the object; read the
+results with getters such as :meth:`~GenericEyeData.get_blinks` or
+:meth:`~GenericEyeData.get_layer_intervals` (a dict keyed like
+``"left_pupil"``, in ms) and undo them with
+:meth:`~GenericEyeData.clear_layer`.
 
 Each variable also keeps *mask layers* that record why a sample is
 masked: ``"blink"`` (:meth:`~EyeData.pupil_blinks_detect`,
@@ -203,7 +206,7 @@ chained:
 .. code-block:: python
 
     d = pp.EyeData.from_eyelink("recording.edf")\
-          .pupil_blinks_detect(apply_mask=True)\
+          .pupil_blinks_detect()\
           .pupil_blinks_interpolate()\
           .pupil_lowpass_filter(cutoff=4)\
           .downsample(50)

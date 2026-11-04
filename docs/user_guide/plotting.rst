@@ -9,7 +9,9 @@ and :class:`GazePlotter`). Pupil plots need pupil data and gaze plots need
 gaze data; they raise an error if the data are missing. All plots use
 :mod:`matplotlib`, so they can be adjusted and saved as usual. Most
 functions take ``eyes=``, ``variables=``, ``plot_range=`` and ``units=``
-arguments.
+arguments. Plain numbers in ``plot_range`` are ms (e.g.,
+``plot_range=(0, 20) * u.sec`` for other units); ``units=`` is the unit of
+the time axis.
 
 The examples on this page use the short example dataset with detected
 blinks:
@@ -23,7 +25,7 @@ blinks:
    import matplotlib.pyplot as plt
 
    d = pp.get_example_data("rlmw_002_short")
-   d.pupil_blinks_detect(apply_mask=True)
+   d.pupil_blinks_detect()
 
 Each function's API documentation has another example.
 

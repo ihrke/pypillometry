@@ -18,7 +18,7 @@ The simplest use case is viewing an :class:`EyeData` object directly:
     import pypillometry as pp
 
     eyedata = pp.get_example_data("rlmw_002_short")
-    eyedata.pupil_blinks_detect(apply_mask=True)
+    eyedata.pupil_blinks_detect()
     pp.view(eyedata)
 
 .. image:: ../images/viewer_eyedata.png

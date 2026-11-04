@@ -15,7 +15,7 @@ EDF files from SR Research Eyelink eye trackers are read with
     import pypillometry as pp
 
     d = pp.EyeData.from_eyelink("recording.edf")
-    p = d.drop_data(variables=["x", "y"])   # pupil only
+    p = d.drop_data(variables=["x", "y"], inplace=False)   # pupil only
 
 The result contains all samples, all messages (as events), the screen
 resolution and the calibration/validation results (as
