@@ -68,8 +68,9 @@ def merge_intervals(*args, label: str = 'merged'):
     >>> combined = merge_intervals(intervals_dict)
     
     Then merge overlapping intervals if needed:
-    
-    >>> combined.merge()
+
+    >>> len(combined.merge())
+    3
     """
     
     # Parse input to get list of Intervals objects
@@ -265,12 +266,15 @@ class Intervals(Stateful):
 
     Examples
     --------
+    >>> from pypillometry import u
     >>> intervals = Intervals([(0, 100), (200, 300)], units="ms", label="stimulus")
     >>> intervals = Intervals([(0, 100), (200, 300)] * u.ms, label="stimulus")
     >>> len(intervals)
     2
     >>> for start, end in intervals:
     ...     print(f"{start}-{end}")
+    0.0-100.0
+    200.0-300.0
     """
     
     # state (see pypillometry.state); intervals as (n, 2) array
@@ -367,8 +371,12 @@ class Intervals(Stateful):
             
         Examples
         --------
+        >>> import pypillometry as pp
+        >>> d = pp.get_example_data("rlmw_002_short").pupil.blinks_detect()
         >>> blinks = d.get_blinks("left", "pupil")["left_pupil"]
         >>> mask = blinks.to_mask(d)
+        >>> len(mask) == len(d)
+        True
         """
         n = len(data.tx)
         mask = np.zeros(n, dtype=np.int8)
@@ -571,8 +579,11 @@ class Intervals(Stateful):
             
         Examples
         --------
-        >>> intervals = data.get_intervals(("stim", "resp"), units="ms")
-        >>> arr = np.array(intervals)
+        >>> import pypillometry as pp
+        >>> d = pp.get_example_data("rlmw_002_short")
+        >>> intervals = d.get_intervals(("F_", "R_"))  # feedback to response
+        >>> np.array(intervals).shape
+        (10, 2)
         """
         if copy is False:
             raise ValueError("Intervals cannot be converted to an array without a copy")
@@ -618,15 +629,18 @@ class Intervals(Stateful):
         
         Examples
         --------
-        >>> intervals = data.get_intervals(("stim", "resp"), units="ms")
+        >>> import pypillometry as pp
+        >>> d = pp.get_example_data("rlmw_002_short")
+        >>> intervals = d.get_intervals(("F_", "R_"), units="ms")
         >>> intervals_sec = intervals.to_units("sec")
         >>> intervals_seconds = intervals.to_units("seconds")  # alias works too
-        
+
         Convert between indices and time units (needs the data object):
-        
-        >>> blinks = data.get_blinks("left", "pupil")["left_pupil"]
-        >>> blinks_ms = blinks.to_units("ms", data)
-        >>> blinks_idx = blinks_ms.to_units("samples", data)
+
+        >>> d = d.pupil.blinks_detect()
+        >>> blinks = d.get_blinks("left", "pupil")["left_pupil"]
+        >>> blinks_idx = blinks.to_units("samples", d)
+        >>> blinks_ms = blinks_idx.to_units("ms", d)
         """
         # Normalize target units (source units already normalized in __init__)
         target_units = normalize_unit(target_units)
@@ -825,7 +839,8 @@ class Intervals(Stateful):
         [(90, 220), (290, 420)]
         
         >>> # Pad and then merge overlapping intervals
-        >>> intervals.pad(left=50, right=50).merge()
+        >>> intervals.pad(left=50, right=50).merge().intervals
+        [(50, 450)]
         
         Notes
         -----
@@ -1084,7 +1099,7 @@ class Intervals(Stateful):
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
            >>> intervals = d.get_intervals("S_", (-500, 2500) * u.ms).to_intervals("sec")
-           >>> plt.figure(figsize=(8, 3))
+           >>> fig = plt.figure(figsize=(8, 3))
            >>> intervals.plot()
         """
         import matplotlib.pyplot as plt
@@ -1184,11 +1199,12 @@ class Intervals(Stateful):
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
            >>> intervals = d.get_intervals("S_", (0, 1000) * u.ms).to_intervals("sec")
-           >>> plt.figure(figsize=(10, 3))
+           >>> fig = plt.figure(figsize=(10, 3))
            >>> d.plot.pupil_plot(eyes="left", plot_range=(0, 20) * u.sec,
            ...                   show_events=False)
-           >>> intervals.plot_highlight(color="green", alpha=0.2)
+           >>> patches = intervals.plot_highlight(color="green", alpha=0.2)
            >>> plt.xlim(0, 20)
+           (0.0, 20.0)
 
         After :meth:`d.plot.plot_timeseries() <pypillometry.plot.PlotNamespace.plot_timeseries>`, the intervals
         are highlighted in all subplots; use ``ax=`` to highlight only one of them.
