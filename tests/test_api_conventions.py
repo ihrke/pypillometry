@@ -68,3 +68,10 @@ class TestInplace:
                        fill_time_discontinuities=False, inplace=False)
         f = e.fill_time_discontinuities()
         assert len(e) == 90 and len(f) == 100
+
+    @pytest.mark.parametrize("call", [
+        lambda d: d.set_blinks(None),
+        lambda d: d.set_events(d.events),
+        lambda d: d.set_experimental_setup(screen_resolution=(1280, 1024))])
+    def test_setters_return_the_object(self, data, call):
+        assert call(data) is data

@@ -736,6 +736,11 @@ class GenericEyeData(state.VersionedState, ABC):
         variables : str or list of str, optional
             variable(s) to set blinks for (e.g., ``["pupil", "x", "y"]``);
             if empty, all available variables. Ignored if `intervals` is a dict.
+
+        Returns
+        -------
+        :class:`~pypillometry.GenericEyeData`
+            the object itself (always modified in-place)
         """
         # Check if intervals is a dict
         if isinstance(intervals, dict):
@@ -754,6 +759,7 @@ class GenericEyeData(state.VersionedState, ABC):
                 logger.warning(f"Key '{key}' not found in data, skipping")
                 continue
             self._set_blink_layer(key, interval_obj)
+        return self
 
     def get_blinks(self, eyes: str|list = [], variables: str|list = [], 
                    units: str = "samples"):

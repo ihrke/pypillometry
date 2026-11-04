@@ -38,6 +38,11 @@ class _GazeMethods:
             - camera_offset: tuple (x, y, z) in eye-centric frame
             - camera_spherical: tuple (theta, phi, r)
             - ipd: inter-pupillary distance
+
+        Returns
+        -------
+        :class:`~pypillometry.EyeData`
+            the object itself (always modified in-place)
         
         Examples
         --------
@@ -60,6 +65,7 @@ class _GazeMethods:
             merged = {**old, **kwargs}
 
             self.experimental_setup = ExperimentalSetup(**merged)
+        return self
 
     # =========================================================================
     # Methods
