@@ -35,7 +35,6 @@ from .eyedata.steps import (
     add_events, set_experimental_setup, drop_data, drop_original,
     fill_time_discontinuities,
 )
-from .plot import EyePlotter, PupilPlotter, GazePlotter
 from .segmented import (
     SegmentedEyeData, GroupLevelSegmentedData, group_segments,
 )
@@ -104,7 +103,6 @@ __all__ = [
     "keep_intervals", "remove_intervals", "merge_masks", "clear_layer",
     "set_blinks", "set_events", "add_events", "set_experimental_setup",
     "drop_data", "drop_original", "fill_time_discontinuities",
-    "EyePlotter", "PupilPlotter", "GazePlotter",
     "SegmentedEyeData", "GroupLevelSegmentedData", "group_segments",
     "Events", "ClockSync", "sync_clocks",
     "Intervals", "merge_intervals", "Epochs",

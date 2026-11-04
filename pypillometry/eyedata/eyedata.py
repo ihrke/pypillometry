@@ -1,7 +1,7 @@
 from .generic import GenericEyeData, keephistory
 from .gaze import GazeNamespace
 from .eyedatadict import EyeDataDict
-from ..plot import EyePlotter
+from ..plot import PlotNamespace
 import numpy as np
 from loguru import logger
 
@@ -25,8 +25,10 @@ class EyeData(GenericEyeData):
     gaze data, or both). The methods for pupil data are in the namespace
     ``d.pupil`` (:class:`~pypillometry.eyedata.pupil.PupilNamespace`, e.g.
     ``d.pupil.blinks_detect()``), those for gaze data in ``d.gaze``
-    (:class:`~pypillometry.eyedata.gaze.GazeNamespace`); they raise a
-    ValueError if the object has no such data. The generic methods (e.g.,
+    (:class:`~pypillometry.eyedata.gaze.GazeNamespace`) and the plots in
+    ``d.plot`` (:class:`~pypillometry.plot.PlotNamespace`, e.g.
+    ``d.plot.pupil_plot()``); they raise a ValueError if the object has no
+    such data. The generic methods (e.g.,
     :meth:`~pypillometry.GenericEyeData.crop`) are methods of the object.
     All transforming methods can also be used as pipeline steps, e.g.
     ``d | pp.pupil.blinks_detect() | pp.crop(0, "10 min")`` (see
@@ -91,6 +93,7 @@ class EyeData(GenericEyeData):
     """
     pupil = accessor(PupilNamespace)
     gaze = accessor(GazeNamespace)
+    plot = accessor(PlotNamespace)
 
     def __init__(self, 
                     time: np.ndarray = None,
@@ -137,11 +140,6 @@ class EyeData(GenericEyeData):
         self.original=None
         if keep_orig: 
             self.original=self.copy()
-
-    @property
-    def plot(self):
-        """Plotting functions for this object (a :class:`~pypillometry.EyePlotter`)."""
-        return EyePlotter(self)
 
 
     def summary(self):

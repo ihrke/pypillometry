@@ -1188,7 +1188,7 @@ class Intervals(Stateful):
            >>> intervals.plot_highlight(color="green", alpha=0.2)
            >>> plt.xlim(0, 20)
 
-        After :meth:`~pypillometry.GenericPlotter.plot_timeseries`, the intervals
+        After :meth:`d.plot.plot_timeseries() <pypillometry.plot.PlotNamespace.plot_timeseries>`, the intervals
         are highlighted in all subplots; use ``ax=`` to highlight only one of them.
         """
         import matplotlib.pyplot as plt

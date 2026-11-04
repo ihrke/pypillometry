@@ -13,7 +13,7 @@ import numpy as np
 
 
 class TestPlottingSmokeGeneric(unittest.TestCase):
-    """Smoke tests for GenericPlotter methods"""
+    """Smoke tests for the generic plots"""
     
     def setUp(self):
         """Create test data once for all tests"""
@@ -55,7 +55,7 @@ class TestPlottingSmokeGeneric(unittest.TestCase):
 
 
 class TestPlottingSmokePupil(unittest.TestCase):
-    """Smoke tests for PupilPlotter methods"""
+    """Smoke tests for the pupil plots"""
     
     def setUp(self):
         """Create test data once for all tests"""
@@ -266,8 +266,43 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
         np.testing.assert_allclose(xs, [100, 400])
 
 
+class TestPlotRange(unittest.TestCase):
+    """plot_range is checked in all plots that take it"""
+
+    def test_reversed_plot_range_raises(self):
+        d = pp.EyeData(sampling_rate=100, left_pupil=np.ones(500),
+                       left_x=np.ones(500), left_y=np.ones(500))
+        for name in ["plot_timeseries", "pupil_plot", "plot_heatmap", "plot_scanpath",
+                     "plot_pupil_foreshortening_error_surface"]:
+            with self.subTest(plot=name):
+                with self.assertRaisesRegex(ValueError, "start must be before end"):
+                    getattr(d.plot, name)(plot_range=(4000, 1000))
+                plt.close("all")
+
+
+class TestPlotRequire(unittest.TestCase):
+    """plots that need channels the object lacks raise a ValueError"""
+
+    def test_gaze_only(self):
+        d = pp.EyeData(sampling_rate=100, left_x=np.ones(500), left_y=np.ones(500))
+        for name in ["pupil_plot", "pupil_plot_segments", "plot_blinks",
+                     "plot_pupil_foreshortening_error_surface"]:
+            with self.subTest(plot=name):
+                with self.assertRaisesRegex(ValueError, "no pupil data"):
+                    getattr(d.plot, name)()
+                plt.close("all")
+
+    def test_pupil_only(self):
+        d = pp.EyeData(sampling_rate=100, left_pupil=np.ones(500))
+        for name in ["plot_heatmap", "plot_scanpath"]:
+            with self.subTest(plot=name):
+                with self.assertRaisesRegex(ValueError, "no x, y data"):
+                    getattr(d.plot, name)()
+                plt.close("all")
+
+
 class TestPlottingGaze(unittest.TestCase):
-    """Smoke tests for GazePlotter methods"""
+    """Smoke tests for the gaze plots"""
 
     def setUp(self):
         rng = np.random.default_rng(1)
@@ -288,6 +323,31 @@ class TestPlottingGaze(unittest.TestCase):
         self.data.plot.plot_heatmap(eyes="left")
         titles = [ax.get_title() for ax in plt.gcf().axes if ax.get_title()]
         self.assertEqual(titles, ["left"])
+
+    def test_plot_heatmap_show_masked_with_nan(self):
+        """show_masked=True leaves out NaN samples (finding 5.1)"""
+        self.data.data["left", "x"][10:20] = np.nan
+        for smooth in [None, 1]:
+            plt.figure()
+            self.data.plot.plot_heatmap(eyes="left", show_masked=True, smooth=smooth)
+            self.assertTrue(np.isfinite(plt.gcf().axes[0].get_xlim()).all())
+            plt.close("all")
+
+    def test_gaze_plots_y_points_down(self):
+        """pixel y increases downward, as in plot_calibration"""
+        for smooth in [None, 1]:
+            plt.figure()
+            self.data.plot.plot_heatmap(eyes="left", smooth=smooth)
+            self.assertTrue(plt.gcf().axes[0].yaxis_inverted())
+            plt.close("all")
+        self.data.plot.plot_scanpath(eyes="left")
+        self.assertTrue(plt.gca().yaxis_inverted())
+        plt.close("all")
+        d = pp.EyeData(sampling_rate=100, left_pupil=np.random.default_rng(2).normal(5, 1, 500),
+                       left_x=self.data.data["left", "x"], left_y=self.data.data["left", "y"])
+        plt.figure()
+        d.plot.plot_pupil_foreshortening_error_surface(min_samples=1)
+        self.assertTrue(plt.gcf().axes[0].yaxis_inverted())
 
     def test_plot_scanpath_single_eye_string(self):
         """eyes="left" plots the left eye only"""

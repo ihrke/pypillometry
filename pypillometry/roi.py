@@ -345,8 +345,8 @@ class CircularROI(ROI):
            >>> left.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)
            >>> right.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)
 
-        :meth:`~pypillometry.GazePlotter.plot_heatmap` and
-        :meth:`~pypillometry.GazePlotter.plot_scanpath` can also draw them
+        :meth:`d.plot.plot_heatmap() <pypillometry.plot.PlotNamespace.plot_heatmap>` and
+        :meth:`d.plot.plot_scanpath() <pypillometry.plot.PlotNamespace.plot_scanpath>` can also draw them
         (``rois=[left, right]``).
         """
         if ax is None:
@@ -595,8 +595,8 @@ class RectangularROI(ROI):
            >>> left.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)
            >>> right.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)
 
-        :meth:`~pypillometry.GazePlotter.plot_heatmap` and
-        :meth:`~pypillometry.GazePlotter.plot_scanpath` can also draw them
+        :meth:`d.plot.plot_heatmap() <pypillometry.plot.PlotNamespace.plot_heatmap>` and
+        :meth:`d.plot.plot_scanpath() <pypillometry.plot.PlotNamespace.plot_scanpath>` can also draw them
         (``rois=[left, right]``).
         """
         if ax is None:

@@ -56,6 +56,15 @@ state, and is created anew on each access (``accessor`` descriptor), so it
 does not affect copying or saving. Its methods work on ``self._d`` and
 return the data object.
 
+The plots use the same mechanism: ``d.plot`` is a
+:class:`~pypillometry.plot.PlotNamespace`, combined from one class per
+domain in its own module (``plot/generic.py``: ``GenericPlots``,
+``plot/pupil.py``: ``PupilPlots``, ``plot/gaze.py``: ``GazePlots``). These
+classes hold no state; a new plot goes into the module of its domain and
+uses ``self._d`` (and ``self._d._require(...)`` for the channels it needs).
+There is no forwarding of unknown attributes: ``d.pupil_plot()`` does not
+exist, only ``d.plot.pupil_plot()``.
+
 Every transforming method can also be used as a pipeline step
 (``eyedata/pipes.py``): decorated with ``@step``, the same method runs
 when it is called on data (``d.crop(...)``, ``d.pupil.blinks_detect()``)

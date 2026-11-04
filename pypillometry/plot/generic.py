@@ -1,7 +1,7 @@
 from typing import Iterable, Optional, Tuple, Union
-from ..eyedata import GenericEyeData
+from ..eyedata.namespace import Namespace
 from ..intervals import Intervals, _as_intervals
-from ..units import parse_time, normalize_unit
+from ..units import parse_time, normalize_unit, parse_angle, u
 import numpy as np
 from loguru import logger
 from pathlib import Path
@@ -13,11 +13,12 @@ import matplotlib as mpl
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.backends.backend_pdf import PdfPages
 
-class GenericPlotter:
+class GenericPlots(Namespace):
     """
-    Abstract Class for plotting eye data. This class is not meant to be used directly.
+    Plots for any channels (time series, intervals, masks) and for the
+    experimental setup; part of the plotting namespace ``d.plot``
+    (:class:`~pypillometry.plot.PlotNamespace`).
     """
-    obj: GenericEyeData # link to the data object
 
     #: most figures a ``*_segments`` plot makes (a plain-number `interv` is ms)
     MAX_SEGMENTS = 500
@@ -52,19 +53,22 @@ class GenericPlotter:
         Raises
         ------
         ValueError
-            If plot_range does not overlap with data time range
+            If plot_range does not overlap with data time range or if its
+            start is not before its end
         """
         start, end = plot_range
+        if not start < end:
+            raise ValueError(f"plot_range ({start}, {end}): start must be before end")
         
         # Handle infinite bounds (always valid)
         if start == -np.inf and end == np.inf:
             return
         
         # Get data time range in the specified units
-        fac = self.obj._unit_fac(units)
+        fac = self._d._unit_fac(units)
         
-        data_start = float(np.min(self.obj.tx) * fac)
-        data_end = float(np.max(self.obj.tx) * fac)
+        data_start = float(np.min(self._d.tx) * fac)
+        data_end = float(np.max(self._d.tx) * fac)
         
         # Replace infinite bounds with data bounds for comparison
         eff_start = data_start if start == -np.inf else start
@@ -156,7 +160,7 @@ class GenericPlotter:
         """
         intervals = _as_intervals(intervals)
         
-        obj = self.obj  # EyeData object
+        obj = self._d  # EyeData object
         nsubplots = nrow * ncol  # number of subplots per figure
         
         # x-axis in the units of the Intervals (sample numbers for indices)
@@ -299,7 +303,7 @@ class GenericPlotter:
            >>> plt.figure(figsize=(10, 6))
            >>> d.plot.plot_timeseries(plot_range=(0, 20) * u.sec, units="sec")
         """
-        obj = self.obj
+        obj = self._d
         pairs = obj.data.select(eyes, variables)
         eyes = list(dict.fromkeys(eye for eye, _ in pairs))
         variables = list(dict.fromkeys(var for _, var in pairs))
@@ -326,7 +330,6 @@ class GenericPlotter:
             endix=np.argmin(np.abs(tx-end))
         
         # which data to plot
-        variables = [v for v in variables if v not in getattr(self, 'ignore_vars', [])]
 
         # how to plot onsets
         if show_onsets=="line":
@@ -486,7 +489,7 @@ class GenericPlotter:
            >>> from pypillometry import u
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
-           >>> figs = d.plot.plot_timeseries_segments(interv=10, units="sec",
+           >>> figs = d.plot.plot_timeseries_segments(interv=10 * u.sec, units="sec",
            ...                                        variables="pupil", figsize=(10, 3))
            >>> for f in figs[1:]:
            ...     plt.close(f)
@@ -496,7 +499,7 @@ class GenericPlotter:
         """
 
         # Calculate start and end times in the specified units
-        obj=self.obj
+        obj=self._d
         fac=obj._unit_fac(units)
         interv = parse_time(interv, to=units, default="ms")
         stime = obj.tx.min() * fac
@@ -598,7 +601,7 @@ class GenericPlotter:
         """
         from ..intervals import merge_intervals
         
-        obj = self.obj
+        obj = self._d
         
         # Get masked intervals for specified eyes/variables
         intervals_dict = obj.mask_as_intervals(eyes, variables, units=units)
@@ -699,3 +702,104 @@ class GenericPlotter:
             ax.set_xlabel(f'Time ({units})')
         else:
             ax.set_xlabel('Samples')
+
+    def plot_experimental_setup(
+        self,
+        theta: Optional[float] = None,
+        phi: Optional[float] = None,
+        calibration = None,
+        show_gaze_samples: bool = True,
+        n_gaze_samples: int = 9,
+        ax: Optional[plt.Axes] = None,
+        viewing_angle: tuple = None,
+        projection: str = '2d'
+    ) -> tuple:
+        """
+        Plot visualization of eye-tracking experimental setup geometry.
+        
+        Shows the spatial relationship between eye, camera, and screen using
+        the experimental parameters stored in the EyeData object. Delegates
+        to ExperimentalSetup.plot().
+        
+        Parameters
+        ----------
+        theta : float or str, optional
+            Camera polar angle; a float is interpreted as radians, a string
+            can carry units (e.g., "20 deg"). If None, uses calibration's theta
+            (if `calibration` is given), else setup's theta.
+        phi : float or str, optional
+            Camera azimuthal angle; a float is interpreted as radians, a string
+            can carry units (e.g., "-90 deg"). If None, uses calibration's phi
+            (if `calibration` is given), else setup's phi.
+        calibration : ForeshorteningCalibration, optional
+            Fitted calibration object containing theta and phi.
+        show_gaze_samples : bool, default True
+            Show sample gaze vectors to screen positions
+        n_gaze_samples : int, default 9
+            Number of sample gaze positions
+        ax : matplotlib axis, optional
+            Existing axis to plot on (only for '3d' projection)
+        viewing_angle : tuple, optional
+            Viewing angle for 3D projection (elev, azim) or (elev, azim, roll).
+            Plain numbers are in degrees (as in matplotlib's ``view_init``);
+            strings with units (e.g., ``("30 deg", "-60 deg")``) are parsed.
+        projection : str, default '2d'
+            '2d' for three orthogonal views, '3d' for interactive 3D view
+
+        Returns
+        -------
+        fig : matplotlib Figure
+        ax : matplotlib axis or array of axes
+
+        Raises
+        ------
+        ValueError
+            if the data object has no `experimental_setup`
+
+        Examples
+        --------
+        Camera geometry from the experimental setup:
+
+        .. plot::
+
+           >>> import pypillometry as pp
+           >>> from pypillometry import u
+           >>> import matplotlib.pyplot as plt
+           >>> d = pp.get_example_data("rlmw_002_short")
+           >>> d.set_experimental_setup(camera_spherical=("20 deg", "-90 deg", "70 cm"))
+           >>> d.plot.plot_experimental_setup()
+
+        To show fitted angles, pass the result of
+        :meth:`d.pupil.fit_foreshortening() <pypillometry.eyedata.pupil.PupilNamespace.fit_foreshortening>` as ``calibration=``, or
+        set ``theta``/``phi`` directly.
+        """
+        obj = self._d
+        setup = obj.experimental_setup
+        
+        if setup is None:
+            raise ValueError("experimental_setup is not set on this EyeData object")
+        
+        # Get theta and phi from calibration if provided
+        if calibration is not None:
+            if theta is None:
+                theta = calibration.theta * u.rad  # fitted angles are in radians
+                logger.info(f"Using theta={np.degrees(calibration.theta):.1f}° from calibration")
+            if phi is None:
+                phi = calibration.phi * u.rad
+                logger.info(f"Using phi={np.degrees(calibration.phi):.1f}° from calibration")
+        
+        # Parse angles if provided as strings
+        if theta is not None:
+            theta = parse_angle(theta)
+        if phi is not None:
+            phi = parse_angle(phi)
+        
+        return setup.plot(
+            theta=theta,
+            phi=phi,
+            projection=projection,
+            show_gaze_samples=show_gaze_samples,
+            n_gaze_samples=n_gaze_samples,
+            ax=ax,
+            viewing_angle=viewing_angle,
+        )

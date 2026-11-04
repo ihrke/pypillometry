@@ -1,5 +1,4 @@
-from ..eyedata import GenericEyeData
-from .genplotter import GenericPlotter
+from .generic import GenericPlots
 import numpy as np
 from collections.abc import Iterable
 from typing import List, Union, Optional, Tuple
@@ -14,27 +13,13 @@ from ..roi import ROI
 from loguru import logger
 from scipy.ndimage import gaussian_filter
 
-class GazePlotter(GenericPlotter):
+class GazePlots(GenericPlots):
     """
-    Class for plotting gaze data. The class is initialized with a GenericEyeData
-    object and provides methods to plot the data in various ways.
-
-    It is usually not created directly; instead, it is available as the `plot`
-    attribute of an :class:`~pypillometry.EyeData` object (as part of
-    :class:`~pypillometry.EyePlotter`), e.g.
+    Plots of gaze data (heatmap, scanpath, calibration); part of the plotting
+    namespace ``d.plot`` (:class:`~pypillometry.plot.PlotNamespace`), e.g.
     ``d.plot.plot_heatmap()``.
-
-    Parameters
-    ----------
-    obj : GenericEyeData
-        the data object to plot (stored as `obj`)
     """
-    obj: GenericEyeData # link to the data object
 
-    def __init__(self, obj: GenericEyeData):
-        self.ignore_vars = [] #["blinkmask", "pupilinterpolated"]
-        self.obj = obj
-    
     def plot_heatmap(
         self,
         plot_range: tuple = (-np.inf, +np.inf),
@@ -56,7 +41,8 @@ class GazePlotter(GenericPlotter):
         To plot a scanpath, use :meth:`.plot_scanpath()` instead.
         Each eye is plotted in a separate subplot of the current figure
         (a new figure is created if none exists); the colorbar shows the
-        number of samples per bin.
+        number of samples per bin. The y-axis points down (screen pixel
+        coordinates, as in :meth:`plot_calibration`).
 
         Parameters
         ----------
@@ -121,8 +107,8 @@ class GazePlotter(GenericPlotter):
            >>> d = pp.get_example_data("rlmw_002_short")
            >>> d.plot.plot_heatmap(eyes="left")
         """
-        self.obj._require("x", "y")
-        obj = self.obj
+        self._d._require("x", "y")
+        obj = self._d
         
         # Validate plot_range
         plot_range = self._plot_range_in(plot_range, units)
@@ -185,6 +171,9 @@ class GazePlotter(GenericPlotter):
                 else:
                     x_plot = x_data
                     y_plot = y_data
+                # samples without a position (NaN, e.g. in blinks) cannot be binned
+                finite = np.isfinite(x_plot) & np.isfinite(y_plot)
+                x_plot, y_plot = x_plot[finite], y_plot[finite]
                 
                 # Determine limits
                 if limits is not None:
@@ -250,7 +239,7 @@ class GazePlotter(GenericPlotter):
                     
                     # Set axis limits
                     ax.set_xlim(xmin, xmax)
-                    ax.set_ylim(ymin, ymax)
+                    ax.set_ylim(ymax, ymin)  # pixel y points down, as on the screen
                 else:
                     # Determine min_samples threshold
                     if min_samples is None:
@@ -276,7 +265,7 @@ class GazePlotter(GenericPlotter):
                     
                     # Set axis limits for hexbin too
                     ax.set_xlim(xmin, xmax)
-                    ax.set_ylim(ymin, ymax)
+                    ax.set_ylim(ymax, ymin)  # pixel y points down, as on the screen
                 
                 divider = make_axes_locatable(ax)
                 cax = divider.append_axes('right', size='5%', pad=0.05)
@@ -315,7 +304,8 @@ class GazePlotter(GenericPlotter):
         If several eyes are available, they are plotted in the same figure
         in different colors. You can choose between them using the `eyes`
         parameter. The samples are drawn as dots colored by time.
-        A new figure is created for the plot.
+        A new figure is created for the plot. The y-axis points down (screen
+        pixel coordinates, as in :meth:`plot_calibration`).
 
         Parameters
         ----------
@@ -369,8 +359,8 @@ class GazePlotter(GenericPlotter):
            >>> d = pp.get_example_data("rlmw_002_short")
            >>> d.plot.plot_scanpath(plot_range=(10, 12) * u.sec, eyes="left")
         """
-        self.obj._require("x", "y")
-        obj = self.obj
+        self._d._require("x", "y")
+        obj = self._d
 
         # Validate plot_range
         plot_range = self._plot_range_in(plot_range, units)
@@ -420,6 +410,7 @@ class GazePlotter(GenericPlotter):
                             fontsize=12, ha="center", va="center")
 
         ax.set_aspect("equal")
+        ax.invert_yaxis()  # pixel y points down, as on the screen
         #fig.colorbar()
         if show_screen and obj.experimental_setup is not None:
             setup = obj.experimental_setup
@@ -485,7 +476,7 @@ class GazePlotter(GenericPlotter):
         >>> # Plot specific eyes
         >>> fig, axes = data.plot.plot_calibration(eyes=['left', 'right'])  # doctest: +SKIP
         """
-        obj = self.obj
+        obj = self._d
         
         # Check if calibration data exists
         if not hasattr(obj, 'calibration') or obj.calibration is None:

@@ -43,7 +43,7 @@ distorted as the eyelid covers the pupil.
    GenericEyeData.get_blinks
    GenericEyeData.get_interpolated_blinks
    GenericEyeData.blink_stats
-   PupilPlotter.plot_blinks
+   EyeData.plot.plot_blinks
 
 A typical sequence is
 

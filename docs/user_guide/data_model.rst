@@ -20,7 +20,7 @@ any of them.
     GenericEyeData: data (EyeDataDict)
     GenericEyeData: events, layers, history, experimental_setup, calibration
     GenericEyeData: get_intervals(), get_segments(), downsample(), ...
-    EyeData: plot (EyePlotter)
+    EyeData: plot (PlotNamespace)
     EyeData: pupil (PupilNamespace)
     EyeData: gaze (GazeNamespace)
     PupilNamespace: blinks_detect(), lowpass_filter(), ...
@@ -33,7 +33,8 @@ work for any data. The methods that need pupil data are in the namespace
 the object has no pupil data ("no pupil data; available channels: left_x,
 left_y"). The same holds for the methods that need gaze data, in ``d.gaze``
 (e.g., :meth:`EyeData.gaze.mask_offscreen`), or both (e.g.,
-:doc:`foreshortening correction </experimental/foreshortening>`).
+:doc:`foreshortening correction </experimental/foreshortening>`). The plots
+are in ``d.plot`` (e.g., ``d.plot.pupil_plot()``, see :doc:`plotting`).
 
 An object is usually created by reading a file (see
 :doc:`loading_data`):
