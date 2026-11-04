@@ -120,7 +120,7 @@ class TestEyesVariables:
         with pytest.raises(TypeError, match="event_select='a'"):
             data.stat_per_event("a", window=(0, 100))
         with pytest.raises(TypeError, match="one eye"):
-            data.fit_foreshortening(["left"])
+            data.pupil.fit_foreshortening(["left"])
 
     def test_view_unknown_eye(self, data):
         pytest.importorskip("vispy")

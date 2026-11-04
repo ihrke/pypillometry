@@ -368,15 +368,15 @@ class TestEyeData(unittest.TestCase):
         """Test the correct_pupil_foreshortening method"""
         # Test correction for both eyes
 
-        corrected = self.eyedata.correct_pupil_foreshortening(eyes=['left', 'right'])
+        corrected = self.eyedata.pupil.correct_foreshortening(eyes=['left', 'right'])
         self.assertEqual(corrected.__class__, pp.EyeData)
         self.assertEqual(corrected.data['left_pupil'].shape, self.left_pupil.shape)
         # Test correction for single eye
-        corrected_left = self.eyedata.correct_pupil_foreshortening(eyes=['left'])
+        corrected_left = self.eyedata.pupil.correct_foreshortening(eyes=['left'])
         self.assertEqual(corrected_left.__class__, pp.EyeData)
         
         # Test with custom midpoint
-        corrected_custom = self.eyedata.correct_pupil_foreshortening(
+        corrected_custom = self.eyedata.pupil.correct_foreshortening(
             eyes=['left'], 
             midpoint=(640, 512)  # Center of 1280x1024 screen
         )
@@ -384,7 +384,7 @@ class TestEyeData(unittest.TestCase):
         
         # Test inplace modification
         original_pupil = self.eyedata.data['left_pupil'].copy()
-        self.eyedata.correct_pupil_foreshortening(eyes=['left'], inplace=True)
+        self.eyedata.pupil.correct_foreshortening(eyes=['left'], inplace=True)
         self.assertFalse(np.array_equal(original_pupil, self.eyedata.data['left_pupil']))
 
     def test_reset_time_defaults(self):
@@ -571,7 +571,7 @@ class TestEyeData(unittest.TestCase):
         data.data.add_mask('right_pupil', np.s_[15])
         
         # Apply foreshortening correction
-        corrected = data.correct_pupil_foreshortening(
+        corrected = data.pupil.correct_foreshortening(
             eyes=['left', 'right'], 
             inplace=False
         )
@@ -594,7 +594,7 @@ class TestEyeData(unittest.TestCase):
         data.data.add_mask('left_pupil', np.s_[10])
         
         # Apply correction and store as new variable
-        corrected = data.correct_pupil_foreshortening(
+        corrected = data.pupil.correct_foreshortening(
             eyes=['left'], 
             store_as='pupil_corrected',
             inplace=False

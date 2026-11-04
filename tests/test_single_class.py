@@ -76,8 +76,8 @@ class TestMissingChannels(unittest.TestCase):
     def test_gaze_methods_on_pupil_only(self):
         d = _pupil_only()
         calls = [lambda: d.gaze.mask_divergences(), lambda: d.gaze.mask_offscreen(),
-                 lambda: d.correct_pupil_foreshortening(),
-                 lambda: d.fit_foreshortening("left"),
+                 lambda: d.pupil.correct_foreshortening(),
+                 lambda: d.pupil.fit_foreshortening("left"),
                  lambda: d.plot.plot_heatmap(), lambda: d.plot.plot_scanpath(),
                  lambda: d.plot.plot_pupil_foreshortening_error_surface()]
         for call in calls:

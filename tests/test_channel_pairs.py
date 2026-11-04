@@ -249,11 +249,11 @@ class TestIncompleteGazeMethods:
     def test_correct_pupil_foreshortening(self, incomplete_eyedata):
         d = incomplete_eyedata
         right = d.data["right_pupil"].copy()
-        d.correct_pupil_foreshortening(store_as="pupilc")
+        d.pupil.correct_foreshortening(store_as="pupilc")
         assert "left_pupilc" in d.data and "right_pupilc" not in d.data
         np.testing.assert_array_equal(d.data["right_pupil"], right)
         with pytest.raises(KeyError, match="right_x"):
-            d.correct_pupil_foreshortening(eyes="right")
+            d.pupil.correct_foreshortening(eyes="right")
 
     def test_mask_offscreen_coords(self, incomplete_eyedata):
         d = incomplete_eyedata

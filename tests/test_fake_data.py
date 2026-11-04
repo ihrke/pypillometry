@@ -478,7 +478,7 @@ class TestIntegration:
         )
         
         # Fit foreshortening (r and d retrieved from experimental_setup)
-        calib = data.fit_foreshortening(eye='left')
+        calib = data.pupil.fit_foreshortening(eye='left')
         
         # Check that fitted angles are close to true angles
         theta_error = np.abs(np.degrees(calib.theta - true_theta))
