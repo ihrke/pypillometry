@@ -147,6 +147,12 @@ def keephistory(func):
     return wrapper
 
 
+def _some(values, n=10):
+    """The first `n` of `values` as a list for messages (``[1.0, 2.0, ...]``)."""
+    values = list(np.asarray(values).tolist())
+    return str(values) if len(values) <= n else str(values[:n])[:-1] + ", ...]"
+
+
 def _per_pair(pairs, fct):
     """Nested dict ``{eye: {var: fct(eye, var)}}`` for the (eye, var) `pairs`."""
     result = {}
@@ -2423,11 +2429,11 @@ class GenericEyeData(state.VersionedState, ABC):
                 logger.warning(
                     f"get_intervals(): skipped {len(skip_a)} {name_a} event(s) with no "
                     f"{name_b} event after them (before the next {name_a} event or "
-                    f"the end), at {on_a[skip_a].tolist()} ms")
+                    f"the end), at {_some(on_a[skip_a])} ms")
             if skip_b and i_a is not None:
                 logger.warning(
                     f"get_intervals(): skipped {len(skip_b)} {name_b} event(s) with no "
-                    f"{name_a} event before them, at {on_b[skip_b].tolist()} ms")
+                    f"{name_a} event before them, at {_some(on_b[skip_b])} ms")
             if not pairs:
                 raise ValueError(f"no {name_a} event is followed by a {name_b} event")
             pa = np.array([p[0] for p in pairs])

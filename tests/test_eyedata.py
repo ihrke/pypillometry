@@ -2255,6 +2255,15 @@ class TestGetIntervalsBetweenEvents(unittest.TestCase):
         self.assertIn("1 'resp' event(s) with no 'start' event before them", msgs[1])
         self.assertIn("[500.0]", msgs[1])
 
+    def test_skipped_events_listed_up_to_ten(self):
+        # the warning listed every skipped onset (1071 on real data)
+        d = self.make(list(range(100, 2500, 100)), ["start"] * 23 + ["resp"])
+        _, msgs = self.warnings_of(
+            lambda: d.get_intervals(("start", "resp"), window=(0, 0), units="ms"))
+        self.assertIn("22 'start' event(s)", msgs[0])
+        self.assertIn("at [100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, "
+                      "1000.0, ...] ms", msgs[0])
+
     def test_no_warning_without_skipped_events(self):
         d = self.make([1000, 2000, 5000, 6000], ["start", "resp"] * 2)
         _, msgs = self.warnings_of(lambda: d.get_intervals(("start", "resp"), (0, 0), units="samples"))
