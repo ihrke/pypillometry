@@ -179,3 +179,46 @@ class TestConstructorEvents:
         with pytest.raises(ValueError, match="either events"):
             pp.EyeData(left_pupil=np.ones(100), sampling_rate=100, events=ev,
                        event_onsets=[100.])
+
+
+class TestNamespaceInplace:
+    """Rule 1 for the methods of d.pupil / d.gaze (and their pipeline steps)."""
+
+    # arguments for each transforming namespace method (all must be listed)
+    CALLS = {
+        "pupil": {"lowpass_filter": dict(cutoff=5), "smooth_window": {},
+                  "merge_eyes": dict(method="offset"), "blinks_detect": {},
+                  "blinks_merge_close": {}, "blinks_interpolate": {},
+                  "estimate_baseline": {}, "estimate_response": {},
+                  "correct_foreshortening": {}},
+        "gaze": {"mask_divergences": {}, "mask_offscreen": {}},
+    }
+
+    @staticmethod
+    def _snapshot(d):
+        return ({k: np.array(v) for k, v in d.data.items()},
+                {k: v.copy() for k, v in d.data.layers.items()}, len(d.history))
+
+    def test_all_step_methods_listed(self):
+        for ns, calls in self.CALLS.items():
+            cls = getattr(pp.EyeData, ns)
+            steps = {n for n in cls._methods() if getattr(getattr(cls, n), "_is_step", False)}
+            assert steps == set(calls), ns
+
+    @pytest.mark.parametrize("ns,name", [(ns, n) for ns, c in CALLS.items() for n in c])
+    def test_inplace_false_leaves_original(self, data, ns, name):
+        data.set_experimental_setup(screen_resolution=(1280, 1024),
+                                    physical_screen_size=("30 cm", "20 cm"),
+                                    eye_to_screen_center="60 cm")
+        data = data.pupil.blinks_detect(strategies=["zero"], inplace=True)
+        before = self._snapshot(data)
+        res = getattr(getattr(data, ns), name)(**self.CALLS[ns][name], inplace=False)
+        assert isinstance(res, pp.EyeData) and res is not data
+        after = self._snapshot(data)
+        assert before[0].keys() == after[0].keys() and before[2] == after[2]
+        for k in before[0]:
+            np.testing.assert_array_equal(before[0][k], after[0][k])
+            np.testing.assert_array_equal(before[1][k], after[1][k])
+        assert res.history[-1]["funcname"] == f"{ns}.{name}"
+        # inplace=True returns the object itself
+        assert getattr(getattr(data, ns), name)(**self.CALLS[ns][name], inplace=True) is data
