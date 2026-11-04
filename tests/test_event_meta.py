@@ -284,7 +284,7 @@ class TestEyedataMeta(unittest.TestCase):
 
     def test_set_events_without_meta(self):
         d = data_with_meta()
-        d.set_events(pp.Events([100], ["x"]), inplace=True)
+        d.set_events(pp.Events([100], ["x"]))
         self.assertEqual(d.events.meta, {})
 
     def test_add_events(self):
@@ -320,7 +320,7 @@ class TestEyedataMeta(unittest.TestCase):
 
     def test_get_intervals_without_meta(self):
         d = data_with_meta()
-        d.set_events(d.events.drop_meta(), inplace=True)
+        d.set_events(d.events.drop_meta())
         ep = d.get_intervals("S_", window=(-100, 500), units="ms")
         self.assertEqual(dict(ep.meta), {})
         self.assertIsNone(ep.to_intervals().event_meta)

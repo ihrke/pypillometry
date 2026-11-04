@@ -1912,9 +1912,9 @@ class GenericEyeData(state.VersionedState, ABC):
         return self._events
 
     @keephistory
-    def set_events(self, events, inplace=None):
+    def set_events(self, events):
         """
-        Replace the events of the dataset.
+        Replace the events of the dataset (in-place).
 
         The onsets are converted to ms (the internal storage format) if
         needed. The time range of the data is not stored with the events.
@@ -1923,15 +1923,12 @@ class GenericEyeData(state.VersionedState, ABC):
         ----------
         events : Events
             the new events (onsets, labels and metadata)
-        inplace : bool or None, optional
-            if `True`, make change in-place and return the object;
-            if `False`, make and return copy before making changes;
-            if `None`, use the object-level setting (specified in the constructor)
 
         Returns
         -------
         :class:`~pypillometry.GenericEyeData`
-            the object with updated events (`self` or a copy, depending on `inplace`)
+            the object itself, with the new events (use ``d.copy()`` first
+            to keep the old events)
 
         Raises
         ------
@@ -1950,9 +1947,8 @@ class GenericEyeData(state.VersionedState, ABC):
         events : the events of the dataset
         add_events : add events to the existing ones
         """
-        obj = self._get_inplace(inplace)
-        obj._events = obj._check_events(events)
-        return obj
+        self._events = self._check_events(events)
+        return self
 
     @keephistory
     def add_events(self, events, inplace=None):

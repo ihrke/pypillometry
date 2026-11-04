@@ -858,8 +858,7 @@ class TestEyeData(unittest.TestCase):
     def test_stat_per_event(self):
         """Test statistical analysis per event"""
         # Create some test events
-        self.eyedata.set_events(pp.Events([1000, 2000, 3000], ['stim1', 'stim2', 'stim3']),
-                                inplace=True)
+        self.eyedata.set_events(pp.Events([1000, 2000, 3000], ['stim1', 'stim2', 'stim3']))
         
         # Test mean pupil size in interval around events
         stats = self.eyedata.stat_per_event(
@@ -1846,24 +1845,14 @@ class TestEventsIntegration(unittest.TestCase):
         for orig_label, event_label in zip(self.data.events.labels, events.labels):
             self.assertEqual(str(orig_label), str(event_label))
     
-    def test_set_events_inplace_parameter(self):
-        """Test set_events with inplace parameter"""
+    def test_set_events_in_place(self):
+        """set_events always works in place and returns the object"""
         events = self.data.events
         filtered = events.filter("F")
-        
-        # Test inplace=True
         data_copy1 = self.data.copy()
-        result1 = data_copy1.set_events(filtered, inplace=True)
+        result1 = data_copy1.set_events(filtered)
         self.assertIs(result1, data_copy1)
         self.assertEqual(result1.nevents(), len(filtered))
-        
-        # Test inplace=False
-        data_copy2 = self.data.copy()
-        original_count = data_copy2.nevents()
-        result2 = data_copy2.set_events(filtered, inplace=False)
-        self.assertIsNot(result2, data_copy2)
-        self.assertEqual(data_copy2.nevents(), original_count)  # Original unchanged
-        self.assertEqual(result2.nevents(), len(filtered))  # Result has filtered events
     
     def test_set_events_keeps_history(self):
         """Test that set_events adds to history"""
@@ -2556,14 +2545,14 @@ class TestHistoryLog(unittest.TestCase):
         self.assertEqual(d.history, [])
         d["left_pupil"] = np.full(100, 2.)
         d.set_blinks(Intervals([(10, 20)], units="samples"), eyes=["left"], variables=["pupil"])
-        d.set_events(pp.Events([100., 200.], ["a", "b"]), inplace=True)
+        d.set_events(pp.Events([100., 200.], ["a", "b"]))
         d.set_experimental_setup(screen_resolution=(1280, 1024))
         d2 = d.drop_data(variables=["x"], inplace=False)
         del d2["left_y"]
         self.assertEqual([h["funcstring"] for h in d.history],
                          ["__setitem__('left_pupil',array(100,))",
                           "set_blinks(Intervals(1),eyes=['left'],variables=['pupil'])",
-                          "set_events(Events: 2 events | units=ms,inplace=True)",
+                          "set_events(Events: 2 events | units=ms)",
                           "set_experimental_setup(screen_resolution=(1280, 1024))"])
         self.assertEqual([h["funcname"] for h in d2.history][-2:], ["drop_data", "__delitem__"])
 

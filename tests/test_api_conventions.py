@@ -48,6 +48,16 @@ class TestDictReturns:
 class TestInplace:
     """Rule 1: transforming methods take `inplace`; only set_* are always in place."""
 
+    def test_transforming_methods_take_inplace(self):
+        import inspect
+        for name, f in inspect.getmembers(pp.EyeData, callable):
+            if not hasattr(f, "__wrapped__") or name.startswith("_"):
+                continue  # not recorded in the history: not a transformation
+            params = inspect.signature(f).parameters
+            if name.startswith("set_"):
+                assert "inplace" not in params, name
+            else:
+                assert "inplace" in params, name
 
     def test_constructor_with_inplace_false_fills_gaps(self):
         tx = np.r_[0:50, 60:100] * 10.
