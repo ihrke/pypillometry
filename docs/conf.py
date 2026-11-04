@@ -172,6 +172,9 @@ pygments_dark_style = "monokai"
 # This hook redirects such links (and bare method names) to the public name.
 
 _PUBLIC_CLASSES = ["GenericEyeData", "EyeData"]
+# d.pupil / d.gaze: EyeData.pupil.<method> is documented on the namespace class
+_NAMESPACES = {"pupil": "pypillometry.eyedata.pupil.PupilNamespace",
+               "gaze": "pypillometry.eyedata.gaze.GazeNamespace"}
 
 
 def _resolve_public_name(app, env, node, contnode):
@@ -189,6 +192,8 @@ def _resolve_public_name(app, env, node, contnode):
             candidates.append(f"pypillometry.{cls.split('.')[-1]}.{target}")
         candidates += [f"pypillometry.{target}"]
         candidates += [f"pypillometry.{c}.{target}" for c in _PUBLIC_CLASSES]
+    if len(parts) >= 2 and parts[-2] in _NAMESPACES:
+        candidates.insert(0, f"{_NAMESPACES[parts[-2]]}.{parts[-1]}")
     py = env.get_domain("py")
     for cand in candidates:
         if cand in py.objects:

@@ -83,7 +83,7 @@ plots appear inline).
 CmdStan (optional)
 ------------------
 
-The baseline estimation (:meth:`~EyeData.pupil_estimate_baseline`, see
+The baseline estimation (:meth:`~EyeData.pupil.estimate_baseline`, see
 :doc:`/user_guide/modeling`) uses the probabilistic programming language
 `Stan <https://mc-stan.org/>`_ through :mod:`cmdstanpy`. Apart from the Python
 package, it needs the CmdStan command-line tools, which are not installed
@@ -109,8 +109,8 @@ without changes. The main differences:
   :doc:`/user_guide/data_model`). It holds both eyes
   and several variables (pupil, x, y) at the same time.
 - Most methods were renamed, e.g. ``blinks_detect()`` is now
-  :meth:`~EyeData.pupil_blinks_detect` and ``lowpass_filter()`` is
-  :meth:`~EyeData.pupil_lowpass_filter`.
+  :meth:`~EyeData.pupil.blinks_detect` and ``lowpass_filter()`` is
+  :meth:`~EyeData.pupil.lowpass_filter`.
 - ERPDs are created with :meth:`~GenericEyeData.get_intervals` and
   :meth:`~GenericEyeData.get_segments` (see :doc:`/notebooks/erpds`).
 

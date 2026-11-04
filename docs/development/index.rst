@@ -44,18 +44,34 @@ dependencies:
 Package architecture
 --------------------
 
-Most functionality is available as methods of the data classes
-(:class:`EyeData` and its base class :class:`GenericEyeData`; the methods
-for pupil and gaze data are kept in separate modules, ``eyedata/pupildata.py``
-and ``eyedata/gazedata.py``). This makes it easy to find functions and to chain them
-into pipelines (see :doc:`/user_guide/data_model`).
+Most functionality is available as methods of the data class
+:class:`EyeData` (and its base class :class:`GenericEyeData`). The generic
+methods (crop, downsample, intervals, masks, events, I/O, ...) are methods of
+the object itself. The methods for pupil and gaze data are kept in separate
+modules, as *namespaces*: ``eyedata/pupil.py`` (``PupilNamespace``, used as
+``d.pupil.blinks_detect()``) and ``eyedata/gaze.py`` (``GazeNamespace``,
+``d.gaze.mask_offscreen()``). A namespace (``eyedata/namespace.py``) is a
+view on one data object: it holds only that object (``self._d``), keeps no
+state, and is created anew on each access (``accessor`` descriptor), so it
+does not affect copying or saving. Its methods work on ``self._d`` and
+return the data object.
+
+Every transforming method can also be used as a pipeline step
+(``eyedata/pipes.py``): decorated with ``@step``, the same method runs
+when it is called on data (``d.crop(...)``, ``d.pupil.blinks_detect()``)
+and returns a :class:`Step` when it is called without data
+(``pp.pupil.blinks_detect()``, or the generic steps ``pp.crop(...)`` made
+in ``eyedata/steps.py``). ``d | step`` copies ``d`` once and runs the steps
+in place on the copy (see :class:`Pipeline`).
 
 The computations themselves are implemented as stateless functions on
 :mod:`numpy` arrays in ``pypillometry.signal`` (see
 :doc:`/api/signal`). To add a new processing step, first write a function
-that works on arrays, then add a thin method to the appropriate class that
-calls it with the right data and parameters. Decorate the method with
-:func:`keephistory` so that it is recorded in the object's history, and
+that works on arrays, then add a thin method to the appropriate class or
+namespace that calls it with the right data and parameters. Decorate the
+method with :func:`keephistory` so that it is recorded in the object's
+history, with ``@step`` (outermost) if it transforms the data, add a
+generic step to ``eyedata/steps.py`` if it is a generic method, and
 follow the API conventions below.
 
 
@@ -70,14 +86,14 @@ follow them too; ``tests/test_api_conventions.py`` checks them.
    else the package setting, see :func:`set_default_inplace`). With
    ``inplace=False`` it changes and returns a copy. Only ``set_*`` methods
    (:meth:`~GenericEyeData.set_events`, :meth:`~GenericEyeData.set_blinks`,
-   :meth:`~EyeData.set_experimental_setup`) always work in place; they
+   :meth:`~GenericEyeData.set_experimental_setup`) always work in place; they
    return the object as well. Methods that change the object are decorated
    with :func:`keephistory`, which records the call in the returned object.
 
 2. **Detectors set their layer and return the object.** Blink detection,
-   :meth:`~GenericEyeData.blinks_merge_close`,
-   :meth:`~EyeData.mask_offscreen_coords` and
-   :meth:`~EyeData.mask_eye_divergences` replace their mask layer
+   :meth:`~EyeData.pupil.blinks_merge_close`,
+   :meth:`~EyeData.gaze.mask_offscreen` and
+   :meth:`~EyeData.gaze.mask_divergences` replace their mask layer
    (``"blink"``, ``"offscreen"``, ``"divergence"``) for the channels they
    process. Setting a layer *is* masking: there is no ``apply_mask``
    argument. The results are read with getters
@@ -107,7 +123,7 @@ follow them too; ``tests/test_api_conventions.py`` checks them.
    `variables`) instead of looping over eyes and variables.
 
 New eyes created from others are named ``"mean"`` by default
-(:meth:`~GenericEyeData.merge_eyes`, :meth:`~EyeData.pupil_merge_eyes`;
+(:meth:`~GenericEyeData.merge_eyes`, :meth:`~EyeData.pupil.merge_eyes`;
 both take ``name=``).
 
 

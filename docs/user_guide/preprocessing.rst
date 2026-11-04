@@ -5,8 +5,8 @@ Preprocessing
 
 Raw pupil data usually contain blinks, other artifacts and high-frequency
 noise. This page lists the tools for dealing with them. All methods
-process all eyes by default (use ``eyes=`` to select) and can be chained
-into a pipeline (see :doc:`data_model`).
+process all eyes by default (use ``eyes=`` to select) and can be combined
+into a pipeline with ``|`` (see :doc:`data_model`).
 
 Visual checks are an important part of preprocessing. Look at the data
 before and after each step (see :doc:`plotting`). To tune parameters, use
@@ -37,9 +37,9 @@ distorted as the eyelid covers the pupil.
 .. autosummary::
    :nosignatures:
 
-   EyeData.pupil_blinks_detect
-   GenericEyeData.blinks_merge_close
-   EyeData.pupil_blinks_interpolate
+   EyeData.pupil.blinks_detect
+   EyeData.pupil.blinks_merge_close
+   EyeData.pupil.blinks_interpolate
    GenericEyeData.get_blinks
    GenericEyeData.get_interpolated_blinks
    GenericEyeData.blink_stats
@@ -49,17 +49,17 @@ A typical sequence is
 
 .. code-block:: python
 
-    d.pupil_blinks_detect()\
-     .blinks_merge_close(distance=100 * u.ms)\
-     .pupil_blinks_interpolate()
+    d = d | pp.pupil.blinks_detect() \
+          | pp.pupil.blinks_merge_close(distance=100 * u.ms) \
+          | pp.pupil.blinks_interpolate()
 
-:meth:`~EyeData.pupil_blinks_detect` finds missing samples and sharp
+:meth:`~EyeData.pupil.blinks_detect` finds missing samples and sharp
 drops in the pupil's velocity profile. The detected blinks are stored in the
 object (the ``"blink"`` layer, which masks them) and the object is
-returned, so the steps can be chained. Check them with
+returned (``d.pupil.blinks_detect()`` works in place). Check them with
 :meth:`~GenericEyeData.get_blinks` (a dict with one :class:`Intervals`
 per channel, in ms); ``d.clear_layer("blink")`` removes them again.
-:meth:`~EyeData.pupil_blinks_interpolate` replaces the pupil size during
+:meth:`~EyeData.pupil.blinks_interpolate` replaces the pupil size during
 blinks by a smooth curve (Mathôt, 2013). Interpolated samples are used by
 all later steps (filters, segments, statistics); they keep the
 ``"interpolated"`` layer, so they can be left out with
@@ -79,10 +79,10 @@ to very different places are usually artifacts:
 .. autosummary::
    :nosignatures:
 
-   EyeData.mask_offscreen_coords
-   EyeData.mask_eye_divergences
+   EyeData.gaze.mask_offscreen
+   EyeData.gaze.mask_divergences
 
-:meth:`~EyeData.mask_offscreen_coords` needs the screen size (see
+:meth:`~EyeData.gaze.mask_offscreen` needs the screen size (see
 :meth:`~EyeData.set_experimental_setup`).
 
 Any stretch of data can be masked or interpolated from an
@@ -107,8 +107,8 @@ reduces the amount of data, e.g., for modeling.
 .. autosummary::
    :nosignatures:
 
-   EyeData.pupil_lowpass_filter
-   EyeData.pupil_smooth_window
+   EyeData.pupil.lowpass_filter
+   EyeData.pupil.smooth_window
    GenericEyeData.downsample
 
 The filters only use the usable samples: masked samples (e.g., blinks
@@ -147,10 +147,10 @@ less noisy and has fewer gaps:
 .. autosummary::
    :nosignatures:
 
-   EyeData.pupil_merge_eyes
+   EyeData.pupil.merge_eyes
    GenericEyeData.merge_eyes
 
-:meth:`~EyeData.pupil_merge_eyes` corrects for a (slowly changing)
+:meth:`~EyeData.pupil.merge_eyes` corrects for a (slowly changing)
 difference in pupil size between the eyes and fills samples missing in one
 eye from the other. The result is stored as ``mean_pupil`` (eye ``"mean"``;
 another name with ``name=``).

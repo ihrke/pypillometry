@@ -43,10 +43,10 @@ problems, or ``DEBUG`` to see everything:
     pp.logging_enable()
 
     with pp.loglevel("DEBUG"):      # temporarily, for a block of code
-        d.pupil_blinks_detect()
+        d.pupil.blinks_detect()
 
     with pp.nologging():            # temporarily silent
-        d.pupil_blinks_detect()
+        d.pupil.blinks_detect()
 
 To see detailed messages from one part of the package only:
 

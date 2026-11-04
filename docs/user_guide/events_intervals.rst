@@ -261,7 +261,7 @@ come from several places:
    * - detected blinks
      - ``d.get_blinks("left", "pupil")["left_pupil"]``
    * - other detection methods
-     - ``d.mask_offscreen_coords().get_layer_intervals("offscreen")``
+     - ``d.gaze.mask_offscreen().get_layer_intervals("offscreen")``
    * - masked samples
      - ``d.mask_as_intervals("left", "pupil")["left_pupil"]``
    * - your own

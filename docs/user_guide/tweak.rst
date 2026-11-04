@@ -52,7 +52,7 @@ For pupillometry analysis, you often need to tune filter parameters. The :func:`
 
     # Define a function that applies lowpass filtering
     def lowpass(data, cutoff=4.0):
-        return data.pupil_lowpass_filter(cutoff=cutoff, inplace=False)
+        return data | pp.pupil.lowpass_filter(cutoff=cutoff)
 
     # Tweak the cutoff frequency
     final_params = pp.tweak(
@@ -84,7 +84,7 @@ Another common use case is tuning blink detection parameters. Functions can retu
 
     # Define a function that detects blinks and returns intervals
     def detect_blinks(data, vel_onset=-5.0, vel_offset=5.0):
-        d = data.pupil_blinks_detect(
+        d = data.pupil.blinks_detect(
             vel_onset=vel_onset,
             vel_offset=vel_offset,
             inplace=False,
@@ -141,11 +141,11 @@ Example returning multiple outputs:
 
     def process(data, cutoff=4.0, vel_onset=-5.0):
         # Apply filter
-        filtered = data.pupil_lowpass_filter(cutoff=cutoff, inplace=False)
+        filtered = data | pp.pupil.lowpass_filter(cutoff=cutoff)
         filtered_signal = np.array(filtered['left_pupil'])
         
         # Detect blinks
-        blinks = data.pupil_blinks_detect(vel_onset=vel_onset, inplace=False).get_blinks()
+        blinks = (data | pp.pupil.blinks_detect(vel_onset=vel_onset)).get_blinks()
         
         # Return both
         return {

@@ -25,7 +25,7 @@ blinks:
    import matplotlib.pyplot as plt
 
    d = pp.get_example_data("rlmw_002_short")
-   d.pupil_blinks_detect()
+   d.pupil.blinks_detect()
 
 Each function's API documentation has another example.
 
@@ -131,7 +131,7 @@ percentage of missing data (see :doc:`events_intervals`):
 .. plot::
    :context: close-figs
 
-   d.pupil_blinks_interpolate()
+   d.pupil.blinks_interpolate()
    intervals = d.get_intervals("S_", (-500, 2500) * u.ms)
    erpd = d.get_segments(intervals, "left_pupil").baseline_correct((-500, 0))
    erpd.plot()
@@ -174,7 +174,7 @@ give each a ``label_prefix`` and a ``style``:
 .. plot::
    :context: close-figs
 
-   filtered = d.pupil_lowpass_filter(cutoff=4, inplace=False)
+   filtered = d | pp.pupil.lowpass_filter(cutoff=4)
 
    plt.figure(figsize=(10, 3))
    d.plot.pupil_plot(eyes="left", plot_range=(5, 15) * u.sec,

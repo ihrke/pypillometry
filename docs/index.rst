@@ -32,9 +32,9 @@ processing step is recorded in the object's history.
    from pypillometry import u
 
    d = pp.EyeData.from_eyelink("recording.edf")   # read an Eyelink file
-   d.pupil_blinks_detect()                          # detect and mask blinks
-   d.pupil_blinks_interpolate()                     # interpolate them
-   d.pupil_lowpass_filter(cutoff=4)                 # 4 Hz low-pass filter
+   d = (d | pp.pupil.blinks_detect()                # detect and mask blinks
+          | pp.pupil.blinks_interpolate()           # interpolate them
+          | pp.pupil.lowpass_filter(cutoff=4))      # 4 Hz low-pass filter
 
    # average pupil response from 200 ms before to 1 s after each stimulus
    intervals = d.get_intervals("stim", (-200, 1000) * u.ms)

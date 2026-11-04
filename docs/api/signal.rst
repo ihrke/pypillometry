@@ -20,7 +20,7 @@ Filtering and baseline
    butter_lowpass_filter
    lowpass_filter_iterative
    smooth_window
-   downsample
+   signal.downsample
    bspline
    baseline_envelope
    baseline_envelope_iter_bspline
