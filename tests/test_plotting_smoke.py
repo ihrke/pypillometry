@@ -280,6 +280,27 @@ class TestPlotRange(unittest.TestCase):
                 plt.close("all")
 
 
+class TestPlotRequire(unittest.TestCase):
+    """plots that need channels the object lacks raise a ValueError"""
+
+    def test_gaze_only(self):
+        d = pp.EyeData(sampling_rate=100, left_x=np.ones(500), left_y=np.ones(500))
+        for name in ["pupil_plot", "pupil_plot_segments", "plot_blinks",
+                     "plot_pupil_foreshortening_error_surface"]:
+            with self.subTest(plot=name):
+                with self.assertRaisesRegex(ValueError, "no pupil data"):
+                    getattr(d.plot, name)()
+                plt.close("all")
+
+    def test_pupil_only(self):
+        d = pp.EyeData(sampling_rate=100, left_pupil=np.ones(500))
+        for name in ["plot_heatmap", "plot_scanpath"]:
+            with self.subTest(plot=name):
+                with self.assertRaisesRegex(ValueError, "no x, y data"):
+                    getattr(d.plot, name)()
+                plt.close("all")
+
+
 class TestPlottingGaze(unittest.TestCase):
     """Smoke tests for the gaze plots"""
 

@@ -336,6 +336,11 @@ class PupilPlots(GenericPlots):
         list
             List of matplotlib Figure objects
 
+        Raises
+        ------
+        ValueError
+            if the object has no data for `variables`
+
         Examples
         --------
         Check the detected blinks of the left eye (the numbers are the blink
@@ -351,6 +356,7 @@ class PupilPlots(GenericPlots):
            >>> d.plot.plot_blinks(eyes="left", nrow=3, ncol=5, figsize=(12, 6),
            ...                    units="sec")
         """
+        self._d._require(*([variables] if isinstance(variables, str) else variables))
         # Get blinks for specified eyes and variables (in ms for consistent padding)
         blinks_result = self._d.get_blinks(eyes=eyes, variables=variables, units="ms")
         
