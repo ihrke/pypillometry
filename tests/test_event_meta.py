@@ -175,6 +175,12 @@ class TestFromTableMeta(unittest.TestCase):
         self.assertEqual(list(ev.meta), ["difficulty", "x"])
         np.testing.assert_array_equal(ev.meta["x"], [7, 8, 9])
 
+    def test_non_numeric_column_names_it(self):
+        with self.assertRaisesRegex(ValueError, "column 'cond'"):
+            Events.from_table(self.behav, ["stim", "cond"])
+        with self.assertRaisesRegex(ValueError, "times for 'resp'"):
+            Events.from_table(self.behav, {"resp": ["a", "b", "c"]})
+
     def test_row_name_conflict(self):
         with self.assertRaises(ValueError):
             Events.from_table(self.behav, ["stim"], meta={"row": "trial"})

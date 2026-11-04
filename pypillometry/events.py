@@ -515,7 +515,11 @@ class Events(Stateful):
         nrows = None
         for label, col in columns.items():
             times = table[col] if isinstance(col, str) else col
-            times = np.asarray(times, dtype=float)
+            try:
+                times = np.asarray(times, dtype=float)
+            except (TypeError, ValueError) as e:
+                name = f"column '{col}'" if isinstance(col, str) else f"the times for '{label}'"
+                raise ValueError(f"{name} must hold event times (numbers or NaN): {e}") from None
             if nrows is not None and len(times) != nrows:
                 raise ValueError(f"column for '{label}' has {len(times)} "
                                  f"values, expected {nrows}")
