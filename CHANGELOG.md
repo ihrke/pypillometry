@@ -113,6 +113,8 @@ The main ones:
 - `plot_heatmap(show_masked=True)` with NaN samples
 - A `plot_range` with start after end raises an error
 - The sample at the end of `plot_range` was not plotted
+- `Events.filter(trial="1")` on a numeric metadata column (or a number on
+  a column of strings) matched nothing silently; it raises a `TypeError`
 - `scale()` twice (or for different variables) then `unscale()` left the
   data scaled or raised: the stored parameters are combined per channel,
   and `unscale()` removes those of the channels it restores

@@ -4,6 +4,7 @@
 import re
 from types import MappingProxyType
 
+import numbers
 import numpy as np
 from typing import Optional, List, Tuple
 
@@ -1235,13 +1236,30 @@ class Events(Stateful):
                 if m.shape != col.shape:
                     raise ValueError(f"the function for '{name}' must return one "
                                      f"bool per event, got shape {m.shape}")
-            elif isinstance(crit, (list, set, tuple, np.ndarray)):
-                m = np.isin(col, list(crit))
             else:
-                m = col == crit
+                values = list(crit) if isinstance(crit, (list, set, tuple, np.ndarray)) \
+                    else [crit]
+                _check_condition_types(name, col, values)
+                m = np.isin(col, values)
             mask &= m
         return self._take(mask)
 
+
+
+def _check_condition_types(name, col, values):
+    """Raise a TypeError if strings are compared with a numeric metadata column
+    or numbers with a column of strings (such a condition matches nothing)."""
+    if col.dtype.kind in "biuf":
+        bad = [v for v in values if isinstance(v, str)]
+        hint = "numbers"
+    elif col.dtype.kind == "U":
+        bad = [v for v in values if isinstance(v, (numbers.Number, np.number))]
+        hint = "strings"
+    else:
+        return
+    if bad:
+        raise TypeError(f"metadata column '{name}' holds {hint}; the condition "
+                        f"{name}={bad[0]!r} never matches")
 
 
 class ClockSync:
