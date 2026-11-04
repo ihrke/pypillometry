@@ -403,7 +403,8 @@ class PupilPlots(GenericPlots):
         ----------
         eyes : str or list, optional
             Which eye(s) to plot: "left", "right", "average", or a list of these.
-            Default is [] which plots all available eyes.
+            Default is [] which plots all eyes with pupil and gaze data; a
+            requested eye without them raises a KeyError.
         plot_range : tuple, optional
             The time range to include in the analysis (in ms, or with
             units, e.g. ``(3, 5) * u.min``). Default is (-np.inf, +np.inf),
@@ -457,11 +458,8 @@ class PupilPlots(GenericPlots):
         self._d._require("pupil", "x", "y")
         obj = self._d
         
-        # Handle eyes parameter
-        if len(eyes) == 0:
-            eyes = obj.eyes
-        if not isinstance(eyes, list):
-            eyes = [eyes]
+        # eyes with pupil and gaze data (KeyError for a requested eye without)
+        eyes = obj._eyes_with(eyes, ["pupil", "x", "y"])
         
         # Validate plot_range
         plot_range = self._plot_range_in(plot_range, units)
@@ -509,19 +507,6 @@ class PupilPlots(GenericPlots):
             vx = f"{eye}_x"
             vy = f"{eye}_y"
             vpupil = f"{eye}_pupil"
-            
-            # Check if the data exists for this eye
-            if vx not in obj.data.keys() or vy not in obj.data.keys():
-                ax.text(0.5, 0.5, f"Gaze data not available\nfor '{eye}' eye", 
-                       ha='center', va='center', transform=ax.transAxes)
-                ax.set_title(f'{eye} eye')
-                continue
-                
-            if vpupil not in obj.data.keys():
-                ax.text(0.5, 0.5, f"Pupil data not available\nfor '{eye}' eye", 
-                       ha='center', va='center', transform=ax.transAxes)
-                ax.set_title(f'{eye} eye')
-                continue
             
             # Get masked arrays (automatically filters masked data)
             x_masked = obj[vx][startix:endix]
