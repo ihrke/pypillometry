@@ -272,8 +272,8 @@ class TestGazeData(unittest.TestCase):
         self.assertEqual(d_masked.data.mask['left_dist'][1], 1)
         self.assertEqual(d_masked.data.mask['right_dist'][1], 1)
     
-    def test_mask_eye_divergences_apply_mask_false(self):
-        """Test mask_eye_divergences with apply_mask=False returns Intervals"""
+    def test_mask_eye_divergences_inplace_false(self):
+        """mask_eye_divergences with inplace=False: the copy holds the divergence layer"""
         from pypillometry.intervals import Intervals
         
         # Create test data with divergence
@@ -285,13 +285,12 @@ class TestGazeData(unittest.TestCase):
             sampling_rate=1000
         )
         
-        # Detect divergences without applying mask
         result = d.mask_eye_divergences(threshold=0.5, thr_type="percentile", 
-                                       apply_mask=False, inplace=False)
-        
-        # Should return a single Intervals object
+                                        inplace=False)
+        result = result.get_layer_intervals("divergence", variables="x")
+        self.assertEqual(set(result), {"left_x", "right_x"})
+        result = result["left_x"]
         self.assertIsInstance(result, Intervals)
-        self.assertEqual(result.label, "eye_divergences")
         
         # Should have detected divergence intervals
         self.assertGreater(len(result), 0)
@@ -300,8 +299,8 @@ class TestGazeData(unittest.TestCase):
         original_mask_sum = np.sum(d.data.mask['left_x'])
         self.assertEqual(original_mask_sum, 0)
     
-    def test_mask_eye_divergences_apply_mask_true_default(self):
-        """Test that apply_mask=True is the default behavior"""
+    def test_mask_eye_divergences_returns_object(self):
+        """mask_eye_divergences returns the object with the mask"""
         d = pp.EyeData(
             left_x=np.array([100, 110, 120, 130, 140]),
             left_y=np.array([100, 100, 100, 100, 100]),
@@ -310,7 +309,6 @@ class TestGazeData(unittest.TestCase):
             sampling_rate=1000
         )
         
-        # Call without apply_mask argument (should default to True)
         result = d.mask_eye_divergences(threshold=0.5, thr_type="percentile", 
                                        inplace=False)
         
@@ -379,8 +377,8 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         self.assertEqual(d_masked.data.mask['right_y'][1], 1)  # right_y=1200 offscreen
         self.assertEqual(d_masked.data.mask['right_x'][3], 1)  # right_x=1500 offscreen
     
-    def test_mask_offscreen_coords_apply_mask_false(self):
-        """Test mask_offscreen_coords with apply_mask=False returns dict of Intervals"""
+    def test_mask_offscreen_coords_inplace_false(self):
+        """mask_offscreen_coords with inplace=False: the copy holds the offscreen layer"""
         from pypillometry.intervals import Intervals
         
         # Create data with offscreen points
@@ -391,24 +389,17 @@ class TestMaskOffscreenCoords(unittest.TestCase):
             experimental_setup=ExperimentalSetup(screen_resolution=(1280, 1024))
         )
         
-        # Detect offscreen without applying mask
-        result = d.mask_offscreen_coords(apply_mask=False, inplace=False)
-        
-        # Should return a dict of Intervals objects
-        self.assertIsInstance(result, dict)
-        self.assertIn('left', result)
-        self.assertIsInstance(result['left'], Intervals)
-        self.assertEqual(result['left'].label, "left_offscreen")
-        
-        # Should have detected offscreen intervals
-        self.assertGreater(len(result['left']), 0)
+        result = d.mask_offscreen_coords(inplace=False).get_layer_intervals("offscreen")
+        self.assertEqual(set(result), {"left_x", "left_y"})
+        self.assertIsInstance(result['left_x'], Intervals)
+        self.assertGreater(len(result['left_x']), 0)
         
         # Mask should NOT be applied to original data
         original_mask_sum = np.sum(d.data.mask['left_x'])
         self.assertEqual(original_mask_sum, 0)
     
-    def test_mask_offscreen_coords_apply_mask_true_default(self):
-        """Test that apply_mask=True is the default behavior"""
+    def test_mask_offscreen_coords_returns_object(self):
+        """mask_offscreen_coords returns the object with the mask"""
         d = pp.EyeData(
             left_x=np.array([100, 1500, 300, 400]),
             left_y=np.array([100, 200, 300, 400]),
@@ -416,7 +407,6 @@ class TestMaskOffscreenCoords(unittest.TestCase):
             experimental_setup=ExperimentalSetup(screen_resolution=(1280, 1024))
         )
         
-        # Call without apply_mask argument (should default to True)
         result = d.mask_offscreen_coords(eyes='left', inplace=False)
         
         # Should return the EyeData object
@@ -518,11 +508,11 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         
         # Apply offscreen masking with ignore_existing_mask=False (default)
         result = d.mask_offscreen_coords(eyes='left', ignore_existing_mask=False, 
-                                        apply_mask=False, inplace=False)
+                                        inplace=False)
         
         # Index 3 should be detected as offscreen (x=1600)
         # Index 1 should NOT be in the intervals since it was already masked
-        intervals = result['left'].intervals
+        intervals = result.get_layer_intervals("offscreen", "left", "x")["left_x"].intervals
         
         # Should detect index 3 as offscreen
         offscreen_indices = [idx for start, end in intervals for idx in range(start, end)]
@@ -546,10 +536,10 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         
         # Apply offscreen masking with ignore_existing_mask=True
         result = d.mask_offscreen_coords(eyes='left', ignore_existing_mask=True, 
-                                        apply_mask=False, inplace=False)
+                                        inplace=False)
         
         # Both index 1 and 3 should be detected as offscreen
-        intervals = result['left'].intervals
+        intervals = result.get_layer_intervals("offscreen", "left", "x")["left_x"].intervals
         offscreen_indices = [idx for start, end in intervals for idx in range(start, end)]
         
         self.assertIn(1, offscreen_indices)  # Previously masked but still detected

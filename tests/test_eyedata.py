@@ -617,7 +617,8 @@ class TestEyeData(unittest.TestCase):
     def test_detectors_have_no_apply_mask(self):
         """the detectors set their layer (no apply_mask argument)"""
         import inspect
-        for f in (pp.EyeData.pupil_blinks_detect, pp.EyeData.blinks_merge_close):
+        for f in (pp.EyeData.pupil_blinks_detect, pp.EyeData.blinks_merge_close,
+                  pp.EyeData.mask_offscreen_coords, pp.EyeData.mask_eye_divergences):
             self.assertNotIn("apply_mask", inspect.signature(f).parameters)
 
     def test_blinks_merge_close(self):
