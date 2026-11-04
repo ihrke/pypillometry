@@ -23,6 +23,7 @@ from .eyedata import (
     EyeDataDict, MaskPolicy, ExperimentalSetup, SpatialCalibration,
     ForeshorteningCalibration, keephistory,
 )
+from .eyedata.pipes import Step, Pipeline
 from .plot import EyePlotter, PupilPlotter, GazePlotter
 from .segmented import (
     SegmentedEyeData, GroupLevelSegmentedData, group_segments,
@@ -84,7 +85,7 @@ __all__ = [
     # data classes
     "GenericEyeData", "EyeData", "FakeEyeData",
     "EyeDataDict", "MaskPolicy", "ExperimentalSetup", "SpatialCalibration",
-    "ForeshorteningCalibration", "keephistory",
+    "ForeshorteningCalibration", "keephistory", "Step", "Pipeline",
     "EyePlotter", "PupilPlotter", "GazePlotter",
     "SegmentedEyeData", "GroupLevelSegmentedData", "group_segments",
     "Events", "ClockSync", "sync_clocks",

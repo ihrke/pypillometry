@@ -1,6 +1,7 @@
 from loguru import logger
 from .generic import keephistory
 from .namespace import Namespace
+from .pipes import step
 from .eyedatadict import _without_layer
 import numpy as np
 import json
@@ -22,6 +23,7 @@ class GazeNamespace(Namespace):
     # Methods
     # =========================================================================
 
+    @step
     @keephistory
     def mask_divergences(self, threshold: float = .99, thr_type: str = "percentile", 
                            store_as: str|None = None,
@@ -155,6 +157,7 @@ class GazeNamespace(Namespace):
             obj.data.set_layer(key, "divergence", divergence_mask, replace=True)
         return obj
     
+    @step
     @keephistory
     def mask_offscreen(self, eyes: str|list = [],
                              ignore_existing_mask: bool = False, inplace=None):

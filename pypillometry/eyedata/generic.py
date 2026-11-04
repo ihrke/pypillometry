@@ -15,6 +15,7 @@ from .eyedatadict import (EyeDataDict, LAYER_DTYPE, REC_LAYERS,
                           MaskPolicy, _as_policy, _join_key)
 from .experimental_setup import ExperimentalSetup
 from .namespace import Namespace
+from .pipes import step, Step, Pipeline, _missing_call
 from ..signal import baseline
 from ..intervals import stat_event_interval, Intervals, _as_intervals
 from ..epochs import Epochs
@@ -30,6 +31,7 @@ from loguru import logger
 #from pytypes import typechecked
 from typing import Sequence, Union, List, TypeVar, Optional, Tuple, Callable, Dict, Any
 import functools
+import inspect
 from random import choice
 from importlib import resources
 from io import BytesIO
@@ -363,7 +365,7 @@ class GenericEyeData(state.VersionedState, ABC):
         ## fill in time discontinuities (part of construction, so bypass
         ## @keephistory and keep it out of the history)
         if fill_time_discontinuities:
-            type(self).fill_time_discontinuities.__wrapped__(self, inplace=True)
+            inspect.unwrap(type(self).fill_time_discontinuities)(self, inplace=True)
 
     def _set_timebase(self, tx, fs=None):
         """
@@ -438,6 +440,19 @@ class GenericEyeData(state.VersionedState, ABC):
         r="{"+",".join(["%s: {...}"%k for k in ks])
         r+="}"
         return r
+
+    def __or__(self, other):
+        """
+        Apply a pipeline step or a pipeline: ``d | pp.pupil.blinks_detect()``.
+
+        Returns a processed copy; the object itself is not changed (see
+        :class:`~pypillometry.Pipeline`).
+        """
+        if isinstance(other, (Step, Pipeline)):
+            return other(self)
+        if getattr(other, "_is_step", False):
+            raise TypeError(_missing_call(other))
+        return NotImplemented
 
     def __len__(self):
         """Return number of sampling points"""
@@ -719,6 +734,7 @@ class GenericEyeData(state.VersionedState, ABC):
                  else intervals.to_mask(self).astype(bool))
         self.data.set_layer(key, "blink", blink, replace=True)
     
+    @step
     @keephistory
     def set_blinks(self, intervals, eyes=[], variables=[]):
         """
@@ -986,6 +1002,7 @@ class GenericEyeData(state.VersionedState, ABC):
         out[self.data.get_policy_mask(key, policy)] = np.nan
         return out
 
+    @step
     @keephistory
     def clear_layer(self, name: str, eyes: str|list = [], variables: str|list = [],
                     inplace=None):
@@ -1265,6 +1282,7 @@ class GenericEyeData(state.VersionedState, ABC):
 
         return ''.join([choice(v if i%2 else c) for i in range(n)])
 
+    @step
     @keephistory
     def drop_original(self, inplace=None):
         """
@@ -1291,6 +1309,7 @@ class GenericEyeData(state.VersionedState, ABC):
         return obj
     
 
+    @step
     @keephistory
     def reset_time(self, t0: float|None=None, inplace=None):
         """
@@ -1420,6 +1439,7 @@ class GenericEyeData(state.VersionedState, ABC):
             self._events = self._events.shift(time_map)
         return self
 
+    @step
     @keephistory
     def crop(self,
              start: float=-np.inf,
@@ -1821,6 +1841,7 @@ class GenericEyeData(state.VersionedState, ABC):
             result.name = new_name
         return result
 
+    @step
     @keephistory
     def drop_data(self, eyes: list = [], variables: list = [], inplace=None):
         """
@@ -1935,6 +1956,7 @@ class GenericEyeData(state.VersionedState, ABC):
         """
         return self._events
 
+    @step
     @keephistory
     def set_experimental_setup(self, **kwargs):
         """
@@ -1988,6 +2010,7 @@ class GenericEyeData(state.VersionedState, ABC):
             self.experimental_setup = ExperimentalSetup(**merged)
         return self
 
+    @step
     @keephistory
     def set_events(self, events):
         """
@@ -2027,6 +2050,7 @@ class GenericEyeData(state.VersionedState, ABC):
         self._events = self._check_events(events)
         return self
 
+    @step
     @keephistory
     def add_events(self, events, inplace=None):
         """
@@ -2113,6 +2137,7 @@ class GenericEyeData(state.VersionedState, ABC):
                              f"found {len(onsets)}")
         return float(onsets[0])
 
+    @step
     @keephistory
     def fill_time_discontinuities(self, yval=np.nan, print_info=True, inplace=None):
         """
@@ -2472,6 +2497,7 @@ class GenericEyeData(state.VersionedState, ABC):
         return SegmentedEyeData.from_eyedata(self, intervals, variable, name=name,
                                              policy=policy)
 
+    @step
     @keephistory
     def scale(self, variables=[], mean: Union[float,dict,None]=None, 
               sd: Union[float,dict,None]=None, eyes=[], policy="default", inplace=None):
@@ -2555,6 +2581,7 @@ class GenericEyeData(state.VersionedState, ABC):
                                    preserve_mask=True)
         return obj
         
+    @step
     @keephistory    
     def unscale(self, variables=[], mean=None, sd=None, eyes=[], inplace=None):
         """
@@ -2617,6 +2644,7 @@ class GenericEyeData(state.VersionedState, ABC):
         return obj    
 
     
+    @step
     @keephistory
     def downsample(self, fsd: float, dsfac: bool=False, policy="default", inplace=None):
         """
@@ -2691,6 +2719,7 @@ class GenericEyeData(state.VersionedState, ABC):
         self._set_timebase(baseline.downsample(self.tx, factor), self.fs/factor)
         return self
 
+    @step
     @keephistory
     def merge_eyes(self, eyes=[], variables=[], method="mean", keep_eyes=True,
                    policy="default", name="mean", inplace=None):
@@ -2897,6 +2926,7 @@ class GenericEyeData(state.VersionedState, ABC):
             # For non-cached objects, return total size
             return ByteSize(data_size + other_size)
 
+    @step
     @keephistory
     def merge_masks(self, inplace=None):
         """Merge masks of all variables into a single joint mask.
@@ -2928,6 +2958,7 @@ class GenericEyeData(state.VersionedState, ABC):
             
         return obj
 
+    @step
     @keephistory
     def mask_intervals(self, intervals, eyes=[], variables=[], inplace=None):
         """Apply Intervals as masks to selected data.
@@ -3004,6 +3035,7 @@ class GenericEyeData(state.VersionedState, ABC):
         
         return obj
 
+    @step
     @keephistory
     def interpolate_intervals(self, intervals, eyes=[], variables=[], 
                              method="linear", margin=(-20, 20),
@@ -3219,6 +3251,7 @@ class GenericEyeData(state.VersionedState, ABC):
         """Boolean array that is True for the samples in an excluded period."""
         return self.data.get_rec_layer("excluded")
 
+    @step
     @keephistory
     def exclude_intervals(self, intervals, inplace=None):
         """
@@ -3275,6 +3308,7 @@ class GenericEyeData(state.VersionedState, ABC):
         obj.data.set_rec_layer("excluded", Intervals(new, units="ms").to_mask(obj))
         return obj
 
+    @step
     @keephistory
     def keep_intervals(self, intervals, inplace=None):
         """
@@ -3380,6 +3414,7 @@ class GenericEyeData(state.VersionedState, ABC):
                                    inplace=False))
         return parts
 
+    @step
     @keephistory
     def remove_intervals(self, intervals, inplace=None):
         """

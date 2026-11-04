@@ -9,6 +9,7 @@ import itertools
 from typing import Optional, Tuple, Union
 from .generic import keephistory
 from .namespace import Namespace
+from .pipes import step
 #from .. import convenience
 from ..signal import baseline
 from ..signal import preproc
@@ -80,6 +81,7 @@ class PupilNamespace(Namespace):
 
     _name = "pupil"
 
+    @step
     @keephistory
     def lowpass_filter(self,  cutoff: float, order: int=2, eyes=[], policy="default",
                              inplace=None):
@@ -130,6 +132,7 @@ class PupilNamespace(Namespace):
             obj.data.set_with_mask(f"{eye}_pupil", out, preserve_mask=True)
         return obj
 
+    @step
     @keephistory
     def smooth_window(self, eyes=[], window: str="hanning", winsize: float=11,
                             policy="default", inplace=None):
@@ -184,6 +187,7 @@ class PupilNamespace(Namespace):
 
         return obj
 
+    @step
     @keephistory
     def merge_eyes(self, method: str = "local_offset", 
                          lowpass_cutoff: float = 0.2,
@@ -450,6 +454,7 @@ class PupilNamespace(Namespace):
         
         return vel_onset_samples, vel_offset_samples
 
+    @step
     @keephistory
     def blinks_detect(self, eyes=[], min_duration:float=20, blink_val:float=0,
                       winsize: float=11, vel_onset=-5.0, vel_offset=5.0, 
@@ -612,6 +617,7 @@ class PupilNamespace(Namespace):
             obj.set_blinks(intervals_obj, eyes=[eye], variables=["pupil"])
         return obj
     
+    @step
     @keephistory
     def blinks_merge_close(
         self,
@@ -685,6 +691,7 @@ class PupilNamespace(Namespace):
             obj.set_blinks(merged_intervals, eyes=[eye], variables=[var])
         return obj
 
+    @step
     @keephistory
     def blinks_interpolate(self, eyes: str|list=[],
                                  store_as: str="pupil", 
@@ -835,6 +842,7 @@ class PupilNamespace(Namespace):
             
 
 
+    @step
     @keephistory
     def estimate_baseline(self, eyes=[], variable="pupil",
                                 method: str="envelope_iter_bspline_2", policy="default",
@@ -925,6 +933,7 @@ class PupilNamespace(Namespace):
             
         return obj
         
+    @step
     @keephistory
     def estimate_response(self, 
                           eyes=[], 
@@ -1047,6 +1056,7 @@ class PupilNamespace(Namespace):
         return obj
     
 
+    @step
     @keephistory
     def correct_foreshortening(self, eyes=[], midpoint=None, store_as="pupil", inplace=None):
         r"""Correct pupil data using a simple algorithm to correct for foreshortening effects.

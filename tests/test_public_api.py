@@ -29,6 +29,7 @@ INTERNAL = {
     "pypillometry.eyedata.namespace": {"Namespace", "accessor"},
     "pypillometry.eyedata.pupil": {"PupilNamespace"},
     "pypillometry.eyedata.gaze": {"GazeNamespace"},
+    "pypillometry.eyedata.pipes": {"step", "generic_step"},
     "pypillometry.intervals": {"stat_event_interval"},
     "pypillometry.io": {"is_ssh_url"},
     "pypillometry.plot.genplotter": {"GenericPlotter"},
