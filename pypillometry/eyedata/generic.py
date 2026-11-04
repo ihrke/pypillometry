@@ -351,7 +351,7 @@ class GenericEyeData(state.VersionedState, ABC):
         ## fill in time discontinuities (part of construction, so bypass
         ## @keephistory and keep it out of the history)
         if fill_time_discontinuities:
-            type(self).fill_time_discontinuities.__wrapped__(self)
+            type(self).fill_time_discontinuities.__wrapped__(self, inplace=True)
 
     def _set_timebase(self, tx, fs=None):
         """
@@ -2041,9 +2041,9 @@ class GenericEyeData(state.VersionedState, ABC):
         return float(onsets[0])
 
     @keephistory
-    def fill_time_discontinuities(self, yval=np.nan, print_info=True):
+    def fill_time_discontinuities(self, yval=np.nan, print_info=True, inplace=None):
         """
-        Find gaps in the time-vector and fill them in (in-place).
+        Find gaps in the time-vector and fill them in.
 
         A gap is a step between consecutive time points that is larger than
         twice the median step. New time points are inserted into each gap
@@ -2061,15 +2061,20 @@ class GenericEyeData(state.VersionedState, ABC):
             values: masked by the ``"user"`` layer)
         print_info : bool, optional
             if True (default), log the number of gaps that are filled in
+        inplace : bool or None, optional
+            if `True`, make change in-place and return the object;
+            if `False`, make and return copy before making changes;
+            if `None`, use the object-level setting (specified in the constructor)
 
         Returns
         -------
         :class:`~pypillometry.GenericEyeData`
-            the object itself (always modified in-place)
+            the object without gaps (`self` or a copy, depending on `inplace`)
         """
-        tx=self.tx
+        obj = self._get_inplace(inplace)
+        tx=obj.tx
         stepsize=np.median(np.diff(tx))
-        n=len(self)
+        n=len(obj)
         gaps_end_ix=np.where(np.r_[stepsize,np.diff(tx)]>2*stepsize)[0]
         ngaps=gaps_end_ix.size
         if ngaps!=0:
@@ -2094,8 +2099,8 @@ class GenericEyeData(state.VersionedState, ABC):
             lens=[len(t) for t in ntx]
             offsets=np.cumsum([0]+lens[:-1])
             newpos=np.concatenate([offsets[2*i]+np.arange(lens[2*i]) for i in range(ngaps+1)])
-            self._insert_samples(np.concatenate(ntx), newpos, yval)
-        return self
+            obj._insert_samples(np.concatenate(ntx), newpos, yval)
+        return obj
 
     def _insert_samples(self, tx, pos, value=np.nan):
         """

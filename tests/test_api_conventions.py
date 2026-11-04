@@ -44,3 +44,18 @@ class TestDictReturns:
         assert iv["left_x"].intervals == [(50, 60)] and len(iv["right_x"]) == 0
         assert data.get_layer_intervals("excluded", "left", "pupil")["left_pupil"].intervals \
             == [(0, 10)]
+
+
+class TestInplace:
+    """Rule 1: transforming methods take `inplace`; only set_* are always in place."""
+
+
+    def test_constructor_with_inplace_false_fills_gaps(self):
+        tx = np.r_[0:50, 60:100] * 10.
+        d = pp.EyeData(left_pupil=np.ones(len(tx)), time=tx, sampling_rate=100,
+                       inplace=False)
+        assert len(d) == 100
+        e = pp.EyeData(left_pupil=np.ones(len(tx)), time=tx, sampling_rate=100,
+                       fill_time_discontinuities=False, inplace=False)
+        f = e.fill_time_discontinuities()
+        assert len(e) == 90 and len(f) == 100
