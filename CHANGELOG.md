@@ -114,6 +114,8 @@ The main ones:
 - A `plot_range` with start after end raises an error
 - `pupil.estimate_response(eyes=...)` removed the stored parameters of the
   other eyes
+- `pupil.estimate_response()` on data without events raises a `ValueError`
+  (it returned the start parameters)
 - Re-running `pupil.blinks_detect()` after `pupil.blinks_interpolate()`
   found no blinks (it read the interpolated values) and cleared the blink
   layer; interpolated samples now count as missing during detection

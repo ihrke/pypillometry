@@ -3,6 +3,7 @@ Tests for the response estimation with excluded periods and missing samples.
 """
 import unittest
 import numpy as np
+import pytest
 import pypillometry as pp
 from pypillometry.signal.pupil import (pupil_response, pupil_response_coverage,
                                        pupil_build_design_matrix, pupil_kernel)
@@ -175,6 +176,13 @@ def test_response_of_one_eye_keeps_the_other():
     d.pupil.estimate_response(eyes="right", npar=10, tmax=900, inplace=True)
     assert sorted(d.params["response"]) == ["left_pupil", "right_pupil"]
     np.testing.assert_array_equal(d.params["response"]["left_pupil"]["coef"], left)
+
+
+def test_response_without_events_raises():
+    d = fake_pupil(duration=20)
+    d.set_events(pp.Events([], [], units="ms"))
+    with pytest.raises(ValueError, match="needs events"):
+        d.pupil.estimate_response(npar=10, tmax=900)
 
 
 if __name__ == "__main__":

@@ -955,6 +955,11 @@ class PupilNamespace(Namespace):
         Estimate pupil-response based on event-onsets, see
         :func:`~pypillometry.signal.pupil.pupil_response`.
 
+        The model has one response per event in ``d.events``: *all* events
+        are used, whatever their label. To use only some of them, set the
+        events first, e.g. ``d.set_events(d.events.filter("stim"))`` on a
+        copy of the data.
+
         If a baseline has been estimated (see :meth:`estimate_baseline`),
         it is subtracted from the pupil signal before estimating the response;
         otherwise, a baseline of zero is used.
@@ -1005,6 +1010,11 @@ class PupilNamespace(Namespace):
         EyeData
             the object with the estimated response
 
+        Raises
+        ------
+        ValueError
+            if the object has no events
+
         Notes
         -----
         The predicted response is stored in ``data[eye, "response"]``; the
@@ -1024,6 +1034,9 @@ class PupilNamespace(Namespace):
         obj = self._d._get_inplace(inplace)
         eyes=self._d._eyes_with(eyes, "pupil")
 
+        if len(obj.events) == 0:
+            raise ValueError("estimate_response needs events (one response per event); "
+                             "the object has none (see set_events)")
         # replace the parameters of the processed eyes only
         obj.params["response"] = dict(obj.params.get("response", {}))
         for eye in eyes:
