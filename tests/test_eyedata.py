@@ -2529,7 +2529,7 @@ class TestHistoryLog(unittest.TestCase):
         d.mask_intervals(iv, eyes=["left"], inplace=True)
         h = d.history[-1]
         self.assertEqual(set(h), {"funcname", "funcstring"})
-        self.assertEqual(h["funcstring"], "mask_intervals(Intervals(2),eyes=['left'],inplace=True)")
+        self.assertEqual(h["funcstring"], "mask_intervals(Intervals(2),eyes=['left'])")
 
     def test_failed_call_does_not_break_recording(self):
         d = self.make()

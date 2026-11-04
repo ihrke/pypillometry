@@ -78,7 +78,8 @@ def keephistory(func):
     if it returned nothing, e.g. for setters), provided that object is an
     eyedata object (i.e., has an ``add_to_history`` method).
     Calls made from inside another decorated method are not recorded, and
-    large arguments are only summarized (e.g., ``Intervals(13)``). The history
+    large arguments are only summarized (e.g., ``Intervals(13)``); the
+    `inplace` argument is left out (it does not change the result). The history
     is a log of the operations; show it with
     :meth:`~pypillometry.GenericEyeData.print_history`.
 
@@ -110,7 +111,8 @@ def keephistory(func):
         target = obj if obj is not None else self
         if _history_depth == 0 and hasattr(target, 'add_to_history'):
             allargs = [_history_arg(v) for v in args[1:]]
-            allargs += [f"{k}={_history_arg(v)}" for k, v in kwargs.items()]
+            allargs += [f"{k}={_history_arg(v)}" for k, v in kwargs.items()
+                        if k != "inplace"]  # does not change the result
             fstr = f"{name}({','.join(allargs)})"
             target.add_to_history({"funcstring": fstr, "funcname": name})
         return obj
