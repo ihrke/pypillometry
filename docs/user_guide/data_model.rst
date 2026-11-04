@@ -52,10 +52,13 @@ as a dictionary.
 Eyes and variables
 ------------------
 
-The time series are stored in the attribute ``data``, an
-:class:`EyeDataDict`. Its keys have the form ``<eye>_<variable>``, e.g.
-``left_pupil``, ``right_x`` or ``left_y``. All time series have the same
-length as the time vector ``d.tx`` (in ms), so they stay aligned.
+The time series (*channels*) are stored in the attribute ``data``, an
+:class:`EyeDataDict`. Their keys have the form ``<eye>_<variable>``, e.g.
+``left_pupil``, ``right_x`` or ``left_y`` (eye names cannot contain
+``_``). Each channel holds its values and its mask layers (see below). All
+channels have the same length as the time vector ``d.tx`` (in ms), so
+they stay aligned: cropping, downsampling or removing samples changes
+values and layers together.
 
 .. code-block:: python
 
@@ -66,14 +69,19 @@ length as the time vector ``d.tx`` (in ms), so they stay aligned.
     d.tx                   # time in ms
     d.fs                   # sampling rate in Hz
 
-Most methods take ``eyes=`` and ``variables=`` arguments. When they are
-left empty, all eyes and variables are processed:
+Most methods take ``eyes=`` and ``variables=`` arguments (a name or a
+list). When they are left empty, all existing channels are processed;
+unknown names raise an error that lists the available channels:
 
 .. code-block:: python
 
     d.pupil.lowpass_filter(cutoff=4)                 # both eyes
     d.pupil.lowpass_filter(cutoff=4, eyes="left")    # only the left eye
     d.plot.plot_timeseries(variables=["x", "y"])     # only gaze
+
+Methods that return one result per channel return a dict with the same
+keys, e.g. ``d.get_blinks()["left_pupil"]`` or
+``d.stat_per_event(epochs)["right_pupil"]``.
 
 New eyes and variables can be added. For example,
 :meth:`~EyeData.pupil.merge_eyes` combines the pupils of both eyes into
@@ -83,69 +91,111 @@ your own arrays with ``d["left", "myvar"] = array``.
 See the tutorial :doc:`/notebooks/eyes_and_variables` for examples.
 
 
-Masks
------
+Masks, layers and policies
+--------------------------
 
-Samples can be *masked*, i.e. marked as invalid without removing them.
+Samples can be *masked*, i.e. marked as unusable without removing them.
 Missing samples (NaN), blinks and samples where the gaze is off the
-screen are typical examples. Every time series is a
-:class:`numpy.ma.MaskedArray`, and masked samples are ignored by
-averages, segments and statistics. Interpolated samples (e.g., blinks
-after :meth:`~EyeData.pupil.blinks_interpolate`) are *not* masked by
-default: they are used like other samples (see the mask policies below).
+screen are typical examples. Masked samples are left out of averages,
+segments, statistics and filters.
+
+Mask layers
+~~~~~~~~~~~
+
+Each channel (e.g., ``left_pupil``) keeps a set of named *mask layers*
+that record why a sample is masked. Each method sets only its own layer:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 18 52 30
+
+   * - layer
+     - set by
+     - meaning
+   * - ``"blink"``
+     - :meth:`~EyeData.pupil.blinks_detect`,
+       :meth:`~EyeData.pupil.blinks_merge_close`,
+       :meth:`~GenericEyeData.set_blinks`
+     - missing
+   * - ``"interpolated"``
+     - :meth:`~EyeData.pupil.blinks_interpolate`,
+       :meth:`~GenericEyeData.interpolate_intervals`
+     - reconstructed
+   * - ``"offscreen"``
+     - :meth:`~EyeData.gaze.mask_offscreen`
+     - missing
+   * - ``"divergence"``
+     - :meth:`~EyeData.gaze.mask_divergences`
+     - missing
+   * - ``"user"``
+     - :meth:`~GenericEyeData.mask_intervals`, assigning a masked array
+       (``d["left_pupil"] = np.ma.masked_array(...)``)
+     - missing
+   * - ``"excluded"``
+     - :meth:`~GenericEyeData.exclude_intervals`,
+       :meth:`~GenericEyeData.keep_intervals` (one layer for the whole
+       recording, see below)
+     - not part of the analysis
+
+NaN is not a layer: it is read from the values. Detection methods store
+what they find in their layer and return the object, so they can be
+chained. Running a detector again *replaces* its layer, and
+:meth:`~GenericEyeData.clear_layer` removes a layer. The results are read
+with getters that return a dict of :class:`Intervals` keyed by channel
+(e.g., ``"left_pupil"``), in ms:
 
 .. code-block:: python
 
-    d.pupil.blinks_detect()                     # detect and mask blinks
-    d.data.count_masked()                       # number of masked samples
-    d.mask_as_intervals("left", "pupil")        # masked stretches (dict of Intervals)
+    d.pupil.blinks_detect()                     # sets the "blink" layer
+    d.get_blinks()["left_pupil"]                # the blinks (runs of the layer)
+    d.get_layer_intervals("offscreen")          # runs of any layer
+    d.mask_as_intervals("left", "pupil")        # all masked stretches
+    d.clear_layer("blink")                      # undo blink detection
     d.plot.plot_masked()                        # where is data masked?
 
-Detection methods store what they find as a mask layer (e.g.,
-``"blink"``), which masks the data, and return the object; read the
-results with getters such as :meth:`~GenericEyeData.get_blinks` or
-:meth:`~GenericEyeData.get_layer_intervals` (a dict keyed like
-``"left_pupil"``, in ms) and undo them with
-:meth:`~GenericEyeData.clear_layer`.
+Interpolation keeps the ``"blink"`` layer and adds ``"interpolated"``, so
+you can always tell recorded from reconstructed samples (e.g.,
+:meth:`~GenericEyeData.get_interpolated_blinks`). The quality report
+splits the masked time by layer.
 
-Each variable also keeps *mask layers* that record why a sample is
-masked: ``"blink"`` (:meth:`~EyeData.pupil.blinks_detect`,
-:meth:`~GenericEyeData.set_blinks`), ``"interpolated"``
-(:meth:`~EyeData.pupil.blinks_interpolate`,
-:meth:`~GenericEyeData.interpolate_intervals`), ``"offscreen"``
-(:meth:`~EyeData.gaze.mask_offscreen`), ``"divergence"``
-(:meth:`~EyeData.gaze.mask_divergences`) and ``"user"``
-(:meth:`~GenericEyeData.mask_intervals`, assigning a masked array). The
-``"excluded"`` layer (see below) belongs to the whole recording, not to
-a variable. The blinks returned by :meth:`~GenericEyeData.get_blinks` are
-the stretches of the ``"blink"`` layer. Running a detector again replaces
-its layer (and its mask), and :meth:`~GenericEyeData.clear_layer` removes
-a layer. The quality report splits the masked time by layer.
-:meth:`~GenericEyeData.mask` and :meth:`~GenericEyeData.values` give the
-mask (or the values with NaN) under a :class:`MaskPolicy`; by default,
-interpolated samples count as usable:
+Mask policies
+~~~~~~~~~~~~~
 
-.. code-block:: python
+A *mask policy* (:class:`MaskPolicy`) decides which layers make a sample
+unusable. There are three predefined policies:
 
-    d.mask("left", "pupil")                     # NaN, blinks, ...; not interpolated
-    d.mask("left", "pupil", policy="strict")    # interpolated samples too
-    d.values("left", "pupil")                   # values, NaN where masked
-    d.clear_layer("blink")                      # undo blink detection
+.. list-table::
+   :header-rows: 1
+   :widths: 15 85
+
+   * - policy
+     - masked samples
+   * - ``"default"``
+     - NaN, blinks, off-screen gaze, eye divergences, user masks and
+       excluded periods; **interpolated samples are used**
+   * - ``"strict"``
+     - as ``"default"``, and interpolated samples
+   * - ``"raw"``
+     - nothing (not even NaN)
 
 All processing and analysis methods read the data under one policy: the
-default one unless you pass ``policy=`` (``"strict"`` leaves out the
-interpolated samples, ``"raw"`` uses all values). Filters
+default one unless you pass ``policy=``. Filters
 (:meth:`~EyeData.pupil.lowpass_filter`,
 :meth:`~EyeData.pupil.smooth_window`) and the baseline model bridge the
 unusable samples linearly instead of using their values, and only change
 the usable samples; masked samples keep their values. Segments,
 :meth:`~GenericEyeData.stat_per_event`, :meth:`~GenericEyeData.scale`,
 :meth:`~GenericEyeData.merge_eyes`, :meth:`~GenericEyeData.downsample` and
-the quality report leave out the unusable samples. ``d["left_pupil"]`` and
-``d.data.mask`` give the mask under the default policy.
+the quality report leave out the unusable samples.
+:meth:`~GenericEyeData.mask` and :meth:`~GenericEyeData.values` give the
+mask (or the values with NaN) of a channel under a policy; ``d["left_pupil"]``
+(a masked array) and ``d.data.mask`` use the default policy:
 
 .. code-block:: python
 
+    d.mask("left", "pupil")                     # True where unusable (default policy)
+    d.mask("left", "pupil", policy="strict")    # interpolated samples too
+    d.values("left", "pupil")                   # values, NaN where masked
     seg = d.get_segments(epochs, "left_pupil", policy="strict")  # without interpolated samples
     d.stat_per_event(epochs, policy="strict")
 
@@ -209,17 +259,20 @@ Processing steps can be combined into a pipeline with ``|``:
 .. code-block:: python
 
     d = pp.EyeData.from_eyelink("recording.edf")
-    d = d | pp.pupil.blinks_detect() \
-          | pp.pupil.blinks_interpolate() \
-          | pp.pupil.lowpass_filter(cutoff=4) \
-          | pp.downsample(50)
+    d = d | (pp.pupil.blinks_detect()
+             | pp.pupil.blinks_interpolate()
+             | pp.pupil.lowpass_filter(cutoff=4)
+             | pp.downsample(50))
 
 ``pp.pupil.<method>`` and ``pp.gaze.<method>`` are the methods of
 ``d.pupil`` and ``d.gaze``, and the generic methods are available at the
 top level (``pp.crop``, ``pp.downsample``, ``pp.scale``, ...), with the
 same arguments. ``d | step`` does not change ``d``: it returns a processed
 copy. A pipeline is a value that can be stored and applied to several
-datasets; applied as a whole, it copies the data only once:
+datasets; applied as a whole, it copies the data only once. (Without the
+parentheses, Python reads ``d | a | b`` as ``(d | a) | b``, which makes a
+copy at each ``|``: the result is the same, but it needs more memory for
+long recordings.)
 
 .. code-block:: python
 
@@ -227,6 +280,11 @@ datasets; applied as a whole, it copies the data only once:
               | pp.pupil.lowpass_filter(cutoff=4)
     print(preproc)
     data = {subj: d | preproc for subj, d in datasets.items()}
+
+Each call like ``pp.pupil.lowpass_filter(cutoff=4)`` makes a :class:`Step`
+(its arguments are checked right away), and ``|`` combines steps into a
+:class:`Pipeline`. If a step fails, the error message says which step of
+the pipeline it was.
 
 The same methods can be called directly, e.g. ``d.pupil.lowpass_filter(4)``
 or ``d.downsample(50)``; they return the object, so calls can be chained.
