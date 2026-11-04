@@ -113,6 +113,8 @@ The main ones:
 - `plot_heatmap(show_masked=True)` with NaN samples
 - A `plot_range` with start after end raises an error
 - The sample at the end of `plot_range` was not plotted
+- `mask_intervals` and `interpolate_intervals` accept a list of
+  `(start, end)` tuples in ms, like `exclude_intervals`
 - `Events.filter(trial="1")` on a numeric metadata column (or a number on
   a column of strings) matched nothing silently; it raises a `TypeError`
 - `scale()` twice (or for different variables) then `unscale()` left the

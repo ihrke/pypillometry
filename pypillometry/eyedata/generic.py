@@ -1376,6 +1376,9 @@ class GenericEyeData(state.VersionedState, ABC):
         """
         if isinstance(intervals, (Intervals, Epochs)):
             return _as_intervals(intervals)
+        if not isinstance(intervals, (list, tuple, np.ndarray)):
+            raise TypeError("intervals must be Intervals, Epochs or a list of (start, end) "
+                            f"tuples, got {type(intervals).__name__}")
         bounds = {-np.inf: float(self.tx[0]),
                   np.inf: float(_samples_to_ms(self, len(self.tx)))}
 
@@ -3020,10 +3023,11 @@ class GenericEyeData(state.VersionedState, ABC):
 
         Parameters
         ----------
-        intervals : Intervals, Epochs or dict
+        intervals : Intervals, Epochs, list of tuple or dict
             Either:
 
-            - A single Intervals (or :class:`~pypillometry.Epochs`) object:
+            - A single Intervals (or :class:`~pypillometry.Epochs`) object
+              or a list of ``(start, end)`` tuples (in ms, or with units):
               applied to all specified eyes/variables
             - A dict of Intervals (or Epochs): keys like "left_pupil",
               "right_x", etc. When dict is provided, `eyes` and `variables`
@@ -3071,6 +3075,7 @@ class GenericEyeData(state.VersionedState, ABC):
             # one Intervals object per eye_variable
             per_key = intervals
         else:
+            intervals = obj._as_spans(intervals)
             per_key = {f"{eye}_{var}": intervals for eye, var in obj.data.select(eyes, variables)}
 
         n = len(obj.tx)
@@ -3104,10 +3109,11 @@ class GenericEyeData(state.VersionedState, ABC):
 
         Parameters
         ----------
-        intervals : Intervals, Epochs or dict
+        intervals : Intervals, Epochs, list of tuple or dict
             Either:
 
-            - A single Intervals (or :class:`~pypillometry.Epochs`) object:
+            - A single Intervals (or :class:`~pypillometry.Epochs`) object
+              or a list of ``(start, end)`` tuples (in ms, or with units):
               applied to all specified eyes/variables
             - A dict of Intervals (or Epochs): keys like "left_pupil",
               "right_x", etc. When dict is provided, `eyes` and `variables`
@@ -3290,7 +3296,7 @@ class GenericEyeData(state.VersionedState, ABC):
                 
                 interpolate_single_key(key, interval_obj)
         else:
-            intervals = _as_intervals(intervals)
+            intervals = obj._as_spans(intervals)
             for eye, var in obj.data.select(eyes, variables):
                 interpolate_single_key(f"{eye}_{var}", intervals)
         

@@ -157,8 +157,8 @@ class TestMethodsAcceptEpochs:
         plt.close("all")
 
     def test_type_error(self):
-        with pytest.raises(TypeError, match="must be Intervals or Epochs, got list"):
-            self.make().mask_intervals([(0, 100)])
+        with pytest.raises(TypeError, match="must be Intervals, Epochs or a list"):
+            self.make().mask_intervals({(0, 100)})
 
 
 class TestSegmentsFromEpochs:

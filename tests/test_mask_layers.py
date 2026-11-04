@@ -477,6 +477,20 @@ class TestBlinkLayer:
 
 class TestUserLayer:
 
+
+    def test_lists_of_tuples(self):
+        # like exclude_intervals: (start, end) in ms
+        import pypillometry as pp
+        d = blink_data()
+        a = d.mask_intervals([(1000, 1100)], inplace=False)
+        b = d.mask_intervals(pp.Intervals([(1000, 1100)], units="ms"), inplace=False)
+        np.testing.assert_array_equal(a.mask("left", "pupil"), b.mask("left", "pupil"))
+        a = d.interpolate_intervals([(2000, 2150)], inplace=False)
+        b = d.interpolate_intervals(pp.Intervals([(2000, 2150)], units="ms"), inplace=False)
+        np.testing.assert_array_equal(a.data["left_pupil"], b.data["left_pupil"])
+        with pytest.raises(TypeError, match="list of"):
+            d.mask_intervals("blinks")
+
     def test_mask_intervals(self):
         import pypillometry as pp
         d = blink_data()
