@@ -2189,9 +2189,9 @@ class GenericEyeData(state.VersionedState, ABC):
             time-array; converted to ms with the sampling rate); for two
             events, also the units of the returned Intervals (a `window` with
             units is converted to them). If not given, the units of `window`
-            are used ("samples" if `window` has no units). Between two events
-            in samples, each event is placed at the first sample at or after
-            its onset.
+            are used ("ms" if `window` has no units: plain numbers are ms).
+            Between two events in samples, each event is placed at the first
+            sample at or after its onset.
         label : str or None, optional
             optional label for the Epochs or Intervals object. If None, a
             label is automatically generated from the event_select parameter
@@ -2237,7 +2237,7 @@ class GenericEyeData(state.VersionedState, ABC):
                 window = np.round(window).astype(int)
             window = tuple(window.tolist())
         elif units is UNSET:
-            units = "samples"
+            units = "ms"  # plain numbers are ms
         units = normalize_unit(units)
 
         # between two events, window[0] and window[1] shift different

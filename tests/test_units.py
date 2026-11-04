@@ -437,9 +437,11 @@ def test_get_intervals_with_units(eyedata):
     np.testing.assert_allclose(ep.window, ref.window)
     ep = eyedata.get_intervals("F", (-0.2, 0.8), units="sec")
     np.testing.assert_allclose(ep.window, ref.window)
-    # plain numbers without units are samples (finding 2.5, step 9)
+    # plain numbers without units are ms (finding 2.5, step 9)
+    ep = eyedata.get_intervals("F", (-200, 800))
+    assert ep == ref
     n = int(eyedata.fs * 0.2)
-    ep = eyedata.get_intervals("F", (-n, 4 * n))
+    ep = eyedata.get_intervals("F", (-n, 4 * n), units="samples")
     np.testing.assert_allclose(ep.window, ref.window)
     assert ep.to_intervals("samples", eyedata).intervals == \
         ref.to_intervals("samples", eyedata).intervals

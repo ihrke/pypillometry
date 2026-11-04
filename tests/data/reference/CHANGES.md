@@ -679,3 +679,14 @@ Changes of the API calls alone (same numbers) need no entry.
 - **Why**: setting the layer is masking (plan 2.8, rule 2); one blink
   store and one meaning.
 - **Step**: 9, `refactor/09-api-conventions`
+
+### Plain numbers are ms: `get_intervals` windows
+
+- **Case**: none (the cases give windows with units, `(-200, 1000) * u.ms`)
+- **Change**: `get_intervals(event, window=(-200, 800))` reads plain numbers
+  as ms (before: sample indices, so at 500 Hz the window was 2 s long); also
+  between two events, where the returned Intervals are now in ms. Sample
+  indices need `units="samples"`.
+- **Why**: one rule for plain numbers (plan 2.8, rule 4; finding 2.5):
+  `stat_per_event`, `crop`, `baseline_correct` already used ms.
+- **Step**: 9, `refactor/09-api-conventions`

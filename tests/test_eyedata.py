@@ -882,7 +882,7 @@ class TestEyeData(unittest.TestCase):
         calls = [
             dict(window=(-200, 0), event_select="a", units="ms"),
             dict(window=(-.2, 0), event_select="a", units="sec"),
-            dict(intervals=d.get_intervals("a", window=(-20, 0))),  # sample indices
+            dict(intervals=d.get_intervals("a", window=(-20, 0), units="samples")),
             dict(intervals=d.get_intervals("a", window=(-.2, 0), units="sec")),
         ]
         for kw in calls:
@@ -2201,20 +2201,20 @@ class TestGetIntervalsBetweenEvents(unittest.TestCase):
 
     def test_indices_one_pair(self):
         d = self.make([1000, 2000], ["start", "resp"])
-        iv = d.get_intervals(("start", "resp"), window=(-5, 5))
+        iv = d.get_intervals(("start", "resp"), window=(-5, 5), units="samples")
         self.assertEqual([tuple(map(int, i)) for i in iv.intervals], [(95, 205)])
 
     def test_indices_several_pairs(self):
         d = self.make([1000, 2000, 5000, 6000, 7000, 8000],
                       ["start", "resp"] * 3)
-        iv = d.get_intervals(("start", "resp"), window=(-5, 5))
+        iv = d.get_intervals(("start", "resp"), window=(-5, 5), units="samples")
         self.assertEqual([tuple(map(int, i)) for i in iv.intervals],
                          [(95, 205), (495, 605), (695, 805)])
         self.assertEqual(iv.event_onsets, [100, 500, 700])
 
     def test_indices_match_ms(self):
         d = self.make([1000, 2000, 5000, 6000], ["start", "resp"] * 2)
-        ix = d.get_intervals(("start", "resp"), window=(-5, 5))
+        ix = d.get_intervals(("start", "resp"), window=(-5, 5), units="samples")
         ms = d.get_intervals(("start", "resp"), window=(-50, 50), units="ms")
         for (a, b), (c, e) in zip(ix.intervals, ms.intervals):
             self.assertEqual((a * 10, b * 10), (c, e))
@@ -2222,13 +2222,13 @@ class TestGetIntervalsBetweenEvents(unittest.TestCase):
     def test_indices_not_clipped(self):
         # finding 2.6: intervals in samples are not clipped to the data (as in ms)
         d = self.make([20, 9980], ["start", "resp"])
-        iv = d.get_intervals(("start", "resp"), window=(-10, 10))
+        iv = d.get_intervals(("start", "resp"), window=(-10, 10), units="samples")
         self.assertEqual([tuple(map(int, i)) for i in iv.intervals], [(-8, 1008)])
         self.assertEqual(iv.to_mask(d).sum(), 1000)
 
     def test_zero_window(self):
         d = self.make([1000, 2000], ["start", "resp"])
-        iv = d.get_intervals(("start", "resp"), window=(0, 0))
+        iv = d.get_intervals(("start", "resp"), window=(0, 0), units="samples")
         self.assertEqual([tuple(map(int, i)) for i in iv.intervals], [(100, 200)])
 
     def warnings_of(self, f):
@@ -2255,7 +2255,7 @@ class TestGetIntervalsBetweenEvents(unittest.TestCase):
 
     def test_no_warning_without_skipped_events(self):
         d = self.make([1000, 2000, 5000, 6000], ["start", "resp"] * 2)
-        _, msgs = self.warnings_of(lambda: d.get_intervals(("start", "resp"), (0, 0)))
+        _, msgs = self.warnings_of(lambda: d.get_intervals(("start", "resp"), (0, 0), units="samples"))
         self.assertEqual(msgs, [])
 
     def test_breaks_between_blocks(self):
@@ -2290,7 +2290,7 @@ class TestGetIntervalsBetweenEvents(unittest.TestCase):
     def test_no_pairs_raises(self):
         d = self.make([1000, 2000], ["resp", "start"])
         with self.assertRaisesRegex(ValueError, "is followed by"):
-            self.warnings_of(lambda: d.get_intervals(("start", "resp"), (0, 0)))
+            self.warnings_of(lambda: d.get_intervals(("start", "resp"), (0, 0), units="samples"))
 
     def test_recording_start(self):
         d = self.make([1000, 2000, 3000], ["Start Block", "End Block", "Start Block"])
@@ -2304,7 +2304,7 @@ class TestGetIntervalsBetweenEvents(unittest.TestCase):
         # the end is one sample past the last one (end-exclusive)
         d = self.make([1000, 2000, 3000], ["End Block", "Start Block", "End Block"])
         iv, msgs = self.warnings_of(
-            lambda: d.get_intervals(("End Block", "<end>"), (0, 0)))
+            lambda: d.get_intervals(("End Block", "<end>"), (0, 0), units="samples"))
         self.assertEqual([tuple(map(int, i)) for i in iv.intervals], [(300, 1000)])
         ms = d.get_intervals(("End Block", "<end>"), (0, 0), units="ms")
         self.assertEqual(ms.intervals, [(3000.0, 10000.0)])
@@ -2313,7 +2313,7 @@ class TestGetIntervalsBetweenEvents(unittest.TestCase):
 
     def test_recording_start_alone(self):
         d = self.make([1000], ["x"])
-        ep = d.get_intervals("<start>", (0, 50))
+        ep = d.get_intervals("<start>", (0, 50), units="samples")
         self.assertEqual(ep.to_intervals("samples", d).intervals, [(0, 50)])
 
     def test_exact(self):
