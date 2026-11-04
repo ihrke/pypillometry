@@ -74,3 +74,23 @@ class TestNamespaceBase:
         fname = str(tmp_path / "d.pkl")
         pp.write_pickle(d, fname)
         assert pp.read_pickle(fname).demo.first() == 1
+
+
+class TestRenamedMethods:
+    """The flat pupil/gaze names of 2.1 are gone; the error names the new one."""
+
+    def test_rename_table(self):
+        from pypillometry.eyedata.generic import _RENAMED_METHODS
+        d = pp.EyeData(left_pupil=np.ones(10), left_x=np.ones(10), left_y=np.ones(10),
+                       sampling_rate=10)
+        for old, new in _RENAMED_METHODS.items():
+            ns, name = new.split(".")
+            assert callable(getattr(getattr(d, ns), name)), new
+            assert not hasattr(pp.EyeData, old), old
+            with pytest.raises(AttributeError, match=rf"renamed: use \.{ns}\.{name}\(\.\.\.\)"):
+                getattr(d, old)
+
+    def test_flat_names_gone(self):
+        flat = [n for n in dir(pp.EyeData)
+                if n.startswith(("pupil_", "gaze_", "mask_offscreen", "mask_eye"))]
+        assert flat == []
