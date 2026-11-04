@@ -1,0 +1,115 @@
+.. currentmodule:: pypillometry
+
+Upgrading from 2.1
+==================
+
+Version 2.2 changes how the data are stored and how the methods are
+called. Most scripts written for 2.1 need some changes. This page lists
+what changed and what to look out for; the
+:doc:`changelog </development/changelog>` has the complete tables of old
+and new calls.
+
+
+What changed
+------------
+
+**One data class.** :class:`EyeData` holds pupil and gaze data alike;
+``PupilData`` and ``GazeData`` are gone. Use
+``d.drop_data(variables=["x", "y"], inplace=False)`` instead of
+``d.to_pupildata()``. See :doc:`data_model`.
+
+**Namespaces.** The methods for pupil data are in ``d.pupil``, those for
+gaze data in ``d.gaze`` and the plots in ``d.plot``, without the prefixes:
+
+.. code-block:: python
+
+    d.pupil_blinks_detect()      # 2.1
+    d.pupil.blinks_detect()      # 2.2
+
+    d.mask_offscreen_coords()    # 2.1
+    d.gaze.mask_offscreen()      # 2.2
+
+    d.pupil_plot()               # 2.1
+    d.plot.pupil_plot()          # 2.2
+
+Old names raise an error that names the new one, e.g.
+``AttributeError: ... (renamed: use .pupil.blinks_detect(...))``.
+
+**Pipelines.** Processing steps can be combined with ``|``
+(``d | pp.pupil.blinks_detect() | pp.pupil.lowpass_filter(4)``); see
+:ref:`pipelines <data-model-pipelines>`.
+
+**Mask layers and policies.** Each channel keeps named mask layers
+(``"blink"``, ``"interpolated"``, ...) instead of a single mask. Detectors
+set their layer and return the object; the ``apply_mask`` argument is
+gone, and the results are read with getters (``d.get_blinks()``,
+``d.get_layer_intervals("offscreen")``). A mask policy decides which layers
+count as unusable; by default, **interpolated samples are used**. See
+:ref:`masks <data-model-masks>`.
+
+**Events, intervals and epochs.** The events are one :class:`Events`
+object (``d.events.onsets`` instead of ``d.event_onsets``).
+``d.get_intervals("stim", window)`` returns :class:`Epochs` (event onsets
+with one window). See :doc:`events_intervals`.
+
+
+Changes that do not raise an error
+----------------------------------
+
+These changes silently give other results with code that ran under 2.1.
+Check your scripts for them:
+
+- **Plain numbers are ms** everywhere: windows of
+  :meth:`~GenericEyeData.get_intervals`, durations, ``plot_range`` and
+  ``interv`` of the plots. Sample indices need ``units="samples"``. A 2.1
+  call like ``d.pupil_plot(plot_range=(0, 20), units="sec")`` now plots the
+  first 20 ms: use ``plot_range=(0, 20) * u.sec`` (``units=`` of the plots
+  only sets the unit of the time axis).
+- **Interpolated samples are used** in segments,
+  :meth:`~GenericEyeData.stat_per_event`, :meth:`~GenericEyeData.scale`,
+  :meth:`~GenericEyeData.merge_eyes`, :meth:`~GenericEyeData.downsample` and
+  the quality report. Pass ``policy="strict"`` for the 2.1 behaviour.
+- **In place by default** also for :meth:`~GenericEyeData.drop_data`,
+  :meth:`~GenericEyeData.fill_time_discontinuities` and
+  :meth:`SegmentedEyeData.baseline_correct`, which returned a copy in 2.1:
+  ``d2 = d.drop_data(...)`` now changes ``d`` too. Pass ``inplace=False``.
+- **Results per channel are dicts** keyed like the data (``"left_pupil"``),
+  e.g. ``d.get_blinks()["left_pupil"]``, in ms.
+- **Merged eyes** are called ``mean`` (``mean_pupil``), not ``merged``.
+- **The sampling rate after** :meth:`~GenericEyeData.downsample` is the
+  actual rate: downsampling 1000 Hz data to 300 Hz gives 333.3 Hz.
+- ``pp.downsample`` is now a pipeline step; the function for numpy arrays
+  is ``pp.signal.downsample``.
+
+All numbers that differ from 2.1, with the reason for each, are listed in
+`tests/data/reference/CHANGES.md
+<https://github.com/ihrke/pypillometry/blob/master/tests/data/reference/CHANGES.md>`_.
+
+
+Saved files
+-----------
+
+Files saved with earlier versions (pickle and HDF5) can still be read:
+they are upgraded each time they are loaded, and ``PupilData`` and
+``GazeData`` objects load as :class:`EyeData`. ``pypil-upgrade`` converts
+them once, so that this is not needed any more (see
+:doc:`/getting_started/cli`):
+
+.. code-block:: bash
+
+    pypil-upgrade -n data/        # report what would be converted
+    pypil-upgrade -i data/        # convert in place
+
+What happens to the contents of old files:
+
+- Blinks, interpolated blinks and excluded periods become the layers
+  ``"blink"``, ``"interpolated"`` and ``"excluded"``. Stored blinks always
+  mask the data, also blinks that were stored without
+  ``apply_mask=True``.
+- Other masked samples (e.g., from ``mask_offscreen_coords``,
+  ``mask_eye_divergences`` or masks set by hand) become the ``"user"``
+  layer: their origin is not stored in old files.
+- A sampling rate that does not fit the time vector (files saved after
+  downsampling to a rate that does not divide the original one) is
+  corrected from the time vector, with a warning.
+- Segments with event-locked intervals get :class:`Epochs`.
