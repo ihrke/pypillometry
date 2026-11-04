@@ -161,6 +161,15 @@ class TestPipeline:
         assert "offscreen" in r.data.layer_names
         assert "offscreen" not in d.data.layer_names
 
+    def test_pipeline_can_be_pickled(self):
+        """e.g. to send it to worker processes, one per subject"""
+        import pickle
+        p = pickle.loads(pickle.dumps(PREPROC | pp.downsample(100)))
+        assert repr(p) == repr(PREPROC | pp.downsample(100))
+        d = _data()
+        np.testing.assert_array_equal((d | p).data["left_pupil"],
+                                      (d | PREPROC | pp.downsample(100)).data["left_pupil"])
+
     def test_step_call_is_pipe(self):
         d = _data()
         s = pp.crop(100, 2000)
