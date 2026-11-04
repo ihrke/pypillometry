@@ -588,7 +588,11 @@ def _merge_thresholds(thresholds: Optional[dict]) -> dict:
             raise ValueError(f"Unknown quality measure '{key}'. "
                              f"Available: {', '.join(res)}")
         if bounds is not None:
-            bounds = tuple(float(b) for b in bounds)
+            try:
+                bounds = tuple(float(b) for b in bounds)
+            except (TypeError, ValueError):
+                raise ValueError(f"Thresholds for '{key}' must be 3 numbers (good, ok, poor) "
+                                 f"or None, got {bounds!r}") from None
             if len(bounds) != 3:
                 raise ValueError(f"Thresholds for '{key}' must have 3 values "
                                  f"(good, ok, poor), got {bounds}")
