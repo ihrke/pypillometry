@@ -1,6 +1,6 @@
 """
-pupildata.py
-============
+pupil.py
+========
 
 Methods of :class:`~pypillometry.EyeData` for pupil data.
 """

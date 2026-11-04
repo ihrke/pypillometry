@@ -178,7 +178,7 @@ if __name__ == '__main__':
 
 class TestMergeBlinkWindows(unittest.TestCase):
     def merge(self, blinks, n=10000):
-        from pypillometry.eyedata.pupildata import _merge_overlapping_blink_windows
+        from pypillometry.eyedata.pupil import _merge_overlapping_blink_windows
         return _merge_overlapping_blink_windows(blinks, n)
 
     def test_separate_blinks(self):

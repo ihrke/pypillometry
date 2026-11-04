@@ -9,7 +9,7 @@ Module containing the class for handling eye data.
 
 It inherits from :class:`GenericEyeData`, which provides the basic, shared
 functionality; the methods for pupil and gaze data are defined in the
-modules `pupildata` and `gazedata`.
+modules `pupil` and `gaze`.
 
 The data are stored in the `data` attribute, which is a dictionary-like object
 of type :class:`EyeDataDict`. 
