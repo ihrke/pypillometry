@@ -722,7 +722,7 @@ class PupilNamespace(Namespace):
 
         This procedure relies heavily on eye-balling (reconstructing visually convincing signal),
         so it can help to inspect the result visually (e.g., using
-        :meth:`~pypillometry.EyePlotter.plot_blinks`) to set
+        :meth:`d.plot.plot_blinks() <pypillometry.plot.PlotNamespace.plot_blinks>`) to set
         good parameter values for `winsize`, `vel_onset`, `vel_offset` and `margin`
         (see paper linked above).
 

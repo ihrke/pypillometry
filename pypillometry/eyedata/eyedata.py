@@ -25,8 +25,10 @@ class EyeData(GenericEyeData):
     gaze data, or both). The methods for pupil data are in the namespace
     ``d.pupil`` (:class:`~pypillometry.eyedata.pupil.PupilNamespace`, e.g.
     ``d.pupil.blinks_detect()``), those for gaze data in ``d.gaze``
-    (:class:`~pypillometry.eyedata.gaze.GazeNamespace`); they raise a
-    ValueError if the object has no such data. The generic methods (e.g.,
+    (:class:`~pypillometry.eyedata.gaze.GazeNamespace`) and the plots in
+    ``d.plot`` (:class:`~pypillometry.plot.PlotNamespace`, e.g.
+    ``d.plot.pupil_plot()``); they raise a ValueError if the object has no
+    such data. The generic methods (e.g.,
     :meth:`~pypillometry.GenericEyeData.crop`) are methods of the object.
     All transforming methods can also be used as pipeline steps, e.g.
     ``d | pp.pupil.blinks_detect() | pp.crop(0, "10 min")`` (see
