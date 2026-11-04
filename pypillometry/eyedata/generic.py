@@ -8,7 +8,7 @@ All other eyedata classes should inherit from this class.
 
 from collections.abc import Iterable
 from .. import io
-from ..convenience import sizeof_fmt, ByteSize, _round_values, requires_package, is_url, suppress_all_output, normalize_unit, _warn_if_ignores_mask
+from ..convenience import sizeof_fmt, ByteSize, _round_values, _plain_values, requires_package, is_url, suppress_all_output, normalize_unit, _warn_if_ignores_mask
 from ..units import UNSET, _has_units, _time_values_and_units, parse_time, _ms_to_samples, _samples_to_ms
 from ..io import download
 from .eyedatadict import (EyeDataDict, LAYER_DTYPE, REC_LAYERS,
@@ -1718,6 +1718,8 @@ class GenericEyeData(state.VersionedState, ABC):
         """Return a string-representation of the dataset."""
         pars=self.summary()
         del pars["name"]
+        if "params" in pars:
+            pars["params"] = self._strfy_params()  # short form
         size = self.get_size()
         s="{cname}({name}, {size}):\n".format(cname=self.__class__.__name__,
                                               name=self.name, 
@@ -2582,8 +2584,8 @@ class GenericEyeData(state.VersionedState, ABC):
             sd = _per_pair(pairs, lambda eye, var, val=sd: val)
         elif not isinstance(sd, dict):
             raise ValueError("sd must be None, a number or dict")
-        logger.debug("Mean: %s" % mean)
-        logger.debug("SD: %s" % sd)
+        logger.debug("Mean: %s" % _plain_values(mean))
+        logger.debug("SD: %s" % _plain_values(sd))
 
         # check that all eye/var combinations are present in mean/sd
         _check_per_pair(pairs, mean, sd)

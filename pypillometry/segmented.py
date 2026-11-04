@@ -14,7 +14,7 @@ import scipy.stats
 from .io import write_pickle, read_pickle
 from . import config, state
 from .units import parse_time, _ms_to_samples
-from .convenience import _warn_if_ignores_mask, _check_accepts_axis
+from .convenience import _warn_if_ignores_mask, _check_accepts_axis, _plain_values
 
 __all__ = [
     "SegmentedEyeData", "GroupLevelSegmentedData", "group_segments",
@@ -273,7 +273,7 @@ class SegmentedEyeData(state.VersionedState):
         """
         percent_masked = np.mean(self.data.mask) * 100 if self.data.mask is not np.bool_(False) else 0.0
         
-        return dict(
+        return _plain_values(dict(
             name=self.name,
             variable=self.variable,
             n_segments=self.n_segments,
@@ -281,7 +281,7 @@ class SegmentedEyeData(state.VersionedState):
             window=self.window,
             percent_masked=percent_masked,
             sampling_rate=self.sampling_rate
-        )
+        ))
     
     def __repr__(self) -> str:
         """Return a string representation of the dataset."""
@@ -820,7 +820,7 @@ class GroupLevelSegmentedData(SegmentedEyeData):
         """
         base_summary = super().summary()
         base_summary['n_subjects'] = self.n_subjects
-        base_summary['mean_mask_percent'] = np.mean(self.mask_percent)
+        base_summary['mean_mask_percent'] = float(np.mean(self.mask_percent))
         # Replace percent_masked with more meaningful group-level stat
         base_summary['percent_masked'] = base_summary['mean_mask_percent']
         return base_summary

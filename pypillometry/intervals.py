@@ -877,11 +877,11 @@ class Intervals(Stateful):
             }
         return {
             "n": len(self.intervals),
-            "mean": np.mean(durations),
-            "sd": np.std(durations),
-            "min": np.min(durations),
-            "max": np.max(durations),
-            "total_duration": np.sum(durations),
+            "mean": float(np.mean(durations)),
+            "sd": float(np.std(durations)),
+            "min": float(np.min(durations)),
+            "max": float(np.max(durations)),
+            "total_duration": float(np.sum(durations)),
             "units": self.units
         }
 

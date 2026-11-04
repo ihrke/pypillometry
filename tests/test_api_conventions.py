@@ -222,3 +222,36 @@ class TestNamespaceInplace:
         assert res.history[-1]["funcname"] == f"{ns}.{name}"
         # inplace=True returns the object itself
         assert getattr(getattr(data, ns), name)(**self.CALLS[ns][name], inplace=True) is data
+
+
+class TestPlainNumbers:
+    """Summaries and statistics hold Python numbers (they print as 500.0,
+    not np.float64(500.0))."""
+
+    @staticmethod
+    def assert_plain(value):
+        if isinstance(value, dict):
+            for v in value.values():
+                TestPlainNumbers.assert_plain(v)
+        elif isinstance(value, (list, tuple)):
+            for v in value:
+                TestPlainNumbers.assert_plain(v)
+        else:
+            assert not isinstance(value, np.generic), repr(value)
+
+    def test_summary(self, data):
+        d = data.pupil.blinks_detect().scale()
+        s = d.summary()
+        self.assert_plain(s)
+        assert isinstance(s["params"], dict) and set(s["params"]) == {"scale"}
+        assert "np.float64" not in repr(d)
+        assert "params            : {scale: {...}}" in repr(d)
+        s["params"]["scale"]["mean"]["left"]["pupil"] = 0.
+        assert d.params["scale"]["mean"]["left"]["pupil"] != 0.
+
+    def test_intervals_stats_and_segments(self, data):
+        iv = data.get_intervals("a", (-100, 200))
+        self.assert_plain(iv.to_intervals().stats())
+        seg = data.get_segments(iv, "left_pupil")
+        self.assert_plain(seg.summary())
+        assert "np.float64" not in repr(seg)

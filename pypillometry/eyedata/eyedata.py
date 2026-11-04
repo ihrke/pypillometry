@@ -9,6 +9,8 @@ from .pupil import PupilNamespace
 from .namespace import accessor
 import numpy as np
 from collections.abc import Iterable
+import copy
+from ..convenience import _plain_values
 from typing import Optional, Dict, Union
 from .spatial_calibration import SpatialCalibration
 from .experimental_setup import ExperimentalSetup
@@ -176,7 +178,7 @@ class EyeData(GenericEyeData):
             duration_minutes=self.get_duration("min"),
             start_min=self.tx.min()/1000./60.,
             end_min=self.tx.max()/1000./60.,
-            params=self._strfy_params()
+            params=copy.deepcopy(self.params)
         )
         if self._excluded_mask().any():
             summary["excluded_minutes"] = self.excluded_duration("min")
@@ -187,4 +189,4 @@ class EyeData(GenericEyeData):
             summary["nblinks"] = {}
             summary["blinks"] = {}
 
-        return summary
+        return _plain_values(summary)
