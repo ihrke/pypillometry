@@ -155,8 +155,8 @@ class GenericPlots(Namespace):
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
            >>> intervals = d.get_intervals("S_", (-500, 2500) * u.ms)
-           >>> d.plot.plot_intervals(intervals, variables="pupil", nrow=2, ncol=5,
-           ...                       figsize=(12, 4))
+           >>> figs = d.plot.plot_intervals(intervals, variables="pupil", nrow=2, ncol=5,
+           ...                              figsize=(12, 4))
         """
         intervals = _as_intervals(intervals)
         
@@ -300,7 +300,7 @@ class GenericPlots(Namespace):
            >>> from pypillometry import u
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
-           >>> plt.figure(figsize=(10, 6))
+           >>> fig = plt.figure(figsize=(10, 6))
            >>> d.plot.plot_timeseries(plot_range=(0, 20) * u.sec, units="sec")
         """
         obj = self._d
@@ -598,8 +598,8 @@ class GenericPlots(Namespace):
            >>> from pypillometry import u
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
-           >>> d.pupil.blinks_detect()
-           >>> plt.figure(figsize=(8, 4))
+           >>> d = d.pupil.blinks_detect()
+           >>> fig = plt.figure(figsize=(8, 4))
            >>> d.plot.plot_masked(variables="pupil", units="sec")
 
         With ``merge=True``, the masks of all eyes and variables are combined;
@@ -772,8 +772,8 @@ class GenericPlots(Namespace):
            >>> from pypillometry import u
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
-           >>> d.set_experimental_setup(camera_spherical=("20 deg", "-90 deg", "70 cm"))
-           >>> d.plot.plot_experimental_setup()
+           >>> d = d.set_experimental_setup(camera_spherical=("20 deg", "-90 deg", "70 cm"))
+           >>> fig, axs = d.plot.plot_experimental_setup()
 
         To show fitted angles, pass the result of
         :meth:`d.pupil.fit_foreshortening() <pypillometry.eyedata.pupil.PupilNamespace.fit_foreshortening>` as ``calibration=``, or

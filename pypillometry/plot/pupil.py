@@ -80,8 +80,8 @@ class PupilPlots(GenericPlots):
            >>> from pypillometry import u
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
-           >>> d.pupil.blinks_detect()
-           >>> plt.figure(figsize=(10, 3))
+           >>> d = d.pupil.blinks_detect()
+           >>> fig = plt.figure(figsize=(10, 3))
            >>> d.plot.pupil_plot(plot_range=(0, 20) * u.sec)
         """
         self._d._require("pupil")
@@ -245,7 +245,7 @@ class PupilPlots(GenericPlots):
            >>> from pypillometry import u
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
-           >>> d.pupil.blinks_detect()
+           >>> d = d.pupil.blinks_detect()
            >>> figs = d.plot.pupil_plot_segments(interv=10 * u.sec, units="sec",
            ...                                   figsize=(10, 3))
            >>> for f in figs[1:]:
@@ -352,9 +352,9 @@ class PupilPlots(GenericPlots):
            >>> from pypillometry import u
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
-           >>> d.pupil.blinks_detect()
-           >>> d.plot.plot_blinks(eyes="left", nrow=3, ncol=5, figsize=(12, 6),
-           ...                    units="sec")
+           >>> d = d.pupil.blinks_detect()
+           >>> figs = d.plot.plot_blinks(eyes="left", nrow=3, ncol=5, figsize=(12, 6),
+           ...                           units="sec")
         """
         self._d._require(*([variables] if isinstance(variables, str) else variables))
         # Get blinks for specified eyes and variables (in ms for consistent padding)
