@@ -1806,11 +1806,10 @@ class GenericEyeData(state.VersionedState, ABC):
         return result
 
     @keephistory
-    def drop_data(self, eyes: list = [], variables: list = []):
+    def drop_data(self, eyes: list = [], variables: list = [], inplace=None):
         """
-        Drop specified eyes and/or variables from the data and return a new object.
+        Drop specified eyes and/or variables from the data.
         
-        This method never works in place - it always returns a new object.
         All data of the given eyes and all data of the given variables are
         dropped (together with their mask layers). Everything else is kept
         (events, excluded periods, parameters, history, experimental setup,
@@ -1824,11 +1823,16 @@ class GenericEyeData(state.VersionedState, ABC):
         variables : str or list of str, optional
             Variables to drop (e.g., ['pupil'] or ['x', 'y']);
             if empty, no variable is dropped
+        inplace : bool or None, optional
+            if `True`, make change in-place and return the object;
+            if `False`, make and return copy before making changes;
+            if `None`, use the object-level setting (specified in the constructor)
             
         Returns
         -------
         :class:`~pypillometry.GenericEyeData`
-            A new object (same class) with the specified data removed.
+            the object without the specified data (`self` or a copy,
+            depending on `inplace`)
             
         Raises
         ------
@@ -1838,13 +1842,13 @@ class GenericEyeData(state.VersionedState, ABC):
         Examples
         --------
         >>> # Drop left eye data
-        >>> right_only = data.drop_data(eyes=['left'])
+        >>> right_only = data.drop_data(eyes=['left'], inplace=False)
         >>> 
         >>> # Drop pupil data, keep only gaze
-        >>> gaze_only = data.drop_data(variables=['pupil'])
+        >>> gaze_only = data.drop_data(variables=['pupil'], inplace=False)
         >>> 
         >>> # Drop right eye and pupil data
-        >>> left_gaze = data.drop_data(eyes=['right'], variables=['pupil'])
+        >>> left_gaze = data.drop_data(eyes=['right'], variables=['pupil'], inplace=False)
         """
         # Normalize inputs to lists
         if isinstance(eyes, str):
@@ -1852,12 +1856,9 @@ class GenericEyeData(state.VersionedState, ABC):
         if isinstance(variables, str):
             variables = [variables]
             
-        # Make a deep copy first
-        result = self.copy(new_name=self.name)
-        
         # Get current keys
         keys_to_remove = []
-        for key in list(result.data.data.keys()):
+        for key in list(self.data.data.keys()):
             parts = key.split("_", 1)
             if len(parts) != 2:
                 continue
@@ -1866,18 +1867,13 @@ class GenericEyeData(state.VersionedState, ABC):
             # Check if this key should be removed
             if eye in eyes or var in variables:
                 keys_to_remove.append(key)
-        
-        # Remove the keys from data and mask
-        for key in keys_to_remove:
-            del result.data[key]
-        
-        # Check what remains
-        remaining_vars = result.data.get_available_variables()
-        remaining_eyes = result.data.get_available_eyes()
-        
-        if len(remaining_vars) == 0 or len(remaining_eyes) == 0:
+        if len(keys_to_remove) == len(self.data.data):
             raise ValueError("Dropping the specified data would leave no data remaining")
 
+        # Remove the keys from data and mask
+        result = self._get_inplace(inplace)
+        for key in keys_to_remove:
+            del result.data[key]
         return result
 
     def _check_events(self, events) -> Events:

@@ -52,10 +52,10 @@ class TestInplaceDefault(unittest.TestCase):
     def test_drop_data_inherits_setting(self):
         d = pp.EyeData(left_x=self.x, left_y=self.x, left_pupil=self.x,
                        sampling_rate=100, inplace=True)
-        self.assertTrue(d.drop_data(variables=["x", "y"]).inplace)
+        self.assertTrue(d.drop_data(variables=["x", "y"], inplace=False).inplace)
         d = pp.EyeData(left_x=self.x, left_y=self.x, left_pupil=self.x,
                        sampling_rate=100)
-        self.assertIsNone(d.drop_data(variables=["x", "y"]).inplace)
+        self.assertIsNone(d.drop_data(variables=["x", "y"], inplace=False).inplace)
 
     def test_internal_mask_calls_with_copy_default(self):
         # methods that mask internally must still mask the returned copy

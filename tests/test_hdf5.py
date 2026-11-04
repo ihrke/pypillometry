@@ -52,8 +52,8 @@ class TestObjects(HDF5TestCase):
 
     def test_pupil_only_and_gaze_only(self):
         d = make_eyedata(keep_orig=False)
-        self.roundtrip(d.drop_data(variables=["x", "y"]))
-        self.roundtrip(d.drop_data(variables=["pupil"]))
+        self.roundtrip(d.drop_data(variables=["x", "y"], inplace=False))
+        self.roundtrip(d.drop_data(variables=["pupil"], inplace=False))
 
     def test_fakeeyedata(self):
         f2 = self.roundtrip(generate_foreshortening_data(duration=1, fs=100, seed=1))

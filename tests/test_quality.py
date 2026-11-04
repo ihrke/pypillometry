@@ -155,7 +155,7 @@ class TestQualityReport(unittest.TestCase):
 
     def test_pupil_only_and_gaze_only(self):
         d = _make_data()
-        r = d.drop_data(eyes="right", variables=["x", "y"]).quality_report()
+        r = d.drop_data(eyes="right", variables=["x", "y"], inplace=False).quality_report()
         self.assertIn("pupil", r)
         self.assertNotIn("gaze", r)
         self.assertNotIn("binocular", r)

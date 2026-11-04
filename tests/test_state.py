@@ -98,8 +98,8 @@ class TestPickleRoundTrip(unittest.TestCase):
 
     def test_pupil_only_and_gaze_only(self):
         d = make_eyedata(keep_orig=False)
-        self.roundtrip(d.drop_data(variables=["x", "y"]))
-        self.roundtrip(d.drop_data(variables=["pupil"]))
+        self.roundtrip(d.drop_data(variables=["x", "y"], inplace=False))
+        self.roundtrip(d.drop_data(variables=["pupil"], inplace=False))
 
     def test_fakeeyedata(self):
         f = generate_foreshortening_data(duration=1, fs=100, seed=1)
@@ -153,7 +153,7 @@ class TestStateCoverage(unittest.TestCase):
         seg = d.get_segments(d.get_intervals("F_", window=(-200, 800), units="ms"),
                              "left_pupil")
         return [
-            d, d.drop_data(variables=["x", "y"]), d.drop_data(variables=["pupil"]),
+            d, d.drop_data(variables=["x", "y"], inplace=False), d.drop_data(variables=["pupil"], inplace=False),
             pp.EyeData(left_pupil=np.ones(10), sampling_rate=10),
             pp.EyeData(left_x=np.ones(10), left_y=np.ones(10), sampling_rate=10),
             generate_foreshortening_data(duration=1, fs=100, seed=1),

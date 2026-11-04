@@ -330,25 +330,25 @@ class TestEyeData(unittest.TestCase):
 
     def test_drop_gaze(self):
         """Dropping the gaze data keeps the class and the pupil data"""
-        pd = self.eyedata.drop_data(variables=["x", "y"])
+        pd = self.eyedata.drop_data(variables=["x", "y"], inplace=False)
         self.assertIs(pd.__class__, pp.EyeData)
         self.assertEqual(sorted(pd.eyes), ["left", "right"])
         self.assertEqual(pd.variables, ["pupil"])
         np.testing.assert_array_equal(pd.tx, self.time)
         np.testing.assert_array_equal(pd.data['left_pupil'], self.left_pupil)
 
-        left = self.eyedata.drop_data(eyes="right", variables=["x", "y"])
+        left = self.eyedata.drop_data(eyes="right", variables=["x", "y"], inplace=False)
         self.assertEqual(left.eyes, ["left"])
         np.testing.assert_array_equal(left.data['left_pupil'], self.left_pupil)
 
         with self.assertRaises(ValueError):
-            self.eyedata.drop_data(eyes=["left", "right"])
+            self.eyedata.drop_data(eyes=["left", "right"], inplace=False)
 
     def test_drop_data_keeps_masks_and_copies(self):
         """Masks and history are kept, and the original is unchanged"""
         d = self.eyedata.copy()
         d.data.add_mask("left_pupil", np.s_[10:20])
-        pd = d.drop_data(variables=["x", "y"])
+        pd = d.drop_data(variables=["x", "y"], inplace=False)
         np.testing.assert_array_equal(pd.data.mask["left_pupil"],
                                       d.data.mask["left_pupil"])
         self.assertEqual(pd.history[-1]["funcname"], "drop_data")
@@ -358,7 +358,7 @@ class TestEyeData(unittest.TestCase):
 
     def test_drop_pupil(self):
         """Dropping the pupil data keeps the class and the gaze data"""
-        g = self.eyedata.drop_data(eyes="left", variables="pupil")
+        g = self.eyedata.drop_data(eyes="left", variables="pupil", inplace=False)
         self.assertIs(g.__class__, pp.EyeData)
         self.assertEqual(g.eyes, ["right"])
         self.assertEqual(sorted(g.variables), ["x", "y"])
@@ -2558,7 +2558,7 @@ class TestHistoryLog(unittest.TestCase):
         d.set_blinks(Intervals([(10, 20)], units="samples"), eyes=["left"], variables=["pupil"])
         d.set_events(pp.Events([100., 200.], ["a", "b"]), inplace=True)
         d.set_experimental_setup(screen_resolution=(1280, 1024))
-        d2 = d.drop_data(variables=["x"])
+        d2 = d.drop_data(variables=["x"], inplace=False)
         del d2["left_y"]
         self.assertEqual([h["funcstring"] for h in d.history],
                          ["__setitem__('left_pupil',array(100,))",
@@ -2572,7 +2572,7 @@ def test_summary_keys():
     d = pp.EyeData(left_x=np.ones(100), left_y=np.ones(100),
                    left_pupil=np.ones(100), sampling_rate=100)
     g = pp.EyeData(left_x=np.ones(100), left_y=np.ones(100), sampling_rate=100)
-    for obj in [d, d.drop_data(variables=["x", "y"]), g]:
+    for obj in [d, d.drop_data(variables=["x", "y"], inplace=False), g]:
         s = obj.summary()
         assert "params" in s
         assert "parameters" not in s
