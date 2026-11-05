@@ -20,7 +20,7 @@ class GenericPlots(Namespace):
     (:class:`~pypillometry.plot.PlotNamespace`).
     """
 
-    #: most figures a ``*_segments`` plot makes (a plain-number `interv` is ms)
+    #: most figures a ``*_segments`` plot makes
     MAX_SEGMENTS = 500
 
     @classmethod
@@ -31,12 +31,12 @@ class GenericPlots(Namespace):
         n = int(np.ceil(duration / interv))
         if n > cls.MAX_SEGMENTS:
             raise ValueError(f"interv gives {n} figures (at most {cls.MAX_SEGMENTS}); "
-                             "plain numbers are ms, e.g. use interv='1 min'")
+                             "plain numbers are in `units`")
 
     @staticmethod
     def _plot_range_in(plot_range, units: str = "ms") -> tuple:
-        """`plot_range` in `units` (the units of the time axis); plain numbers are ms."""
-        start, end = parse_time(plot_range, to=units, default="ms")
+        """`plot_range` in `units` (the units of the time axis); plain numbers are in `units`."""
+        start, end = parse_time(plot_range, to=units, default=units)
         return float(start), float(end)
 
     def _validate_plot_range(self, plot_range: tuple, units: str = "ms") -> None:
@@ -254,7 +254,9 @@ class GenericPlots(Namespace):
         Parameters
         ----------
         plot_range : tuple
-            The time range to plot (in `units`). Default is (-np.inf, +np.inf), i.e. all data.
+            The time range to plot; plain numbers are in `units`, values with
+            units are converted (e.g. ``(0, 20) * u.sec``). Default is
+            (-np.inf, +np.inf), i.e. all data.
         variables : list
             The data to plot. Default is [], which means all available data will be plotted.
             Available data are ["x","y","pupil"] but can be extended by the user.
@@ -458,8 +460,8 @@ class GenericPlots(Namespace):
         pdf_file : str or None
             file name to store the PDF; if None, no PDF is written
         interv : float, str or Quantity
-            duration of each of the segments to be plotted (in ms, or with
-            units, e.g. ``10 * u.sec``); default 1 min
+            duration of each of the segments to be plotted (plain numbers
+            are in `units`, or with units, e.g. ``10 * u.sec``); default 1 min
         figsize : Tuple[int,int]
             dimensions of the figures
         ylim : Tuple[float,float] or None
@@ -501,7 +503,7 @@ class GenericPlots(Namespace):
         # Calculate start and end times in the specified units
         obj=self._d
         fac=obj._unit_fac(units)
-        interv = parse_time(interv, to=units, default="ms")
+        interv = parse_time(interv, to=units, default=units)
         stime = obj.tx.min() * fac
         etime = obj.tx.max() * fac
         self._check_nsegments(etime - stime, interv)
@@ -520,7 +522,7 @@ class GenericPlots(Namespace):
         for start,end in segments:
             # Create a new figure for each segment
             fig = plt.figure(figsize=figsize)
-            self.plot_timeseries(plot_range=(start/fac, end/fac), units=units, 
+            self.plot_timeseries(plot_range=(start, end), units=units, 
                                eyes=eyes, variables=variables, **kwargs)
             if ylim is not None:
                 for ax in fig.axes:

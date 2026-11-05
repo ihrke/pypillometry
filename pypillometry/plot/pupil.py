@@ -42,8 +42,8 @@ class PupilPlots(GenericPlots):
         Parameters
         ----------
         plot_range : tuple (start,end)
-            plot from start to end (in ms, or with units, e.g.
-            ``(3, 5) * u.min``)
+            plot from start to end (plain numbers are in `units`, or with
+            units, e.g. ``(3, 5) * u.min``)
         eyes : str or list
             eye(s) to plot; if empty, all eyes with pupil data are plotted
         show_events : bool
@@ -218,8 +218,8 @@ class PupilPlots(GenericPlots):
         pdf_file : str or None
             file name to store the PDF; if None, no PDF is written
         interv : float, str or Quantity
-            duration of each of the segments to be plotted (in ms, or with
-            units, e.g. ``"2 min"``); default 1 min
+            duration of each of the segments to be plotted (plain numbers
+            are in `units`, or with units, e.g. ``"2 min"``); default 1 min
         figsize : Tuple[int,int]
             dimensions of the figures
         ylim : Tuple[float,float] or None
@@ -258,7 +258,7 @@ class PupilPlots(GenericPlots):
         self._d._require("pupil")
         obj = self._d
         unit_factor = obj._unit_fac(units)
-        interv = parse_time(interv, to=units, default="ms")
+        interv = parse_time(interv, to=units, default=units)
         start_unit = float(np.min(obj.tx) * unit_factor)
         end_unit = float(np.max(obj.tx) * unit_factor)
         self._check_nsegments(end_unit - start_unit, interv)
@@ -275,7 +275,7 @@ class PupilPlots(GenericPlots):
 
         for start,end in segments:
             fig = plt.figure(figsize=figsize)
-            self.pupil_plot(plot_range=(start / unit_factor, end / unit_factor), units=units,
+            self.pupil_plot(plot_range=(start, end), units=units,
                             **kwargs)
             if ylim is not None:
                 for ax in fig.axes:
@@ -406,8 +406,8 @@ class PupilPlots(GenericPlots):
             Default is [] which plots all eyes with pupil and gaze data; a
             requested eye without them raises a KeyError.
         plot_range : tuple, optional
-            The time range to include in the analysis (in ms, or with
-            units, e.g. ``(3, 5) * u.min``). Default is (-np.inf, +np.inf),
+            The time range to include in the analysis (plain numbers are
+            in `units`, or with units, e.g. ``(3, 5) * u.min``). Default is (-np.inf, +np.inf),
             i.e. all data.
         units : str, optional
             Time units of the plot. Default is "sec".

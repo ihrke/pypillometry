@@ -117,12 +117,13 @@ follow them too; ``tests/test_api_conventions.py`` checks them.
    :meth:`~GenericEyeData.nblinks` gives 0 for a channel without blinks).
    The keys are the same strings as in ``d["left_pupil"]`` and ``d.data``.
 
-4. **Plain numbers are ms**: windows, durations, margins, ``plot_range``,
-   ``interv``, and the default units of returned times and intervals
+4. **Plain numbers are ms**: windows, durations, margins, and the default
+   units of returned times and intervals
    (:meth:`~GenericEyeData.get_blinks`, :meth:`~GenericEyeData.get_duration`,
    ...). Other units are given with the values (``(-200, 800) * u.ms``,
    ``"2 min"``). Sample indices only with an explicit ``units="samples"``.
-   In plotting functions, ``units`` is only the unit of the time axis.
+   Exception: in plotting functions, plain numbers in ``plot_range`` and
+   ``interv`` are in ``units`` (the unit of the time axis).
 
 5. **eyes and variables**: ``None`` or ``[]`` select all existing
    channels; a string or a list is accepted; unknown names raise a

@@ -60,11 +60,9 @@ These changes silently give other results with code that ran under 2.1.
 Check your scripts for them:
 
 - **Plain numbers are ms** everywhere: windows of
-  :meth:`~GenericEyeData.get_intervals`, durations, ``plot_range`` and
-  ``interv`` of the plots. Sample indices need ``units="samples"``. A 2.1
-  call like ``d.pupil_plot(plot_range=(0, 20), units="sec")`` now plots the
-  first 20 ms: use ``plot_range=(0, 20) * u.sec`` (``units=`` of the plots
-  only sets the unit of the time axis).
+  :meth:`~GenericEyeData.get_intervals`, durations, margins. Sample indices
+  need ``units="samples"``. Exception: in plots, plain numbers in
+  ``plot_range`` and ``interv`` are in ``units=``, as in 2.1.
 - **Interpolated samples are used** in segments,
   :meth:`~GenericEyeData.stat_per_event`, :meth:`~GenericEyeData.scale`,
   :meth:`~GenericEyeData.merge_eyes`, :meth:`~GenericEyeData.downsample` and

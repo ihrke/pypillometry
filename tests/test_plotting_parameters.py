@@ -3,6 +3,7 @@ Tests for plotting function parameters.
 These tests verify that different parameter combinations work correctly.
 """
 import unittest
+import pytest
 import matplotlib
 matplotlib.use('Agg')  # Use non-interactive backend for testing
 import matplotlib.pyplot as plt
@@ -292,7 +293,7 @@ class TestSegmentPlotParameters(unittest.TestCase):
     
     def test_segments_different_intervals(self):
         """Test plot_timeseries_segments with different interval sizes"""
-        for interv in ["0.5 min", 60000, 2 * pp.u.min]:
+        for interv in ["0.5 min", 1, 2 * pp.u.min]:
             figs = self.data.plot.plot_timeseries_segments(interv=interv)
             self.assertIsNotNone(figs)
             self.assertGreater(len(figs), 0)
@@ -300,7 +301,7 @@ class TestSegmentPlotParameters(unittest.TestCase):
     
     def test_segments_interv_with_units(self):
         """interv with units gives the same segments as plain numbers (bug 1.8)"""
-        ref = self.data.plot.plot_timeseries_segments(interv=10000, units="sec")
+        ref = self.data.plot.plot_timeseries_segments(interv=10, units="sec")
         n = len(ref)
         plt.close('all')
         for interv in [10 * pp.u.sec, "10 sec", 1 / 6 * pp.u.min]:
@@ -380,6 +381,23 @@ def test_plot_range_includes_end_sample():
             xs = [line.get_xdata() for ax in plt.gcf().axes for line in ax.lines
                   if len(line.get_xdata()) > 2]
             assert xs and all(x[0] == 100 and x[-1] == 500 for x in xs), plot
+            plt.close("all")
+    finally:
+        plt.close("all")
+
+
+@pytest.mark.parametrize("plot_range", [(1, 3), (1 * pp.u.sec, 3 * pp.u.sec), ("1000 ms", 3)])
+def test_plot_range_plain_numbers_in_units(plot_range):
+    # plain numbers in plot_range are in `units` (2.1 scripts: units="sec")
+    d = pp.EyeData(left_pupil=np.arange(1000.), left_x=np.arange(1000.),
+                   left_y=np.arange(1000.), sampling_rate=100)
+    try:
+        for plot in (d.plot.plot_timeseries, d.plot.pupil_plot):
+            plt.figure()
+            plot(plot_range=plot_range, units="sec")
+            xs = [line.get_xdata() for ax in plt.gcf().axes for line in ax.lines
+                  if len(line.get_xdata()) > 2]
+            assert xs and all(x[0] == 1 and x[-1] == 3 for x in xs), plot
             plt.close("all")
     finally:
         plt.close("all")

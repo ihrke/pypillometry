@@ -28,8 +28,8 @@ tables below for every changed call.
   quality report); `policy="strict"` leaves them out. Several results change
   (see "Changed results")
 - Plain numbers are ms everywhere: windows (`get_intervals`), durations,
-  `plot_range`, `interv`; sample indices need `units="samples"`.
-  `units=` of the plots is only the unit of the time axis
+  margins; sample indices need `units="samples"`. In plots, plain numbers in
+  `plot_range` and `interv` are in `units=` (as in 2.1).
 - Results per channel are dicts keyed like the data (`"left_pupil"`):
   `get_blinks`, `get_interpolated_blinks`, `mask_as_intervals`, `nblinks`,
   `blink_stats`; `nblinks()` includes channels without blinks (0); the
