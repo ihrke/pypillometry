@@ -238,7 +238,7 @@ class GenericPlots(Namespace):
             plot_range: tuple=(-np.inf, +np.inf),
             variables: list=[], 
             eyes: list=[],
-            units: str="ms",
+            units: str="sec",
             show_onsets: str="line",
             show_masked: bool=True,
             show_mask_highlight: bool=True,
@@ -263,8 +263,8 @@ class GenericPlots(Namespace):
             The eyes to plot. Default is [], which means all available data ("left", "right",
             "average", "regression", ...)
         units : str
-            The units of the time axis ("ms", "sec", "min", "h").
-            Default "ms" (the units of the time vector).
+            The units of the time axis and of plain numbers in `plot_range`
+            ("ms", "sec", "min", "h"). Default "sec".
         show_onsets : str
             Whether to plot markers for the event onsets. One of "line" (vertical lines),
             "label" (text label), "both" (both lines and labels), or "none" (no markers).
@@ -450,7 +450,7 @@ class GenericPlots(Namespace):
         
     def plot_timeseries_segments(self, pdf_file: str=None, interv: float="1 min", figsize=(15,5), 
                                   ylim=None, eyes: list=[], variables: list=[], 
-                                  units: str="min", **kwargs):
+                                  units: str="sec", **kwargs):
         """
         Plot the whole dataset chunked up into segments (usually to a PDF file).
 
@@ -470,7 +470,8 @@ class GenericPlots(Namespace):
         variables : list
             list of variables to plot; if empty, all available variables are plotted
         units : str
-            units for the time axis; default is "min" (minutes).
+            units for the time axis (and plain numbers in `interv`); default
+            "sec"
         **kwargs
             additional arguments passed to :meth:`plot_timeseries`
 
@@ -547,7 +548,7 @@ class GenericPlots(Namespace):
         return figs if pdf_file is None else None
 
     def plot_masked(self, eyes: str|list = [], variables: str|list = [], 
-                    units: str = "min", merge: bool = False, 
+                    units: str = "sec", merge: bool = False, 
                     show_labels: bool = True, show_events: bool = False,
                     policy="default", **kwargs):
         """
@@ -567,7 +568,7 @@ class GenericPlots(Namespace):
         units : str, optional
             Time units for x-axis: "ms", "sec", "min", "h", or "samples" for
             sample indices.
-            Default is "min".
+            Default is "sec".
         merge : bool, optional
             If True, merge all masks into a single set of intervals for plotting.
             If False, plot each eye/variable separately with different colors.

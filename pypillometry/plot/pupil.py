@@ -207,7 +207,7 @@ class PupilPlots(GenericPlots):
         interv: float = "1 min",
         figsize=(15, 5),
         ylim=None,
-        units: str = "min",
+        units: str = "sec",
         **kwargs,
     ):
         """
@@ -225,7 +225,7 @@ class PupilPlots(GenericPlots):
         ylim : Tuple[float,float] or None
             y-axis limits for the plots; if None, matplotlib's automatic limits are used
         units : str, optional
-            Units of the time axis, passed to :meth:`pupil_plot`. Default "min".
+            Units of the time axis, passed to :meth:`pupil_plot`. Default "sec".
         **kwargs
             arguments passed to :meth:`pupil_plot`
 
@@ -304,7 +304,7 @@ class PupilPlots(GenericPlots):
                    pdf_file: str|None = None, nrow: int = 5, ncol: int = 3, 
                    figsize: tuple = (10, 10),
                    pre_blink: float = 200, post_blink: float = 200, 
-                   units: str = "min", show_index: bool = True) -> list:
+                   units: str = "sec", show_index: bool = True) -> list:
         """
         Plot detected blinks in separate subplots.
         
@@ -327,7 +327,7 @@ class PupilPlots(GenericPlots):
         post_blink : float
             Time after blink to include (in ms)
         units : str
-            Display units for time axis
+            Display units for time axis; default "sec"
         show_index : bool
             Show blink index numbers
             
