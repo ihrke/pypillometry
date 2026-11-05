@@ -255,8 +255,8 @@ class TestPlainNumbers:
         assert isinstance(s["params"], dict) and set(s["params"]) == {"scale"}
         assert "np.float64" not in repr(d)
         assert "params            : {scale: {...}}" in repr(d)
-        s["params"]["scale"]["mean"]["left"]["pupil"] = 0.
-        assert d.params["scale"]["mean"]["left"]["pupil"] != 0.
+        s["params"]["scale"]["mean"]["left_pupil"] = 0.
+        assert d.params["scale"]["mean"]["left_pupil"] != 0.
 
     def test_intervals_stats_and_segments(self, data):
         iv = data.get_intervals("a", (-100, 200))

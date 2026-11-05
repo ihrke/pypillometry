@@ -51,8 +51,9 @@ Version history
     Intervals have no `event_indices`, `data_time_range` and
     `interval_window`; segments store their Epochs (`onsets` and `window`
     in ms, `labels`, `meta`, `label`) or, if not event-locked, Intervals,
-    with the class name in ``intervals["class"]``; the response parameters
-    (``params["response"]``) are keyed by channel (``"left_pupil"``)
+    with the class name in ``intervals["class"]``; the response and scaling
+    parameters (``params["response"]``, ``params["scale"]``) are keyed by
+    channel (``"left_pupil"``)
 """
 
 import contextlib
@@ -695,15 +696,34 @@ def _v2_eyedata_layers(state):
         state["sim_data"] = _v2_eyedatadict(state["sim_data"])[0]
 
 
+def _by_channel(values):
+    """``{eye: {var: x}}`` -> ``{"<eye>_<var>": x}`` (keys that are already
+    channels are kept)."""
+    out = {}
+    for eye, vs in values.items():
+        if isinstance(vs, dict):
+            out.update({f"{eye}_{var}": x for var, x in vs.items()})
+        else:
+            out[eye] = vs
+    return out
+
+
 def _v2_params(state):
-    """Key the response parameters of a version-2 eyedata state by channel
-    (``params["response"]["left"]`` -> ``["left_pupil"]``; replaces
-    `state["params"]` by a new dict)."""
+    """Key the response and scaling parameters of a version-2 eyedata state
+    by channel (``params["response"]["left"]`` -> ``["left_pupil"]``,
+    ``params["scale"]["mean"]["left"]["pupil"]`` -> ``["mean"]["left_pupil"]``;
+    replaces `state["params"]` by a new dict)."""
     params = state.get("params")
-    if isinstance(params, dict) and isinstance(params.get("response"), dict):
-        response = {(k if "_" in k else f"{k}_pupil"): v
-                    for k, v in params["response"].items()}
-        state["params"] = {**params, "response": response}
+    if not isinstance(params, dict):
+        return
+    params = dict(params)
+    if isinstance(params.get("response"), dict):
+        params["response"] = {(k if "_" in k else f"{k}_pupil"): v
+                              for k, v in params["response"].items()}
+    if isinstance(params.get("scale"), dict):
+        params["scale"] = {stat: _by_channel(values)
+                           for stat, values in params["scale"].items()}
+    state["params"] = params
 
 
 def _migrate_2_to_3(state, class_name):
@@ -712,8 +732,8 @@ def _migrate_2_to_3(state, class_name):
     masks are layers (see _v2_eyedata_layers); segments store Epochs (see
     _v2_spans); a sampling rate that does not fit the time vector is
     corrected (see _v2_fix_fs); all eyedata objects have an experimental
-    setup and calibration (None for PupilData); the response parameters are
-    keyed by channel (see _v2_params)."""
+    setup and calibration (None for PupilData); the response and scaling
+    parameters are keyed by channel (see _v2_params)."""
     state = dict(state)
     if class_name in _SEGMENTED_CLASSES:
         state["intervals"] = _v2_spans(state.get("intervals"), state.get("sampling_rate"))

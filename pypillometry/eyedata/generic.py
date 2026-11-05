@@ -154,20 +154,19 @@ def _some(values, n=10):
 
 
 def _per_pair(pairs, fct):
-    """Nested dict ``{eye: {var: fct(eye, var)}}`` for the (eye, var) `pairs`."""
-    result = {}
-    for eye, var in pairs:
-        result.setdefault(eye, {})[var] = fct(eye, var)
-    return result
+    """Dict ``{"<eye>_<var>": fct(eye, var)}`` for the (eye, var) `pairs`."""
+    return {f"{eye}_{var}": fct(eye, var) for eye, var in pairs}
 
 
 def _check_per_pair(pairs, mean, sd):
     """Raise a ValueError if `mean` or `sd` miss a value for one of the `pairs`."""
-    for eye, var in pairs:
-        if eye not in mean or eye not in sd:
-            raise ValueError("mean and sd must be provided for each eye")
-        if var not in mean[eye] or var not in sd[eye]:
-            raise ValueError("mean and sd must be provided for each variable")
+    for name, values in (("mean", mean), ("sd", sd)):
+        if any(isinstance(v, dict) for v in values.values()):
+            raise ValueError(f"{name} must be keyed by channel, e.g. "
+                             "{'left_pupil': 1000.}, not {'left': {'pupil': 1000.}}")
+        for eye, var in pairs:
+            if f"{eye}_{var}" not in values:
+                raise ValueError(f"{name} has no value for {eye}_{var}")
 
 
 def _decimate_factor(fs, fsd, dsfac):
@@ -2583,14 +2582,14 @@ class GenericEyeData(state.VersionedState, ABC):
             mean to subtract from signal; if `None`, use the signal's mean
             (of the usable samples under `policy`);
             if float, use the same value for all eyes and variables;
-            if dict, provide mean for each eye and variable as
-            ``{eye: {variable: value}}``
+            if dict, provide mean for each channel as
+            ``{"left_pupil": value, ...}``
         sd : None, float or dict, optional
             sd to scale with; if `None`, use the signal's std (of the
             usable samples under `policy`);
             if float, use the same value for all eyes and variables;
-            if dict, provide sd for each eye and variable as
-            ``{eye: {variable: value}}``
+            if dict, provide sd for each channel as
+            ``{"left_pupil": value, ...}``
         eyes : str or list of str, optional
             eye(s) to consider; if empty, all available eyes
         policy : str, MaskPolicy or list of str
@@ -2610,7 +2609,8 @@ class GenericEyeData(state.VersionedState, ABC):
         Notes
         -----
         Scaling-parameters are being saved in the `params["scale"]` attribute
-        (per eye and variable) and are used by :meth:`unscale`. Scaling a
+        (``{"mean": {"left_pupil": ...}, "sd": {...}}``) and are used by
+        :meth:`unscale`. Scaling a
         variable again combines the parameters, so that :meth:`unscale`
         restores the values before the first `scale`.
         """
@@ -2640,18 +2640,18 @@ class GenericEyeData(state.VersionedState, ABC):
         # store scaling parameters (per channel; combined with those of an
         # earlier scale() of the same channel, so that unscale() undoes both)
         stored = obj.params.get("scale") or {}
-        smean = {eye: dict(v) for eye, v in stored.get("mean", {}).items()}
-        ssd = {eye: dict(v) for eye, v in stored.get("sd", {}).items()}
+        smean, ssd = dict(stored.get("mean", {})), dict(stored.get("sd", {}))
         for eye, var in pairs:
-            m0, s0 = smean.get(eye, {}).get(var, 0.), ssd.get(eye, {}).get(var, 1.)
-            smean.setdefault(eye, {})[var] = m0 + mean[eye][var] * s0
-            ssd.setdefault(eye, {})[var] = s0 * sd[eye][var]
+            key = f"{eye}_{var}"
+            m0, s0 = smean.get(key, 0.), ssd.get(key, 1.)
+            smean[key] = m0 + mean[key] * s0
+            ssd[key] = s0 * sd[key]
         obj.params["scale"] = {"mean": smean, "sd": ssd}
 
         for eye, var in pairs:
             # scale the masked samples too, keep the layers
             key = f"{eye}_{var}"
-            obj.data.set_with_mask(key, (obj.data[key] - mean[eye][var]) / sd[eye][var],
+            obj.data.set_with_mask(key, (obj.data[key] - mean[key]) / sd[key],
                                    preserve_mask=True)
         return obj
         
@@ -2673,11 +2673,11 @@ class GenericEyeData(state.VersionedState, ABC):
             available variables can be checked with `obj.variables`; empty list means all variables
         mean : None, float or dict, optional
             mean to add to the signal; a number (same for all eyes and
-            variables) or ``{eye: {variable: value}}``;
+            variables) or ``{"left_pupil": value, ...}``;
             if `None`, use the mean stored by :meth:`scale`
         sd : None, float or dict, optional
             sd to multiply the signal with; a number (same for all eyes and
-            variables) or ``{eye: {variable: value}}``;
+            variables) or ``{"left_pupil": value, ...}``;
             if `None`, use the sd stored by :meth:`scale`
         eyes : str or list of str, optional
             eye(s) to consider; if empty, all available eyes
@@ -2714,17 +2714,15 @@ class GenericEyeData(state.VersionedState, ABC):
         for eye, var in pairs:
             # unscale the masked samples too, keep the layers
             key = f"{eye}_{var}"
-            obj.data.set_with_mask(key, obj.data[key] * sd[eye][var] + mean[eye][var],
+            obj.data.set_with_mask(key, obj.data[key] * sd[key] + mean[key],
                                    preserve_mask=True)
         # the unscaled channels have no scaling parameters any more
         stored = obj.params.get("scale")
         if stored:
-            smean = {eye: {v: x for v, x in vs.items() if (eye, v) not in pairs}
-                     for eye, vs in stored.get("mean", {}).items()}
-            ssd = {eye: {v: x for v, x in vs.items() if (eye, v) not in pairs}
-                   for eye, vs in stored.get("sd", {}).items()}
-            obj.params["scale"] = {"mean": {e: v for e, v in smean.items() if v},
-                                   "sd": {e: v for e, v in ssd.items() if v}}
+            keys = {f"{eye}_{var}" for eye, var in pairs}
+            obj.params["scale"] = {stat: {k: v for k, v in stored.get(stat, {}).items()
+                                          if k not in keys}
+                                   for stat in ("mean", "sd")}
         return obj    
 
     

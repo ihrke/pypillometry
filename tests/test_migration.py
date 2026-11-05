@@ -97,7 +97,8 @@ class TestMigratedState:
         st = state.migrate(old, "EyeData")
         assert st["params"]["response"] == {"left_pupil": {"npar": 10.},
                                             "right_pupil": {"npar": 11.}}
-        assert st["params"]["scale"] == old["params"]["scale"]
+        assert st["params"]["scale"] == {"mean": {"left_pupil": 1.}}
+        assert old["params"]["scale"] == {"mean": {"left": {"pupil": 1.}}}
         assert sorted(old["params"]["response"]) == ["left", "right"]
 
     def test_input_not_changed(self):

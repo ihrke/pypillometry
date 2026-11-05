@@ -57,6 +57,10 @@ tables below for every changed call.
   as `both_dist` (eye `"both"`)
 - `SegmentedEyeData.intervals` is `SegmentedEyeData.epochs` (also the
   constructor argument; files are unchanged)
+- `params["scale"]` and the `mean=`/`sd=` dicts of `scale()`/`unscale()`
+  are keyed by channel (`{"left_pupil": 1000.}`, was
+  `{"left": {"pupil": 1000.}}`), like `params["response"]`; stored
+  parameters of older files are converted when they are read
 - `Intervals.as_pandas()`: the columns `event_label`/`event_onset` are
   `label`/`onset` (as in `Epochs.as_pandas()` and `Events.to_table()`)
 - `pp.downsample` is the pipeline step for `d.downsample()`; the array
@@ -234,6 +238,7 @@ Calls whose arguments or results changed:
 | `d.to_gazedata()` | `d.drop_data(variables="pupil", inplace=False)` |
 | `pp.downsample(x, factor)` (array) | `pp.signal.downsample(x, factor)` |
 | `segments.intervals` | `segments.epochs` |
+| `d.scale(mean={"left": {"pupil": m}}, sd=...)`, `d.params["scale"]["mean"]["left"]["pupil"]` | `d.scale(mean={"left_pupil": m}, sd=...)`, `d.params["scale"]["mean"]["left_pupil"]` |
 | `pp.smooth_window(...)`, `pp.pupil_kernel(...)`, ... (array functions) | `pp.signal.smooth_window(...)`, `pp.signal.pupil_kernel(...)`, ... |
 | `d.params["response"]["left"]` | `d.params["response"]["left_pupil"]` |
 | `iv.as_pandas()["event_label"]`, `["event_onset"]` | `iv.as_pandas()["label"]`, `["onset"]` |
