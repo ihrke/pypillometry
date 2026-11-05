@@ -342,7 +342,7 @@ class TestEyedataMeta(unittest.TestCase):
         d = data_with_meta()
         seg = d.get_segments(d.get_intervals("S_", window=(-100, 500), units="ms"),
                              "left_pupil")
-        np.testing.assert_array_equal(seg.intervals.meta["reward"], [15, 0])
+        np.testing.assert_array_equal(seg.epochs.meta["reward"], [15, 0])
 
 
 class TestIntervalsMeta(unittest.TestCase):

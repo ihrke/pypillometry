@@ -206,7 +206,7 @@ class TestSegmentsFromEpochs:
         d = self.ramp()
         ep = pp.Epochs([100., 1500.], (-200, 300), labels=["a", "b"], label="ev")
         s = d.get_segments(ep, "left_pupil")
-        assert s.intervals is ep
+        assert s.epochs is ep
         assert s.name == "ev"
 
     def test_mask_is_copied(self):
@@ -277,9 +277,9 @@ class TestSegmentsFromIntervals:
         s = d.get_segments(iv, "left_pupil")
         assert s.n_timepoints == 300 and s.tx[0] == 0 and s.tx[-1] == 299
         np.testing.assert_array_equal(s.data[0], [100, 1500])
-        assert isinstance(s.intervals, pp.Epochs)
-        assert s.intervals.labels.tolist() == ["a", "b"]
-        assert s.intervals.meta["t"].tolist() == [1, 2]
+        assert isinstance(s.epochs, pp.Epochs)
+        assert s.epochs.labels.tolist() == ["a", "b"]
+        assert s.epochs.meta["t"].tolist() == [1, 2]
         assert s.name == "x"
         repr(s)
         s.baseline_correct((0, 10), inplace=False)

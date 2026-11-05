@@ -113,7 +113,7 @@ class TestPickleRoundTrip(unittest.TestCase):
         seg = d.get_segments(iv, "left_pupil")
         seg2 = self.roundtrip(seg)
         np.testing.assert_array_equal(seg2.data.mask, seg.data.mask)
-        self.assertEqual(seg2.intervals, seg.intervals)
+        self.assertEqual(seg2.epochs, seg.epochs)
         self.roundtrip(pp.group_segments([seg, seg]))
 
     def test_write_file_from_file(self):
@@ -243,7 +243,7 @@ class TestFormatVersion0(unittest.TestCase):
         s = self.load("segmented_v0.pkl")
         self.assertIsInstance(s, pp.SegmentedEyeData)
         self.assertEqual(s.variable, "left_pupil")
-        self.assertEqual(s.intervals.label, "F_")
+        self.assertEqual(s.epochs.label, "F_")
         g = self.load("group_segmented_v0.pkl")
         self.assertIsInstance(g, pp.GroupLevelSegmentedData)
         self.assertEqual(g.n_subjects, 2)
@@ -278,7 +278,7 @@ class TestMigrate(unittest.TestCase):
             obj = cls.from_file(os.path.join(DATA, name))
             # segments: event-locked intervals are loaded as Epochs (in ms);
             # eyedata: blinks are loaded into the blink layer
-            ivs = [obj.intervals.to_intervals()] if cls is pp.SegmentedEyeData else \
+            ivs = [obj.epochs.to_intervals()] if cls is pp.SegmentedEyeData else \
                 [iv for iv in obj.get_blinks().values() if len(iv) > 0]
             self.assertTrue(ivs)
             for iv in ivs:

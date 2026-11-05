@@ -98,7 +98,7 @@ def eyedata_facts(d):
 
 
 def segmented_facts(s):
-    ep = s.intervals  # Epochs (in ms)
+    ep = s.epochs  # Epochs (in ms)
     return {"class": type(s).__name__, "name": s.name, "variable": s.variable,
             "n_segments": s.n_segments, "n_timepoints": s.n_timepoints,
             "sampling_rate": s.sampling_rate, "tx_first": s.tx[0], "tx_last": s.tx[-1],

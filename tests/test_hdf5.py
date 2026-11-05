@@ -118,7 +118,7 @@ class TestFixtures(HDF5TestCase):
                 assert_state_equal(self, state.to_state(d), state.to_state(d1))
         s = pp.read_pickle(os.path.join(DATA, "segmented_v1.h5"))
         self.assertIsInstance(s, pp.SegmentedEyeData)
-        self.assertEqual(s.intervals.label, "F_")
+        self.assertEqual(s.epochs.label, "F_")
 
 
 class TestGenericWriter(HDF5TestCase):
