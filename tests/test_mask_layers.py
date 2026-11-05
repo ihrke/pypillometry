@@ -739,3 +739,54 @@ class TestConsumersUsePolicy:
         d = self.binocular()
         assert len(d.mask_as_intervals("left", "pupil", units="samples")["left_pupil"]) == 0
         assert d.mask_as_intervals("left", "pupil", policy="strict", units="samples")["left_pupil"].intervals == [(50, 60)]
+
+
+class TestMergeEyesLayers:
+    """merge_eyes: recorded samples first, layers common to the used eyes."""
+
+    def make(self):
+        import pypillometry as pp
+        n = 100
+        d = pp.EyeData(left_pupil=np.full(n, 10.), right_pupil=np.full(n, 20.),
+                       sampling_rate=100, inplace=True)
+        # 10-20: left interpolated, right recorded
+        d.data.set_layer("left_pupil", "blink", np.arange(n) // 10 == 1)
+        d.data.set_layer("left_pupil", "interpolated", np.arange(n) // 10 == 1)
+        # 30-40: blink (not interpolated) in both eyes
+        for k in ("left_pupil", "right_pupil"):
+            d.data.set_layer(k, "blink", np.arange(n) // 10 == 3)
+        # 50-60: interpolated in both eyes
+        for k in ("left_pupil", "right_pupil"):
+            d.data.set_layer(k, "blink", np.arange(n) // 10 == 5)
+            d.data.set_layer(k, "interpolated", np.arange(n) // 10 == 5)
+        # 70-80: blink left, user mask right
+        d.data.set_layer("left_pupil", "blink", np.arange(n) // 10 == 7)
+        d.data.set_layer("right_pupil", "user", np.arange(n) // 10 == 7)
+        return d
+
+    @pytest.mark.parametrize("merge", [lambda d: d.merge_eyes(variables="pupil"),
+                                       lambda d: d.pupil.merge_eyes(method="offset")])
+    def test_layers_and_values(self, merge):
+        d = merge(self.make())
+        m = d.data["mean_pupil"]
+        layer = lambda name: d.data.get_layer("mean_pupil", name)
+        # recorded right eye beats the interpolated left eye
+        assert not layer("interpolated")[10:20].any() and not layer("blink")[10:20].any()
+        assert not d.mask("mean", "pupil")[10:20].any()
+        # both blinked: a blink of the merged pupil, masked
+        assert layer("blink")[30:40].all() and d.mask("mean", "pupil")[30:40].all()
+        assert len(d.get_blinks("mean", "pupil")["mean_pupil"]) == 2  # 30-40, 50-60
+        # both interpolated: interpolated (and blink), usable by default, not strict
+        assert layer("interpolated")[50:60].all()
+        assert not d.mask("mean", "pupil")[50:60].any()
+        assert d.mask("mean", "pupil", "strict")[50:60].all()
+        # no common reason: user layer
+        assert layer("user")[70:80].all() and not layer("blink")[70:80].any()
+        assert d.mask("mean", "pupil")[70:80].all()
+        # elsewhere nothing
+        assert not d.data.layers["mean_pupil"][:10].any()
+
+    def test_generic_value_from_recorded_eye(self):
+        d = self.make().merge_eyes(variables="pupil")
+        np.testing.assert_array_equal(d.data["mean_pupil"][10:20], 20.)
+        np.testing.assert_array_equal(d.data["mean_pupil"][50:60], 15.)

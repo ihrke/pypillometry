@@ -549,20 +549,33 @@ def _case_b(dataset):
 
 def _merged_pupil(case_id, key, stored):
     """`merge_eyes` of the pupil (step 7): mean over the eyes in which a sample
-    is usable under the default policy (interpolated samples are used)."""
+    is usable under the default policy (interpolated samples are used);
+    step 29: recorded samples first, an interpolated sample is used only
+    where no eye has a recorded one."""
     name, _, var = key.partition(".")
     if var != "mean_pupil":
         return stored  # gaze: nothing interpolated, unchanged
-    b = _case_b(case_id.rsplit(".", 1)[1])
+    dataset = case_id.rsplit(".", 1)[1]
+    b = _case_b(dataset)
+    full = load_arrays(f"b.blinks_interpolate.{dataset}")
     v = np.stack([b[k][0] for k in ("left_pupil", "right_pupil")])
     usable = np.stack([b[k][1] for k in ("left_pupil", "right_pupil")])
+    interp = np.zeros_like(usable)
+    for i, k in enumerate(("left_pupil", "right_pupil")):
+        for on, off in full[f"interpolated.{k}"]:
+            interp[i, on:off] = True
+    recorded = usable & ~interp
+    usable = np.where(recorded.any(axis=0), recorded, usable)
     allmasked = ~usable.any(axis=0)
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", RuntimeWarning)
         merged = np.where(allmasked, np.nanmean(v, axis=0),
                           np.nansum(np.where(usable, v, 0), axis=0) / usable.sum(axis=0))
-    return {"sub": merged[::50], "mean": float(np.mean(merged[~allmasked])),
-            "nanmean_all": float(np.nanmean(merged)), "masked": int(allmasked.sum())}[name]
+    # the merged pupil is "interpolated" where all eyes used were (step 29),
+    # so these samples are masked in the old (strict) mask as well
+    strict = allmasked | (np.where(usable, interp, True).all(axis=0) & ~allmasked)
+    return {"sub": merged[::50], "mean": float(np.mean(merged[~strict])),
+            "nanmean_all": float(np.nanmean(merged)), "masked": int(strict.sum())}[name]
 
 
 def _scaled_pupil(case_id, key, stored):

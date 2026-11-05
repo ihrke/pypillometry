@@ -7,7 +7,7 @@ Methods of :class:`~pypillometry.EyeData` for pupil data.
 
 import itertools
 from typing import Optional, Tuple, Union
-from .generic import keephistory
+from .generic import keephistory, _merge_usage, _store_merged
 from .namespace import Namespace
 from .pipes import step
 #from .. import convenience
@@ -203,8 +203,14 @@ class PupilNamespace(Namespace):
         (masked values) intelligently. Where both eyes are valid, the signals are
         averaged to reduce noise. Where only one eye is valid, that eye's data is
         used (with offset correction if applicable). Valid samples are the
-        usable samples under the mask `policy` (by default, interpolated
-        samples are used, see :meth:`~pypillometry.GenericEyeData.mask`).
+        usable samples under the mask `policy` (see
+        :meth:`~pypillometry.GenericEyeData.mask`), where recorded samples
+        come first: an interpolated sample of one eye is used only if the
+        other eye has no recorded sample there. The merged pupil gets the
+        layers that are set in all eyes that went into a sample (e.g.,
+        ``"interpolated"`` where both were interpolated, ``"blink"`` where
+        both eyes are masked by a blink); masked samples without such a
+        common layer get the ``"user"`` layer.
         
         Parameters
         ----------
@@ -313,8 +319,13 @@ class PupilNamespace(Namespace):
         # get data and mask from object
         left_data = obj.data["left_pupil"]
         right_data = obj.data["right_pupil"]
-        left_mask = obj.mask("left", "pupil", policy)
-        right_mask = obj.mask("right", "pupil", policy)
+        keys = ["left_pupil", "right_pupil"]
+        if method == "both_available":
+            # both eyes must be usable (recorded or not)
+            used = np.stack([~obj.data.get_policy_mask(k, policy) for k in keys])
+        else:
+            used = _merge_usage(obj.data, keys, policy)
+        left_mask, right_mask = ~used[0], ~used[1]
         
         # Determine valid regions
         both_valid = ~left_mask & ~right_mask
@@ -382,8 +393,8 @@ class PupilNamespace(Namespace):
         masked = merged_mask.astype(bool)
         merged[masked] = fill[masked]
         
-        # Store merged data
-        obj.data.set_with_mask((name, "pupil"), merged, mask=merged_mask)
+        # Store merged data with the layers the used eyes have in common
+        _store_merged(obj.data, f"{name}_pupil", merged, keys, used, masked, policy)
         
         # Optionally remove original eye data
         if not keep_eyes:

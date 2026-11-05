@@ -69,7 +69,8 @@ The standard layers:
      - :meth:`~GenericEyeData.mask_intervals`,
        :meth:`~GenericEyeData.merge_masks`, assigning a masked array
        (``d["left_pupil"] = np.ma.masked_array(...)``),
-       :meth:`~GenericEyeData.merge_eyes`
+       :meth:`~GenericEyeData.merge_eyes` (where no other reason is
+       common to the eyes)
      - masked
      - masked
    * - ``"interpolated"``
@@ -247,9 +248,12 @@ All processing methods read the samples that are usable under their
      - left out of the mean and the standard deviation
    * - :meth:`~EyeData.pupil.merge_eyes`,
        :meth:`~GenericEyeData.merge_eyes`
-     - each eye contributes its usable samples; the merged channel is
-       masked (``"user"`` layer) only where no eye is usable. The layers
-       of the eyes are not copied (see `Things to watch for`_)
+     - each eye contributes its usable samples, recorded samples first
+       (an interpolated sample only where no eye has a recorded one); the
+       merged channel is masked only where no eye is usable, and it gets
+       the layers that all eyes used for a sample have in common (e.g.,
+       ``"interpolated"`` where both eyes were interpolated, ``"blink"``
+       where both blinked; otherwise ``"user"`` for masked samples)
    * - :meth:`~GenericEyeData.crop`,
        :meth:`~GenericEyeData.remove_intervals`
      - values and layers are cut together
@@ -347,12 +351,11 @@ Things to watch for
   the stored values, including those in blinks (e.g., the unfiltered
   values after :meth:`~EyeData.pupil.lowpass_filter`). Use
   ``d.values(...)`` or ``d["left_pupil"]`` to get the usable samples only.
-- **Merged eyes lose the layers.** ``mean_pupil`` from
-  :meth:`~EyeData.pupil.merge_eyes` has no ``"interpolated"`` layer, so
-  ``policy="strict"`` later on does not leave out samples that were
-  interpolated in one eye. Merge with ``policy="strict"`` if interpolated
-  samples should not be averaged; samples that are interpolated in both
-  eyes are then masked in ``mean_pupil``.
+- **Merged eyes keep only the common layers.** Where one eye was
+  interpolated and the other recorded, ``mean_pupil`` holds the recorded
+  value and no ``"interpolated"`` layer; where a sample is masked in the
+  eyes for different reasons (e.g., a blink in one, a user mask in the
+  other), the merged sample has the ``"user"`` layer.
 - **Detecting blinks after interpolating** is skipped (with a warning)
   for eyes with interpolated samples: their blinks are kept. Interpolating
   twice makes the interpolated stretches longer by the margins. Detect and

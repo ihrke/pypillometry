@@ -152,8 +152,10 @@ less noisy and has fewer gaps:
 
 :meth:`~EyeData.pupil.merge_eyes` corrects for a (slowly changing)
 difference in pupil size between the eyes and fills samples missing in one
-eye from the other. The result is stored as ``mean_pupil`` (eye ``"mean"``;
-another name with ``name=``).
+eye from the other (recorded samples come before interpolated ones). The
+result is stored as ``mean_pupil`` (eye ``"mean"``; another name with
+``name=``); it keeps the layers that both eyes have in common, e.g.,
+``"blink"`` and ``"interpolated"`` where both eyes blinked.
 :meth:`~GenericEyeData.merge_eyes` simply averages any variable. See
 :doc:`/notebooks/eyes_and_variables`.
 
