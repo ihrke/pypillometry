@@ -1385,20 +1385,25 @@ class GenericEyeData(state.VersionedState, ABC):
         """
         Intervals from `intervals`: an Intervals object (returned as it is),
         Epochs (their spans in ms) or a list of ``(start, end)`` tuples in ms (or with units), where
-        ``-np.inf`` and ``np.inf`` stand for the start and the end of the
-        recording.
+        ``"<start>"`` and ``"<end>"`` stand for the start and the end of the
+        recording (as in :meth:`get_intervals`; ``-np.inf`` and ``np.inf``
+        too, with a warning).
         """
         if isinstance(intervals, (Intervals, Epochs)):
             return _as_intervals(intervals)
         if not isinstance(intervals, (list, tuple, np.ndarray)):
             raise TypeError("intervals must be Intervals, Epochs or a list of (start, end) "
                             f"tuples, got {type(intervals).__name__}")
-        bounds = {-np.inf: float(self.tx[0]),
-                  np.inf: float(_samples_to_ms(self, len(self.tx)))}
+        bounds = {"<start>": float(self.tx[0]),
+                  "<end>": float(_samples_to_ms(self, len(self.tx)))}
 
         def bound(v):
-            if isinstance(v, numbers.Real) and np.isinf(v):
+            if isinstance(v, str) and v in bounds:
                 return bounds[v]
+            if isinstance(v, numbers.Real) and np.isinf(v):
+                logger.warning('use "<start>" and "<end>" for the start and end of the '
+                               "recording instead of -np.inf and np.inf")
+                return bounds["<start>" if v < 0 else "<end>"]
             # plain numbers are ms; values with units are converted (each
             # value on its own, so that e.g. (0, 2 * u.min) works)
             return parse_time(v, to="ms", default="ms")
@@ -3370,8 +3375,9 @@ class GenericEyeData(state.VersionedState, ABC):
             the periods to exclude: an :class:`~pypillometry.Intervals`
             object (e.g., from :meth:`get_intervals`; in time units or sample
             indices), :class:`~pypillometry.Epochs` or a list of ``(start, end)`` tuples (in ms, or with
-            units, e.g., ``[(0, 2 * u.min)]``; ``-np.inf`` and ``np.inf``
-            stand for the start and end of the recording); ends are exclusive
+            units, e.g., ``[(0, 2 * u.min)]``; ``"<start>"`` and ``"<end>"``
+            stand for the start and end of the recording, e.g.,
+            ``[(10 * u.min, "<end>")]``); ends are exclusive
         inplace : bool or None, optional
             if `True`, make change in-place and return the object;
             if `False`, make and return copy before making changes;
@@ -3418,8 +3424,8 @@ class GenericEyeData(state.VersionedState, ABC):
             the periods to keep: an :class:`~pypillometry.Intervals`
             object (e.g., from :meth:`get_intervals`; in time units or sample
             indices), :class:`~pypillometry.Epochs` or a list of ``(start, end)`` tuples (in ms, or with
-            units; ``-np.inf`` and ``np.inf`` stand for the start and end of
-            the recording); ends are exclusive
+            units; ``"<start>"`` and ``"<end>"`` stand for the start and end
+            of the recording); ends are exclusive
         inplace : bool or None, optional
             if `True`, make change in-place and return the object;
             if `False`, make and return copy before making changes;
@@ -3540,8 +3546,8 @@ class GenericEyeData(state.VersionedState, ABC):
             object (in time units or sample indices),
             :class:`~pypillometry.Epochs` or a list of
             ``(start, end)`` tuples (in ms, or with units, e.g.,
-            ``[(10 * u.min, 12 * u.min)]``; ``-np.inf`` and ``np.inf`` stand
-            for the start and end of the recording); ends are exclusive
+            ``[(10 * u.min, 12 * u.min)]``; ``"<start>"`` and ``"<end>"``
+            stand for the start and end of the recording); ends are exclusive
         inplace : bool or None, optional
             if `True`, make change in-place and return the object;
             if `False`, make and return copy before making changes;
