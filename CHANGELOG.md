@@ -152,7 +152,7 @@ The main ones:
   (it returned an empty object)
 - Re-running `pupil.blinks_detect()` after `pupil.blinks_interpolate()`
   found no blinks (it read the interpolated values) and cleared the blink
-  layer; interpolated samples now count as missing during detection
+  layer; eyes with interpolated samples are now skipped with a warning
 - The source distribution contains all test data (`MANIFEST.in`)
 - Docstring examples run as written (several used undefined names or
   outdated calls)

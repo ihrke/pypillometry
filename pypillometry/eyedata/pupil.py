@@ -481,7 +481,10 @@ class PupilNamespace(Namespace):
         blinks detected before (and their mask), and the blinks detected
         before are not treated as masked during detection, so re-running the
         detection with other parameters gives the same result as running it
-        once (``clear_layer("blink")`` removes them).
+        once (``clear_layer("blink")`` removes them). Eyes whose pupil has
+        interpolated samples (after :meth:`blinks_interpolate`) are skipped
+        with a warning and keep their blinks: the values there are
+        reconstructed, so detect blinks before interpolating them.
 
         Finally, detected blinks have to be at least `min_duration` ms.
         
@@ -529,10 +532,7 @@ class PupilNamespace(Namespace):
             if `True`, use raw data ignoring existing masks
             if `False` (default), only detect blinks in the usable data under
             the ``"strict"`` mask policy (masked regions are skipped, see
-            :meth:`~pypillometry.GenericEyeData.mask`); interpolated samples
-            count as missing, so that detection after
-            :meth:`blinks_interpolate` finds the interpolated blinks again
-            (instead of reading the reconstructed values)
+            :meth:`~pypillometry.GenericEyeData.mask`)
         inplace : bool or None
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes                                                    
@@ -572,18 +572,18 @@ class PupilNamespace(Namespace):
                              f"'velocity', got {strategies!r}")
         
         for eye in eyes:
+            if obj.data.get_layer(f"{eye}_pupil", "interpolated").any():
+                logger.warning(f"{eye}_pupil has interpolated samples; blink detection "
+                               "skipped (detect blinks before interpolating them)")
+                continue
             logger.debug(f"Detecting blinks for eye {eye}")
             
             # the new blinks replace the old ones, which must not mask the data
             obj.set_blinks(None, eyes=[eye], variables=["pupil"])
 
             # pupil data: unusable samples are NaN, unless the existing mask
-            # is ignored; interpolated samples count as missing (they are
-            # reconstructed blinks), so re-detection after interpolation
-            # finds the blinks again
+            # is ignored
             pupil_data = obj.values(eye, "pupil", "raw" if ignore_existing_mask else "strict")
-            interpolated = (np.zeros(len(pupil_data), dtype=bool) if ignore_existing_mask
-                            else obj.data.get_layer(f"{eye}_pupil", "interpolated"))
             
             ## detect blinks with the different strategies
             if "velocity" in strategies:
@@ -604,7 +604,6 @@ class PupilNamespace(Namespace):
                 raw = obj.data[eye, "pupil"]
                 if not np.isnan(blink_val):
                     raw = np.where(raw == blink_val, np.nan, raw)
-                raw = np.where(interpolated, np.nan, raw)
                 blinks_zero=preproc.detect_blinks_zero(raw, 1, np.nan)
                 logger.debug(f"Detected {len(blinks_zero)} blinks with zero strategy")
             else:

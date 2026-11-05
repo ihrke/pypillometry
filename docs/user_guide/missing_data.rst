@@ -342,11 +342,10 @@ Things to watch for
   interpolated in one eye. Merge with ``policy="strict"`` if interpolated
   samples should not be averaged; samples that are interpolated in both
   eyes are then masked in ``mean_pupil``.
-- **Detecting blinks after interpolating** finds the interpolated
-  stretches (blink plus margins) as blinks, because the detector treats
-  interpolated samples as missing. Interpolating twice makes the
-  interpolated stretches longer by the margins. Detect and interpolate
-  once, on the raw data.
+- **Detecting blinks after interpolating** is skipped (with a warning)
+  for eyes with interpolated samples: their blinks are kept. Interpolating
+  twice makes the interpolated stretches longer by the margins. Detect and
+  interpolate once, on the raw data.
 - **Blinks next to excluded periods** stay in the ``"blink"`` layer if
   they were detected before the period was excluded, but
   :meth:`~GenericEyeData.get_blinks` leaves them out (and so does the blink
