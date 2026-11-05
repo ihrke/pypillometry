@@ -35,7 +35,7 @@ from ..units import (UNSET, _has_units, _time_values_and_units, parse_time, _ms_
 from .eyedatadict import EyeDataDict, REC_LAYERS, _join_key
 from .experimental_setup import ExperimentalSetup
 from .gaze import GazeNamespace
-from .generic import (_RENAMED_METHODS, _check_per_pair, _check_timebase, _decimate_dict,
+from .generic import (_check_per_pair, _check_timebase, _decimate_dict,
                       _decimate_factor, _history_arg, _insert_dict, _keep_dict, _merge_usage,
                       _per_pair, _some, _store_merged, keephistory)
 from .namespace import accessor
@@ -548,25 +548,6 @@ class EyeData(state.VersionedState):
         # Use _unit_fac which already handles all valid units
         factor = self._unit_fac(unit)
         return self.tx * factor
-
-    def __getattr__(self, name):
-        """
-        Raise the AttributeError for a missing attribute, naming the new
-        method if it is one of the renamed methods (``_RENAMED_METHODS``).
-
-        Python calls this only when the normal lookup fails. If an attribute
-        of the class (e.g., a property) raised the AttributeError, it is run
-        again, so that its own error is reported instead of "object has no
-        attribute".
-        """
-        if any(name in vars(cls) for cls in type(self).__mro__):
-            return object.__getattribute__(self, name)
-        hint = ""
-        if name in _RENAMED_METHODS:
-            hint = f" (renamed: use .{_RENAMED_METHODS[name]}(...))"
-        raise AttributeError(
-            f"'{type(self).__name__}' object has no attribute '{name}'{hint}"
-        )
 
     def nevents(self) -> int:
         """Return number of events in data."""

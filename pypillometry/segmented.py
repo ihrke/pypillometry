@@ -149,10 +149,6 @@ class SegmentedEyeData(state.VersionedState):
         return self.data.shape[1]
     
     @property
-    def intervals(self):
-        raise AttributeError("SegmentedEyeData.intervals was renamed to epochs")
-
-    @property
     def window(self) -> Tuple[float, float]:
         """Time window in ms as (start, end)."""
         return (self.tx.min(), self.tx.max())
