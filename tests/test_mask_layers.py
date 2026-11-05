@@ -393,22 +393,26 @@ class TestBlinkLayer:
         d.pupil.blinks_detect(strategies=["velocity"], min_duration=10)
         assert int(d.data.mask["left_pupil"].sum()) == n1
 
-    def test_redetection_after_interpolation_finds_the_blinks(self):
-        # the interpolated samples count as missing, so detection does not
-        # read the reconstructed values and wipe the blink layer
-        d = blink_data().pupil.blinks_detect().pupil.blinks_interpolate()
-        interp = d.get_interpolated_blinks("left", "pupil", units="samples")["left_pupil"].intervals
-        d.pupil.blinks_detect()
+    def test_redetection_after_interpolation_is_skipped(self):
+        # the interpolated values are reconstructed: detecting blinks in them
+        # (or in the raw values, which are overwritten) makes no sense
+        from loguru import logger
+        d = blink_data().pupil.blinks_detect()
         blinks = d.get_blinks("left", "pupil", units="samples")["left_pupil"].intervals
-        assert blinks == interp
-        d.pupil.blinks_detect()
-        assert d.get_blinks("left", "pupil", units="samples")["left_pupil"].intervals == blinks
+        d.pupil.blinks_interpolate()
+        msgs = []
+        hid = logger.add(lambda m: msgs.append(m.record["message"]), level="WARNING")
+        try:
+            for kw in ({}, {"ignore_existing_mask": True}, {"min_duration": 2000}):
+                d.pupil.blinks_detect(**kw)
+                assert d.get_blinks("left", "pupil", units="samples")["left_pupil"].intervals \
+                    == blinks
+        finally:
+            logger.remove(hid)
+        assert len(msgs) == 3 and "left_pupil has interpolated samples" in msgs[0]
         # still usable by default (interpolated), masked under "strict"
         assert not d.mask("left", "pupil")[d.data.get_layer("left_pupil", "blink")].any()
         assert d.mask("left", "pupil", "strict")[d.data.get_layer("left_pupil", "blink")].all()
-        # ignoring the mask reads the stored (interpolated) values
-        assert d.pupil.blinks_detect(ignore_existing_mask=True, inplace=False).nblinks() \
-            == {"left_pupil": 0}
 
     def test_unknown_strategy_raises(self):
         # finding 4.8: a typo only logged a warning and found 0 blinks
