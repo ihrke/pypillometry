@@ -78,7 +78,7 @@ class FakeEyeData(EyeData):
         Examples
         --------
         >>> import pypillometry as pp
-        >>> data = pp.generate_foreshortening_data(duration=10, seed=42)
+        >>> data = pp.signal.generate_foreshortening_data(duration=10, seed=42)
         >>> print(data.get_generation_call())  # doctest: +ELLIPSIS
         generate_foreshortening_data(experimental_setup={...}, duration=10, fs=1000, eye='left', ...)
         """
@@ -111,7 +111,7 @@ class FakeEyeData(EyeData):
         Examples
         --------
         >>> import pypillometry as pp
-        >>> data = pp.generate_foreshortening_data(duration=10, seed=42)
+        >>> data = pp.signal.generate_foreshortening_data(duration=10, seed=42)
         >>> data2 = data.regenerate(seed=43)  # same parameters, different seed
         >>> data3 = data.regenerate(duration=20, seed=44)  # different duration
         >>> len(data3)

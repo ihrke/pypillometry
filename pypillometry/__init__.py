@@ -57,24 +57,8 @@ from .example_data import (
 )
 
 # ---------------------------------------------------------------------------
-# Signal processing
-from .signal import (
-    # baseline
-    bspline, butter_lowpass, butter_lowpass_filter,
-    baseline_envelope, baseline_envelope_iter_bspline, baseline_pupil_model,
-    # preprocessing
-    smooth_window, velocity_savgol, detect_blinks_velocity,
-    detect_blinks_zero, blink_onsets_mahot,
-    # pupil response
-    lowpass_filter_iterative, pupil_signal_quality, pupil_kernel,
-    pupil_kernel_t, pupil_get_max_duration, plot_prf,
-    pupil_build_design_matrix, pupil_response, pupil_response_coverage,
-    pupilresponse_nnls,
-    pupil_eye_offset,
-    # synthetic data
-    fake_pupil_baseline, fake_gaze_fixations, add_measurement_noise,
-    generate_foreshortening_data,
-)
+# Signal processing for numpy arrays: pp.signal.<function>
+from . import signal
 from .convenience import zscale
 
 # ---------------------------------------------------------------------------
@@ -114,19 +98,6 @@ __all__ = [
     "load_study_local", "load_study_osf", "get_osf_project_files",
     "get_available_datasets", "get_example_data", "get_rlmw_002",
     "get_rlmw_002_short", "get_rlmw_010_edf",
-    # signal processing
-    "bspline", "butter_lowpass", "butter_lowpass_filter",
-    "baseline_envelope", "baseline_envelope_iter_bspline",
-    "baseline_pupil_model",
-    "smooth_window", "velocity_savgol", "detect_blinks_velocity",
-    "detect_blinks_zero", "blink_onsets_mahot",
-    "lowpass_filter_iterative", "pupil_signal_quality", "pupil_kernel",
-    "pupil_kernel_t", "pupil_get_max_duration", "plot_prf",
-    "pupil_build_design_matrix", "pupil_response", "pupil_response_coverage",
-    "pupilresponse_nnls",
-    "pupil_eye_offset",
-    "fake_pupil_baseline", "fake_gaze_fixations", "add_measurement_noise",
-    "generate_foreshortening_data",
     "zscale",
     # viewer
     "view", "tweak",
@@ -138,5 +109,12 @@ __all__ = [
 ]
 
 initialize_logging()
+
+
+def __getattr__(name):
+    # the array functions were also at the top level up to 2.1
+    if name in signal.__all__:
+        raise AttributeError(f"pypillometry.{name} was moved: use pypillometry.signal.{name}")
+    raise AttributeError(f"module 'pypillometry' has no attribute {name!r}")
 
 __package_path__ = os.path.abspath(os.path.dirname(__file__))
