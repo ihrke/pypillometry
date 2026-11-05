@@ -19,16 +19,16 @@ class Epochs(Stateful):
 
     An Epochs object describes the same window around each of several
     events, e.g., -200 to 800 ms around every stimulus. It is returned by
-    :meth:`~pypillometry.GenericEyeData.get_intervals` for single events
-    and is the input of :meth:`~pypillometry.GenericEyeData.get_segments`,
+    :meth:`~pypillometry.EyeData.get_intervals` for single events
+    and is the input of :meth:`~pypillometry.EyeData.get_segments`,
     which takes the length and the time axis of the segments from the
     window. Spans of time that are not locked to one event (e.g., between
     two events) are :class:`~pypillometry.Intervals`.
 
     Epochs iterate like spans (``(onset + window[0], onset + window[1])`` in
     ms), so they can be used wherever the eyedata methods take Intervals
-    (e.g., :meth:`~pypillometry.GenericEyeData.mask_intervals` or
-    :meth:`~pypillometry.GenericEyeData.stat_per_event`);
+    (e.g., :meth:`~pypillometry.EyeData.mask_intervals` or
+    :meth:`~pypillometry.EyeData.stat_per_event`);
     :meth:`to_intervals` converts them explicitly. Windows that extend
     beyond the data are not clipped; the methods that read the data handle
     the parts outside of it.
@@ -191,7 +191,7 @@ class Epochs(Stateful):
         units : str, optional
             units of the Intervals ("ms" (default), "sec", "min", "h", or
             "samples" for sample indices of `data`)
-        data : GenericEyeData, optional
+        data : EyeData, optional
             data object the epochs belong to; needed for "samples"
 
         Returns

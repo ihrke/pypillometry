@@ -186,11 +186,11 @@ def _find_class(name: str):
     """The class (eyedata or segmented data) called `name` (or renamed from `name`)."""
     renamed = {old: new for (_, old), (_, new) in _RENAMED_CLASSES.items()}
     name = renamed.get(name, name)
-    from .eyedata.generic import GenericEyeData
+    from .eyedata.eyedata import EyeData
     from .segmented import SegmentedEyeData
     # importing the package registers all its classes as subclasses
     from . import eyedata, segmented  # noqa: F401
-    todo = [GenericEyeData, SegmentedEyeData]
+    todo = [EyeData, SegmentedEyeData]
     while todo:
         cls = todo.pop()
         if cls.__name__ == name:

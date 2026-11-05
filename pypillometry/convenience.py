@@ -323,7 +323,7 @@ def test_selector(obj, selfun, **kwargs):
 
     Parameters
     ----------
-    obj : GenericEyeData
+    obj : EyeData
         object to test the selector function on
     selfun : function
         function that takes a single event label as input and returns True/False

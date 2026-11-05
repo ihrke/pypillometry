@@ -4,7 +4,7 @@ quality.py
 
 Data-quality report for eye-tracking data.
 
-The report is created by :meth:`~pypillometry.GenericEyeData.quality_report`
+The report is created by :meth:`~pypillometry.EyeData.quality_report`
 and is a :class:`QualityReport`. It collects quality measures (each a
 :class:`QualityMetric`) in sections:
 
@@ -254,7 +254,7 @@ class QualityReport:
     """
     Data-quality report for an eyedata object.
 
-    Created by :meth:`~pypillometry.GenericEyeData.quality_report`. The
+    Created by :meth:`~pypillometry.EyeData.quality_report`. The
     report can be
 
     - shown as text (``print(report)``; labels are colored if the terminal
@@ -681,7 +681,7 @@ def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[],
     """
     Compute a :class:`QualityReport` for an eyedata object.
 
-    See :meth:`~pypillometry.GenericEyeData.quality_report`.
+    See :meth:`~pypillometry.EyeData.quality_report`.
     """
     thresholds = _merge_thresholds(thresholds)
     b = _Builder(thresholds)

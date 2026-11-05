@@ -99,7 +99,7 @@ class GenericPlots(Namespace):
         Plotting data around intervals.
 
         Intervals can be extracted with
-        :meth:`~pypillometry.GenericEyeData.get_intervals`.
+        :meth:`~pypillometry.EyeData.get_intervals`.
         Each interval gets a separate subplot.
         The data is plotted for each eye and variable in different colors.
         The x-axis is plotted in the units of the Intervals object.
@@ -110,7 +110,7 @@ class GenericPlots(Namespace):
         ----------
         intervals : Intervals or Epochs
             the intervals to plot (e.g., from
-            :meth:`~pypillometry.GenericEyeData.get_intervals`); Epochs are
+            :meth:`~pypillometry.EyeData.get_intervals`); Epochs are
             plotted in ms, with a line at each event onset
         eyes : str or list
             eyes to plot; if empty, all available eyes are plotted
@@ -579,7 +579,7 @@ class GenericPlots(Namespace):
             Whether to show vertical grey stripes at event positions. Default is False.
         policy : str, MaskPolicy or list of str
             mask policy that decides which samples are masked (see
-            :meth:`~pypillometry.GenericEyeData.mask_as_intervals`); e.g.,
+            :meth:`~pypillometry.EyeData.mask_as_intervals`); e.g.,
             ``"strict"`` also shows the interpolated samples, ``["interpolated"]``
             only those. Default ``"default"``.
         **kwargs : dict

@@ -7,9 +7,9 @@ Module containing the class for handling eye data.
 - :class:`EyeData`: pupil and/or gaze data of one or two eyes (any set of
   channels, e.g. only pupil data).
 
-It inherits from :class:`GenericEyeData`, which provides the basic, shared
-functionality; the methods for pupil and gaze data are defined in the
-modules `pupil` and `gaze` (the namespaces ``d.pupil`` and ``d.gaze``).
+The methods for pupil and gaze data are defined in the modules `pupil` and
+`gaze` (the namespaces ``d.pupil`` and ``d.gaze``); helpers shared with
+them are in `generic`.
 
 The data are stored in the `data` attribute, which is a dictionary-like object
 of type :class:`EyeDataDict`. 
@@ -31,12 +31,12 @@ Simulation classes:
 - :class:`FakeEyeData`: Synthetic eye-tracking data for testing and validation.
 """
 
-__all__ = ["EyeDataDict", "MaskPolicy", "GenericEyeData", "EyeData", 
+__all__ = ["EyeDataDict", "MaskPolicy", "EyeData",
            "SpatialCalibration", "ForeshorteningCalibration", "FakeEyeData",
            "ExperimentalSetup", "keephistory"]
 
 from .eyedatadict import EyeDataDict, MaskPolicy
-from .generic import GenericEyeData, keephistory
+from .generic import keephistory
 from .eyedata import EyeData
 from .spatial_calibration import SpatialCalibration
 from .foreshortening_calibration import ForeshorteningCalibration

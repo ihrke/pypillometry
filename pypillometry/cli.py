@@ -168,7 +168,7 @@ def pypilview_main(argv=None):
         d, fmt, _ = _read_file(args.file, keep_triggers=args.keep_triggers)
     except ValueError as e:
         parser.error(str(e))
-    if fmt != "edf" and not isinstance(d, pp.GenericEyeData):
+    if fmt != "edf" and not isinstance(d, pp.EyeData):
         parser.error(f"{args.file} does not contain an eyedata object "
                      f"(found {type(d).__name__})")
 
@@ -310,7 +310,7 @@ def pypilinfo_main(argv=None):
     Reads each file like ``pypilview`` (EDF, pickle or HDF5, detected from
     the file content) and prints its format, size and a summary of the stored
     object (its :func:`repr`). With ``--quality``, the data-quality report
-    (:meth:`~pypillometry.GenericEyeData.quality_report`) is printed
+    (:meth:`~pypillometry.EyeData.quality_report`) is printed
     instead (with ``--descriptions``, each measure is explained); for several
     files, a summary table comes first. With ``--html``, the quality reports of all files are written
     to an HTML file (``-o``, default: a temporary file), which is opened in
