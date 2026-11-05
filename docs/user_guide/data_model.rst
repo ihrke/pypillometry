@@ -219,6 +219,7 @@ during them, also variables added later:
     breaks = d.get_intervals(("break_start", "break_end"), units="ms")
     d = d.exclude_intervals(breaks)
     d = d.exclude_intervals([(0, 2 * u.min)])   # calibration at the start
+    d = d.exclude_intervals([(58 * u.min, "<end>")])  # until the end
     d = d.exclude_intervals(d.get_intervals(("<start>", "Start Block 1"), units="ms"))
     d.get_excluded()                            # the excluded periods
     d.excluded_duration("min")                  # their total duration

@@ -248,7 +248,7 @@ class TestIncludedSplitRemove(unittest.TestCase):
         # removing the beginning and end does not shift: same as crop()
         e = _make_data()
         e.set_events(pp.Events([6000, 9000, 20000], ["a", "b", "c"]))
-        r = e.remove_intervals([(-np.inf, 7000), (15000, np.inf)], inplace=False)
+        r = e.remove_intervals([("<start>", 7000), (15000, "<end>")], inplace=False)
         c = e.crop(7000, 15000 - 2, inplace=False)
         np.testing.assert_array_equal(r.tx, c.tx)
         np.testing.assert_array_equal(r.data["left_pupil"], c.data["left_pupil"])

@@ -220,7 +220,7 @@ class TestRemovedIntervalsClock(unittest.TestCase):
         self.check(d)
 
     def test_no_shift_without_a_gap(self):
-        d = self.make().remove_intervals([(0, 2000), (9000, np.inf)], inplace=False)
+        d = self.make().remove_intervals([(0, 2000), (9000, "<end>")], inplace=False)
         self.assertNotIn("removed_shifts", d.params)
         self.check(d)
 

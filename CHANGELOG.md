@@ -94,6 +94,10 @@ tables below for every changed call.
 - `d.plot.plot_masked(policy=...)`, e.g. `policy="strict"` to show the
   interpolated stretches
 - `pytest` also runs the examples in the docstrings (doctests)
+- `"<start>"` and `"<end>"` in the lists of `exclude_intervals`,
+  `keep_intervals`, `remove_intervals`, `mask_intervals` and
+  `interpolate_intervals` (as in `get_intervals`); `-np.inf`/`np.inf` still
+  work but warn
 
 ### Changed results
 

@@ -37,23 +37,41 @@ class TestValidation:
 
 
 class TestInfiniteBoundsInLists:
-    """-inf/inf in plain lists stand for the start/end of the recording."""
+    """"<start>"/"<end>" (or -inf/inf, with a warning) in plain lists stand for
+    the start/end of the recording."""
 
     def make(self):
         return pp.EyeData(left_pupil=np.arange(100.), sampling_rate=100,
                             time=np.arange(100) * 10. + 1000)
 
-    def test_remove_intervals(self):
+    @pytest.mark.parametrize("start, end", [("<start>", "<end>"), (-np.inf, np.inf)])
+    def test_remove_intervals(self, start, end):
         d = self.make()
-        r = d.remove_intervals([(-np.inf, 1200), (1800, np.inf)], inplace=False)
+        r = d.remove_intervals([(start, 1200), (1800, end)], inplace=False)
         np.testing.assert_array_equal(r.tx, d.crop(1200, 1790, inplace=False).tx)
 
-    def test_exclude_and_keep(self):
+    @pytest.mark.parametrize("start, end", [("<start>", "<end>"), (-np.inf, np.inf)])
+    def test_exclude_and_keep(self, start, end):
         d = self.make()
-        e = d.exclude_intervals([(1500, np.inf)], inplace=False)
+        e = d.exclude_intervals([(1500, end)], inplace=False)
         assert e.get_excluded().intervals == [(1500., 2000.)]
-        k = d.keep_intervals([(-np.inf, 1500)], inplace=False)
+        k = d.keep_intervals([(start, 1500)], inplace=False)
         assert k.get_excluded().intervals == [(1500., 2000.)]
+
+    def test_inf_warns(self):
+        from loguru import logger
+        msgs = []
+        hid = logger.add(lambda m: msgs.append(m.record["message"]), level="WARNING")
+        try:
+            self.make().exclude_intervals([(1500, np.inf)], inplace=False)
+            self.make().exclude_intervals([(1500, "<end>")], inplace=False)
+        finally:
+            logger.remove(hid)
+        assert len(msgs) == 1 and '"<start>" and "<end>"' in msgs[0]
+
+    def test_other_strings_raise(self):
+        with pytest.raises(ValueError):
+            self.make().exclude_intervals([(1500, "stop")], inplace=False)
 
     @pytest.mark.parametrize("pair", [
         (1200, 1.5 * pp.u.sec),            # plain number (ms) next to a unit
