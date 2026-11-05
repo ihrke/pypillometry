@@ -194,7 +194,8 @@ layer (``d.clear_layer("blink")`` undoes blink detection).
 - :meth:`~EyeData.pupil.blinks_detect` looks for runs of NaN (and
   ``blink_val``) in the stored values and for blinks in the velocity
   profile of the samples that are usable under the strict policy. Blinks
-  in or next to an excluded period are not stored. It can find blinks
+  are cut at excluded periods (so a break without data is not a
+  blink); blinks next to them are kept. It can find blinks
   where no sample is NaN (from the velocity).
 - :meth:`~EyeData.gaze.mask_offscreen` and
   :meth:`~EyeData.gaze.mask_divergences` check the gaze coordinates.
@@ -346,10 +347,11 @@ Things to watch for
   for eyes with interpolated samples: their blinks are kept. Interpolating
   twice makes the interpolated stretches longer by the margins. Detect and
   interpolate once, on the raw data.
-- **Blinks next to excluded periods** stay in the ``"blink"`` layer if
-  they were detected before the period was excluded, but
-  :meth:`~GenericEyeData.get_blinks` leaves them out (and so does the blink
-  count). Exclude periods before detecting blinks.
+- **Blinks and excluded periods**: :meth:`~GenericEyeData.get_blinks`
+  returns all blinks of the layer, also those detected before a period
+  was excluded around them. Exclude periods before detecting blinks, so
+  that blinks are cut at them. A blink that ends in an excluded period
+  is not interpolated (there is no usable data after it).
 - **Downsampling counts each layer separately.** A window that is 40%
   off-screen, 40% divergent and 20% usable is not more than half covered
   by either layer, so the new sample is usable (it is the mean of the

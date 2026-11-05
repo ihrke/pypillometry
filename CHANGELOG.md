@@ -105,6 +105,11 @@ The main ones:
   longer counted as "other artifacts"
 - Files saved after a `downsample` to a rate that does not divide the
   original one get a corrected `fs` when they are read
+- Blinks next to excluded periods are blinks: `get_blinks()` (and blink
+  counts, interpolation, plots) no longer leaves out blinks that overlap or
+  touch an excluded period; `pupil.blinks_detect()` cuts blinks at excluded
+  periods instead of dropping them. A blink without usable data at its
+  anchor points (e.g., one that ends in a break) is not interpolated
 
 ### Fixed
 

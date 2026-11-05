@@ -922,9 +922,8 @@ class GenericEyeData(state.VersionedState, ABC):
         Get the runs of a mask layer (e.g., ``"offscreen"``) as a dict of Intervals.
 
         Each contiguous run of samples in which the layer is set becomes
-        one interval. See :meth:`get_blinks` for the blinks (without those
-        next to excluded periods) and :meth:`get_excluded` for the excluded
-        periods.
+        one interval. See :meth:`get_blinks` for the blinks and
+        :meth:`get_excluded` for the excluded periods.
 
         Parameters
         ----------
@@ -3358,10 +3357,10 @@ class GenericEyeData(state.VersionedState, ABC):
         variables (also those added later), so that functions that
         ignore masked data (e.g., :meth:`scale`, :meth:`get_segments`) also
         ignore the excluded periods. Unlike other masked data (blinks,
-        artifacts), excluded periods are not treated as missing data: blinks
-        that overlap or touch an excluded period are not counted (they are
-        left out by :meth:`get_blinks`, but keep their layer, mask and
-        interpolation), and blink detection ignores them as well.
+        artifacts), excluded periods are not treated as missing data: blink
+        detection cuts blinks at them, and blinks that end in an excluded
+        period are not interpolated. Blinks detected before keep their
+        layer.
 
         The layer moves with the samples (:meth:`crop`, :meth:`downsample`,
         :meth:`remove_intervals`, ...). Calling the method again adds to
