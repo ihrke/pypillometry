@@ -66,8 +66,13 @@ values and layers together.
     d.variables            # ['x', 'y', 'pupil']
     d["left_pupil"]        # a numpy masked array
     d["left", "pupil"]     # the same
+    d.data["left_pupil"]   # the stored values (numpy array)
     d.tx                   # time in ms
     d.fs                   # sampling rate in Hz
+
+Assigning to a channel (``d["left_pupil"] = ...``) replaces its mask
+layers as well; to change only the values, see
+:ref:`missing-data-changing-values`.
 
 Most methods take ``eyes=`` and ``variables=`` arguments (a name or a
 list). When they are left empty, all existing channels are processed;

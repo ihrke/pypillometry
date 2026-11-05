@@ -296,6 +296,34 @@ Changing masks by hand
   channel is masked (``"user"`` layer).
 - ``d.clear_layer(name)`` removes a layer from the selected channels.
 
+.. _missing-data-changing-values:
+
+Changing values
+~~~~~~~~~~~~~~~
+
+Writing new values into an existing channel can change its layers, too:
+
+- ``d["left_pupil"] = array`` (a plain numpy array) **removes all layers
+  of the channel**: blinks, interpolated stretches, off-screen periods,
+  ... are gone; only NaN samples and excluded periods stay masked.
+- ``d["left_pupil"] = masked_array`` makes the default mask of the
+  channel equal to the mask of the array (like ``d.data.set_mask``). This
+  also changes layers that are not part of the mask: ``d["left_pupil"] =
+  d["left_pupil"] * 2`` after :meth:`~EyeData.pupil.blinks_interpolate`
+  drops the ``"blink"`` layer, because interpolated blinks are usable and
+  so not masked in ``d["left_pupil"]``.
+- ``d.data.set_with_mask("left_pupil", values, preserve_mask=True)``
+  replaces the values and keeps all layers. Use it for your own
+  processing of a channel:
+
+.. code-block:: python
+
+    v = d.data["left_pupil"]                    # the stored values (numpy array)
+    d.data.set_with_mask("left_pupil", my_filter(v), preserve_mask=True)
+
+A new channel (``d["left", "baseline"] = array``) starts without layers;
+excluded periods mask it as well.
+
 
 Common tasks
 ------------
@@ -356,6 +384,9 @@ Things to watch for
   value and no ``"interpolated"`` layer; where a sample is masked in the
   eyes for different reasons (e.g., a blink in one, a user mask in the
   other), the merged sample has the ``"user"`` layer.
+- **Assigning values removes layers.** ``d["left_pupil"] = array`` clears
+  the layers of the channel (see `Changing values`_); use
+  ``d.data.set_with_mask(..., preserve_mask=True)``.
 - **Detecting blinks after interpolating** is skipped (with a warning)
   for eyes with interpolated samples: their blinks are kept. Interpolating
   twice makes the interpolated stretches longer by the margins. Detect and
