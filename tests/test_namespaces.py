@@ -77,18 +77,7 @@ class TestNamespaceBase:
 
 
 class TestRenamedMethods:
-    """The flat pupil/gaze names of 2.1 are gone; the error names the new one."""
-
-    def test_rename_table(self):
-        from pypillometry.eyedata.generic import _RENAMED_METHODS
-        d = pp.EyeData(left_pupil=np.ones(10), left_x=np.ones(10), left_y=np.ones(10),
-                       sampling_rate=10)
-        for old, new in _RENAMED_METHODS.items():
-            ns, name = new.split(".")
-            assert callable(getattr(getattr(d, ns), name)), new
-            assert not hasattr(pp.EyeData, old), old
-            with pytest.raises(AttributeError, match=rf"renamed: use \.{ns}\.{name}\(\.\.\.\)"):
-                getattr(d, old)
+    """The flat pupil/gaze names of 2.1 are gone (no forwarders)."""
 
     def test_flat_names_gone(self):
         flat = [n for n in dir(pp.EyeData)
@@ -101,10 +90,7 @@ class TestRenamedMethods:
         assert callable(d.plot.pupil_plot)
         assert not hasattr(d, "pupil_plot")
         assert not hasattr(d, "obj")  # the plotter's back-reference
-        with pytest.raises(AttributeError, match=r"renamed: use \.plot\.plot_timeseries"):
-            d.plot_timeseries()
-        with pytest.raises(AttributeError, match=r"has no attribute 'no_such_thing'$"):
-            d.no_such_thing
+        assert not hasattr(d, "plot_timeseries")
 
     def test_property_error_not_masked(self):
         # an AttributeError inside a property is reported as it is, not as

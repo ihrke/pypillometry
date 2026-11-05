@@ -38,32 +38,6 @@ def _history_arg(v):
         return type(v).__name__
 
 
-#: methods renamed in version 2.2 (old name -> new name; no forwarders): the
-#: pupil and gaze methods moved into the namespaces ``d.pupil`` and ``d.gaze``;
-#: the plots are only available in ``d.plot`` (``d.pupil_plot()`` was a short
-#: form of ``d.plot.pupil_plot()``)
-_RENAMED_METHODS = {
-    "pupil_lowpass_filter": "pupil.lowpass_filter",
-    "pupil_smooth_window": "pupil.smooth_window",
-    "pupil_merge_eyes": "pupil.merge_eyes",
-    "pupil_blinks_detect": "pupil.blinks_detect",
-    "pupil_blinks_interpolate": "pupil.blinks_interpolate",
-    "pupil_estimate_baseline": "pupil.estimate_baseline",
-    "pupil_estimate_response": "pupil.estimate_response",
-    "blinks_merge_close": "pupil.blinks_merge_close",
-    "correct_pupil_foreshortening": "pupil.correct_foreshortening",
-    "fit_foreshortening": "pupil.fit_foreshortening",
-    "mask_offscreen_coords": "gaze.mask_offscreen",
-    "mask_eye_divergences": "gaze.mask_divergences",
-    **{name: f"plot.{name}" for name in [
-        "plot_timeseries", "plot_timeseries_segments", "plot_intervals",
-        "plot_masked", "plot_experimental_setup", "pupil_plot",
-        "pupil_plot_segments", "plot_blinks",
-        "plot_pupil_foreshortening_error_surface", "plot_heatmap",
-        "plot_scanpath", "plot_calibration"]},
-}
-
-
 # number of decorated methods currently running; only the outermost call
 # (the one made by the user) is recorded
 _history_depth = 0

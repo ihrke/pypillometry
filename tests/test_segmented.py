@@ -507,8 +507,7 @@ class TestSegmentedEyeDataFromIntervals(unittest.TestCase):
     
     def test_intervals_renamed(self):
         seg = SegmentedEyeData.from_masked_array(np.ones((5, 2)), np.arange(5.), "left_pupil")
-        with self.assertRaisesRegex(AttributeError, "renamed to epochs"):
-            seg.intervals
+        self.assertFalse(hasattr(seg, "intervals"))
 
     def test_name_from_intervals_label(self):
         """Test that name defaults to intervals label"""

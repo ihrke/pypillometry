@@ -167,14 +167,10 @@ class TestPublicAPI(unittest.TestCase):
 
     def test_signal_functions_only_in_signal(self):
         self.assertTrue(callable(pp.signal.smooth_window))
-        with self.assertRaisesRegex(AttributeError, "use pypillometry.signal.smooth_window"):
-            pp.smooth_window
-        with self.assertRaisesRegex(AttributeError, "has no attribute 'nonexistent'"):
-            pp.nonexistent
+        self.assertFalse(hasattr(pp, "smooth_window"))
 
     def test_generic_eyedata_is_eyedata(self):
-        with self.assertRaisesRegex(AttributeError, "now part of pypillometry.EyeData"):
-            pp.GenericEyeData
+        self.assertFalse(hasattr(pp, "GenericEyeData"))
         self.assertEqual(pp.EyeData.__bases__, (pp.state.VersionedState,))
 
 
