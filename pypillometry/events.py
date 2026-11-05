@@ -1031,7 +1031,7 @@ class Events(Stateful):
         self,
         show_labels: str = "auto",
         marker: str = ".",
-        units: Optional[str] = "min",
+        units: Optional[str] = "sec",
         **kwargs,
     ):
         """
@@ -1045,7 +1045,7 @@ class Events(Stateful):
         marker : str, optional
             Matplotlib marker style for the events (default '.').
         units : str or None, optional
-            Units to display in the plot. Defaults to "min". Use None to keep existing units.
+            Units to display in the plot. Defaults to "sec". Use None to keep existing units.
         **kwargs :
             Additional keyword arguments passed to :func:`matplotlib.axes.Axes.plot`.
 

@@ -401,3 +401,21 @@ def test_plot_range_plain_numbers_in_units(plot_range):
             plt.close("all")
     finally:
         plt.close("all")
+
+
+def test_default_time_units_are_seconds():
+    d = pp.EyeData(left_pupil=np.arange(1000.), left_x=np.arange(1000.),
+                   left_y=np.arange(1000.), sampling_rate=100,
+                   event_onsets=[1000., 5000.], event_labels=["a", "b"])
+    d.mask_intervals([(1000, 2000)])  # plot_masked needs a masked period
+    try:
+        for plot in (d.plot.plot_timeseries, d.plot.pupil_plot, d.plot.plot_masked,
+                     d.events.plot):
+            plt.figure()
+            plot()
+            assert any("sec" in ax.get_xlabel() for ax in plt.gcf().axes), plot
+            plt.close("all")
+        figs = d.plot.plot_timeseries_segments(interv=5)  # 5 sec
+        assert len(figs) == 2 and "sec" in [ax.get_xlabel() for ax in figs[0].axes]
+    finally:
+        plt.close("all")

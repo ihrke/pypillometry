@@ -293,7 +293,7 @@ class GazePlots(GenericPlots):
             roi_style: dict={},
             show_onsets: bool=True,
             title: str="",
-            units: str="ms",
+            units: str="sec",
             figsize: tuple=(10,10)
             ) -> None:
         """
@@ -337,8 +337,8 @@ class GazePlots(GenericPlots):
         title : str
             The title of the plot. Default is "".
         units : str
-            The units of the time axis ("ms", "sec", "min", "h"). Default "ms"
-            (the units of the time vector).
+            The units of the time axis and of plain numbers in `plot_range`
+            ("ms", "sec", "min", "h"). Default "sec".
         figsize : tuple
             The figure size (width, height) in inches. Default is (10,10).
 
