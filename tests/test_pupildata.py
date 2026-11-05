@@ -17,15 +17,15 @@ class TestPupilData(unittest.TestCase):
         d=d.scale("pupil")
         self.assertEqual(d.data["left","pupil"].mean(), 0)
         self.assertEqual(d.data["right","pupil"].mean(), 0)
-        self.assertEqual(d.params["scale"]["mean"]["left"]["pupil"], 1.5)
-        self.assertEqual(d.params["scale"]["mean"]["right"]["pupil"], 3.5)
+        self.assertEqual(d.params["scale"]["mean"]["left_pupil"], 1.5)
+        self.assertEqual(d.params["scale"]["mean"]["right_pupil"], 3.5)
     def test_scale_ignores_masked(self):
         # masked (non-NaN) and NaN samples do not enter mean/sd
         d = pp.EyeData(sampling_rate=10, left_pupil=[1., 3., 1., 3., 999., np.nan])
         d.data.add_mask("left_pupil", np.s_[4])
         d = d.scale("pupil", inplace=False)
-        self.assertEqual(d.params["scale"]["mean"]["left"]["pupil"], 2.)
-        self.assertEqual(d.params["scale"]["sd"]["left"]["pupil"], 1.)
+        self.assertEqual(d.params["scale"]["mean"]["left_pupil"], 2.)
+        self.assertEqual(d.params["scale"]["sd"]["left_pupil"], 1.)
     def test_scale_masked_samples(self):
         # masked samples are scaled as well and stay masked
         d = pp.EyeData(sampling_rate=10, left_pupil=[1., 3., 1., 3., 5.])
@@ -38,17 +38,18 @@ class TestPupilData(unittest.TestCase):
         self.assertEqual(u.data.mask["left_pupil"][4], 1)
     def test_scale_fixed(self):
         d = pp.EyeData(sampling_rate=10, left_pupil=[1,2,1,2], right_pupil=[3,4,3,4])
-        scalepars = {
-            "left": {"pupil": 1},
-            "right": {"pupil": 3}
-        }
-        sdpars = {
-            "left": {"pupil": 0.5},
-            "right": {"pupil": 0.5}
-        }
+        scalepars = {"left_pupil": 1, "right_pupil": 3}
+        sdpars = {"left_pupil": 0.5, "right_pupil": 0.5}
         d=d.scale("pupil", mean=scalepars, sd=sdpars)
         self.assertEqual(d.data["left","pupil"].mean(), 1)
         self.assertEqual(d.data["right","pupil"].mean(), 1)
+        self.assertEqual(d.params["scale"], {"mean": scalepars, "sd": sdpars})
+    def test_scale_dict_by_channel(self):
+        d = pp.EyeData(sampling_rate=10, left_pupil=[1,2,1,2], right_pupil=[3,4,3,4])
+        with self.assertRaisesRegex(ValueError, "keyed by channel"):
+            d.scale("pupil", mean={"left": {"pupil": 1}, "right": {"pupil": 3}}, sd=1)
+        with self.assertRaisesRegex(ValueError, "mean has no value for right_pupil"):
+            d.scale("pupil", mean={"left_pupil": 1}, sd=1)
     def test_unscale(self):
         d = pp.EyeData(sampling_rate=10, left_pupil=[1,2,1,2], right_pupil=[3,4,3,4])
         d=d.scale("pupil")

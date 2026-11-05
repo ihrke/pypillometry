@@ -18,22 +18,12 @@ class TestGazeData(unittest.TestCase):
         d=d.scale(["x",'y'])
         self.assertEqual(d.data["left","x"].mean(), 0)
         self.assertEqual(d.data["left","y"].mean(), 0)
-        self.assertEqual(d.params["scale"]["mean"]["left"]["x"], 1.5)
-        self.assertEqual(d.params["scale"]["mean"]["left"]["y"], 3.5)
+        self.assertEqual(d.params["scale"]["mean"]["left_x"], 1.5)
+        self.assertEqual(d.params["scale"]["mean"]["left_y"], 3.5)
     def test_scale_fixed(self):
         d = pp.EyeData(sampling_rate=10, left_x=[1,2,1,2], left_y=[3,4,3,4])
-        scalepars = {
-            "left": {
-                "x": 1,
-                "y": 3
-            }
-        }
-        sdpars = {
-            "left": {
-                "x": 0.5,
-                "y": 0.5
-            }
-        }
+        scalepars = {"left_x": 1, "left_y": 3}
+        sdpars = {"left_x": 0.5, "left_y": 0.5}
         d=d.scale(["x",'y'], mean=scalepars, sd=sdpars)
         self.assertEqual(d.data["left","x"].mean(), 1)
         self.assertEqual(d.data["left","y"].mean(), 1)
@@ -50,7 +40,7 @@ class TestGazeData(unittest.TestCase):
         d = pp.EyeData(sampling_rate=10, left_x=x, left_y=y)
         d.scale("x").scale("y").unscale("x")
         np.testing.assert_allclose(d.data["left_x"], x)
-        self.assertEqual(list(d.params["scale"]["mean"]["left"]), ["y"])
+        self.assertEqual(list(d.params["scale"]["mean"]), ["left_y"])
         d.unscale("y")
         np.testing.assert_allclose(d.data["left_y"], y)
         self.assertEqual(d.params["scale"], {"mean": {}, "sd": {}})
