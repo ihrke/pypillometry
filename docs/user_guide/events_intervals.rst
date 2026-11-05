@@ -357,7 +357,7 @@ segments × time points). Averaged over segments, this is the
 The length and the time axis of the segments come from the window: the
 time points are ``window[0] + k * 1000/fs`` ms (at 500 Hz: -200, -198, ...,
 998 ms). Parts of a window outside the recording are masked. The segments
-keep their epochs (``erpd.intervals``). :meth:`~GenericEyeData.get_segments`
+keep their epochs (``erpd.epochs``). :meth:`~GenericEyeData.get_segments`
 also takes Intervals, but only if they all have the same length (the time
 axis then starts at 0 at their starts); for intervals between two events,
 it raises an error. The baseline window of
