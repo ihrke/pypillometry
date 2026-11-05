@@ -47,8 +47,8 @@ class GazePlots(GenericPlots):
         Parameters
         ----------
         plot_range : tuple
-            The time range to plot (in ms, or with units, e.g.
-            ``(3, 5) * u.min``). Default is (-np.inf, +np.inf), i.e. all data.
+            The time range to plot (plain numbers are in `units`, or with
+            units, e.g. ``(3, 5) * u.min``). Default is (-np.inf, +np.inf), i.e. all data.
         eyes : str or list
             The eyes to plot. Default is [], which means all available data ("left", "right",
             average, regression, ...)
@@ -72,8 +72,8 @@ class GazePlots(GenericPlots):
                 }
 
         units : str
-            The units in which `plot_range` is reported in messages ("ms", "sec",
-            "min", "h"); plain numbers in `plot_range` are ms. Default is "sec".
+            The units of plain numbers in `plot_range` and of messages ("ms",
+            "sec", "min", "h"). Default is "sec".
         cmap : str
             The colormap to use. Default is "jet".
         gridsize : int or str
@@ -310,8 +310,8 @@ class GazePlots(GenericPlots):
         Parameters
         ----------
         plot_range : tuple
-            The time range to plot (in ms, or with units, e.g.
-            ``(3, 5) * u.min``). Default is (-np.inf, +np.inf), i.e. all data.
+            The time range to plot (plain numbers are in `units`, or with
+            units, e.g. ``(3, 5) * u.min``). Default is (-np.inf, +np.inf), i.e. all data.
         eyes : str or list
             The eyes to plot. Default is [], which means all available data ("left", "right",
             average, regression, ...)

@@ -42,8 +42,8 @@ class PupilPlots(GenericPlots):
         Parameters
         ----------
         plot_range : tuple (start,end)
-            plot from start to end (in ms, or with units, e.g.
-            ``(3, 5) * u.min``)
+            plot from start to end (plain numbers are in `units`, or with
+            units, e.g. ``(3, 5) * u.min``)
         eyes : str or list
             eye(s) to plot; if empty, all eyes with pupil data are plotted
         show_events : bool
@@ -275,7 +275,7 @@ class PupilPlots(GenericPlots):
 
         for start,end in segments:
             fig = plt.figure(figsize=figsize)
-            self.pupil_plot(plot_range=(start / unit_factor, end / unit_factor), units=units,
+            self.pupil_plot(plot_range=(start, end), units=units,
                             **kwargs)
             if ylim is not None:
                 for ax in fig.axes:
@@ -406,8 +406,8 @@ class PupilPlots(GenericPlots):
             Default is [] which plots all eyes with pupil and gaze data; a
             requested eye without them raises a KeyError.
         plot_range : tuple, optional
-            The time range to include in the analysis (in ms, or with
-            units, e.g. ``(3, 5) * u.min``). Default is (-np.inf, +np.inf),
+            The time range to include in the analysis (plain numbers are
+            in `units`, or with units, e.g. ``(3, 5) * u.min``). Default is (-np.inf, +np.inf),
             i.e. all data.
         units : str, optional
             Time units of the plot. Default is "sec".

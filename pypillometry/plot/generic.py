@@ -35,8 +35,8 @@ class GenericPlots(Namespace):
 
     @staticmethod
     def _plot_range_in(plot_range, units: str = "ms") -> tuple:
-        """`plot_range` in `units` (the units of the time axis); plain numbers are ms."""
-        start, end = parse_time(plot_range, to=units, default="ms")
+        """`plot_range` in `units` (the units of the time axis); plain numbers are in `units`."""
+        start, end = parse_time(plot_range, to=units, default=units)
         return float(start), float(end)
 
     def _validate_plot_range(self, plot_range: tuple, units: str = "ms") -> None:
@@ -254,7 +254,9 @@ class GenericPlots(Namespace):
         Parameters
         ----------
         plot_range : tuple
-            The time range to plot (in `units`). Default is (-np.inf, +np.inf), i.e. all data.
+            The time range to plot; plain numbers are in `units`, values with
+            units are converted (e.g. ``(0, 20) * u.sec``). Default is
+            (-np.inf, +np.inf), i.e. all data.
         variables : list
             The data to plot. Default is [], which means all available data will be plotted.
             Available data are ["x","y","pupil"] but can be extended by the user.
@@ -520,7 +522,7 @@ class GenericPlots(Namespace):
         for start,end in segments:
             # Create a new figure for each segment
             fig = plt.figure(figsize=figsize)
-            self.plot_timeseries(plot_range=(start/fac, end/fac), units=units, 
+            self.plot_timeseries(plot_range=(start, end), units=units, 
                                eyes=eyes, variables=variables, **kwargs)
             if ylim is not None:
                 for ax in fig.axes:
