@@ -55,6 +55,18 @@ class TestInfiniteBoundsInLists:
         k = d.keep_intervals([(-np.inf, 1500)], inplace=False)
         assert k.get_excluded().intervals == [(1500., 2000.)]
 
+    @pytest.mark.parametrize("pair", [
+        (1200, 1.5 * pp.u.sec),            # plain number (ms) next to a unit
+        (1.2 * pp.u.sec, "1500 ms"),
+        (1200, 1500),
+    ])
+    def test_plain_numbers_and_units_mixed(self, pair):
+        d = self.make()
+        e = d.exclude_intervals([pair], inplace=False)
+        assert e.get_excluded().intervals == [(1200., 1500.)]
+        m = d.mask_intervals([pair], inplace=False)
+        assert m.mask("left_pupil").sum() == 30
+
 
 class TestNoEventLocking:
     """Intervals have no event-locking metadata (that is Epochs)."""
