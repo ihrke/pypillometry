@@ -293,7 +293,7 @@ class TestSegmentPlotParameters(unittest.TestCase):
     
     def test_segments_different_intervals(self):
         """Test plot_timeseries_segments with different interval sizes"""
-        for interv in ["0.5 min", 60000, 2 * pp.u.min]:
+        for interv in ["0.5 min", 1, 2 * pp.u.min]:
             figs = self.data.plot.plot_timeseries_segments(interv=interv)
             self.assertIsNotNone(figs)
             self.assertGreater(len(figs), 0)
@@ -301,7 +301,7 @@ class TestSegmentPlotParameters(unittest.TestCase):
     
     def test_segments_interv_with_units(self):
         """interv with units gives the same segments as plain numbers (bug 1.8)"""
-        ref = self.data.plot.plot_timeseries_segments(interv=10000, units="sec")
+        ref = self.data.plot.plot_timeseries_segments(interv=10, units="sec")
         n = len(ref)
         plt.close('all')
         for interv in [10 * pp.u.sec, "10 sec", 1 / 6 * pp.u.min]:

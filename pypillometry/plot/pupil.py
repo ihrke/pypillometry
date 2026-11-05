@@ -218,8 +218,8 @@ class PupilPlots(GenericPlots):
         pdf_file : str or None
             file name to store the PDF; if None, no PDF is written
         interv : float, str or Quantity
-            duration of each of the segments to be plotted (in ms, or with
-            units, e.g. ``"2 min"``); default 1 min
+            duration of each of the segments to be plotted (plain numbers
+            are in `units`, or with units, e.g. ``"2 min"``); default 1 min
         figsize : Tuple[int,int]
             dimensions of the figures
         ylim : Tuple[float,float] or None
@@ -258,7 +258,7 @@ class PupilPlots(GenericPlots):
         self._d._require("pupil")
         obj = self._d
         unit_factor = obj._unit_fac(units)
-        interv = parse_time(interv, to=units, default="ms")
+        interv = parse_time(interv, to=units, default=units)
         start_unit = float(np.min(obj.tx) * unit_factor)
         end_unit = float(np.max(obj.tx) * unit_factor)
         self._check_nsegments(end_unit - start_unit, interv)

@@ -20,7 +20,7 @@ class GenericPlots(Namespace):
     (:class:`~pypillometry.plot.PlotNamespace`).
     """
 
-    #: most figures a ``*_segments`` plot makes (a plain-number `interv` is ms)
+    #: most figures a ``*_segments`` plot makes
     MAX_SEGMENTS = 500
 
     @classmethod
@@ -31,7 +31,7 @@ class GenericPlots(Namespace):
         n = int(np.ceil(duration / interv))
         if n > cls.MAX_SEGMENTS:
             raise ValueError(f"interv gives {n} figures (at most {cls.MAX_SEGMENTS}); "
-                             "plain numbers are ms, e.g. use interv='1 min'")
+                             "plain numbers are in `units`")
 
     @staticmethod
     def _plot_range_in(plot_range, units: str = "ms") -> tuple:
@@ -460,8 +460,8 @@ class GenericPlots(Namespace):
         pdf_file : str or None
             file name to store the PDF; if None, no PDF is written
         interv : float, str or Quantity
-            duration of each of the segments to be plotted (in ms, or with
-            units, e.g. ``10 * u.sec``); default 1 min
+            duration of each of the segments to be plotted (plain numbers
+            are in `units`, or with units, e.g. ``10 * u.sec``); default 1 min
         figsize : Tuple[int,int]
             dimensions of the figures
         ylim : Tuple[float,float] or None
@@ -503,7 +503,7 @@ class GenericPlots(Namespace):
         # Calculate start and end times in the specified units
         obj=self._d
         fac=obj._unit_fac(units)
-        interv = parse_time(interv, to=units, default="ms")
+        interv = parse_time(interv, to=units, default=units)
         stime = obj.tx.min() * fac
         etime = obj.tx.max() * fac
         self._check_nsegments(etime - stime, interv)

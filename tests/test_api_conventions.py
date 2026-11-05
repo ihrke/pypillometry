@@ -156,8 +156,8 @@ class TestMs:
     def test_plot_segments_too_many(self, data):
         import matplotlib.pyplot as plt
         for f in (data.plot.plot_timeseries_segments, data.plot.pupil_plot_segments):
-            with pytest.raises(ValueError, match="plain numbers are ms"):
-                f(interv=1)  # 1 ms, not 1 min
+            with pytest.raises(ValueError, match="plain numbers are in `units`"):
+                f(interv=1, units="ms")
         assert len(data.plot.plot_timeseries_segments(interv="5 sec")) == 2
         plt.close("all")
 
