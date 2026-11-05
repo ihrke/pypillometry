@@ -3,7 +3,7 @@
 
 Used to build reference distributions for the measures of the quality report
 (see docs/user_guide/quality.rst), e.g., to choose thresholds. The values
-come from :meth:`~pypillometry.GenericEyeData.quality_report`, so they are
+come from :meth:`~pypillometry.EyeData.quality_report`, so they are
 computed exactly as in the report.
 
 Each file (EDF or pypillometry pickle, as for ``pypilinfo``) gives one row

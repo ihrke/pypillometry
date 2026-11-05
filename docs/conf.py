@@ -171,7 +171,7 @@ pygments_dark_style = "monokai"
 # documents everything under its public name (pypillometry.signal.pupil_response).
 # This hook redirects such links (and bare method names) to the public name.
 
-_PUBLIC_CLASSES = ["GenericEyeData", "EyeData"]
+_PUBLIC_CLASSES = ["EyeData"]
 # d.pupil / d.gaze / d.plot: EyeData.pupil.<method> is documented on the namespace class
 _NAMESPACES = {"pupil": "pypillometry.eyedata.pupil.PupilNamespace",
                "gaze": "pypillometry.eyedata.gaze.GazeNamespace",

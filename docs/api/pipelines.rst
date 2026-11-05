@@ -24,7 +24,7 @@ Generic steps
 -------------
 
 Each of these makes a step from the method of the same name
-(e.g., ``pp.crop(...)`` calls :meth:`GenericEyeData.crop`).
+(e.g., ``pp.crop(...)`` calls :meth:`EyeData.crop`).
 
 .. autosummary::
    :toctree: generated

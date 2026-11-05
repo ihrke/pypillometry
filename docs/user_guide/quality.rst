@@ -3,7 +3,7 @@
 Data quality
 ============
 
-:meth:`~GenericEyeData.quality_report` summarizes the quality of a
+:meth:`~EyeData.quality_report` summarizes the quality of a
 dataset: missing data, dropouts and noise of the pupil, missing and
 off-screen samples and precision of the gaze, and agreement between the
 eyes. These measures need no preprocessing. After preprocessing, blinks and
@@ -24,7 +24,7 @@ From the command line, ``pypilinfo -Q`` prints the report and
 :doc:`/getting_started/cli`).
 
 If parts of the recording are excluded from the analysis (e.g., breaks,
-see :meth:`~GenericEyeData.exclude_intervals`), the report only looks at
+see :meth:`~EyeData.exclude_intervals`), the report only looks at
 the included time: the recording section shows the total and the included
 duration, and all rates and percentages refer to the included part.
 Dropouts end at the boundaries of an excluded period, and no

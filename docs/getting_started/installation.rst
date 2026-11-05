@@ -111,8 +111,8 @@ without changes. The main differences:
 - Most methods were renamed, e.g. ``blinks_detect()`` is now
   :meth:`~EyeData.pupil.blinks_detect` and ``lowpass_filter()`` is
   :meth:`~EyeData.pupil.lowpass_filter`.
-- ERPDs are created with :meth:`~GenericEyeData.get_intervals` and
-  :meth:`~GenericEyeData.get_segments` (see :doc:`/notebooks/erpds`).
+- ERPDs are created with :meth:`~EyeData.get_intervals` and
+  :meth:`~EyeData.get_segments` (see :doc:`/notebooks/erpds`).
 
 Version 1 is still available on the `v1 branch
 <https://github.com/ihrke/pypillometry/tree/v1>`_ and its documentation is

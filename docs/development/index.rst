@@ -45,7 +45,8 @@ Package architecture
 --------------------
 
 Most functionality is available as methods of the data class
-:class:`EyeData` (and its base class :class:`GenericEyeData`). The generic
+:class:`EyeData` (``eyedata/eyedata.py``; helpers it shares with the
+namespaces are in ``eyedata/generic.py``). The generic
 methods (crop, downsample, intervals, masks, events, I/O, ...) are methods of
 the object itself. The methods for pupil and gaze data are kept in separate
 modules, as *namespaces*: ``eyedata/pupil.py`` (``PupilNamespace``, used as
@@ -94,8 +95,8 @@ follow them too; ``tests/test_api_conventions.py`` checks them.
    (``None`` by default: the object-level setting from the constructor,
    else the package setting, see :func:`set_default_inplace`). With
    ``inplace=False`` it changes and returns a copy. Only ``set_*`` methods
-   (:meth:`~GenericEyeData.set_events`, :meth:`~GenericEyeData.set_blinks`,
-   :meth:`~GenericEyeData.set_experimental_setup`) always work in place; they
+   (:meth:`~EyeData.set_events`, :meth:`~EyeData.set_blinks`,
+   :meth:`~EyeData.set_experimental_setup`) always work in place; they
    return the object as well. Methods that change the object are decorated
    with :func:`keephistory`, which records the call in the returned object.
 
@@ -106,20 +107,20 @@ follow them too; ``tests/test_api_conventions.py`` checks them.
    (``"blink"``, ``"offscreen"``, ``"divergence"``) for the channels they
    process. Setting a layer *is* masking: there is no ``apply_mask``
    argument. The results are read with getters
-   (:meth:`~GenericEyeData.get_blinks`,
-   :meth:`~GenericEyeData.get_layer_intervals`, ...) and removed with
-   :meth:`~GenericEyeData.clear_layer`. To compute without storing, use the
+   (:meth:`~EyeData.get_blinks`,
+   :meth:`~EyeData.get_layer_intervals`, ...) and removed with
+   :meth:`~EyeData.clear_layer`. To compute without storing, use the
    functions in ``pypillometry.signal``.
 
 3. **Getters with per-channel results always return a dict** keyed by
    the channel name ``"<eye>_<variable>"`` (e.g., ``"left_pupil"``), also
    for a single channel, and with an entry for every selected channel (e.g.,
-   :meth:`~GenericEyeData.nblinks` gives 0 for a channel without blinks).
+   :meth:`~EyeData.nblinks` gives 0 for a channel without blinks).
    The keys are the same strings as in ``d["left_pupil"]`` and ``d.data``.
 
 4. **Plain numbers are ms**: windows, durations, margins, and the default
    units of returned times and intervals
-   (:meth:`~GenericEyeData.get_blinks`, :meth:`~GenericEyeData.get_duration`,
+   (:meth:`~EyeData.get_blinks`, :meth:`~EyeData.get_duration`,
    ...). Other units are given with the values (``(-200, 800) * u.ms``,
    ``"2 min"``). Sample indices only with an explicit ``units="samples"``.
    Exception: in plotting functions, plain numbers in ``plot_range`` and
@@ -133,7 +134,7 @@ follow them too; ``tests/test_api_conventions.py`` checks them.
    `variables`) instead of looping over eyes and variables.
 
 New eyes created from others are named ``"mean"`` by default
-(:meth:`~GenericEyeData.merge_eyes`, :meth:`~EyeData.pupil.merge_eyes`;
+(:meth:`~EyeData.merge_eyes`, :meth:`~EyeData.pupil.merge_eyes`;
 both take ``name=``).
 
 

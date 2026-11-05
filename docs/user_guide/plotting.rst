@@ -126,7 +126,7 @@ check blink detection and interpolation:
 Event-related pupil dilation
 ----------------------------
 
-The segments returned by :meth:`~GenericEyeData.get_segments` have their
+The segments returned by :meth:`~EyeData.get_segments` have their
 own ``plot()`` method that shows the mean (with its standard error) and the
 percentage of missing data (see :doc:`events_intervals`):
 

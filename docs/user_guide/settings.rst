@@ -16,10 +16,10 @@ By default, methods change the object they are called on (see
 
 A value given to an object's constructor (``inplace=...``) or to a single
 method call takes precedence. This holds for every method that changes the
-data (also :meth:`~GenericEyeData.drop_data`, blink detection and
+data (also :meth:`~EyeData.drop_data`, blink detection and
 :meth:`SegmentedEyeData.baseline_correct`); all of them return the
 (changed) object. Only the ``set_*`` methods (e.g.,
-:meth:`~GenericEyeData.set_events`) always change the object itself.
+:meth:`~EyeData.set_events`) always change the object itself.
 
 .. autosummary::
    :nosignatures:

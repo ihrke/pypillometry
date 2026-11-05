@@ -6,7 +6,7 @@ look at a recording without writing any Python code.
 
 All of them read Eyelink EDF files and eyedata objects saved with
 :func:`~pypillometry.write_pickle` or
-:meth:`~pypillometry.GenericEyeData.write_file` (pickle files, e.g.,
+:meth:`~pypillometry.EyeData.write_file` (pickle files, e.g.,
 ``.pkl`` or ``.pypil``, or HDF5 files, ``.h5``). The format is detected from the file content, not from the
 extension. Instead of a local file, you can also give an HTTP(S) URL or an
 SSH URL (``ssh://server/folder/file.edf``).
@@ -86,7 +86,7 @@ The calibration line shows the validation error (in degrees) for each
 eye, and the history lists all processing steps applied to the data so far.
 
 With ``-Q``/``--quality``, ``pypilinfo`` prints a data-quality report
-instead of the summary (see :meth:`~pypillometry.GenericEyeData.quality_report`):
+instead of the summary (see :meth:`~pypillometry.EyeData.quality_report`):
 missing data, dropouts, noise, gaze precision, calibration errors etc.,
 each labeled "good", "ok", "poor" or "bad". Add ``-d``/``--descriptions``
 to explain each measure and its thresholds. For several files, a summary
@@ -134,7 +134,7 @@ More options:
     edf2pypil recording.edf -f           # overwrite an existing file
 
 Load the result in Python with :func:`~pypillometry.read_pickle` or
-:meth:`EyeData.from_file() <pypillometry.GenericEyeData.from_file>`.
+:meth:`EyeData.from_file() <pypillometry.EyeData.from_file>`.
 
 
 ``pypil-upgrade``: convert files saved with older versions

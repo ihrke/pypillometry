@@ -15,11 +15,11 @@ any of them.
 .. mermaid::
 
    classDiagram
-    GenericEyeData <|-- EyeData
+    EyeData <|-- EyeData
     EyeData <|-- FakeEyeData
-    GenericEyeData: data (EyeDataDict)
-    GenericEyeData: events, layers, history, experimental_setup, calibration
-    GenericEyeData: get_intervals(), get_segments(), downsample(), ...
+    EyeData: data (EyeDataDict)
+    EyeData: events, layers, history, experimental_setup, calibration
+    EyeData: get_intervals(), get_segments(), downsample(), ...
     EyeData: plot (PlotNamespace)
     EyeData: pupil (PupilNamespace)
     EyeData: gaze (GazeNamespace)
@@ -45,7 +45,7 @@ An object is usually created by reading a file (see
     d = pp.EyeData.from_eyelink("recording.edf")
 
 Printing the object, or showing it in a notebook, gives an overview of
-its contents. :meth:`~GenericEyeData.summary` returns the same information
+its contents. :meth:`~EyeData.summary` returns the same information
 as a dictionary.
 
 
@@ -119,11 +119,11 @@ that record why a sample is masked. Each method sets only its own layer:
    * - ``"blink"``
      - :meth:`~EyeData.pupil.blinks_detect`,
        :meth:`~EyeData.pupil.blinks_merge_close`,
-       :meth:`~GenericEyeData.set_blinks`
+       :meth:`~EyeData.set_blinks`
      - missing
    * - ``"interpolated"``
      - :meth:`~EyeData.pupil.blinks_interpolate`,
-       :meth:`~GenericEyeData.interpolate_intervals`
+       :meth:`~EyeData.interpolate_intervals`
      - reconstructed
    * - ``"offscreen"``
      - :meth:`~EyeData.gaze.mask_offscreen`
@@ -132,19 +132,19 @@ that record why a sample is masked. Each method sets only its own layer:
      - :meth:`~EyeData.gaze.mask_divergences`
      - missing
    * - ``"user"``
-     - :meth:`~GenericEyeData.mask_intervals`, assigning a masked array
+     - :meth:`~EyeData.mask_intervals`, assigning a masked array
        (``d["left_pupil"] = np.ma.masked_array(...)``)
      - missing
    * - ``"excluded"``
-     - :meth:`~GenericEyeData.exclude_intervals`,
-       :meth:`~GenericEyeData.keep_intervals` (one layer for the whole
+     - :meth:`~EyeData.exclude_intervals`,
+       :meth:`~EyeData.keep_intervals` (one layer for the whole
        recording, see below)
      - not part of the analysis
 
 NaN is not a layer: it is read from the values. Detection methods store
 what they find in their layer and return the object, so they can be
 chained. Running a detector again *replaces* its layer, and
-:meth:`~GenericEyeData.clear_layer` removes a layer. The results are read
+:meth:`~EyeData.clear_layer` removes a layer. The results are read
 with getters that return a dict of :class:`Intervals` keyed by channel
 (e.g., ``"left_pupil"``), in ms:
 
@@ -159,7 +159,7 @@ with getters that return a dict of :class:`Intervals` keyed by channel
 
 Interpolation keeps the ``"blink"`` layer and adds ``"interpolated"``, so
 you can always tell recorded from reconstructed samples (e.g.,
-:meth:`~GenericEyeData.get_interpolated_blinks`). The quality report
+:meth:`~EyeData.get_interpolated_blinks`). The quality report
 splits the masked time by layer.
 
 Mask policies
@@ -188,10 +188,10 @@ default one unless you pass ``policy=``. Filters
 :meth:`~EyeData.pupil.smooth_window`) and the baseline model bridge the
 unusable samples linearly instead of using their values, and only change
 the usable samples; masked samples keep their values. Segments,
-:meth:`~GenericEyeData.stat_per_event`, :meth:`~GenericEyeData.scale`,
-:meth:`~GenericEyeData.merge_eyes`, :meth:`~GenericEyeData.downsample` and
+:meth:`~EyeData.stat_per_event`, :meth:`~EyeData.scale`,
+:meth:`~EyeData.merge_eyes`, :meth:`~EyeData.downsample` and
 the quality report leave out the unusable samples.
-:meth:`~GenericEyeData.mask` and :meth:`~GenericEyeData.values` give the
+:meth:`~EyeData.mask` and :meth:`~EyeData.values` give the
 mask (or the values with NaN) of a channel under a policy; ``d["left_pupil"]``
 (a masked array) and ``d.data.mask`` use the default policy:
 
@@ -210,7 +210,7 @@ Excluded periods
 Some parts of a recording are not part of the analysis at all, e.g., the
 calibration at the start or breaks between blocks. The data there may be
 perfectly valid, so they should not count as missing data or blinks.
-:meth:`~GenericEyeData.exclude_intervals` stores such periods with the
+:meth:`~EyeData.exclude_intervals` stores such periods with the
 object (the recording-wide ``"excluded"`` layer) and masks all variables
 during them, also variables added later:
 
@@ -224,7 +224,7 @@ during them, also variables added later:
     d.get_excluded()                            # the excluded periods
     d.excluded_duration("min")                  # their total duration
 
-:meth:`~GenericEyeData.keep_intervals` does the opposite: it excludes
+:meth:`~EyeData.keep_intervals` does the opposite: it excludes
 everything outside the given periods, e.g., to keep only the fMRI run:
 
 .. code-block:: python
@@ -233,17 +233,17 @@ everything outside the given periods, e.g., to keep only the fMRI run:
     d = d.keep_intervals(run)
 
 Because the samples are masked, everything that ignores masked data
-(averages, :meth:`~GenericEyeData.scale`, segments, ...) also ignores the
+(averages, :meth:`~EyeData.scale`, segments, ...) also ignores the
 excluded periods (also where the data were interpolated). Unlike other
 masks, excluded periods are not blinks: blink detection cuts blinks at
 them, and a blink that ends in an excluded period is not interpolated. The layer moves with the samples when the data are
 sliced or downsampled, and it is saved with the object;
 ``d.clear_layer("excluded")`` removes the excluded periods.
 
-:meth:`~GenericEyeData.get_included` returns the periods between them. To
-get rid of the excluded data altogether, :meth:`~GenericEyeData.split_excluded`
+:meth:`~EyeData.get_included` returns the periods between them. To
+get rid of the excluded data altogether, :meth:`~EyeData.split_excluded`
 returns one object per included period, and
-:meth:`~GenericEyeData.remove_intervals` deletes the excluded samples and
+:meth:`~EyeData.remove_intervals` deletes the excluded samples and
 joins the rest (the time vector and the events are shifted so that there
 are no gaps):
 
@@ -296,7 +296,7 @@ or ``d.downsample(50)``; they return the object, so calls can be chained.
 
 Every step is stored with its parameters in the object's history, shown at
 the bottom of the object's summary and by
-:meth:`~GenericEyeData.print_history`. This keeps a record of exactly how
+:meth:`~EyeData.print_history`. This keeps a record of exactly how
 the data were processed. See :doc:`/notebooks/pipes`.
 
 

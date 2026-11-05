@@ -14,7 +14,8 @@ What changed
 ------------
 
 **One data class.** :class:`EyeData` holds pupil and gaze data alike;
-``PupilData`` and ``GazeData`` are gone. Use
+``PupilData``, ``GazeData`` and their base class ``GenericEyeData`` are
+gone. Use
 ``d.drop_data(variables=["x", "y"], inplace=False)`` instead of
 ``d.to_pupildata()``. See :doc:`data_model`.
 
@@ -60,21 +61,21 @@ These changes silently give other results with code that ran under 2.1.
 Check your scripts for them:
 
 - **Plain numbers are ms** everywhere: windows of
-  :meth:`~GenericEyeData.get_intervals`, durations, margins. Sample indices
+  :meth:`~EyeData.get_intervals`, durations, margins. Sample indices
   need ``units="samples"``. Exception: in plots, plain numbers in
   ``plot_range`` and ``interv`` are in ``units=``, as in 2.1.
 - **Interpolated samples are used** in segments,
-  :meth:`~GenericEyeData.stat_per_event`, :meth:`~GenericEyeData.scale`,
-  :meth:`~GenericEyeData.merge_eyes`, :meth:`~GenericEyeData.downsample` and
+  :meth:`~EyeData.stat_per_event`, :meth:`~EyeData.scale`,
+  :meth:`~EyeData.merge_eyes`, :meth:`~EyeData.downsample` and
   the quality report. Pass ``policy="strict"`` for the 2.1 behaviour.
-- **In place by default** also for :meth:`~GenericEyeData.drop_data`,
-  :meth:`~GenericEyeData.fill_time_discontinuities` and
+- **In place by default** also for :meth:`~EyeData.drop_data`,
+  :meth:`~EyeData.fill_time_discontinuities` and
   :meth:`SegmentedEyeData.baseline_correct`, which returned a copy in 2.1:
   ``d2 = d.drop_data(...)`` now changes ``d`` too. Pass ``inplace=False``.
 - **Results per channel are dicts** keyed like the data (``"left_pupil"``),
   e.g. ``d.get_blinks()["left_pupil"]``, in ms.
 - **Merged eyes** are called ``mean`` (``mean_pupil``), not ``merged``.
-- **The sampling rate after** :meth:`~GenericEyeData.downsample` is the
+- **The sampling rate after** :meth:`~EyeData.downsample` is the
   actual rate: downsampling 1000 Hz data to 300 Hz gives 333.3 Hz.
 - ``pp.downsample`` is now a pipeline step; the function for numpy arrays
   is ``pp.signal.downsample``. All functions for numpy arrays are only in

@@ -10,9 +10,9 @@ pupil and gaze data are in the namespaces ``d.pupil`` (:doc:`pupil`) and
 Main class
 ----------
 
-:class:`EyeData` holds the data. The generic methods (crop, downsample,
-masks and layers, events, intervals, segments, saving, ...) are defined in
-its base class :class:`GenericEyeData` and listed on both pages.
+:class:`EyeData` holds the data. Its methods for any channel (crop,
+downsample, masks and layers, events, intervals, segments, saving, ...) are
+listed on its page.
 
 .. autosummary::
    :toctree: generated
@@ -20,7 +20,6 @@ its base class :class:`GenericEyeData` and listed on both pages.
    :nosignatures:
 
    EyeData
-   GenericEyeData
 
 Channels, layers and mask policies
 ----------------------------------
@@ -57,7 +56,7 @@ Simulated data and history
 Quality report
 --------------
 
-See :meth:`GenericEyeData.quality_report`.
+See :meth:`EyeData.quality_report`.
 
 .. autosummary::
    :toctree: generated
