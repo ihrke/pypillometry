@@ -48,6 +48,13 @@ If you have not used the package before, start with the
       the reason for each bad sample is stored and what each method does
       with it.
 
+   .. grid-item-card:: :fas:`crosshairs` Gaze data and the setup
+      :link: gaze
+      :link-type: doc
+
+      Gaze coordinates, the screen and camera geometry, conversion to
+      degrees, off-screen and divergent samples, gaze plots and regions.
+
    .. grid-item-card:: :fas:`clipboard-check` Data quality
       :link: quality
       :link-type: doc
@@ -112,6 +119,7 @@ If you have not used the package before, start with the
    units
    preprocessing
    missing_data
+   gaze
    quality
    events_intervals
    plotting

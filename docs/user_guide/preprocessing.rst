@@ -83,7 +83,7 @@ to very different places are usually artifacts:
    EyeData.gaze.mask_divergences
 
 :meth:`~EyeData.gaze.mask_offscreen` needs the screen size (see
-:meth:`~EyeData.set_experimental_setup`).
+:meth:`~EyeData.set_experimental_setup` and :doc:`gaze`).
 
 Any stretch of data can be masked or interpolated from an
 :class:`Intervals` object, e.g., periods you marked as bad by hand:
