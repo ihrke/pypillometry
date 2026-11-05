@@ -51,9 +51,9 @@ class GazeNamespace(Namespace):
             - "pixel": threshold is the maximum allowed distance in pixels
         store_as : str or None, default=None
             Variable name to store the distance timeseries. If None, distance is not stored.
-            The distance is stored for both eyes (``left_<store_as>`` and
-            ``right_<store_as>``, the same values), masked where one of the
-            coordinates is masked or the eyes diverge.
+            The distance is stored once, under the eye ``"both"``
+            (``both_<store_as>``), masked where one of the coordinates is
+            masked or the eyes diverge.
         ignore_existing_mask : bool, default=True
             If True (default), check all data points including those already masked (e.g., from blinks).
             If False, only check the data points that are usable under the
@@ -144,17 +144,16 @@ class GazeNamespace(Namespace):
         divergence_mask = (dist > thr).filled(False)
         
         # Store distance as a timeseries if requested: as variable `store_as`
-        # of both eyes (a key without an eye would be taken for an eye),
-        # masked where any of the coordinates is masked or the eyes diverge
+        # of the eye "both" (like "mean" for merged eyes), masked where any of
+        # the coordinates is masked or the eyes diverge
         if store_as is not None:
             policy = _without_layer("default", "divergence")
             source_mask = np.logical_or.reduce(
                 [obj.data.get_policy_mask(k, policy)
                  for k in ("left_x", "left_y", "right_x", "right_y")])
-            for eye in ("left", "right"):
-                key = f"{eye}_{store_as}"
-                obj.data.set_with_mask(key, np.ma.getdata(dist), mask=source_mask)
-                obj.data.set_layer(key, "divergence", divergence_mask, replace=True)
+            key = f"both_{store_as}"
+            obj.data.set_with_mask(key, np.ma.getdata(dist), mask=source_mask)
+            obj.data.set_layer(key, "divergence", divergence_mask, replace=True)
         
         # replace the divergence layer of x and y
         for key in ("left_x", "left_y", "right_x", "right_y"):

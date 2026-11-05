@@ -117,16 +117,16 @@ class TestGazeData(unittest.TestCase):
         # Apply divergence masking at 90th percentile with distance stored
         d_masked = d.gaze.mask_divergences(threshold=0.9, thr_type="percentile", store_as="dist", inplace=False)
         
-        # Verify distance was stored for both eyes (no new eye)
-        self.assertEqual(d_masked.eyes, ["left", "right"])
+        # Verify distance was stored once, under the eye "both"
+        self.assertEqual(sorted(d_masked.eyes), ["both", "left", "right"])
+        self.assertNotIn("left_dist", d_masked.data)
         
         # Calculate expected distance
         expected_dist = np.sqrt((left_x - right_x)**2 + (left_y - right_y)**2)
         
         # Verify distance calculation
-        for key in ('left_dist', 'right_dist'):
-            np.testing.assert_allclose(d_masked.data[key], expected_dist, rtol=1e-5)
-            self.assertEqual(d_masked.data.mask[key][8], 1)
+        np.testing.assert_allclose(d_masked.data['both_dist'], expected_dist, rtol=1e-5)
+        self.assertEqual(d_masked.data.mask['both_dist'][8], 1)
         
         # Verify that the point with large divergence (index 8) is masked
         self.assertEqual(d_masked.data.mask['left_x'][8], 1)
@@ -189,8 +189,7 @@ class TestGazeData(unittest.TestCase):
         self.assertIs(result, d)
         
         # Verify distance was stored in original object
-        self.assertIn('left_mydist', d.data)
-        self.assertIn('right_mydist', d.data)
+        self.assertIn('both_mydist', d.data)
     
     def test_mask_eye_divergences_requires_both_eyes(self):
         """Test that function raises error if both eyes are not available"""
@@ -283,8 +282,7 @@ class TestGazeData(unittest.TestCase):
         self.assertEqual(d_masked.data.mask['left_x'][1], 1)
         
         # Distance array should also have the masked point
-        self.assertEqual(d_masked.data.mask['left_dist'][1], 1)
-        self.assertEqual(d_masked.data.mask['right_dist'][1], 1)
+        self.assertEqual(d_masked.data.mask['both_dist'][1], 1)
     
     def test_mask_eye_divergences_inplace_false(self):
         """mask_eye_divergences with inplace=False: the copy holds the divergence layer"""
@@ -714,8 +712,8 @@ class TestMaskOffscreenCoords(unittest.TestCase):
 if __name__ == '__main__':
     unittest.main()
 
-def test_stored_divergence_is_not_an_eye():
-    """Finding 5.3: the stored distance must not be taken for an eye."""
+def test_stored_divergence_eye_both():
+    """Finding 5.3: the stored distance is the variable of the eye "both"."""
     rng = np.random.default_rng(0)
     n = 200
     d = pp.EyeData(left_x=rng.normal(500, 5, n), left_y=rng.normal(400, 5, n),
@@ -723,8 +721,8 @@ def test_stored_divergence_is_not_an_eye():
                    left_pupil=np.full(n, 1000.), right_pupil=np.full(n, 1000.),
                    sampling_rate=100, inplace=False)
     d = d.gaze.mask_divergences(store_as="div")
-    assert d.eyes == ["left", "right"]
-    assert d.data.get_layer("left_div", "divergence").sum() == 2  # 99th percentile
+    assert d.eyes == ["left", "right", "both"]
+    assert d.data.get_layer("both_div", "divergence").sum() == 2  # 99th percentile
     d.pupil.blinks_detect()
     d.merge_eyes()
     d.crop(0, 1000)
