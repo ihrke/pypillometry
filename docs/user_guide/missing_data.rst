@@ -210,6 +210,16 @@ for any intervals. The ``"blink"`` layer stays, so you can always tell
 recorded from reconstructed samples. After interpolation, the pupil has no
 NaN in the blinks any more.
 
+Each interpolation adds to the ``"interpolated"`` layer, so different kinds
+of artifacts can be interpolated one after the other with different
+methods (e.g., :meth:`~EyeData.pupil.blinks_interpolate`, then
+:meth:`~GenericEyeData.interpolate_intervals` for periods marked by hand),
+and the layer holds all of them. ``d.clear_layer("interpolated")`` (also
+for selected ``eyes=``/``variables=``) empties it: the values stay as they
+were interpolated, but the samples are no longer marked as reconstructed,
+so they are unusable again where another layer (e.g., ``"blink"``) masks
+them.
+
 Processing
 ~~~~~~~~~~
 
