@@ -92,7 +92,7 @@ class SegmentedEyeData(state.VersionedState):
         Time axis relative to segment onset (in ms)
     data : np.ma.MaskedArray
         Masked array with shape (n_timepoints, n_segments)
-    intervals : Epochs, optional
+    epochs : Epochs, optional
         the epochs the segments were extracted from (event onsets, window,
         labels and metadata); segments from old files made from intervals
         that were not event-locked keep these Intervals
@@ -100,16 +100,17 @@ class SegmentedEyeData(state.VersionedState):
         Original sampling rate in Hz
     """
     
-    # state (see pypillometry.state); `intervals` is Epochs or Intervals
+    # state (see pypillometry.state); `epochs` is Epochs or Intervals (stored
+    # as "intervals", the attribute's name up to 2.2)
     _STATE_FIELDS = ("name", "variable", "tx", ("data", "masked"),
-                     ("intervals", "tagged"), "sampling_rate")
+                     ("intervals", "tagged", "epochs"), "sampling_rate")
 
     def __init__(self, 
                  name: str, 
                  variable: str,
                  tx: np.ndarray, 
                  data: ma.MaskedArray,
-                 intervals=None,
+                 epochs=None,
                  sampling_rate: float = None):
         self.name = name
         self.variable = variable
@@ -120,7 +121,7 @@ class SegmentedEyeData(state.VersionedState):
             data = ma.masked_array(data, mask=np.isnan(data))
         self.data = data
         
-        self.intervals = intervals
+        self.epochs = epochs
         self.sampling_rate = sampling_rate
         
         # Validate variable format
@@ -148,6 +149,10 @@ class SegmentedEyeData(state.VersionedState):
         return self.data.shape[1]
     
     @property
+    def intervals(self):
+        raise AttributeError("SegmentedEyeData.intervals was renamed to epochs")
+
+    @property
     def window(self) -> Tuple[float, float]:
         """Time window in ms as (start, end)."""
         return (self.tx.min(), self.tx.max())
@@ -157,7 +162,7 @@ class SegmentedEyeData(state.VersionedState):
                           data: Union[np.ndarray, ma.MaskedArray],
                           tx: np.ndarray,
                           variable: str,
-                          intervals=None,
+                          epochs=None,
                           name: str = "segments",
                           sampling_rate: float = None,
                           mask: np.ndarray = None) -> 'SegmentedEyeData':
@@ -172,7 +177,7 @@ class SegmentedEyeData(state.VersionedState):
             Time axis relative to segment onset (in ms)
         variable : str
             Variable name in "eye_variable" format
-        intervals : Epochs, optional
+        epochs : Epochs, optional
             the epochs the segments were extracted from
         name : str, optional
             Name for the dataset (default "segments")
@@ -198,7 +203,7 @@ class SegmentedEyeData(state.VersionedState):
             variable=variable,
             tx=tx,
             data=masked_data,
-            intervals=intervals,
+            epochs=epochs,
             sampling_rate=sampling_rate
         )
     
@@ -223,7 +228,7 @@ class SegmentedEyeData(state.VersionedState):
             ms) come from the window, and the parts outside the data are
             masked. Intervals must all have the same length; they are used
             as Epochs with the onsets at their starts and the window
-            ``(0, length)`` (kept as `intervals` of the result)
+            ``(0, length)`` (kept as `epochs` of the result)
         variable : str
             Variable to extract in "eye_variable" format (e.g., "left_pupil")
         name : str, optional
@@ -259,7 +264,7 @@ class SegmentedEyeData(state.VersionedState):
             intervals = _epochs_from_spans(eyedata, intervals)
         txw, masked_data = _extract_epochs(eyedata, intervals, variable, policy)
         return cls(name=name, variable=variable, tx=txw, data=masked_data,
-                   intervals=intervals, sampling_rate=eyedata.fs)
+                   epochs=intervals, sampling_rate=eyedata.fs)
     
     def summary(self) -> dict:
         """
@@ -316,8 +321,8 @@ class SegmentedEyeData(state.VersionedState):
             overview.append(("Sampling rate", f"{summary['sampling_rate']:.0f} Hz"))
         
         # Add intervals info if available
-        if self.intervals is not None and self.intervals.label:
-            overview.insert(0, ("Intervals", self.intervals.label))
+        if self.epochs is not None and self.epochs.label:
+            overview.insert(0, ("Epochs", self.epochs.label))
         
         # Generate sparkline of mean signal
         sparkline_html = ""
@@ -459,7 +464,7 @@ class SegmentedEyeData(state.VersionedState):
             variable=self.variable,
             tx=self.tx,
             data=corrected_data,
-            intervals=self.intervals,
+            epochs=self.epochs,
             sampling_rate=self.sampling_rate
         )
     
@@ -691,7 +696,7 @@ class GroupLevelSegmentedData(SegmentedEyeData):
         Percentage of masked data per subject at each timepoint (shape: n_timepoints)
     n_subjects : int
         Number of subjects combined
-    intervals : Epochs, optional
+    epochs : Epochs, optional
         the epochs of the first segments
     sampling_rate : float, optional
         Original sampling rate in Hz
@@ -707,7 +712,7 @@ class GroupLevelSegmentedData(SegmentedEyeData):
                  data: ma.MaskedArray,
                  mask_percent: np.ndarray,
                  n_subjects: int,
-                 intervals=None,
+                 epochs=None,
                  sampling_rate: float = None):
         # Call parent constructor
         super().__init__(
@@ -715,7 +720,7 @@ class GroupLevelSegmentedData(SegmentedEyeData):
             variable=variable,
             tx=tx,
             data=data,
-            intervals=intervals,
+            epochs=epochs,
             sampling_rate=sampling_rate
         )
         self.mask_percent = mask_percent
@@ -823,7 +828,7 @@ class GroupLevelSegmentedData(SegmentedEyeData):
             data=combined_data,
             mask_percent=mask_percent,
             n_subjects=n_subjects,
-            intervals=first.intervals,
+            epochs=first.epochs,
             sampling_rate=first.sampling_rate
         )
     

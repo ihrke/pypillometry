@@ -201,8 +201,8 @@ class TestMigratedState:
         np.testing.assert_array_equal(ep["onsets"], old["intervals"]["event_onsets"])
         assert ep["window"] == tuple(old["intervals"]["interval_window"])
         s = state.from_state(st)
-        assert isinstance(s.intervals, pp.Epochs)
-        np.testing.assert_array_equal(np.asarray(s.intervals), old["intervals"]["intervals"])
+        assert isinstance(s.epochs, pp.Epochs)
+        np.testing.assert_array_equal(np.asarray(s.epochs), old["intervals"]["intervals"])
 
     def test_segments_in_samples(self):
         st = format2_state("segmented.h5")
@@ -214,17 +214,17 @@ class TestMigratedState:
         with warnings_logged() as logs:
             s = state.from_state(st)
         assert any("sample indices" in m for m in logs)
-        assert s.intervals.window == (-200., 800.)
-        np.testing.assert_allclose(s.intervals.onsets,
+        assert s.epochs.window == (-200., 800.)
+        np.testing.assert_allclose(s.epochs.onsets,
                                    format2_state("segmented.h5")["intervals"]["event_onsets"])
 
     def test_segments_not_event_locked(self):
         st = format2_state("segmented.h5")
         st["intervals"]["interval_window"] = None
         s = state.from_state(st)
-        assert isinstance(s.intervals, pp.Intervals)
+        assert isinstance(s.epochs, pp.Intervals)
         assert state.to_state(s)["intervals"]["class"] == "Intervals"
-        assert s.intervals.intervals == [tuple(r) for r in
+        assert s.epochs.intervals == [tuple(r) for r in
                                          format2_state("segmented.h5")["intervals"]["intervals"]]
 
 

@@ -499,12 +499,17 @@ class TestSegmentedEyeDataFromIntervals(unittest.TestCase):
             data=data,
             tx=tx,
             variable="left_pupil",
-            intervals=intervals
+            epochs=intervals
         )
         
-        self.assertIs(seg.intervals, intervals)
-        self.assertEqual(seg.intervals.label, "test_intervals")
+        self.assertIs(seg.epochs, intervals)
+        self.assertEqual(seg.epochs.label, "test_intervals")
     
+    def test_intervals_renamed(self):
+        seg = SegmentedEyeData.from_masked_array(np.ones((5, 2)), np.arange(5.), "left_pupil")
+        with self.assertRaisesRegex(AttributeError, "renamed to epochs"):
+            seg.intervals
+
     def test_name_from_intervals_label(self):
         """Test that name defaults to intervals label"""
         # Create pupil-only EyeData
