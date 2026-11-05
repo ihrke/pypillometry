@@ -115,6 +115,19 @@ class TestExcluded(unittest.TestCase):
         np.testing.assert_array_equal(d.data["left_pupil"][excl], before[excl])
         self.assertTrue(np.isnan(d.data["left_pupil"][3000:3100]).all())
 
+    def test_blink_ending_in_excluded_not_interpolated(self):
+        # its anchor points are in the excluded period (NaN there)
+        d = _make_data()
+        d.data["left_pupil"][3050:3500] = np.nan
+        d = d.exclude_intervals(pp.Intervals([(3050, 3500)], "samples"))
+        d = d.pupil.blinks_detect().pupil.blinks_interpolate()
+        self.assertEqual(d.get_blinks("left", "pupil", units="samples")["left_pupil"].intervals[1],
+                         (3000, 3050))
+        interp = d.get_interpolated_blinks("left", "pupil", units="samples")["left_pupil"]
+        self.assertEqual(len(interp), 3)
+        self.assertFalse(d.data.get_layer("left_pupil", "interpolated")[2900:3600].any())
+        self.assertTrue(d.mask("left", "pupil")[3000:3050].all())
+
     def test_time_changes(self):
         d = _make_data().exclude_intervals([(7000, 8000)])
         r = d.reset_time()

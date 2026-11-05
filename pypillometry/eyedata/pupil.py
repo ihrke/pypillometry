@@ -818,6 +818,7 @@ class PupilNamespace(Namespace):
 
             # Collect successfully interpolated blinks
             interpolated_intervals = []
+            excl = obj._excluded_mask()
             
             # loop through blinks
             for ix,(t1,t2,t3,t4) in enumerate(blink_onsets):
@@ -834,6 +835,11 @@ class PupilNamespace(Namespace):
                 
                 txpts=[obj.tx[pt] for pt in [t1,t2,t3,t4]]
                 sypts=[obj.data[eye,"pupil"][pt] for pt in [t1,t2,t3,t4]]
+                # e.g., a blink that ends in an excluded period (a break)
+                if np.isnan(sypts).any() or excl[[t1, t2, t3, t4]].any():
+                    logger.warning(f"Skipping blink {ix} for {eye}: no usable data at its "
+                                   f"anchor points (t1={t1}, t2={t2}, t3={t3}, t4={t4})")
+                    continue
                 intfct=interp1d(txpts,sypts, kind=interp_type)
                 islic=slice(t2, t3)
                 syr[islic]=intfct(obj.tx[islic])
