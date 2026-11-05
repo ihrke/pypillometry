@@ -169,6 +169,36 @@ def _check_per_pair(pairs, mean, sd):
                 raise ValueError(f"{name} has no value for {eye}_{var}")
 
 
+def _merge_usage(d, keys, policy):
+    """
+    Which eyes (rows, one per key of `d`, an EyeDataDict) go into each
+    sample of a merged channel: the samples that are usable under `policy`,
+    but recorded samples first (an interpolated sample is used only where no
+    eye has a usable sample that is not interpolated). A column is all False
+    where no eye is usable.
+    """
+    usable = np.stack([~d.get_policy_mask(k, policy) for k in keys])
+    recorded = usable & ~np.stack([d.get_layer(k, "interpolated") for k in keys])
+    return np.where(recorded.any(axis=0), recorded, usable)
+
+
+def _store_merged(d, key, values, keys, used, masked, policy):
+    """
+    Store merged `values` as `key` of `d` with the layers that are set in all
+    eyes that went into a sample (`used`, see `_merge_usage`; in all eyes
+    where none did). Samples in `masked` that are still usable under
+    `policy` with these layers get the ``"user"`` layer.
+    """
+    layers = np.stack([d.layers[k] for k in keys])
+    sel = np.where(used.any(axis=0), used, True)
+    allbits = np.iinfo(LAYER_DTYPE).max
+    merged = np.bitwise_and.reduce(np.where(sel, layers, allbits), axis=0)
+    d._set_channel(key, values, merged.astype(LAYER_DTYPE))
+    rest = masked & ~d.get_policy_mask(key, policy)
+    if rest.any():
+        d.set_layer(key, "user", rest)
+
+
 def _decimate_factor(fs, fsd, dsfac):
     """Decimate factor for :meth:`GenericEyeData.downsample` (checks the arguments)."""
     what = "decimate factor" if dsfac else "sampling rate in Hz"
@@ -2814,12 +2844,16 @@ class GenericEyeData(state.VersionedState, ABC):
 
         The merged data is stored under the eye name `name` (default
         "mean", e.g., ``obj["mean", "pupil"]``). Each sample is the mean over the eyes
-        in which it is usable under the mask `policy` (by default,
-        interpolated samples are used, see :meth:`mask`); it is masked in
-        the merged data (``"user"`` layer) only if it is unusable in all
-        merged eyes (it then holds the mean of the stored values; NaN only
-        if they are NaN). Each variable is merged over the selected eyes
-        that have data for it.
+        in which it is usable under the mask `policy` (see :meth:`mask`),
+        where recorded samples come first: an interpolated sample is used
+        only if no eye has a recorded one there. A sample is masked in the
+        merged data only if it is unusable in all merged eyes (it then holds
+        the mean of the stored values; NaN only if they are NaN). The merged
+        data get the layers that are set in all eyes that went into a sample
+        (e.g., ``"interpolated"`` where all of them were interpolated, or
+        ``"blink"`` where all eyes are masked by a blink); masked samples
+        without such a common layer get the ``"user"`` layer. Each variable
+        is merged over the selected eyes that have data for it.
 
         Parameters
         ----------
@@ -2854,21 +2888,21 @@ class GenericEyeData(state.VersionedState, ABC):
 
         if method=="mean":            
             for var in dict.fromkeys(v for _, v in pairs):
-                # stored values and unusable samples of all eyes with this variable
+                # stored values of all eyes with this variable and the eyes
+                # that go into each merged sample
                 eyes = [eye for eye, v in pairs if v == var]
-                stored = np.stack([obj.data[eye, var] for eye in eyes])
-                unusable = np.stack([obj.data.get_policy_mask(f"{eye}_{var}", policy)
-                                     for eye in eyes])
+                keys = [f"{eye}_{var}" for eye in eyes]
+                stored = np.stack([obj.data[k] for k in keys])
+                used = _merge_usage(obj.data, keys, policy)
 
-                # Mean over the usable eyes; masked only where all eyes
-                # are unusable
-                meanval = np.ma.mean(np.ma.array(stored, mask=unusable), axis=0)
+                # Mean over the used eyes; masked only where no eye is usable
+                meanval = np.ma.mean(np.ma.array(stored, mask=~used), axis=0)
                 allmasked = np.ma.getmaskarray(meanval)
                 # where all eyes are unusable, keep the mean of the stored
                 # values, still masked
                 rawmean = np.ma.mean(np.ma.masked_invalid(stored), axis=0).filled(np.nan)
                 values = np.where(allmasked, rawmean, np.ma.getdata(meanval))
-                obj[name, var] = np.ma.array(values, mask=allmasked)
+                _store_merged(obj.data, f"{name}_{var}", values, keys, used, allmasked, policy)
                 
                 if not keep_eyes:
                     for eye in eyes:

@@ -713,6 +713,20 @@ Changes of the API calls alone (same numbers) need no entry.
   in an excluded period are blinks.
 - **Step**: 21, `fix/blinks-next-to-excluded`
 
+### `merge_eyes`: recorded samples first, layers of the merged channel
+
+- **Case**: `h.merge_eyes.rlmw`, `h.merge_eyes.synth` (`mean_pupil`: `sub`,
+  `mean`, `masked`)
+- **Change**: where one eye is interpolated and the other recorded, the
+  merged value is the recorded one (step 7: the mean of both); the merged
+  channel gets the layers common to the eyes used, so it is `interpolated`
+  (and masked under the strict policy of the reference's `masked`) where
+  both eyes were interpolated (rlmw: 1007 samples, synth: 166).
+- **Why**: owner decision (review guide, open decision 17): averaging a
+  reconstruction with a measurement made jumps of up to ~400 units on
+  pavlov; the reasons for masking were lost (`user` layer only).
+- **Step**: 29, `fix/merge-eyes-layers`
+
 ### Not a change: `fit_foreshortening` in the foreshortening tutorial
 
 - **Case**: none (no reference case covers `fit_foreshortening`)
