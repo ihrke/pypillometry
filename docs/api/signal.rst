@@ -1,10 +1,11 @@
-.. currentmodule:: pypillometry
+.. currentmodule:: pypillometry.signal
 
 Signal processing
 =================
 
 These functions work on plain :mod:`numpy` arrays and do not keep any
-state. The methods of the data classes call them with the right arguments,
+state. They are in the submodule ``pp.signal`` (e.g.,
+``pp.signal.smooth_window``). The methods of the data classes call them with the right arguments,
 so you usually do not need them directly, but they are useful for your
 own processing steps or for data that are not in a data object.
 
@@ -20,12 +21,12 @@ Filtering and baseline
    butter_lowpass_filter
    lowpass_filter_iterative
    smooth_window
-   signal.downsample
+   downsample
    bspline
    baseline_envelope
    baseline_envelope_iter_bspline
    baseline_pupil_model
-   zscale
+   ~pypillometry.zscale
 
 Blinks
 ------
