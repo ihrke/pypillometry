@@ -153,11 +153,20 @@ class TestMs:
         assert data.get_duration("min") == pytest.approx(1 / 6)
         assert data.exclude_intervals([(0, 500)]).excluded_duration() == 500.
 
-    def test_plot_segments_too_many(self, data):
+    def test_plot_segments_many_warns(self, data, monkeypatch):
         import matplotlib.pyplot as plt
-        for f in (data.plot.plot_timeseries_segments, data.plot.pupil_plot_segments):
-            with pytest.raises(ValueError, match="plain numbers are in `units`"):
-                f(interv=1, units="ms")
+        from loguru import logger
+        from pypillometry.plot.generic import GenericPlots
+        monkeypatch.setattr(GenericPlots, "WARN_SEGMENTS", 3)
+        msgs = []
+        hid = logger.add(lambda m: msgs.append(m.record["message"]), level="WARNING")
+        try:
+            for f in (data.plot.plot_timeseries_segments, data.plot.pupil_plot_segments):
+                assert len(f(interv=1, units="sec", pdf_file=None)) == 10
+                plt.close("all")
+        finally:
+            logger.remove(hid)
+        assert sum("interv gives 10 figures" in m for m in msgs) == 2
         assert len(data.plot.plot_timeseries_segments(interv="5 sec")) == 2
         plt.close("all")
 
