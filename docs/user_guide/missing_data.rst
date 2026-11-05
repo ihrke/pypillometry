@@ -44,14 +44,14 @@ The standard layers:
      - ``"strict"``
    * - NaN (values)
      - any
-     - the eye tracker; :meth:`~GenericEyeData.fill_time_discontinuities`
+     - the eye tracker; :meth:`~EyeData.fill_time_discontinuities`
      - masked
      - masked
    * - ``"blink"``
      - pupil
      - :meth:`~EyeData.pupil.blinks_detect`,
        :meth:`~EyeData.pupil.blinks_merge_close`,
-       :meth:`~GenericEyeData.set_blinks`
+       :meth:`~EyeData.set_blinks`
      - masked
      - masked
    * - ``"offscreen"``
@@ -66,23 +66,23 @@ The standard layers:
      - masked
    * - ``"user"``
      - the selected channels
-     - :meth:`~GenericEyeData.mask_intervals`,
-       :meth:`~GenericEyeData.merge_masks`, assigning a masked array
+     - :meth:`~EyeData.mask_intervals`,
+       :meth:`~EyeData.merge_masks`, assigning a masked array
        (``d["left_pupil"] = np.ma.masked_array(...)``),
-       :meth:`~GenericEyeData.merge_eyes` (where no other reason is
+       :meth:`~EyeData.merge_eyes` (where no other reason is
        common to the eyes)
      - masked
      - masked
    * - ``"interpolated"``
      - the interpolated channel
      - :meth:`~EyeData.pupil.blinks_interpolate`,
-       :meth:`~GenericEyeData.interpolate_intervals`
+       :meth:`~EyeData.interpolate_intervals`
      - **used**
      - masked
    * - ``"excluded"``
      - all (recording-wide)
-     - :meth:`~GenericEyeData.exclude_intervals`,
-       :meth:`~GenericEyeData.keep_intervals`
+     - :meth:`~EyeData.exclude_intervals`,
+       :meth:`~EyeData.keep_intervals`
      - masked
      - masked
 
@@ -162,18 +162,18 @@ Reading masks and values
      - masked array and 0/1 masks under the default policy
    * - ``d.data["left_pupil"]``
      - the stored values (masked samples keep their values; see below)
-   * - :meth:`~GenericEyeData.get_blinks`,
-       :meth:`~GenericEyeData.get_interpolated_blinks`,
-       :meth:`~GenericEyeData.get_layer_intervals`
+   * - :meth:`~EyeData.get_blinks`,
+       :meth:`~EyeData.get_interpolated_blinks`,
+       :meth:`~EyeData.get_layer_intervals`
      - the runs of a layer as :class:`Intervals` (dict keyed by channel, ms)
-   * - :meth:`~GenericEyeData.mask_as_intervals`
+   * - :meth:`~EyeData.mask_as_intervals`
      - the runs of unusable samples under a policy
-   * - :meth:`~GenericEyeData.get_excluded`,
-       :meth:`~GenericEyeData.get_included`
+   * - :meth:`~EyeData.get_excluded`,
+       :meth:`~EyeData.get_included`
      - the excluded periods and the periods between them
    * - :meth:`~EyeData.plot.plot_masked`
      - plot of the unusable stretches (with ``policy=``)
-   * - :meth:`~GenericEyeData.quality_report`
+   * - :meth:`~EyeData.quality_report`
      - missing data and masked time per layer (see :doc:`quality`)
 
 ``d.data.get_layer("left_pupil", "blink")`` gives a single layer as a
@@ -189,7 +189,7 @@ Detecting
 
 Detectors write only their own layer and **replace** it when they run
 again on the same channels, so trying other parameters never adds up
-masks from earlier runs. :meth:`~GenericEyeData.clear_layer` removes a
+masks from earlier runs. :meth:`~EyeData.clear_layer` removes a
 layer (``d.clear_layer("blink")`` undoes blink detection).
 
 - :meth:`~EyeData.pupil.blinks_detect` looks for runs of NaN (and
@@ -206,7 +206,7 @@ Interpolating
 
 :meth:`~EyeData.pupil.blinks_interpolate` replaces the pupil values in
 each stored blink (extended by a margin) and sets the ``"interpolated"``
-layer there; :meth:`~GenericEyeData.interpolate_intervals` does the same
+layer there; :meth:`~EyeData.interpolate_intervals` does the same
 for any intervals. The ``"blink"`` layer stays, so you can always tell
 recorded from reconstructed samples. After interpolation, the pupil has no
 NaN in the blinks any more.
@@ -214,7 +214,7 @@ NaN in the blinks any more.
 Each interpolation adds to the ``"interpolated"`` layer, so different kinds
 of artifacts can be interpolated one after the other with different
 methods (e.g., :meth:`~EyeData.pupil.blinks_interpolate`, then
-:meth:`~GenericEyeData.interpolate_intervals` for periods marked by hand),
+:meth:`~EyeData.interpolate_intervals` for periods marked by hand),
 and the layer holds all of them. ``d.clear_layer("interpolated")`` (also
 for selected ``eyes=``/``variables=``) empties it: the values stay as they
 were interpolated, but the samples are no longer marked as reconstructed,
@@ -240,34 +240,34 @@ All processing methods read the samples that are usable under their
    * - :meth:`~EyeData.pupil.estimate_baseline`,
        :meth:`~EyeData.pupil.estimate_response`
      - left out of the fit
-   * - :meth:`~GenericEyeData.downsample`
+   * - :meth:`~EyeData.downsample`
      - left out of the window means; a layer is set for a new sample if it
        covers more than half of its window (counted for each layer
        separately); a window without usable samples stays unusable
-   * - :meth:`~GenericEyeData.scale`
+   * - :meth:`~EyeData.scale`
      - left out of the mean and the standard deviation
    * - :meth:`~EyeData.pupil.merge_eyes`,
-       :meth:`~GenericEyeData.merge_eyes`
+       :meth:`~EyeData.merge_eyes`
      - each eye contributes its usable samples, recorded samples first
        (an interpolated sample only where no eye has a recorded one); the
        merged channel is masked only where no eye is usable, and it gets
        the layers that all eyes used for a sample have in common (e.g.,
        ``"interpolated"`` where both eyes were interpolated, ``"blink"``
        where both blinked; otherwise ``"user"`` for masked samples)
-   * - :meth:`~GenericEyeData.crop`,
-       :meth:`~GenericEyeData.remove_intervals`
+   * - :meth:`~EyeData.crop`,
+       :meth:`~EyeData.remove_intervals`
      - values and layers are cut together
-   * - :meth:`~GenericEyeData.fill_time_discontinuities`
+   * - :meth:`~EyeData.fill_time_discontinuities`
      - inserted samples are NaN
 
 Analysing
 ~~~~~~~~~
 
-- :meth:`~GenericEyeData.get_segments` masks the unusable samples in each
+- :meth:`~EyeData.get_segments` masks the unusable samples in each
   segment, and the parts of a window outside the recording.
-- :meth:`~GenericEyeData.stat_per_event` computes each statistic from the
+- :meth:`~EyeData.stat_per_event` computes each statistic from the
   usable samples.
-- :meth:`~GenericEyeData.quality_report` counts missing data from the
+- :meth:`~EyeData.quality_report` counts missing data from the
   values (NaN), shows the masked time per layer in its "Artifacts"
   section, and leaves the excluded periods out of all measures.
 
@@ -284,7 +284,7 @@ those files).
 Changing masks by hand
 ----------------------
 
-- :meth:`~GenericEyeData.mask_intervals` adds intervals to the
+- :meth:`~EyeData.mask_intervals` adds intervals to the
   ``"user"`` layer (existing masks are kept).
 - ``d.data.add_mask(key, where)`` masks samples by index (``"user"``).
 - ``d.data.set_mask(key, mask)`` makes the default mask of a channel equal
@@ -292,7 +292,7 @@ Changing masks by hand
   and puts the newly masked samples into ``"user"`` (clearing their
   ``"interpolated"`` mark, which would make them usable). NaN samples and
   excluded periods stay masked.
-- :meth:`~GenericEyeData.merge_masks` masks every channel where any
+- :meth:`~EyeData.merge_masks` masks every channel where any
   channel is masked (``"user"`` layer).
 - ``d.clear_layer(name)`` removes a layer from the selected channels.
 
@@ -313,8 +313,8 @@ usable under the default policy (see `Mask policies`_); use
 ``policy="strict"`` to leave them out as well.
 
 **Leave out interpolated samples.** Pass ``policy="strict"``, e.g. to
-:meth:`~GenericEyeData.get_segments` or
-:meth:`~GenericEyeData.stat_per_event`. To drop trials that consist
+:meth:`~EyeData.get_segments` or
+:meth:`~EyeData.stat_per_event`. To drop trials that consist
 mostly of reconstructed data, compute the share of interpolated samples
 per trial and select the epochs with :meth:`Epochs.keep`:
 
@@ -325,7 +325,7 @@ per trial and select the epochs with :meth:`Epochs.keep`:
     recon = np.ma.getmaskarray(seg.data).mean(axis=0)   # one value per trial
     good = stim.keep(recon < 0.25)
 
-**Look at one reason only.** :meth:`~GenericEyeData.get_layer_intervals`
+**Look at one reason only.** :meth:`~EyeData.get_layer_intervals`
 gives the runs of one layer, e.g. ``d.get_layer_intervals("offscreen")``.
 A list of layers as policy selects these layers and NaN, e.g.
 ``d.mask("left_x", policy=["offscreen"])``.
@@ -360,7 +360,7 @@ Things to watch for
   for eyes with interpolated samples: their blinks are kept. Interpolating
   twice makes the interpolated stretches longer by the margins. Detect and
   interpolate once, on the raw data.
-- **Blinks and excluded periods**: :meth:`~GenericEyeData.get_blinks`
+- **Blinks and excluded periods**: :meth:`~EyeData.get_blinks`
   returns all blinks of the layer, also those detected before a period
   was excluded around them. Exclude periods before detecting blinks, so
   that blinks are cut at them. A blink that ends in an excluded period

@@ -79,7 +79,7 @@ def generic_step(method):
     sig = inspect.signature(method)
     params = [p for p in list(sig.parameters.values())[1:] if p.name != "inplace"]
     factory.__signature__ = sig.replace(parameters=params)
-    factory.__doc__ = (f"Pipeline step for :meth:`~pypillometry.GenericEyeData.{method.__name__}`"
+    factory.__doc__ = (f"Pipeline step for :meth:`~pypillometry.EyeData.{method.__name__}`"
                        f" (``d | pp.{method.__name__}(...)``).\n\n"
                        + inspect.cleandoc(method.__doc__ or ""))
     return factory
@@ -216,14 +216,14 @@ class Pipeline:
         return NotImplemented
 
     def __ror__(self, other):
-        # data objects handle `d | pipeline` themselves (GenericEyeData.__or__)
+        # data objects handle `d | pipeline` themselves (EyeData.__or__)
         raise TypeError(f"cannot pipe an object of type {type(other).__name__} into "
                         f"{self!r}: only EyeData objects can be piped into steps")
 
     def __call__(self, d):
         """Apply the pipeline to a copy of `d` and return the copy."""
-        from .generic import GenericEyeData
-        if not isinstance(d, GenericEyeData):
+        from .eyedata import EyeData
+        if not isinstance(d, EyeData):
             self.__ror__(d)
         d = d.copy(new_name=d.name)
         n = len(self.steps)

@@ -170,7 +170,7 @@ def stat_event_interval(tx,sy,intervals,statfct=np.mean):
     Return result of applying a statistical function to pupillometric data in
     each of a list of intervals. For example, extract mean pupil-size in the
     interval before each trial onset (intervals as returned by
-    :meth:`~pypillometry.GenericEyeData.get_intervals`).
+    :meth:`~pypillometry.EyeData.get_intervals`).
 
     Parameters
     ----------
@@ -227,11 +227,11 @@ class Intervals(Stateful):
 
     Usually, Intervals objects are not created directly but returned by
     methods of the eye-data classes, e.g.,
-    :meth:`~pypillometry.GenericEyeData.get_intervals` (spans between two
+    :meth:`~pypillometry.EyeData.get_intervals` (spans between two
     events; windows around single events are
     :class:`~pypillometry.Epochs`, see :meth:`~pypillometry.Epochs.to_intervals`),
-    :meth:`~pypillometry.GenericEyeData.get_blinks` or
-    :meth:`~pypillometry.GenericEyeData.mask_as_intervals`.
+    :meth:`~pypillometry.EyeData.get_blinks` or
+    :meth:`~pypillometry.EyeData.mask_as_intervals`.
     Detection methods such as
     :meth:`d.pupil.blinks_detect() <pypillometry.eyedata.pupil.PupilNamespace.blinks_detect>` store their results
     as Intervals. Several Intervals can be combined with ``+`` or
@@ -359,7 +359,7 @@ class Intervals(Stateful):
         
         Parameters
         ----------
-        data : GenericEyeData
+        data : EyeData
             data object the intervals belong to (anything with a time
             vector `tx` in ms and a sampling rate `fs`); the mask has one
             entry per sample of `data`
@@ -397,7 +397,7 @@ class Intervals(Stateful):
         mask : np.ndarray
             Binary array where non-zero values indicate interval membership,
             one entry per sample.
-        data : GenericEyeData, optional
+        data : EyeData, optional
             data object the mask belongs to (anything with `tx` and `fs`);
             needed for time units.
         units : str, optional
@@ -612,7 +612,7 @@ class Intervals(Stateful):
         target_units : str
             Target units: "ms", "sec", "min", "h", or "samples" for sample
             indices (aliases such as "seconds" or "indices" work, too).
-        data : GenericEyeData, optional
+        data : EyeData, optional
             data object the intervals belong to (anything with a time vector
             `tx` in ms and a sampling rate `fs`); needed to convert between
             sample indices and time
@@ -776,7 +776,7 @@ class Intervals(Stateful):
 
         Parameters
         ----------
-        data : GenericEyeData
+        data : EyeData
             data object the intervals belong to; the complement is taken
             within the whole recording, from the first sample to the end of
             the last one (one sample past it, as intervals are

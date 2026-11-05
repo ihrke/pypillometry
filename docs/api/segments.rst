@@ -4,7 +4,7 @@ Segmented data
 ==============
 
 Data cut into segments around events (see
-:meth:`GenericEyeData.get_segments` and the tutorial
+:meth:`EyeData.get_segments` and the tutorial
 :doc:`/notebooks/erpds`).
 
 .. autosummary::

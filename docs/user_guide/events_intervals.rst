@@ -22,7 +22,7 @@ stimulus appears or a response is given. Analyses then look at the data in
 Events
 ------
 
-:attr:`~GenericEyeData.events` holds the events of a dataset as an
+:attr:`~EyeData.events` holds the events of a dataset as an
 :class:`Events` object, a list of onsets and labels:
 
 .. code-block:: python
@@ -37,13 +37,13 @@ Events
 
 :class:`Events` cannot be changed in place: :meth:`~Events.filter`,
 indexing and the other methods return new :class:`Events`. You can store
-changed events in the dataset with :meth:`~GenericEyeData.set_events`,
+changed events in the dataset with :meth:`~EyeData.set_events`,
 e.g., to remove test trials or to rename labels. Operations that change
-the time of the data (:meth:`~GenericEyeData.crop`,
-:meth:`~GenericEyeData.remove_intervals`,
-:meth:`~GenericEyeData.reset_time`) move the events with it.
-:meth:`~GenericEyeData.add_events` adds events to the existing ones, and
-:meth:`~GenericEyeData.event_onset` returns the onset of the one event with
+the time of the data (:meth:`~EyeData.crop`,
+:meth:`~EyeData.remove_intervals`,
+:meth:`~EyeData.reset_time`) move the events with it.
+:meth:`~EyeData.add_events` adds events to the existing ones, and
+:meth:`~EyeData.event_onset` returns the onset of the one event with
 a given label (it raises an error unless exactly one event has it):
 
 .. code-block:: python
@@ -95,8 +95,8 @@ selects events by their metadata:
     ev.filter("S_", rt=lambda rt: rt < 1000)       # function of the column
     ev.filter(ev.meta["left"] < ev.meta["right"])  # boolean array
 
-:meth:`~GenericEyeData.set_events` stores the metadata in the dataset
-(e.g., ``d = d.set_events(ev)``; they are saved with it), and :meth:`~GenericEyeData.get_intervals` passes
+:meth:`~EyeData.set_events` stores the metadata in the dataset
+(e.g., ``d = d.set_events(ev)``; they are saved with it), and :meth:`~EyeData.get_intervals` passes
 the metadata of the selected events on to the intervals
 (``intervals.event_meta``, also in :meth:`~Intervals.as_pandas`).
 :meth:`~Events.to_table` returns the events with their metadata as a dict
@@ -201,7 +201,7 @@ maps times or events to the eye-tracker clock:
 Other columns of the log become :ref:`metadata <event-metadata>` of the
 events with ``meta``, e.g.,
 ``pp.Events.from_table(behav, ..., units="sec", meta=["block", "trial", "rt"])``.
-They are kept by ``sync`` and :meth:`~GenericEyeData.add_events`.
+They are kept by ``sync`` and :meth:`~EyeData.add_events`.
 
 :func:`sync_clocks` logs a summary of the fit. Check the *residuals*
 (``sync.residuals``, or ``print(sync)`` for a table): with correct pairs,
@@ -222,7 +222,7 @@ Epochs
 An :class:`Epochs` object holds the onsets of some events (in ms) and *one*
 time window around them, e.g., from 200 ms before to 1000 ms after each
 stimulus, together with the labels and the metadata of the events.
-:meth:`~GenericEyeData.get_intervals` returns Epochs for single events:
+:meth:`~EyeData.get_intervals` returns Epochs for single events:
 
 .. code-block:: python
 
@@ -232,9 +232,9 @@ stimulus, together with the labels and the metadata of the events.
     epochs.to_intervals("sec")                  # the spans as Intervals
 
 Epochs can be used wherever the methods take intervals (e.g.,
-:meth:`~GenericEyeData.mask_intervals`,
-:meth:`~GenericEyeData.exclude_intervals`,
-:meth:`~GenericEyeData.stat_per_event`); they stand for their spans
+:meth:`~EyeData.mask_intervals`,
+:meth:`~EyeData.exclude_intervals`,
+:meth:`~EyeData.stat_per_event`); they stand for their spans
 ``(onset + window[0], onset + window[1])`` in ms. Windows that extend
 beyond the recording are not cut off: the methods that read the data use
 the part within it (in segments, the rest is masked).
@@ -279,7 +279,7 @@ before, between and after the blocks).
 Between two events
 ~~~~~~~~~~~~~~~~~~
 
-With a tuple of two selectors, :meth:`~GenericEyeData.get_intervals`
+With a tuple of two selectors, :meth:`~EyeData.get_intervals`
 pairs each first event with the next second event after it. If several
 first events come before the same second event (e.g., a missing
 "End Block"), the last of them is used. Events without a partner are
@@ -300,14 +300,14 @@ Sample indices and time
 
 Intervals are either in time units ("ms", "sec", "min", "h") or in sample
 indices (``units="samples"``; plain numbers in the window of
-:meth:`~GenericEyeData.get_intervals` are ms, sample indices need
+:meth:`~EyeData.get_intervals` are ms, sample indices need
 ``units="samples"``). Intervals are
 end-exclusive: ``(start, end)`` covers the samples with
 ``start <= t < end``.
 
 Intervals in sample indices are only valid for the data object they came
-from: after :meth:`~GenericEyeData.crop`,
-:meth:`~GenericEyeData.downsample` or for another recording, the same
+from: after :meth:`~EyeData.crop`,
+:meth:`~EyeData.downsample` or for another recording, the same
 indices point to other samples (blinks stored in the object are adjusted
 automatically). Therefore, every conversion between sample indices and
 time takes the data object and uses its time vector:
@@ -330,10 +330,10 @@ Many methods of the data objects take intervals as input:
 .. autosummary::
    :nosignatures:
 
-   GenericEyeData.get_segments
-   GenericEyeData.stat_per_event
-   GenericEyeData.mask_intervals
-   GenericEyeData.interpolate_intervals
+   EyeData.get_segments
+   EyeData.stat_per_event
+   EyeData.mask_intervals
+   EyeData.interpolate_intervals
    EyeData.plot.plot_intervals
 
 Tutorial: :doc:`/notebooks/intervals`.
@@ -342,7 +342,7 @@ Tutorial: :doc:`/notebooks/intervals`.
 Segments and event-related pupil dilation
 -----------------------------------------
 
-:meth:`~GenericEyeData.get_segments` cuts the data of one variable in each
+:meth:`~EyeData.get_segments` cuts the data of one variable in each
 epoch and returns a :class:`SegmentedEyeData` object (a matrix of
 segments × time points). Averaged over segments, this is the
 *event-related pupil dilation* (ERPD):
@@ -357,7 +357,7 @@ segments × time points). Averaged over segments, this is the
 The length and the time axis of the segments come from the window: the
 time points are ``window[0] + k * 1000/fs`` ms (at 500 Hz: -200, -198, ...,
 998 ms). Parts of a window outside the recording are masked. The segments
-keep their epochs (``erpd.epochs``). :meth:`~GenericEyeData.get_segments`
+keep their epochs (``erpd.epochs``). :meth:`~EyeData.get_segments`
 also takes Intervals, but only if they all have the same length (the time
 axis then starts at 0 at their starts); for intervals between two events,
 it raises an error. The baseline window of
@@ -368,7 +368,7 @@ it raises an error. The baseline window of
 Both can be saved with ``write_file()``.
 
 For statistical models of trial-by-trial data, it is often easier to work
-with one number per trial. :meth:`~GenericEyeData.stat_per_event` applies a
+with one number per trial. :meth:`~EyeData.stat_per_event` applies a
 function (by default the mean) to each interval:
 
 .. code-block:: python

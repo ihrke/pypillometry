@@ -67,7 +67,7 @@ class TestSegmentedEyeDataCreation(unittest.TestCase):
         self.assertFalse(np.any(seg.data.mask[:, 0]))
     
     def test_creation_from_eyedata(self):
-        """Test creating SegmentedEyeData from GenericEyeData via get_segments"""
+        """Test creating SegmentedEyeData from EyeData via get_segments"""
         # Create pupil-only EyeData with events
         n_samples = 1000
         fs = 100

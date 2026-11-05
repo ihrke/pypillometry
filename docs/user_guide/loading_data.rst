@@ -7,7 +7,7 @@ Eyelink EDF files
 -----------------
 
 EDF files from SR Research Eyelink eye trackers are read with
-:meth:`~GenericEyeData.from_eyelink`, which uses the `eyelinkio
+:meth:`~EyeData.from_eyelink`, which uses the `eyelinkio
 <https://github.com/scott-huberty/eyelinkio>`_ package:
 
 .. code-block:: python
@@ -84,8 +84,8 @@ Saving and loading objects
 --------------------------
 
 Processed objects, including their history, are saved with
-:meth:`~GenericEyeData.write_file` and loaded with
-:meth:`~GenericEyeData.from_file`:
+:meth:`~EyeData.write_file` and loaded with
+:meth:`~EyeData.from_file`:
 
 .. code-block:: python
 

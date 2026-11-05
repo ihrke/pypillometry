@@ -168,11 +168,11 @@ class Events(Stateful):
     place; all methods return new Events.
 
     The events of a dataset are obtained with
-    :attr:`~pypillometry.GenericEyeData.events`. An (e.g., filtered)
+    :attr:`~pypillometry.EyeData.events`. An (e.g., filtered)
     Events object can be passed as `event_select` to
-    :meth:`~pypillometry.GenericEyeData.get_intervals` or stored in a dataset
-    with :meth:`~pypillometry.GenericEyeData.set_events` or added with
-    :meth:`~pypillometry.GenericEyeData.add_events`. Events from a
+    :meth:`~pypillometry.EyeData.get_intervals` or stored in a dataset
+    with :meth:`~pypillometry.EyeData.set_events` or added with
+    :meth:`~pypillometry.EyeData.add_events`. Events from a
     behaviour log can be created with :meth:`from_table` and mapped to the
     eye-tracker clock with :func:`~pypillometry.sync_clocks`.
 
@@ -831,7 +831,7 @@ class Events(Stateful):
         by : str or None, optional
             if None (default), each first event is paired with the next
             second event after it (as in
-            :meth:`~pypillometry.GenericEyeData.get_intervals`); if the
+            :meth:`~pypillometry.EyeData.get_intervals`); if the
             name of a metadata column (e.g., "trial"), with the next second
             event with the same value in this column
         exact : bool, optional

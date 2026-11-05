@@ -3,7 +3,7 @@ import sys
 import numpy as np
 
 from pypillometry.eyedata.eyedatadict import EyeDataDict
-from pypillometry.eyedata.generic import GenericEyeData
+from pypillometry.eyedata.eyedata import EyeData
 from pypillometry.eyedata import ExperimentalSetup
 sys.path.insert(0,"..")
 import pypillometry as pp
@@ -289,7 +289,7 @@ class TestEyeData(unittest.TestCase):
             pp.EyeData(right_y=[3,4], sampling_rate=1000)
 
     def test_dunder_getitem_returns_masked_array(self):
-        """GenericEyeData should return masked arrays via __getitem__."""
+        """EyeData should return masked arrays via __getitem__."""
         masked = self.eyedata['left_pupil']
         self.assertIsInstance(masked, np.ma.MaskedArray)
         np.testing.assert_array_equal(np.ma.getdata(masked), self.left_pupil)

@@ -90,7 +90,7 @@ class PupilNamespace(Namespace):
         
         Only the usable samples under the mask `policy` are filtered
         (by default, interpolated samples are used; see
-        :meth:`~pypillometry.GenericEyeData.mask`). The unusable samples
+        :meth:`~pypillometry.EyeData.mask`). The unusable samples
         (masked or NaN) are bridged linearly for the filter
         (see :func:`~pypillometry.signal.pupil.lowpass_filter_iterative`),
         so their stored values (e.g., zeros in blinks) do not enter the
@@ -107,7 +107,7 @@ class PupilNamespace(Namespace):
             list of eyes to filter; if empty, all available eyes are filtered
         policy : str, MaskPolicy or list of str
             mask policy that decides which samples are usable (see
-            :meth:`~pypillometry.GenericEyeData.mask`); default ``"default"``
+            :meth:`~pypillometry.EyeData.mask`); default ``"default"``
         inplace : bool or None
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes           
@@ -156,7 +156,7 @@ class PupilNamespace(Namespace):
             the length of the window in ms (or with units, e.g. ``"20 ms"``)
         policy : str, MaskPolicy or list of str
             mask policy that decides which samples are usable (see
-            :meth:`~pypillometry.GenericEyeData.mask`); default ``"default"``
+            :meth:`~pypillometry.EyeData.mask`); default ``"default"``
         inplace : bool or None
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes                            
@@ -204,7 +204,7 @@ class PupilNamespace(Namespace):
         averaged to reduce noise. Where only one eye is valid, that eye's data is
         used (with offset correction if applicable). Valid samples are the
         usable samples under the mask `policy` (see
-        :meth:`~pypillometry.GenericEyeData.mask`), where recorded samples
+        :meth:`~pypillometry.EyeData.mask`), where recorded samples
         come first: an interpolated sample of one eye is used only if the
         other eye has no recorded sample there. The merged pupil gets the
         layers that are set in all eyes that went into a sample (e.g.,
@@ -241,10 +241,10 @@ class PupilNamespace(Namespace):
             (gaze data are kept).
         policy : str, MaskPolicy or list of str
             mask policy that decides which samples are valid (see
-            :meth:`~pypillometry.GenericEyeData.mask`); default ``"default"``
+            :meth:`~pypillometry.EyeData.mask`); default ``"default"``
         name : str, optional
             name of the new eye (default ``"mean"``, as in
-            :meth:`~pypillometry.GenericEyeData.merge_eyes`); the merged
+            :meth:`~pypillometry.EyeData.merge_eyes`); the merged
             pupil is stored as ``"<name>_pupil"``
         inplace : bool or None, optional
             If True, modify in-place. If False, return a copy.
@@ -298,7 +298,7 @@ class PupilNamespace(Namespace):
         
         See Also
         --------
-        merge_eyes : Generic merge method in GenericEyeData (masks if all eyes invalid)
+        merge_eyes : Generic merge method in EyeData (masks if all eyes invalid)
         pypillometry.signal.pupil.pupil_eye_offset : Compute local offset between eyes
         """
         self._d._require("pupil")
@@ -486,9 +486,9 @@ class PupilNamespace(Namespace):
         
         Detected blinks are stored in the object, as the ``"blink"``
         layer of the pupil (retrieve them with
-        :meth:`~pypillometry.GenericEyeData.get_blinks`), and are masked
+        :meth:`~pypillometry.EyeData.get_blinks`), and are masked
         under the mask policies (see
-        :meth:`~pypillometry.GenericEyeData.mask`). They replace the
+        :meth:`~pypillometry.EyeData.mask`). They replace the
         blinks detected before (and their mask), and the blinks detected
         before are not treated as masked during detection, so re-running the
         detection with other parameters gives the same result as running it
@@ -543,7 +543,7 @@ class PupilNamespace(Namespace):
             if `True`, use raw data ignoring existing masks
             if `False` (default), only detect blinks in the usable data under
             the ``"strict"`` mask policy (masked regions are skipped, see
-            :meth:`~pypillometry.GenericEyeData.mask`)
+            :meth:`~pypillometry.EyeData.mask`)
         inplace : bool or None
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes                                                    
@@ -657,8 +657,8 @@ class PupilNamespace(Namespace):
         Merge blinks that are close together.
 
         The merged blinks replace the ``"blink"`` layer of the pupil
-        (see :meth:`~pypillometry.GenericEyeData.set_blinks`); read them with
-        :meth:`~pypillometry.GenericEyeData.get_blinks`.
+        (see :meth:`~pypillometry.EyeData.set_blinks`); read them with
+        :meth:`~pypillometry.EyeData.get_blinks`.
         
         Parameters
         ----------
@@ -678,7 +678,7 @@ class PupilNamespace(Namespace):
             
         Returns
         -------
-        :class:`~pypillometry.GenericEyeData`
+        :class:`~pypillometry.EyeData`
             the object with the merged blinks (`self` or a copy, depending
             on `inplace`)
         """
@@ -742,9 +742,9 @@ class PupilNamespace(Namespace):
         The interpolated samples get the ``"interpolated"`` layer (on the
         variable they are stored in, see `store_as`): they are used under the
         default mask policy and masked under the ``"strict"`` one (see
-        :meth:`~pypillometry.GenericEyeData.mask`); the interpolated blinks
+        :meth:`~pypillometry.EyeData.mask`); the interpolated blinks
         can be retrieved with
-        :meth:`~pypillometry.GenericEyeData.get_interpolated_blinks`.
+        :meth:`~pypillometry.EyeData.get_interpolated_blinks`.
 
         This procedure relies heavily on eye-balling (reconstructing visually convincing signal),
         so it can help to inspect the result visually (e.g., using
@@ -884,7 +884,7 @@ class PupilNamespace(Namespace):
 
         The baseline is estimated from the usable samples under the mask
         `policy` (by default, interpolated samples are used, see
-        :meth:`~pypillometry.GenericEyeData.mask`). The unusable samples
+        :meth:`~pypillometry.EyeData.mask`). The unusable samples
         (masked or NaN, e.g., blinks that were not interpolated or the
         excluded periods) are bridged linearly between their neighbours.
         Interpolate blinks first (see :meth:`blinks_interpolate`) to
@@ -906,7 +906,7 @@ class PupilNamespace(Namespace):
               with two iterations
         policy : str, MaskPolicy or list of str
             mask policy that decides which samples are usable (see
-            :meth:`~pypillometry.GenericEyeData.mask`); default ``"default"``
+            :meth:`~pypillometry.EyeData.mask`); default ``"default"``
         inplace : bool or None
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes                                        
@@ -991,7 +991,7 @@ class PupilNamespace(Namespace):
         Only the usable samples under the mask `policy` are used for the
         fit: by default, NaN, masked samples (e.g., blinks applied as mask)
         and the excluded periods (see
-        :meth:`~pypillometry.GenericEyeData.exclude_intervals`, e.g., breaks)
+        :meth:`~pypillometry.EyeData.exclude_intervals`, e.g., breaks)
         are not used, interpolated samples (e.g., blinks) are. For each
         event, the share of its response that falls on usable samples
         (`valid`) and the share that falls on real data (`observed`:
@@ -1023,7 +1023,7 @@ class PupilNamespace(Namespace):
             reliably; default 0.5; 0 uses all events
         policy : str, MaskPolicy or list of str
             mask policy that decides which samples are usable (see
-            :meth:`~pypillometry.GenericEyeData.mask`); default ``"default"``
+            :meth:`~pypillometry.EyeData.mask`); default ``"default"``
         inplace : bool or None
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes                                        
@@ -1151,7 +1151,7 @@ class PupilNamespace(Namespace):
         Raises
         ------
         ValueError
-            if no experimental setup is set (see :meth:`~pypillometry.GenericEyeData.set_experimental_setup`)
+            if no experimental setup is set (see :meth:`~pypillometry.EyeData.set_experimental_setup`)
         """
         self._d._require("pupil", "x", "y")
         obj=self._d._get_inplace(inplace)

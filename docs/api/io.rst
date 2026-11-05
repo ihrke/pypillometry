@@ -4,8 +4,8 @@ Reading and writing data
 ========================
 
 See :doc:`/user_guide/loading_data`. Eyelink files are usually read with
-:meth:`EyeData.from_eyelink() <GenericEyeData.from_eyelink>`, saved
-objects with :meth:`~GenericEyeData.from_file`.
+:meth:`EyeData.from_eyelink() <EyeData.from_eyelink>`, saved
+objects with :meth:`~EyeData.from_file`.
 
 Files and URLs
 --------------

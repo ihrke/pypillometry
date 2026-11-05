@@ -5,7 +5,7 @@ io.py
 Read/Write data from/to disk.
 
 Reading EDF files is slow: :func:`read_eyelink` (and
-:meth:`~pypillometry.GenericEyeData.from_eyelink`) takes about a minute
+:meth:`~pypillometry.EyeData.from_eyelink`) takes about a minute
 for a 90 MB EDF file (64 min of binocular data at 1000 Hz), mostly in the
 `eyelinkio` package. It is therefore recommended to convert EDF files once
 and to work with the converted files, e.g., with the command-line program
@@ -696,7 +696,7 @@ def read_eyelink(
 
     See Also
     --------
-    pypillometry.GenericEyeData.from_eyelink : create an eyedata object from an EDF file
+    pypillometry.EyeData.from_eyelink : create an eyedata object from an EDF file
     """
     with local_copy(source, cache_file=cache_file, cache_dir=cache_dir,
                     autodelete=autodelete, force_download=force_download,

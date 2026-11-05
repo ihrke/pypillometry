@@ -17,7 +17,7 @@ change them.
 Data quality
 ------------
 
-Before and after preprocessing, :meth:`~GenericEyeData.quality_report`
+Before and after preprocessing, :meth:`~EyeData.quality_report`
 summarizes the quality of a dataset (missing data, noise, blinks, artifacts,
 calibration) and labels each measure "good", "ok", "poor" or "bad". See
 :doc:`quality`.
@@ -40,9 +40,9 @@ distorted as the eyelid covers the pupil.
    EyeData.pupil.blinks_detect
    EyeData.pupil.blinks_merge_close
    EyeData.pupil.blinks_interpolate
-   GenericEyeData.get_blinks
-   GenericEyeData.get_interpolated_blinks
-   GenericEyeData.blink_stats
+   EyeData.get_blinks
+   EyeData.get_interpolated_blinks
+   EyeData.blink_stats
    EyeData.plot.plot_blinks
 
 A typical sequence is
@@ -57,7 +57,7 @@ A typical sequence is
 drops in the pupil's velocity profile. The detected blinks are stored in the
 object (the ``"blink"`` layer, which masks them) and the object is
 returned (``d.pupil.blinks_detect()`` works in place). Check them with
-:meth:`~GenericEyeData.get_blinks` (a dict with one :class:`Intervals`
+:meth:`~EyeData.get_blinks` (a dict with one :class:`Intervals`
 per channel, in ms); ``d.clear_layer("blink")`` removes them again.
 :meth:`~EyeData.pupil.blinks_interpolate` replaces the pupil size during
 blinks by a smooth curve (Mathôt, 2013). Interpolated samples are used by
@@ -91,10 +91,10 @@ Any stretch of data can be masked or interpolated from an
 .. autosummary::
    :nosignatures:
 
-   GenericEyeData.mask_intervals
-   GenericEyeData.interpolate_intervals
-   GenericEyeData.mask_as_intervals
-   GenericEyeData.merge_masks
+   EyeData.mask_intervals
+   EyeData.interpolate_intervals
+   EyeData.mask_as_intervals
+   EyeData.merge_masks
 
 
 Filtering and downsampling
@@ -109,7 +109,7 @@ reduces the amount of data, e.g., for modeling.
 
    EyeData.pupil.lowpass_filter
    EyeData.pupil.smooth_window
-   GenericEyeData.downsample
+   EyeData.downsample
 
 The filters only use the usable samples: masked samples (e.g., blinks
 that were not interpolated, or zero-coded blinks) are bridged linearly
@@ -117,7 +117,7 @@ for the filter and keep their values, so they do not leak into their
 neighbours. Interpolating blinks before filtering gives a better bridge
 than a straight line.
 
-:meth:`~GenericEyeData.downsample` averages the samples within each new
+:meth:`~EyeData.downsample` averages the samples within each new
 sampling interval (masked samples are left out), so filter before
 downsampling to a rate close to the frequencies of interest.
 
@@ -131,11 +131,11 @@ and the setup. To compare participants, the data are often z-scored:
 .. autosummary::
    :nosignatures:
 
-   GenericEyeData.scale
-   GenericEyeData.unscale
+   EyeData.scale
+   EyeData.unscale
 
 The mean and standard deviation that were used are stored with the
-object, and :meth:`~GenericEyeData.unscale` undoes the scaling.
+object, and :meth:`~EyeData.unscale` undoes the scaling.
 
 
 Combining the eyes
@@ -148,7 +148,7 @@ less noisy and has fewer gaps:
    :nosignatures:
 
    EyeData.pupil.merge_eyes
-   GenericEyeData.merge_eyes
+   EyeData.merge_eyes
 
 :meth:`~EyeData.pupil.merge_eyes` corrects for a (slowly changing)
 difference in pupil size between the eyes and fills samples missing in one
@@ -156,7 +156,7 @@ eye from the other (recorded samples come before interpolated ones). The
 result is stored as ``mean_pupil`` (eye ``"mean"``; another name with
 ``name=``); it keeps the layers that both eyes have in common, e.g.,
 ``"blink"`` and ``"interpolated"`` where both eyes blinked.
-:meth:`~GenericEyeData.merge_eyes` simply averages any variable. See
+:meth:`~EyeData.merge_eyes` simply averages any variable. See
 :doc:`/notebooks/eyes_and_variables`.
 
 
@@ -166,22 +166,22 @@ Selecting and cleaning up data
 .. autosummary::
    :nosignatures:
 
-   GenericEyeData.crop
-   GenericEyeData.remove_intervals
-   GenericEyeData.reset_time
-   GenericEyeData.drop_data
-   GenericEyeData.drop_original
-   GenericEyeData.fill_time_discontinuities
-   GenericEyeData.copy
+   EyeData.crop
+   EyeData.remove_intervals
+   EyeData.reset_time
+   EyeData.drop_data
+   EyeData.drop_original
+   EyeData.fill_time_discontinuities
+   EyeData.copy
 
-:meth:`~GenericEyeData.crop` cuts out a time range, e.g., one block
+:meth:`~EyeData.crop` cuts out a time range, e.g., one block
 of the experiment: ``d.crop(3 * u.min, 5 * u.min)`` (``sub_slice`` is a
-deprecated alias). :meth:`~GenericEyeData.remove_intervals` removes periods
+deprecated alias). :meth:`~EyeData.remove_intervals` removes periods
 in the middle, e.g., breaks, and joins the rest: the time vector and the
 events after a removed period are shifted back, so that there are no gaps.
-:meth:`~GenericEyeData.reset_time` makes the time vector start at zero
+:meth:`~EyeData.reset_time` makes the time vector start at zero
 (or at any other time).
-:meth:`~GenericEyeData.drop_data` removes eyes or variables, e.g.,
+:meth:`~EyeData.drop_data` removes eyes or variables, e.g.,
 ``d.drop_data(variables=["x", "y"])`` keeps only the pupil data; masks,
 blinks, events, the experimental setup and all other data are kept. Like
 all transforming methods, it works in place unless ``inplace=False`` is

@@ -172,6 +172,11 @@ class TestPublicAPI(unittest.TestCase):
         with self.assertRaisesRegex(AttributeError, "has no attribute 'nonexistent'"):
             pp.nonexistent
 
+    def test_generic_eyedata_is_eyedata(self):
+        with self.assertRaisesRegex(AttributeError, "now part of pypillometry.EyeData"):
+            pp.GenericEyeData
+        self.assertEqual(pp.EyeData.__bases__, (pp.state.VersionedState,))
+
 
 if __name__ == "__main__":
     unittest.main()

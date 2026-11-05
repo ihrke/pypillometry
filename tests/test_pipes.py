@@ -52,7 +52,7 @@ class TestSteps:
     def test_factory_signature_and_doc(self):
         sig = inspect.signature(pp.crop)
         assert list(sig.parameters) == ["start", "end", "units"]
-        assert pp.crop.__doc__.startswith("Pipeline step for :meth:`~pypillometry.GenericEyeData.crop`")
+        assert pp.crop.__doc__.startswith("Pipeline step for :meth:`~pypillometry.EyeData.crop`")
         assert pp.crop.__doc__.endswith(inspect.cleandoc(pp.EyeData.crop.__doc__))
         assert pp.pupil.lowpass_filter.__doc__ == pp.EyeData.pupil.lowpass_filter.__doc__
 

@@ -19,7 +19,7 @@ import os.path
 # ---------------------------------------------------------------------------
 # Data classes
 from .eyedata import (
-    GenericEyeData, EyeData, FakeEyeData,
+    EyeData, FakeEyeData,
     EyeDataDict, MaskPolicy, ExperimentalSetup, SpatialCalibration,
     ForeshorteningCalibration, keephistory,
 )
@@ -77,7 +77,7 @@ from loguru import logger  # available as pp.logger, not part of __all__
 
 __all__ = [
     # data classes
-    "GenericEyeData", "EyeData", "FakeEyeData",
+    "EyeData", "FakeEyeData",
     "EyeDataDict", "MaskPolicy", "ExperimentalSetup", "SpatialCalibration",
     "ForeshorteningCalibration", "keephistory", "Step", "Pipeline",
     # pipeline steps
@@ -115,6 +115,8 @@ def __getattr__(name):
     # the array functions were also at the top level up to 2.1
     if name in signal.__all__:
         raise AttributeError(f"pypillometry.{name} was moved: use pypillometry.signal.{name}")
+    if name == "GenericEyeData":  # merged into EyeData in 2.2
+        raise AttributeError("pypillometry.GenericEyeData is now part of pypillometry.EyeData")
     raise AttributeError(f"module 'pypillometry' has no attribute {name!r}")
 
 __package_path__ = os.path.abspath(os.path.dirname(__file__))

@@ -75,9 +75,9 @@ class SegmentedEyeData(state.VersionedState):
     Holds equal-length segments of a single eye data variable (e.g., "left_pupil", 
     "right_x") extracted around events. Tracks masked/missing data.
 
-    Usually created with :meth:`~pypillometry.GenericEyeData.get_segments`
+    Usually created with :meth:`~pypillometry.EyeData.get_segments`
     from the :class:`~pypillometry.Epochs` returned by
-    :meth:`~pypillometry.GenericEyeData.get_intervals`, e.g.
+    :meth:`~pypillometry.EyeData.get_intervals`, e.g.
     ``d.get_segments(d.get_intervals("F", window=(-200, 800), units="ms"),
     "left_pupil")``. Segments of several subjects can be combined with
     :func:`~pypillometry.group_segments`.
@@ -215,15 +215,15 @@ class SegmentedEyeData(state.VersionedState):
                      name: str = None,
                      policy="default") -> 'SegmentedEyeData':
         """
-        Extract segments from a GenericEyeData object using intervals.
+        Extract segments from a EyeData object using intervals.
         
         Parameters
         ----------
-        eyedata : GenericEyeData
+        eyedata : EyeData
             Source eye data object
         intervals : Epochs or Intervals
             the segments to extract; for Epochs (e.g., from
-            :meth:`~pypillometry.GenericEyeData.get_intervals` with a window),
+            :meth:`~pypillometry.EyeData.get_intervals` with a window),
             the length and the time axis (``window[0] + arange(n) * 1000/fs``
             ms) come from the window, and the parts outside the data are
             masked. Intervals must all have the same length; they are used
@@ -235,7 +235,7 @@ class SegmentedEyeData(state.VersionedState):
             Name for the dataset. If None, uses intervals.label or "segments"
         policy : str, MaskPolicy or list of str
             mask policy of the segments: the samples that are unusable under
-            it are masked (see :meth:`~pypillometry.GenericEyeData.mask`);
+            it are masked (see :meth:`~pypillometry.EyeData.mask`);
             default ``"default"`` (interpolated samples are used)
             
         Returns
