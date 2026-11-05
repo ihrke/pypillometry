@@ -1409,8 +1409,9 @@ class GenericEyeData(state.VersionedState, ABC):
         def bound(v):
             if isinstance(v, numbers.Real) and np.isinf(v):
                 return bounds[v]
-            return v
-        # plain numbers are ms; values with units are converted
+            # plain numbers are ms; values with units are converted (each
+            # value on its own, so that e.g. (0, 2 * u.min) works)
+            return parse_time(v, to="ms", default="ms")
         return Intervals([tuple(bound(v) for v in pair) for pair in intervals], units="ms")
 
     def _original_time(self, t):
