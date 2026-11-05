@@ -59,6 +59,8 @@ tables below for every changed call.
   function is `pp.signal.downsample`
 - `downsample()` stores the actual sampling rate (`fs/factor`)
 - Gaze plots (heatmap, scanpath) draw y downward (screen pixels)
+- The time axis of all plots is in seconds by default (`units="sec"`;
+  was ms or min depending on the plot)
 - Saved files have format 3; files of earlier versions are upgraded when
   they are read (masks whose origin is unknown become the `"user"` layer;
   stored blinks always mask the data)
