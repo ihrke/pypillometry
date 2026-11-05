@@ -20,18 +20,17 @@ class GenericPlots(Namespace):
     (:class:`~pypillometry.plot.PlotNamespace`).
     """
 
-    #: most figures a ``*_segments`` plot makes
-    MAX_SEGMENTS = 500
+    #: a ``*_segments`` plot with more figures than this warns
+    WARN_SEGMENTS = 500
 
     @classmethod
     def _check_nsegments(cls, duration, interv):
-        """Raise a ValueError if `duration` / `interv` (same units) gives too many figures."""
+        """Warn if `duration` / `interv` (same units) gives very many figures."""
         if not interv > 0:
             raise ValueError(f"interv must be positive, got {interv}")
         n = int(np.ceil(duration / interv))
-        if n > cls.MAX_SEGMENTS:
-            raise ValueError(f"interv gives {n} figures (at most {cls.MAX_SEGMENTS}); "
-                             "plain numbers are in `units`")
+        if n > cls.WARN_SEGMENTS:
+            logger.warning(f"interv gives {n} figures; plain numbers are in `units`")
 
     @staticmethod
     def _plot_range_in(plot_range, units: str = "ms") -> tuple:
