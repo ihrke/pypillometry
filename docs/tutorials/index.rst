@@ -83,6 +83,13 @@ Preprocessing and plotting
 
       Detect, check and interpolate blinks.
 
+   .. grid-item-card:: Missing data
+      :link: /notebooks/missing_data
+      :link-type: doc
+
+      Mask layers and policies on a real recording: blinks, off-screen
+      gaze, excluded periods, interpolation and their effect on analyses.
+
    .. grid-item-card:: Plotting
       :link: /notebooks/plotting
       :link-type: doc
@@ -166,6 +173,7 @@ More examples for the experimental features are in
    :caption: Preprocessing and plotting
 
    /notebooks/blinks
+   /notebooks/missing_data
    /notebooks/plotting
 
 .. toctree::

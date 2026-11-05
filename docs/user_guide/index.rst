@@ -40,6 +40,14 @@ If you have not used the package before, start with the
       Blinks, gaze artifacts, filtering, downsampling, scaling and
       combining the eyes.
 
+   .. grid-item-card:: :fas:`eye-slash` Missing data
+      :link: missing_data
+      :link-type: doc
+
+      Blinks, off-screen gaze, excluded periods and interpolation: where
+      the reason for each bad sample is stored and what each method does
+      with it.
+
    .. grid-item-card:: :fas:`clipboard-check` Data quality
       :link: quality
       :link-type: doc
@@ -103,6 +111,7 @@ If you have not used the package before, start with the
    loading_data
    units
    preprocessing
+   missing_data
    quality
    events_intervals
    plotting

@@ -99,7 +99,9 @@ Masks, layers and policies
 Samples can be *masked*, i.e. marked as unusable without removing them.
 Missing samples (NaN), blinks and samples where the gaze is off the
 screen are typical examples. Masked samples are left out of averages,
-segments, statistics and filters.
+segments, statistics and filters. This section gives an overview; see
+:doc:`missing_data` for how each method treats masked samples and for
+common tasks.
 
 Mask layers
 ~~~~~~~~~~~
