@@ -58,6 +58,10 @@ SHADOWED = {
     "pypillometry.signal.baseline": {"downsample"},
 }
 
+# Modules whose public names are only in a namespace submodule, not at the
+# top level (pp.signal.smooth_window, not pp.smooth_window).
+SUBMODULE_API = {"pypillometry.signal": "pypillometry.signal"}
+
 # Modules that are not imported by the package (legacy code).
 SKIP_MODULES = set()
 
@@ -66,6 +70,14 @@ def _package_modules():
     for info in pkgutil.walk_packages(pp.__path__, "pypillometry."):
         if info.name not in SKIP_MODULES:
             yield importlib.import_module(info.name)
+
+
+def _api_module(module):
+    """The module whose __all__ exports the public names of `module`."""
+    for prefix, api in SUBMODULE_API.items():
+        if module.__name__ == prefix or module.__name__.startswith(prefix + "."):
+            return importlib.import_module(api)
+    return pp
 
 
 def _public_definitions(module):
@@ -90,8 +102,15 @@ class TestPublicAPI(unittest.TestCase):
     def test_submodule_all_is_exported(self):
         for module in _package_modules():
             shadowed = SHADOWED.get(module.__name__, set())
+            api = _api_module(module)
             for name in getattr(module, "__all__", []):
                 with self.subTest(module=module.__name__, name=name):
+                    if api is not pp:
+                        self.assertIn(name, api.__all__)
+                        if name not in shadowed:
+                            self.assertNotIn(name, pp.__all__,
+                                             f"{name} belongs to {api.__name__} only")
+                        continue
                     self.assertIn(name, pp.__all__,
                                   "add it to pypillometry/__init__.py")
                     if name in shadowed:
@@ -119,10 +138,11 @@ class TestPublicAPI(unittest.TestCase):
     def test_new_definitions_are_exported_or_internal(self):
         for module in _package_modules():
             internal = INTERNAL.get(module.__name__, set())
+            api = _api_module(module)
             for name in _public_definitions(module):
                 with self.subTest(module=module.__name__, name=name):
                     self.assertTrue(
-                        name in pp.__all__ or name in internal,
+                        name in api.__all__ or name in internal,
                         f"{module.__name__}.{name} is public but neither in "
                         f"__all__ nor listed in INTERNAL ({__file__})",
                     )
@@ -144,6 +164,13 @@ class TestPublicAPI(unittest.TestCase):
             with self.subTest(name=name):
                 self.assertEqual(getattr(pp, name).__name__,
                                  f"pypillometry.{name}")
+
+    def test_signal_functions_only_in_signal(self):
+        self.assertTrue(callable(pp.signal.smooth_window))
+        with self.assertRaisesRegex(AttributeError, "use pypillometry.signal.smooth_window"):
+            pp.smooth_window
+        with self.assertRaisesRegex(AttributeError, "has no attribute 'nonexistent'"):
+            pp.nonexistent
 
 
 if __name__ == "__main__":

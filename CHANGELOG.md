@@ -59,6 +59,9 @@ tables below for every changed call.
   `label`/`onset` (as in `Epochs.as_pandas()` and `Events.to_table()`)
 - `pp.downsample` is the pipeline step for `d.downsample()`; the array
   function is `pp.signal.downsample`
+- The functions for numpy arrays are only in `pp.signal` (e.g.,
+  `pp.signal.smooth_window`, `pp.signal.pupil_kernel`); `pp.smooth_window`
+  raises an error that names the new place
 - `downsample()` stores the actual sampling rate (`fs/factor`)
 - Gaze plots (heatmap, scanpath) draw y downward (screen pixels)
 - The time axis of all plots is in seconds by default (`units="sec"`;
@@ -228,6 +231,7 @@ Calls whose arguments or results changed:
 | `d.to_pupildata()` | `d.drop_data(variables=["x", "y"], inplace=False)` |
 | `d.to_gazedata()` | `d.drop_data(variables="pupil", inplace=False)` |
 | `pp.downsample(x, factor)` (array) | `pp.signal.downsample(x, factor)` |
+| `pp.smooth_window(...)`, `pp.pupil_kernel(...)`, ... (array functions) | `pp.signal.smooth_window(...)`, `pp.signal.pupil_kernel(...)`, ... |
 | `d.params["response"]["left"]` | `d.params["response"]["left_pupil"]` |
 | `iv.as_pandas()["event_label"]`, `["event_onset"]` | `iv.as_pandas()["label"]`, `["onset"]` |
 | `CircularROI.from_degrees((0.087, 0), 0.035, s)` (radians) | `CircularROI.from_degrees((5, 0), 2, s)` (degrees) |

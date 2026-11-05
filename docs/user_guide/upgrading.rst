@@ -77,7 +77,9 @@ Check your scripts for them:
 - **The sampling rate after** :meth:`~GenericEyeData.downsample` is the
   actual rate: downsampling 1000 Hz data to 300 Hz gives 333.3 Hz.
 - ``pp.downsample`` is now a pipeline step; the function for numpy arrays
-  is ``pp.signal.downsample``.
+  is ``pp.signal.downsample``. All functions for numpy arrays are only in
+  ``pp.signal`` (``pp.signal.smooth_window``, ``pp.signal.pupil_kernel``,
+  ...).
 
 All numbers that differ from 2.1, with the reason for each, are listed in
 `tests/data/reference/CHANGES.md

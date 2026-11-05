@@ -327,7 +327,7 @@ def pupil_kernel(duration=4000, fs=1000, npar=10.1, tmax=930.0):
     $$h(t)=\frac{1}{h_{max}} h_{HL}(t)$$
     where $$h_{max} = \max_t{\left(h_{HL}(t)\right)} = e^{-n}t_{max}^{n}$$
     which yields a maximum value of 1 for this function.
-    The function $h(t)$ is implemented in `pp.pupil_kernel()`.
+    The function $h(t)$ is implemented in `pp.signal.pupil_kernel()`.
 
     Parameters
     ----------
@@ -382,8 +382,8 @@ def plot_prf(npar=10.1,tmax=930,max_duration="estimate",fs=500,**kwargs):
 
        >>> import pypillometry as pp
        >>> import matplotlib.pyplot as plt
-       >>> pp.plot_prf()
-       >>> pp.plot_prf(npar=5, tmax=500)
+       >>> pp.signal.plot_prf()
+       >>> pp.signal.plot_prf(npar=5, tmax=500)
     """
     if max_duration=="estimate":
         max_duration=pupil_get_max_duration(npar,tmax)

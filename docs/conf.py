@@ -168,7 +168,7 @@ pygments_dark_style = "monokai"
 #
 # Docstrings often link to the module where an object is defined, e.g.
 # :func:`pypillometry.signal.pupil.pupil_response`, but the API reference
-# documents everything under its public name (pypillometry.pupil_response).
+# documents everything under its public name (pypillometry.signal.pupil_response).
 # This hook redirects such links (and bare method names) to the public name.
 
 _PUBLIC_CLASSES = ["GenericEyeData", "EyeData"]
@@ -187,6 +187,8 @@ def _resolve_public_name(app, env, node, contnode):
     if target.startswith("pypillometry."):
         candidates += [f"pypillometry.{parts[-1]}",
                        f"pypillometry.{'.'.join(parts[-2:])}"]
+        if target.startswith("pypillometry.signal."):
+            candidates.insert(0, f"pypillometry.signal.{parts[-1]}")
     elif len(parts) == 1:
         cls = node.get("py:class")
         if cls:
