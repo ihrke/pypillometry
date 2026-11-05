@@ -53,6 +53,8 @@ tables below for every changed call.
   `get_segments()` with `Intervals` needs intervals of equal length
 - The merged eye of `pupil.merge_eyes()` is always `"mean"` (`mean_pupil`);
   choose another name with `name=`
+- `gaze.mask_divergences(store_as="dist")` stores the eye distance once,
+  as `both_dist` (eye `"both"`)
 - `Intervals.as_pandas()`: the columns `event_label`/`event_onset` are
   `label`/`onset` (as in `Epochs.as_pandas()` and `Events.to_table()`)
 - `pp.downsample` is the pipeline step for `d.downsample()`; the array
