@@ -618,11 +618,12 @@ class PupilNamespace(Namespace):
             # Filter by minimum duration and create Intervals object
             filtered_blinks = [(int(on), int(off)+1) for (on,off) in blinks
                                if off+1-on>=min_duration_ix]
-            # blinks in or next to excluded periods are not blinks
+            # blinks are cut at excluded periods (e.g., breaks without data
+            # are not blinks); blinks next to them are kept
             excl = obj._excluded_mask()
             if excl.any():
-                filtered_blinks = [(on, off) for on, off in filtered_blinks
-                                   if not excl[max(on-1, 0):off+1].any()]
+                inblink = Intervals(filtered_blinks, "samples").to_mask(obj).astype(bool)
+                filtered_blinks = Intervals.from_mask(inblink & ~excl).intervals
             logger.debug(f"Filtered {len(filtered_blinks)} blinks by minimum duration")
             intervals_obj = Intervals(
                 intervals=filtered_blinks,
@@ -679,7 +680,6 @@ class PupilNamespace(Namespace):
         logger.debug(f"Distance '{distance}' in index units: {distance_ix}")
 
         for eye, var in pairs:
-            # all runs, also those next to excluded periods (set_blinks replaces the layer)
             blinks = obj._layer_runs(f"{eye}_{var}", "blink")
             if len(blinks) == 0:
                 continue

@@ -674,6 +674,12 @@ def _blinks_masked(case_id, key, stored):
     return stored | blink
 
 
+def _blinks_not_hidden(case_id, key, stored):
+    """Blinks after `exclude_intervals` (step 21): all blinks of the layer,
+    also those next to the excluded periods (as before excluding)."""
+    return load_arrays(case_id.replace("g.exclude_intervals", "b.blinks_interpolate"))[key]
+
+
 #: intended changes (see CHANGES.md): (case id prefix, result key prefix) ->
 #: function mapping (case id, key, stored reference value) to the expected value
 CHANGED = {("e.segments.rlmw.interp", ""): _segments_interp,
@@ -690,7 +696,8 @@ CHANGED = {("e.segments.rlmw.interp", ""): _segments_interp,
            ("f.quality.", "artifacts."): _quality_other,
            ("h.merge_eyes.", ""): _merged_pupil,
            ("h.scale.", ""): _scaled_pupil,
-           ("a.blinks_detect.", "mask."): _blinks_masked}
+           ("a.blinks_detect.", "mask."): _blinks_masked,
+           ("g.exclude_intervals.", "blinks."): _blinks_not_hidden}
 
 
 def expected_value(case_id, key, stored):

@@ -701,6 +701,18 @@ Changes of the API calls alone (same numbers) need no entry.
 - **Why**: one rule for time values (plan 2.8, rule 4).
 - **Step**: 9, `refactor/09-api-conventions`
 
+### Blinks next to excluded periods are returned
+
+- **Case**: `g.exclude_intervals.rlmw`, `blinks.left_pupil` and
+  `blinks.right_pupil`
+- **Change**: `get_blinks()` returns all blinks of the `"blink"` layer, also
+  those in or next to an excluded period (14/13 blinks, as in
+  `b.blinks_interpolate.rlmw`; before: 12/12). `blinks_detect()` cuts
+  blinks at excluded periods instead of dropping the blinks that touch one.
+- **Why**: owner decision (review guide, open decision 18): blinks that end
+  in an excluded period are blinks.
+- **Step**: 21, `fix/blinks-next-to-excluded`
+
 ### Not a change: `fit_foreshortening` in the foreshortening tutorial
 
 - **Case**: none (no reference case covers `fit_foreshortening`)
