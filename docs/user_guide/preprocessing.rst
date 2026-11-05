@@ -63,7 +63,7 @@ per channel, in ms); ``d.clear_layer("blink")`` removes them again.
 blinks by a smooth curve (Mathôt, 2013). Interpolated samples are used by
 all later steps (filters, segments, statistics); they keep the
 ``"interpolated"`` layer, so they can be left out with
-``policy="strict"`` (see :doc:`data_model`).
+``policy="strict"`` (see :doc:`missing_data`).
 
 Blinks differ a lot between participants, and checking the result for
 each participant is worth the effort. The tutorial :doc:`/notebooks/blinks`
