@@ -828,11 +828,11 @@ class GenericEyeData(state.VersionedState, ABC):
         Get blinks as a dict of Intervals (one per eye/variable).
 
         The blinks are the runs of the ``"blink"`` layer (blinks that
-        overlap or touch are one blink), without the runs that overlap or
-        touch an excluded period (see
-        :meth:`~pypillometry.GenericEyeData.exclude_intervals`; they stay
-        in the layer). If no blinks are stored for an eye/variable, an
-        empty Intervals object is returned for it.
+        overlap or touch are one blink), also those in or next to an
+        excluded period (see
+        :meth:`~pypillometry.GenericEyeData.exclude_intervals`). If no
+        blinks are stored for an eye/variable, an empty Intervals object is
+        returned for it.
 
         Parameters
         ----------
@@ -867,8 +867,7 @@ class GenericEyeData(state.VersionedState, ABC):
         ['left_pupil', 'right_pupil']
         >>> blinks_idx = blinks.to_units("indices", d)
         """
-        return self._layer_intervals("blink", eyes, variables, units, "blinks",
-                                     skip_excluded=True)
+        return self._layer_intervals("blink", eyes, variables, units, "blinks")
 
     def get_interpolated_blinks(self, eyes: str|list = [], variables: str|list = [], 
                                 units: str = "ms"):
@@ -923,9 +922,8 @@ class GenericEyeData(state.VersionedState, ABC):
         Get the runs of a mask layer (e.g., ``"offscreen"``) as a dict of Intervals.
 
         Each contiguous run of samples in which the layer is set becomes
-        one interval. See :meth:`get_blinks` for the blinks (without those
-        next to excluded periods) and :meth:`get_excluded` for the excluded
-        periods.
+        one interval. See :meth:`get_blinks` for the blinks and
+        :meth:`get_excluded` for the excluded periods.
 
         Parameters
         ----------
@@ -953,22 +951,15 @@ class GenericEyeData(state.VersionedState, ABC):
         """
         return self._layer_intervals(name, eyes, variables, units, name)
 
-    def _layer_runs(self, key, layer, skip_excluded=False):
-        """Runs of `layer` of `key` (Intervals in samples); with
-        `skip_excluded`, without the runs that overlap or touch an excluded
-        period."""
+    def _layer_runs(self, key, layer):
+        """Runs of `layer` of `key` (Intervals in samples)."""
         if layer in REC_LAYERS:
             runs = Intervals.from_mask(self.data.get_rec_layer(layer)).intervals
         else:
             runs = Intervals.from_mask(self.data.get_layer(key, layer)).intervals
-        excl = self._excluded_mask()
-        if skip_excluded and excl.any():
-            n = len(excl)
-            runs = [(on, off) for on, off in runs
-                    if not excl[max(on - 1, 0):min(off + 1, n)].any()]
         return Intervals(runs, "samples")
 
-    def _layer_intervals(self, layer, eyes, variables, units, suffix, skip_excluded=False):
+    def _layer_intervals(self, layer, eyes, variables, units, suffix):
         """Runs of `layer` (e.g., interpolated blinks) for eyes/variables
         (see `_layer_runs`): a dict (keys like "left_pupil") over the
         existing eye/variable combinations.
@@ -976,7 +967,7 @@ class GenericEyeData(state.VersionedState, ABC):
         result = {}
         for e, v in self.data.select(eyes, variables):
             key = f"{e}_{v}"
-            runs = self._layer_runs(key, layer, skip_excluded)
+            runs = self._layer_runs(key, layer)
             result[key] = Intervals(runs.intervals, "samples",
                                     label=f"{key}_{suffix}").to_units(units, self)
         return result
@@ -3366,10 +3357,10 @@ class GenericEyeData(state.VersionedState, ABC):
         variables (also those added later), so that functions that
         ignore masked data (e.g., :meth:`scale`, :meth:`get_segments`) also
         ignore the excluded periods. Unlike other masked data (blinks,
-        artifacts), excluded periods are not treated as missing data: blinks
-        that overlap or touch an excluded period are not counted (they are
-        left out by :meth:`get_blinks`, but keep their layer, mask and
-        interpolation), and blink detection ignores them as well.
+        artifacts), excluded periods are not treated as missing data: blink
+        detection cuts blinks at them, and blinks that end in an excluded
+        period are not interpolated. Blinks detected before keep their
+        layer.
 
         The layer moves with the samples (:meth:`crop`, :meth:`downsample`,
         :meth:`remove_intervals`, ...). Calling the method again adds to

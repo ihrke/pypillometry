@@ -234,10 +234,8 @@ everything outside the given periods, e.g., to keep only the fMRI run:
 Because the samples are masked, everything that ignores masked data
 (averages, :meth:`~GenericEyeData.scale`, segments, ...) also ignores the
 excluded periods (also where the data were interpolated). Unlike other
-masks, excluded periods are not blinks: blink detection ignores them, and
-blinks that overlap or touch an excluded period are not counted (they are
-left out by :meth:`~GenericEyeData.get_blinks`), so they are not
-interpolated either. The layer moves with the samples when the data are
+masks, excluded periods are not blinks: blink detection cuts blinks at
+them, and a blink that ends in an excluded period is not interpolated. The layer moves with the samples when the data are
 sliced or downsampled, and it is saved with the object;
 ``d.clear_layer("excluded")`` removes the excluded periods.
 
