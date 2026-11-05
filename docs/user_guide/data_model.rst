@@ -330,5 +330,5 @@ Fake data
 used to generate them, which is useful for testing preprocessing methods.
 The functions for :ref:`simulated data <api-simulated-data>` generate the parts (slow
 baseline changes, fixations, measurement noise), and
-:func:`generate_foreshortening_data` creates a complete dataset (see
+:func:`~signal.generate_foreshortening_data` creates a complete dataset (see
 :doc:`/experimental/foreshortening`).
