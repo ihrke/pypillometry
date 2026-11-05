@@ -4,8 +4,8 @@
 
 A new data model behind the same kind of analyses: one data class, mask
 layers instead of a single mask, pipelines, and the pupil, gaze and plot
-methods in namespaces. Most scripts need changes; old method names raise an
-`AttributeError` that names the new one. See
+methods in namespaces. Most scripts need changes (old names are gone, without
+forwarders). See
 [Upgrading from 2.1](../user_guide/upgrading.rst) for an overview and the
 tables below for every changed call.
 
@@ -68,8 +68,7 @@ tables below for every changed call.
 - `pp.downsample` is the pipeline step for `d.downsample()`; the array
   function is `pp.signal.downsample`
 - The functions for numpy arrays are only in `pp.signal` (e.g.,
-  `pp.signal.smooth_window`, `pp.signal.pupil_kernel`); `pp.smooth_window`
-  raises an error that names the new place
+  `pp.signal.smooth_window`, `pp.signal.pupil_kernel`)
 - `downsample()` stores the actual sampling rate (`fs/factor`)
 - Gaze plots (heatmap, scanpath) draw y downward (screen pixels)
 - The time axis of all plots is in seconds by default (`units="sec"`;

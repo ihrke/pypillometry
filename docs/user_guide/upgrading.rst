@@ -33,8 +33,8 @@ gaze data in ``d.gaze`` and the plots in ``d.plot``, without the prefixes:
     d.pupil_plot()               # 2.1
     d.plot.pupil_plot()          # 2.2
 
-Old names raise an error that names the new one, e.g.
-``AttributeError: ... (renamed: use .pupil.blinks_detect(...))``.
+The old names are gone (an ``AttributeError``); the tables in the
+changelog list the new name for every changed call.
 
 **Pipelines.** Processing steps can be combined with ``|``
 (``d | pp.pupil.blinks_detect() | pp.pupil.lowpass_filter(4)``); see
