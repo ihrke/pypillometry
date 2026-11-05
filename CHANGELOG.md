@@ -120,6 +120,11 @@ The main ones:
   longer counted as "other artifacts"
 - Files saved after a `downsample` to a rate that does not divide the
   original one get a corrected `fs` when they are read
+- `merge_eyes()`/`pupil.merge_eyes()` use recorded samples first: where one
+  eye is interpolated and the other recorded, the merged value is the
+  recorded one (not the mean of both); the merged channel gets the layers
+  common to the eyes used (e.g., `blink`, `interpolated`) instead of only
+  `user`
 - Blinks next to excluded periods are blinks: `get_blinks()` (and blink
   counts, interpolation, plots) no longer leaves out blinks that overlap or
   touch an excluded period; `pupil.blinks_detect()` cuts blinks at excluded
