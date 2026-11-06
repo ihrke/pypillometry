@@ -5,7 +5,7 @@ import numpy as np
 
 from .convenience import requires_package
 from .units import parse_time
-from .events import Events
+from .events import Events, _warn_if_needs_sync
 from .state import Stateful
 
 __all__ = ["Epochs"]
@@ -130,6 +130,7 @@ class Epochs(Stateful):
         -------
         Epochs
         """
+        _warn_if_needs_sync(events)
         ep = cls.__new__(cls)
         ep._setup(events.to_units("ms"), window, label)
         return ep

@@ -42,9 +42,9 @@ Version history
     value per interval)
 3
     eyedata objects store their events as one Events state (`events`:
-    `onsets` in `units`, `labels`, `data_time_range`, `meta`); all eyedata
-    objects have `experimental_setup` and `calibration`; masks are
-    layers: EyeDataDicts have `layers` (one uint16 bit-field per key),
+    `onsets` in `units`, `labels`, `data_time_range`, `meta`,
+    `needs_sync`); all eyedata objects have `experimental_setup` and
+    `calibration`; masks are layers: EyeDataDicts have `layers` (one uint16 bit-field per key),
     `layer_names` (layer i is bit i) and `rec_layers` (recording-wide
     layers, e.g. excluded periods) instead of `mask`; eyedata objects have
     no `blinks`, `interpolated_blinks` and `excluded` (they are layers);
@@ -640,7 +640,8 @@ def _v2_spans(st, fs):
         labels = np.full(len(onsets), "")
     return {"class": "Epochs",
             "events": {"onsets": onsets, "labels": labels, "units": "ms",
-                       "data_time_range": None, "meta": st.get("event_meta")},
+                       "data_time_range": None, "meta": st.get("event_meta"),
+                       "needs_sync": False},
             "window": tuple(float(w) * fac for w in st["interval_window"]),
             "label": st.get("label")}
 
@@ -745,7 +746,8 @@ def _migrate_2_to_3(state, class_name):
         return state
     state["events"] = {"onsets": state.pop("event_onsets"),
                        "labels": state.pop("event_labels"), "units": "ms",
-                       "data_time_range": None, "meta": state.pop("event_meta")}
+                       "data_time_range": None, "meta": state.pop("event_meta"),
+                       "needs_sync": False}
     _v2_fix_fs(state)
     _v2_eyedata_layers(state)
     _v2_params(state)

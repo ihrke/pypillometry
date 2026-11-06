@@ -1,6 +1,6 @@
 """
 Tests for events from behaviour logs: Events.from_table(), sync_clocks(),
-add_events() and event_onset().
+add_events(), event_onset() and the warning for events on another clock.
 """
 import unittest
 import numpy as np
@@ -150,6 +150,68 @@ class TestAddEvents(unittest.TestCase):
     def test_history(self):
         d = fake_data().add_events(Events([2000], ["x"]))
         self.assertIn("add_events", str(d.history))
+
+
+class TestNeedsSync(unittest.TestCase):
+    """Events from a behaviour log are marked as being on another clock."""
+
+    def setUp(self):
+        self.ev = Events.from_table({"stim": [1.0, 3.0]}, ["stim"], units="sec")
+
+    def test_from_table_marks_events(self):
+        self.assertTrue(self.ev.needs_sync)
+        self.assertFalse(Events([0], ["a"]).needs_sync)
+        self.assertFalse(Events.from_table({"stim": [1.0]}, ["stim"],
+                                           needs_sync=False).needs_sync)
+        self.assertIn("needs sync_clocks()", repr(self.ev))
+
+    def test_kept_by_methods(self):
+        ev = self.ev
+        for derived in [ev.filter("stim"), ev.keep(np.array([True, False])), ev[0:1],
+                        ev.to_units("ms"), ev.set_meta("x", 1), ev.drop_meta(),
+                        ev.parse_labels(r"(?P<kind>\w+)"), Events([0], ["a"]) + ev,
+                        ev + Events([0], ["a"])]:
+            self.assertTrue(derived.needs_sync)
+
+    def test_cleared_by_mapping(self):
+        sync = pp.sync_clocks([0.0, 4.0], [500.0, 4500.0], src_units="sec",
+                              dst_units="ms")
+        self.assertFalse(sync(self.ev).needs_sync)
+        self.assertFalse(self.ev.shift(0.5).needs_sync)
+
+    def test_kept_in_state(self):
+        st = self.ev._to_state()
+        self.assertTrue(Events._from_state(st).needs_sync)
+        del st["needs_sync"]
+        self.assertFalse(Events._from_state(st).needs_sync)
+
+    def test_data_methods_warn(self):
+        d = fake_data()
+        for fct in [lambda: d.add_events(self.ev),
+                    lambda: d.copy().set_events(self.ev),
+                    lambda: d.get_epochs(self.ev, (0, 100)),
+                    lambda: pp.Epochs.from_events(self.ev, (0, 100))]:
+            with _capture_warnings() as msgs:
+                fct()
+            self.assertTrue(any("sync_clocks" in m for m in msgs), msgs)
+
+    def test_no_warning_after_sync(self):
+        d = fake_data()
+        sync = pp.sync_clocks([0.0, 4.0], [500.0, 4500.0], src_units="sec",
+                              dst_units="ms")
+        with _capture_warnings() as msgs:
+            d2 = d.add_events(sync(self.ev))
+            d2.get_epochs("stim", (0, 100))
+        self.assertEqual(msgs, [])
+        self.assertFalse(d2.events.needs_sync)   # stored events are on the data clock
+
+    def test_error_outside_data_points_to_sync(self):
+        d = fake_data()
+        with self.assertRaisesRegex(ValueError, r"1 of 3 event onsets are outside.*sync_clocks"):
+            d.add_events(Events([20000], ["late"]))
+        late = Events.from_table({"stim": [1.0, 30.0]}, ["stim"], units="sec")
+        with self.assertRaisesRegex(ValueError, "another clock.*sync_clocks"):
+            d.add_events(late)
 
 
 class TestEventOnset(unittest.TestCase):
