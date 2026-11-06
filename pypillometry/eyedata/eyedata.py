@@ -26,7 +26,7 @@ from .. import config, io, state
 from ..convenience import (sizeof_fmt, ByteSize, _round_values, _plain_values, requires_package,
                            normalize_unit, _warn_if_ignores_mask)
 from ..epochs import Epochs
-from ..events import Events, _pair_with_next
+from ..events import Events, _pair_with_next, _warn_if_needs_sync
 from ..intervals import Intervals, _as_intervals
 from ..plot import PlotNamespace
 from ..signal import baseline
@@ -1878,15 +1878,26 @@ class EyeData(state.VersionedState):
         `events` in ms, checked against the data.
 
         Raises a TypeError if `events` is not an Events object and a
-        ValueError if an onset is outside the time range of the data.
+        ValueError if an onset is outside the time range of the data; warns
+        if the events are on another clock (`needs_sync`).
         """
         if not isinstance(events, Events):
             raise TypeError(f"events must be an Events object, got {type(events)}")
+        _warn_if_needs_sync(events)
         events = events.to_units("ms")
         on = events.onsets
-        if len(on) and (on.min() < self.tx.min() or on.max() > self.tx.max()):
-            raise ValueError("some event-onsets outside data range according to time-vector")
-        # the time range of the data is not stored with the events
+        t0, t1 = float(self.tx.min()), float(self.tx.max())
+        outside = (on < t0) | (on > t1)
+        if outside.any():
+            hint = ("they are on another clock (e.g., from Events.from_table()): map them "
+                    "with pp.sync_clocks() first" if events.needs_sync else
+                    "events from another clock (e.g., a behaviour log) must be mapped to "
+                    "the eye-tracker clock with pp.sync_clocks() first")
+            raise ValueError(
+                f"{outside.sum()} of {len(on)} event onsets are outside the data "
+                f"({t0:.6g} to {t1:.6g} ms), e.g. at {_some(on[outside], 3)} ms; {hint}")
+        # the time range of the data is not stored with the events; they are
+        # on the clock of the data now
         return Events(on, events.labels, units="ms", meta=events.meta)
 
     @property
@@ -1972,6 +1983,8 @@ class EyeData(state.VersionedState):
 
         The onsets are converted to ms (the internal storage format) if
         needed. The time range of the data is not stored with the events.
+        A warning is given for events that are marked as being on another
+        clock (`needs_sync`, see :func:`~pypillometry.sync_clocks`).
 
         Parameters
         ----------
@@ -2013,9 +2026,12 @@ class EyeData(state.VersionedState):
         The new events are merged with the existing ones and all events are
         sorted by onset (events at the same time keep their order, existing
         ones first). Metadata columns that only the existing or only the new
-        events have get missing values (NaN or "") for the other events. Events from a behaviour log on another clock can be
-        mapped to the eye-tracker clock with :func:`~pypillometry.sync_clocks`
-        first.
+        events have get missing values (NaN or "") for the other events.
+        Events from a behaviour log on another clock must be mapped to the
+        eye-tracker clock with :func:`~pypillometry.sync_clocks` first; a
+        warning is given for events that are marked as being on another
+        clock (`needs_sync`, e.g., from
+        :meth:`~pypillometry.Events.from_table`).
 
         Parameters
         ----------
@@ -2041,10 +2057,11 @@ class EyeData(state.VersionedState):
         Examples
         --------
         Events from a behaviour log ``behav`` (a table with times in sec,
-        already on the eye-tracker clock, see :func:`~pypillometry.sync_clocks`):
+        already on the eye-tracker clock; otherwise, see
+        :func:`~pypillometry.sync_clocks`):
 
-        >>> ev = pp.Events.from_table(behav, ["stim_on", "response"],
-        ...                           units="sec")  # doctest: +SKIP
+        >>> ev = pp.Events.from_table(behav, ["stim_on", "response"], units="sec",
+        ...                           needs_sync=False)  # doctest: +SKIP
         >>> d = d.add_events(ev)  # doctest: +SKIP
 
         See Also
@@ -2302,6 +2319,7 @@ class EyeData(state.VersionedState):
             raise ValueError(f"window must be (min, max) with min < max, got {window}")
 
         if isinstance(event_select, Events):
+            _warn_if_needs_sync(event_select)
             onsets = event_select.to_units("ms").onsets
             labels = event_select.labels.tolist()
             meta = dict(event_select.meta) or None

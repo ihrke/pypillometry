@@ -201,6 +201,15 @@ class Events(Stateful):
     meta : dict or None, optional
         metadata: column name -> values (one per event); "onset" and
         "label" cannot be used as names
+    needs_sync : bool, optional
+        True if the onsets are on another clock than the eye tracker (e.g.,
+        from a behaviour log) and still have to be mapped with
+        :func:`~pypillometry.sync_clocks`; default False. Events from
+        :meth:`from_table` have it set; mapping them with a
+        :class:`~pypillometry.ClockSync` or :meth:`shift` clears it. Data
+        objects warn about such events (:meth:`~pypillometry.EyeData.add_events`,
+        :meth:`~pypillometry.EyeData.set_events`,
+        :meth:`~pypillometry.EyeData.get_epochs`).
 
     Raises
     ------
@@ -226,14 +235,15 @@ class Events(Stateful):
     """
 
     # state (see pypillometry.state)
-    _STATE_FIELDS = ("onsets", "labels", "units", "data_time_range", ("meta", None, "_meta"))
+    _STATE_FIELDS = ("onsets", "labels", "units", "data_time_range", ("meta", None, "_meta"),
+                     "needs_sync")
 
     def __init__(self,
                  onsets: np.ndarray | List,
                  labels: np.ndarray | List,
                  units: Optional[str] = UNSET,
                  data_time_range: Optional[Tuple[float, float]] = None,
-                 meta: Optional[dict] = None):
+                 meta: Optional[dict] = None, needs_sync: bool = False):
         """
         Initialize an Events object (see class docstring for parameters).
         """
@@ -252,6 +262,7 @@ class Events(Stateful):
         if len(self.onsets) != len(self.labels):
             raise ValueError(f"onsets and labels must have same length, got {len(self.onsets)} and {len(self.labels)}")
         self._meta = _meta_dict(meta, len(self.onsets))
+        self.needs_sync = bool(needs_sync)
         # Events are immutable: methods return new objects
         for arr in (self.onsets, self.labels, *self._meta.values()):
             arr.flags.writeable = False
@@ -260,7 +271,8 @@ class Events(Stateful):
         """Set the attributes from a state of the current version (checked like
         the arguments of the constructor)."""
         self.__init__(st["onsets"], st["labels"], units=st["units"],
-                      data_time_range=st["data_time_range"], meta=st["meta"])
+                      data_time_range=st["data_time_range"], meta=st["meta"],
+                      needs_sync=st.get("needs_sync", False))
 
     @property
     def meta(self):
@@ -281,7 +293,8 @@ class Events(Stateful):
             labels=self.labels[idx],
             units=self.units,
             data_time_range=self.data_time_range,
-            meta={name: col[idx] for name, col in self.meta.items()}
+            meta={name: col[idx] for name, col in self.meta.items()},
+            needs_sync=self.needs_sync
         )
 
     def shift(self, by) -> 'Events':
@@ -299,7 +312,8 @@ class Events(Stateful):
         -------
         Events
             new Events with the same labels and metadata; `data_time_range`
-            (if set) is moved in the same way
+            (if set) is moved in the same way. The events count as mapped to
+            the eye-tracker clock (`needs_sync` is False).
 
         Raises
         ------
@@ -454,7 +468,8 @@ class Events(Stateful):
 
     @classmethod
     def from_table(cls, table, columns, units: Optional[str] = UNSET,
-                   meta=None, row: Optional[str] = "row") -> 'Events':
+                   meta=None, row: Optional[str] = "row",
+                   needs_sync: bool = True) -> 'Events':
         """
         Create Events from a table with one row per trial.
 
@@ -467,6 +482,11 @@ class Events(Stateful):
         Other columns of the table (e.g., condition, reaction time) can be
         given as `meta`; every event of a row gets the values of that row
         as metadata.
+
+        The times of a behaviour log are usually on another clock than the
+        eye tracker, so the events are marked as `needs_sync`: map them with
+        :func:`~pypillometry.sync_clocks` before adding them to a data
+        object (which warns otherwise).
 
         Parameters
         ----------
@@ -487,6 +507,10 @@ class Events(Stateful):
             name of a metadata column with the position of the row in the
             table (0, 1, ...), which links the events of the same row;
             default "row"; None for no such column
+        needs_sync : bool, optional
+            if True (default), the times are on another clock and must be
+            mapped with :func:`~pypillometry.sync_clocks`; False if they
+            are on the eye-tracker clock already
 
         Returns
         -------
@@ -550,7 +574,8 @@ class Events(Stateful):
         # stable sort, so events at the same time keep the column order
         order = np.argsort(onsets, kind="stable")
         return cls(onsets[order], labels[order], units=units,
-                   meta={name: col[order] for name, col in columns_meta.items()})
+                   meta={name: col[order] for name, col in columns_meta.items()},
+                   needs_sync=needs_sync)
 
     def __add__(self, other: 'Events') -> 'Events':
         """
@@ -570,7 +595,8 @@ class Events(Stateful):
         order = np.argsort(onsets, kind="stable")
         return Events(onsets[order], labels[order], units=self.units,
                       data_time_range=self.data_time_range,
-                      meta={name: col[order] for name, col in meta.items()})
+                      meta={name: col[order] for name, col in meta.items()},
+                      needs_sync=self.needs_sync or other.needs_sync)
 
     def _with_columns(self, values: dict) -> 'Events':
         """
@@ -585,7 +611,8 @@ class Events(Stateful):
                 vals = [o if v is None else v for v, o in zip(vals, old)]
             meta[name] = _column_from_values(vals)
         return Events(self.onsets, self.labels, units=self.units,
-                      data_time_range=self.data_time_range, meta=meta)
+                      data_time_range=self.data_time_range, meta=meta,
+                      needs_sync=self.needs_sync)
 
     def parse_labels(self, parser) -> 'Events':
         r"""
@@ -733,7 +760,8 @@ class Events(Stateful):
         meta = dict(self.meta)
         meta[name] = _column_from_values(values)
         return Events(self.onsets, self.labels, units=self.units,
-                      data_time_range=self.data_time_range, meta=meta)
+                      data_time_range=self.data_time_range, meta=meta,
+                      needs_sync=self.needs_sync)
 
     def drop_meta(self, *names: str) -> 'Events':
         """
@@ -750,7 +778,8 @@ class Events(Stateful):
                 raise KeyError(f"no metadata column '{name}'")
         meta = {} if not names else {k: v for k, v in self.meta.items() if k not in names}
         return Events(self.onsets, self.labels, units=self.units,
-                      data_time_range=self.data_time_range, meta=meta)
+                      data_time_range=self.data_time_range, meta=meta,
+                      needs_sync=self.needs_sync)
 
     def fill_meta(self, columns, by: str = "trial") -> 'Events':
         """
@@ -934,7 +963,8 @@ class Events(Stateful):
             labels=self.labels.copy(),
             units=target_units,
             data_time_range=converted_range,
-            meta=self.meta
+            meta=self.meta,
+            needs_sync=self.needs_sync
         )
     
     def __repr__(self) -> str:
@@ -965,7 +995,9 @@ class Events(Stateful):
 
         if self.meta:
             parts.append(f"meta=[{', '.join(self.meta)}]")
-        
+        if self.needs_sync:
+            parts.append("needs sync_clocks()")
+
         return " | ".join(parts)
     
     def _repr_html_(self) -> str:
@@ -1023,6 +1055,8 @@ class Events(Stateful):
         summary += f'Total: {len(self)} events'
         if self.data_time_range is not None:
             summary += f' | Data range: [{self.data_time_range[0]:.1f}, {self.data_time_range[1]:.1f}] {unit_str}'
+        if self.needs_sync:
+            summary += ' | on another clock: map with sync_clocks()'
         summary += '</p>'
         
         return html + summary
@@ -1248,6 +1282,16 @@ class Events(Stateful):
 
 
 
+def _warn_if_needs_sync(events, what="events"):
+    """Warn if `events` are on another clock (`needs_sync`)."""
+    if events.needs_sync:
+        logger.warning(
+            f"the {what} are on another clock than the eye tracker (e.g., from "
+            "Events.from_table()); map them with pp.sync_clocks() first, or use "
+            "Events.from_table(..., needs_sync=False) if they are on the eye-tracker "
+            "clock already")
+
+
 def _check_condition_types(name, col, values):
     """Raise a TypeError if strings are compared with a numeric metadata column
     or numbers with a column of strings (such a condition matches nothing)."""
@@ -1275,7 +1319,8 @@ class ClockSync:
     Calling the object maps times: plain numbers are taken to be in
     `src_units` and are returned as an array in `dst_units`; numbers with
     units and :class:`Events` are converted first and returned in
-    `dst_units` (as :class:`Events` for :class:`Events`).
+    `dst_units` (as :class:`Events` for :class:`Events`, which are then no
+    longer marked as `needs_sync`).
 
     Attributes
     ----------

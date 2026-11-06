@@ -162,7 +162,7 @@ arrays of times; missing times (NaN, e.g., no response) give no event:
                               units="sec")
 
 This gives one event per stimulus and per response, sorted by onset (still
-on the clock of the behaviour log):
+on the clock of the behaviour log, so they are marked as ``needs_sync``):
 
 .. list-table:: ``ev``
    :header-rows: 1
@@ -198,6 +198,16 @@ maps times or events to the eye-tracker clock:
     sync = pp.sync_clocks(starts, d.events.filter("Start Block"),
                           src_units="sec")
     d.add_events(sync(ev))
+
+Events from :meth:`Events.from_table` are marked as being on another clock
+(``ev.needs_sync``); :meth:`~EyeData.add_events`,
+:meth:`~EyeData.set_events` and :meth:`~EyeData.get_epochs` warn if they
+get such events, so a forgotten ``sync_clocks()`` does not go unnoticed.
+Mapping them with a :class:`ClockSync` (or :meth:`Events.shift`) removes
+the mark. If the log is on the eye-tracker clock already (e.g., the times
+were taken from eye-tracker messages), use
+``Events.from_table(..., needs_sync=False)``. Events outside the time range
+of the data raise an error.
 
 Other columns of the log become :ref:`metadata <event-metadata>` of the
 events with ``meta``, e.g.,
