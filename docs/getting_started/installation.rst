@@ -111,7 +111,7 @@ without changes. The main differences:
 - Most methods were renamed, e.g. ``blinks_detect()`` is now
   :meth:`~EyeData.pupil.blinks_detect` and ``lowpass_filter()`` is
   :meth:`~EyeData.pupil.lowpass_filter`.
-- ERPDs are created with :meth:`~EyeData.get_intervals` and
+- ERPDs are created with :meth:`~EyeData.get_epochs` and
   :meth:`~EyeData.get_segments` (see :doc:`/notebooks/erpds`).
 
 Version 1 is still available on the `v1 branch

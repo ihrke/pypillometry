@@ -20,8 +20,8 @@ def timebase(n, fs=1000., t0=0.):
 
 
 def spans(d, event, window, units):
-    """The spans of ``d.get_intervals(event, window)`` as Intervals in `units`."""
-    return d.get_intervals(event, window=window, units=units).to_intervals(units, d)
+    """The spans of ``d.get_epochs(event, window)`` as Intervals in `units`."""
+    return d.get_epochs(event, window=window, units=units).to_intervals(units, d)
 
 
 class TestIntervalsClass(unittest.TestCase):
@@ -547,47 +547,47 @@ class TestIntervalsAddOperator(unittest.TestCase):
         self.assertEqual(len(result), 3)
         self.assertEqual(result.intervals, [(0, 100), (200, 300), (400, 500)])
     
-class TestIntervalsWithGetIntervals(unittest.TestCase):
-    """Test Intervals class with get_intervals() method"""
+class TestGetEpochsAndIntervals(unittest.TestCase):
+    """Epochs and Intervals from get_epochs() and get_intervals()"""
     
     def setUp(self):
         """Create test data"""
         self.data = pp.get_example_data("rlmw_002_short")
     
-    def test_get_intervals_returns_epochs(self):
-        """get_intervals with a window around single events returns Epochs"""
-        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
+    def test_return_types(self):
+        """get_epochs returns Epochs, get_intervals returns Intervals"""
+        intervals = self.data.get_epochs("F", window=(-200, 200), units="ms")
         
         self.assertIsInstance(intervals, pp.Epochs)
         self.assertEqual(intervals.window, (-200, 200))
         self.assertIsNotNone(intervals.label)
         # between two events: Intervals
-        self.assertIsInstance(self.data.get_intervals(("F", "S"), units="ms"), Intervals)
+        self.assertIsInstance(self.data.get_intervals(start="F", end="S", units="ms"), Intervals)
     
-    def test_get_intervals_has_metadata(self):
-        """Test that Intervals from get_intervals has proper metadata"""
-        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
+    def test_get_epochs_has_metadata(self):
+        """Test that Epochs from get_epochs have proper metadata"""
+        intervals = self.data.get_epochs("F", window=(-200, 200), units="ms")
         
         self.assertGreater(len(intervals), 0)
         self.assertEqual(len(intervals.labels), len(intervals))
         self.assertTrue(all("F" in lab for lab in intervals.labels))
     
-    def test_get_intervals_different_units(self):
+    def test_get_epochs_different_units(self):
         """plain numbers in the window are in `units`; Epochs are in ms"""
         for units, fac in [("ms", 1), ("sec", 1000), ("min", 60000),
                            ("samples", 1000 / self.data.fs)]:
-            intervals = self.data.get_intervals("F", window=(-200, 200), units=units)
+            intervals = self.data.get_epochs("F", window=(-200, 200), units=units)
             self.assertIsInstance(intervals, pp.Epochs)
             np.testing.assert_allclose(intervals.window, (-200 * fac, 200 * fac))
     
     def test_intervals_label_from_string(self):
         """Test that label is set from string event_select"""
-        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
+        intervals = self.data.get_epochs("F", window=(-200, 200), units="ms")
         self.assertEqual(intervals.label, "F")
     
     def test_intervals_can_be_iterated(self):
-        """Test that Intervals from get_intervals can be iterated"""
-        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
+        """Test that Epochs from get_epochs can be iterated"""
+        intervals = self.data.get_epochs("F", window=(-200, 200), units="ms")
         
         count = 0
         for start, end in intervals:
@@ -601,13 +601,13 @@ class TestIntervalsWithGetIntervals(unittest.TestCase):
     def test_intervals_custom_label(self):
         """Test that custom label parameter overrides automatic label"""
         custom_label = "my_custom_label"
-        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms", label=custom_label)
+        intervals = self.data.get_epochs("F", window=(-200, 200), units="ms", label=custom_label)
         
         self.assertEqual(intervals.label, custom_label)
     
     def test_intervals_automatic_label_when_none(self):
         """Test that automatic label is used when label parameter is None"""
-        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms", label=None)
+        intervals = self.data.get_epochs("F", window=(-200, 200), units="ms", label=None)
         
         # Should use the automatic label from event_select
         self.assertEqual(intervals.label, "F")
@@ -677,7 +677,7 @@ class TestIntervalsPlotMethod(unittest.TestCase):
     
     def test_plot_sets_title_from_label(self):
         """Test that plot uses intervals label as title"""
-        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms",
+        intervals = self.data.get_epochs("F", window=(-200, 200), units="ms",
                                             label="test_label").to_intervals()
         
         fig = plt.figure()
@@ -1745,9 +1745,9 @@ class TestConversionWithData(unittest.TestCase):
         self.d = pp.EyeData(time=1000 + np.arange(0, 10000, 10.), left_pupil=np.ones(1000),
                               event_onsets=[2000, 5005], event_labels=["a", "b"])
 
-    def test_get_intervals_samples_and_ms_agree(self):
-        ms = self.d.get_intervals("", (-100, 200), units="ms")
-        ix = self.d.get_intervals("", (-10, 20), units="samples")
+    def test_get_epochs_samples_and_ms_agree(self):
+        ms = self.d.get_epochs("", (-100, 200), units="ms")
+        ix = self.d.get_epochs("", (-10, 20), units="samples")
         self.assertEqual(ix, ms)
         self.assertEqual(ms.to_intervals("samples", self.d).intervals,
                          [(90, 120), (391, 421)])
@@ -1757,8 +1757,8 @@ class TestConversionWithData(unittest.TestCase):
         np.testing.assert_array_equal(np.where(d.data.mask["left_pupil"])[0], np.arange(10, 15))
 
     def test_segments_from_samples_and_ms(self):
-        seg_ms = self.d.get_segments(self.d.get_intervals("", (-100, 200), units="ms"), "left_pupil")
-        seg_ix = self.d.get_segments(self.d.get_intervals("", (-10, 20), units="samples"), "left_pupil")
+        seg_ms = self.d.get_segments(self.d.get_epochs("", (-100, 200), units="ms"), "left_pupil")
+        seg_ix = self.d.get_segments(self.d.get_epochs("", (-10, 20), units="samples"), "left_pupil")
         np.testing.assert_allclose(seg_ms.tx, seg_ix.tx)
         self.assertEqual(seg_ms.data.shape, seg_ix.data.shape)
 
@@ -1767,7 +1767,7 @@ class TestConversionWithData(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "samples"):
             Intervals([(0, 10)], units=None)
         with self.assertRaisesRegex(ValueError, "samples"):
-            self.d.get_intervals("", (-10, 20), units=None)
+            self.d.get_epochs("", (-10, 20), units=None)
         with self.assertRaisesRegex(ValueError, "samples"):
             self.d.get_blinks("left", "pupil", units=None)["left_pupil"]
         with self.assertRaisesRegex(ValueError, "samples"):

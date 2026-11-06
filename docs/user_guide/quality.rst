@@ -34,7 +34,7 @@ against the data:
 
 .. code-block:: python
 
-    d = d.exclude_intervals(d.get_intervals(("break_start", "break_end"), units="ms"))
+    d = d.exclude_intervals(d.get_intervals(start="break_start", end="break_end", units="ms"))
     d.quality_report()
 
 

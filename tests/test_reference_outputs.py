@@ -280,7 +280,7 @@ for _ds in DATASETS:
 
 def _segments(dataset, preproc):
     d = preprocessed(dataset) if preproc else get_data(dataset)
-    ep = d.get_intervals(EVENT[dataset], window=(-200, 1000) * u.ms)
+    ep = d.get_epochs(EVENT[dataset], window=(-200, 1000) * u.ms)
     out = {"intervals_ms": iv_float(ep.to_intervals()),
            "intervals_samples": iv_samples(ep.to_intervals("samples", d)),
            "event_onsets": np.asarray(ep.onsets, dtype=float)}
@@ -314,7 +314,7 @@ for _ds in DATASETS:
         _tag = "interp" if _pre else "raw"
         _what = "after case b" if _pre else "raw data"
         case(f"e.segments.{_ds}.{_tag}",
-             f"get_intervals('{EVENT[_ds]}', window=(-200,1000)*u.ms), get_segments "
+             f"get_epochs('{EVENT[_ds]}', window=(-200,1000)*u.ms), get_segments "
              f"per pupil, baseline_correct((-200,0)) on {_ds} ({_what}): intervals, "
              "segment tx, masks, data, per-segment means",
              dataset=_ds, preproc=_pre)(_segments)
@@ -634,7 +634,7 @@ def _stats(case_id, k, masked):
     for name, window, fct in (("mean_pre", (-200, 0), np.mean),
                               ("mean_post", (0, 1000), np.mean),
                               ("median_post", (0, 1000), np.median)):
-        ivs = iv_samples(d.get_intervals(EVENT[dataset], window=window * u.ms)
+        ivs = iv_samples(d.get_epochs(EVENT[dataset], window=window * u.ms)
                          .to_intervals("samples", d))
         res = []
         for start, end in ivs:

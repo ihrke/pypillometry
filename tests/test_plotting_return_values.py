@@ -26,13 +26,13 @@ class TestPlottingReturnValues(unittest.TestCase):
     
     def test_plot_intervals_returns_list(self):
         """Test that plot_intervals returns a list"""
-        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
+        intervals = self.data.get_epochs("F", window=(-200, 200), units="ms")
         figs = self.data.plot.plot_intervals(intervals, nrow=1, ncol=1)
         self.assertIsInstance(figs, list)
     
     def test_plot_intervals_returns_figures(self):
         """Test that plot_intervals returns Figure objects"""
-        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
+        intervals = self.data.get_epochs("F", window=(-200, 200), units="ms")
         figs = self.data.plot.plot_intervals(intervals, nrow=1, ncol=1)
         for fig in figs:
             self.assertIsInstance(fig, plt.Figure)
@@ -40,7 +40,7 @@ class TestPlottingReturnValues(unittest.TestCase):
     def test_plot_intervals_correct_figure_count(self):
         """Test that plot_intervals returns correct number of figures"""
         # With nrow=2, ncol=2, we have 4 subplots per figure
-        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
+        intervals = self.data.get_epochs("F", window=(-200, 200), units="ms")
         if len(intervals) >= 5:
             # Take first 5 intervals
             intervals_subset = intervals.keep(np.arange(len(intervals)) < 5)
@@ -116,7 +116,7 @@ class TestPlottingEmptyReturns(unittest.TestCase):
     
     def test_plot_intervals_with_intervals_object(self):
         """Test with Intervals object"""
-        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
+        intervals = self.data.get_epochs("F", window=(-200, 200), units="ms")
         figs = self.data.plot.plot_intervals(intervals)
         self.assertIsInstance(figs, list)
         self.assertGreater(len(figs), 0)

@@ -223,7 +223,7 @@ class TestPlotIntervalsParameters(unittest.TestCase):
     
     def test_plot_intervals_different_layouts(self):
         """Test plot_intervals with different nrow/ncol combinations using Intervals"""
-        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
+        intervals = self.data.get_epochs("F", window=(-200, 200), units="ms")
         
         # 2x3 layout
         figs1 = self.data.plot.plot_intervals(intervals, nrow=2, ncol=3)
@@ -237,7 +237,7 @@ class TestPlotIntervalsParameters(unittest.TestCase):
     
     def test_plot_intervals_units(self):
         """Test plot_intervals with different units for display"""
-        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
+        intervals = self.data.get_epochs("F", window=(-200, 200), units="ms")
         
         for units in ["ms", "sec", "min"]:
             intervals_in_units = intervals.to_intervals(units)
@@ -247,7 +247,7 @@ class TestPlotIntervalsParameters(unittest.TestCase):
     
     def test_plot_intervals_show_mask(self):
         """Test plot_intervals with show_mask option"""
-        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
+        intervals = self.data.get_epochs("F", window=(-200, 200), units="ms")
         figs = self.data.plot.plot_intervals(intervals, show_mask=True)
         self.assertIsNotNone(figs)
 
@@ -256,7 +256,7 @@ class TestPlotIntervalsParameters(unittest.TestCase):
         d = self.data.copy()
         for key in d.data:
             d.data.set_mask(key, np.zeros(len(d.tx)))
-        intervals = d.get_intervals("F", window=(-200, 200), units="ms")
+        intervals = d.get_epochs("F", window=(-200, 200), units="ms")
         start, end = intervals.to_intervals("samples", self.data).intervals[0]
         d.data.add_mask("left_pupil", np.s_[int(start) + 10:int(start) + 50])
         figs = d.plot.plot_intervals(intervals, eyes=["left"],
@@ -266,7 +266,7 @@ class TestPlotIntervalsParameters(unittest.TestCase):
     
     def test_plot_intervals_show_index(self):
         """Test plot_intervals with show_index option"""
-        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
+        intervals = self.data.get_epochs("F", window=(-200, 200), units="ms")
         
         # With index
         figs1 = self.data.plot.plot_intervals(intervals, show_index=True)

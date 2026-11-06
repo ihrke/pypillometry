@@ -27,7 +27,7 @@ tables below for every changed call.
   analyses (segments, `stat_per_event`, `scale`, `merge_eyes`, `downsample`,
   quality report); `policy="strict"` leaves them out. Several results change
   (see "Changed results")
-- Plain numbers are ms everywhere: windows (`get_intervals`), durations,
+- Plain numbers are ms everywhere: windows (`get_epochs`, `get_intervals`), durations,
   margins; sample indices need `units="samples"`. In plots, plain numbers in
   `plot_range` and `interv` are in `units=` (as in 2.1).
 - Results per channel are dicts keyed like the data (`"left_pupil"`):
@@ -45,9 +45,11 @@ tables below for every changed call.
 - Events: one `Events` object in `d.events`; `d.event_onsets`,
   `d.event_labels`, `d.event_meta`, `d.get_events()` and
   `d.set_event_onsets()` were removed
-- `get_intervals(event, window)` returns the new `Epochs` (event onsets and
-  one window) instead of `Intervals`; windows are not clipped at the ends
-  of the recording; segment time axes are `window[0] + k * 1000/fs`, and
+- `get_intervals()` was split: windows around single events come from
+  `get_epochs(event, window)`, which returns the new `Epochs` (event onsets
+  and one window) instead of `Intervals`; `get_intervals(start=..., end=...)`
+  gives the spans between two events (keywords instead of a tuple). Windows
+  are not clipped at the ends of the recording; segment time axes are `window[0] + k * 1000/fs`, and
   segment parts outside the data are NaN and masked. `Intervals` lost
   `interval_window`, `event_indices` and `data_time_range`;
   `get_segments()` with `Intervals` needs intervals of equal length
@@ -172,7 +174,7 @@ The main ones:
 - `pupil.estimate_response()` on data without events raises a `ValueError`
   (it returned the start parameters)
 - `pp.nologging()` could leave logging disabled after the `with` block
-- Labels of `get_intervals(("F_", "R_"))`: `"F_ to R_"` (was `"F__to_R_"`),
+- Labels of `get_intervals(start="F_", end="R_")`: `"F_ to R_"` (was `"F__to_R_"`),
   per interval e.g. `"F_1 to R_1"`
 - `summary()`, `Intervals.stats()` and the segment summary return Python
   numbers (not `np.float64`); `summary()["params"]` is the dict of
@@ -237,7 +239,9 @@ Calls whose arguments or results changed:
 | `d.get_blinks("left", "pupil")` (Intervals, samples) | `d.get_blinks("left", "pupil")["left_pupil"]` (ms; `units="samples"` for indices) |
 | `d.mask_as_intervals("left", "pupil")` | `d.mask_as_intervals("left", "pupil")["left_pupil"]` (ms) |
 | `d.blink_stats()["left"]` (None without blinks) | `d.blink_stats()["left_pupil"]` (n=0 without blinks) |
-| `d.get_intervals("S_", (-100, 400))` (samples) | `d.get_intervals("S_", (-100, 400), units="samples")`; plain numbers are ms |
+| `d.get_intervals("S_", window)` | `d.get_epochs("S_", window)` (returns `Epochs`) |
+| `d.get_intervals(("F_", "R_"), window)` | `d.get_intervals(start="F_", end="R_", window=window)` |
+| `d.get_intervals("S_", (-100, 400))` (samples) | `d.get_epochs("S_", (-100, 400), units="samples")`; plain numbers are ms |
 | `d.get_duration()` (min) | `d.get_duration("min")`; default ms (also `excluded_duration`) |
 | `d.pupil_plot(plot_range=(0, 20))` (sec) | `d.plot.pupil_plot(plot_range=(0, 20) * u.sec)` |
 | `d.plot_timeseries_segments(interv=1)` (min) | `d.plot.plot_timeseries_segments(interv="1 min")` |

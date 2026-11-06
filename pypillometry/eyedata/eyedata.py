@@ -2183,104 +2183,12 @@ class EyeData(state.VersionedState):
         self._set_timebase(tx)
         return self
     
-    def get_intervals(self,
-                    event_select,
-                    window: tuple|None=None,
-                    units: str=UNSET, label: str|None=None, exact: bool=False,
-                    **kwargs):
-        """
-        Return the time windows around events (Epochs) or between events (Intervals).
-        For example, extract the interval before and after a stimulus has been presented.
-        It is possible to select based on the event label, e.g. only select
-        events matching "stimulus" or "response". It is also
-        possible to select the intervals situated between two different events,
-        e.g., trial start and response by specifying `event_select` as a tuple
-        with two entries.
-
-        Parameters
-        ----------
-        event_select : str, tuple, function, or Events
-            variable describing which events to select and align to
-
-            - if str: use all events whose label contains the string (or
-              is equal to it, if `exact` is True); ``"<start>"`` and
-              ``"<end>"`` stand for the start and the end of the recording
-              (the first sample and one sample past the last one, as
-              intervals are end-exclusive)
-            - if function: apply function to all labels, use those where the
-              function returns True
-            - if tuple: use the intervals between the events selected by the
-              first and the second entry (each a str or function); `window[0]`
-              is added to the first and `window[1]` to the second event
-              (so ``window=(0, 0)``, the default, gives exactly the span
-              between them).
-              Each first event is paired with the next second event after it
-              (a second event at the same time does not count). If several
-              first events come before the same second event, the last of
-              them is used. Events without a partner are skipped with a
-              warning that lists them (not for ``"<start>"`` and ``"<end>"``,
-              which are paired with the first or last event only). For example,
-              ``("End Block", "Start Block")`` gives the breaks between
-              blocks and ``("<start>", "Start Block")`` the time before the
-              first block.
-            - if Events: use the events from the
-              :class:`~pypillometry.Events` object directly
-        window : tuple (min,max) or Quantity, optional
-            time-window relative to event-onset (0 is event-onset); i.e., negative
-            numbers are before the event, positive numbers after, e.g.
-            ``(-200, 800) * u.ms`` or ``("-0.2 sec", "0.8 sec")``. Plain numbers
-            are in units given by the `units` parameter. Required for single
-            events; for two events (tuple), the default is ``(0, 0)``.
-        units : str, optional
-            units of plain numbers in `window` (one of "ms", "sec", "min",
-            "h", or "samples" for sample indices, i.e., indices into the
-            time-array; converted to ms with the sampling rate); for two
-            events, also the units of the returned Intervals (a `window` with
-            units is converted to them). If not given, the units of `window`
-            are used ("ms" if `window` has no units: plain numbers are ms).
-            Between two events in samples, each event is placed at the first
-            sample at or after its onset.
-        label : str or None, optional
-            optional label for the Epochs or Intervals object. If None, a
-            label is automatically generated from the event_select parameter
-        exact : bool, optional
-            if True, string selectors match only labels that are equal to
-            them; if False (default), labels that contain them
-        **kwargs
-            passed onto the event_select function; an error is raised if no
-            selector is a function
-
-        Returns
-        -------
-        :class:`~pypillometry.Epochs` or :class:`~pypillometry.Intervals`
-            for single events (a str, function or Events): Epochs with the
-            onsets (ms) of the selected events, the window (in ms), their
-            labels and metadata (see :class:`~pypillometry.Events`).
-            For two events (tuple): Intervals with the spans between them
-            (in `units`; the label of the Intervals is ``"<first> to <second>"``
-            for two strings) and, per interval, the label
-            ``"<first label> to <second label>"``,
-            the onset of the first event and the metadata of the first event
-            (of the second one if the first is ``"<start>"``).
-            Windows that extend beyond the data are not clipped.
-        """
-        from ..intervals import Intervals
-        from ..events import Events
-
-        between = isinstance(event_select, tuple)
-        selectors = event_select if between else (event_select,)
-        if kwargs and not any(callable(sel) and not isinstance(sel, Events)
-                              for sel in selectors):
-            # kwargs are only passed to function selectors
-            raise TypeError("get_intervals() got unexpected keyword argument(s) "
-                            f"{', '.join(kwargs)} (only passed to function selectors)")
-        if window is None:
-            if not between:
-                raise ValueError("give a window around the events, e.g., "
-                                 "window=(-200, 1000) * u.ms")
-            window = (0, 0)
+    def _parse_window(self, window, units):
+        """`window` as a tuple of plain numbers in `units` (and the units): a
+        window with units is converted to `units` (or keeps its own), plain
+        numbers are in `units` (default ms)."""
         if not isinstance(window, Iterable) or isinstance(window, str):
-            raise ValueError("window must be iterable")
+            raise ValueError("window must be iterable, e.g., (-200, 1000) * u.ms")
         if _has_units(window):
             window, units = _time_values_and_units(window, units, self.fs)
             if units == "samples":
@@ -2288,122 +2196,247 @@ class EyeData(state.VersionedState):
             window = tuple(window.tolist())
         elif units is UNSET:
             units = "ms"  # plain numbers are ms
-        units = normalize_unit(units)
+        window = tuple(window)
+        if len(window) != 2:
+            raise ValueError(f"window must be (start, end), got {window}")
+        return window, normalize_unit(units)
 
-        # between two events, window[0] and window[1] shift different
-        # events, so e.g. (0,0) is valid; the resulting intervals are checked below
-        if not between and window[1]<=window[0]:
-            raise ValueError("window must be (min,max) with min<max, got {}".format(window))
-
+    def _select_events(self, evsel, exact, kwargs):
+        """Onsets (ms), samples, indices and labels of the events matching the
+        selector `evsel` (str or function); ``"<start>"`` and ``"<end>"`` are the
+        start and the end of the recording (without indices)."""
         n = len(self.tx)
         # start and end of the recording as (onset in ms, sample); the end is
         # one sample past the last one, as intervals are end-exclusive
-        virtual = {"<start>": (float(self.tx[0]), 0),
-                   "<end>": (float(_samples_to_ms(self, n)), n)}
+        if isinstance(evsel, str) and evsel in ("<start>", "<end>"):
+            t, smp = (float(self.tx[0]), 0) if evsel == "<start>" \
+                else (float(_samples_to_ms(self, n)), n)
+            return np.array([t]), np.array([smp]), None, [evsel]
+        if callable(evsel):
+            ix = np.array([bool(evsel(evlab, **kwargs)) for evlab in self._events.labels],
+                          dtype=bool)
+        elif isinstance(evsel, str):
+            ix = np.array([evlab == evsel if exact else evsel in evlab
+                           for evlab in self._events.labels], dtype=bool)
+        else:
+            raise TypeError(f"event selectors must be a str or a function, "
+                            f"got {type(evsel).__name__}")
+        if np.sum(ix) == 0:
+            raise ValueError(f"no events found matching {_history_arg(evsel)}")
+        on = self._events.onsets[ix]
+        return (on, np.clip(_ms_to_samples(self, on), 0, n-1), np.where(ix)[0],
+                [self._events.labels[i] for i in np.where(ix)[0]])
 
-        def select(evsel):
-            """Onsets (ms), samples, indices and labels of the events matching `evsel`."""
-            if isinstance(evsel, str) and evsel in virtual:
-                t, s = virtual[evsel]
-                return np.array([t]), np.array([s]), None, [evsel]
-            if callable(evsel):
-                ix = np.array([bool(evsel(evlab, **kwargs)) for evlab in self._events.labels],
-                              dtype=bool)
-            elif isinstance(evsel, str):
-                ix = np.array([evlab == evsel if exact else evsel in evlab
-                               for evlab in self._events.labels], dtype=bool)
-            else:
-                raise ValueError("event_select must be string or function")
-            if np.sum(ix)==0:
-                raise ValueError(f"no events found matching {_history_arg(evsel)}")
-            on = self._events.onsets[ix]
-            return (on, np.clip(_ms_to_samples(self, on), 0, n-1), np.where(ix)[0],
-                    [self._events.labels[i] for i in np.where(ix)[0]])
+    def _meta_of(self, indices):
+        """Metadata of the events with `indices` (None if there are none)."""
+        if indices is None or not self._events.meta:
+            return None
+        return {name: col[indices] for name, col in self._events.meta.items()}
 
-        def meta_of(indices):
-            """Metadata of the events with `indices` (None if there are none)."""
-            if indices is None or not self._events.meta:
-                return None
-            return {name: col[indices] for name, col in self._events.meta.items()}
+    def get_epochs(self, event_select, window, units: str = UNSET,
+                   label: str | None = None, exact: bool = False, **kwargs):
+        """
+        Return the time windows around events (Epochs).
+
+        Selects events, e.g., all stimuli, and one time window around each
+        of them, e.g., from 200 ms before to 1000 ms after the stimulus. The
+        result is the input of :meth:`get_segments` (event-related pupil
+        dilations) and can be used wherever intervals are taken (e.g.,
+        :meth:`stat_per_event`, :meth:`mask_intervals`). For spans between two
+        different events (e.g., from trial start to response), use
+        :meth:`get_intervals`.
+
+        Parameters
+        ----------
+        event_select : str, function or Events
+            which events to select:
+
+            - str: all events whose label contains the string (or is equal
+              to it, if `exact` is True); ``"<start>"`` and ``"<end>"`` stand
+              for the start and the end of the recording
+            - function: applied to all labels, the events where it returns
+              True are used
+            - Events: the events of this :class:`~pypillometry.Events`
+              object (e.g., ``d.events.filter(cond="easy")``)
+        window : tuple (min, max) or Quantity
+            time window relative to the event onset (0 is the onset; negative
+            numbers are before it), e.g. ``(-200, 800) * u.ms`` or
+            ``("-0.2 sec", "0.8 sec")``. Plain numbers are in `units`.
+        units : str, optional
+            units of plain numbers in `window` ("ms", "sec", "min", "h", or
+            "samples" for sample indices, converted to ms with the sampling
+            rate); default: the units of `window`, or "ms" for plain numbers
+        label : str or None, optional
+            label of the Epochs; if None, it is taken from `event_select`
+        exact : bool, optional
+            if True, a string selector matches only labels that are equal
+            to it; if False (default), labels that contain it
+        **kwargs
+            passed on to the `event_select` function; an error is raised if
+            it is not a function
+
+        Returns
+        -------
+        Epochs
+            the selected events (onsets in ms, labels and metadata, see
+            :class:`~pypillometry.Events`) and the window (in ms). Windows
+            that extend beyond the data are not clipped.
+
+        Examples
+        --------
+        >>> import pypillometry as pp
+        >>> from pypillometry import u
+        >>> d = pp.EyeData(time=range(10000), left_pupil=range(10000),
+        ...                event_onsets=[2000, 6000], event_labels=["stim", "stim"])
+        >>> d.get_epochs("stim", (-200, 800) * u.ms)
+        Epochs 'stim' | 2 epochs, window (-200, 800) ms
+        """
+        if kwargs and (isinstance(event_select, Events) or not callable(event_select)):
+            raise TypeError("get_epochs() got unexpected keyword argument(s) "
+                            f"{', '.join(kwargs)} (only passed to a function selector)")
+        if isinstance(event_select, tuple):
+            raise TypeError("get_epochs() takes one event selector; for the spans "
+                            "between two events, use get_intervals(start=..., end=...)")
+        window, units = self._parse_window(window, units)
+        if window[1] <= window[0]:
+            raise ValueError(f"window must be (min, max) with min < max, got {window}")
 
         if isinstance(event_select, Events):
-            # events given directly
-            on1 = on2 = event_select.to_units("ms").onsets
-            eix1 = eix2 = np.clip(_ms_to_samples(self, on1), 0, n-1)
-            selected_labels = event_select.labels.tolist()
-            selected_indices = None
-            selected_meta = dict(event_select.meta) or None
+            onsets = event_select.to_units("ms").onsets
+            labels = event_select.labels.tolist()
+            meta = dict(event_select.meta) or None
             if label is None:
                 label = f"events_{len(event_select)}"
-        elif isinstance(event_select, tuple):
-            # two events and interval in between
-            if len(event_select)!=2:
-                raise ValueError("event_select must be tuple with two entries")
-            on_a, s_a, i_a, l_a = select(event_select[0])
-            on_b, s_b, i_b, l_b = select(event_select[1])
-            pairs, skip_a, skip_b = _pair_with_next(on_a, on_b)
-            name_a, name_b = (_history_arg(e) for e in event_select)
-            # "<start>"/"<end>" pair with one event only; the others are not reported
-            if skip_a and i_b is not None:
-                logger.warning(
-                    f"get_intervals(): skipped {len(skip_a)} {name_a} event(s) with no "
-                    f"{name_b} event after them (before the next {name_a} event or "
-                    f"the end), at {_some(on_a[skip_a])} ms")
-            if skip_b and i_a is not None:
-                logger.warning(
-                    f"get_intervals(): skipped {len(skip_b)} {name_b} event(s) with no "
-                    f"{name_a} event before them, at {_some(on_b[skip_b])} ms")
-            if not pairs:
-                raise ValueError(f"no {name_a} event is followed by a {name_b} event")
-            pa = np.array([p[0] for p in pairs])
-            pb = np.array([p[1] for p in pairs])
-            on1, on2 = on_a[pa], on_b[pb]
-            eix1, eix2 = s_a[pa], s_b[pb]
-            if label is None:
-                if isinstance(event_select[0], str) and isinstance(event_select[1], str):
-                    label = f"{event_select[0]} to {event_select[1]}"
-                else:
-                    label = "between_events"
-            selected_labels = [f"{l_a[i]} to {l_b[j]}" for i, j in pairs]
-            selected_indices = None if i_a is None else i_a[pa]
-            selected_meta = meta_of(selected_indices) if i_a is not None \
-                else meta_of(None if i_b is None else i_b[pb])
         else:
-            # one event with a window around it
-            on1, eix1, selected_indices, selected_labels = select(event_select)
-            on2, eix2 = on1, eix1
-            selected_meta = meta_of(selected_indices)
+            onsets, _, indices, labels = self._select_events(event_select, exact, kwargs)
+            meta = self._meta_of(indices)
             if label is None:
                 label = event_select if isinstance(event_select, str) else "custom_events"
 
-        if not between:
-            # one window around each event, in ms
-            fac = 1000. / self.fs if units == "samples" else 1. / self._unit_fac(units)
-            return Epochs(on1, (window[0] * fac, window[1] * fac), labels=selected_labels,
-                          meta=selected_meta, label=label)
+        # the window in ms
+        fac = 1000. / self.fs if units == "samples" else 1. / self._unit_fac(units)
+        return Epochs(onsets, (window[0] * fac, window[1] * fac), labels=labels,
+                      meta=meta, label=label)
+
+    def get_intervals(self, *, start, end, window=(0, 0), units: str = UNSET,
+                      label: str | None = None, exact: bool = False, **kwargs):
+        """
+        Return the spans between two kinds of events (Intervals).
+
+        For example, the time from each trial start to the response, or the
+        breaks between blocks. For one time window around single events
+        (e.g., stimuli), use :meth:`get_epochs`.
+
+        Each `start` event is paired with the next `end` event after it (an
+        `end` event at the same time does not count). If several `start`
+        events come before the same `end` event, the last of them is used.
+        Events without a partner are skipped with a warning that lists them
+        (not for ``"<start>"`` and ``"<end>"``, which are paired with the
+        first or last event only).
+
+        Parameters
+        ----------
+        start, end : str or function
+            the events at the start and at the end of the spans:
+
+            - str: all events whose label contains the string (or is equal
+              to it, if `exact` is True); ``"<start>"`` and ``"<end>"`` stand
+              for the start and the end of the recording (the first sample
+              and one sample past the last one, as intervals are
+              end-exclusive)
+            - function: applied to all labels, the events where it returns
+              True are used
+
+            For example, ``start="End Block", end="Start Block"`` gives the
+            breaks between blocks and ``start="<start>", end="Start Block"``
+            the time before the first block.
+        window : tuple or Quantity, optional
+            `window[0]` is added to the `start` events and `window[1]` to
+            the `end` events; default ``(0, 0)``: exactly the spans between
+            them. Plain numbers are in `units`.
+        units : str, optional
+            units of plain numbers in `window` and of the returned Intervals
+            ("ms", "sec", "min", "h", or "samples" for sample indices: each
+            event is placed at the first sample at or after its onset);
+            default: the units of `window`, or "ms"
+        label : str or None, optional
+            label of the Intervals; if None, ``"<start> to <end>"`` (for two
+            strings)
+        exact : bool, optional
+            if True, string selectors match only labels that are equal
+            to them; if False (default), labels that contain them
+        **kwargs
+            passed on to the selector functions; an error is raised if no
+            selector is a function
+
+        Returns
+        -------
+        Intervals
+            the spans (in `units`) with, per interval, the label
+            ``"<start label> to <end label>"``, the onset of the start event
+            and its metadata (those of the end event if `start` is
+            ``"<start>"``). Intervals that extend beyond the data are not
+            clipped.
+
+        Examples
+        --------
+        >>> import pypillometry as pp
+        >>> d = pp.EyeData(time=range(10000), left_pupil=range(10000),
+        ...                event_onsets=[1000, 3000, 5000, 8000],
+        ...                event_labels=["trial", "resp", "trial", "resp"])
+        >>> d.get_intervals(start="trial", end="resp").intervals
+        [(1000.0, 3000.0), (5000.0, 8000.0)]
+        """
+        if kwargs and not (callable(start) or callable(end)):
+            raise TypeError("get_intervals() got unexpected keyword argument(s) "
+                            f"{', '.join(kwargs)} (only passed to function selectors)")
+        # window[0] and window[1] shift different events, so e.g. (0, 0) is
+        # valid; the resulting intervals are checked below
+        window, units = self._parse_window(window, units)
+
+        on_a, s_a, i_a, l_a = self._select_events(start, exact, kwargs)
+        on_b, s_b, i_b, l_b = self._select_events(end, exact, kwargs)
+        pairs, skip_a, skip_b = _pair_with_next(on_a, on_b)
+        name_a, name_b = _history_arg(start), _history_arg(end)
+        # "<start>"/"<end>" pair with one event only; the others are not reported
+        if skip_a and i_b is not None:
+            logger.warning(
+                f"get_intervals(): skipped {len(skip_a)} {name_a} event(s) with no "
+                f"{name_b} event after them (before the next {name_a} event or "
+                f"the end), at {_some(on_a[skip_a])} ms")
+        if skip_b and i_a is not None:
+            logger.warning(
+                f"get_intervals(): skipped {len(skip_b)} {name_b} event(s) with no "
+                f"{name_a} event before them, at {_some(on_b[skip_b])} ms")
+        if not pairs:
+            raise ValueError(f"no {name_a} event is followed by a {name_b} event")
+        pa = np.array([p[0] for p in pairs])
+        pb = np.array([p[1] for p in pairs])
+        if label is None:
+            label = f"{start} to {end}" if isinstance(start, str) and isinstance(end, str) \
+                else "between_events"
+        labels = [f"{l_a[i]} to {l_b[j]}" for i, j in pairs]
+        meta = self._meta_of(i_a[pa]) if i_a is not None \
+            else self._meta_of(None if i_b is None else i_b[pb])
 
         if units == "samples":
             # sample of each event, the window in samples around it
-            sti = eix1+window[0]
-            ste = eix2+window[1]
-            event_onsets_list = np.atleast_1d(eix1).tolist()
+            sti = s_a[pa] + window[0]
+            ste = s_b[pb] + window[1]
+            onsets = np.atleast_1d(s_a[pa]).tolist()
         else:
             fac = self._unit_fac(units)
-            sti = on1*fac+window[0]
-            ste = on2*fac+window[1]
-            event_onsets_list = (on1*fac).tolist()
-        bad=np.where(ste<=sti)[0]
-        if len(bad)>0:
-            raise ValueError("window {} gives empty intervals for pair(s) {}"
-                             .format(window, bad.tolist()))
+            sti = on_a[pa] * fac + window[0]
+            ste = on_b[pb] * fac + window[1]
+            onsets = (on_a[pa] * fac).tolist()
+        bad = np.where(ste <= sti)[0]
+        if len(bad) > 0:
+            raise ValueError(f"window {window} gives empty intervals for pair(s) "
+                             f"{bad.tolist()}")
         return Intervals(
             intervals=list(zip(np.atleast_1d(sti).tolist(), np.atleast_1d(ste).tolist())),
-            units=units,
-            label=label,
-            event_labels=selected_labels,
-            event_onsets=event_onsets_list,
-            event_meta=selected_meta
-        )
+            units=units, label=label, event_labels=labels, event_onsets=onsets,
+            event_meta=meta)
 
     def get_segments(self, intervals, variable: str, name: str = None, policy="default"):
         """
@@ -2416,7 +2449,7 @@ class EyeData(state.VersionedState):
         ----------
         intervals : Epochs or Intervals
             the segments to extract: :class:`~pypillometry.Epochs` (from
-            :meth:`get_intervals` with a window around single events; length
+            :meth:`get_epochs`; length
             and time axis ``window[0] + arange(n) * 1000/fs`` from the
             window, parts outside the data masked) or Intervals that all have
             the same length (time axis from 0 at their starts)
@@ -2445,7 +2478,7 @@ class EyeData(state.VersionedState):
         >>> import pypillometry as pp
         >>> d = pp.get_example_data("rlmw_002_short")
         >>> # Extract pupil segments around the feedback events
-        >>> epochs = d.get_intervals("F_", window=(-200, 800), units="ms")
+        >>> epochs = d.get_epochs("F_", window=(-200, 800), units="ms")
         >>> segments = d.get_segments(epochs, "left_pupil")
         >>> segments.plot()  # doctest: +SKIP
 
@@ -2454,7 +2487,7 @@ class EyeData(state.VersionedState):
         
         See Also
         --------
-        get_intervals : Create Intervals object from events
+        get_epochs : Windows around events (Epochs)
         SegmentedEyeData : Class holding segmented data
         """
         from ..segmented import SegmentedEyeData
@@ -2790,18 +2823,17 @@ class EyeData(state.VersionedState):
         Parameters
         ----------
         intervals : Intervals or Epochs, optional
-            Intervals object (in any time units or in sample indices) or
-            :class:`~pypillometry.Epochs` (e.g., from :meth:`get_intervals`).
-            If provided, window and event_select are ignored.
+            Intervals object (in any time units or in sample indices, e.g.,
+            from :meth:`get_intervals`) or :class:`~pypillometry.Epochs`
+            (e.g., from :meth:`get_epochs`). If provided, window and
+            event_select are ignored.
         window : tuple (min,max) or Quantity, optional
             time-window relative to event-onset (0 is event-onset), e.g.
             ``(-200, 0) * u.ms``; plain numbers are in units given by `units`.
-            Required for single events if intervals is not provided; between
-            two events, the default is ``(0, 0)`` (see :meth:`get_intervals`).
-        event_select : str or function, optional
-            variable describing which events to select and align to
-            see :meth:`get_intervals` for details.
             Required if intervals is not provided.
+        event_select : str, function or Events, optional
+            the events to select (see :meth:`get_epochs`); required if
+            intervals is not provided
         eyes : str or list of str, optional
             eye(s) to consider; if empty, all available eyes
         variables : str or list of str, optional
@@ -2841,8 +2873,11 @@ class EyeData(state.VersionedState):
             if event_select is None:
                 raise ValueError("Must provide either 'intervals' or 'event_select' "
                                  "(and 'window')")
-            intervs = _as_intervals(self.get_intervals(event_select, window, units=units,
-                                                       **kwargs))
+            if window is None:
+                raise ValueError("give a window around the events, e.g., "
+                                 "window=(-200, 0) * u.ms")
+            intervs = _as_intervals(self.get_epochs(event_select, window, units=units,
+                                                    **kwargs))
 
         # bounds in sample indices, matched against the sample numbers
         tx = np.arange(len(self.tx))
@@ -3288,7 +3323,7 @@ class EyeData(state.VersionedState):
 
         Examples
         --------
-        >>> breaks = d.get_intervals(("break_start", "break_end"), units="ms")  # doctest: +SKIP
+        >>> breaks = d.get_intervals(start="break_start", end="break_end", units="ms")  # doctest: +SKIP
         >>> d = d.exclude_intervals(breaks)  # doctest: +SKIP
         >>> d = d.exclude_intervals([(0, 2 * u.min)])  # doctest: +SKIP
 
@@ -3336,7 +3371,7 @@ class EyeData(state.VersionedState):
 
         Examples
         --------
-        >>> run = d.get_intervals(("rsfMRI_ONSET", "rsfMRI_END"), units="ms")  # doctest: +SKIP
+        >>> run = d.get_intervals(start="rsfMRI_ONSET", end="rsfMRI_END", units="ms")  # doctest: +SKIP
         >>> d = d.keep_intervals(run)  # doctest: +SKIP
         """
         intervals = self._as_spans(intervals)
@@ -3468,7 +3503,7 @@ class EyeData(state.VersionedState):
 
         Examples
         --------
-        >>> breaks = d.get_intervals(("break_start", "break_end"), units="ms")  # doctest: +SKIP
+        >>> breaks = d.get_intervals(start="break_start", end="break_end", units="ms")  # doctest: +SKIP
         >>> d = d.remove_intervals(breaks)  # doctest: +SKIP
         >>> d = d.remove_intervals(d.get_excluded())  # doctest: +SKIP
         """

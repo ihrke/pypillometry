@@ -317,30 +317,30 @@ class TestEyedataMeta(unittest.TestCase):
         np.testing.assert_array_equal(d.events.meta["trial"], [1, 1, 2, 2, 2])
         self.assertEqual(len(d.events), 5)
 
-    def test_get_intervals_carries_meta(self):
+    def test_epochs_and_intervals_carry_meta(self):
         d = data_with_meta()
-        ep = d.get_intervals("S_", window=(-100, 500), units="ms")
+        ep = d.get_epochs("S_", window=(-100, 500), units="ms")
         np.testing.assert_array_equal(ep.meta["trial"], [1, 2])
         np.testing.assert_array_equal(ep.meta["reward"], [15, 0])
         np.testing.assert_array_equal(ep.to_intervals().event_meta["trial"], [1, 2])
-        ep = d.get_intervals(d.events.filter("S_", reward=0), window=(-100, 500),
+        ep = d.get_epochs(d.events.filter("S_", reward=0), window=(-100, 500),
                              units="ms")
         np.testing.assert_array_equal(ep.meta["trial"], [2])
-        iv = d.get_intervals(("F_", "S_"))
+        iv = d.get_intervals(start="F_", end="S_")
         np.testing.assert_array_equal(iv.event_meta["trial"], [1, 2])
-        iv = d.get_intervals(("<start>", "S_"))
+        iv = d.get_intervals(start="<start>", end="S_")
         np.testing.assert_array_equal(iv.event_meta["trial"], [1])
 
-    def test_get_intervals_without_meta(self):
+    def test_get_epochs_without_meta(self):
         d = data_with_meta()
         d.set_events(d.events.drop_meta())
-        ep = d.get_intervals("S_", window=(-100, 500), units="ms")
+        ep = d.get_epochs("S_", window=(-100, 500), units="ms")
         self.assertEqual(dict(ep.meta), {})
         self.assertIsNone(ep.to_intervals().event_meta)
 
     def test_segments_keep_meta(self):
         d = data_with_meta()
-        seg = d.get_segments(d.get_intervals("S_", window=(-100, 500), units="ms"),
+        seg = d.get_segments(d.get_epochs("S_", window=(-100, 500), units="ms"),
                              "left_pupil")
         np.testing.assert_array_equal(seg.epochs.meta["reward"], [15, 0])
 

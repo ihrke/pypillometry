@@ -17,7 +17,7 @@ class Epochs(Stateful):
 
     An Epochs object describes the same window around each of several
     events, e.g., -200 to 800 ms around every stimulus. It is returned by
-    :meth:`~pypillometry.EyeData.get_intervals` for single events
+    :meth:`~pypillometry.EyeData.get_epochs`
     and is the input of :meth:`~pypillometry.EyeData.get_segments`,
     which takes the length and the time axis of the segments from the
     window. Spans of time that are not locked to one event (e.g., between

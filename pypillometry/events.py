@@ -170,7 +170,7 @@ class Events(Stateful):
     The events of a dataset are obtained with
     :attr:`~pypillometry.EyeData.events`. An (e.g., filtered)
     Events object can be passed as `event_select` to
-    :meth:`~pypillometry.EyeData.get_intervals` or stored in a dataset
+    :meth:`~pypillometry.EyeData.get_epochs` or stored in a dataset
     with :meth:`~pypillometry.EyeData.set_events` or added with
     :meth:`~pypillometry.EyeData.add_events`. Events from a
     behaviour log can be created with :meth:`from_table` and mapped to the
