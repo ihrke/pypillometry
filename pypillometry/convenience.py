@@ -13,9 +13,7 @@ from contextlib import contextmanager
 import os, sys
 from tqdm import tqdm
 
-__all__ = [
-    "zscale",
-]
+__all__ = []
 
 @contextmanager
 def change_dir(path: Union[str]):
@@ -85,28 +83,6 @@ def suppress_all_output():
         os.close(original_stdout_fd)
         os.close(original_stderr_fd)
         os.close(devnull_fd)
-
-import pickle
-from hashlib import md5
-
-def zscale(y):
-    """
-    Z-transform an array, ignoring NaNs.
-
-    Parameters
-    ----------
-    y : np.ndarray
-        input array
-
-    Returns
-    -------
-    np.ndarray
-        `y` with mean subtracted and divided by its standard deviation
-        (both computed with :func:`numpy.nanmean`/:func:`numpy.nanstd`);
-        NaNs are kept
-    """
-    return (y-np.nanmean(y))/np.nanstd(y)
-
 
 
 def sizeof_fmt(num, suffix='B'):

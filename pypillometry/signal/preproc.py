@@ -12,7 +12,7 @@ from scipy.ndimage import convolve1d
 
 __all__ = [
     "smooth_window", "velocity_savgol", "detect_blinks_velocity",
-    "detect_blinks_zero", "blink_onsets_mahot",
+    "detect_blinks_zero", "blink_onsets_mahot", "zscale",
 ]
 
 
@@ -111,6 +111,25 @@ def smooth_window(x, window_len=11, window='hanning', direction='center'):
         padded = np.r_[x, np.full(window_len-1, x[-1])]
         y = np.convolve(w, padded, mode='valid')
         return y
+
+
+def zscale(y):
+    """
+    Z-transform an array, ignoring NaNs.
+
+    Parameters
+    ----------
+    y : np.ndarray
+        input array
+
+    Returns
+    -------
+    np.ndarray
+        `y` with mean subtracted and divided by its standard deviation
+        (both computed with :func:`numpy.nanmean`/:func:`numpy.nanstd`);
+        NaNs are kept
+    """
+    return (y-np.nanmean(y))/np.nanstd(y)
 
 
 def velocity_savgol(x, window_len=11, polyorder=2, direction='center'):

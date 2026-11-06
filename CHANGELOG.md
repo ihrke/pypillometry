@@ -68,7 +68,8 @@ tables below for every changed call.
 - `pp.downsample` is the pipeline step for `d.downsample()`; the array
   function is `pp.signal.downsample`
 - The functions for numpy arrays are only in `pp.signal` (e.g.,
-  `pp.signal.smooth_window`, `pp.signal.pupil_kernel`)
+  `pp.signal.smooth_window`, `pp.signal.pupil_kernel`); this includes
+  `zscale` (`pp.zscale` -> `pp.signal.zscale`)
 - `nprange`, `p_asym_laplac`, `p_asym_laplac_kappa` and
   `trans_logistic_vec` were removed from `pp.convenience`
 - `downsample()` stores the actual sampling rate (`fs/factor`)
@@ -253,6 +254,7 @@ Calls whose arguments or results changed:
 | `isinstance(d, pp.GenericEyeData)` | `isinstance(d, pp.EyeData)` |
 | `d.scale(mean={"left": {"pupil": m}}, sd=...)`, `d.params["scale"]["mean"]["left"]["pupil"]` | `d.scale(mean={"left_pupil": m}, sd=...)`, `d.params["scale"]["mean"]["left_pupil"]` |
 | `pp.smooth_window(...)`, `pp.pupil_kernel(...)`, ... (array functions) | `pp.signal.smooth_window(...)`, `pp.signal.pupil_kernel(...)`, ... |
+| `pp.zscale(x)` | `pp.signal.zscale(x)` |
 | `d.params["response"]["left"]` | `d.params["response"]["left_pupil"]` |
 | `iv.as_pandas()["event_label"]`, `["event_onset"]` | `iv.as_pandas()["label"]`, `["onset"]` |
 | `CircularROI.from_degrees((0.087, 0), 0.035, s)` (radians) | `CircularROI.from_degrees((5, 0), 2, s)` (degrees) |

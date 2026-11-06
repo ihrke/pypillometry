@@ -22,23 +22,11 @@ Filtering and baseline
    lowpass_filter_iterative
    smooth_window
    downsample
+   zscale
    bspline
    baseline_envelope
    baseline_envelope_iter_bspline
    baseline_pupil_model
-
-At the top level:
-
-.. currentmodule:: pypillometry
-
-.. autosummary::
-   :toctree: generated
-   :template: function.rst
-   :nosignatures:
-
-   zscale
-
-.. currentmodule:: pypillometry.signal
 
 Blinks
 ------

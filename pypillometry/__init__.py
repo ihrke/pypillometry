@@ -84,7 +84,6 @@ from .example_data import (
 # ---------------------------------------------------------------------------
 # Signal processing for numpy arrays: pp.signal.<function>
 from . import signal
-from .convenience import zscale
 
 # ---------------------------------------------------------------------------
 # Viewer
@@ -123,7 +122,6 @@ __all__ = [
     "load_study_local", "load_study_osf", "get_osf_project_files",
     "get_available_datasets", "get_example_data", "get_rlmw_002",
     "get_rlmw_002_short", "get_rlmw_010_edf",
-    "zscale",
     # viewer
     "view", "tweak",
     # units, settings and logging

@@ -80,7 +80,7 @@ Check your scripts for them:
 - ``pp.downsample`` is now a pipeline step; the function for numpy arrays
   is ``pp.signal.downsample``. All functions for numpy arrays are only in
   ``pp.signal`` (``pp.signal.smooth_window``, ``pp.signal.pupil_kernel``,
-  ...).
+  ``pp.signal.zscale``, ...).
 
 All numbers that differ from 2.1, with the reason for each, are listed in
 `tests/data/reference/CHANGES.md
