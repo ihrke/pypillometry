@@ -28,7 +28,9 @@ class PupilPlots(GenericPlots):
                    show_blinks: bool=True,
                    units: str="sec",
                    label_prefix: str="",
-                   style: dict=None
+                   style: dict=None,
+                   highlight=None,
+                   highlight_color="lightblue"
             ) -> None:
         """Make a plot of the pupil data using `matplotlib`.
 
@@ -60,6 +62,13 @@ class PupilPlots(GenericPlots):
             - Dict of dicts: Per-eye styling (e.g., {'left': {'linestyle': '-'}, 'right': {'linestyle': '--'}})
 
             Default is None (uses matplotlib defaults with automatic per-eye colors and linestyles).
+        highlight : Intervals, Epochs or list of them, optional
+            periods to shade in the background (e.g., trials from
+            :meth:`~pypillometry.EyeData.get_intervals`), converted to the
+            units of the time axis
+        highlight_color : color or list of colors, optional
+            color of the shading: one for all or one per element of
+            `highlight`; default "lightblue"
 
         Raises
         ------
@@ -79,6 +88,22 @@ class PupilPlots(GenericPlots):
            >>> d = d.pupil.blinks_detect()
            >>> fig = plt.figure(figsize=(10, 3))
            >>> d.plot.pupil_plot(plot_range=(0, 20) * u.sec)
+
+        Shade the trials (feedback to response) and the first second after
+        each stimulus in different colors:
+
+        .. plot::
+
+           >>> import pypillometry as pp
+           >>> from pypillometry import u
+           >>> import matplotlib.pyplot as plt
+           >>> d = pp.get_example_data("rlmw_002_short")
+           >>> trials = d.get_intervals(start="F_", end="R_")
+           >>> stim = d.get_epochs("S_", (0, 1000) * u.ms)
+           >>> fig = plt.figure(figsize=(10, 3))
+           >>> d.plot.pupil_plot(plot_range=(0, 20) * u.sec, show_blinks=False,
+           ...                   highlight=[trials, stim],
+           ...                   highlight_color=["lightgrey", "green"])
         """
         self._d._require("pupil")
         eyes = self._d._eyes_with(eyes, "pupil")
@@ -193,8 +218,12 @@ class PupilPlots(GenericPlots):
                     ax.axvspan(tx[sblink], tx[min(eblink - 1, len(tx) - 1)], color="red", alpha=0.2)
 
 
+        if len(tx):
+            self._draw_highlight([plt.gca()], highlight, highlight_color, units,
+                                 (tx[0], tx[-1]))
+
         plt.legend()
-        plt.xlabel(xlab)        
+        plt.xlabel(xlab)
 
 
     def pupil_plot_segments(
@@ -223,7 +252,8 @@ class PupilPlots(GenericPlots):
         units : str, optional
             Units of the time axis, passed to :meth:`pupil_plot`. Default "sec".
         **kwargs
-            arguments passed to :meth:`pupil_plot`
+            arguments passed to :meth:`pupil_plot` (e.g., `highlight` and
+            `highlight_color`)
 
         Returns
         -------

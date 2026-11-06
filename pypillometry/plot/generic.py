@@ -1,12 +1,14 @@
 from typing import Iterable, Optional, Tuple
 from ..eyedata.namespace import Namespace
 from ..intervals import Intervals, _as_intervals
+from ..epochs import Epochs
 from ..units import parse_time, normalize_unit, parse_angle, u
 import numpy as np
 from loguru import logger
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+from matplotlib.colors import is_color_like
 from matplotlib.backends.backend_pdf import PdfPages
 
 class GenericPlots(Namespace):
@@ -27,6 +29,35 @@ class GenericPlots(Namespace):
         n = int(np.ceil(duration / interv))
         if n > cls.WARN_SEGMENTS:
             logger.warning(f"interv gives {n} figures; plain numbers are in `units`")
+
+    def _draw_highlight(self, axes, highlight, highlight_color, units, xrange):
+        """
+        Shade the intervals in `highlight` (Intervals, Epochs or a list or tuple
+        of them) on all `axes`, whose time axis is in `units`, limited to
+        `xrange` = (start, end) of the plotted data.
+        """
+        if highlight is None:
+            return
+        items = list(highlight) if isinstance(highlight, (list, tuple)) else [highlight]
+        for item in items:
+            if not isinstance(item, (Intervals, Epochs)):
+                raise TypeError(f"highlight must be Intervals or Epochs (or a list or "
+                                f"tuple of them), got {type(item).__name__}")
+        if is_color_like(highlight_color):
+            colors = [highlight_color] * len(items)
+        else:
+            colors = list(highlight_color)
+            if len(colors) != len(items):
+                raise ValueError(f"{len(colors)} highlight colors for {len(items)} "
+                                 "highlight objects; give one color or one per object")
+        lo, hi = xrange
+        for item, color in zip(items, colors):
+            for start, end in _as_intervals(item).to_units(units, self._d).intervals:
+                start, end = max(start, lo), min(end, hi)
+                if start < end:
+                    for ax in axes:
+                        ax.axvspan(start, end, color=color, alpha=0.3, zorder=0,
+                                   linewidth=0)
 
     @staticmethod
     def _plot_range_in(plot_range, units: str = "ms") -> tuple:
@@ -240,7 +271,9 @@ class GenericPlots(Namespace):
             show_masked: bool=True,
             show_mask_highlight: bool=True,
             label_prefix: str="",
-            style: dict=None
+            style: dict=None,
+            highlight=None,
+            highlight_color="lightblue"
             ) -> None:
         """
         Plot a part of the EyeData. Each data type is plotted in a separate subplot.
@@ -283,6 +316,13 @@ class GenericPlots(Namespace):
             - Dict of dicts: Per-eye styling (e.g., {'left': {'linestyle': '-'}, 'right': {'linestyle': '--'}})
 
             Default is None (uses matplotlib defaults with automatic per-eye colors and linestyles).
+        highlight : Intervals, Epochs or list of them, optional
+            periods to shade in the background (e.g., trials from
+            :meth:`~pypillometry.EyeData.get_intervals`), converted to the
+            units of the time axis
+        highlight_color : color or list of colors, optional
+            color of the shading: one for all or one per element of
+            `highlight`; default "lightblue"
 
         Raises
         ------
@@ -300,6 +340,19 @@ class GenericPlots(Namespace):
            >>> d = pp.get_example_data("rlmw_002_short")
            >>> fig = plt.figure(figsize=(10, 6))
            >>> d.plot.plot_timeseries(plot_range=(0, 20) * u.sec, units="sec")
+
+        The first second after each stimulus, shaded in all subplots:
+
+        .. plot::
+
+           >>> import pypillometry as pp
+           >>> from pypillometry import u
+           >>> import matplotlib.pyplot as plt
+           >>> d = pp.get_example_data("rlmw_002_short")
+           >>> fig = plt.figure(figsize=(10, 6))
+           >>> d.plot.plot_timeseries(plot_range=(0, 20) * u.sec,
+           ...                        highlight=d.get_epochs("S_", (0, 1000) * u.ms),
+           ...                        highlight_color="green")
         """
         obj = self._d
         pairs = obj.data.select(eyes, variables)
@@ -433,6 +486,9 @@ class GenericPlots(Namespace):
                             end_ix = min(end_ix, len(tx) - 1)
                             ax.axvspan(tx[start_ix], tx[end_ix], color='red', alpha=0.2, zorder=0)
             
+            if len(tx):
+                self._draw_highlight([ax], highlight, highlight_color, units,
+                                     (tx[0], tx[-1]))
             if ev_line:
                 ax.vlines(evon, *ax.get_ylim(), color="grey", alpha=0.5)
             if ev_label:
@@ -470,7 +526,8 @@ class GenericPlots(Namespace):
             units for the time axis (and plain numbers in `interv`); default
             "sec"
         **kwargs
-            additional arguments passed to :meth:`plot_timeseries`
+            additional arguments passed to :meth:`plot_timeseries` (e.g.,
+            `highlight` and `highlight_color`)
 
         Returns
         -------
@@ -547,7 +604,8 @@ class GenericPlots(Namespace):
     def plot_masked(self, eyes: str|list = [], variables: str|list = [], 
                     units: str = "sec", merge: bool = False, 
                     show_labels: bool = True, show_events: bool = False,
-                    policy="default", **kwargs):
+                    policy="default", highlight=None, highlight_color="lightblue",
+                    **kwargs):
         """
         Plot masked intervals for specified eyes and variables.
         
@@ -579,6 +637,13 @@ class GenericPlots(Namespace):
             :meth:`~pypillometry.EyeData.mask_as_intervals`); e.g.,
             ``"strict"`` also shows the interpolated samples, ``["interpolated"]``
             only those. Default ``"default"``.
+        highlight : Intervals, Epochs or list of them, optional
+            periods to shade in the background (e.g., trials from
+            :meth:`~pypillometry.EyeData.get_intervals`), converted to the
+            units of the time axis
+        highlight_color : color or list of colors, optional
+            color of the shading: one for all or one per element of
+            `highlight`; default "lightblue"
         **kwargs : dict
             Additional keyword arguments passed to matplotlib plot()
             
@@ -689,6 +754,13 @@ class GenericPlots(Namespace):
             if show_labels:
                 ax.set_title('Masked Intervals')
         
+        if normalize_unit(units) == "samples":
+            xrange = (0, len(obj.tx))
+        else:
+            fac = obj._unit_fac(units)
+            xrange = (obj.tx[0] * fac, obj.tx[-1] * fac)
+        self._draw_highlight([ax], highlight, highlight_color, units, xrange)
+
         # Plot event markers as vertical grey lines
         if show_events:
             # Get events in appropriate units
