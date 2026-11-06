@@ -97,6 +97,11 @@ tables below for every changed call.
 - `pp.Epochs` (event-locked windows): the events (`ep.events`) and one
   window; selected and changed like Events (`filter`, `keep`, `set_meta`,
   `drop_meta`, `parse_labels`)
+- Warning for events on another clock: `Events.from_table()` marks its
+  events as `needs_sync` (cleared by mapping them with a `ClockSync` or
+  `shift()`, or with `needs_sync=False`); `add_events()`, `set_events()`
+  and `get_epochs()` warn about such events. The error for events outside
+  the data says how far outside they are and points to `sync_clocks()`
 - `pypil-upgrade`: converts saved files to the current format
 - Experimental setup and calibration are kept and saved for every object
 - `d.plot.plot_masked(policy=...)`, e.g. `policy="strict"` to show the
