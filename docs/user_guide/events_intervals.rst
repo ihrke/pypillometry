@@ -289,7 +289,7 @@ come from several places:
 Intervals can be converted to other units (:meth:`~Intervals.to_units`),
 filtered (:meth:`~Intervals.filter`), padded (:meth:`~Intervals.pad`),
 merged when they overlap (:meth:`~Intervals.merge`), combined (``+``,
-:func:`merge_intervals`), subtracted (``-``), summarized
+:func:`concat_intervals`), subtracted (``-``), summarized
 (:meth:`~Intervals.stats`, :meth:`~Intervals.as_pandas`) and plotted
 (:meth:`~Intervals.plot`). :meth:`~Intervals.complement` returns the
 periods that are not covered (e.g., ``blocks.complement(d)`` gives the time

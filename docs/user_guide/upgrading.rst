@@ -54,7 +54,9 @@ Windows around events come from the new :meth:`~EyeData.get_epochs`
 (``d.get_epochs("stim", window)`` returns :class:`Epochs`: event onsets
 with one window); :meth:`~EyeData.get_intervals` only gives the spans
 between two events and takes them as keywords
-(``d.get_intervals(start="trial", end="response")``). See
+(``d.get_intervals(start="trial", end="response")``).
+``pp.merge_intervals()`` is now :func:`concat_intervals` (it concatenates;
+:meth:`Intervals.merge` merges overlapping intervals). See
 :doc:`events_intervals`.
 
 

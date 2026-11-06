@@ -64,7 +64,7 @@ from .segmented import (
     SegmentedEyeData, GroupLevelSegmentedData, group_segments,
 )
 from .events import Events, ClockSync, sync_clocks
-from .intervals import Intervals, merge_intervals
+from .intervals import Intervals, concat_intervals
 from .epochs import Epochs
 from .roi import ROI, CircularROI, RectangularROI
 from .quality import QualityReport, QualityMetric
@@ -113,7 +113,7 @@ __all__ = [
     "drop_data", "drop_original", "fill_time_discontinuities",
     "SegmentedEyeData", "GroupLevelSegmentedData", "group_segments",
     "Events", "ClockSync", "sync_clocks",
-    "Intervals", "merge_intervals", "Epochs",
+    "Intervals", "concat_intervals", "Epochs",
     "ROI", "CircularROI", "RectangularROI",
     "QualityReport", "QualityMetric",
     # reading and writing data

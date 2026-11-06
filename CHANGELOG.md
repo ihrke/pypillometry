@@ -74,6 +74,9 @@ tables below for every changed call.
   `zscale` (`pp.zscale` -> `pp.signal.zscale`)
 - `nprange`, `p_asym_laplac`, `p_asym_laplac_kappa` and
   `trans_logistic_vec` were removed from `pp.convenience`
+- `merge_intervals()` is `concat_intervals()` (it concatenates; `merge()`
+  merges overlaps); it works like `+`: other time units are converted
+  instead of raising an error, and the default label is `"combined"`
 - `downsample()` stores the actual sampling rate (`fs/factor`)
 - Gaze plots (heatmap, scanpath) draw y downward (screen pixels)
 - The time axis of all plots is in seconds by default (`units="sec"`;
@@ -261,6 +264,7 @@ Calls whose arguments or results changed:
 | `d.to_pupildata()` | `d.drop_data(variables=["x", "y"], inplace=False)` |
 | `d.to_gazedata()` | `d.drop_data(variables="pupil", inplace=False)` |
 | `pp.downsample(x, factor)` (array) | `pp.signal.downsample(x, factor)` |
+| `pp.merge_intervals(a, b)` | `pp.concat_intervals(a, b)` or `a + b` |
 | `segments.intervals` | `segments.epochs` |
 | `isinstance(d, pp.GenericEyeData)` | `isinstance(d, pp.EyeData)` |
 | `d.scale(mean={"left": {"pupil": m}}, sd=...)`, `d.params["scale"]["mean"]["left"]["pupil"]` | `d.scale(mean={"left_pupil": m}, sd=...)`, `d.params["scale"]["mean"]["left_pupil"]` |
