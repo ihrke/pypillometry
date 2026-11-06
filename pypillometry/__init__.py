@@ -14,7 +14,7 @@ Example
 
     d = pp.get_example_data("rlmw_002")
     d = d | pp.pupil.blinks_detect() | pp.pupil.blinks_interpolate()
-    intervals = d.get_intervals("S_", (-500, 2500) * u.ms)
+    intervals = d.get_epochs("S_", (-500, 2500) * u.ms)
 
 Overview
 --------

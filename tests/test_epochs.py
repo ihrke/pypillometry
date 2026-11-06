@@ -270,14 +270,14 @@ class TestGetIntervals:
 
     def test_single_events_give_epochs(self):
         d = self.make()
-        ep = d.get_intervals("ev", window=(-200, 300) * u.ms)
+        ep = d.get_epochs("ev", window=(-200, 300) * u.ms)
         assert isinstance(ep, pp.Epochs)
         np.testing.assert_array_equal(ep.onsets, [100., 1500.])
         assert ep.window == (-200., 300.) and ep.label == "ev"
-        assert isinstance(d.get_intervals(d.events, window=(0, 10) * u.ms), pp.Epochs)
+        assert isinstance(d.get_epochs(d.events, window=(0, 10) * u.ms), pp.Epochs)
 
     def test_two_events_give_intervals(self):
-        iv = self.make().get_intervals(("ev", "x"), units="ms")
+        iv = self.make().get_intervals(start="ev", end="x", units="ms")
         assert isinstance(iv, pp.Intervals)
         assert iv.intervals == [(1500., 2900.)]
         assert iv.label == "ev to x"
@@ -288,11 +288,11 @@ class TestGetIntervals:
         # so the segment is not shifted (event at t=0 has the value 100)
         d = self.make()
         for window in [(-200, 300), (-200, 300) * u.ms]:
-            ep = d.get_intervals("ev", window=window)
+            ep = d.get_epochs("ev", window=window)
             assert ep.to_intervals("samples", d).intervals[0] == (-100, 400)
             s = d.get_segments(ep, "left_pupil")
             assert s.data[s.tx == 0, 0] == 100
-        ep = d.get_intervals("x", window=(-100, 300))
+        ep = d.get_epochs("x", window=(-100, 300))
         assert list(ep) == [(2800., 3200.)]
 
 
@@ -308,7 +308,7 @@ class TestSegmentsFromIntervals:
     def test_different_lengths_raise(self):
         # finding 2.1: between-event intervals gave segments with 0 time points
         d = self.make()
-        iv = d.get_intervals(("S_", "R_"), units="ms")
+        iv = d.get_intervals(start="S_", end="R_", units="ms")
         with pytest.raises(ValueError, match="same length, got lengths from 300 to 500 ms"):
             d.get_segments(iv, "left_pupil")
 
@@ -351,7 +351,7 @@ class TestBaselineWindow:
         n = 1000
         d = pp.EyeData(left_pupil=np.arange(n) * 1., sampling_rate=100,
                          event_onsets=[3000., 6000.], event_labels=["a", "a"])
-        return d.get_segments(d.get_intervals("a", window=(-200, 800) * u.ms), "left_pupil")
+        return d.get_segments(d.get_epochs("a", window=(-200, 800) * u.ms), "left_pupil")
 
     @pytest.mark.parametrize("window, msg", [
         ((-500, -300), r"baseline window \(-500, -300\) ms is not within the segments; "
@@ -386,8 +386,8 @@ def test_plot_intervals_past_the_end():
     n = 1000
     d = pp.EyeData(left_pupil=np.arange(n) * 1., left_x=np.zeros(n), left_y=np.zeros(n),
                    sampling_rate=100, event_onsets=[100., 9900.], event_labels=["a", "a"])
-    for ep in [d.get_intervals("a", window=(-200, 500) * u.ms),
-               d.get_intervals("a", window=(-20, 50))]:
+    for ep in [d.get_epochs("a", window=(-200, 500) * u.ms),
+               d.get_epochs("a", window=(-20, 50))]:
         figs = d.plot.plot_intervals(ep, show_mask=True, nrow=1, ncol=2)
         assert len(figs) == 1
     plt.close("all")

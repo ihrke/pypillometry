@@ -170,7 +170,8 @@ def stat_event_interval(tx,sy,intervals,statfct=np.mean):
     Return result of applying a statistical function to pupillometric data in
     each of a list of intervals. For example, extract mean pupil-size in the
     interval before each trial onset (intervals as returned by
-    :meth:`~pypillometry.EyeData.get_intervals`).
+    :meth:`~pypillometry.EyeData.get_intervals` or
+    :meth:`~pypillometry.EyeData.get_epochs`).
 
     Parameters
     ----------
@@ -229,7 +230,9 @@ class Intervals(Stateful):
     methods of the eye-data classes, e.g.,
     :meth:`~pypillometry.EyeData.get_intervals` (spans between two
     events; windows around single events are
-    :class:`~pypillometry.Epochs`, see :meth:`~pypillometry.Epochs.to_intervals`),
+    :class:`~pypillometry.Epochs` from
+    :meth:`~pypillometry.EyeData.get_epochs`, see
+    :meth:`~pypillometry.Epochs.to_intervals`),
     :meth:`~pypillometry.EyeData.get_blinks` or
     :meth:`~pypillometry.EyeData.mask_as_intervals`.
     Detection methods such as
@@ -581,7 +584,7 @@ class Intervals(Stateful):
         --------
         >>> import pypillometry as pp
         >>> d = pp.get_example_data("rlmw_002_short")
-        >>> intervals = d.get_intervals(("F_", "R_"))  # feedback to response
+        >>> intervals = d.get_intervals(start="F_", end="R_")  # feedback to response
         >>> np.array(intervals).shape
         (10, 2)
         """
@@ -631,7 +634,7 @@ class Intervals(Stateful):
         --------
         >>> import pypillometry as pp
         >>> d = pp.get_example_data("rlmw_002_short")
-        >>> intervals = d.get_intervals(("F_", "R_"), units="ms")
+        >>> intervals = d.get_intervals(start="F_", end="R_", units="ms")
         >>> intervals_sec = intervals.to_units("sec")
         >>> intervals_seconds = intervals.to_units("seconds")  # alias works too
 
@@ -1098,7 +1101,7 @@ class Intervals(Stateful):
            >>> from pypillometry import u
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
-           >>> intervals = d.get_intervals("S_", (-500, 2500) * u.ms).to_intervals("sec")
+           >>> intervals = d.get_epochs("S_", (-500, 2500) * u.ms).to_intervals("sec")
            >>> fig = plt.figure(figsize=(8, 3))
            >>> intervals.plot()
         """
@@ -1198,7 +1201,7 @@ class Intervals(Stateful):
            >>> from pypillometry import u
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
-           >>> intervals = d.get_intervals("S_", (0, 1000) * u.ms).to_intervals("sec")
+           >>> intervals = d.get_epochs("S_", (0, 1000) * u.ms).to_intervals("sec")
            >>> fig = plt.figure(figsize=(10, 3))
            >>> d.plot.pupil_plot(eyes="left", plot_range=(0, 20) * u.sec,
            ...                   show_events=False)

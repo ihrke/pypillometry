@@ -95,6 +95,7 @@ class GenericPlots(Namespace):
         Plotting data around intervals.
 
         Intervals can be extracted with
+        :meth:`~pypillometry.EyeData.get_epochs` or
         :meth:`~pypillometry.EyeData.get_intervals`.
         Each interval gets a separate subplot.
         The data is plotted for each eye and variable in different colors.
@@ -106,7 +107,7 @@ class GenericPlots(Namespace):
         ----------
         intervals : Intervals or Epochs
             the intervals to plot (e.g., from
-            :meth:`~pypillometry.EyeData.get_intervals`); Epochs are
+            :meth:`~pypillometry.EyeData.get_epochs`); Epochs are
             plotted in ms, with a line at each event onset
         eyes : str or list
             eyes to plot; if empty, all available eyes are plotted
@@ -149,7 +150,7 @@ class GenericPlots(Namespace):
            >>> from pypillometry import u
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
-           >>> intervals = d.get_intervals("S_", (-500, 2500) * u.ms)
+           >>> intervals = d.get_epochs("S_", (-500, 2500) * u.ms)
            >>> figs = d.plot.plot_intervals(intervals, variables="pupil", nrow=2, ncol=5,
            ...                              figsize=(12, 4))
         """

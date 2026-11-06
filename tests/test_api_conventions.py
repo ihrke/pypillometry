@@ -77,7 +77,7 @@ class TestInplace:
         assert call(data) is data
 
     def test_baseline_correct(self, data):
-        seg = data.get_segments(data.get_intervals("a", window=(-100, 200) * pp.u.ms),
+        seg = data.get_segments(data.get_epochs("a", window=(-100, 200) * pp.u.ms),
                                 "right_pupil")
         orig = seg.data.copy()
         bc = seg.baseline_correct((-100, 0), inplace=False)
@@ -143,9 +143,9 @@ class TestMs:
         assert d.get_layer_intervals("blink", "left", "pupil")["left_pupil"].units == "ms"
 
     def test_get_intervals_window(self, data):
-        ep = data.get_intervals("a", window=(-200, 800))
+        ep = data.get_epochs("a", window=(-200, 800))
         assert ep.window == (-200, 800)
-        iv = data.get_intervals(("a", "b"))
+        iv = data.get_intervals(start="a", end="b")
         assert iv.units == "ms" and iv.intervals == [(1000., 5000.)]
 
     def test_durations(self, data):
@@ -259,7 +259,7 @@ class TestPlainNumbers:
         assert d.params["scale"]["mean"]["left_pupil"] != 0.
 
     def test_intervals_stats_and_segments(self, data):
-        iv = data.get_intervals("a", (-100, 200))
+        iv = data.get_epochs("a", (-100, 200))
         self.assert_plain(iv.to_intervals().stats())
         seg = data.get_segments(iv, "left_pupil")
         self.assert_plain(seg.summary())

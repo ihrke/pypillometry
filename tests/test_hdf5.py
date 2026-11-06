@@ -61,7 +61,7 @@ class TestObjects(HDF5TestCase):
 
     def test_segmented(self):
         d = make_eyedata(keep_orig=False)
-        seg = d.get_segments(d.get_intervals("F_", window=(-200, 800), units="ms"),
+        seg = d.get_segments(d.get_epochs("F_", window=(-200, 800), units="ms"),
                              "left_pupil")
         self.roundtrip(seg)
         self.roundtrip(pp.group_segments([seg, seg]))
