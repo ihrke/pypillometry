@@ -28,7 +28,8 @@ Instead of a local file name, you can also pass an HTTP(S) URL or an SSH
 URL (``ssh://server/folder/file.edf``). The file is then downloaded and
 cached (see :func:`fetch_url`).
 
-Reading large EDF files is slow. Save the result (see below) or convert
+Reading large EDF files is slow (about a minute for a 90 MB file). Save
+the result (see below), which is read in well under a second, or convert
 the file once with the :doc:`command-line tool </getting_started/cli>`
 ``edf2pypil``.
 

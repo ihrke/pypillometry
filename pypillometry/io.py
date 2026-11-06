@@ -1,27 +1,16 @@
 """
-io.py
-=====
+Reading and writing data.
 
-Read/Write data from/to disk.
+- Eyelink EDF files: :func:`read_eyelink` (usually used through
+  :meth:`~pypillometry.EyeData.from_eyelink`)
+- saved objects: :func:`write_pickle` and :func:`read_pickle` (pickle or
+  HDF5 files; usually used through :meth:`~pypillometry.EyeData.write_file`
+  and :meth:`~pypillometry.EyeData.from_file`)
+- files from URLs (HTTP(S), SSH, OSF) and the download cache:
+  :func:`fetch_url`, :func:`local_copy`, :func:`download`,
+  :func:`osf_authenticate`
 
-Reading EDF files is slow: :func:`read_eyelink` (and
-:meth:`~pypillometry.EyeData.from_eyelink`) takes about a minute
-for a 90 MB EDF file (64 min of binocular data at 1000 Hz), mostly in the
-`eyelinkio` package. It is therefore recommended to convert EDF files once
-and to work with the converted files, e.g., with the command-line program
-``edf2pypil`` (``edf2pypil recording.edf`` writes ``recording.pkl``) or
-with :func:`write_pickle`. Reading the pickle file with :func:`read_pickle`
-is more than 100 times faster. :func:`write_pickle` compresses the file
-with zstd by default: a 400 MB pickle (90 MB EDF file) shrinks to about
-31 MB, takes 0.5 s to write and 0.35 s to read (uncompressed: 0.2 s from
-a warm cache, more from a slow disk or network). Pickle files should only
-be read from trusted sources.
-
-Eyedata and segmented objects can also be saved in HDF5 files (filename
-ending in ``.h5`` or ``.hdf5``), which other programs can read as well and
-which do not run code when read. Both formats store the same versioned
-state of the object (see :mod:`pypillometry.state`), so files written by
-older versions of pypillometry keep loading.
+See the user guide (Loading and saving data) for an overview.
 """
 
 import gzip
@@ -636,6 +625,11 @@ def read_pickle(
     -------
     object
         loaded object
+
+    Warnings
+    --------
+    Pickle files can run arbitrary code when they are read. Only read pickle
+    files from sources you trust; HDF5 files do not run code.
     """
     with local_copy(fname, cache_file=cache_file, cache_dir=cache_dir,
                     autodelete=autodelete, force_download=force_download,
@@ -693,6 +687,13 @@ def read_eyelink(
     -------
     eyelinkio.EDF
         object returned by :func:`eyelinkio.read_edf`
+
+    Notes
+    -----
+    Reading EDF files is slow (about a minute for a 90 MB file, mostly in
+    `eyelinkio`). Convert them once and work with the saved files, which
+    are read in well under a second: with the command-line program
+    ``edf2pypil`` or with :meth:`~pypillometry.EyeData.write_file`.
 
     See Also
     --------

@@ -1430,6 +1430,8 @@ class EyeData(state.VersionedState):
         The file is read with :func:`pypillometry.io.read_pickle`, so
         `fname` can also be an HTTP(S) or SSH URL. Files written by older
         versions of pypillometry are upgraded to the current version.
+        Pickle files can run arbitrary code when they are read: only read
+        them from sources you trust (HDF5 files do not run code).
 
         Parameters
         ----------
@@ -1468,6 +1470,11 @@ class EyeData(state.VersionedState):
         eyelink-detected saccades, etc.
         If you need more control, use the "eyelinkio" package directly and
         create the object manually.
+
+        Reading EDF files is slow (about a minute for a 90 MB file). Save the
+        object with :meth:`write_file` and read it with :meth:`from_file`
+        later, or convert the files once with the command-line program
+        ``edf2pypil``.
 
         Parameters
         ----------
