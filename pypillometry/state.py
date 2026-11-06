@@ -49,8 +49,8 @@ Version history
     layers, e.g. excluded periods) instead of `mask`; eyedata objects have
     no `blinks`, `interpolated_blinks` and `excluded` (they are layers);
     Intervals have no `event_indices`, `data_time_range` and
-    `interval_window`; segments store their Epochs (`onsets` and `window`
-    in ms, `labels`, `meta`, `label`) or, if not event-locked, Intervals,
+    `interval_window`; segments store their Epochs (`events`: an Events
+    state in ms, `window` in ms, `label`) or, if not event-locked, Intervals,
     with the class name in ``intervals["class"]``; the response and scaling
     parameters (``params["response"]``, ``params["scale"]``) are keyed by
     channel (``"left_pupil"``)
@@ -634,9 +634,14 @@ def _v2_spans(st, fs):
         fac = 1000. / fs
     else:
         fac = _V2_MS_PER_UNIT[st["units"]]
-    return {"class": "Epochs", "onsets": np.asarray(st["event_onsets"], dtype=float) * fac,
+    onsets = np.asarray(st["event_onsets"], dtype=float) * fac
+    labels = st["event_labels"]
+    if labels is None:
+        labels = np.full(len(onsets), "")
+    return {"class": "Epochs",
+            "events": {"onsets": onsets, "labels": labels, "units": "ms",
+                       "data_time_range": None, "meta": st.get("event_meta")},
             "window": tuple(float(w) * fac for w in st["interval_window"]),
-            "labels": st["event_labels"], "meta": st.get("event_meta"),
             "label": st.get("label")}
 
 

@@ -198,8 +198,10 @@ class TestMigratedState:
         st = state.migrate(format2_state("segmented.h5"), "SegmentedEyeData")
         ep = st["intervals"]
         assert ep["class"] == "Epochs"
-        assert set(ep) == {"class", "onsets", "window", "labels", "meta", "label"}
-        np.testing.assert_array_equal(ep["onsets"], old["intervals"]["event_onsets"])
+        assert set(ep) == {"class", "events", "window", "label"}
+        assert ep["events"]["units"] == "ms"
+        np.testing.assert_array_equal(ep["events"]["onsets"],
+                                      old["intervals"]["event_onsets"])
         assert ep["window"] == tuple(old["intervals"]["interval_window"])
         s = state.from_state(st)
         assert isinstance(s.epochs, pp.Epochs)

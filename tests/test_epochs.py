@@ -94,7 +94,7 @@ class TestSpans:
         np.testing.assert_array_equal(k.onsets, [1000., 5000.])
         assert k.meta["trial"].tolist() == [1, 3]
         assert k.window == ep.window and k.label == ep.label
-        with pytest.raises(ValueError, match="one value per epoch"):
+        with pytest.raises(ValueError, match="one value per"):
             ep.keep([True, False])
 
     def test_equality(self):
@@ -106,6 +106,48 @@ class TestSpans:
         df = make_epochs().as_pandas()
         assert list(df.columns) == ["onset", "start", "end", "label", "trial"]
         assert df["start"].tolist() == [800., 2800., 4800.]
+
+
+class TestEventsAndMetadata:
+
+    def test_events(self):
+        ep = make_epochs()
+        assert isinstance(ep.events, pp.Events)
+        assert ep.events.units == "ms"
+        assert ep.onsets is ep.events.onsets
+
+    def test_from_events_keeps_the_events(self):
+        ev = pp.Events([1, 2], ["x", "y"], units="sec", data_time_range=(0, 3))
+        ep = pp.Epochs.from_events(ev, (0, 500))
+        assert ep.events.units == "ms"
+        assert ep.events.data_time_range == (0., 3000.)
+
+    def test_filter(self):
+        ep = make_epochs()
+        f = ep.filter("a", exact=True, trial=lambda t: t > 1)
+        assert isinstance(f, pp.Epochs)
+        np.testing.assert_array_equal(f.onsets, [5000.])
+        assert f.window == ep.window and f.label == ep.label
+        assert len(ep.filter(trial=[1, 2])) == 2
+        assert len(ep.filter((0, 2000))) == 1
+        with pytest.raises(KeyError, match="no metadata column"):
+            ep.filter(cond="x")
+
+    def test_metadata_methods(self):
+        ep = make_epochs()
+        ep2 = ep.set_meta("cond", ["p", "q", "p"])
+        assert isinstance(ep2, pp.Epochs) and ep2.window == ep.window
+        assert ep2.meta["cond"].tolist() == ["p", "q", "p"]
+        assert "cond" not in ep.meta
+        assert list(ep2.drop_meta("trial").meta) == ["cond"]
+        ep3 = pp.Epochs([0, 1], (0, 1), labels=["S_1", "S_2"]).parse_labels(r"S_(?P<n>\d+)")
+        assert ep3.meta["n"].tolist() == [1, 2]
+
+    def test_state_roundtrip(self):
+        ep = make_epochs().filter(trial=[1, 3])
+        st = ep._to_state()
+        assert set(st) == {"events", "window", "label"}
+        assert ep._from_state(st) == ep
 
 
 class TestMethodsAcceptEpochs:

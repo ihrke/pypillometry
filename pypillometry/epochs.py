@@ -1,13 +1,11 @@
 """Event-locked windows (epochs): event onsets and one window around them.
 """
 
-import types
-
 import numpy as np
 
 from .convenience import requires_package
 from .units import parse_time
-from .events import _meta_dict
+from .events import Events
 from .state import Stateful
 
 __all__ = ["Epochs"]
@@ -33,6 +31,13 @@ class Epochs(Stateful):
     beyond the data are not clipped; the methods that read the data handle
     the parts outside of it.
 
+    The events are kept as an :class:`~pypillometry.Events` object
+    (:attr:`events`, in ms). Epochs are selected like events, by label, time
+    or metadata (:meth:`filter`, :meth:`keep`), and their metadata are
+    changed with :meth:`set_meta`, :meth:`drop_meta` and
+    :meth:`parse_labels`; these methods return new Epochs with the same
+    window.
+
     Parameters
     ----------
     onsets : array-like or Quantity
@@ -50,6 +55,8 @@ class Epochs(Stateful):
 
     Attributes
     ----------
+    events : Events
+        the events the epochs are locked to (onsets in ms)
     onsets : np.ndarray
         onsets in ms (read-only)
     window : tuple of float
@@ -68,40 +75,42 @@ class Epochs(Stateful):
     [(800.0, 1800.0), (2800.0, 3800.0)]
     >>> ep.to_intervals("sec").intervals[0]
     (0.8, 1.8)
+    >>> ep = Epochs([1000, 3000], (-200, 800), meta={"cond": ["easy", "hard"]})
+    >>> ep.filter(cond="easy").onsets
+    array([1000.])
     """
 
     # state (see pypillometry.state)
-    _STATE_FIELDS = ("onsets", "window", "labels", ("meta", None, "_meta"), "label")
+    _STATE_FIELDS = (("events", "Events"), "window", "label")
 
     def __init__(self, onsets, window, labels=None, meta=None, label=None):
         onsets = np.atleast_1d(np.asarray(parse_time(onsets, to="ms"), dtype=float))
         if onsets.ndim != 1:
             raise ValueError(f"onsets must be one-dimensional, got shape {onsets.shape}")
-        if not np.isfinite(onsets).all():
+        n = len(onsets)
+        labels = np.full(n, "") if labels is None else np.asarray(labels, dtype=str)
+        if labels.shape != (n,):
+            raise ValueError(f"{labels.size} labels for {n} onsets")
+        self._setup(Events(onsets, labels, units="ms", meta=meta), window, label)
+
+    def _setup(self, events, window, label):
+        """Set the attributes (`events` in ms) after checking them."""
+        if events.units != "ms":
+            raise ValueError(f"the events of Epochs must be in ms, got {events.units}")
+        if not np.isfinite(events.onsets).all():
             raise ValueError("onsets must be finite")
         window = np.asarray(parse_time(window, to="ms"), dtype=float)
         if window.shape != (2,) or not np.isfinite(window).all() or window[0] >= window[1]:
             raise ValueError(f"window must be (start, end) with finite start < end, "
                              f"got {window.tolist()}")
-        n = len(onsets)
-        labels = np.full(n, "") if labels is None else np.asarray(labels, dtype=str)
-        if labels.shape != (n,):
-            raise ValueError(f"{labels.size} labels for {n} onsets")
-        onsets.flags.writeable = False
-        labels.flags.writeable = False
-        self.onsets = onsets
+        self.events = events
         self.window = (float(window[0]), float(window[1]))
-        self.labels = labels
-        self._meta = _meta_dict(meta, n)
-        for col in self._meta.values():
-            col.flags.writeable = False
         self.label = label
 
     def _set_state(self, st: dict):
         """Set the attributes from a state of the current version (checked like
         the arguments of the constructor)."""
-        self.__init__(st["onsets"], st["window"], labels=st["labels"], meta=st["meta"],
-                      label=st["label"])
+        self._setup(Events._from_state(st["events"]), st["window"], st["label"])
 
     @classmethod
     def from_events(cls, events, window, label=None) -> 'Epochs':
@@ -121,13 +130,30 @@ class Epochs(Stateful):
         -------
         Epochs
         """
-        return cls(events.to_units("ms").onsets, window, labels=events.labels,
-                   meta=dict(events.meta), label=label)
+        ep = cls.__new__(cls)
+        ep._setup(events.to_units("ms"), window, label)
+        return ep
+
+    def _with_events(self, events) -> 'Epochs':
+        """New Epochs with the same window and label around `events`."""
+        ep = type(self).__new__(type(self))
+        ep._setup(events, self.window, self.label)
+        return ep
+
+    @property
+    def onsets(self) -> np.ndarray:
+        """Onsets of the events in ms (read-only)."""
+        return self.events.onsets
+
+    @property
+    def labels(self) -> np.ndarray:
+        """Labels of the events (read-only)."""
+        return self.events.labels
 
     @property
     def meta(self):
         """Metadata of the events (read-only mapping: column name -> array)."""
-        return types.MappingProxyType(self._meta)
+        return self.events.meta
 
     @property
     def duration(self) -> float:
@@ -136,7 +162,7 @@ class Epochs(Stateful):
 
     def __len__(self) -> int:
         """Number of epochs."""
-        return len(self.onsets)
+        return len(self.events)
 
     def _spans(self) -> np.ndarray:
         """(n, 2) array of absolute (start, end) in ms."""
@@ -173,12 +199,74 @@ class Epochs(Stateful):
         >>> ep.keep(ep.onsets < 600).labels
         array(['A', 'B'], dtype='<U1')
         """
-        mask = np.asarray(mask)
-        if mask.dtype != bool or mask.shape != (len(self),):
-            raise ValueError(f"mask must be a boolean array with one value per "
-                             f"epoch ({len(self)}), got {mask.dtype} {mask.shape}")
-        return Epochs(self.onsets[mask], self.window, labels=self.labels[mask],
-                      meta={k: v[mask] for k, v in self._meta.items()}, label=self.label)
+        return self._with_events(self.events.keep(mask))
+
+    def filter(self, selector=None, exact: bool = False, **conditions) -> 'Epochs':
+        """
+        Epochs whose events match the criteria.
+
+        The events are selected as in :meth:`Events.filter
+        <pypillometry.Events.filter>`: by label, onset time (in ms), a
+        boolean array or metadata.
+
+        Parameters
+        ----------
+        selector : str, callable, tuple or boolean array, optional
+            criterion for the events (see :meth:`Events.filter
+            <pypillometry.Events.filter>`)
+        exact : bool, optional
+            if True, a string selector matches only labels equal to it
+        **conditions
+            criteria for metadata columns, e.g. ``cond="easy"``,
+            ``trial=[1, 2]`` or ``rt=lambda rt: rt < 800``
+
+        Returns
+        -------
+        Epochs
+            the selected epochs (same window and label)
+
+        Examples
+        --------
+        >>> ep = Epochs([100, 500, 900], (0, 100), labels=["A", "B", "A"],
+        ...             meta={"rt": [300, 900, 500]})
+        >>> ep.filter("A", rt=lambda rt: rt < 400).onsets
+        array([100.])
+        """
+        return self._with_events(self.events.filter(selector, exact, **conditions))
+
+    def set_meta(self, name: str, values, select=None, exact: bool = False) -> 'Epochs':
+        """
+        Epochs with a metadata column set (see :meth:`Events.set_meta
+        <pypillometry.Events.set_meta>`).
+
+        Returns
+        -------
+        Epochs
+            new Epochs with the changed metadata
+        """
+        return self._with_events(self.events.set_meta(name, values, select, exact))
+
+    def drop_meta(self, *names: str) -> 'Epochs':
+        """
+        Epochs without the metadata columns `names` (all, if none given; see
+        :meth:`Events.drop_meta <pypillometry.Events.drop_meta>`).
+
+        Returns
+        -------
+        Epochs
+        """
+        return self._with_events(self.events.drop_meta(*names))
+
+    def parse_labels(self, parser) -> 'Epochs':
+        """
+        Epochs with metadata from the labels of the events (see
+        :meth:`Events.parse_labels <pypillometry.Events.parse_labels>`).
+
+        Returns
+        -------
+        Epochs
+        """
+        return self._with_events(self.events.parse_labels(parser))
 
     def to_intervals(self, units="ms", data=None):
         """
@@ -202,7 +290,7 @@ class Epochs(Stateful):
         iv = Intervals([tuple(row) for row in self._spans().tolist()], units="ms",
                        label=self.label, event_labels=self.labels.tolist(),
                        event_onsets=self.onsets.copy(),
-                       event_meta=dict(self._meta) or None)
+                       event_meta=dict(self.meta) or None)
         return iv.to_units(units, data)
 
     @requires_package("pandas")
@@ -220,7 +308,7 @@ class Epochs(Stateful):
         spans = self._spans()
         df = pd.DataFrame({"onset": self.onsets, "start": spans[:, 0],
                            "end": spans[:, 1], "label": self.labels})
-        for name, col in self._meta.items():
+        for name, col in self.meta.items():
             df[name] = col
         return df
 
@@ -230,9 +318,9 @@ class Epochs(Stateful):
         return (self.window == other.window and self.label == other.label
                 and np.array_equal(self.onsets, other.onsets)
                 and np.array_equal(self.labels, other.labels)
-                and self._meta.keys() == other._meta.keys()
-                and all(np.array_equal(v, other._meta[k], equal_nan=v.dtype.kind == "f")
-                        for k, v in self._meta.items()))
+                and self.meta.keys() == other.meta.keys()
+                and all(np.array_equal(v, other.meta[k], equal_nan=v.dtype.kind == "f")
+                        for k, v in self.meta.items()))
 
     __hash__ = None
 
