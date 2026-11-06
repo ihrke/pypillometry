@@ -1870,15 +1870,15 @@ class TestEventsIntegration(unittest.TestCase):
         self.assertEqual(self.data.history[-1]["funcname"], "set_events")
 
 
-class TestEventsWithGetIntervals(unittest.TestCase):
-    """Test get_intervals() with Events objects"""
+class TestGetEpochsWithEvents(unittest.TestCase):
+    """Test get_epochs() with Events objects"""
     
     def setUp(self):
         """Set up test data"""
         self.data = get_rlmw_002_short()
     
-    def test_get_intervals_with_events_object(self):
-        """Test that get_intervals accepts Events object"""
+    def test_get_epochs_with_events_object(self):
+        """Test that get_epochs accepts Events object"""
         events = self.data.events
         intervals = self.data.get_epochs(events, window=(-200, 200), units="ms")
         
@@ -1887,8 +1887,8 @@ class TestEventsWithGetIntervals(unittest.TestCase):
         np.testing.assert_array_equal(intervals.onsets, events.onsets)
         self.assertEqual(intervals.window, (-200, 200))
     
-    def test_get_intervals_with_filtered_events(self):
-        """Test get_intervals with filtered Events object"""
+    def test_get_epochs_with_filtered_events(self):
+        """Test get_epochs with filtered Events object"""
         events = self.data.events
         filtered = events.filter("F")
         
@@ -1901,7 +1901,7 @@ class TestEventsWithGetIntervals(unittest.TestCase):
         intervals_str = self.data.get_epochs("F", window=(-200, 200), units="ms")
         self.assertEqual(len(intervals), len(intervals_str))
     
-    def test_get_intervals_events_vs_string(self):
+    def test_get_epochs_events_vs_string(self):
         """Test that Events and string selector give same results"""
         events = self.data.events
         filtered = events.filter("F")
@@ -1915,8 +1915,8 @@ class TestEventsWithGetIntervals(unittest.TestCase):
         # Should have same event labels
         np.testing.assert_array_equal(intervals_events.labels, intervals_str.labels)
     
-    def test_get_intervals_with_events_different_units(self):
-        """Test get_intervals with Events in different units"""
+    def test_get_epochs_with_events_different_units(self):
+        """Test get_epochs with Events in different units"""
         events = self.data.events
         events_sec = events.to_units("sec")
         
@@ -1927,14 +1927,14 @@ class TestEventsWithGetIntervals(unittest.TestCase):
         np.testing.assert_allclose(intervals.onsets, events.onsets)
         np.testing.assert_allclose(intervals.window, (-200, 200))
     
-    def test_get_intervals_with_events_custom_label(self):
+    def test_get_epochs_with_events_custom_label(self):
         """Test that custom label works with Events object"""
         events = self.data.events
         intervals = self.data.get_epochs(events, window=(-200, 200), units="ms", label="custom_label")
         
         self.assertEqual(intervals.label, "custom_label")
     
-    def test_get_intervals_with_events_automatic_label(self):
+    def test_get_epochs_with_events_automatic_label(self):
         """Test that automatic label is generated when not provided"""
         events = self.data.events
         filtered = events.filter("F")
@@ -1945,7 +1945,7 @@ class TestEventsWithGetIntervals(unittest.TestCase):
         self.assertIsNotNone(intervals.label)
         self.assertIn("events", intervals.label.lower())
     
-    def test_get_intervals_with_events_units_consistency(self):
+    def test_get_epochs_with_events_units_consistency(self):
         """Test that units are consistent between Events and resulting Intervals"""
         events = self.data.events.to_units("sec")
         
@@ -1954,8 +1954,8 @@ class TestEventsWithGetIntervals(unittest.TestCase):
         np.testing.assert_allclose(intervals.window, (-200, 200))
         self.assertEqual(events.units, "sec")
     
-    def test_get_intervals_with_events_indices(self):
-        """Test get_intervals with Events using index units"""
+    def test_get_epochs_with_events_indices(self):
+        """Test get_epochs with Events using index units"""
         events = self.data.events
         
         intervals = self.data.get_epochs(events, window=(-10, 10), units="samples")
@@ -1964,8 +1964,8 @@ class TestEventsWithGetIntervals(unittest.TestCase):
         np.testing.assert_allclose(intervals.window, (-10000 / self.data.fs, 10000 / self.data.fs))
         self.assertEqual(len(intervals), len(events))
     
-    def test_get_intervals_with_empty_events(self):
-        """Test get_intervals with empty Events object"""
+    def test_get_epochs_with_empty_events(self):
+        """Test get_epochs with empty Events object"""
         from pypillometry.events import Events
         
         empty_events = Events([], [], units="ms")
@@ -1974,7 +1974,7 @@ class TestEventsWithGetIntervals(unittest.TestCase):
         
         self.assertEqual(len(intervals), 0)
     
-    def test_get_intervals_events_preserves_labels(self):
+    def test_get_epochs_events_preserves_labels(self):
         """Test that event labels are preserved in intervals"""
         events = self.data.events
         filtered = events.filter("F")
@@ -1988,8 +1988,8 @@ class TestEventsWithGetIntervals(unittest.TestCase):
         for interval_label, event_label in zip(intervals.labels, filtered.labels):
             self.assertEqual(interval_label, event_label)
     
-    def test_get_intervals_backward_compatibility(self):
-        """Test that existing string/function selectors still work"""
+    def test_get_epochs_string_and_function_selectors(self):
+        """String and function selectors select the same events"""
         # String selector
         intervals_str = self.data.get_epochs("F", window=(-200, 200), units="ms")
         self.assertIsNotNone(intervals_str)
@@ -2192,7 +2192,7 @@ if __name__ == '__main__':
     unittest.main() 
 
 class TestGetIntervalsBetweenEvents(unittest.TestCase):
-    """get_intervals() with a tuple of two event selectors"""
+    """get_intervals() between start and end events"""
 
     def make(self, onsets, labels):
         tx = np.arange(0, 10000, 10.)  # 100 Hz, sample i at 10*i ms

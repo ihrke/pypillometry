@@ -259,7 +259,7 @@ class TestSegmentsFromEpochs:
                                       (np.arange(30) >= 10) & (np.arange(30) < 20))
 
 
-class TestGetIntervals:
+class TestGetEpochsAndIntervals:
 
     def make(self):
         n = 3000
@@ -394,7 +394,7 @@ def test_plot_intervals_past_the_end():
 
 
 class TestStatPerEventOutside:
-    """Windows partly or entirely outside the data (not clipped in get_intervals)."""
+    """Windows partly or entirely outside the data (not clipped in get_epochs)."""
 
     def make(self):
         n = 1000

@@ -547,15 +547,15 @@ class TestIntervalsAddOperator(unittest.TestCase):
         self.assertEqual(len(result), 3)
         self.assertEqual(result.intervals, [(0, 100), (200, 300), (400, 500)])
     
-class TestIntervalsWithGetIntervals(unittest.TestCase):
-    """Test Intervals class with get_intervals() method"""
+class TestGetEpochsAndIntervals(unittest.TestCase):
+    """Epochs and Intervals from get_epochs() and get_intervals()"""
     
     def setUp(self):
         """Create test data"""
         self.data = pp.get_example_data("rlmw_002_short")
     
-    def test_get_intervals_returns_epochs(self):
-        """get_intervals with a window around single events returns Epochs"""
+    def test_return_types(self):
+        """get_epochs returns Epochs, get_intervals returns Intervals"""
         intervals = self.data.get_epochs("F", window=(-200, 200), units="ms")
         
         self.assertIsInstance(intervals, pp.Epochs)
@@ -564,15 +564,15 @@ class TestIntervalsWithGetIntervals(unittest.TestCase):
         # between two events: Intervals
         self.assertIsInstance(self.data.get_intervals(start="F", end="S", units="ms"), Intervals)
     
-    def test_get_intervals_has_metadata(self):
-        """Test that Intervals from get_intervals has proper metadata"""
+    def test_get_epochs_has_metadata(self):
+        """Test that Epochs from get_epochs have proper metadata"""
         intervals = self.data.get_epochs("F", window=(-200, 200), units="ms")
         
         self.assertGreater(len(intervals), 0)
         self.assertEqual(len(intervals.labels), len(intervals))
         self.assertTrue(all("F" in lab for lab in intervals.labels))
     
-    def test_get_intervals_different_units(self):
+    def test_get_epochs_different_units(self):
         """plain numbers in the window are in `units`; Epochs are in ms"""
         for units, fac in [("ms", 1), ("sec", 1000), ("min", 60000),
                            ("samples", 1000 / self.data.fs)]:
@@ -586,7 +586,7 @@ class TestIntervalsWithGetIntervals(unittest.TestCase):
         self.assertEqual(intervals.label, "F")
     
     def test_intervals_can_be_iterated(self):
-        """Test that Intervals from get_intervals can be iterated"""
+        """Test that Epochs from get_epochs can be iterated"""
         intervals = self.data.get_epochs("F", window=(-200, 200), units="ms")
         
         count = 0
@@ -1745,7 +1745,7 @@ class TestConversionWithData(unittest.TestCase):
         self.d = pp.EyeData(time=1000 + np.arange(0, 10000, 10.), left_pupil=np.ones(1000),
                               event_onsets=[2000, 5005], event_labels=["a", "b"])
 
-    def test_get_intervals_samples_and_ms_agree(self):
+    def test_get_epochs_samples_and_ms_agree(self):
         ms = self.d.get_epochs("", (-100, 200), units="ms")
         ix = self.d.get_epochs("", (-10, 20), units="samples")
         self.assertEqual(ix, ms)

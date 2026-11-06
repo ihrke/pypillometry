@@ -522,7 +522,7 @@ class TestSegmentedEyeDataFromIntervals(unittest.TestCase):
         intervals = data.get_epochs("cue", window=(-100, 200), units="ms")
         segments = data.get_segments(intervals, "left_pupil")
         
-        # Name should come from intervals label which was set by get_intervals
+        # Name should come from intervals label which was set by get_epochs
         self.assertEqual(segments.name, "cue")
 
 

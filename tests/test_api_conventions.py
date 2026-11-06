@@ -142,7 +142,7 @@ class TestMs:
         assert d.mask_as_intervals("left", "pupil")["left_pupil"].intervals == [(3000., 3200.)]
         assert d.get_layer_intervals("blink", "left", "pupil")["left_pupil"].units == "ms"
 
-    def test_get_intervals_window(self, data):
+    def test_get_epochs_and_intervals_window(self, data):
         ep = data.get_epochs("a", window=(-200, 800))
         assert ep.window == (-200, 800)
         iv = data.get_intervals(start="a", end="b")

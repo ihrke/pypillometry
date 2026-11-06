@@ -317,7 +317,7 @@ class TestEyedataMeta(unittest.TestCase):
         np.testing.assert_array_equal(d.events.meta["trial"], [1, 1, 2, 2, 2])
         self.assertEqual(len(d.events), 5)
 
-    def test_get_intervals_carries_meta(self):
+    def test_epochs_and_intervals_carry_meta(self):
         d = data_with_meta()
         ep = d.get_epochs("S_", window=(-100, 500), units="ms")
         np.testing.assert_array_equal(ep.meta["trial"], [1, 2])
@@ -331,7 +331,7 @@ class TestEyedataMeta(unittest.TestCase):
         iv = d.get_intervals(start="<start>", end="S_")
         np.testing.assert_array_equal(iv.event_meta["trial"], [1])
 
-    def test_get_intervals_without_meta(self):
+    def test_get_epochs_without_meta(self):
         d = data_with_meta()
         d.set_events(d.events.drop_meta())
         ep = d.get_epochs("S_", window=(-100, 500), units="ms")

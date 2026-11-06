@@ -427,7 +427,7 @@ def test_crop_with_units(eyedata):
         np.testing.assert_array_equal(d.tx, ref.tx)
 
 
-def test_get_intervals_with_units(eyedata):
+def test_get_epochs_with_units(eyedata):
     ref = eyedata.get_epochs("F", (-200, 800), units="ms")
     ep = eyedata.get_epochs("F", (-200, 800) * u.ms)
     assert ep == ref
