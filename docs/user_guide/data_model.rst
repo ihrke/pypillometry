@@ -19,7 +19,7 @@ any of them.
     EyeData <|-- FakeEyeData
     EyeData: data (EyeDataDict)
     EyeData: events, layers, history, experimental_setup, calibration
-    EyeData: get_intervals(), get_segments(), downsample(), ...
+    EyeData: get_epochs(), get_intervals(), get_segments(), ...
     EyeData: plot (PlotNamespace)
     EyeData: pupil (PupilNamespace)
     EyeData: gaze (GazeNamespace)
@@ -221,11 +221,11 @@ during them, also variables added later:
 
 .. code-block:: python
 
-    breaks = d.get_intervals(("break_start", "break_end"), units="ms")
+    breaks = d.get_intervals(start="break_start", end="break_end", units="ms")
     d = d.exclude_intervals(breaks)
     d = d.exclude_intervals([(0, 2 * u.min)])   # calibration at the start
     d = d.exclude_intervals([(58 * u.min, "<end>")])  # until the end
-    d = d.exclude_intervals(d.get_intervals(("<start>", "Start Block 1"), units="ms"))
+    d = d.exclude_intervals(d.get_intervals(start="<start>", end="Start Block 1", units="ms"))
     d.get_excluded()                            # the excluded periods
     d.excluded_duration("min")                  # their total duration
 
@@ -234,7 +234,7 @@ everything outside the given periods, e.g., to keep only the fMRI run:
 
 .. code-block:: python
 
-    run = d.get_intervals(("rsfMRI_ONSET", "rsfMRI_END"), units="ms")
+    run = d.get_intervals(start="rsfMRI_ONSET", end="rsfMRI_END", units="ms")
     d = d.keep_intervals(run)
 
 Because the samples are masked, everything that ignores masked data

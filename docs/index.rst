@@ -37,7 +37,7 @@ processing step is recorded in the object's history.
           | pp.pupil.lowpass_filter(cutoff=4))      # 4 Hz low-pass filter
 
    # average pupil response from 200 ms before to 1 s after each stimulus
-   intervals = d.get_intervals("stim", (-200, 1000) * u.ms)
+   intervals = d.get_epochs("stim", (-200, 1000) * u.ms)
    erpd = d.get_segments(intervals, "left_pupil").baseline_correct((-200, 0))
    erpd.plot()                                          # event-related pupil dilation
 

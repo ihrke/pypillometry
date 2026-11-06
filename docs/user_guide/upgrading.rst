@@ -50,8 +50,12 @@ count as unusable; by default, **interpolated samples are used**. See
 
 **Events, intervals and epochs.** The events are one :class:`Events`
 object (``d.events.onsets`` instead of ``d.event_onsets``).
-``d.get_intervals("stim", window)`` returns :class:`Epochs` (event onsets
-with one window). See :doc:`events_intervals`.
+Windows around events come from the new :meth:`~EyeData.get_epochs`
+(``d.get_epochs("stim", window)`` returns :class:`Epochs`: event onsets
+with one window); :meth:`~EyeData.get_intervals` only gives the spans
+between two events and takes them as keywords
+(``d.get_intervals(start="trial", end="response")``). See
+:doc:`events_intervals`.
 
 
 Changes that do not raise an error
@@ -61,7 +65,8 @@ These changes silently give other results with code that ran under 2.1.
 Check your scripts for them:
 
 - **Plain numbers are ms** everywhere: windows of
-  :meth:`~EyeData.get_intervals`, durations, margins. Sample indices
+  :meth:`~EyeData.get_epochs` and :meth:`~EyeData.get_intervals`,
+  durations, margins. Sample indices
   need ``units="samples"``. Exception: in plots, plain numbers in
   ``plot_range`` and ``interv`` are in ``units=``, as in 2.1.
 - **Interpolated samples are used** in segments,

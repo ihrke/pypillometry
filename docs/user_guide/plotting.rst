@@ -106,7 +106,7 @@ check blink detection and interpolation:
 .. plot::
    :context: close-figs
 
-   intervals = d.get_intervals("S_", (-500, 2500) * u.ms)
+   intervals = d.get_epochs("S_", (-500, 2500) * u.ms)
    d.plot.plot_intervals(intervals, variables="pupil", nrow=2, ncol=5,
                          figsize=(12, 4))
 
@@ -115,7 +115,7 @@ check blink detection and interpolation:
 .. plot::
    :context: close-figs
 
-   intervals = d.get_intervals("S_", (0, 1000) * u.ms).to_intervals("sec")
+   intervals = d.get_epochs("S_", (0, 1000) * u.ms).to_intervals("sec")
    plt.figure(figsize=(10, 3))
    d.plot.pupil_plot(eyes="left", plot_range=(0, 20) * u.sec,
                      show_events=False)
@@ -134,7 +134,7 @@ percentage of missing data (see :doc:`events_intervals`):
    :context: close-figs
 
    d.pupil.blinks_interpolate()
-   intervals = d.get_intervals("S_", (-500, 2500) * u.ms)
+   intervals = d.get_epochs("S_", (-500, 2500) * u.ms)
    erpd = d.get_segments(intervals, "left_pupil").baseline_correct((-500, 0))
    erpd.plot()
 

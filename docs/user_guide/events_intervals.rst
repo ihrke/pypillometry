@@ -11,8 +11,8 @@ stimulus appears or a response is given. Analyses then look at the data in
 .. mermaid::
 
    flowchart LR
-     E["<b>Events</b><br/>onsets + labels + metadata"] -- "get_intervals(event, window)" --> P["<b>Epochs</b><br/>onsets + one window"]
-     E -- "get_intervals((event1, event2))" --> I["<b>Intervals</b><br/>(start, end) pairs"]
+     E["<b>Events</b><br/>onsets + labels + metadata"] -- "get_epochs(event, window)" --> P["<b>Epochs</b><br/>onsets + one window"]
+     E -- "get_intervals(start=event1, end=event2)" --> I["<b>Intervals</b><br/>(start, end) pairs"]
      P -- "get_segments()" --> S["<b>SegmentedEyeData</b><br/>segments x time"]
      S -- "group_segments()" --> G["<b>GroupLevelSegmentedData</b><br/>participants x time"]
      P -- "stat_per_event()" --> N["one value<br/>per event"]
@@ -96,9 +96,10 @@ selects events by their metadata:
     ev.filter(ev.meta["left"] < ev.meta["right"])  # boolean array
 
 :meth:`~EyeData.set_events` stores the metadata in the dataset
-(e.g., ``d = d.set_events(ev)``; they are saved with it), and :meth:`~EyeData.get_intervals` passes
-the metadata of the selected events on to the intervals
-(``intervals.event_meta``, also in :meth:`~Intervals.as_pandas`).
+(e.g., ``d = d.set_events(ev)``; they are saved with it), and
+:meth:`~EyeData.get_epochs` and :meth:`~EyeData.get_intervals` pass the
+metadata of the selected events on (``epochs.meta``,
+``intervals.event_meta``, also in ``as_pandas()``).
 :meth:`~Events.to_table` returns the events with their metadata as a dict
 of columns, e.g., for ``pandas.DataFrame()``.
 
@@ -221,12 +222,12 @@ Epochs
 
 An :class:`Epochs` object holds some events (an :class:`Events` object in
 ms) and *one* time window around them, e.g., from 200 ms before to 1000 ms
-after each stimulus. :meth:`~EyeData.get_intervals` returns Epochs for
-single events:
+after each stimulus. :meth:`~EyeData.get_epochs` selects the events and
+the window:
 
 .. code-block:: python
 
-    epochs = d.get_intervals("stim", (-200, 1000) * u.ms)
+    epochs = d.get_epochs("stim", (-200, 1000) * u.ms)
     epochs.onsets, epochs.window, epochs.labels, epochs.meta["trial"]
     epochs.events                               # the events, as Events
     epochs.filter(cond="a", rt=lambda rt: rt < 800)  # select like Events
@@ -263,9 +264,9 @@ come from several places:
    * - Source
      - Example
    * - windows around events
-     - ``d.get_intervals("stim", (-200, 1000) * u.ms).to_intervals()``
+     - ``d.get_epochs("stim", (-200, 1000) * u.ms).to_intervals()``
    * - spans between two events
-     - ``d.get_intervals(("trial_start", "response"))``
+     - ``d.get_intervals(start="trial_start", end="response")``
    * - detected blinks
      - ``d.get_blinks("left", "pupil")["left_pupil"]``
    * - other detection methods
@@ -287,18 +288,18 @@ before, between and after the blocks).
 Between two events
 ~~~~~~~~~~~~~~~~~~
 
-With a tuple of two selectors, :meth:`~EyeData.get_intervals`
-pairs each first event with the next second event after it. If several
-first events come before the same second event (e.g., a missing
-"End Block"), the last of them is used. Events without a partner are
-skipped, and a warning lists them. ``"<start>"`` and ``"<end>"`` stand for
-the start and the end of the recording:
+:meth:`~EyeData.get_intervals` pairs each `start` event with the next
+`end` event after it. If several `start` events come before the same
+`end` event (e.g., a missing "End Block"), the last of them is used.
+Events without a partner are skipped, and a warning lists them.
+``"<start>"`` and ``"<end>"`` stand for the start and the end of the
+recording:
 
 .. code-block:: python
 
-    blocks = d.get_intervals(("Start Block", "End Block"), units="ms")
-    breaks = d.get_intervals(("End Block", "Start Block"), units="ms")
-    before = d.get_intervals(("<start>", "Start Block"), units="ms")
+    blocks = d.get_intervals(start="Start Block", end="End Block", units="ms")
+    breaks = d.get_intervals(start="End Block", end="Start Block", units="ms")
+    before = d.get_intervals(start="<start>", end="Start Block", units="ms")
 
 String selectors match labels that contain them; with ``exact=True``,
 only labels that are equal to them.
@@ -308,7 +309,8 @@ Sample indices and time
 
 Intervals are either in time units ("ms", "sec", "min", "h") or in sample
 indices (``units="samples"``; plain numbers in the window of
-:meth:`~EyeData.get_intervals` are ms, sample indices need
+:meth:`~EyeData.get_epochs` and :meth:`~EyeData.get_intervals` are ms,
+sample indices need
 ``units="samples"``). Intervals are
 end-exclusive: ``(start, end)`` covers the samples with
 ``start <= t < end``.
@@ -357,7 +359,7 @@ segments × time points). Averaged over segments, this is the
 
 .. code-block:: python
 
-    epochs = d.get_intervals("stim", (-200, 1000) * u.ms)
+    epochs = d.get_epochs("stim", (-200, 1000) * u.ms)
     erpd = d.get_segments(epochs, "left_pupil", name="stimulus")
     erpd = erpd.baseline_correct((-200, 0))   # subtract the pre-stimulus mean
     erpd.plot()

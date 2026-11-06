@@ -51,7 +51,7 @@ def main():
     ax1.legend(loc="lower left", frameon=False)
 
     # event-related pupil dilation
-    intervals = d.get_intervals("S_", (-500, 2500) * u.ms)
+    intervals = d.get_epochs("S_", (-500, 2500) * u.ms)
     erpd = d.get_segments(intervals, f"{EYE}_pupil").baseline_correct((-500, 0))
     erpd.plot(ax=ax2, show_legend=False)
     ax2.set_title(f"Pupil response to {erpd.n_segments} stimuli (mean ± SE)",

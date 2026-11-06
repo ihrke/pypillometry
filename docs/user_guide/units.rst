@@ -13,7 +13,7 @@ string:
     from pypillometry import u
 
     d.crop(3 * u.min, 5 * u.min)                    # or ("3 min", "5 min")
-    d.get_intervals("stim", (-200, 800) * u.ms)
+    d.get_epochs("stim", (-200, 800) * u.ms)
     d.pupil.blinks_detect(min_duration="20 ms")
     d.plot.pupil_plot(plot_range=(3, 5) * u.min)
     d.set_experimental_setup(eye_to_screen_center=60 * u.cm,

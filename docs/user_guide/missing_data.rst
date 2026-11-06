@@ -348,7 +348,7 @@ per trial and select the epochs with :meth:`Epochs.keep`:
 
 .. code-block:: python
 
-    stim = d.get_intervals("S_", window=(-500, 2500) * u.ms)
+    stim = d.get_epochs("S_", window=(-500, 2500) * u.ms)
     seg = d.get_segments(stim, "left_pupil", policy="strict")
     recon = np.ma.getmaskarray(seg.data).mean(axis=0)   # one value per trial
     good = stim.keep(recon < 0.25)
@@ -363,7 +363,7 @@ the calibration (see :ref:`data-model-masks`):
 
 .. code-block:: python
 
-    d.exclude_intervals(d.get_intervals(("break_start", "break_end")))
+    d.exclude_intervals(d.get_intervals(start="break_start", end="break_end"))
     d.keep_intervals([(first_onset - 1000, last_onset + 3000)])   # in ms
 
 **Undo a step**: ``d.clear_layer("blink")``, ``d.clear_layer("offscreen")``,
