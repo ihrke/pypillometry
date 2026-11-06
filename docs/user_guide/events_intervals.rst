@@ -219,17 +219,25 @@ Tutorial: :doc:`/notebooks/importdata_behaviour`.
 Epochs
 ------
 
-An :class:`Epochs` object holds the onsets of some events (in ms) and *one*
-time window around them, e.g., from 200 ms before to 1000 ms after each
-stimulus, together with the labels and the metadata of the events.
-:meth:`~EyeData.get_intervals` returns Epochs for single events:
+An :class:`Epochs` object holds some events (an :class:`Events` object in
+ms) and *one* time window around them, e.g., from 200 ms before to 1000 ms
+after each stimulus. :meth:`~EyeData.get_intervals` returns Epochs for
+single events:
 
 .. code-block:: python
 
     epochs = d.get_intervals("stim", (-200, 1000) * u.ms)
     epochs.onsets, epochs.window, epochs.labels, epochs.meta["trial"]
+    epochs.events                               # the events, as Events
+    epochs.filter(cond="a", rt=lambda rt: rt < 800)  # select like Events
     epochs.keep(epochs.meta["cond"] == "a")     # a subset of the epochs
+    epochs.set_meta("block", 1)                 # change the metadata
     epochs.to_intervals("sec")                  # the spans as Intervals
+
+Selecting and changing the metadata works as for :class:`Events`
+(:meth:`~Epochs.filter`, :meth:`~Epochs.set_meta`,
+:meth:`~Epochs.drop_meta`, :meth:`~Epochs.parse_labels`); the results are
+new Epochs with the same window.
 
 Epochs can be used wherever the methods take intervals (e.g.,
 :meth:`~EyeData.mask_intervals`,

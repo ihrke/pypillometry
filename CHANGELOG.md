@@ -92,7 +92,9 @@ tables below for every changed call.
   `d.clear_layer()`, `d.get_layer_intervals()`, `d.mask()`, `d.values()`
 - `pp.MaskPolicy` and the policies `"default"`, `"strict"` and `"raw"`
   (`policy=` in all processing and analysis methods)
-- `pp.Epochs` (event-locked windows)
+- `pp.Epochs` (event-locked windows): the events (`ep.events`) and one
+  window; selected and changed like Events (`filter`, `keep`, `set_meta`,
+  `drop_meta`, `parse_labels`)
 - `pypil-upgrade`: converts saved files to the current format
 - Experimental setup and calibration are kept and saved for every object
 - `d.plot.plot_masked(policy=...)`, e.g. `policy="strict"` to show the
