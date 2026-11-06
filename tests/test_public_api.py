@@ -22,7 +22,6 @@ INTERNAL = {
     "pypillometry.convenience": {
         "change_dir", "suppress_all_output", "sizeof_fmt", "ByteSize",
         "test_selector", "is_url", "requires_package", "normalize_unit",
-        "nprange", "p_asym_laplac", "p_asym_laplac_kappa", "trans_logistic_vec",
     },
     "pypillometry.example_data": {"DatasetDict"},
     # namespaces: used as d.pupil / pp.pupil, documented in their modules

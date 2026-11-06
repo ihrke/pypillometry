@@ -69,6 +69,8 @@ tables below for every changed call.
   function is `pp.signal.downsample`
 - The functions for numpy arrays are only in `pp.signal` (e.g.,
   `pp.signal.smooth_window`, `pp.signal.pupil_kernel`)
+- `nprange`, `p_asym_laplac`, `p_asym_laplac_kappa` and
+  `trans_logistic_vec` were removed from `pp.convenience`
 - `downsample()` stores the actual sampling rate (`fs/factor`)
 - Gaze plots (heatmap, scanpath) draw y downward (screen pixels)
 - The time axis of all plots is in seconds by default (`units="sec"`;
