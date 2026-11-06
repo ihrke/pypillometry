@@ -604,7 +604,7 @@ class GenericPlots(Namespace):
         With ``merge=True``, the masks of all eyes and variables are combined;
         ``show_events=True`` adds the event markers.
         """
-        from ..intervals import merge_intervals
+        from ..intervals import concat_intervals
         
         obj = self._d
         
@@ -620,7 +620,7 @@ class GenericPlots(Namespace):
         
         if merge:
             # Merge all intervals and plot as one set
-            merged = merge_intervals(intervals_dict, label='All masked intervals')
+            merged = concat_intervals(intervals_dict, label='All masked intervals')
             merged = merged.merge()
             
             # Use Intervals.plot style

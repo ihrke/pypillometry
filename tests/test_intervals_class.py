@@ -10,7 +10,7 @@ sys.path.insert(0, "..")
 import pypillometry as pp
 import numpy as np
 import pandas as pd
-from pypillometry.intervals import Intervals, merge_intervals
+from pypillometry.intervals import Intervals, concat_intervals
 from types import SimpleNamespace
 
 
@@ -1050,60 +1050,60 @@ class TestIntervalsConversionMethods(unittest.TestCase):
             self.assertEqual(len(intervals_sec.event_labels), len(intervals.event_labels))
 
 
-class TestMergeIntervals(unittest.TestCase):
-    """Test merge_intervals function"""
+class TestConcatIntervals(unittest.TestCase):
+    """Test concat_intervals function"""
     
-    def test_merge_intervals_from_args(self):
-        """Test merging multiple Intervals passed as arguments"""
+    def test_concat_intervals_from_args(self):
+        """Test concatenating multiple Intervals passed as arguments"""
         intervals1 = Intervals([(0, 100), (200, 300)], units="ms", label="int1",
                               event_labels=["a", "b"])
         intervals2 = Intervals([(50, 150), (400, 500)], units="ms", label="int2",
                               event_labels=["c", "d"])
         
-        merged = merge_intervals(intervals1, intervals2)
+        merged = concat_intervals(intervals1, intervals2)
         
         self.assertIsInstance(merged, Intervals)
         self.assertEqual(len(merged), 4)  # All 4 intervals, not merged
         self.assertEqual(merged.units, "ms")
-        self.assertEqual(merged.label, "merged")
+        self.assertEqual(merged.label, "combined")
         
         # Check metadata preserved
         self.assertIsNotNone(merged.event_labels)
         self.assertEqual(merged.event_labels, ["a", "b", "c", "d"])
     
-    def test_merge_intervals_from_list(self):
-        """Test merging from a list of Intervals"""
+    def test_concat_intervals_from_list(self):
+        """Test concatenating from a list of Intervals"""
         intervals1 = Intervals([(0, 100)], units="ms", event_labels=["x"])
         intervals2 = Intervals([(200, 300)], units="ms", event_labels=["y"])
         intervals3 = Intervals([(400, 500)], units="ms", event_labels=["z"])
         
         intervals_list = [intervals1, intervals2, intervals3]
-        merged = merge_intervals(intervals_list)
+        merged = concat_intervals(intervals_list)
         
         self.assertEqual(len(merged), 3)
         self.assertEqual(merged.event_labels, ["x", "y", "z"])
     
-    def test_merge_intervals_from_dict(self):
-        """Test merging from a dict of Intervals"""
+    def test_concat_intervals_from_dict(self):
+        """Test concatenating from a dict of Intervals"""
         intervals1 = Intervals([(0, 100)], units="ms", event_labels=["p"])
         intervals2 = Intervals([(200, 300)], units="ms", event_labels=["q"])
         
         intervals_dict = {"left_pupil": intervals1, "right_pupil": intervals2}
-        merged = merge_intervals(intervals_dict)
+        merged = concat_intervals(intervals_dict)
         
         self.assertEqual(len(merged), 2)
         self.assertEqual(merged.event_labels, ["p", "q"])
     
-    def test_merge_intervals_custom_label(self):
-        """Test merging with custom label"""
+    def test_concat_intervals_custom_label(self):
+        """Test concatenating with custom label"""
         intervals1 = Intervals([(0, 100)], units="ms")
         intervals2 = Intervals([(200, 300)], units="ms")
         
-        merged = merge_intervals(intervals1, intervals2, label="custom")
+        merged = concat_intervals(intervals1, intervals2, label="custom")
         
         self.assertEqual(merged.label, "custom")
     
-    def test_merge_intervals_preserves_all_metadata(self):
+    def test_concat_intervals_preserves_all_metadata(self):
         """Test that all metadata is preserved"""
         intervals1 = Intervals([(0, 100), (200, 300)], units="ms",
                               event_labels=["a", "b"],
@@ -1112,41 +1112,41 @@ class TestMergeIntervals(unittest.TestCase):
                               event_labels=["c"],
                               event_onsets=[30])
         
-        merged = merge_intervals(intervals1, intervals2)
+        merged = concat_intervals(intervals1, intervals2)
         
         self.assertEqual(merged.event_labels, ["a", "b", "c"])
         self.assertEqual(list(merged.event_onsets), [10, 20, 30])
     
-    def test_merge_intervals_partial_metadata(self):
-        """Test merging when only some objects have metadata"""
+    def test_concat_intervals_partial_metadata(self):
+        """Test concatenating when only some objects have metadata"""
         intervals1 = Intervals([(0, 100)], units="ms",
                               event_labels=["a"])
         intervals2 = Intervals([(200, 300)], units="ms")  # No metadata
         intervals3 = Intervals([(400, 500)], units="ms",
                               event_labels=["c"])
         
-        merged = merge_intervals(intervals1, intervals2, intervals3)
+        merged = concat_intervals(intervals1, intervals2, intervals3)
         
         # Should preserve labels with "" for missing
         self.assertEqual(merged.event_labels, ["a", "", "c"])
     
-    def test_merge_intervals_no_metadata(self):
-        """Test merging when no objects have metadata"""
+    def test_concat_intervals_no_metadata(self):
+        """Test concatenating when no objects have metadata"""
         intervals1 = Intervals([(0, 100)], units="ms")
         intervals2 = Intervals([(200, 300)], units="ms")
         
-        merged = merge_intervals(intervals1, intervals2)
+        merged = concat_intervals(intervals1, intervals2)
         
         # Should have no metadata
         self.assertIsNone(merged.event_labels)
         self.assertIsNone(merged.event_onsets)
     
-    def test_merge_intervals_does_not_merge_overlaps(self):
+    def test_concat_intervals_does_not_merge_overlaps(self):
         """Test that overlapping intervals are NOT merged, just concatenated"""
         intervals1 = Intervals([(0, 100)], units="ms")
         intervals2 = Intervals([(50, 150)], units="ms")  # Overlaps with first
         
-        merged = merge_intervals(intervals1, intervals2)
+        merged = concat_intervals(intervals1, intervals2)
         
         # Should have both intervals, not merged
         self.assertEqual(len(merged), 2)
@@ -1156,12 +1156,12 @@ class TestMergeIntervals(unittest.TestCase):
         self.assertEqual(arr[1, 0], 50)
         self.assertEqual(arr[1, 1], 150)
     
-    def test_merge_intervals_then_merge_method(self):
+    def test_concat_intervals_then_merge_method(self):
         """Test combining intervals then merging overlaps with .merge()"""
         intervals1 = Intervals([(0, 100)], units="ms")
         intervals2 = Intervals([(50, 150)], units="ms")
         
-        combined = merge_intervals(intervals1, intervals2)
+        combined = concat_intervals(intervals1, intervals2)
         self.assertEqual(len(combined), 2)
         
         # Now merge overlaps
@@ -1169,68 +1169,80 @@ class TestMergeIntervals(unittest.TestCase):
         self.assertEqual(len(merged), 1)
         self.assertEqual(merged[0], (0, 150))
     
-    def test_merge_intervals_empty_intervals(self):
-        """Test merging when one or more Intervals are empty"""
+    def test_concat_intervals_empty_intervals(self):
+        """Test concatenating when one or more Intervals are empty"""
         intervals1 = Intervals([(0, 100)], units="ms")
         intervals2 = Intervals([], units="ms")
         intervals3 = Intervals([(200, 300)], units="ms")
         
-        merged = merge_intervals(intervals1, intervals2, intervals3)
+        merged = concat_intervals(intervals1, intervals2, intervals3)
         
         self.assertEqual(len(merged), 2)
     
-    def test_merge_intervals_all_empty(self):
-        """Test merging when all Intervals are empty"""
+    def test_concat_intervals_all_empty(self):
+        """Test concatenating when all Intervals are empty"""
         intervals1 = Intervals([], units="ms")
         intervals2 = Intervals([], units="ms")
         
-        merged = merge_intervals(intervals1, intervals2)
+        merged = concat_intervals(intervals1, intervals2)
         
         self.assertEqual(len(merged), 0)
         self.assertEqual(merged.units, "ms")
     
-    def test_merge_intervals_units_must_match(self):
-        """Test that merging requires matching units"""
+    def test_concat_intervals_converts_units(self):
+        """Time units are converted to those of the first object, as with +"""
         intervals1 = Intervals([(0, 100)], units="ms")
         intervals2 = Intervals([(0, 1)], units="sec")
-        
-        with self.assertRaises(ValueError) as cm:
-            merge_intervals(intervals1, intervals2)
-        
-        self.assertIn("units", str(cm.exception).lower())
+        combined = concat_intervals(intervals1, intervals2)
+        self.assertEqual(combined.units, "ms")
+        self.assertEqual(combined.intervals, [(0, 100), (0.0, 1000.0)])
+        # time units and sample indices cannot be combined
+        with self.assertRaisesRegex(ValueError, "units"):
+            concat_intervals(intervals1, Intervals([(0, 10)], units="samples"))
+
+    def test_concat_intervals_same_as_add(self):
+        """concat_intervals(a, b, c) gives the intervals and metadata of a + b + c"""
+        a = Intervals([(0, 100)], units="ms", event_labels=["a"], event_meta={"x": [1]})
+        b = Intervals([(200, 300)], units="ms")
+        c = Intervals([(1, 2)], units="sec", event_labels=["c"], event_onsets=[1])
+        added, combined = a + b + c, concat_intervals([a, b, c])
+        self.assertEqual(combined.intervals, added.intervals)
+        self.assertEqual(combined.event_labels, added.event_labels)
+        self.assertEqual(list(combined.event_onsets), list(added.event_onsets))
+        np.testing.assert_array_equal(combined.event_meta["x"], added.event_meta["x"])
     
-    def test_merge_intervals_single_object(self):
-        """Test merging with a single Intervals object"""
+    def test_concat_intervals_single_object(self):
+        """Test concatenating with a single Intervals object"""
         intervals = Intervals([(0, 100), (200, 300)], units="ms",
                              event_labels=["a", "b"])
         
-        merged = merge_intervals(intervals)
+        merged = concat_intervals(intervals)
         
         # Should return a new object with same content
         self.assertEqual(len(merged), 2)
         self.assertEqual(merged.event_labels, ["a", "b"])
     
-    def test_merge_intervals_no_arguments_raises_error(self):
+    def test_concat_intervals_no_arguments_raises_error(self):
         """Test that calling with no arguments raises error"""
         with self.assertRaises(ValueError) as cm:
-            merge_intervals()
+            concat_intervals()
         
         self.assertIn("no intervals", str(cm.exception).lower())
     
-    def test_merge_intervals_invalid_type_raises_error(self):
+    def test_concat_intervals_invalid_type_raises_error(self):
         """Test that invalid argument types raise error"""
         intervals1 = Intervals([(0, 100)], units="ms")
         
         with self.assertRaises(TypeError):
-            merge_intervals(intervals1, "not an intervals object")
+            concat_intervals(intervals1, "not an intervals object")
     
-    def test_merge_intervals_different_units(self):
-        """Test merging with different unit types"""
+    def test_concat_intervals_different_units(self):
+        """Test concatenating with different unit types"""
         for units in ["ms", "sec", "min", "h", "samples"]:
             intervals1 = Intervals([(0, 100)], units=units)
             intervals2 = Intervals([(200, 300)], units=units)
             
-            merged = merge_intervals(intervals1, intervals2)
+            merged = concat_intervals(intervals1, intervals2)
             
             self.assertEqual(merged.units, units)
             self.assertEqual(len(merged), 2)

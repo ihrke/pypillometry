@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import pypillometry as pp
 from pypillometry.events import Events, sync_clocks
-from pypillometry.intervals import Intervals, merge_intervals
+from pypillometry.intervals import Intervals, concat_intervals
 
 
 def trigger_events():
@@ -363,9 +363,9 @@ class TestIntervalsMeta(unittest.TestCase):
             self.iv.filter(time_range=(300, 600)).event_meta["cond"], ["x"])
         np.testing.assert_array_equal(self.iv.merge().event_meta["trial"], [1, 3])
 
-    def test_add_and_merge_intervals(self):
+    def test_add_and_concat_intervals(self):
         other = Intervals([(600, 700)], units="ms")
-        for combined in (self.iv + other, merge_intervals(self.iv, other)):
+        for combined in (self.iv + other, concat_intervals(self.iv, other)):
             np.testing.assert_array_equal(combined.event_meta["trial"], [1, 2, 3, np.nan])
             np.testing.assert_array_equal(combined.event_meta["cond"], ["x", "y", "x", ""])
         self.assertIsNone((other + other).event_meta)

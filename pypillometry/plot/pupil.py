@@ -357,12 +357,12 @@ class PupilPlots(GenericPlots):
         blinks_result = self._d.get_blinks(eyes=eyes, variables=variables, units="ms")
         
         # Merge all blinks from dict
-        from ..intervals import merge_intervals
+        from ..intervals import concat_intervals
         all_blinks_list = [b for b in blinks_result.values() if len(b) > 0]
         if not all_blinks_list:
             logger.warning("No blinks to plot")
             return []
-        blinks = merge_intervals(*all_blinks_list)
+        blinks = concat_intervals(*all_blinks_list)
         
         # Pad blinks with pre/post time (pre_blink and post_blink are in ms)
         padded_blinks = blinks.pad(left=pre_blink, right=post_blink)

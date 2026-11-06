@@ -11,112 +11,69 @@ from pypillometry.events import _meta_dict, _concat_meta
 from pypillometry.epochs import Epochs
 
 __all__ = [
-    "Intervals", "merge_intervals",
+    "Intervals", "concat_intervals",
 ]
 
 _MS_PER_UNIT = {"ms": 1.0, "sec": 1000.0, "min": 60000.0, "h": 3600000.0}
 
-def merge_intervals(*args, label: str = 'merged'):
-    """Combine multiple Intervals objects into a single Intervals object.
-    
-    Takes multiple Intervals objects and concatenates them into one, preserving
-    all intervals and their metadata. Does NOT merge overlapping intervals - 
-    call .merge() on the result if you want to merge overlapping intervals.
-    All input Intervals must have the same units.
-    
+def concat_intervals(*args, label: str = "combined"):
+    """
+    Put the intervals of several Intervals objects into one.
+
+    The same as ``a + b + c`` (see :meth:`Intervals.__add__`), for any
+    number of objects or a list or dict of them (e.g., the blinks of all
+    channels from :meth:`~pypillometry.EyeData.get_blinks`). The intervals
+    are concatenated, with their labels, onsets and metadata; overlapping
+    intervals are kept as they are (:meth:`Intervals.merge` merges them).
+    The units of the first object are used (the others are converted).
+
     Parameters
     ----------
-    *args : Intervals objects, list, or dict
-        Variable number of Intervals objects, or a single list/dict of Intervals.
-        If dict, keys are ignored and all Intervals are combined.
+    *args : Intervals, list or dict
+        Intervals objects, or a single list or dict of them (the keys of a
+        dict are ignored)
     label : str, optional
-        Label for the resulting Intervals object. Default is "merged".
-        
+        label of the result; default "combined"
+
     Returns
     -------
     Intervals
-        A single Intervals object containing all intervals from all input
-        Intervals objects with their metadata preserved.
-        
+        all intervals of all objects, in the given order
+
     Raises
     ------
     ValueError
-        If no Intervals objects are provided or if units don't match.
+        if no Intervals are given, or if time units and sample indices are
+        mixed
     TypeError
-        If any argument is not an Intervals object (or a list/dict of them).
+        if an argument is not an Intervals object
 
     Examples
     --------
-    Combine multiple Intervals objects:
-    
-    >>> intervals1 = Intervals([(0, 100), (200, 300)], units="ms", event_labels=["a", "b"])
-    >>> intervals2 = Intervals([(50, 150), (400, 500)], units="ms", event_labels=["c", "d"])
-    >>> combined = merge_intervals(intervals1, intervals2)
-    >>> len(combined)
-    4
-    >>> combined.event_labels
+    >>> a = Intervals([(0, 100), (200, 300)], units="ms", event_labels=["a", "b"])
+    >>> b = Intervals([(50, 150), (400, 500)], units="ms", event_labels=["c", "d"])
+    >>> both = concat_intervals(a, b)
+    >>> both.event_labels
     ['a', 'b', 'c', 'd']
-    
-    Combine from a list:
-    
-    >>> intervals_list = [intervals1, intervals2]
-    >>> combined = merge_intervals(intervals_list)
-    
-    Combine from a dict:
-    
-    >>> intervals_dict = {"left_pupil": intervals1, "right_pupil": intervals2}
-    >>> combined = merge_intervals(intervals_dict)
-    
-    Then merge overlapping intervals if needed:
-
-    >>> len(combined.merge())
-    3
+    >>> len(both), len(both.merge())   # merge() merges the overlaps
+    (4, 3)
+    >>> both = concat_intervals({"left_pupil": a, "right_pupil": b})
     """
-    
-    # Parse input to get list of Intervals objects
-    intervals_list = []
-    
-    if len(args) == 1:
-        arg = args[0]
-        if isinstance(arg, dict):
-            # Dict of Intervals
-            intervals_list = list(arg.values())
-        elif isinstance(arg, list):
-            # List of Intervals
-            intervals_list = arg
-        elif isinstance(arg, Intervals):
-            # Single Intervals object
-            intervals_list = [arg]
-        else:
-            raise TypeError(f"Expected Intervals, list, or dict, got {type(arg)}")
+    if len(args) == 1 and isinstance(args[0], dict):
+        intervals_list = list(args[0].values())
+    elif len(args) == 1 and isinstance(args[0], (list, tuple)):
+        intervals_list = list(args[0])
     else:
-        # Multiple Intervals objects as *args
         intervals_list = list(args)
-    
-    # Validate we have Intervals objects
     if not intervals_list:
-        raise ValueError("No Intervals objects provided")
-    
+        raise ValueError("no Intervals given")
     for i, obj in enumerate(intervals_list):
         if not isinstance(obj, Intervals):
-            raise TypeError(f"Argument {i} is not an Intervals object: {type(obj)}")
-    
-    # Check that all have the same units
-    first_units = intervals_list[0].units
+            raise TypeError(f"argument {i} is not an Intervals object: {type(obj).__name__}")
+    combined = intervals_list[0]
     for obj in intervals_list[1:]:
-        if obj.units != first_units:
-            raise ValueError(
-                f"All Intervals must have the same units. "
-                f"Found {first_units} and {obj.units}"
-            )
-    
-    all_intervals = [pair for obj in intervals_list for pair in obj.intervals]
-    if not all_intervals:
-        # All were empty
-        return Intervals([], units=first_units, label=label)
-    labels, onsets, meta = _concat_rows(intervals_list)
-    return Intervals(all_intervals, units=first_units, label=label,
-                     event_labels=labels, event_onsets=onsets, event_meta=meta)
+        combined = combined + obj
+    return combined._copy_with(label=label)
 
 
 def _concat_rows(intervals_list):
@@ -238,7 +195,7 @@ class Intervals(Stateful):
     Detection methods such as
     :meth:`d.pupil.blinks_detect() <pypillometry.eyedata.pupil.PupilNamespace.blinks_detect>` store their results
     as Intervals. Several Intervals can be combined with ``+`` or
-    :func:`~pypillometry.merge_intervals` and subtracted with ``-``.
+    :func:`~pypillometry.concat_intervals` and subtracted with ``-``.
 
     Intervals in sample indices are only valid for the data object they
     came from. Converting between sample indices and time needs that data

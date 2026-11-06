@@ -143,7 +143,7 @@ class TestRowTable:
             pp.Intervals([(0, 1), (2, 3)], units="ms", event_onsets=[0, 1, 2])
 
     @pytest.mark.parametrize("combine", [lambda a, b: a + b,
-                                         lambda a, b: pp.merge_intervals(a, b.to_units("ms"))])
+                                         lambda a, b: pp.concat_intervals(a, b.to_units("ms"))])
     def test_concatenated_row_wise(self, combine):
         c = combine(self.a(), self.b())
         assert c.intervals == [(0, 100), (200, 300), (1000., 2000.)]
