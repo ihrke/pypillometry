@@ -13,7 +13,7 @@ from importlib.resources import files
 from loguru import logger
 
 import scipy.interpolate
-from scipy.interpolate import interp1d, splrep, splev
+from scipy.interpolate import interp1d
 
 from .pupil import pupil_kernel, pupil_response
 from ..convenience import _user_cache_dir

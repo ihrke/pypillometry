@@ -1,4 +1,4 @@
-from typing import Iterable, Optional, Tuple, Union
+from typing import Iterable, Optional, Tuple
 from ..eyedata.namespace import Namespace
 from ..intervals import Intervals, _as_intervals
 from ..units import parse_time, normalize_unit, parse_angle, u
@@ -7,10 +7,6 @@ from loguru import logger
 from pathlib import Path
 
 import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-from matplotlib import cm
-import matplotlib as mpl
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.backends.backend_pdf import PdfPages
 
 class GenericPlots(Namespace):

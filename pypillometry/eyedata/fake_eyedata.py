@@ -1,6 +1,5 @@
 """Synthetic eye-tracking data for testing and validation."""
 
-import inspect
 from .eyedata import EyeData
 from .eyedatadict import EyeDataDict
 from .experimental_setup import ExperimentalSetup

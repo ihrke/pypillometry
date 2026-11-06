@@ -27,7 +27,7 @@ from ..convenience import (sizeof_fmt, ByteSize, _round_values, _plain_values, r
                            normalize_unit, _warn_if_ignores_mask)
 from ..epochs import Epochs
 from ..events import Events, _pair_with_next
-from ..intervals import stat_event_interval, Intervals, _as_intervals
+from ..intervals import Intervals, _as_intervals
 from ..plot import PlotNamespace
 from ..signal import baseline
 from ..units import (UNSET, _has_units, _time_values_and_units, parse_time, _ms_to_samples,
@@ -2826,7 +2826,7 @@ class EyeData(state.VersionedState):
             one array per eye/variable (keys like "left_pupil"), with one
             value per interval/event
         """
-        from ..intervals import Intervals, stat_event_interval
+        from ..intervals import stat_event_interval
         
         pairs = self.data.select(eyes, variables)
         

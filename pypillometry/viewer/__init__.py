@@ -27,7 +27,7 @@ Features
 - Support for viewing raw numpy arrays and masked arrays
 """
 
-from typing import Dict, Optional, Union, List, TYPE_CHECKING
+from typing import Dict, Optional, List, TYPE_CHECKING
 import numpy as np
 from types import SimpleNamespace
 

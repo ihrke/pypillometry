@@ -5,7 +5,6 @@ pupil.py
 Methods of :class:`~pypillometry.EyeData` for pupil data.
 """
 
-import itertools
 from typing import Optional, Tuple, Union
 from .generic import keephistory, _merge_usage, _store_merged
 from .namespace import Namespace
@@ -28,12 +27,10 @@ from .foreshortening_calibration import (
 )
 from ..signal.baseline import butter_lowpass_filter, downsample
 
-import json
 from loguru import logger
 import numpy as np
 from scipy.interpolate import interp1d
 from scipy import interpolate
-import scipy
 from scipy import optimize
 
 

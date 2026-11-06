@@ -13,12 +13,9 @@ import numpy as np
 import pandas as pd
 from .eyedata import EyeData
 from importlib.resources import files
-from urllib.request import urlretrieve
 import inspect
 import os
 import os.path
-import requests
-from tqdm import tqdm
 from .io import fetch_url
 from .convenience import _user_cache_dir
 
@@ -333,7 +330,6 @@ def get_rlmw_010_edf(cache_dir=None):
     EyeData
         the example dataset
     """
-    from .eyedata.experimental_setup import ExperimentalSetup
     cache_dir = cache_dir or _user_cache_dir()
     fname = fetch_url(example_datasets["rlmw_010_edf"]["edf"],
                       cache_file=os.path.join(cache_dir, "010_rlmw.edf"))

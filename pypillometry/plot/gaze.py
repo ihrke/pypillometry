@@ -7,8 +7,6 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib import cm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-import matplotlib as mpl
-from matplotlib.backends.backend_pdf import PdfPages
 from ..roi import ROI
 from loguru import logger
 from scipy.ndimage import gaussian_filter

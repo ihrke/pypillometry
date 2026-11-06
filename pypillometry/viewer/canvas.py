@@ -1,9 +1,9 @@
 """Main VisPy canvas with subplot grid for GPU viewer with LOD support."""
 
 import numpy as np
-from vispy import app, scene
+from vispy import scene
 from vispy.scene import SceneCanvas
-from typing import List, Dict, Union, Optional
+from typing import List, Dict, Optional
 
 from .visuals import LODLine, DynamicMaskRegions, DynamicEventMarkers, SelectionRegion, HighlightRegion
 from .navigation import NavigationHandler

@@ -17,9 +17,8 @@ Coordinate Systems
   Requires eye-to-screen distance from ExperimentalSetup.
 """
 
-from typing import Dict, Union, Tuple, Optional, TYPE_CHECKING
+from typing import Union, Tuple, Optional, TYPE_CHECKING
 import numpy as np
-from loguru import logger
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 

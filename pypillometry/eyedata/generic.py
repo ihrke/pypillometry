@@ -9,7 +9,6 @@ decimation, per-channel parameters) that the namespaces ``d.pupil`` and
 
 from .eyedatadict import EyeDataDict, LAYER_DTYPE, MaskPolicy, _as_policy
 from .namespace import Namespace
-from .pipes import step
 from ..signal import baseline
 
 import numpy as np

@@ -1,18 +1,14 @@
-import itertools
 from .generic import GenericPlots
-from ..intervals import Intervals
 from ..units import parse_time
 import numpy as np
 from collections.abc import Iterable
-from typing import Sequence, Union, List, TypeVar, Optional, Tuple, Callable
+from typing import List, Optional, Tuple
 from pathlib import Path
 
 from loguru import logger
 
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-from matplotlib import cm
-import matplotlib as mpl
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.backends.backend_pdf import PdfPages
 from scipy.ndimage import gaussian_filter

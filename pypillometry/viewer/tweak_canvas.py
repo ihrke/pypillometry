@@ -5,7 +5,7 @@ while seeing the result overlaid on the original data.
 """
 
 import numpy as np
-from vispy import app, scene
+from vispy import scene
 from vispy.scene import SceneCanvas
 from vispy.color import Color
 from typing import Dict, Callable, Any, Optional, List, Union, Tuple

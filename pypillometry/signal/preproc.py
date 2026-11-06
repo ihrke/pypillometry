@@ -5,7 +5,6 @@ preproc.py
 preprocessing functions (blinks, smoothing, missing data...)
 """
 import numpy as np
-import scipy.optimize
 from loguru import logger
 from scipy.signal import savgol_coeffs
 from scipy.ndimage import convolve1d

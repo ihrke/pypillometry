@@ -13,7 +13,6 @@ from loguru import logger
 import sys
 import logging
 from contextlib import contextmanager
-from typing import Optional
 
 __all__ = [
     "logging_disable", "logging_enable", "logging_set_level",

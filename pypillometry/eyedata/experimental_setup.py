@@ -1011,9 +1011,6 @@ class ExperimentalSetup(Stateful):
            >>> fig, ax = setup.plot()  # 2D views
            >>> fig, ax = setup.plot(projection='3d')  # 3D view
         """
-        import matplotlib.pyplot as plt
-        import matplotlib.patches as mpatches
-        from matplotlib.patches import Arc
         
         # Validate required parameters
         if not self.has_screen_info():
