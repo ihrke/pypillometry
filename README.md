@@ -62,8 +62,8 @@ d = (d | pp.pupil.blinks_detect()       # detect and mask blinks
        | pp.pupil.lowpass_filter(cutoff=4))  # 4 Hz low-pass filter
 
 # pupil response from 500 ms before to 2.5 s after each stimulus
-intervals = d.get_epochs("S_", (-500, 2500) * u.ms)
-erpd = d.get_segments(intervals, "left_pupil").baseline_correct((-500, 0))
+epochs = d.get_epochs("S_", (-500, 2500) * u.ms)
+erpd = d.get_segments(epochs, "left_pupil").baseline_correct((-500, 0))
 erpd.plot()
 ```
 

@@ -417,8 +417,8 @@ class SegmentedEyeData(state.VersionedState):
         >>> import pypillometry as pp
         >>> from pypillometry import u
         >>> d = pp.get_example_data("rlmw_002_short")
-        >>> intervals = d.get_epochs("S_", (-500, 2500) * u.ms)
-        >>> segments = d.get_segments(intervals, "left_pupil")
+        >>> epochs = d.get_epochs("S_", (-500, 2500) * u.ms)
+        >>> segments = d.get_segments(epochs, "left_pupil")
         >>> # Use pre-event period as baseline
         >>> segments_bc = segments.baseline_correct(window=(-200, 0), inplace=False)
         >>> segments = segments.baseline_correct(window=(-200, 0) * u.ms)
@@ -546,11 +546,11 @@ class SegmentedEyeData(state.VersionedState):
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
            >>> d = d | pp.pupil.blinks_detect() | pp.pupil.blinks_interpolate()
-           >>> intervals = d.get_epochs("S_", (-500, 2500) * u.ms)
-           >>> erpd = d.get_segments(intervals, "left_pupil").baseline_correct((-500, 0))
+           >>> epochs = d.get_epochs("S_", (-500, 2500) * u.ms)
+           >>> erpd = d.get_segments(epochs, "left_pupil").baseline_correct((-500, 0))
            >>> ax = erpd.plot()
            >>> # overlay two eyes
-           >>> right = d.get_segments(intervals, "right_pupil").baseline_correct((-500, 0))
+           >>> right = d.get_segments(epochs, "right_pupil").baseline_correct((-500, 0))
            >>> fig, ax = plt.subplots()
            >>> ax = erpd.plot(ax=ax, label="left eye")
            >>> ax = right.plot(ax=ax, label="right eye")
@@ -756,9 +756,9 @@ class GroupLevelSegmentedData(SegmentedEyeData):
         >>> import pypillometry as pp
         >>> from pypillometry import u
         >>> d = pp.get_example_data("rlmw_002_short")
-        >>> intervals = d.get_epochs("S_", (-500, 2500) * u.ms)
-        >>> subj1 = d.get_segments(intervals, "left_pupil", name="S01")
-        >>> subj2 = d.get_segments(intervals, "left_pupil", name="S02")
+        >>> epochs = d.get_epochs("S_", (-500, 2500) * u.ms)
+        >>> subj1 = d.get_segments(epochs, "left_pupil", name="S01")
+        >>> subj2 = d.get_segments(epochs, "left_pupil", name="S02")
 
         >>> # Aggregate within subjects, then combine
         >>> group = pp.GroupLevelSegmentedData.from_segments([subj1, subj2])
@@ -1074,9 +1074,9 @@ def group_segments(segments, meanfct=np.mean, name: str = None) -> GroupLevelSeg
     >>> import pypillometry as pp
     >>> from pypillometry import u
     >>> d = pp.get_example_data("rlmw_002_short")
-    >>> intervals = d.get_epochs("S_", (-500, 2500) * u.ms)
-    >>> subj1_seg = d.get_segments(intervals, "left_pupil", name="S01")
-    >>> subj2_seg = d.get_segments(intervals, "left_pupil", name="S02")
+    >>> epochs = d.get_epochs("S_", (-500, 2500) * u.ms)
+    >>> subj1_seg = d.get_segments(epochs, "left_pupil", name="S01")
+    >>> subj2_seg = d.get_segments(epochs, "left_pupil", name="S02")
 
     >>> # From a list
     >>> group = pp.group_segments([subj1_seg, subj2_seg])

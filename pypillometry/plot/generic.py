@@ -150,8 +150,8 @@ class GenericPlots(Namespace):
            >>> from pypillometry import u
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
-           >>> intervals = d.get_epochs("S_", (-500, 2500) * u.ms)
-           >>> figs = d.plot.plot_intervals(intervals, variables="pupil", nrow=2, ncol=5,
+           >>> epochs = d.get_epochs("S_", (-500, 2500) * u.ms)
+           >>> figs = d.plot.plot_intervals(epochs, variables="pupil", nrow=2, ncol=5,
            ...                              figsize=(12, 4))
         """
         intervals = _as_intervals(intervals)

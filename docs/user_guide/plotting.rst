@@ -106,8 +106,8 @@ check blink detection and interpolation:
 .. plot::
    :context: close-figs
 
-   intervals = d.get_epochs("S_", (-500, 2500) * u.ms)
-   d.plot.plot_intervals(intervals, variables="pupil", nrow=2, ncol=5,
+   epochs = d.get_epochs("S_", (-500, 2500) * u.ms)
+   d.plot.plot_intervals(epochs, variables="pupil", nrow=2, ncol=5,
                          figsize=(12, 4))
 
 :meth:`Intervals.plot_highlight` shades intervals on an existing plot:
@@ -134,8 +134,8 @@ percentage of missing data (see :doc:`events_intervals`):
    :context: close-figs
 
    d.pupil.blinks_interpolate()
-   intervals = d.get_epochs("S_", (-500, 2500) * u.ms)
-   erpd = d.get_segments(intervals, "left_pupil").baseline_correct((-500, 0))
+   epochs = d.get_epochs("S_", (-500, 2500) * u.ms)
+   erpd = d.get_segments(epochs, "left_pupil").baseline_correct((-500, 0))
    erpd.plot()
 
 .. autosummary::
