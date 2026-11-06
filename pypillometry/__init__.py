@@ -1,17 +1,42 @@
-"""Python-package to help with processing of pupillometric and eyetracking data.
+"""pypillometry - processing of pupillometric and eyetracking data.
 
-This package provides classes for handling pupillometric and eyetracking data
-as well as tools for plotting and analyzing these data.
+Reads recordings from eye trackers, cleans them (blinks, artifacts,
+filtering), cuts them into event-related segments and plots the results.
+Pupil size and gaze of one or both eyes are kept together in one object
+that records its own processing history.
 
-Unit Handling:
---------------
-Times, distances and angles can carry units, either from the `pypillometry.u`
-namespace (``3 * u.min``, ``(-200, 800) * u.ms``, ``60 * u.cm``,
-``20 * u.deg``) or as strings (``"3 min"``, ``"60 cm"``, ``"20 deg"``).
+Example
+-------
+::
+
+    import pypillometry as pp
+    from pypillometry import u
+
+    d = pp.get_example_data("rlmw_002")
+    d = d | pp.pupil.blinks_detect() | pp.pupil.blinks_interpolate()
+    intervals = d.get_intervals("S_", (-500, 2500) * u.ms)
+
+Overview
+--------
+EyeData
+    The main data class; ``SegmentedEyeData`` for data cut into segments.
+pupil, gaze
+    Pipeline steps for pupil and gaze data, used as ``d | pp.pupil.<step>()``.
+    General steps (``crop``, ``downsample``, ...) are at the top level.
+read_eyelink, read_pickle, load_study_local, get_example_data
+    Reading and writing data.
+Events, Intervals, Epochs
+    Event markers, time intervals and event-related segments.
+signal
+    Signal-processing functions that work on plain numpy arrays.
+u
+    Units for times, distances and angles (``3 * u.min``, ``60 * u.cm``);
+    strings like ``"200 ms"`` work too. See `pypillometry.units`.
+view
+    Interactive viewer for long recordings.
 
 - Github: https://github.com/ihrke/pypillometry
 - Documentation: https://ihrke.github.io/pypillometry
-
 """
 
 import os.path
