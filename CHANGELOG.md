@@ -77,6 +77,8 @@ tables below for every changed call.
 - `merge_intervals()` is `concat_intervals()` (it concatenates; `merge()`
   merges overlaps); it works like `+`: other time units are converted
   instead of raising an error, and the default label is `"combined"`
+- `Intervals.plot_highlight()` was removed; the plots shade intervals with
+  `highlight=` (see "Added")
 - `downsample()` stores the actual sampling rate (`fs/factor`)
 - Gaze plots (heatmap, scanpath) draw y downward (screen pixels)
 - The time axis of all plots is in seconds by default (`units="sec"`;
@@ -105,6 +107,9 @@ tables below for every changed call.
   `shift()`, or with `needs_sync=False`); `add_events()`, `set_events()`
   and `get_epochs()` warn about such events. The error for events outside
   the data says how far outside they are and points to `sync_clocks()`
+- `highlight=` and `highlight_color=` in `pupil_plot`, `plot_timeseries`,
+  `plot_masked` and the `*_segments` plots: shade Intervals or Epochs (or a
+  list of them, one color each), converted to the units of the time axis
 - `pypil-upgrade`: converts saved files to the current format
 - Experimental setup and calibration are kept and saved for every object
 - `d.plot.plot_masked(policy=...)`, e.g. `policy="strict"` to show the
@@ -265,6 +270,7 @@ Calls whose arguments or results changed:
 | `d.to_gazedata()` | `d.drop_data(variables="pupil", inplace=False)` |
 | `pp.downsample(x, factor)` (array) | `pp.signal.downsample(x, factor)` |
 | `pp.merge_intervals(a, b)` | `pp.concat_intervals(a, b)` or `a + b` |
+| `d.pupil_plot(...); iv.to_units("sec").plot_highlight(color=c)` | `d.plot.pupil_plot(..., highlight=iv, highlight_color=c)` |
 | `segments.intervals` | `segments.epochs` |
 | `isinstance(d, pp.GenericEyeData)` | `isinstance(d, pp.EyeData)` |
 | `d.scale(mean={"left": {"pupil": m}}, sd=...)`, `d.params["scale"]["mean"]["left"]["pupil"]` | `d.scale(mean={"left_pupil": m}, sd=...)`, `d.params["scale"]["mean"]["left_pupil"]` |

@@ -88,7 +88,6 @@ Blinks and intervals
    EyeData.plot.plot_blinks
    EyeData.plot.plot_intervals
    Intervals.plot
-   Intervals.plot_highlight
    Events.plot
 
 :meth:`~EyeData.plot.plot_blinks` draws one small plot per blink, e.g., to
@@ -110,17 +109,21 @@ check blink detection and interpolation:
    d.plot.plot_intervals(epochs, variables="pupil", nrow=2, ncol=5,
                          figsize=(12, 4))
 
-:meth:`Intervals.plot_highlight` shades intervals on an existing plot:
+The plots with a time axis (:meth:`~EyeData.plot.pupil_plot`,
+:meth:`~EyeData.plot.plot_timeseries`, :meth:`~EyeData.plot.plot_masked`
+and the ``*_segments`` plots) shade :class:`Intervals` or :class:`Epochs`
+with ``highlight=``. They are converted to the units of the time axis. A
+list of them gets one color each from ``highlight_color=``:
 
 .. plot::
    :context: close-figs
 
-   intervals = d.get_epochs("S_", (0, 1000) * u.ms).to_intervals("sec")
+   trials = d.get_intervals(start="F_", end="R_")
+   stim = d.get_epochs("S_", (0, 1000) * u.ms)
    plt.figure(figsize=(10, 3))
    d.plot.pupil_plot(eyes="left", plot_range=(0, 20) * u.sec,
-                     show_events=False)
-   intervals.plot_highlight(color="green", alpha=0.2)
-   plt.xlim(0, 20)
+                     show_events=False, highlight=[trials, stim],
+                     highlight_color=["lightgrey", "green"])
 
 
 Event-related pupil dilation
