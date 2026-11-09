@@ -20,7 +20,7 @@ def data():
 class TestDictReturns:
     """Rule 3: getters with per-channel results always return a dict."""
 
-    @pytest.mark.parametrize("getter", ["get_blinks", "get_interpolated_blinks",
+    @pytest.mark.parametrize("getter", ["get_blinks", "get_interpolated",
                                         "mask_as_intervals"])
     def test_single_channel_gives_dict(self, data, getter):
         res = getattr(data, getter)("left", "pupil")
@@ -138,7 +138,7 @@ class TestMs:
         d = data.pupil.blinks_detect(strategies=["zero"])
         assert d.get_blinks("left", "pupil")["left_pupil"].intervals == [(3000., 3200.)]
         assert d.blinks["left_pupil"].units == "ms"
-        assert d.get_interpolated_blinks()["left_pupil"].units == "ms"
+        assert d.get_interpolated()["left_pupil"].units == "ms"
         assert d.mask_as_intervals("left", "pupil")["left_pupil"].intervals == [(3000., 3200.)]
         assert d.get_layer_intervals("blink", "left", "pupil")["left_pupil"].units == "ms"
 

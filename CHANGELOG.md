@@ -31,7 +31,7 @@ tables below for every changed call.
   margins; sample indices need `units="samples"`. In plots, plain numbers in
   `plot_range` and `interv` are in `units=` (as in 2.1).
 - Results per channel are dicts keyed like the data (`"left_pupil"`):
-  `get_blinks`, `get_interpolated_blinks`, `mask_as_intervals`, `nblinks`,
+  `get_blinks`, `get_interpolated`, `mask_as_intervals`, `nblinks`,
   `blink_stats`; `nblinks()` includes channels without blinks (0); the
   parameters of `pupil.estimate_response()` are in
   `params["response"]["left_pupil"]` (saved files are converted)
@@ -258,7 +258,7 @@ The generic methods that are also steps: `crop`, `downsample`, `scale`,
 `set_events`, `add_events`, `set_experimental_setup`, `drop_data`,
 `drop_original`, `fill_time_discontinuities`. The blink getters and setters
 (`get_blinks`, `set_blinks`, `nblinks`, `blink_stats`,
-`get_interpolated_blinks`) stay on `d`.
+`get_interpolated`) stay on `d`.
 
 Plots: `d.<plot>(...)` and the plotter classes -> `d.plot.<plot>(...)`, with
 the same names: `plot_timeseries`, `plot_timeseries_segments`,
@@ -277,6 +277,7 @@ Calls whose arguments or results changed:
 | `d.mask_offscreen_coords(apply_mask=False)` | `d.gaze.mask_offscreen(inplace=False).get_layer_intervals("offscreen")` |
 | `d.mask_eye_divergences(apply_mask=False)` | `d.gaze.mask_divergences(inplace=False).get_layer_intervals("divergence")` |
 | `d.set_blinks(iv, apply_mask=False)` | `d.set_blinks(iv)` (blinks always mask) |
+| `d.get_interpolated_blinks("left", "pupil")` | `d.get_interpolated("left", "pupil")["left_pupil"]` (also intervals from `interpolate_intervals()`) |
 | `d.get_blinks("left", "pupil")` (Intervals, samples) | `d.get_blinks("left", "pupil")["left_pupil"]` (ms; `units="samples"` for indices) |
 | `d.mask_as_intervals("left", "pupil")` | `d.mask_as_intervals("left", "pupil")["left_pupil"]` (ms) |
 | `d.blink_stats()["left"]` (None without blinks) | `d.blink_stats()["left_pupil"]` (n=0 without blinks) |

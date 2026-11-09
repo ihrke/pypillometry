@@ -62,7 +62,7 @@ def eyedata_facts(d):
            "tx_first": d.tx[0], "tx_last": d.tx[-1], "eyes": sorted(d.eyes),
            "variables": sorted(d.variables), "keys": sorted(d.data.keys())}
     blinks = d.get_blinks(units="samples")
-    interp = d.get_interpolated_blinks(units="samples")
+    interp = d.get_interpolated(units="samples")
     excluded = d.get_excluded(units="samples")
     excl_mask = intervals_mask(excluded, n)
     out["blinks"] = {k: np.asarray(iv.intervals).reshape(-1, 2) for k, iv in blinks.items()}

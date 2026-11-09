@@ -41,7 +41,7 @@ distorted as the eyelid covers the pupil.
    EyeData.pupil.blinks_merge_close
    EyeData.pupil.blinks_interpolate
    EyeData.get_blinks
-   EyeData.get_interpolated_blinks
+   EyeData.get_interpolated
    EyeData.blink_stats
    EyeData.plot.plot_blinks
 

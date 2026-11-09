@@ -164,7 +164,7 @@ with getters that return a dict of :class:`Intervals` keyed by channel
 
 Interpolation keeps the ``"blink"`` layer and adds ``"interpolated"``, so
 you can always tell recorded from reconstructed samples (e.g.,
-:meth:`~EyeData.get_interpolated_blinks`). The quality report
+:meth:`~EyeData.get_interpolated`). The quality report
 splits the masked time by layer.
 
 Mask policies

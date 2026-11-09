@@ -312,7 +312,7 @@ class TestInterpolatedLayer:
     def test_blinks_interpolate_sets_layer(self):
         d = blink_data().pupil.blinks_detect().pupil.blinks_interpolate()
         interp = d.data.get_layer("left_pupil", "interpolated")
-        iv = d.get_interpolated_blinks("left", "pupil", units="samples")["left_pupil"]
+        iv = d.get_interpolated("left", "pupil", units="samples")["left_pupil"]
         assert len(iv) == 3
         np.testing.assert_array_equal(iv.to_mask(d).astype(bool), interp)
         # interpolated samples are used by default
@@ -340,7 +340,7 @@ class TestInterpolatedLayer:
         d = blink_data().pupil.blinks_detect()
         d.pupil.blinks_interpolate(store_as="pupilinterp")
         assert not d.data.get_layer("left_pupil", "interpolated").any()
-        assert len(d.get_interpolated_blinks("left", "pupilinterp", units="samples")["left_pupilinterp"]) == 3
+        assert len(d.get_interpolated("left", "pupilinterp", units="samples")["left_pupilinterp"]) == 3
         np.testing.assert_array_equal(
             d.mask("left", "pupilinterp", "strict"),
             d.mask("left", "pupil") | d.data.get_layer("left_pupilinterp", "interpolated"))
@@ -353,7 +353,7 @@ class TestInterpolatedLayer:
         d.interpolate_intervals(iv)
         for var in ("pupil", "pupil_lin"):
             np.testing.assert_array_equal(
-                np.asarray(d.get_interpolated_blinks("left", var, units="samples")[f"left_{var}"].intervals), [(200, 215), (500, 520)])
+                np.asarray(d.get_interpolated("left", var, units="samples")[f"left_{var}"].intervals), [(200, 215), (500, 520)])
         assert d.mask("left", "pupil", "strict")[200:215].all()
         assert not d.mask("left", "pupil")[200:215].any()
 

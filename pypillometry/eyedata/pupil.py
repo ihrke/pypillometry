@@ -741,7 +741,7 @@ class PupilNamespace(Namespace):
         default mask policy and masked under the ``"strict"`` one (see
         :meth:`~pypillometry.EyeData.mask`); the interpolated blinks
         can be retrieved with
-        :meth:`~pypillometry.EyeData.get_interpolated_blinks`.
+        :meth:`~pypillometry.EyeData.get_interpolated`.
 
         This procedure relies heavily on eye-balling (reconstructing visually convincing signal),
         so it can help to inspect the result visually (e.g., using

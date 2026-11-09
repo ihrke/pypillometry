@@ -241,7 +241,7 @@ class TestIncompletePupilMethods:
         nb = d.nblinks(variables="pupil")
         assert set(nb) == {"left_pupil", "right_pupil"}
         d.pupil.blinks_interpolate()
-        assert set(d.get_interpolated_blinks(variables="pupil")) == {"left_pupil", "right_pupil"}
+        assert set(d.get_interpolated(variables="pupil")) == {"left_pupil", "right_pupil"}
         assert np.all(d.data["right_pupil"][200:220] > 4)
 
 

@@ -172,7 +172,7 @@ class TestPupilData(unittest.TestCase):
         self.assertEqual(len(d.get_blinks("left", "pupil")["left_pupil"]), 2)
         d = d.pupil.blinks_interpolate(inplace=False)
         self.assertEqual(np.isnan(d.data["left", "pupil"]).sum(), 0)
-        self.assertEqual(len(d.get_interpolated_blinks("left", "pupil")["left_pupil"]), 1)
+        self.assertEqual(len(d.get_interpolated("left", "pupil")["left_pupil"]), 1)
 
 if __name__ == '__main__':
     unittest.main()

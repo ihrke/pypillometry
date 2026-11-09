@@ -163,7 +163,7 @@ Reading masks and values
    * - ``d.data["left_pupil"]``
      - the stored values (masked samples keep their values; see below)
    * - :meth:`~EyeData.get_blinks`,
-       :meth:`~EyeData.get_interpolated_blinks`,
+       :meth:`~EyeData.get_interpolated`,
        :meth:`~EyeData.get_layer_intervals`
      - the runs of a layer as :class:`Intervals` (dict keyed by channel, ms)
    * - :meth:`~EyeData.mask_as_intervals`

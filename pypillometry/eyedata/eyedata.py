@@ -622,33 +622,34 @@ class EyeData(state.VersionedState):
         """
         return self._layer_intervals("blink", eyes, variables, units, "blinks")
 
-    def get_interpolated_blinks(self, eyes: str|list = [], variables: str|list = [], 
-                                units: str = "ms"):
+    def get_interpolated(self, eyes: str|list = [], variables: str|list = [],
+                         units: str = "ms"):
         """
-        Get interpolated blinks as a dict of Intervals (one per eye/variable).
-        
-        Interpolated blinks are the runs of the ``"interpolated"`` layer:
-        the blink regions that were successfully interpolated
-        by :meth:`d.pupil.blinks_interpolate() <pypillometry.eyedata.pupil.PupilNamespace.blinks_interpolate>` (and the intervals interpolated by
-        :meth:`interpolate_intervals`). These may differ from detected blinks because:
+        Get the interpolated stretches as a dict of Intervals (one per eye/variable).
+
+        These are the runs of the ``"interpolated"`` layer, set by
+        :meth:`d.pupil.blinks_interpolate() <pypillometry.eyedata.pupil.PupilNamespace.blinks_interpolate>`
+        (interpolated blinks) and by :meth:`interpolate_intervals` (any
+        intervals). Interpolated blinks may differ from the detected blinks
+        (:meth:`get_blinks`) because:
 
         - Blink boundaries are refined using velocity thresholds
         - Some blinks may be skipped if they're too short to interpolate
 
-        If no interpolated blinks are stored for an eye/variable, an empty
-        Intervals object is returned for it.
+        If nothing was interpolated for an eye/variable, an empty Intervals
+        object is returned for it.
 
         Parameters
         ----------
         eyes : str or list of str, optional
-            Eye(s) to get interpolated blinks for; if empty, all available eyes.
+            Eye(s) to get interpolated stretches for; if empty, all available eyes.
         variables : str or list of str, optional
-            Variable(s) to get interpolated blinks for; if empty, all available
-            variables.
+            Variable(s) to get interpolated stretches for; if empty, all
+            available variables.
         units : str, optional
             Units for intervals: "ms" (default), "sec", "min", "h", or
             "samples" for sample indices
-            
+
         Returns
         -------
         dict
@@ -660,14 +661,15 @@ class EyeData(state.VersionedState):
         KeyError
             if a requested eye/variable combination does not exist (see
             :meth:`~pypillometry.EyeDataDict.select`)
-            
+
         See Also
         --------
-        get_blinks : Get detected (not interpolated) blinks
+        get_blinks : Get detected blinks
+        get_layer_intervals : Get the runs of any mask layer
         pypillometry.eyedata.pupil.PupilNamespace.blinks_interpolate : Interpolate blinks
         """
         return self._layer_intervals("interpolated", eyes, variables, units,
-                                     "interpolated_blinks")
+                                     "interpolated")
 
     def get_layer_intervals(self, name: str, eyes: str|list = [],
                             variables: str|list = [], units: str = "ms"):
@@ -2979,7 +2981,7 @@ class EyeData(state.VersionedState):
         This function replaces data within the specified intervals with interpolated
         values based on boundary points outside each interval. The
         interpolated samples get the ``"interpolated"`` layer (see
-        :meth:`get_interpolated_blinks`), so they are used under the default
+        :meth:`get_interpolated`), so they are used under the default
         mask policy and masked under the ``"strict"`` one (see :meth:`mask`).
         Intervals without usable boundary points on both sides are skipped
         with a warning.

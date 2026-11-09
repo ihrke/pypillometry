@@ -97,14 +97,14 @@ class TestExcluded(unittest.TestCase):
     def test_blink_next_to_excluded_keeps_its_layers(self):
         d = _make_data().pupil.blinks_detect().pupil.blinks_interpolate()
         on, off = d.get_blinks("left", "pupil", units="samples")["left_pupil"].intervals[1]
-        interp = d.get_interpolated_blinks("left", "pupil", units="samples")["left_pupil"].intervals
+        interp = d.get_interpolated("left", "pupil", units="samples")["left_pupil"].intervals
         mask = d.data.mask["left_pupil"].copy()
         e = d.exclude_intervals(pp.Intervals([(off, off + 50)], "samples"))
         # still a blink, masked and interpolated
         self.assertEqual(len(e.get_blinks("left", "pupil", units="samples")["left_pupil"]), 4)
         self.assertEqual(len(e.blinks["left_pupil"]), 4)
         self.assertTrue(e.data.get_layer("left_pupil", "blink")[on:off].all())
-        self.assertEqual(e.get_interpolated_blinks("left", "pupil", units="samples")["left_pupil"].intervals, interp)
+        self.assertEqual(e.get_interpolated("left", "pupil", units="samples")["left_pupil"].intervals, interp)
         self.assertTrue(e.data.mask["left_pupil"][mask.astype(bool)].all())
 
     def test_interpolation_leaves_excluded(self):
@@ -123,7 +123,7 @@ class TestExcluded(unittest.TestCase):
         d = d.pupil.blinks_detect().pupil.blinks_interpolate()
         self.assertEqual(d.get_blinks("left", "pupil", units="samples")["left_pupil"].intervals[1],
                          (3000, 3050))
-        interp = d.get_interpolated_blinks("left", "pupil", units="samples")["left_pupil"]
+        interp = d.get_interpolated("left", "pupil", units="samples")["left_pupil"]
         self.assertEqual(len(interp), 3)
         self.assertFalse(d.data.get_layer("left_pupil", "interpolated")[2900:3600].any())
         self.assertTrue(d.mask("left", "pupil")[3000:3050].all())
