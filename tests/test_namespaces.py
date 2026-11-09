@@ -4,7 +4,7 @@ import pytest
 
 import pypillometry as pp
 from pypillometry.eyedata.namespace import Namespace, accessor
-from pypillometry.eyedata.generic import keephistory
+from pypillometry.eyedata.history import keephistory
 
 
 class _Demo(Namespace):

@@ -1,4 +1,6 @@
 from collections.abc import Mapping, MutableMapping
+import warnings
+
 import numpy as np
 from typing import Optional, Dict, List, Union, Tuple
 from numpy.typing import NDArray
@@ -138,6 +140,26 @@ class _PolicyMask(Mapping):
 
     def __contains__(self, key):
         return key in self._d.data
+
+
+def _decimate_layers(layers, factor):
+    """Decimated layer bit-field: a bit is set where it is set for more than
+    half of the samples in the window (the last window may be shorter)."""
+    n = len(layers)
+    nw = -(-n // factor)
+    out = np.zeros(nw, dtype=LAYER_DTYPE)
+    if n == 0:
+        return out
+    windows = np.concatenate([layers, np.zeros(nw * factor - n, dtype=LAYER_DTYPE)])
+    windows = windows.reshape(nw, factor)
+    size = np.full(nw, factor)
+    size[-1] = n - (nw - 1) * factor
+    present = int(np.bitwise_or.reduce(layers))
+    for i in range(present.bit_length()):
+        bit = LAYER_DTYPE(1 << i)
+        if present & bit:
+            out[2 * ((windows & bit) != 0).sum(axis=1) > size] |= bit
+    return out
 
 
 class EyeDataDict(MutableMapping, Stateful):
@@ -815,3 +837,105 @@ class EyeDataDict(MutableMapping, Stateful):
         else:
             return max(int(np.sum(mask)) for mask in self.mask.values())
 
+
+    # ------------------------------------------------------------------
+    # Operations on all channels (used by EyeData)
+    # ------------------------------------------------------------------
+
+    def _take(self, keep):
+        """New EyeDataDict with the samples where `keep` is True (values,
+        masks and layers)."""
+        nd = EyeDataDict()
+        nd.layer_names = list(self.layer_names)
+        for k, v in self.items():
+            nd._set_channel(k, v[keep], self.layers[k][keep])
+        if self.rec_layers is not None:
+            nd.rec_layers = self.rec_layers[keep].copy()
+        return nd
+
+    def _insert(self, n, pos, value):
+        """New EyeDataDict of length `n` with the samples of this one at `pos`;
+        new samples hold `value` and are masked as missing (NaN, or the
+        ``"user"`` layer if `value` is not NaN; no other layers)."""
+        nd = EyeDataDict()
+        nd.layer_names = list(self.layer_names)
+        missing = 0 if np.isnan(value) else nd.layer_bits("user", create=n > len(pos))
+        for k, v in self.items():
+            nv = np.full(n, value, dtype=float)
+            nl = np.full(n, missing, dtype=LAYER_DTYPE)  # inserted = missing
+            nv[pos] = v
+            nl[pos] = self.layers[k]
+            nd._set_channel(k, nv, nl)
+        if self.rec_layers is not None:
+            nd.rec_layers = np.zeros(n, dtype=LAYER_DTYPE)
+            nd.rec_layers[pos] = self.rec_layers
+        return nd
+
+    def _decimate(self, factor, policy="default"):
+        """
+        New EyeDataDict with the samples decimated by the integer `factor`.
+
+        Each window of `factor` samples becomes one sample (the last window
+        may be shorter): values are the mean of the samples that are usable
+        under the mask `policy`. A layer (e.g., ``"blink"``) is set for a new
+        sample if it covers more than half of the samples in the window (also
+        the recording-wide layers, e.g. excluded periods). A new sample whose
+        window has no usable sample holds the mean of the stored values and
+        stays unusable: if the layers that cover more than half of the window
+        do not make it unusable, it gets the layers of its samples that make
+        them unusable under `policy`.
+        """
+        from ..signal import baseline
+        nd = EyeDataDict()
+        nd.layer_names = list(self.layer_names)
+        pol = _as_policy(policy)
+        # layers that make a sample unusable under the policy
+        masking = LAYER_DTYPE(self.layer_bits(pol.layers) & ~self.layer_bits(pol.unless))
+        if self.rec_layers is not None:
+            nd.rec_layers = _decimate_layers(self.rec_layers, factor)
+        for k, v in self.items():
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", RuntimeWarning)  # all-NaN windows
+                y = baseline.downsample(np.where(self.get_policy_mask(k, policy), np.nan, v), factor)
+                stored = baseline.downsample(v, factor)
+            allmasked = np.isnan(y)
+            y[allmasked] = stored[allmasked]
+            nd._set_channel(k, y, _decimate_layers(self.layers[k], factor))
+            # a window whose samples are all unusable stays unusable: if the
+            # layers that cover more than half of it do not make it unusable,
+            # it gets the masking layers of its samples (if there are none,
+            # all its values are NaN, and so is the new value)
+            todo = allmasked & ~nd.get_policy_mask(k, MaskPolicy(pol.layers, pol.unless, nan=False))
+            if todo.any():
+                present = np.bitwise_or.reduceat(self.layers[k] & masking,
+                                                 np.arange(0, len(v), factor))
+                nd.layers[k][todo] |= present[todo]
+        return nd
+
+    def _merge_usage(self, keys, policy):
+        """
+        Which eyes (rows, one per key in `keys`) go into each
+        sample of a merged channel: the samples that are usable under `policy`,
+        but recorded samples first (an interpolated sample is used only where no
+        eye has a usable sample that is not interpolated). A column is all False
+        where no eye is usable.
+        """
+        usable = np.stack([~self.get_policy_mask(k, policy) for k in keys])
+        recorded = usable & ~np.stack([self.get_layer(k, "interpolated") for k in keys])
+        return np.where(recorded.any(axis=0), recorded, usable)
+
+    def _store_merged(self, key, values, keys, used, masked, policy):
+        """
+        Store merged `values` as `key` with the layers that are set in all
+        eyes that went into a sample (`used`, see `_merge_usage`; in all eyes
+        where none did). Samples in `masked` that are still usable under
+        `policy` with these layers get the ``"user"`` layer.
+        """
+        layers = np.stack([self.layers[k] for k in keys])
+        sel = np.where(used.any(axis=0), used, True)
+        allbits = np.iinfo(LAYER_DTYPE).max
+        merged = np.bitwise_and.reduce(np.where(sel, layers, allbits), axis=0)
+        self._set_channel(key, values, merged.astype(LAYER_DTYPE))
+        rest = masked & ~self.get_policy_mask(key, policy)
+        if rest.any():
+            self.set_layer(key, "user", rest)

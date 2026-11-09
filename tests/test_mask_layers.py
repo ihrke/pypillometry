@@ -120,7 +120,7 @@ class TestRecLayers:
         d.data.set_rec_layer("excluded", np.arange(12) < 7)
         c = d.crop(30, 80, inplace=False)  # samples 3..8
         np.testing.assert_array_equal(c.data.get_rec_layer("excluded"), [1, 1, 1, 1, 0, 0])
-        d._decimate(4)  # windows 4/4, 3/4, 0/4
+        d.downsample(4, dsfac=True, inplace=True)  # windows 4/4, 3/4, 0/4
         np.testing.assert_array_equal(d.data.get_rec_layer("excluded"), [1, 1, 0])
         d._insert_samples(np.arange(4) * 40., [0, 2, 3])
         np.testing.assert_array_equal(d.data.get_rec_layer("excluded"), [1, 0, 1, 0])
@@ -213,7 +213,7 @@ class TestSampleOperations:
         blink[[0, 1, 2, 4, 5, 20, 21]] = True
         d.data.set_layer("left_pupil", "blink", blink)
         d.data.set_layer("left_pupil", "user", np.arange(22) == 21)  # half of the last
-        d._decimate(4)
+        d.downsample(4, dsfac=True, inplace=True)
         expected = np.zeros(6, dtype=bool)
         expected[[0, 5]] = True
         np.testing.assert_array_equal(d.data.get_layer("left_pupil", "blink"), expected)
@@ -623,7 +623,7 @@ class TestNoStoredMask:
         v = d.data["left_pupil"].copy()
         v[4:8] = np.nan
         d.data.set_with_mask("left_pupil", v, preserve_mask=True)
-        d._decimate(4, "strict")  # the interpolated samples are unusable too
+        d.downsample(4, dsfac=True, policy="strict", inplace=True)  # the interpolated samples are unusable too
         np.testing.assert_array_equal(d.mask("left", "pupil", "strict"), [1, 1])
         assert d.data.get_layer("left_pupil", "user")[0]
         assert d.data.get_layer("left_pupil", "interpolated")[0]
@@ -636,7 +636,7 @@ class TestNoStoredMask:
         # window 0: half user, half interpolated -> the interpolated samples are used
         d.data.set_layer("left_pupil", "user", [1, 1, 0, 0, 0, 0, 0, 0])
         d.data.set_layer("left_pupil", "interpolated", [0, 0, 1, 1, 0, 0, 0, 0])
-        d._decimate(4)
+        d.downsample(4, dsfac=True, inplace=True)
         assert d.data["left_pupil"][0] == 2.5
         np.testing.assert_array_equal(d.mask("left", "pupil"), [0, 0])
 
