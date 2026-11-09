@@ -183,6 +183,33 @@ Combining the eyes: :meth:`~EyeData.merge_eyes` with
 ``variables=["x", "y"]`` averages the gaze of both eyes into ``mean_x``
 and ``mean_y`` (using the samples that are usable in each eye).
 
+Off-screen and divergent samples often occur at the start and end of
+blinks, when the eye tracker loses the eye:
+
+.. plot::
+   :include-source: False
+
+   d = pp.get_example_data("rlmw_002_short")
+   d.gaze.mask_offscreen()
+   d.gaze.mask_divergences()
+
+   t0, t1 = 10300, 11600
+   sel = (d.tx >= t0) & (d.tx < t1)
+   fig, axes = plt.subplots(2, 1, figsize=(8, 3.8), sharex=True)
+   for ax, var in zip(axes, ["x", "y"]):
+       for eye, c in (("left", "C0"), ("right", "C1")):
+           ax.plot(d.tx[sel] / 1000, d.data[f"{eye}_{var}"][sel], color=c, lw=1, label=eye)
+       for layer, color in (("offscreen", "C3"), ("divergence", "C4")):
+           for a, b in d.get_layer_intervals(layer, "left", var)[f"left_{var}"].intervals:
+               if a < t1 and b > t0:
+                   ax.axvspan(a / 1000, b / 1000, color=color, alpha=0.3, lw=0)
+       ax.set_ylabel(f"{var} (px)")
+   axes[0].plot([], [], color="C3", alpha=0.3, lw=8, label='"offscreen" (left eye)')
+   axes[0].plot([], [], color="C4", alpha=0.3, lw=8, label='"divergence"')
+   axes[0].legend(frameon=False, fontsize=8, ncol=4, loc="upper center", bbox_to_anchor=(0.5, 1.3))
+   axes[1].set_xlabel("time (s)")
+   fig.tight_layout()
+
 
 Plotting gaze data
 ------------------
@@ -250,6 +277,40 @@ the camera angles from the data and :meth:`d.pupil.correct_foreshortening()
 <pypillometry.eyedata.pupil.PupilNamespace.correct_foreshortening>`
 corrects the pupil size for the gaze position. This is experimental as
 well; see :doc:`/experimental/foreshortening`.
+
+The camera sees the pupil at the angle α between the eye-to-camera line
+and the gaze direction; the pupil looks smaller by about cos α:
+
+.. plot::
+   :include-source: False
+
+   import matplotlib.patches as patches
+
+   fig, ax = plt.subplots(figsize=(7, 3.6))
+   eye, cam = np.array([0.0, 0.0]), np.array([6.0, -2.2])
+   target = np.array([6.0, 2.0])
+   ax.add_patch(patches.Rectangle((6.0, -1.6), 0.15, 4.2, color="0.6"))           # screen
+   ax.text(6.35, 1.0, "screen", fontsize=9, va="center")
+   ax.add_patch(patches.Rectangle((5.8, -2.5), 0.5, 0.6, color="k"))              # camera
+   ax.text(6.45, -2.2, "camera", fontsize=9, va="center")
+   ax.add_patch(patches.Circle(eye, 0.45, fill=False, lw=1.5))                     # eye
+   ax.add_patch(patches.Ellipse(eye + 0.45 * (target - eye) / np.linalg.norm(target - eye),
+                                0.08, 0.45, angle=np.degrees(np.arctan2(*(target - eye)[::-1])),
+                                color="k"))                                      # pupil
+   ax.annotate("", xy=target, xytext=eye, arrowprops=dict(arrowstyle="->", color="C0", lw=1.5))
+   ax.plot(*target, "o", color="C0")
+   ax.text(*(target + [-0.25, 0.0]), "gaze position", color="C0", ha="right", va="center", fontsize=9)
+   ax.plot(*zip(eye, cam), color="C1", lw=1.5, ls="--")
+   ax.text(3.2, -1.55, "eye to camera", color="C1", fontsize=9, rotation=-20)
+   a1 = np.degrees(np.arctan2(*(cam - eye)[::-1]))
+   a2 = np.degrees(np.arctan2(*(target - eye)[::-1]))
+   ax.add_patch(patches.Arc(eye, 2.2, 2.2, theta1=a1, theta2=a2, color="C3", lw=1.5))
+   ax.text(1.25, 0.05, r"$\alpha$", color="C3", fontsize=13)
+   ax.text(0, -0.85, "eye", ha="center", fontsize=9)
+   ax.set_xlim(-0.8, 7.6)
+   ax.set_ylim(-2.8, 2.8)
+   ax.set_aspect("equal")
+   ax.axis("off")
 
 
 What is not included

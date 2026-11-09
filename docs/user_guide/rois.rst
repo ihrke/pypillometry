@@ -67,6 +67,17 @@ The boolean array can become :class:`Intervals` (the visits to the ROI,
 with :meth:`Intervals.from_mask`) or a channel of the data (see
 :doc:`/experimental/gaze_rois`).
 
+The heatmap of the left eye with the two ROIs (the options of the task, 8°
+to the left and right of the center):
+
+.. plot::
+
+   d = pp.get_example_data("rlmw_002_short")
+   setup = d.experimental_setup
+   left = pp.CircularROI.from_degrees(("-8 deg", "0 deg"), "3 deg", setup=setup, name="leftopt")
+   right = pp.CircularROI.from_degrees(("8 deg", "0 deg"), "3 deg", setup=setup, name="rightopt")
+   d.plot.plot_heatmap(eyes="left", rois=[left, right])
+
 
 ROIs around events
 ------------------
