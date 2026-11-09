@@ -79,12 +79,12 @@ class TestInplace:
     def test_baseline_correct(self, data):
         seg = data.get_segments(data.get_epochs("a", window=(-100, 200) * pp.u.ms),
                                 "right_pupil")
-        orig = seg.data.copy()
-        bc = seg.baseline_correct((-100, 0), inplace=False)
+        orig = seg["right_pupil"].copy()
+        bc = seg.pupil.baseline_correct((-100, 0), inplace=False)
         assert bc is not seg
-        np.testing.assert_array_equal(seg.data, orig)
-        assert seg.baseline_correct((-100, 0), inplace=True) is seg
-        np.testing.assert_allclose(seg.data, bc.data)
+        np.testing.assert_array_equal(seg["right_pupil"], orig)
+        assert seg.pupil.baseline_correct((-100, 0), inplace=True) is seg
+        np.testing.assert_allclose(seg["right_pupil"], bc["right_pupil"])
 
 
 class TestEyesVariables:

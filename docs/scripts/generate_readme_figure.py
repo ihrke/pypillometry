@@ -4,7 +4,7 @@
 Both panels are drawn with pypillometry's own plotting functions. Left: a
 stretch of raw pupil data, and the same data after blink interpolation and
 low-pass filtering (`pupil_plot()`, blinks shaded). Right: the average pupil
-response to the stimuli with its standard error (`SegmentedEyeData.plot()`).
+response to the stimuli with its standard error (`seg.pupil.plot()`).
 
 Uses the "rlmw_002" example dataset (downloaded from OSF on the first call).
 
@@ -52,8 +52,8 @@ def main():
 
     # event-related pupil dilation
     epochs = d.get_epochs("S_", (-500, 2500) * u.ms)
-    erpd = d.get_segments(epochs, f"{EYE}_pupil").baseline_correct((-500, 0))
-    erpd.plot(ax=ax2, show_legend=False)
+    erpd = d.get_segments(epochs, f"{EYE}_pupil").pupil.baseline_correct((-500, 0))
+    erpd.pupil.plot(ax=ax2, show_legend=False)
     ax2.set_title(f"Pupil response to {erpd.n_segments} stimuli (mean ± SE)",
                   loc="left")
 

@@ -130,22 +130,26 @@ Event-related pupil dilation
 ----------------------------
 
 The segments returned by :meth:`~EyeData.get_segments` have their
-own ``plot()`` method that shows the mean (with its standard error) and the
-percentage of missing data (see :doc:`events_intervals`):
+own plots that show the mean (with its standard error) and the
+percentage of missing data: ``seg.pupil.plot()`` for the pupil (the
+event-related pupil dilation), ``seg.gaze.plot_roi()`` for the share of
+trials in which the gaze is in a region of interest, and ``seg.plot()``
+for any channel (see :doc:`events_intervals`):
 
 .. plot::
    :context: close-figs
 
    d.pupil.blinks_interpolate()
    epochs = d.get_epochs("S_", (-500, 2500) * u.ms)
-   erpd = d.get_segments(epochs, "left_pupil").baseline_correct((-500, 0))
-   erpd.plot()
+   erpd = d.get_segments(epochs, "left_pupil").pupil.baseline_correct((-500, 0))
+   erpd.pupil.plot()
 
 .. autosummary::
    :nosignatures:
 
+   segmented.SegmentedPupilNamespace.plot
+   segmented.SegmentedGazeNamespace.plot_roi
    SegmentedEyeData.plot
-   GroupLevelSegmentedData.plot
 
 
 Gaze

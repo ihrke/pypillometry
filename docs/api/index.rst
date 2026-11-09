@@ -48,7 +48,8 @@ together, see the :doc:`/user_guide/index`.
       :link: segments
       :link-type: doc
 
-      Event-related segments for single participants and groups.
+      Event-related segments for single participants and groups, with
+      their pupil (``seg.pupil``) and gaze (``seg.gaze``) methods.
 
    .. grid-item-card:: Plotting
       :link: plotting

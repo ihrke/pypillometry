@@ -2463,30 +2463,40 @@ class EyeData(state.VersionedState):
             units=units, label=label, event_labels=labels, event_onsets=onsets,
             event_meta=meta)
 
-    def get_segments(self, intervals, variable: str, name: str = None, policy="default"):
+    def get_segments(self, epochs, channels=None, name: str = None, policy="default",
+                     eyes=[], variables=[]):
         """
-        Extract segments from data using intervals.
-        
-        Creates a SegmentedEyeData object containing equal-length segments
-        of a single variable extracted at the specified intervals.
-        
+        Cut the data around events into segments of equal length.
+
+        Creates a :class:`~pypillometry.SegmentedEyeData` object with the
+        segments of one or several channels (by default, all), cut at the
+        same epochs; trials are selected for all channels at once (e.g.,
+        ``seg.filter(cond="easy")``).
+
         Parameters
         ----------
-        intervals : Epochs or Intervals
+        epochs : Epochs or Intervals
             the segments to extract: :class:`~pypillometry.Epochs` (from
             :meth:`get_epochs`; length
             and time axis ``window[0] + arange(n) * 1000/fs`` from the
             window, parts outside the data masked) or Intervals that all have
             the same length (time axis from 0 at their starts)
-        variable : str
-            Variable to extract in "eye_variable" format (e.g., "left_pupil", "right_x")
+        channels : str or list of str, optional
+            channels to extract (e.g., ``"left_pupil"`` or ``["left_x",
+            "left_y"]``); if None, those of `eyes` and `variables`
         name : str, optional
-            Name for the segmented dataset. If None, uses intervals.label or "segments"
+            Name for the segmented dataset. If None, uses the label of
+            `epochs` or "segments"
         policy : str, MaskPolicy or list of str
             mask policy of the segments: the samples that are unusable under
             it are masked (see :meth:`mask`); default ``"default"``
             (interpolated samples are used)
-            
+        eyes : str or list of str, optional
+            eyes to extract if `channels` is None (default: all)
+        variables : str or list of str, optional
+            variables to extract if `channels` is None (e.g., ``"pupil"``;
+            default: all)
+
         Returns
         -------
         SegmentedEyeData
@@ -2495,29 +2505,35 @@ class EyeData(state.VersionedState):
         Raises
         ------
         ValueError
-            if `intervals` are Intervals of different lengths (e.g., between
-            two events)
-            
+            if `epochs` are Intervals of different lengths (e.g., between
+            two events), or both `channels` and `eyes`/`variables` are given
+        KeyError
+            if a channel, eye or variable does not exist
+
         Examples
         --------
         >>> import pypillometry as pp
         >>> d = pp.get_example_data("rlmw_002_short")
-        >>> # Extract pupil segments around the feedback events
         >>> epochs = d.get_epochs("F_", window=(-200, 800), units="ms")
-        >>> segments = d.get_segments(epochs, "left_pupil")
-        >>> segments.plot()  # doctest: +SKIP
+        >>> # all channels (pupil and gaze of both eyes)
+        >>> seg = d.get_segments(epochs)
+        >>> # pupil segments around the feedback events
+        >>> erpd = d.get_segments(epochs, variables="pupil")
+        >>> erpd.channels
+        ['left_pupil', 'right_pupil']
+        >>> erpd.pupil.plot()  # doctest: +SKIP
 
         >>> # Apply baseline correction
-        >>> segments_bc = segments.baseline_correct(window=(-200, 0))
-        
+        >>> erpd_bc = erpd.pupil.baseline_correct(window=(-200, 0))
+
         See Also
         --------
         get_epochs : Windows around events (Epochs)
         SegmentedEyeData : Class holding segmented data
         """
         from ..segmented import SegmentedEyeData
-        return SegmentedEyeData.from_eyedata(self, intervals, variable, name=name,
-                                             policy=policy)
+        return SegmentedEyeData.from_eyedata(self, epochs, channels, name=name,
+                                             policy=policy, eyes=eyes, variables=variables)
 
     @step
     @keephistory

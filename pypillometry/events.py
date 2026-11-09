@@ -1260,6 +1260,10 @@ class Events(Stateful):
         >>> events.filter(cond="a", rt=lambda rt: rt < 500).onsets
         array([100.])
         """
+        return self._take(self._filter_mask(selector, exact, **conditions))
+
+    def _filter_mask(self, selector=None, exact: bool = False, **conditions) -> np.ndarray:
+        """Boolean mask of the events that match the criteria of :meth:`filter`."""
         mask = np.ones(len(self), dtype=bool) if selector is None \
             else self._mask(selector, exact)
         for name, crit in conditions.items():
@@ -1278,7 +1282,7 @@ class Events(Stateful):
                 _check_condition_types(name, col, values)
                 m = np.isin(col, values)
             mask &= m
-        return self._take(mask)
+        return mask
 
 
 

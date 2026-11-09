@@ -38,8 +38,8 @@ processing step is recorded in the object's history.
 
    # average pupil response from 200 ms before to 1 s after each stimulus
    epochs = d.get_epochs("stim", (-200, 1000) * u.ms)
-   erpd = d.get_segments(epochs, "left_pupil").baseline_correct((-200, 0))
-   erpd.plot()                                          # event-related pupil dilation
+   erpd = d.get_segments(epochs, "left_pupil").pupil.baseline_correct((-200, 0))
+   erpd.pupil.plot()                                    # event-related pupil dilation
 
 
 .. grid:: 1 2 2 3

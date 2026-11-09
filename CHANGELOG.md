@@ -39,7 +39,7 @@ tables below for every changed call.
   names raise a `KeyError` that lists the channels
 - Every transforming method takes `inplace` (default: in place, see
   `set_default_inplace()`); this is new for `drop_data`,
-  `fill_time_discontinuities` and `SegmentedEyeData.baseline_correct`, which
+  `fill_time_discontinuities` and `seg.pupil.baseline_correct`, which
   used to return a copy. `set_*` methods are always in place
   (`set_events` lost `inplace`)
 - Events: one `Events` object in `d.events`; `d.event_onsets`,
@@ -60,7 +60,17 @@ tables below for every changed call.
 - `GenericEyeData` is part of `EyeData` (it was the base class of the
   removed `PupilData`/`GazeData`); use `EyeData` in `isinstance` checks
 - `SegmentedEyeData.intervals` is `SegmentedEyeData.epochs` (also the
-  constructor argument; files are unchanged)
+  constructor argument)
+- `SegmentedEyeData` holds several channels: `get_segments(epochs,
+  channels=None, ..., eyes=, variables=)` cuts all channels by default (or
+  those named); `seg.data` is a dict of channels (`seg["left_pupil"]`), the
+  constructor takes this dict, and `variable`, `eye`, `var` and
+  `from_masked_array()` were removed. `baseline_correct()` is
+  `seg.pupil.baseline_correct()` (pupil channels only); `plot()` takes
+  `channels=` (`seg.pupil.plot()` plots the pupil). `GroupLevelSegmentedData`:
+  `mask_percent` is a dict of channels, `n_subjects` comes from the new
+  `subjects`; averaged groups have no epochs; the error ribbons of the
+  segment plots have the color of their line (were grey without `color=`)
 - `params["scale"]` and the `mean=`/`sd=` dicts of `scale()`/`unscale()`
   are keyed by channel (`{"left_pupil": 1000.}`, was
   `{"left": {"pupil": 1000.}}`), like `params["response"]`; stored
@@ -90,6 +100,18 @@ tables below for every changed call.
 ### Added
 
 - Namespaces `d.pupil`, `d.gaze` and `d.plot`
+- Segments of several channels share their epochs: `seg.keep()` and
+  `seg.filter(cond="easy")` select trials in all channels;
+  `seg.select_channels()`, `seg.drop_channels()`
+- `seg.gaze` for regions of interest: `roi_hits()` (a 0/1 channel per eye,
+  whose mean is the share of trials in the ROI), `plot_roi()` (fixation
+  curve), `dwell_time()` and `first_entry()` (tables per trial with the
+  epochs' metadata)
+- User guide page "Regions of interest" and the tutorial "Gaze in regions
+  of interest around events"
+- `group_segments()` stores the subjects (names from dict keys); stacked
+  trials keep the epochs of all subjects, with the column `"subject"`, so
+  they can be selected with `filter()`
 - Pipelines: `d | pp.pupil.blinks_detect() | pp.pupil.lowpass_filter(4)`;
   `pp.pupil.*`, `pp.gaze.*` and the generic steps (`pp.crop`,
   `pp.downsample`, `pp.scale`, ...) make `pp.Step`s, combined into a
@@ -259,7 +281,10 @@ Calls whose arguments or results changed:
 | `d.pupil_plot(plot_range=(0, 20))` (sec) | `d.plot.pupil_plot(plot_range=(0, 20) * u.sec)` |
 | `d.plot_timeseries_segments(interv=1)` (min) | `d.plot.plot_timeseries_segments(interv="1 min")` |
 | `d2 = d.drop_data(...)` (always a copy) | `d2 = d.drop_data(..., inplace=False)` |
-| `seg.baseline_correct(w)` (always a copy) | `seg.baseline_correct(w, inplace=False)` |
+| `seg.baseline_correct(w)` (always a copy) | `seg.pupil.baseline_correct(w, inplace=False)` |
+| `seg.plot()` | `seg.pupil.plot()` |
+| `seg.data`, `seg.variable` | `seg["left_pupil"]`, `seg.channels` |
+| `group.mask_percent` | `group.mask_percent["left_pupil"]` |
 | `d.set_events(ev, inplace=False)` | `d.copy().set_events(ev)` |
 | `d.pupil_merge_eyes()` -> `merged_pupil` | `d.pupil.merge_eyes()` -> `mean_pupil` (`name=` to choose) |
 | `d.event_onsets`, `d.event_labels`, `d.event_meta` | `d.events.onsets`, `d.events.labels`, `d.events.meta` |

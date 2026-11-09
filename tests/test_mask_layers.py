@@ -710,9 +710,9 @@ class TestConsumersUsePolicy:
         d = self.binocular()
         ep = pp.Epochs([400.], (0, 300))  # samples 40-69
         seg = d.get_segments(ep, "left_pupil")
-        assert not np.ma.getmaskarray(seg.data).any()
+        assert not np.ma.getmaskarray(seg["left_pupil"]).any()
         seg = d.get_segments(ep, "left_pupil", policy="strict")
-        assert list(np.flatnonzero(np.ma.getmaskarray(seg.data)[:, 0])) == list(range(10, 20))
+        assert list(np.flatnonzero(np.ma.getmaskarray(seg["left_pupil"])[:, 0])) == list(range(10, 20))
 
     def test_stat_per_event(self):
         import pypillometry as pp

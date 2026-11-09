@@ -49,11 +49,15 @@ Version history
     layers, e.g. excluded periods) instead of `mask`; eyedata objects have
     no `blinks`, `interpolated_blinks` and `excluded` (they are layers);
     Intervals have no `event_indices`, `data_time_range` and
-    `interval_window`; segments store their Epochs (`events`: an Events
-    state in ms, `window` in ms, `label`) or, if not event-locked, Intervals,
-    with the class name in ``intervals["class"]``; the response and scaling
+    `interval_window`; the response and scaling
     parameters (``params["response"]``, ``params["scale"]``) are keyed by
-    channel (``"left_pupil"``)
+    channel (``"left_pupil"``); segments hold several channels (`data`:
+    channel -> masked array, no `variable`) and store their Epochs
+    (`epochs`: an Events state in ms, `window` in ms, `label`) or, if not
+    event-locked, Intervals, with the class name in ``epochs["class"]``;
+    group-level segments store `subjects`, `subject` (the subject of each
+    column), `subject_mask_percent` (channel -> time points x subjects) and
+    `stacked` instead of `mask_percent` and `n_subjects`
 """
 
 import contextlib
@@ -732,6 +736,36 @@ def _v2_params(state):
     state["params"] = params
 
 
+def _v3_channels(state, class_name):
+    """
+    Segments with one channel (`variable`, `data`, `intervals`; version 2
+    after the conversion of the intervals, and development versions of 2.2)
+    -> segments with several channels (version 3; see the version history).
+
+    Group-level segments: the columns are subject averages if there is one
+    per subject, otherwise stacked trials (whose subjects are unknown:
+    `subject` is None); each subject gets the stored average percentage of
+    masked trials; the epochs (those of the first subject) are dropped.
+    """
+    state = dict(state)
+    var = state.pop("variable")
+    data = state["data"]
+    state["data"] = {var: data}
+    epochs = state.pop("intervals", None)
+    if class_name == "GroupLevelSegmentedData":
+        n_subjects = int(state.pop("n_subjects"))
+        mask_percent = np.asarray(state.pop("mask_percent"), dtype=float)
+        stacked = np.shape(data["values"])[1] != n_subjects
+        state["subjects"] = [str(i + 1) for i in range(n_subjects)]
+        state["subject"] = None if stacked else np.arange(n_subjects)
+        state["subject_mask_percent"] = {
+            var: np.tile(mask_percent.reshape(-1, 1), (1, n_subjects))}
+        state["stacked"] = bool(stacked)
+        epochs = None
+    state["epochs"] = epochs
+    return state
+
+
 def _migrate_2_to_3(state, class_name):
     """Version 2 -> 3: the events of eyedata objects are one Events state
     (`events`) instead of `event_onsets`, `event_labels` and `event_meta`;
@@ -739,11 +773,12 @@ def _migrate_2_to_3(state, class_name):
     _v2_spans); a sampling rate that does not fit the time vector is
     corrected (see _v2_fix_fs); all eyedata objects have an experimental
     setup and calibration (None for PupilData); the response and scaling
-    parameters are keyed by channel (see _v2_params)."""
+    parameters are keyed by channel (see _v2_params); segments hold several
+    channels (see _v3_channels)."""
     state = dict(state)
     if class_name in _SEGMENTED_CLASSES:
         state["intervals"] = _v2_spans(state.get("intervals"), state.get("sampling_rate"))
-        return state
+        return _v3_channels(state, class_name)
     state["events"] = {"onsets": state.pop("event_onsets"),
                        "labels": state.pop("event_labels"), "units": "ms",
                        "data_time_range": None, "meta": state.pop("event_meta"),

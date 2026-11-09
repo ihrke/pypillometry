@@ -350,7 +350,7 @@ per trial and select the epochs with :meth:`Epochs.keep`:
 
     stim = d.get_epochs("S_", window=(-500, 2500) * u.ms)
     seg = d.get_segments(stim, "left_pupil", policy="strict")
-    recon = np.ma.getmaskarray(seg.data).mean(axis=0)   # one value per trial
+    recon = np.ma.getmaskarray(seg["left_pupil"]).mean(axis=0)   # one value per trial
     good = stim.keep(recon < 0.25)
 
 **Look at one reason only.** :meth:`~EyeData.get_layer_intervals`

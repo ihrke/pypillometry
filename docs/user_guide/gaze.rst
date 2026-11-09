@@ -189,7 +189,10 @@ samples fall into them and can be drawn into the gaze plots (``rois=``):
     inside = roi.contains(np.column_stack([d.data["left_x"], d.data["left_y"]]))
     d.plot.plot_heatmap(rois=[roi])
 
-These classes are experimental (see :doc:`/experimental/gaze_rois`).
+For event-related analyses, ``seg.gaze`` of the segments
+(:meth:`~EyeData.get_segments`) uses ROIs: the share of trials in which
+the gaze is in an ROI over time, and the dwell time and first entry per
+trial. See :doc:`rois` and the tutorial :doc:`/notebooks/rois`.
 
 
 Pupil foreshortening

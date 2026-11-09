@@ -59,6 +59,19 @@ between two events and takes them as keywords
 :meth:`Intervals.merge` merges overlapping intervals). See
 :doc:`events_intervals`.
 
+**Segments with several channels.** :meth:`~EyeData.get_segments` cuts
+all channels by default (or those named); a channel is read with
+``seg["left_pupil"]`` instead of ``seg.data``. As for the data, the pupil
+methods are in ``seg.pupil``; the gaze methods (regions of interest) are
+new in ``seg.gaze``:
+
+.. code-block:: python
+
+    erpd = d.get_segments(epochs, "left_pupil").baseline_correct((-200, 0))   # 2.1
+    erpd.plot()                                                               # 2.1
+    erpd = d.get_segments(epochs, "left_pupil").pupil.baseline_correct((-200, 0))  # 2.2
+    erpd.pupil.plot()                                                         # 2.2
+
 
 Changes that do not raise an error
 ----------------------------------
@@ -77,7 +90,7 @@ Check your scripts for them:
   the quality report. Pass ``policy="strict"`` for the 2.1 behaviour.
 - **In place by default** also for :meth:`~EyeData.drop_data`,
   :meth:`~EyeData.fill_time_discontinuities` and
-  :meth:`SegmentedEyeData.baseline_correct`, which returned a copy in 2.1:
+  ``seg.pupil.baseline_correct()``, which returned a copy in 2.1:
   ``d2 = d.drop_data(...)`` now changes ``d`` too. Pass ``inplace=False``.
 - **Results per channel are dicts** keyed like the data (``"left_pupil"``),
   e.g. ``d.get_blinks()["left_pupil"]``, in ms.
@@ -121,3 +134,6 @@ What happens to the contents of old files:
   downsampling to a rate that does not divide the original one) is
   corrected from the time vector, with a warning.
 - Segments with event-locked intervals get :class:`Epochs`.
+- Segments hold their one variable as a channel (``seg["left_pupil"]``).
+  Groups of stacked trials from old files do not know the participant of
+  each trial, so their trials cannot be selected.

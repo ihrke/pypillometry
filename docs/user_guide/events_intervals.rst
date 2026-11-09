@@ -13,7 +13,7 @@ stimulus appears or a response is given. Analyses then look at the data in
    flowchart LR
      E["<b>Events</b><br/>onsets + labels + metadata"] -- "get_epochs(event, window)" --> P["<b>Epochs</b><br/>onsets + one window"]
      E -- "get_intervals(start=event1, end=event2)" --> I["<b>Intervals</b><br/>(start, end) pairs"]
-     P -- "get_segments()" --> S["<b>SegmentedEyeData</b><br/>segments x time"]
+     P -- "get_segments()" --> S["<b>SegmentedEyeData</b><br/>channels: segments x time"]
      S -- "group_segments()" --> G["<b>GroupLevelSegmentedData</b><br/>participants x time"]
      P -- "stat_per_event()" --> N["one value<br/>per event"]
      P -- "to_intervals()" --> I
@@ -362,17 +362,32 @@ Tutorial: :doc:`/notebooks/intervals`.
 Segments and event-related pupil dilation
 -----------------------------------------
 
-:meth:`~EyeData.get_segments` cuts the data of one variable in each
-epoch and returns a :class:`SegmentedEyeData` object (a matrix of
-segments × time points). Averaged over segments, this is the
-*event-related pupil dilation* (ERPD):
+:meth:`~EyeData.get_segments` cuts the data in each epoch and returns a
+:class:`SegmentedEyeData` object: one matrix of segments × time points
+per channel (by default all channels; choose them by name, or with
+``eyes=`` and ``variables=``). Averaged over segments, the pupil channel
+is the *event-related pupil dilation* (ERPD). As for :class:`EyeData`,
+the methods for the pupil are in ``seg.pupil`` and those for the gaze in
+``seg.gaze``:
 
 .. code-block:: python
 
     epochs = d.get_epochs("stim", (-200, 1000) * u.ms)
     erpd = d.get_segments(epochs, "left_pupil", name="stimulus")
-    erpd = erpd.baseline_correct((-200, 0))   # subtract the pre-stimulus mean
-    erpd.plot()
+    erpd = erpd.pupil.baseline_correct((-200, 0))   # subtract the pre-stimulus mean
+    erpd.pupil.plot()
+    erpd["left_pupil"]                               # masked array, time points x segments
+
+All channels share the epochs, so trials are selected once for all of
+them: :meth:`~SegmentedEyeData.filter` selects by label or metadata of
+the epochs, :meth:`~SegmentedEyeData.keep` with a boolean array (e.g.,
+to reject trials with too much missing data):
+
+.. code-block:: python
+
+    seg = d.get_segments(epochs)                     # pupil and gaze of both eyes
+    easy = seg.filter(cond="easy")
+    good = seg.keep(seg["left_pupil"].mask.mean(axis=0) < 0.5)
 
 The length and the time axis of the segments come from the window: the
 time points are ``window[0] + k * 1000/fs`` ms (at 500 Hz: -200, -198, ...,
@@ -381,11 +396,31 @@ keep their epochs (``erpd.epochs``). :meth:`~EyeData.get_segments`
 also takes Intervals, but only if they all have the same length (the time
 axis then starts at 0 at their starts); for intervals between two events,
 it raises an error. The baseline window of
-:meth:`~SegmentedEyeData.baseline_correct` must be within the segments.
+``seg.pupil.baseline_correct()`` must be within the segments.
 
-:func:`group_segments` averages the ERPDs of several participants into a
-:class:`GroupLevelSegmentedData` object, which can be plotted the same way.
-Both can be saved with ``write_file()``.
+``seg.gaze`` analyses the gaze with regions of interest (ROIs, see
+:doc:`gaze`): :meth:`~segmented.SegmentedGazeNamespace.roi_hits` adds a
+channel per eye that is 1 where the gaze is in the ROI and 0 outside, so
+its mean over the segments is the share of trials in which the gaze is
+in the ROI at each time point (a fixation curve, see :doc:`rois`);
+:meth:`~segmented.SegmentedGazeNamespace.dwell_time` and
+:meth:`~segmented.SegmentedGazeNamespace.first_entry` give one value per
+trial, in a table with the metadata of the epochs:
+
+.. code-block:: python
+
+    target = pp.CircularROI((640, 512), radius=100, name="target")
+    seg = seg.gaze.roi_hits(target)          # adds left_target, right_target
+    seg.gaze.plot_roi("target")              # share of trials in the ROI
+    import pandas as pd
+    pd.DataFrame(seg.gaze.dwell_time(target, window=(0, 1000)))
+
+:func:`group_segments` averages the segments of several participants
+(each channel, e.g., ERPDs and fixation curves) into a
+:class:`GroupLevelSegmentedData` object, which has the same methods.
+With ``meanfct=None``, it stacks all trials instead; their epochs then
+have the participant in the metadata column ``"subject"``. Both can be
+saved with ``write_file()``.
 
 For statistical models of trial-by-trial data, it is often easier to work
 with one number per trial. :meth:`~EyeData.stat_per_event` applies a

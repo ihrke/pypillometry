@@ -26,6 +26,9 @@ Experimental setup and calibration
 Regions of interest
 -------------------
 
+ROIs are used with the segments around events by ``seg.gaze`` (see
+:doc:`/user_guide/rois`).
+
 .. autosummary::
    :toctree: generated
    :template: class.rst
