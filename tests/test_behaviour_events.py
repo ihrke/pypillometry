@@ -1,6 +1,6 @@
 """
 Tests for events from behaviour logs: Events.from_table(), sync_clocks(),
-add_events(), event_onset() and the warning for events on another clock.
+add_events(), Events.onset() and the warning for events on another clock.
 """
 import unittest
 import numpy as np
@@ -218,17 +218,17 @@ class TestEventOnset(unittest.TestCase):
 
     def test_onset(self):
         d = fake_data()
-        self.assertEqual(d.event_onset("Start Block 2"), 5000)
-        self.assertEqual(d.event_onset("Start Block 2", units="sec"), 5)
+        self.assertEqual(d.events.onset("Start Block 2"), 5000)
+        self.assertEqual(d.events.onset("Start Block 2", units="sec"), 5)
 
     def test_exact_match_only(self):
         with self.assertRaises(ValueError):
-            fake_data().event_onset("Start Block")    # substring of two
+            fake_data().events.onset("Start Block")    # substring of two
 
     def test_not_unique(self):
         d = fake_data().add_events(Events([2000], ["Start Block 1"]))
         with self.assertRaises(ValueError):
-            d.event_onset("Start Block 1")
+            d.events.onset("Start Block 1")
 
 
 if __name__ == "__main__":

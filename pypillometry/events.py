@@ -1262,6 +1262,43 @@ class Events(Stateful):
         """
         return self._take(self._filter_mask(selector, exact, **conditions))
 
+    def onset(self, label: str, units: str = "ms") -> float:
+        """
+        Onset of the one event with the given label.
+
+        Parameters
+        ----------
+        label : str
+            label of the event; only a label equal to it matches
+        units : str, optional
+            units of the returned onset: "ms" (default), "sec", "min" or "h"
+
+        Returns
+        -------
+        float
+            onset of the event
+
+        Raises
+        ------
+        ValueError
+            if no event or more than one event has this label
+
+        See Also
+        --------
+        filter : select events (e.g., labels that occur several times)
+
+        Examples
+        --------
+        >>> events = Events([100, 2500], ["start", "stim"], units="ms")
+        >>> events.onset("stim", units="sec")
+        2.5
+        """
+        onsets = self.to_units(units).onsets[self.labels == label]
+        if len(onsets) != 1:
+            raise ValueError(f"expected one event with label '{label}', "
+                             f"found {len(onsets)}")
+        return float(onsets[0])
+
     def _filter_mask(self, selector=None, exact: bool = False, **conditions) -> np.ndarray:
         """Boolean mask of the events that match the criteria of :meth:`filter`."""
         mask = np.ones(len(self), dtype=bool) if selector is None \

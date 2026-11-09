@@ -1941,46 +1941,6 @@ class EyeData(state.VersionedState):
         obj._events = obj._check_events(obj._events + events)
         return obj
 
-    def event_onset(self, label: str, units: str = "ms") -> float:
-        """
-        Onset of the one event with the given label.
-
-        Parameters
-        ----------
-        label : str
-            label of the event; only a label equal to it matches
-        units : str, optional
-            units of the returned onset: "ms" (default), "sec", "min" or "h"
-
-        Returns
-        -------
-        float
-            onset of the event
-
-        Raises
-        ------
-        ValueError
-            if no event or more than one event has this label
-
-        Examples
-        --------
-        >>> import pypillometry as pp
-        >>> d = pp.get_example_data("rlmw_002_short")
-        >>> d.event_onset("F_2", units="sec")
-        8.776
-
-        See Also
-        --------
-        events : all events (e.g., ``events.filter(label)`` for labels
-            that occur several times)
-        """
-        events = self._events.to_units(units)
-        onsets = events.onsets[events.labels == label]
-        if len(onsets) != 1:
-            raise ValueError(f"expected one event with label '{label}', "
-                             f"found {len(onsets)}")
-        return float(onsets[0])
-
     @step
     @keephistory
     def fill_time_discontinuities(self, yval=np.nan, print_info=True, inplace=None):
