@@ -146,7 +146,3 @@ What happens to the contents of old files:
   corrected from the time vector, with a warning.
 - Segments with event-locked intervals get :class:`Epochs`.
 - Segments hold their one variable as a channel (``seg["left_pupil"]``).
-- Groups (``GroupLevelSegmentedData``) load as :class:`SegmentedEyeData`.
-  Averages of participants get the participants "1", "2", ... (metadata
-  ``subject``) and an unknown number of trials (``n_trials`` is NaN);
-  stacked trials do not know their participant.

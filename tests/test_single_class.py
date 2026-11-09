@@ -124,15 +124,6 @@ class TestSetupAndCalibration(unittest.TestCase):
                 self.assertEqual(q.experimental_setup.screen_resolution, (1280, 1024))
                 self.assertEqual(list(q.calibration), ["left"])
 
-    def test_state_without_setup(self):
-        """States of development versions of format 3 without the two fields."""
-        from pypillometry import state
-        st = state.to_state(self.d)
-        del st["experimental_setup"], st["calibration"]
-        q = state.from_state(st)
-        self.assertIsNone(q.experimental_setup)
-        self.assertIsNone(q.calibration)
-
 
 class TestDropData(unittest.TestCase):
     def test_keeps_class_and_attributes(self):
@@ -163,20 +154,6 @@ class TestOldClassesLoad(unittest.TestCase):
         self.assertIsNotNone(self.load("gazedata.h5").experimental_setup)
         objs = self.load("dict_of_eyedata.pypil")
         self.assertEqual({type(v) for v in objs.values()}, {pp.EyeData})
-
-    def test_states_with_old_class_names(self):
-        """States (e.g., in HDF5 files) of development versions of format 3."""
-        from pypillometry import state
-        d = pp.get_rlmw_002_short().crop(0, 1000, inplace=False)
-        for old, keep in (("PupilData", ["x", "y"]), ("GazeData", ["pupil"])):
-            with self.subTest(old=old):
-                st = state.to_state(d.drop_data(variables=keep, inplace=False))
-                st["class"] = old
-                if old == "PupilData":
-                    del st["experimental_setup"], st["calibration"]
-                q = state.from_state(st)
-                self.assertIs(type(q), pp.EyeData)
-                self.assertEqual(state.to_state(q)["class"], "EyeData")
 
     def test_pypil_upgrade(self):
         from pypillometry import hdf5

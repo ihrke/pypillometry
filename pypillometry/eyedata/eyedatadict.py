@@ -664,38 +664,6 @@ class EyeDataDict(MutableMapping, Stateful):
             self.rec_layers = np.asarray(self.rec_layers, dtype=LAYER_DTYPE)
         elif first is not None:
             self._init_rec_layers()
-        if "_nan" in self.layer_names:
-            self._drop_nan_layer()
-        if "_blink_applied" in self.layer_names:
-            # development versions of 2.2 (format 3) masked a blink only if
-            # it was applied as mask; now every blink masks the data
-            self._drop_layer("_blink_applied")
-
-    def _drop_nan_layer(self) -> None:
-        """Remove the layer ``"_nan"`` of states written by development
-        versions of 2.2 (format 3 before the mask policy was used for all
-        processing): it marked samples that were NaN when they were set.
-        Where such a sample holds a value now (filled by a filter) and is
-        not interpolated, it stays masked (``"user"`` layer)."""
-        for key, layers in self.layers.items():
-            filled = (self.get_layer(key, "_nan") & ~self.get_layer(key, "interpolated")
-                      & ~np.isnan(self.data[key]))
-            if filled.any():
-                self.set_layer(key, "user", filled)
-        self._drop_layer("_nan")
-
-    def _drop_layer(self, name: str) -> None:
-        """Remove layer `name` and its bit (the bits of the later layers move down)."""
-        i = self.layer_names.index(name)
-        low, high = (1 << i) - 1, ~((1 << (i + 1)) - 1) & 0xFFFF
-
-        def drop(arr):
-            return ((arr & low) | ((arr & high) >> 1)).astype(LAYER_DTYPE)
-
-        self.layers = {key: drop(arr) for key, arr in self.layers.items()}
-        if self.rec_layers is not None:
-            self.rec_layers = drop(self.rec_layers)
-        del self.layer_names[i]
 
     def copy(self) -> 'EyeDataDict':
         """Create a deep copy of the dictionary (data and masks)."""

@@ -658,31 +658,6 @@ class TestNoStoredMask:
                                       [0, 0, 1, 0, 0, 0])
         assert r.data.layer_names == ["user"]
 
-    def test_development_states_with_the_nan_layer(self):
-        """Format-3 states written before step 7 have the layer "_nan" (NaN at
-        assignment); filled samples stay masked as "user", the bit is removed."""
-        import pypillometry as pp
-        from pypillometry import state
-        pupil = np.arange(6, dtype=float)
-        pupil[[1, 2]] = np.nan
-        d = pp.EyeData(left_pupil=pupil, sampling_rate=100)
-        d.data.set_layer("left_pupil", "blink", [0, 0, 0, 0, 1, 0])
-        st = state.to_state(d)
-        dd = st["data"]
-        # as written before: "_nan" registered between other layers
-        dd["layer_names"] = ["_nan", "blink", "interpolated"]
-        dd["values"]["left_pupil"][[1, 3]] = [10., 30.]  # 1 filled by a filter, 3 interpolated
-        dd["layers"]["left_pupil"] = np.array([0, 1, 1, 1 | 4, 2, 0], dtype=LAYER_DTYPE)
-        dd["rec_layers"] = np.array([0, 0, 0, 0, 4, 0], dtype=LAYER_DTYPE)
-        r = state.from_state(st)
-        assert r.data.layer_names == ["blink", "interpolated", "user"]
-        np.testing.assert_array_equal(np.flatnonzero(r.data.get_layer("left_pupil", "user")), [1])
-        np.testing.assert_array_equal(np.flatnonzero(r.data.get_layer("left_pupil", "blink")), [4])
-        np.testing.assert_array_equal(
-            np.flatnonzero(r.data.get_layer("left_pupil", "interpolated")), [3])
-        np.testing.assert_array_equal(np.flatnonzero(r.data.get_rec_layer("interpolated")), [4])
-        np.testing.assert_array_equal(r.mask("left", "pupil"), [0, 1, 1, 0, 1, 0])
-
 
 class TestConsumersUsePolicy:
     """Processing and analyses read the data under a mask policy (step 7)."""

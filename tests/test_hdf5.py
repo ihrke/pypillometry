@@ -104,7 +104,7 @@ class TestFixtures(HDF5TestCase):
 
     def test_v0_pickles_to_hdf5(self):
         for name in ["eyedata", "pupildata", "gazedata", "fakeeyedata",
-                     "segmented", "group_segmented"]:
+                     "segmented"]:
             with self.subTest(name=name):
                 obj = pp.read_pickle(os.path.join(DATA, f"{name}_v0.pkl"))
                 st = state.to_state(obj)

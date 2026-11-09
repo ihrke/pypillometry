@@ -141,12 +141,6 @@ class EyeData(state.VersionedState):
     # the samples (_keep_samples, _decimate, _insert_samples) apply to all
     _SAMPLE_ALIGNED = ("data",)
 
-    def _set_state(self, st: dict):
-        # PupilData states of development versions of format 3 (before
-        # 2.2) have no experimental setup and calibration; this can be
-        # removed before 2.2 is released
-        super()._set_state({"experimental_setup": None, "calibration": None, **st})
-
     def __init__(self, 
                     time: np.ndarray = None,
                     left_x: np.ndarray = None,
