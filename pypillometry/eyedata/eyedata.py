@@ -169,87 +169,37 @@ class EyeData(state.VersionedState):
         for eye, x, y in (("left", left_x, left_y), ("right", right_x, right_y)):
             if (x is None) != (y is None):
                 raise ValueError(f"{eye}_x and {eye}_y must be provided together")
-        self.data=EyeDataDict(left_x=left_x, left_y=left_y, left_pupil=left_pupil,
+        self.data = EyeDataDict(left_x=left_x, left_y=left_y, left_pupil=left_pupil,
                                 right_x=right_x, right_y=right_y, right_pupil=right_pupil)
-        
-        
-        if events is not None:
-            if event_onsets is not None or event_labels is not None:
-                raise ValueError("give either events or event_onsets/event_labels, not both")
-        self._init_common(time, sampling_rate, 
-                          event_onsets, event_labels, 
-                          name, fill_time_discontinuities, 
-                          info=info, inplace=inplace,
-                          experimental_setup=experimental_setup,
-                          calibration=calibration, events=events)
 
-        self.original=None
-        if keep_orig: 
-            self.original=self.copy()
-
-
-
-    def _init_common(self, time: np.ndarray,
-                    sampling_rate: float,
-                    event_onsets: np.ndarray,
-                    event_labels: np.ndarray,
-                    name: str|None,
-                    fill_time_discontinuities: bool,
-                    inplace: Optional[bool],
-                    info: dict = None,
-                    experimental_setup: Optional[ExperimentalSetup] = None,
-                    calibration: Optional[dict] = None,
-                    events: Optional[Events] = None):
-        """
-        Common code for the child-classes of EyeData.
-        Assumes that self.data is already set and filled.
-
-        Private method.
-        """
-        logger.debug("Initializing common data")
-        if self.data is None:
-            raise ValueError("data must be available before calling _init_common()")
-        
+        if events is not None and (event_onsets is not None or event_labels is not None):
+            raise ValueError("give either events or event_onsets/event_labels, not both")
         if time is None and sampling_rate is None:
             raise ValueError("Either `time` or `sampling_rate` must be provided")
 
-        ## name
-        if name is None:
-            self.name = self._random_id()
-        else:
-            self.name=name
+        self.name = self._random_id() if name is None else name
 
-        ## set time array and sampling rate
+        ## time array and sampling rate
         if time is None:
-            tx=np.arange(len(self.data))*1000./sampling_rate
+            tx = np.arange(len(self.data)) * 1000. / sampling_rate
         else:
-            tx=np.array(time, dtype=float)
-
+            tx = np.array(time, dtype=float)
         if sampling_rate is None:
-            sampling_rate=np.round(1000./np.median(np.diff(tx)))
+            sampling_rate = np.round(1000. / np.median(np.diff(tx)))
         self._set_timebase(tx, sampling_rate)
 
-        if events is not None:
-            self._events = self._check_events(events)
-        else:
+        if events is None:
             if event_onsets is None:
                 event_onsets = []
             if event_labels is None:
                 event_labels = np.full(len(event_onsets), "")
-            self._events = self._check_events(Events(event_onsets, event_labels, units="ms"))
+            events = Events(event_onsets, event_labels, units="ms")
+        self._events = self._check_events(events)
 
-        ## empty parameter dict
         self.params = dict()
-
-        ## start with empty history    
-        self.history=[]            
-
-        ## init whether or not to do operations in place
-        self.inplace=inplace 
-
-        ## set info
+        self.history = []
+        self.inplace = inplace
         self.info = info if info is not None else {}
-
         ## experimental setup (geometry) and spatial calibration data
         self.experimental_setup = experimental_setup
         self.calibration = calibration
@@ -258,6 +208,10 @@ class EyeData(state.VersionedState):
         ## @keephistory and keep it out of the history)
         if fill_time_discontinuities:
             inspect.unwrap(type(self).fill_time_discontinuities)(self, inplace=True)
+
+        self.original = None
+        if keep_orig:
+            self.original = self.copy()
 
     def _set_timebase(self, tx, fs=None):
         """
