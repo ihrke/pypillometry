@@ -577,22 +577,13 @@ def _v2_eyedatadict(st):
 
     The mask of version 2 (``mask``) becomes layers: masked samples that are
     not NaN the ``"user"`` layer (NaN values are masked by their value).
-    States written by development versions between 2.1 and 3 may already
-    have (some) layers.
     """
     st = dict(st)
     values = st["values"]
-    if st.get("layers") is None:
-        st["layers"] = {k: np.zeros(np.shape(v), dtype=np.uint16) for k, v in values.items()}
-    else:
-        st["layers"] = {k: np.array(v, dtype=np.uint16) for k, v in st["layers"].items()}
-    st["layer_names"] = [str(name) for name in st.get("layer_names") or []]
-    if st.get("rec_layers") is not None:
-        st["rec_layers"] = np.array(st["rec_layers"], dtype=np.uint16)
-    elif values:
-        st["rec_layers"] = np.zeros(np.shape(next(iter(values.values()))), dtype=np.uint16)
-    else:
-        st["rec_layers"] = None
+    st["layers"] = {k: np.zeros(np.shape(v), dtype=np.uint16) for k, v in values.items()}
+    st["layer_names"] = []
+    st["rec_layers"] = (np.zeros(np.shape(next(iter(values.values()))), dtype=np.uint16)
+                        if values else None)
     layers = _V3Layers(st)
     for key, m in (st.pop("mask", None) or {}).items():
         m = np.asarray(m).astype(bool) & ~layers.mask(key)
@@ -743,8 +734,8 @@ def _v2_params(state):
 def _v3_channels(state, class_name):
     """
     Segments with one channel (`variable`, `data`, `intervals`; version 2
-    after the conversion of the intervals, and development versions of 2.2)
-    -> segments with several channels (version 3; see the version history).
+    after the conversion of the intervals) -> segments with several
+    channels (version 3; see the version history).
 
     Group-level segments become segments: if there is one column per
     subject, they are averages with Epochs without a time (NaN onsets),

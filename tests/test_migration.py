@@ -166,16 +166,6 @@ class TestMigratedState:
             assert blink.any() and d.mask(key)[blink].all()
             assert not d.data.get_layer(key, "user").any()
 
-    def test_development_layer_blink_applied(self):
-        """Format-3 files of development versions with the layer `_blink_applied`."""
-        d = pp.EyeData(left_pupil=np.arange(6.), sampling_rate=100)
-        d.data.set_layer("left_pupil", "_blink_applied", [0, 1, 0, 0, 0, 0])
-        d.data.set_layer("left_pupil", "blink", [0, 1, 1, 0, 0, 0])
-        d.data.set_layer("left_pupil", "user", [0, 0, 0, 0, 1, 0])
-        r = state.from_state(state.to_state(d))
-        assert r.data.layer_names == ["blink", "user"]
-        np.testing.assert_array_equal(r.mask("left", "pupil"), [0, 1, 1, 0, 1, 0])
-
     def test_excluded_is_recording_wide(self):
         old = format2_state("eyedata.h5")
         d = state.from_state(format2_state("eyedata.h5"))

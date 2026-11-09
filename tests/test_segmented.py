@@ -575,17 +575,12 @@ class TestIO(unittest.TestCase):
                     np.testing.assert_array_equal(loaded._valid_share(ch), group._valid_share(ch))
 
     def single_channel_state(self, group=False):
-        """State of segments with one channel (layout of development versions of 2.2)."""
+        """Format-2 state of segments with one channel (pypillometry 2.1)."""
         data = ma.masked_array(np.arange(12.).reshape(4, 3), mask=np.eye(4, 3, dtype=bool))
-        st = {"format_version": 3, "class": "SegmentedEyeData", "name": "old",
+        st = {"format_version": 2, "class": "SegmentedEyeData", "name": "old",
               "variable": "left_pupil", "tx": np.arange(4.),
               "data": {"values": ma.getdata(data), "mask": ma.getmaskarray(data)},
-              "intervals": {"class": "Epochs",
-                            "events": {"onsets": np.array([0., 10., 20.]),
-                                       "labels": np.array(["a", "b", "c"]), "units": "ms",
-                                       "data_time_range": None, "meta": {}, "needs_sync": False},
-                            "window": (0., 4.), "label": "a"},
-              "sampling_rate": 1000.}
+              "intervals": None, "sampling_rate": 1000.}
         if group:
             st.update({"class": "GroupLevelSegmentedData", "n_subjects": 3,
                        "mask_percent": np.array([10., 20., 30., 40.])})
@@ -594,7 +589,7 @@ class TestIO(unittest.TestCase):
     def test_single_channel_layout(self):
         s = state.from_state(self.single_channel_state())
         self.assertEqual(s.channels, ["left_pupil"])
-        self.assertEqual(s.epochs.label, "a")
+        self.assertIsNone(s.epochs)
         self.assertTrue(s["left_pupil"].mask[0, 0])
         self.assertNotIn("variable", state.to_state(s))
 
