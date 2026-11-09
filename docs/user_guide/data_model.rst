@@ -55,6 +55,24 @@ values and layers together.
     d.tx                   # time in ms
     d.fs                   # sampling rate in Hz
 
+The channels of the short example dataset over 10 seconds, all on the
+same time axis:
+
+.. plot::
+   :include-source: False
+
+   d = pp.get_example_data("rlmw_002_short")
+   sel = (d.tx >= 5000) & (d.tx < 15000)
+   keys = ["left_pupil", "right_pupil", "left_x", "right_x", "left_y", "right_y"]
+   fig, axes = plt.subplots(len(keys), 1, figsize=(8, 5.5), sharex=True)
+   for ax, key in zip(axes, keys):
+       ax.plot(d.tx[sel] / 1000, d[key][sel], lw=0.8, color="C0" if key.startswith("left") else "C1")
+       ax.set_ylabel(key, rotation=0, ha="right", va="center", fontsize=9)
+       ax.tick_params(labelsize=8)
+       ax.spines[["top", "right"]].set_visible(False)
+   axes[-1].set_xlabel("time (s): d.tx, shared by all channels")
+   fig.tight_layout(h_pad=0.3)
+
 Assigning to a channel (``d["left_pupil"] = ...``) replaces its mask
 layers as well; to change only the values, see
 :ref:`missing-data-changing-values`.
@@ -213,6 +231,30 @@ during them, also variables added later:
     d = d.exclude_intervals(d.get_intervals(start="<start>", end="Start Block 1", units="ms"))
     d.get_excluded()                            # the excluded periods
     d.excluded_duration("min")                  # their total duration
+
+For example, with the first 5 seconds and a "break" excluded,
+:meth:`~EyeData.get_excluded` and :meth:`~EyeData.get_included` give
+the excluded periods and the parts in between:
+
+.. plot::
+   :include-source: False
+
+   d = pp.get_example_data("rlmw_002_short")
+   d.exclude_intervals([(0, 5000), (19500, 23000)])      # e.g. before the task, a break
+
+   fig, ax = plt.subplots(figsize=(8, 2.8))
+   ax.plot(d.tx / 1000, d["left_pupil"], lw=0.7, color="C0")
+   for a, b in d.get_excluded().intervals:
+       ax.axvspan(a / 1000, b / 1000, color="0.4", alpha=0.25, lw=0)
+   y = ax.get_ylim()[0]
+   for a, b in d.get_included().intervals:
+       ax.annotate("", xy=(b / 1000, y), xytext=(a / 1000, y),
+                   arrowprops=dict(arrowstyle="<->", color="C2", lw=1.5))
+   ax.plot([], [], color="0.4", alpha=0.25, lw=8, label="get_excluded()")
+   ax.plot([], [], color="C2", lw=1.5, label="get_included()")
+   ax.legend(frameon=False, fontsize=8, loc="upper right")
+   ax.set(xlabel="time (s)", ylabel="left pupil")
+   fig.tight_layout()
 
 :meth:`~EyeData.keep_intervals` does the opposite: it excludes
 everything outside the given periods, e.g., to keep only the fMRI run:

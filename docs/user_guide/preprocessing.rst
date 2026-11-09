@@ -65,6 +65,38 @@ all later steps (filters, segments, statistics); they keep the
 ``"interpolated"`` layer, so they can be left out with
 ``policy="strict"`` (see :doc:`missing_data`).
 
+One blink, before and after: the pupil size drops and is then missing
+while the eye is closed; the detected blink (red) is extended by a margin
+on each side and replaced by a smooth curve (green):
+
+.. plot::
+   :include-source: False
+
+   from pypillometry import u
+
+   raw = pp.get_example_data("rlmw_002_short")
+   d = raw | pp.pupil.blinks_detect() | pp.pupil.blinks_interpolate()
+   t0, t1 = 31800, 32900
+   sel = (raw.tx >= t0) & (raw.tx < t1)
+   t = raw.tx[sel] / 1000
+
+   fig, ax = plt.subplots(figsize=(8, 3.4))
+   for a, b in d.get_interpolated("left", "pupil")["left_pupil"].intervals:
+       if a < t1 and b > t0:
+           ax.axvspan(a / 1000, b / 1000, color="C2", alpha=0.12, lw=0)
+   for a, b in d.get_blinks("left", "pupil")["left_pupil"].intervals:
+       if a < t1 and b > t0:
+           ax.axvspan(a / 1000, b / 1000, color="C3", alpha=0.25, lw=0)
+   ax.plot(t, raw.data["left_pupil"][sel], color="0.5", lw=2.5, label="recorded")
+   ax.plot(t, d.data["left_pupil"][sel], color="C2", lw=1.2, label="after blinks_interpolate()")
+   ax.plot([], [], color="C3", alpha=0.25, lw=8, label="blink (detected)")
+   ax.plot([], [], color="C2", alpha=0.12, lw=8, label="interpolated (blink + margins)")
+   ax.set_xlabel("time (s)")
+   ax.set_ylabel("left pupil")
+   ax.set_xlim(t[0], t[-1])
+   ax.legend(fontsize=8, loc="lower left", frameon=False)
+   fig.tight_layout()
+
 Blinks differ a lot between participants, and checking the result for
 each participant is worth the effort. The tutorial :doc:`/notebooks/blinks`
 shows how.
@@ -121,6 +153,38 @@ than a straight line.
 sampling interval (masked samples are left out), so filter before
 downsampling to a rate close to the frequencies of interest.
 
+A 4 Hz low-pass filter removes the fast noise:
+
+.. plot::
+
+   d = pp.get_example_data("rlmw_002_short") | pp.pupil.blinks_detect() | pp.pupil.blinks_interpolate()
+   filtered = d.pupil.lowpass_filter(cutoff=4, inplace=False)
+
+   sel = (d.tx >= 12000) & (d.tx < 17000)
+   fig, ax = plt.subplots(figsize=(8, 3))
+   ax.plot(d.tx[sel] / 1000, d["left_pupil"][sel], color="0.6", lw=1, label="before")
+   ax.plot(d.tx[sel] / 1000, filtered["left_pupil"][sel], color="C0", lw=1.5,
+           label="lowpass_filter(cutoff=4)")
+   ax.set(xlabel="time (s)", ylabel="left pupil")
+   ax.legend(frameon=False, fontsize=8)
+   fig.tight_layout()
+
+Downsampling to 50 Hz keeps the slow changes of the pupil:
+
+.. plot::
+
+   d = pp.get_example_data("rlmw_002_short") | pp.pupil.blinks_detect() | pp.pupil.blinks_interpolate()
+   low = d.downsample(50, inplace=False)          # 500 Hz -> 50 Hz
+
+   fig, ax = plt.subplots(figsize=(8, 3))
+   for obj, style, label in [(d, dict(color="0.6", lw=1), "500 Hz"),
+                             (low, dict(color="C1", marker="o", ms=3, lw=1), "downsample(50): 50 Hz")]:
+       sel = (obj.tx >= 12000) & (obj.tx < 14000)
+       ax.plot(obj.tx[sel] / 1000, obj["left_pupil"][sel], label=label, **style)
+   ax.set(xlabel="time (s)", ylabel="left pupil")
+   ax.legend(frameon=False, fontsize=8)
+   fig.tight_layout()
+
 
 Scaling
 -------
@@ -152,6 +216,22 @@ relative to a baseline before each event, see
 ``seg.pupil.baseline_correct(window, method="percent")``
 (:doc:`events_intervals`).
 
+All methods keep the shape of the signal and change only its units (the
+y-axes):
+
+.. plot::
+
+   d = pp.get_example_data("rlmw_002_short") | pp.pupil.blinks_detect() | pp.pupil.blinks_interpolate()
+
+   fig, axes = plt.subplots(1, 4, figsize=(11, 2.6), sharex=True)
+   for ax, method in zip(axes, ["z", "robust", "minmax", "percent"]):
+       s = d.scale("pupil", method=method, inplace=False)
+       ax.plot(s.tx / 1000, s["left_pupil"], lw=0.7)
+       ax.set_title(f'method="{method}"', fontsize=10)
+       ax.set_xlabel("time (s)")
+   axes[0].set_ylabel("scaled left pupil")
+   fig.tight_layout()
+
 
 Combining the eyes
 ------------------
@@ -173,6 +253,25 @@ result is stored as ``mean_pupil`` (eye ``"mean"``; another name with
 ``"blink"`` and ``"interpolated"`` where both eyes blinked.
 :meth:`~EyeData.merge_eyes` simply averages any variable. See
 :doc:`/notebooks/eyes_and_variables`.
+
+Where the left eye is masked during a blink, the merged pupil continues
+from the right eye, shifted by the difference between the eyes, so it
+has no jump and no gap:
+
+.. plot::
+
+   d = pp.get_example_data("rlmw_002_short") | pp.pupil.blinks_detect()
+   d.pupil.merge_eyes()                     # adds "mean_pupil"
+
+   sel = (d.tx >= 9800) & (d.tx < 12200)
+   t = d.tx[sel] / 1000
+   fig, ax = plt.subplots(figsize=(8, 3))
+   ax.plot(t, d["left_pupil"][sel], color="C0", lw=1, label="left (masked: blink)")
+   ax.plot(t, d["right_pupil"][sel], color="C1", lw=1, label="right")
+   ax.plot(t, d["mean_pupil"][sel], color="k", lw=1.5, ls="--", label="mean_pupil")
+   ax.set(xlabel="time (s)", ylabel="pupil")
+   ax.legend(frameon=False, fontsize=8, loc="lower left")
+   fig.tight_layout()
 
 
 Selecting and cleaning up data
