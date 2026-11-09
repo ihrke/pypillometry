@@ -47,6 +47,8 @@ This version is a major refactor of the package without changing functionality (
 
 ### Fixed
 
+- `from_eyelink()` failed with "time data ... does not match format" in
+  programs that use a locale with non-English day and month names
 - Download progress bars hidden in `pp.nologging()` 
 - `fs` after `downsample` did not match the time vector
 - `reset_time` did not shift blinks stored in time units

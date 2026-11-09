@@ -721,10 +721,28 @@ def _read_edf(fname: str):
     if show_eyelinkio_output:
         logger.debug(f"Loading EDF file: {fname}")
         logger.debug("eyelinkio output will be displayed below:")
-        edf = eyelinkio.read_edf(fname)
+        with _c_time_locale():
+            edf = eyelinkio.read_edf(fname)
     else:
         logger.info(f"Loading EDF file: {fname} (current log level: {current_level}, set to DEBUG to see eyelinkio output)")
-        with suppress_all_output():
+        with suppress_all_output(), _c_time_locale():
             edf = eyelinkio.read_edf(fname)
 
     return edf
+
+
+@contextmanager
+def _c_time_locale():
+    """Use the "C" locale for times while reading an EDF file.
+
+    eyelinkio parses the English date in the file header ("Fri Feb 14
+    ...") with ``strptime``, which fails if a program activated a locale
+    with other names of days and months (e.g., Norwegian).
+    """
+    import locale
+    old = locale.setlocale(locale.LC_TIME)
+    try:
+        locale.setlocale(locale.LC_TIME, "C")
+        yield
+    finally:
+        locale.setlocale(locale.LC_TIME, old)

@@ -420,5 +420,20 @@ class TestIO(unittest.TestCase):
         finally:
             pp.logging_set_level(level)
 
+    def test_edf_dates_independent_of_locale(self):
+        """EDF headers have English dates: they are read with the "C" time
+        locale, and the locale of the program is restored afterwards"""
+        import locale
+        import time
+        from pypillometry.io import _c_time_locale
+        before = locale.setlocale(locale.LC_TIME)
+        with _c_time_locale():
+            self.assertEqual(locale.setlocale(locale.LC_TIME), "C")
+            time.strptime("Fri Feb 14 08:48:33 2020", "%a %b  %d %H:%M:%S %Y")
+        self.assertEqual(locale.setlocale(locale.LC_TIME), before)
+        with self.assertRaises(RuntimeError), _c_time_locale():
+            raise RuntimeError
+        self.assertEqual(locale.setlocale(locale.LC_TIME), before)
+
 if __name__ == '__main__':
     unittest.main()
