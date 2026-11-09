@@ -5,9 +5,7 @@
 A new data model behind the same kind of analyses: one data class, mask
 layers instead of a single mask, pipelines, and the pupil, gaze and plot
 methods in namespaces. Most scripts need changes (old names are gone, without
-forwarders). See
-[Upgrading from 2.1](../user_guide/upgrading.rst) for an overview and the
-tables below for every changed call.
+forwarders); the tables below list every changed call.
 
 ### Breaking changes
 
