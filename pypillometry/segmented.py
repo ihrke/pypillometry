@@ -195,54 +195,35 @@ def _window_mask(tx, window):
     return sel
 
 
-def _sparklines(tx, series):
-    """
-    HTML with a small PNG of the curves in `series` (label -> values), one
-    row each (empty string if matplotlib cannot draw it).
-    """
+def _sparkline(tx, values):
+    """Small PNG (data URI) of `values` over `tx` with a line at time 0, or
+    None if matplotlib cannot draw it."""
     import base64
     from io import BytesIO
     try:
         from matplotlib.figure import Figure
         from matplotlib.backends.backend_agg import FigureCanvasAgg
-        fig = Figure(figsize=(3, 0.45 * len(series) + 0.2), dpi=100)
-        axs = np.atleast_1d(fig.subplots(len(series), 1, sharex=True))
-        for ax, (label, values) in zip(axs, series.items()):
-            ax.plot(tx, values, color="#1f77b4", linewidth=1.2)
-            ax.axvline(x=0, color="#d62728", linewidth=1, linestyle="--", alpha=0.7)
-            ax.set_xlim(tx[0], tx[-1])
-            ax.text(0.01, 0.95, label, transform=ax.transAxes, fontsize=7,
-                    va="top", color="#555")
-            ax.axis("off")
-        fig.tight_layout(pad=0.1)
+        fig = Figure(figsize=(1.8, 0.6), dpi=100)
+        ax = fig.subplots()
+        ax.plot(tx, values, color="#1f77b4", linewidth=1)
+        ax.axvline(x=0, color="#d62728", linewidth=1, linestyle="--", alpha=0.7)
+        ax.set_xlim(tx[0], tx[-1])
+        ax.axis("off")
         buf = BytesIO()
         FigureCanvasAgg(fig).print_png(buf)
-        img = base64.b64encode(buf.getvalue()).decode("ascii")
-    except Exception:
-        return ""
-    return f'''
-        <div style="margin-top:10px;">
-          <div style="font-size:0.85em; color:#666; margin-bottom:4px;">Mean per channel (red line = event onset)</div>
-          <img src="data:image/png;base64,{img}" alt="Mean signal" style="width:100%; max-width:300px; border-radius:4px;">
-        </div>'''
+    except Exception as exc:  # pragma: no cover - optional feature
+        logger.debug(f"Could not render sparkline: {exc}")
+        return None
+    return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode("ascii")
 
 
-def _html_card(title, name, overview, extra=""):
-    """HTML card with a title, a grid of (label, value) items and `extra` HTML."""
-    items = "".join(
-        f'''<div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
-              <div style="font-size:0.85em; color:#666; text-transform:uppercase;">{label}</div>
-              <div style="font-weight:600;">{value}</div>
-            </div>'''
-        for label, value in overview)
-    return f'''
-    <div style="font-family:system-ui, sans-serif; border:1px solid #ddd; border-radius:6px; padding:12px; max-width:400px;">
-      <h3 style="margin-top:0;">{title} — <span style="color:#555;">{name}</span></h3>
-      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:8px;">
-        {items}
-      </div>
-      {extra}
-    </div>'''
+def _render_template(template, **context):
+    """Render the template `template` of pypillometry/templates (autoescaped, so
+    that names and labels with "<" or "&" are shown as text)."""
+    from importlib import resources
+    from jinja2 import Environment
+    source = resources.read_text("pypillometry.templates", template)
+    return Environment(autoescape=True).from_string(source).render(**context)
 
 
 # --------------------------------------------------------------------------
@@ -1167,7 +1148,6 @@ class SegmentedEyeData(state.VersionedState):
         s = self.summary()
         w = s["window"]
         items = [
-            ("Channels", ", ".join(s["channels"])),
             ("Segments", f"{s['n_segments']:,}"),
             ("Time points", f"{s['n_timepoints']:,}"),
             ("Window", f"{w[0]:.0f} to {w[1]:.0f} ms"),
@@ -1180,11 +1160,21 @@ class SegmentedEyeData(state.VersionedState):
         return items
 
     def _repr_html_(self) -> str:
-        """Rich HTML representation for Jupyter notebooks."""
-        series = {ch: np.ma.filled(np.mean(arr, axis=1).astype(float), np.nan)
-                  for ch, arr in list(self.data.items())[:8]}
-        return _html_card(type(self).__name__, self.name, self._overview(),
-                          _sparklines(self.tx, series))
+        """Rich HTML representation for Jupyter notebooks (template
+        templates/segmented_repr.html)."""
+        channels = [{"name": ch,
+                     "missing": f"{np.mean(self._percent_missing(ch)):.1f}%",
+                     "sparkline": _sparkline(self.tx, np.ma.filled(
+                         np.mean(arr, axis=1).astype(float), np.nan))}
+                    for ch, arr in self.data.items()]
+        return _render_template(
+            "segmented_repr.html", class_name=type(self).__name__, name=self.name,
+            overview=self._overview(), channels=channels, columns=self._columns_text(),
+            epochs=None if self.epochs is None else repr(self.epochs))
+
+    def _columns_text(self) -> str:
+        """What the columns of the data are (for the HTML display)."""
+        return "segments"
 
     # ----------------------------------------------------------------------
     # Plotting
@@ -1665,6 +1655,9 @@ class GroupLevelSegmentedData(SegmentedEyeData):
         cols = "trials" if self.stacked else "subject averages"
         return (f"{self.n_subjects} subjects, {self.n_segments} {cols} x "
                 f"{self.n_timepoints} time points")
+
+    def _columns_text(self) -> str:
+        return "trials" if self.stacked else "subject averages"
 
     def _overview(self):
         items = super()._overview()

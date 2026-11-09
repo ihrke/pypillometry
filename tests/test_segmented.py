@@ -273,6 +273,14 @@ class TestDisplay(unittest.TestCase):
         for text in ("SegmentedEyeData", "test", "left_pupil", "Segments", "Time points"):
             self.assertIn(text, html)
 
+    def test_repr_html_template(self):
+        """one sparkline per channel; names are escaped"""
+        seg = SegmentedEyeData("<b>x</b>", np.arange(5.), {"left_pupil": np.ones((5, 2)),
+                                                           "left_x": np.ones((5, 2))})
+        html = seg._repr_html_()
+        self.assertEqual(html.count("<img"), 2)
+        self.assertIn("&lt;b&gt;x&lt;/b&gt;", html)
+
 
 class TestBaselineCorrection(unittest.TestCase):
 
