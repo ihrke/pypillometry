@@ -68,7 +68,8 @@ Working with data objects
       :link: /notebooks/summary
       :link-type: doc
 
-      Summaries of one or many datasets as tables.
+      Summaries of one or many datasets: contents, data quality, masked
+      data and one value per trial, as tables.
 
 
 Preprocessing and plotting
