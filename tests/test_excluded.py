@@ -254,12 +254,6 @@ class TestIncludedSplitRemove(unittest.TestCase):
         np.testing.assert_array_equal(r.data["left_pupil"], c.data["left_pupil"])
         np.testing.assert_array_equal(r.events.onsets, c.events.onsets)
 
-    def test_sub_slice_deprecated(self):
-        d = _make_data()
-        with self.assertWarns(DeprecationWarning):
-            s = d.sub_slice(6000, 8000)
-        np.testing.assert_array_equal(s.tx, d.crop(6000, 8000).tx)
-
 if __name__ == "__main__":
     unittest.main()
 

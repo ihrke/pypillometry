@@ -11,7 +11,6 @@ import copy
 import inspect
 import numbers
 import sys
-import warnings
 from collections.abc import Iterable
 from random import choice
 from typing import Callable, Dict, List, Optional, Tuple, Union
@@ -1296,18 +1295,6 @@ class EyeData(state.VersionedState):
         obj._keep_samples(keep, keep_events=(on >= start) & (on <= end))
         return obj
 
-    def sub_slice(self, start: float=-np.inf, end: float=np.inf,
-                  units: str="ms", inplace=None):
-        """
-        Deprecated alias of :meth:`crop`.
-
-        .. deprecated:: 2.1
-           Use :meth:`crop` instead; `sub_slice` will be removed.
-        """
-        warnings.warn("sub_slice() is deprecated, use crop() instead",
-                      DeprecationWarning, stacklevel=2)
-        return self.crop(start, end, units=units, inplace=inplace)
-    
     def write_file(self, fname:str, compress:bool=True):
         """
         Save to file (using :func:`~pypillometry.io.write_pickle`).

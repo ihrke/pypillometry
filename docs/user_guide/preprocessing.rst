@@ -175,8 +175,8 @@ Selecting and cleaning up data
    EyeData.copy
 
 :meth:`~EyeData.crop` cuts out a time range, e.g., one block
-of the experiment: ``d.crop(3 * u.min, 5 * u.min)`` (``sub_slice`` is a
-deprecated alias). :meth:`~EyeData.remove_intervals` removes periods
+of the experiment: ``d.crop(3 * u.min, 5 * u.min)``.
+:meth:`~EyeData.remove_intervals` removes periods
 in the middle, e.g., breaks, and joins the rest: the time vector and the
 events after a removed period are shifted back, so that there are no gaps.
 :meth:`~EyeData.reset_time` makes the time vector start at zero
