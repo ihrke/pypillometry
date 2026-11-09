@@ -29,6 +29,7 @@ from ..intervals import Intervals, _as_intervals
 from ..plot import PlotNamespace
 from ..signal import baseline
 from ..templates import render, sparkline
+from ..table import Table
 from ..units import (UNSET, _has_units, _time_values_and_units, parse_time, _ms_to_samples,
                      _samples_to_ms, _ms_to, _to_ms)
 from .eyedatadict import EyeDataDict, REC_LAYERS, _join_key
@@ -972,7 +973,7 @@ class EyeData(state.VersionedState):
         return intervals_obj.intervals
 
     def layer_stats(self, layers=None, eyes: str|list = [], variables: str|list = [],
-                    units: str = "ms", policy="default") -> "Table":
+                    units: str = "ms", policy="default") -> Table:
         """
         Statistics of the mask layers: how often and how long each channel is
         marked by each layer.
@@ -1034,7 +1035,6 @@ class EyeData(state.VersionedState):
         >>> int(t["n"][4])                        # blinks of the left pupil
         14
         """
-        from ..table import Table
         requested = None if layers is None else (
             [layers] if isinstance(layers, str) else list(layers))
         channel_layers = [n for n in self.data.layer_names if n not in REC_LAYERS]

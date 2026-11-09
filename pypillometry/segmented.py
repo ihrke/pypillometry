@@ -28,6 +28,7 @@ from .units import parse_time, _ms_to_samples
 from .convenience import _warn_if_ignores_mask, _check_accepts_axis, _plain_values
 from .eyedata.namespace import Namespace, accessor
 from .templates import render, sparkline
+from .table import Table
 
 __all__ = [
     "SegmentedEyeData", "concat_segments", "group_segments",
@@ -516,7 +517,6 @@ class SegmentedGazeNamespace(Namespace):
         """Table with the epochs' onsets, labels and metadata (if the
         segments have Epochs) and `values`."""
         from .epochs import Epochs
-        from .table import Table
         ep = self._d.epochs
         columns = dict(ep.events.to_table()) if isinstance(ep, Epochs) else {}
         columns.update(values)
@@ -585,7 +585,7 @@ class SegmentedGazeNamespace(Namespace):
             out[ch] = values
         return out
 
-    def dwell_time(self, roi, eyes=[], window=None) -> "Table":
+    def dwell_time(self, roi, eyes=[], window=None) -> Table:
         """
         Time the gaze spends in a region of interest in each trial (ms).
 
@@ -637,7 +637,7 @@ class SegmentedGazeNamespace(Namespace):
             values[f"{eye}_{name}"] = np.asarray(n_in, dtype=float) * step
         return self._table(values)
 
-    def first_entry(self, roi, eyes=[], window=(0, None)) -> "Table":
+    def first_entry(self, roi, eyes=[], window=(0, None)) -> Table:
         """
         Time of the first usable sample in a region of interest in each trial (ms).
 

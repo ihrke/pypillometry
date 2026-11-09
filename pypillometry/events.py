@@ -11,6 +11,7 @@ from typing import Optional, List, Tuple
 from loguru import logger
 from pypillometry.convenience import normalize_unit
 from pypillometry.state import Stateful
+from pypillometry.table import Table
 from pypillometry.units import (UNSET, Quantity, _has_units, _time_values_and_units,
                                 parse_time)
 
@@ -443,7 +444,7 @@ class Events(Stateful):
         return {"onset": self.onsets[i].item(), "label": str(self.labels[i]),
                 **{name: col[i].item() for name, col in self.meta.items()}}
 
-    def to_table(self) -> "Table":
+    def to_table(self) -> Table:
         """
         Events as a table (copies of the columns).
 
@@ -464,7 +465,6 @@ class Events(Stateful):
         >>> import pandas as pd
         >>> df = pd.DataFrame(ev.to_table())
         """
-        from .table import Table
         return Table({"onset": self.onsets.copy(), "label": self.labels.copy(),
                       **{name: col.copy() for name, col in self.meta.items()}})
 
