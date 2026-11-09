@@ -2,7 +2,7 @@ from typing import Iterable, Optional, Tuple
 from ..eyedata.namespace import Namespace
 from ..intervals import Intervals, _as_intervals
 from ..epochs import Epochs
-from ..units import parse_time, normalize_unit, parse_angle, u
+from ..units import parse_time, normalize_unit, parse_angle, u, _ms_to
 import numpy as np
 from loguru import logger
 from pathlib import Path
@@ -91,10 +91,8 @@ class GenericPlots(Namespace):
             return
         
         # Get data time range in the specified units
-        fac = self._d._unit_fac(units)
-        
-        data_start = float(np.min(self._d.tx) * fac)
-        data_end = float(np.max(self._d.tx) * fac)
+        data_start = float(_ms_to(np.min(self._d.tx), units))
+        data_end = float(_ms_to(np.max(self._d.tx), units))
         
         # Replace infinite bounds with data bounds for comparison
         eff_start = data_start if start == -np.inf else start
@@ -194,7 +192,7 @@ class GenericPlots(Namespace):
         if intervals.units == "samples":
             xvals = np.arange(len(obj.tx), dtype=float)
         else:
-            xvals = obj.tx * obj._unit_fac(intervals.units)
+            xvals = _ms_to(obj.tx, intervals.units)
         
         pairs = obj.data.select(eyes, variables)
         
@@ -363,9 +361,8 @@ class GenericPlots(Namespace):
         plot_range = self._plot_range_in(plot_range, units)
         self._validate_plot_range(plot_range, units)
         
-        fac=obj._unit_fac(units)
-        tx = obj.tx*fac
-        evon = obj.events.onsets*fac
+        tx = _ms_to(obj.tx, units)
+        evon = _ms_to(obj.events.onsets, units)
         xlab=units
 
         # plot_range
@@ -556,10 +553,9 @@ class GenericPlots(Namespace):
 
         # Calculate start and end times in the specified units
         obj=self._d
-        fac=obj._unit_fac(units)
         interv = parse_time(interv, to=units, default=units)
-        stime = obj.tx.min() * fac
-        etime = obj.tx.max() * fac
+        stime = float(_ms_to(obj.tx.min(), units))
+        etime = float(_ms_to(obj.tx.max(), units))
         self._check_nsegments(etime - stime, interv)
         
         # Create segments
@@ -757,8 +753,7 @@ class GenericPlots(Namespace):
         if normalize_unit(units) == "samples":
             xrange = (0, len(obj.tx))
         else:
-            fac = obj._unit_fac(units)
-            xrange = (obj.tx[0] * fac, obj.tx[-1] * fac)
+            xrange = tuple(_ms_to(obj.tx[[0, -1]], units))
         self._draw_highlight([ax], highlight, highlight_color, units, xrange)
 
         # Plot event markers as vertical grey lines

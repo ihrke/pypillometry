@@ -29,7 +29,7 @@ from ..plot import PlotNamespace
 from ..signal import baseline
 from ..templates import render, sparkline
 from ..units import (UNSET, _has_units, _time_values_and_units, parse_time, _ms_to_samples,
-                     _samples_to_ms)
+                     _samples_to_ms, _ms_to, _to_ms)
 from .eyedatadict import EyeDataDict, REC_LAYERS, _join_key
 from .experimental_setup import ExperimentalSetup
 from .gaze import GazeNamespace
@@ -251,33 +251,6 @@ class EyeData(state.VersionedState):
         n = {"down": np.trunc, "up": np.ceil, "nearest": np.round}[rounding](n)
         return tuple(int(v) for v in n) if np.ndim(n) else int(n)
 
-    def _unit_fac(self, units):
-        """Convert time units to factor for converting from milliseconds.
-        
-        Parameters
-        ----------
-        units : str
-            Time unit (accepts aliases like "seconds", "s", "hrs", etc.)
-            
-        Returns
-        -------
-        float
-            Conversion factor from milliseconds to target unit
-        """
-        units = normalize_unit(units)
-        if units == "samples":
-            raise ValueError("samples are not a time unit")
-        
-        if units == "sec":
-            fac = 1./1000.
-        elif units == "min":
-            fac = 1./1000./60.
-        elif units == "h":
-            fac = 1./1000./60./60.
-        else:  # "ms"
-            fac = 1.
-        return fac
-
     def _strfy_params(self):
         """
         Return a shortened string representation of the parameters.
@@ -420,19 +393,7 @@ class EyeData(state.VersionedState):
             # Already in milliseconds
             self._set_timebase(value.astype(float))
             return
-        
-        # Normalize unit (handles all aliases)
-        unit = normalize_unit(unit)
-        
-        if unit == "ms":
-            # Already in milliseconds
-            self._set_timebase(value.astype(float))
-        else:
-            # Convert to milliseconds
-            # _unit_fac gives factor to convert FROM ms to target unit
-            # So to convert TO ms, we divide by the factor
-            factor = self._unit_fac(unit)
-            self._set_timebase((value / factor).astype(float))
+        self._set_timebase(_to_ms(value, unit))
 
     @keephistory
     def __delitem__(self, key):
@@ -490,10 +451,7 @@ class EyeData(state.VersionedState):
 
         if unit == "ms":
             return self.tx
-
-        # Use _unit_fac which already handles all valid units
-        factor = self._unit_fac(unit)
-        return self.tx * factor
+        return _ms_to(self.tx, unit)
 
     def nevents(self) -> int:
         """Return number of events in data."""
@@ -1065,15 +1023,14 @@ class EyeData(state.VersionedState):
         Parameters
         ----------
         units : str, optional
-            unit one of "ms" (default), "sec", "min", "h"
+            unit one of "ms" (default), "sec", "min", "h" or "samples"
 
         Returns
         -------
         float
             duration of dataset in specified units
         """        
-        fac=self._unit_fac(units)
-        return (len(self)/self.fs*1000)*fac
+        return float(_ms_to(len(self) / self.fs * 1000, units, self.fs))
 
     def add_to_history(self, event):
         """Add event to history.
@@ -2253,8 +2210,8 @@ class EyeData(state.VersionedState):
                 label = event_select if isinstance(event_select, str) else "custom_events"
 
         # the window in ms
-        fac = 1000. / self.fs if units == "samples" else 1. / self._unit_fac(units)
-        return Epochs(onsets, (window[0] * fac, window[1] * fac), labels=labels,
+        window_ms = _to_ms(window, units, self.fs)
+        return Epochs(onsets, (window_ms[0], window_ms[1]), labels=labels,
                       meta=meta, label=label)
 
     def get_intervals(self, *, start, end, window=(0, 0), units: str = UNSET,
@@ -2364,10 +2321,9 @@ class EyeData(state.VersionedState):
             ste = s_b[pb] + window[1]
             onsets = np.atleast_1d(s_a[pa]).tolist()
         else:
-            fac = self._unit_fac(units)
-            sti = on_a[pa] * fac + window[0]
-            ste = on_b[pb] * fac + window[1]
-            onsets = (on_a[pa] * fac).tolist()
+            sti = _ms_to(on_a[pa], units) + window[0]
+            ste = _ms_to(on_b[pb], units) + window[1]
+            onsets = _ms_to(on_a[pa], units).tolist()
         bad = np.where(ste <= sti)[0]
         if len(bad) > 0:
             raise ValueError(f"window {window} gives empty intervals for pair(s) "
@@ -3507,11 +3463,11 @@ class EyeData(state.VersionedState):
         Parameters
         ----------
         units : str, optional
-            units of the result ("ms" (default), "sec", "min", "h")
+            units of the result ("ms" (default), "sec", "min", "h" or "samples")
 
         Returns
         -------
         float
             the excluded time (number of excluded samples / sampling rate)
         """
-        return self._excluded_mask().sum() / self.fs * 1000 * self._unit_fac(units)
+        return float(_ms_to(self._excluded_mask().sum() / self.fs * 1000, units, self.fs))

@@ -1,5 +1,5 @@
 from .generic import GenericPlots
-from ..units import parse_time
+from ..units import parse_time, _ms_to
 import numpy as np
 from collections.abc import Iterable
 from typing import List, Optional, Tuple
@@ -113,8 +113,7 @@ class PupilPlots(GenericPlots):
         plot_range = self._plot_range_in(plot_range, units)
         self._validate_plot_range(plot_range, units)
 
-        fac=self._d._unit_fac(units)
-        logger.debug("Plotting in units %s (fac=%f)"%(units, fac))
+        logger.debug(f"Plotting in units {units}")
         if units=="sec":
             xlab="seconds"
         elif units=="min":
@@ -123,8 +122,8 @@ class PupilPlots(GenericPlots):
             xlab="hours"
         else:
             xlab="ms"
-        tx=self._d.tx*fac
-        evon=self._d.events.onsets*fac
+        tx = _ms_to(self._d.tx, units)
+        evon = _ms_to(self._d.events.onsets, units)
 
         start,end=plot_range
         if start==-np.inf:
@@ -283,10 +282,9 @@ class PupilPlots(GenericPlots):
 
         self._d._require("pupil")
         obj = self._d
-        unit_factor = obj._unit_fac(units)
         interv = parse_time(interv, to=units, default=units)
-        start_unit = float(np.min(obj.tx) * unit_factor)
-        end_unit = float(np.max(obj.tx) * unit_factor)
+        start_unit = float(_ms_to(np.min(obj.tx), units))
+        end_unit = float(_ms_to(np.max(obj.tx), units))
         self._check_nsegments(end_unit - start_unit, interv)
 
         segments=[]
@@ -492,8 +490,7 @@ class PupilPlots(GenericPlots):
         self._validate_plot_range(plot_range, units)
         
         # Handle time range
-        fac = obj._unit_fac(units)
-        tx = obj.tx * fac
+        tx = _ms_to(obj.tx, units)
         
         start, end = plot_range
         if start == -np.inf:

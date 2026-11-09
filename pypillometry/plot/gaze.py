@@ -8,6 +8,7 @@ import matplotlib.patches as patches
 from matplotlib import cm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from ..roi import ROI
+from ..units import _ms_to
 from loguru import logger
 from scipy.ndimage import gaussian_filter
 
@@ -112,8 +113,7 @@ class GazePlots(GenericPlots):
         plot_range = self._plot_range_in(plot_range, units)
         self._validate_plot_range(plot_range, units)
         
-        fac=obj._unit_fac(units)
-        tx=obj.tx*fac
+        tx = _ms_to(obj.tx, units)
 
         # plot_range
         start,end=plot_range
@@ -364,9 +364,8 @@ class GazePlots(GenericPlots):
         plot_range = self._plot_range_in(plot_range, units)
         self._validate_plot_range(plot_range, units)
 
-        fac=obj._unit_fac(units)
-        tx = obj.tx*fac
-        evon = obj.events.onsets*fac
+        tx = _ms_to(obj.tx, units)
+        evon = _ms_to(obj.events.onsets, units)
 
         # plot_range
         start,end=plot_range

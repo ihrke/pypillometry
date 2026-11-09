@@ -502,6 +502,23 @@ def parse_angle(value):
     return _parse(value, "angle", "rad", "rad")
 
 
+def _ms_to(values, units, fs=None):
+    """`values` (times or durations in ms) in the time unit `units`.
+
+    Durations in "samples" need the sampling rate `fs`; time points are
+    not converted to sample indices (see :func:`_ms_to_samples`).
+    """
+    return _convert(np.asarray(values, dtype=float), _get_unit("ms", "time"),
+                    _get_unit(units, "time"), fs)
+
+
+def _to_ms(values, units, fs=None):
+    """`values` (times or durations in the time unit `units`) in ms;
+    durations in "samples" need the sampling rate `fs`."""
+    return _convert(np.asarray(values, dtype=float), _get_unit(units, "time"),
+                    _get_unit("ms", "time"), fs)
+
+
 def _samples_to_ms(data, ix):
     """Time (ms) of sample indices `ix` of `data` (an object with `tx` and `fs`).
 
