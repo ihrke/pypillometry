@@ -43,13 +43,13 @@ the time of the data (:meth:`~EyeData.crop`,
 :meth:`~EyeData.remove_intervals`,
 :meth:`~EyeData.reset_time`) move the events with it.
 :meth:`~EyeData.add_events` adds events to the existing ones, and
-:meth:`~EyeData.event_onset` returns the onset of the one event with
-a given label (it raises an error unless exactly one event has it):
+:meth:`Events.onset` returns the onset of the one event with a given
+label (it raises an error unless exactly one event has it):
 
 .. code-block:: python
 
     d.add_events(pp.Events([1500, 2500], ["cue", "cue"], units="ms"))
-    t = d.event_onset("Start Block 2", units="sec")
+    t = d.events.onset("Start Block 2", units="sec")
 
 Tutorial: :doc:`/notebooks/events`.
 

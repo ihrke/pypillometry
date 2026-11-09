@@ -137,6 +137,8 @@ tables below for every changed call.
   `shift()`, or with `needs_sync=False`); `add_events()`, `set_events()`
   and `get_epochs()` warn about such events. The error for events outside
   the data says how far outside they are and points to `sync_clocks()`
+- `Events.onset(label)`: onset of the one event with this label (e.g.,
+  `d.events.onset("experiment_start")`)
 - `highlight=` and `highlight_color=` in `pupil_plot`, `plot_timeseries`,
   `plot_masked` and the `*_segments` plots: shade Intervals or Epochs (or a
   list of them, one color each), converted to the units of the time axis

@@ -47,7 +47,7 @@ functions, ``units=`` is only the unit of the time axis):
 .. code-block:: python
 
     d.get_duration(units="min")
-    d.event_onset("Start Block 2", units="sec")
+    d.events.onset("Start Block 2", units="sec")
     d.crop(3, 5, units="min")
 
 Sample indices are ``units="samples"`` (aliases: "sample", "index",
