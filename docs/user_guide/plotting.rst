@@ -144,12 +144,25 @@ for any channel (see :doc:`events_intervals`):
    erpd = d.get_segments(epochs, "left_pupil").pupil.baseline_correct((-500, 0))
    erpd.pupil.plot()
 
+:meth:`~SegmentedEyeData.plot_carpet` shows all segments of a channel
+instead of their mean: one row per trial, the value as color (a "carpet
+plot"). It shows how the response varies between trials, e.g., trials with
+artifacts or a change over the session; ``sort_by=`` orders the rows by
+a property of the trials (e.g., a metadata column such as the reaction
+time), and ``show_mean=True`` adds the mean below the image:
+
+.. plot::
+   :context: close-figs
+
+   erpd.plot_carpet(show_mean=True)
+
 .. autosummary::
    :nosignatures:
 
    segmented.SegmentedPupilNamespace.plot
    segmented.SegmentedGazeNamespace.plot_roi
    SegmentedEyeData.plot
+   SegmentedEyeData.plot_carpet
 
 
 Gaze
