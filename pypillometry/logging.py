@@ -46,6 +46,12 @@ def logging_enable():
     _enabled = True
 
 
+def _show_progress() -> bool:
+    """Whether progress bars (e.g., of downloads) are shown: only if logging
+    is enabled and the level is "DEBUG" or "INFO"."""
+    return _enabled and logging_get_level() in ("DEBUG", "INFO")
+
+
 def logging_set_level(level="INFO"):
     """
     Set the logging level for all pypillometry submodules.

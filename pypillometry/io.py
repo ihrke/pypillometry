@@ -20,7 +20,7 @@ from contextlib import contextmanager
 from typing import Optional
 from loguru import logger
 from .convenience import is_url, suppress_all_output, requires_package
-from .logging import logging_get_level
+from .logging import logging_get_level, _show_progress
 from . import state
 from . import hdf5
 
@@ -209,6 +209,7 @@ def download(url: str, fname: str = None, chunk_size: int = 1024, session: Optio
                 unit="iB",
                 unit_scale=True,
                 unit_divisor=1024,
+                disable=not _show_progress(),
             ) as bar:
                 for data in resp.iter_content(chunk_size=chunk_size):
                     size = file.write(data)
@@ -363,7 +364,8 @@ def _scp(url: str, target: str):
     worker = threading.Thread(target=run, daemon=True)
     worker.start()
     with tqdm(desc=os.path.basename(path.rstrip("/")), total=total,
-              unit="iB", unit_scale=True, unit_divisor=1024) as bar:
+              unit="iB", unit_scale=True, unit_divisor=1024,
+              disable=not _show_progress()) as bar:
         while worker.is_alive():
             worker.join(0.2)
             bar.update(_local_size(target) - bar.n)

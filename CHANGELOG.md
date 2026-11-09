@@ -194,6 +194,8 @@ The main ones:
 
 ### Fixed
 
+- Download progress bars (`read_file`, `from_eyelink`, studies from OSF) were
+  shown inside `pp.nologging()` and at log levels above INFO
 - `fs` after `downsample` did not match the time vector
 - `reset_time` did not shift blinks stored in time units
 - `FakeEyeData.sim_data` was not cut or downsampled with the data
