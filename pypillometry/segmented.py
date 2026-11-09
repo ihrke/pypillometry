@@ -261,13 +261,17 @@ class SegmentedPupilNamespace(Namespace):
     def _channels(self, eyes):
         return _select_channels(self._d.channels, eyes, "pupil")
 
-    def baseline_correct(self, window=0, eyes=[], inplace=None):
+    def baseline_correct(self, window=0, method: str = "subtract", eyes=[], inplace=None):
         """
-        Subtract a baseline from each segment of the pupil channels.
+        Correct each segment of the pupil channels for its baseline.
 
         The window is given in ms relative to the event onsets (time 0), e.g.,
         ``window=(-200, 0)`` uses the mean of the 200 ms before each event.
-        Other channels (e.g., gaze) are not changed.
+        `method` says how the baseline is removed: ``"subtract"`` (default;
+        the change from the baseline in the units of the data),
+        ``"divide"`` (the ratio to the baseline) or ``"percent"`` (the
+        change in % of the baseline, ``(x - base) / base * 100``). Other
+        channels (e.g., gaze) are not changed.
 
         Parameters
         ----------
@@ -282,6 +286,10 @@ class SegmentedPupilNamespace(Namespace):
             Default is 0 (baseline at event onset).
 
             The window must be within the time axis of the segments.
+        method : str, optional
+            ``"subtract"`` (default), ``"divide"`` or ``"percent"``;
+            segments whose baseline is masked (or 0, for ``"divide"`` and
+            ``"percent"``) are masked
         eyes : str or list of str, optional
             eyes whose pupil channels are corrected (default: all)
         inplace : bool or None, optional
@@ -299,8 +307,8 @@ class SegmentedPupilNamespace(Namespace):
         Raises
         ------
         ValueError
-            if the window (or time point) is not within the segments, or its
-            start is not before its end
+            if the window (or time point) is not within the segments, its
+            start is not before its end, or `method` is unknown
         KeyError
             if there are no pupil channels (of `eyes`)
 
@@ -317,7 +325,13 @@ class SegmentedPupilNamespace(Namespace):
 
         >>> # Use single time point as baseline, left eye only
         >>> seg = seg.pupil.baseline_correct(window=-100, eyes="left")
+
+        >>> # Change in % of the baseline
+        >>> seg_pc = d.get_segments(epochs).pupil.baseline_correct((-200, 0), method="percent")
         """
+        if method not in ("subtract", "divide", "percent"):
+            raise ValueError(f"unknown method {method!r}; use 'subtract', 'divide' or "
+                             f"'percent'")
         seg = self._d
         if window is None:
             logger.warning("No baseline correction applied")
@@ -336,9 +350,14 @@ class SegmentedPupilNamespace(Namespace):
                 # time window
                 i0, i1 = (np.argmin(np.abs(bw - seg.tx)) for bw in window)
                 base = arr[i0:i1].mean(axis=0)
-            arr -= base
+            if method == "subtract":
+                arr -= base
+            elif method == "divide":
+                arr = arr / base
+            else:
+                arr = (arr - base) / base * 100.
             corrected[ch] = arr
-        logger.info(f"Baseline correction applied using window {window}")
+        logger.info(f"Baseline correction ({method}) applied using window {window}")
 
         if inplace is None:
             inplace = config.get_default_inplace()

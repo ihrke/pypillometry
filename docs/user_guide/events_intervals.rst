@@ -398,6 +398,11 @@ axis then starts at 0 at their starts); for intervals between two events,
 it raises an error. The baseline window of
 ``seg.pupil.baseline_correct()`` must be within the segments.
 
+By default, the baseline is subtracted (the change in the units of the
+data); ``method="divide"`` gives the ratio to the baseline and
+``method="percent"`` the change in % of the baseline, e.g.,
+``erpd.pupil.baseline_correct((-200, 0), method="percent")``.
+
 ``seg.gaze`` analyses the gaze with regions of interest (ROIs, see
 :doc:`gaze`): :meth:`~segmented.SegmentedGazeNamespace.roi_hits` adds a
 channel per eye that is 1 where the gaze is in the ROI and 0 outside, so

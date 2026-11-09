@@ -106,6 +106,9 @@ tables below for every changed call.
 
 - `scale(method=...)`: `"z"` (default), `"robust"` (median and raw MAD),
   `"minmax"` (0 to 1) and `"percent"` (% change from the mean)
+- `seg.pupil.baseline_correct(method=...)`: `"subtract"` (default),
+  `"divide"` (ratio to the baseline) or `"percent"` (% change from the
+  baseline)
 - `import pypillometry` takes about 0.4 s instead of 2.4 s: matplotlib, scipy,
   pandas, h5py and requests are imported when they are first used
 - Namespaces `d.pupil`, `d.gaze` and `d.plot`

@@ -284,6 +284,26 @@ class TestDisplay(unittest.TestCase):
 
 class TestBaselineCorrection(unittest.TestCase):
 
+    def test_methods(self):
+        tx = np.arange(4.) * 10 - 10                      # -10, 0, 10, 20 ms
+        data = np.array([[2., 4.], [2., 4.], [3., 6.], [4., 2.]])
+        seg = make(data, tx)
+        div = seg.pupil.baseline_correct((-10, 10), method="divide", inplace=False)
+        np.testing.assert_allclose(div["left_pupil"], data / data[0])
+        pc = seg.pupil.baseline_correct((-10, 10), method="percent", inplace=False)
+        np.testing.assert_allclose(pc["left_pupil"][2:], [[50., 50.], [100., -50.]])
+        sub = seg.pupil.baseline_correct((-10, 10), inplace=False)
+        np.testing.assert_allclose(sub["left_pupil"][3], [2., -2.])
+        with self.assertRaisesRegex(ValueError, "unknown method 'ratio'"):
+            seg.pupil.baseline_correct(0, method="ratio")
+
+    def test_methods_mask_missing_and_zero_baselines(self):
+        data = ma.masked_array([[0., 2.], [1., 4.]], mask=[[False, True], [False, False]])
+        seg = make(data, np.array([0., 10.]))
+        for method in ("divide", "percent"):
+            bc = seg.pupil.baseline_correct(0, method=method, inplace=False)
+            self.assertTrue(bc["left_pupil"].mask.all())   # base 0, base masked
+
     def test_single_point(self):
         tx = np.linspace(-200, 800, 100)
         data = np.zeros((100, 5))
