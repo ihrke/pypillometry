@@ -8,8 +8,8 @@ Module containing the class for handling eye data.
   channels, e.g. only pupil data).
 
 The methods for pupil and gaze data are defined in the modules `pupil` and
-`gaze` (the namespaces ``d.pupil`` and ``d.gaze``); helpers shared with
-them are in `generic`.
+`gaze` (the namespaces ``d.pupil`` and ``d.gaze``); the decorator that
+records their calls in the history is in `history`.
 
 The data are stored in the `data` attribute, which is a dictionary-like object
 of type :class:`EyeDataDict`. 
@@ -36,7 +36,7 @@ __all__ = ["EyeDataDict", "MaskPolicy", "EyeData",
            "ExperimentalSetup", "keephistory"]
 
 from .eyedatadict import EyeDataDict, MaskPolicy
-from .generic import keephistory
+from .history import keephistory
 from .eyedata import EyeData
 from .spatial_calibration import SpatialCalibration
 from .foreshortening_calibration import ForeshorteningCalibration

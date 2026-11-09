@@ -6,7 +6,7 @@ Methods of :class:`~pypillometry.EyeData` for pupil data.
 """
 
 from typing import Optional, Tuple, Union
-from .generic import keephistory, _merge_usage, _store_merged
+from .history import keephistory
 from .namespace import Namespace
 from .pipes import step
 #from .. import convenience
@@ -318,7 +318,7 @@ class PupilNamespace(Namespace):
             # both eyes must be usable (recorded or not)
             used = np.stack([~obj.data.get_policy_mask(k, policy) for k in keys])
         else:
-            used = _merge_usage(obj.data, keys, policy)
+            used = obj.data._merge_usage(keys, policy)
         left_mask, right_mask = ~used[0], ~used[1]
         
         # Determine valid regions
@@ -388,7 +388,7 @@ class PupilNamespace(Namespace):
         merged[masked] = fill[masked]
         
         # Store merged data with the layers the used eyes have in common
-        _store_merged(obj.data, f"{name}_pupil", merged, keys, used, masked, policy)
+        obj.data._store_merged(f"{name}_pupil", merged, keys, used, masked, policy)
         
         # Optionally remove original eye data
         if not keep_eyes:

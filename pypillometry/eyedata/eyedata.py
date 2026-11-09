@@ -3,8 +3,10 @@ eyedata.py
 ==========
 
 The class :class:`EyeData`: pupil and/or gaze data of one or two eyes.
-The helpers it uses (and that the namespaces ``d.pupil``/``d.gaze`` use as
-well) are in :mod:`pypillometry.eyedata.generic`.
+Operations on all channels at once (cutting, inserting and decimating
+samples, merging eyes) are methods of
+:class:`~pypillometry.eyedata.eyedatadict.EyeDataDict`; the history
+decorator is in :mod:`pypillometry.eyedata.history`.
 """
 
 import copy
@@ -32,14 +34,86 @@ from ..units import (UNSET, _has_units, _time_values_and_units, parse_time, _ms_
 from .eyedatadict import EyeDataDict, REC_LAYERS, _join_key
 from .experimental_setup import ExperimentalSetup
 from .gaze import GazeNamespace
-from .generic import (_check_per_pair, _check_timebase, _decimate_dict,
-                      _decimate_factor, _history_arg, _insert_dict, _keep_dict, _merge_usage,
-                      _per_channel_values, _per_pair, _scale_stats, _SCALE_METHODS, _some,
-                      _store_merged, keephistory)
+from .history import _history_arg, keephistory
 from .namespace import accessor
 from .pipes import step, Step, Pipeline, _missing_call
 from .pupil import PupilNamespace
 from .spatial_calibration import SpatialCalibration
+
+
+
+def _some(values, n=10):
+    """The first `n` of `values` as a list for messages (``[1.0, 2.0, ...]``)."""
+    values = list(np.asarray(values).tolist())
+    return str(values) if len(values) <= n else str(values[:n])[:-1] + ", ...]"
+
+
+def _per_pair(pairs, fct):
+    """Dict ``{"<eye>_<var>": fct(eye, var)}`` for the (eye, var) `pairs`."""
+    return {f"{eye}_{var}": fct(eye, var) for eye, var in pairs}
+
+
+def _check_per_pair(pairs, **dicts):
+    """Raise a ValueError if one of the `dicts` (name -> dict keyed by channel)
+    misses a value for one of the `pairs`."""
+    for name, values in dicts.items():
+        if any(isinstance(v, dict) for v in values.values()):
+            raise ValueError(f"{name} must be keyed by channel, e.g. "
+                             "{'left_pupil': 1000.}, not {'left': {'pupil': 1000.}}")
+        for eye, var in pairs:
+            if f"{eye}_{var}" not in values:
+                raise ValueError(f"{name} has no value for {eye}_{var}")
+
+
+#: methods of EyeData.scale()
+_SCALE_METHODS = ("z", "robust", "minmax", "percent")
+
+
+def _scale_stats(x, method):
+    """(center, scale) of the values `x` (NaN: unusable) for a method of
+    EyeData.scale() (see there)."""
+    if method == "z":
+        return float(np.nanmean(x)), float(np.nanstd(x))
+    if method == "robust":
+        med = np.nanmedian(x)
+        return float(med), float(np.nanmedian(np.abs(x - med)))
+    if method == "minmax":
+        lo, hi = np.nanmin(x), np.nanmax(x)
+        return float(lo), float(hi - lo)
+    m = float(np.nanmean(x))   # "percent"
+    return m, m / 100.
+
+
+def _per_channel_values(pairs, value, name, default):
+    """`value` (None, a number or a dict keyed by channel) as a dict keyed
+    by channel; None gives `default`."""
+    if value is None:
+        return default
+    if isinstance(value, numbers.Real):
+        return _per_pair(pairs, lambda eye, var: value)
+    if isinstance(value, dict):
+        return value
+    raise ValueError(f"{name} must be None, a number or a dict")
+
+
+def _check_timebase(tx, fs, rtol=0.05):
+    """
+    Raise a ValueError if the sampling rate `fs` (Hz) does not fit the time
+    vector `tx` (ms).
+
+    `fs` fits if ``1000/fs`` agrees (within `rtol`) with the median or the
+    mean step of `tx`. The median is robust to gaps, the mean to time
+    stamps rounded to whole ms (e.g., 300 Hz with steps of 3 and 4 ms).
+    """
+    if isinstance(fs, bool) or not isinstance(fs, numbers.Real) or not (0 < fs < np.inf):
+        raise ValueError(f"the sampling rate must be a positive number (Hz), got {fs!r}")
+    if len(tx) < 2:
+        return
+    median = np.median(np.diff(tx))
+    mean = (tx[-1] - tx[0]) / (len(tx) - 1)
+    if not any(np.isclose(step, 1000. / fs, rtol=rtol, atol=0) for step in (median, mean)):
+        raise ValueError(f"the sampling rate ({fs:g} Hz) does not match the time vector "
+                         f"(median step {median:g} ms, i.e. {1000. / median:g} Hz)")
 
 
 class EyeData(state.VersionedState):
@@ -1207,13 +1281,13 @@ class EyeData(state.VersionedState):
                 out.append((x + shift, y + shift))
         return out
 
-    def _map_sample_aligned(self, fct, *args):
+    def _map_sample_aligned(self, fct):
         """Replace each sample-aligned EyeDataDict `d` (see `_SAMPLE_ALIGNED`)
-        by ``fct(d, *args)`` (in place)."""
+        by ``fct(d)`` (in place)."""
         for name in self._SAMPLE_ALIGNED:
             d = getattr(self, name, None)
             if d is not None:
-                setattr(self, name, fct(d, *args))
+                setattr(self, name, fct(d))
 
     def _keep_samples(self, keep, time_map=None, keep_events=None):
         """
@@ -1227,7 +1301,7 @@ class EyeData(state.VersionedState):
         """
         keep = np.asarray(keep, dtype=bool)
         old_tx = self.tx
-        self._map_sample_aligned(_keep_dict, keep)
+        self._map_sample_aligned(lambda d: d._take(keep))
         self._set_timebase((self.tx if time_map is None else time_map(self.tx))[keep])
         if time_map is not None:
             self._set_removed_shifts(self._original_time(old_tx)[keep])
@@ -2024,7 +2098,7 @@ class EyeData(state.VersionedState):
         stay valid.
         """
         pos=np.asarray(pos, dtype=int)
-        self._map_sample_aligned(_insert_dict, len(tx), pos, value)
+        self._map_sample_aligned(lambda d: d._insert(len(tx), pos, value))
         self._set_timebase(tx)
         return self
     
@@ -2581,31 +2655,30 @@ class EyeData(state.VersionedState):
             if the sampling rate `fsd` is not above 0 and at most `fs`, or
             the decimate factor is not a positive integer
         """
-        dsfac=_decimate_factor(self.fs, fsd, dsfac)
+        what = "decimate factor" if dsfac else "sampling rate in Hz"
+        if isinstance(fsd, bool) or not isinstance(fsd, numbers.Real) or not np.isfinite(fsd):
+            raise TypeError(f"fsd must be a finite number (the {what}), got {fsd!r}")
+        if dsfac:
+            if fsd < 1 or fsd != int(fsd):
+                raise ValueError(f"the decimate factor must be a positive integer, got {fsd}")
+            factor = int(fsd)
+        else:
+            if not 0 < fsd <= self.fs:
+                raise ValueError(f"fsd must be a sampling rate in Hz above 0 and at most "
+                                 f"the current rate ({self.fs} Hz), got {fsd}")
+            ratio = self.fs / fsd
+            if np.isclose(ratio, round(ratio)):
+                factor = int(round(ratio))
+            else:
+                factor = int(ratio)
+                logger.warning(f"{self.fs} Hz is not a multiple of {fsd} Hz: decimating by "
+                               f"{factor}, the new sampling rate is {self.fs/factor:g} Hz")
+
         obj = self._get_inplace(inplace)
-        obj._decimate(dsfac, policy)
+        # all channels (values and layers), then the time axis
+        obj._map_sample_aligned(lambda d: d._decimate(factor, policy))
+        obj._set_timebase(baseline.downsample(obj.tx, factor), obj.fs / factor)
         return obj
-
-    def _decimate(self, factor, policy="default"):
-        """
-        Decimate the samples by the integer `factor` (in place).
-
-        Each window of `factor` samples becomes one sample (the last window
-        may be shorter): values are the mean of the samples that are usable
-        under the mask `policy`, the time is the mean time of the window,
-        and the new sampling rate is ``fs/factor``. A layer (e.g.,
-        ``"blink"``) is set for a new sample if it covers more than half of
-        the samples in the window (also the recording-wide layers, e.g.
-        excluded periods). A new sample whose window has no usable sample
-        holds the mean of the stored values and stays unusable: if the
-        layers that cover more than half of the window do not make it
-        unusable, it gets the layers of its samples that make them unusable
-        under `policy`.
-        Events stay valid.
-        """
-        self._map_sample_aligned(_decimate_dict, factor, policy)
-        self._set_timebase(baseline.downsample(self.tx, factor), self.fs/factor)
-        return self
 
     @step
     @keephistory
@@ -2664,7 +2737,7 @@ class EyeData(state.VersionedState):
                 eyes = [eye for eye, v in pairs if v == var]
                 keys = [f"{eye}_{var}" for eye in eyes]
                 stored = np.stack([obj.data[k] for k in keys])
-                used = _merge_usage(obj.data, keys, policy)
+                used = obj.data._merge_usage(keys, policy)
 
                 # Mean over the used eyes; masked only where no eye is usable
                 meanval = np.ma.mean(np.ma.array(stored, mask=~used), axis=0)
@@ -2673,7 +2746,7 @@ class EyeData(state.VersionedState):
                 # values, still masked
                 rawmean = np.ma.mean(np.ma.masked_invalid(stored), axis=0).filled(np.nan)
                 values = np.where(allmasked, rawmean, np.ma.getdata(meanval))
-                _store_merged(obj.data, f"{name}_{var}", values, keys, used, allmasked, policy)
+                obj.data._store_merged(f"{name}_{var}", values, keys, used, allmasked, policy)
                 
                 if not keep_eyes:
                     for eye in eyes:

@@ -45,8 +45,11 @@ Package architecture
 --------------------
 
 Most functionality is available as methods of the data class
-:class:`EyeData` (``eyedata/eyedata.py``; helpers it shares with the
-namespaces are in ``eyedata/generic.py``). The generic
+:class:`EyeData` (``eyedata/eyedata.py``). Its data are an ``EyeDataDict``
+(``eyedata/eyedatadict.py``), which also does the operations on all
+channels at once (cutting, inserting and decimating samples, merging eyes);
+the decorator that records calls in the history is in
+``eyedata/history.py``. The generic
 methods (crop, downsample, intervals, masks, events, I/O, ...) are methods of
 the object itself. The methods for pupil and gaze data are kept in separate
 modules, as *namespaces*: ``eyedata/pupil.py`` (``PupilNamespace``, used as
@@ -272,7 +275,7 @@ development, it can help to see the debug messages of a single module only:
 
     import pypillometry as pp
     pp.logging_disable()
-    pp.logger.enable("pypillometry.eyedata.generic")
+    pp.logger.enable("pypillometry.eyedata.eyedata")
     pp.logging_set_level("DEBUG")
 
 

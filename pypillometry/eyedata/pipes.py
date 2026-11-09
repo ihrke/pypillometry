@@ -87,7 +87,7 @@ def generic_step(method):
 
 def _arg_text(v):
     """Short text for an argument in the repr of a step."""
-    from .generic import _history_arg
+    from .history import _history_arg
     return _history_arg(v)
 
 
