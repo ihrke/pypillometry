@@ -1292,7 +1292,7 @@ class SegmentedEyeData(state.VersionedState):
             lines.append(line)
             if callable(varfct):
                 sd_data = varfct(data, axis=1)
-                ribbon_color = line_color or ("grey" if single else line.get_color())
+                ribbon_color = line_color or line.get_color()
                 ax1.fill_between(self.tx, mean_data - sd_data, mean_data + sd_data,
                                  color=ribbon_color, alpha=ribbon_alpha)
 
