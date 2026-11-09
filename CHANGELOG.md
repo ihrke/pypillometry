@@ -2,330 +2,74 @@
 
 ## 2.2.0 (unreleased)
 
-A new data model behind the same kind of analyses: one data class, mask
-layers instead of a single mask, pipelines, and the pupil, gaze and plot
-methods in namespaces. Most scripts need changes (old names are gone, without
-forwarders); the tables below list every changed call.
+This version is a major refactor of the package without changing functionality (many bugs fixed, though). Scripts will need update to the new syntax.
 
 ### Breaking changes
 
-- One data class, `EyeData`: `PupilData`, `GazeData`, `to_pupildata()` and
-  `to_gazedata()` were removed (files with these classes load as `EyeData`;
-  `to_pupildata()` -> `drop_data(variables=["x", "y"], inplace=False)`)
-- Pupil methods are in `d.pupil`, gaze methods in `d.gaze`, plots only in
-  `d.plot`, without the prefixes (`d.pupil_blinks_detect()` ->
-  `d.pupil.blinks_detect()`, `d.pupil_plot()` -> `d.plot.pupil_plot()`); the
-  plotter classes (`EyePlotter`, `PupilPlotter`, `GazePlotter`) were removed
-- Mask layers: detectors (`pupil.blinks_detect`, `pupil.blinks_merge_close`,
-  `gaze.mask_offscreen`, `gaze.mask_divergences`) set their layer, replace
-  the results of an earlier run and return the object; `apply_mask` was
-  removed (setting the layer is masking); read the results with
-  `get_blinks()`, `get_layer_intervals()` etc.
-- Mask policies: interpolated samples are *used* by default in all
-  analyses (segments, `stat_per_event`, `scale`, `merge_eyes`, `downsample`,
-  quality report); `policy="strict"` leaves them out. Several results change
-  (see "Changed results")
-- Plain numbers are ms everywhere: windows (`get_epochs`, `get_intervals`), durations,
-  margins; sample indices need `units="samples"`. In plots, plain numbers in
-  `plot_range` and `interv` are in `units=` (as in 2.1).
-- Results per channel are dicts keyed like the data (`"left_pupil"`):
-  `get_blinks`, `get_interpolated`, `mask_as_intervals`, `nblinks`,
-  `blink_stats`; `nblinks()` includes channels without blinks (0); the
-  parameters of `pupil.estimate_response()` are in
-  `params["response"]["left_pupil"]` (saved files are converted)
-- `eyes`/`variables`: `None` or `[]` means all existing channels; unknown
-  names raise a `KeyError` that lists the channels
-- Every transforming method takes `inplace` (default: in place, see
-  `set_default_inplace()`); this is new for `drop_data`,
-  `fill_time_discontinuities` and `seg.pupil.baseline_correct`, which
-  used to return a copy. `set_*` methods are always in place
-  (`set_events` lost `inplace`)
-- Events: one `Events` object in `d.events`; `d.event_onsets`,
-  `d.event_labels`, `d.event_meta`, `d.get_events()` and
-  `d.set_event_onsets()` were removed
-- `get_intervals()` was split: windows around single events come from
-  `get_epochs(event, window)`, which returns the new `Epochs` (event onsets
-  and one window) instead of `Intervals`; `get_intervals(start=..., end=...)`
-  gives the spans between two events (keywords instead of a tuple). Windows
-  are not clipped at the ends of the recording; segment time axes are `window[0] + k * 1000/fs`, and
-  segment parts outside the data are NaN and masked. `Intervals` lost
-  `interval_window`, `event_indices` and `data_time_range`;
-  `get_segments()` with `Intervals` needs intervals of equal length
-- The merged eye of `pupil.merge_eyes()` is always `"mean"` (`mean_pupil`);
-  choose another name with `name=`
-- `gaze.mask_divergences(store_as="dist")` stores the eye distance once,
-  as `both_dist` (eye `"both"`)
-- `GenericEyeData` is part of `EyeData` (it was the base class of the
-  removed `PupilData`/`GazeData`); use `EyeData` in `isinstance` checks
-- `SegmentedEyeData.intervals` is `SegmentedEyeData.epochs` (also the
-  constructor argument)
-- `SegmentedEyeData` holds several channels: `get_segments(epochs,
-  channels=None, ..., eyes=, variables=)` cuts all channels by default (or
-  those named); `seg.data` is a dict of channels (`seg["left_pupil"]`), the
-  constructor takes this dict, and `variable`, `eye`, `var` and
-  `from_masked_array()` were removed. `baseline_correct()` is
-  `seg.pupil.baseline_correct()` (pupil channels only); `plot()` takes
-  `channels=` (`seg.pupil.plot()` plots the pupil); the error ribbons of the
-  segment plots have the color of their line (were grey without `color=`)
-- `GroupLevelSegmentedData` was removed: averages are `SegmentedEyeData`
-  whose columns are averages (see "Added"). `group_segments()` returns
-  `SegmentedEyeData` with one column per participant and the metadata
-  column `"subject"` (instead of `subjects`, `n_subjects`, `mask_percent`)
-- `params["scale"]` and the `center=`/`scale=` dicts of `scale()`/`unscale()`
-  are keyed by channel (`{"left_pupil": 1000.}`, was
-  `{"left": {"pupil": 1000.}}`), like `params["response"]`; stored
-  parameters of older files are converted when they are read
-- `scale()`/`unscale()`: `mean=`/`sd=` are `center=`/`scale=`, and
-  `params["scale"]` holds `center`, `scale` and `method` (was `mean` and
-  `sd`); a scale of 0 raises a ValueError (was division by zero)
-- `Intervals.as_pandas()`: the columns `event_label`/`event_onset` are
-  `label`/`onset` (as in `Epochs.as_pandas()` and `Events.to_table()`)
-- `pp.downsample` is the pipeline step for `d.downsample()`; the array
-  function is `pp.signal.downsample`
-- The functions for numpy arrays are only in `pp.signal` (e.g.,
-  `pp.signal.smooth_window`, `pp.signal.pupil_kernel`); this includes
-  `zscale` (`pp.zscale` -> `pp.signal.zscale`)
-- `nprange`, `p_asym_laplac`, `p_asym_laplac_kappa` and
-  `trans_logistic_vec` were removed from `pp.convenience`
-- `merge_intervals()` is `concat_intervals()` (it concatenates; `merge()`
-  merges overlaps); it works like `+`: other time units are converted
-  instead of raising an error, and the default label is `"combined"`
-- `Intervals.plot_highlight()` was removed; the plots shade intervals with
-  `highlight=` (see "Added")
+- One data class, `EyeData` instead of per modality, pupil methods are in `d.pupil`, gaze methods in `d.gaze`
+- similarly,  plotter classes (`EyePlotter`, `PupilPlotter`, `GazePlotter`) were removed
+- Mask layers: multiple layers for reasons data may be masked
+- Plain numbers are ms everywhere
+- `get_intervals()` and `get_epochs(event, window)`
+- `GenericEyeData` removed
+- `SegmentedEyeData.intervals` is `SegmentedEyeData.epochs` 
+- `SegmentedEyeData` holds several channels
+- `GroupLevelSegmentedData` was removed
+- `scale()`/`unscale()`: `center=`/`scale=`
+- The functions for numpy arrays are only in `pp.signal`
+- `merge_intervals()` is `concat_intervals()` 
+- `Intervals.plot_highlight()` was removed; the plots shade intervals with `highlight=`
 - `downsample()` stores the actual sampling rate (`fs/factor`)
 - Gaze plots (heatmap, scanpath) draw y downward (screen pixels)
-- The time axis of all plots is in seconds by default (`units="sec"`;
-  was ms or min depending on the plot)
-- Saved files have format 3; files of earlier versions are upgraded when
-  they are read (masks whose origin is unknown become the `"user"` layer;
-  stored blinks always mask the data)
+- The time axis of all plots is in seconds by default 
 
 ### Added
 
-- `scale(method=...)`: `"z"` (default), `"robust"` (median and raw MAD),
-  `"minmax"` (0 to 1) and `"percent"` (% change from the mean)
-- `seg.pupil.baseline_correct(method=...)`: `"subtract"` (default),
-  `"divide"` (ratio to the baseline) or `"percent"` (% change from the
-  baseline)
-- `import pypillometry` takes about 0.4 s instead of 2.4 s: matplotlib, scipy,
-  pandas, h5py and requests are imported when they are first used
+- `scale(method=...)` for common transformations
+- `seg.pupil.baseline_correct(method=...)`
+- faster `import pypillometry`
 - Namespaces `d.pupil`, `d.gaze` and `d.plot`
-- Segments of several channels share their epochs: `seg.keep()` and
-  `seg.filter(cond="easy")` select trials in all channels;
-  `seg.select_channels()`, `seg.drop_channels()`
-- `seg.gaze` for regions of interest: `roi_hits()` (a 0/1 channel per eye,
-  whose mean is the share of trials in the ROI), `plot_roi()` (fixation
-  curve), `dwell_time()` and `first_entry()` (tables per trial with the
-  epochs' metadata)
-- User guide page "Regions of interest" and the tutorial "Gaze in regions
-  of interest around events"
-- `seg.average(by=...)` averages all trials or groups of them (by metadata
-  columns of the epochs); the averages keep the grouping columns and the
-  number of trials (`"n_trials"`) as metadata of epochs without a time (NaN
-  onsets), and the share of usable trials (`valid_share`)
-- `concat_segments()` stacks the segments of several participants, with the
-  metadata column `"subject"`; `group_segments()` is `concat_segments()`
-  plus `average(by="subject")`, and `meanfct=None` stacks the trials
-- Pipelines: `d | pp.pupil.blinks_detect() | pp.pupil.lowpass_filter(4)`;
-  `pp.pupil.*`, `pp.gaze.*` and the generic steps (`pp.crop`,
-  `pp.downsample`, `pp.scale`, ...) make `pp.Step`s, combined into a
-  `pp.Pipeline` with `|`
-- Mask layers per channel (`blink`, `interpolated`, `offscreen`,
-  `divergence`, `user`) and a recording-wide `excluded` layer;
-  `d.clear_layer()`, `d.get_layer_intervals()`, `d.mask()`, `d.get_values()`
-- `pp.MaskPolicy` and the policies `"default"`, `"strict"` and `"raw"`
-  (`policy=` in all processing and analysis methods)
-- `pp.Epochs` (event-locked windows): the events (`ep.events`) and one
-  window; selected and changed like Events (`filter`, `keep`, `set_meta`,
-  `drop_meta`, `parse_labels`)
-- Warning for events on another clock: `Events.from_table()` marks its
-  events as `needs_sync` (cleared by mapping them with a `ClockSync` or
-  `shift()`, or with `needs_sync=False`); `add_events()`, `set_events()`
-  and `get_epochs()` warn about such events. The error for events outside
-  the data says how far outside they are and points to `sync_clocks()`
-- `Events.onset(label)`: onset of the one event with this label (e.g.,
-  `d.events.onset("experiment_start")`)
-- `highlight=` and `highlight_color=` in `pupil_plot`, `plot_timeseries`,
-  `plot_masked` and the `*_segments` plots: shade Intervals or Epochs (or a
-  list of them, one color each), converted to the units of the time axis
+- Segments of several channels share their epochs
+- `seg.gaze` for regions of interest: `roi_hits()`
+- User guide page "Regions of interest" 
+- `seg.average(by=...)` averages all trials or groups of them - `concat_segments()` 
+- Pipelines with pipe operator: `d | pp.pupil.blinks_detect()`
+- Mask layers per channel 
+- `pp.MaskPolicy` to decide which samples to mask
+- `pp.Epochs` (event-locked windows)
+- Warning for events on another clock
+- `Events.onset(label)` find onset of a special event 
+- `highlight=` and `highlight_color=` in `pupil_plot`
 - `pypil-upgrade`: converts saved files to the current format
-- Experimental setup and calibration are kept and saved for every object
-- `d.plot.plot_masked(policy=...)`, e.g. `policy="strict"` to show the
+- `d.plot.plot_masked(policy=...)` to show the
   interpolated stretches
-- `pytest` also runs the examples in the docstrings (doctests)
-- `"<start>"` and `"<end>"` in the lists of `exclude_intervals`,
-  `keep_intervals`, `remove_intervals`, `mask_intervals` and
-  `interpolate_intervals` (as in `get_intervals`); `-np.inf`/`np.inf` still
-  work but warn
-
-### Changed results
-
-Every number that differs from 2.1 is listed with case, reason and old and
-new values in
-[tests/data/reference/CHANGES.md](https://github.com/ihrke/pypillometry/blob/master/tests/data/reference/CHANGES.md).
-The main ones:
-
-- Interpolated samples are used: segments, `stat_per_event`, `scale`,
-  `merge_eyes`, `downsample` and the quality report change wherever blinks
-  were interpolated
-- Low-pass filter, smoothing and baseline estimation bridge unusable
-  samples linearly (the low-pass filter started from the global mean) and
-  change only usable samples
-- `downsample` keeps a mask layer where it covers more than half of a
-  window
-- Segment time axes at the sampling rate (e.g., the last time point of
-  the window (-200, 1000) ms at 500 Hz is 998 ms, was 1000 ms)
-- Quality report: masked time is split by layer; interpolation is no
-  longer counted as "other artifacts"
-- Files saved after a `downsample` to a rate that does not divide the
-  original one get a corrected `fs` when they are read
-- `merge_eyes()`/`pupil.merge_eyes()` use recorded samples first: where one
-  eye is interpolated and the other recorded, the merged value is the
-  recorded one (not the mean of both); the merged channel gets the layers
-  common to the eyes used (e.g., `blink`, `interpolated`) instead of only
-  `user`
-- Blinks next to excluded periods are blinks: `get_blinks()` (and blink
-  counts, interpolation, plots) no longer leaves out blinks that overlap or
-  touch an excluded period; `pupil.blinks_detect()` cuts blinks at excluded
-  periods instead of dropping them. A blink without usable data at its
-  anchor points (e.g., one that ends in a break) is not interpolated
+- `"<start>"` and `"<end>"` for interval selectors
 
 ### Fixed
 
-- Download progress bars (`read_file`, `from_eyelink`, studies from OSF) were
-  shown inside `pp.nologging()` and at log levels above INFO
+- Download progress bars hidden in `pp.nologging()` 
 - `fs` after `downsample` did not match the time vector
 - `reset_time` did not shift blinks stored in time units
-- `FakeEyeData.sim_data` was not cut or downsampled with the data
+- `FakeEyeData.sim_data` was not cut or downsampled 
 - Masks only grew: re-running a detector added to the old mask
-- Experimental setup and calibration were lost when saving some objects
+- Experimental setup and calibration were sometimes lost
 - `plot_heatmap(show_masked=True)` with NaN samples
 - A `plot_range` with start after end raises an error
 - The sample at the end of `plot_range` was not plotted
-- `mask_intervals` and `interpolate_intervals` accept a list of
-  `(start, end)` tuples in ms, like `exclude_intervals`
-- `Events.filter(trial="1")` on a numeric metadata column (or a number on
-  a column of strings) matched nothing silently; it raises a `TypeError`
-- `scale()` twice (or for different variables) then `unscale()` left the
-  data scaled or raised: the stored parameters are combined per channel,
-  and `unscale()` removes those of the channels it restores
+- `scale()` twice then `unscale()` left the data scaled
 - `pypilview --eyes right FILE` took the file for an eye
-- `CircularROI.from_degrees`/`RectangularROI.from_degrees` read plain
-  numbers as radians; they are degrees now (as in
-  `ExperimentalSetup.degrees_to_pixels`)
-- `load_study_local`/`load_study_osf`: `subjects="001"` loaded subject
-  `"1"` (the string was iterated); unknown subjects raise a `ValueError`
-  (they were skipped)
-- `ExperimentalSetup`: a negative `eye_to_screen_center` lost its sign;
-  non-positive distances and resolutions that are not two whole numbers
-  raise a `ValueError`
+- `CircularROI.from_degrees`/`RectangularROI.from_degrees` 
 - `pypillometry.viewer.tweak` (the function) was replaced by its submodule
-  once the tweak viewer had been used; the submodule is now
-  `pypillometry.viewer.tweak_canvas`
-- `pupil.estimate_response(eyes=...)` removed the stored parameters of the
-  other eyes
+- `pupil.estimate_response(eyes=...)` removed parameters
 - `pupil.estimate_response()` on data without events raises a `ValueError`
-  (it returned the start parameters)
-- `pp.nologging()` could leave logging disabled after the `with` block
-- Labels of `get_intervals(start="F_", end="R_")`: `"F_ to R_"` (was `"F__to_R_"`),
-  per interval e.g. `"F_1 to R_1"`
-- `summary()`, `Intervals.stats()` and the segment summary return Python
-  numbers (not `np.float64`); `summary()["params"]` is the dict of
-  parameters (was the string `'{...}'`)
-- `pupil.blinks_detect()` with an unknown strategy (e.g. `"zeros"`) raises a
-  `ValueError` (it only logged a warning and found no blinks)
-- `crop()` with start after end or outside the data raises a `ValueError`
-  (it returned an empty object)
+- `pp.nologging()` could leave logging disabled
+- `summary()`, `Intervals.stats()` return Python
+  numbers
+- `pupil.blinks_detect()` with an unknown strategy 
+- `crop()` with start after end or outside the data
 - Re-running `pupil.blinks_detect()` after `pupil.blinks_interpolate()`
   found no blinks (it read the interpolated values) and cleared the blink
-  layer; eyes with interpolated samples are now skipped with a warning
-- The source distribution contains all test data (`MANIFEST.in`)
-- Docstring examples run as written (several used undefined names or
-  outdated calls)
-
-### Upgrading code: old -> new
-
-Methods (`pp.<namespace>.<method>(...)` is the pipeline step):
-
-| 2.1 | 2.2 method | pipeline step |
-|---|---|---|
-| `d.pupil_lowpass_filter(...)` | `d.pupil.lowpass_filter(...)` | `pp.pupil.lowpass_filter(...)` |
-| `d.pupil_smooth_window(...)` | `d.pupil.smooth_window(...)` | `pp.pupil.smooth_window(...)` |
-| `d.pupil_merge_eyes(...)` | `d.pupil.merge_eyes(...)` | `pp.pupil.merge_eyes(...)` |
-| `d.pupil_blinks_detect(...)` | `d.pupil.blinks_detect(...)` | `pp.pupil.blinks_detect(...)` |
-| `d.blinks_merge_close(eyes, variables, ...)` | `d.pupil.blinks_merge_close(eyes, ...)` (pupil only) | `pp.pupil.blinks_merge_close(...)` |
-| `d.pupil_blinks_interpolate(...)` | `d.pupil.blinks_interpolate(...)` | `pp.pupil.blinks_interpolate(...)` |
-| `d.pupil_estimate_baseline(...)` | `d.pupil.estimate_baseline(...)` | `pp.pupil.estimate_baseline(...)` |
-| `d.pupil_estimate_response(...)` | `d.pupil.estimate_response(...)` | `pp.pupil.estimate_response(...)` |
-| `d.correct_pupil_foreshortening(...)` | `d.pupil.correct_foreshortening(...)` | `pp.pupil.correct_foreshortening(...)` |
-| `d.fit_foreshortening(...)` | `d.pupil.fit_foreshortening(...)` | (returns a calibration) |
-| `d.mask_offscreen_coords(...)` | `d.gaze.mask_offscreen(...)` | `pp.gaze.mask_offscreen(...)` |
-| `d.mask_eye_divergences(...)` | `d.gaze.mask_divergences(...)` | `pp.gaze.mask_divergences(...)` |
-| `d.crop(...)`, `d.downsample(...)`, `d.scale(...)`, ... | unchanged | `pp.crop(...)`, `pp.downsample(...)`, `pp.scale(...)`, ... |
-
-The generic methods that are also steps: `crop`, `downsample`, `scale`,
-`unscale`, `merge_eyes`, `reset_time`, `mask_intervals`,
-`interpolate_intervals`, `exclude_intervals`, `keep_intervals`,
-`remove_intervals`, `merge_masks`, `clear_layer`, `set_blinks`,
-`set_events`, `add_events`, `set_experimental_setup`, `drop_data`,
-`drop_original`, `fill_time_discontinuities`. The blink getters and setters
-(`get_blinks`, `set_blinks`, `nblinks`, `blink_stats`,
-`get_interpolated`) stay on `d`.
-
-Plots: `d.<plot>(...)` and the plotter classes -> `d.plot.<plot>(...)`, with
-the same names: `plot_timeseries`, `plot_timeseries_segments`,
-`plot_intervals`, `plot_masked`, `plot_experimental_setup`, `pupil_plot`,
-`pupil_plot_segments`, `plot_blinks`,
-`plot_pupil_foreshortening_error_surface`, `plot_heatmap`, `plot_scanpath`,
-`plot_calibration`.
-
-Calls whose arguments or results changed:
-
-| 2.1 | 2.2 |
-|---|---|
-| `d.pupil_blinks_detect(apply_mask=True)` | `d.pupil.blinks_detect()` |
-| `bl = d.pupil_blinks_detect()` (returned the blinks) | `d.pupil.blinks_detect(); bl = d.get_blinks()` |
-| `merged = d.blinks_merge_close(...)` (dict) | `d.pupil.blinks_merge_close(..., inplace=False).get_blinks()` |
-| `d.mask_offscreen_coords(apply_mask=False)` | `d.gaze.mask_offscreen(inplace=False).get_layer_intervals("offscreen")` |
-| `d.mask_eye_divergences(apply_mask=False)` | `d.gaze.mask_divergences(inplace=False).get_layer_intervals("divergence")` |
-| `d.set_blinks(iv, apply_mask=False)` | `d.set_blinks(iv)` (blinks always mask) |
-| `d.get_interpolated_blinks("left", "pupil")` | `d.get_interpolated("left", "pupil")["left_pupil"]` (also intervals from `interpolate_intervals()`) |
-| `d.get_blinks("left", "pupil")` (Intervals, samples) | `d.get_blinks("left", "pupil")["left_pupil"]` (ms; `units="samples"` for indices) |
-| `d.mask_as_intervals("left", "pupil")` | `d.mask_as_intervals("left", "pupil")["left_pupil"]` (ms) |
-| `d.blink_stats()["left"]` (None without blinks) | `d.blink_stats()["left_pupil"]` (n=0 without blinks) |
-| `d.get_intervals("S_", window)` | `d.get_epochs("S_", window)` (returns `Epochs`) |
-| `d.get_intervals(("F_", "R_"), window)` | `d.get_intervals(start="F_", end="R_", window=window)` |
-| `d.get_intervals("S_", (-100, 400))` (samples) | `d.get_epochs("S_", (-100, 400), units="samples")`; plain numbers are ms |
-| `d.get_duration()` (min) | `d.get_duration("min")`; default ms (also `excluded_duration`) |
-| `d.pupil_plot(plot_range=(0, 20))` (sec) | `d.plot.pupil_plot(plot_range=(0, 20) * u.sec)` |
-| `d.plot_timeseries_segments(interv=1)` (min) | `d.plot.plot_timeseries_segments(interv="1 min")` |
-| `d2 = d.drop_data(...)` (always a copy) | `d2 = d.drop_data(..., inplace=False)` |
-| `seg.baseline_correct(w)` (always a copy) | `seg.pupil.baseline_correct(w, inplace=False)` |
-| `seg.plot()` | `seg.pupil.plot()` |
-| `seg.data`, `seg.variable` | `seg["left_pupil"]`, `seg.channels` |
-| `group.subjects` | `group.epochs.meta["subject"]` |
-| `d.set_events(ev, inplace=False)` | `d.copy().set_events(ev)` |
-| `d.pupil_merge_eyes()` -> `merged_pupil` | `d.pupil.merge_eyes()` -> `mean_pupil` (`name=` to choose) |
-| `d.event_onsets`, `d.event_labels`, `d.event_meta` | `d.events.onsets`, `d.events.labels`, `d.events.meta` |
-| `d.get_events(units)` | `d.events.to_units(units)` |
-| `d.set_event_onsets(on, lab, meta)` | `d.set_events(pp.Events(on, lab, meta=meta))` |
-| `pp.PupilData(...)`, `pp.GazeData(...)` | `pp.EyeData(...)` |
-| `d.sub_slice(start, end)` (deprecated in 2.1) | `d.crop(start, end)` |
-| `pp.read_pickle(f)`, `pp.write_pickle(obj, f)` | `pp.read_file(f)`, `pp.write_file(obj, f)` (pickle or HDF5) |
-| `d.to_pupildata()` | `d.drop_data(variables=["x", "y"], inplace=False)` |
-| `d.to_gazedata()` | `d.drop_data(variables="pupil", inplace=False)` |
-| `pp.downsample(x, factor)` (array) | `pp.signal.downsample(x, factor)` |
-| `pp.merge_intervals(a, b)` | `pp.concat_intervals(a, b)` or `a + b` |
-| `d.pupil_plot(...); iv.to_units("sec").plot_highlight(color=c)` | `d.plot.pupil_plot(..., highlight=iv, highlight_color=c)` |
-| `segments.intervals` | `segments.epochs` |
-| `isinstance(d, pp.GenericEyeData)` | `isinstance(d, pp.EyeData)` |
-| `d.scale(mean={"left": {"pupil": m}}, sd=...)`, `d.params["scale"]["mean"]["left"]["pupil"]` | `d.scale(center={"left_pupil": m}, scale=...)`, `d.params["scale"]["center"]["left_pupil"]` |
-| `pp.smooth_window(...)`, `pp.pupil_kernel(...)`, ... (array functions) | `pp.signal.smooth_window(...)`, `pp.signal.pupil_kernel(...)`, ... |
-| `pp.zscale(x)` | `pp.signal.zscale(x)` |
-| `d.params["response"]["left"]` | `d.params["response"]["left_pupil"]` |
-| `iv.as_pandas()["event_label"]`, `["event_onset"]` | `iv.as_pandas()["label"]`, `["onset"]` |
-| `CircularROI.from_degrees((0.087, 0), 0.035, s)` (radians) | `CircularROI.from_degrees((5, 0), 2, s)` (degrees) |
-| history `pupil_blinks_detect(..., inplace=True)` | history `pupil.blinks_detect(...)` |
+  layer
 
 ## 2.1.0 (2026-11-02)
 
