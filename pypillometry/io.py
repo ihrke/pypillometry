@@ -16,9 +16,7 @@ See the user guide (Loading and saving data) for an overview.
 import gzip
 import pickle
 import os
-import requests
 from contextlib import contextmanager
-from tqdm import tqdm
 from typing import Optional
 from loguru import logger
 from .convenience import is_url, suppress_all_output, requires_package
@@ -46,9 +44,9 @@ __all__ = [
 def osf_authenticate(
     access_token: str,
     validate: bool = True,
-    session: Optional[requests.Session] = None,
+    session: Optional["requests.Session"] = None,
     timeout: float = 10.0,
-) -> requests.Session:
+) -> "requests.Session":
     """
     Authenticate against the OSF API using a personal access token.
 
@@ -73,6 +71,7 @@ def osf_authenticate(
     ValueError
         If no access token is provided or validation fails.
     """
+    import requests
     if not access_token or not isinstance(access_token, str):
         raise ValueError("A non-empty OSF access token string is required.")
 
@@ -104,7 +103,7 @@ def osf_authenticate(
     return session
 
 
-def _osf_client_url_to_download_url(url: str, session: Optional[requests.Session] = None) -> str:
+def _osf_client_url_to_download_url(url: str, session: Optional["requests.Session"] = None) -> str:
     """
     Convert an OSF client URL to a download URL.
     Parameters
@@ -118,6 +117,7 @@ def _osf_client_url_to_download_url(url: str, session: Optional[requests.Session
     str
         Download URL
     """
+    import requests
     # is it an OSF client URL?
     if not url.startswith("https://osf.io/"):
         logger.debug(f"URL is not an OSF client URL: {url!r}")
@@ -148,7 +148,7 @@ def _osf_client_url_to_download_url(url: str, session: Optional[requests.Session
 
 
 
-def download(url: str, fname: str = None, chunk_size: int = 1024, session: Optional[requests.Session] = None) -> str:
+def download(url: str, fname: str = None, chunk_size: int = 1024, session: Optional["requests.Session"] = None) -> str:
     """Download a file from a URL to a local file.
 
     See https://gist.github.com/yanqd0/c13ed29e29432e3cf3e7c38467f42f51.
@@ -169,6 +169,8 @@ def download(url: str, fname: str = None, chunk_size: int = 1024, session: Optio
     str
         Local filename of the downloaded file.
     """
+    import requests
+    from tqdm import tqdm
     import tempfile
 
     # Create temporary file if fname is None
@@ -334,6 +336,7 @@ def _scp(url: str, target: str):
     Shows a progress bar that follows the size of `target` while ``scp``
     is running.
     """
+    from tqdm import tqdm
     import subprocess
     import shutil
     import threading
@@ -383,7 +386,7 @@ def fetch_url(
     cache_file: Optional[str] = None,
     cache_dir: Optional[str] = None,
     force_download: bool = False,
-    session: Optional[requests.Session] = None,
+    session: Optional["requests.Session"] = None,
     cache_layout: str = "flat") -> str:
     """Download an HTTP(S) or SSH URL to a local file, with caching.
 
@@ -469,7 +472,7 @@ def local_copy(
     cache_dir: Optional[str] = None,
     autodelete: Optional[bool] = None,
     force_download: bool = False,
-    session: Optional[requests.Session] = None,
+    session: Optional["requests.Session"] = None,
     cache_layout: str = "flat"):
     """Context manager that gives a local filename for `source`.
 
@@ -581,7 +584,7 @@ def read_pickle(
     fname: str,
     cache_file: Optional[str] = None,
     force_download: bool = False,
-    session: Optional[requests.Session] = None,
+    session: Optional["requests.Session"] = None,
     cache_dir: Optional[str] = None,
     autodelete: Optional[bool] = None,
     cache_layout: str = "flat"):
@@ -645,7 +648,7 @@ def read_eyelink(
     source: str, 
     cache_file: Optional[str] = None, 
     force_download: bool = False, 
-    session: Optional[requests.Session] = None,
+    session: Optional["requests.Session"] = None,
     cache_dir: Optional[str] = None,
     autodelete: Optional[bool] = None,
     cache_layout: str = "flat"):

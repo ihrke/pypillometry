@@ -29,9 +29,6 @@ from ..signal.baseline import butter_lowpass_filter, downsample
 
 from loguru import logger
 import numpy as np
-from scipy.interpolate import interp1d
-from scipy import interpolate
-from scipy import optimize
 
 
 def _merge_overlapping_blink_windows(blinks, n):
@@ -789,6 +786,7 @@ class PupilNamespace(Namespace):
         EyeData
             the object with the interpolated pupil data
         """
+        from scipy.interpolate import interp1d
         self._d._require("pupil")
         obj = self._d._get_inplace(inplace)
         eyes=self._d._eyes_with(eyes, "pupil")
@@ -928,6 +926,7 @@ class PupilNamespace(Namespace):
         phasic pupil dynamics in humans. *Behavior Research Methods*, 57(9), 233.
         https://doi.org/10.3758/s13428-025-02755-7
         """
+        from scipy import interpolate
         self._d._require(variable)
         obj = self._d._get_inplace(inplace)
         if not isinstance(variable, str):
@@ -1338,6 +1337,7 @@ class PupilNamespace(Namespace):
         ForeshorteningCalibration : Container for fitted parameters
         correct_foreshortening : Simple foreshortening correction method
         """
+        from scipy import optimize
         # Validate eye
         self._d._require("pupil", "x", "y")
         if not isinstance(eye, str):

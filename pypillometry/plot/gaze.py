@@ -3,14 +3,9 @@ import numpy as np
 from collections.abc import Iterable
 from typing import List, Union, Optional, Tuple
 
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-from matplotlib import cm
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 from ..roi import ROI
 from ..units import _ms_to
 from loguru import logger
-from scipy.ndimage import gaussian_filter
 
 class GazePlots(GenericPlots):
     """
@@ -106,6 +101,10 @@ class GazePlots(GenericPlots):
            >>> d = pp.get_example_data("rlmw_002_short")
            >>> d.plot.plot_heatmap(eyes="left")
         """
+        import matplotlib.pyplot as plt
+        import matplotlib.patches as patches
+        from mpl_toolkits.axes_grid1 import make_axes_locatable
+        from scipy.ndimage import gaussian_filter
         self._d._require("x", "y")
         obj = self._d
         
@@ -357,6 +356,9 @@ class GazePlots(GenericPlots):
            >>> d = pp.get_example_data("rlmw_002_short")
            >>> d.plot.plot_scanpath(plot_range=(10, 12) * u.sec, eyes="left")
         """
+        import matplotlib.pyplot as plt
+        import matplotlib.patches as patches
+        from matplotlib import cm
         self._d._require("x", "y")
         obj = self._d
 
@@ -473,6 +475,7 @@ class GazePlots(GenericPlots):
         >>> # Plot specific eyes
         >>> fig, axes = data.plot.plot_calibration(eyes=['left', 'right'])  # doctest: +SKIP
         """
+        import matplotlib.pyplot as plt
         obj = self._d
         
         # Check if calibration data exists

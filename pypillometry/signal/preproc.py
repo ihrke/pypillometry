@@ -6,8 +6,6 @@ preprocessing functions (blinks, smoothing, missing data...)
 """
 import numpy as np
 from loguru import logger
-from scipy.signal import savgol_coeffs
-from scipy.ndimage import convolve1d
 
 __all__ = [
     "smooth_window", "velocity_savgol", "detect_blinks_velocity",
@@ -172,6 +170,8 @@ def velocity_savgol(x, window_len=11, polyorder=2, direction='center'):
     >>> # Forward-looking for offset detection
     >>> vel_fwd = velocity_savgol(signal, window_len=11, direction='forward')
     """
+    from scipy.signal import savgol_coeffs
+    from scipy.ndimage import convolve1d
     x = np.asarray(x, dtype=float)
     
     if x.ndim != 1:

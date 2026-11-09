@@ -21,7 +21,6 @@ from collections.abc import Mapping
 import numpy as np
 import numpy.ma as ma
 from loguru import logger
-import scipy.stats
 
 from .io import write_pickle, read_pickle
 from . import config, state
@@ -234,6 +233,13 @@ def _group_key(value):
     return value
 
 
+def sem(data, axis=None):
+    """Standard error of the mean, ignoring masked values
+    (:func:`scipy.stats.sem`; the default error of the segment plots)."""
+    import scipy.stats
+    return scipy.stats.sem(data, axis=axis)
+
+
 # --------------------------------------------------------------------------
 # Namespaces
 # --------------------------------------------------------------------------
@@ -341,7 +347,7 @@ class SegmentedPupilNamespace(Namespace):
             out[ch] = arr
         return out
 
-    def plot(self, eyes=[], meanfct=np.mean, varfct=scipy.stats.sem,
+    def plot(self, eyes=[], meanfct=np.mean, varfct=sem,
              show_missing: bool = None, show_zero_line: bool = True,
              show_legend: bool = None, title: str = None, label: str = None,
              ribbon_alpha: float = 0.3, ax=None, **kwargs):
@@ -665,7 +671,7 @@ class SegmentedGazeNamespace(Namespace):
             values[f"{eye}_{name}"] = np.where(inside.any(axis=0), first, np.nan)
         return self._table(values)
 
-    def plot_roi(self, roi, eyes=[], meanfct=np.mean, varfct=scipy.stats.sem,
+    def plot_roi(self, roi, eyes=[], meanfct=np.mean, varfct=sem,
                  show_missing: bool = None, show_zero_line: bool = True,
                  show_legend: bool = None, title: str = None, label: str = None,
                  ribbon_alpha: float = 0.3, ax=None, **kwargs):
@@ -1398,7 +1404,7 @@ class SegmentedEyeData(state.VersionedState):
             self[ch]  # raises a KeyError if missing
         return channels
 
-    def plot(self, channels=None, meanfct=np.mean, varfct=scipy.stats.sem,
+    def plot(self, channels=None, meanfct=np.mean, varfct=sem,
              show_missing: bool = None, show_zero_line: bool = True,
              show_legend: bool = None, title: str = None, label: str = None,
              ylabel: str = None, ribbon_alpha: float = 0.3, ax=None, **kwargs):

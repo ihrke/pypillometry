@@ -310,7 +310,7 @@ class TestIO(unittest.TestCase):
         self.assertEqual(type(edf_data_debug), type(edf_data_info))
 
     @patch("pypillometry.io._osf_client_url_to_download_url", return_value="https://files.osf.io/download")
-    @patch("pypillometry.io.tqdm")
+    @patch("tqdm.tqdm")
     def test_download_with_provided_session(self, mock_tqdm, mock_osf_url):
         """download should reuse provided session and respect OSF URL conversion."""
         session = MagicMock()
@@ -336,9 +336,9 @@ class TestIO(unittest.TestCase):
             if os.path.exists(fname):
                 os.remove(fname)
 
-    @patch("pypillometry.io.requests.Session")
+    @patch("requests.Session")
     @patch("pypillometry.io._osf_client_url_to_download_url", side_effect=lambda url, session=None: url)
-    @patch("pypillometry.io.tqdm")
+    @patch("tqdm.tqdm")
     def test_download_creates_session_when_missing(self, mock_tqdm, mock_osf_url, mock_session_cls):
         """download should create and close its own session when none supplied."""
         mock_session = MagicMock()
@@ -366,7 +366,7 @@ class TestIO(unittest.TestCase):
                 os.remove(fname)
 
     @patch("pypillometry.io._osf_client_url_to_download_url", side_effect=lambda url, session=None: url)
-    @patch("pypillometry.io.tqdm")
+    @patch("tqdm.tqdm")
     def test_download_progress_bar(self, mock_tqdm, mock_osf_url):
         """the bar shows the name without ".part" and has no total for an unknown size"""
         session = MagicMock()

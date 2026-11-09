@@ -137,7 +137,7 @@ class TestLoadStudyOSF(unittest.TestCase):
         stdout = io.StringIO()
         try:
             with patch.object(ppstudy, "get_osf_project_files", return_value=self.files), \
-                 patch.object(ppstudy.requests, "get", side_effect=self.get), \
+                 patch("requests.get", side_effect=self.get), \
                  redirect_stdout(stdout):
                 data, _ = ppstudy.load_study_osf("abcde", self.path, **kwargs)
         finally:

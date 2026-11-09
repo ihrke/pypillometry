@@ -7,9 +7,6 @@ import numpy as np
 from loguru import logger
 from pathlib import Path
 
-import matplotlib.pyplot as plt
-from matplotlib.colors import is_color_like
-from matplotlib.backends.backend_pdf import PdfPages
 
 class GenericPlots(Namespace):
     """
@@ -36,6 +33,7 @@ class GenericPlots(Namespace):
         of them) on all `axes`, whose time axis is in `units`, limited to
         `xrange` = (start, end) of the plotted data.
         """
+        from matplotlib.colors import is_color_like
         if highlight is None:
             return
         items = list(highlight) if isinstance(highlight, (list, tuple)) else [highlight]
@@ -183,6 +181,8 @@ class GenericPlots(Namespace):
            >>> figs = d.plot.plot_intervals(epochs, variables="pupil", nrow=2, ncol=5,
            ...                              figsize=(12, 4))
         """
+        import matplotlib.pyplot as plt
+        from matplotlib.backends.backend_pdf import PdfPages
         intervals = _as_intervals(intervals)
         
         obj = self._d  # EyeData object
@@ -352,6 +352,7 @@ class GenericPlots(Namespace):
            ...                        highlight=d.get_epochs("S_", (0, 1000) * u.ms),
            ...                        highlight_color="green")
         """
+        import matplotlib.pyplot as plt
         obj = self._d
         pairs = obj.data.select(eyes, variables)
         eyes = list(dict.fromkeys(eye for eye, _ in pairs))
@@ -551,6 +552,8 @@ class GenericPlots(Namespace):
         instead.
         """
 
+        import matplotlib.pyplot as plt
+        from matplotlib.backends.backend_pdf import PdfPages
         # Calculate start and end times in the specified units
         obj=self._d
         interv = parse_time(interv, to=units, default=units)
@@ -665,6 +668,7 @@ class GenericPlots(Namespace):
         With ``merge=True``, the masks of all eyes and variables are combined;
         ``show_events=True`` adds the event markers.
         """
+        import matplotlib.pyplot as plt
         from ..intervals import concat_intervals
         
         obj = self._d
@@ -782,7 +786,7 @@ class GenericPlots(Namespace):
         calibration = None,
         show_gaze_samples: bool = True,
         n_gaze_samples: int = 9,
-        ax: Optional[plt.Axes] = None,
+        ax: Optional["matplotlib.axes.Axes"] = None,
         viewing_angle: tuple = None,
         projection: str = '2d'
     ) -> tuple:

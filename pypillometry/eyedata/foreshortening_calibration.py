@@ -9,7 +9,6 @@ cos(alpha), where alpha is this viewing angle.
 
 import numpy as np
 import numpy.ma as ma
-from scipy.interpolate import BSpline
 from typing import Optional, Union, Tuple, Dict
 from ..intervals import Intervals
 from .experimental_setup import ExperimentalSetup
@@ -196,6 +195,7 @@ def _create_bspline_basis(
     >>> basis = _create_bspline_basis(t, knots, degree=3)
     >>> print(f"Basis shape: {basis.shape}")  # doctest: +SKIP
     """
+    from scipy.interpolate import BSpline
     n_basis = len(knots) - degree - 1
     n_points = len(t)
     
@@ -536,6 +536,7 @@ class ForeshorteningCalibration:
         fit_metrics : dict or None
             Fit quality metrics
         """
+        from scipy.interpolate import BSpline
         self.eye = eye
         self.theta = theta
         self.phi = phi

@@ -101,6 +101,8 @@ tables below for every changed call.
 
 ### Added
 
+- `import pypillometry` takes about 0.4 s instead of 2.4 s: matplotlib, scipy,
+  pandas, h5py and requests are imported when they are first used
 - Namespaces `d.pupil`, `d.gaze` and `d.plot`
 - Segments of several channels share their epochs: `seg.keep()` and
   `seg.filter(cond="easy")` select trials in all channels;

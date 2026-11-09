@@ -7,12 +7,6 @@ from pathlib import Path
 
 from loguru import logger
 
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-from mpl_toolkits.axes_grid1 import make_axes_locatable
-from matplotlib.backends.backend_pdf import PdfPages
-from scipy.ndimage import gaussian_filter
-from scipy.stats import binned_statistic_2d
 
 class PupilPlots(GenericPlots):
     """
@@ -105,6 +99,7 @@ class PupilPlots(GenericPlots):
            ...                   highlight=[trials, stim],
            ...                   highlight_color=["lightgrey", "green"])
         """
+        import matplotlib.pyplot as plt
         self._d._require("pupil")
         eyes = self._d._eyes_with(eyes, "pupil")
         logger.debug("Plotting eyes %s"%eyes)
@@ -279,7 +274,8 @@ class PupilPlots(GenericPlots):
         With ``pdf_file="segments.pdf"``, the figures are written to a PDF file
         instead.
         """
-
+        import matplotlib.pyplot as plt
+        from matplotlib.backends.backend_pdf import PdfPages
         self._d._require("pupil")
         obj = self._d
         interv = parse_time(interv, to=units, default=units)
@@ -479,6 +475,11 @@ class PupilPlots(GenericPlots):
         ``vmin``/``vmax`` set the color range, ``min_samples`` hides bins with
         few samples and ``smooth`` applies Gaussian smoothing.
         """
+        import matplotlib.pyplot as plt
+        import matplotlib.patches as patches
+        from mpl_toolkits.axes_grid1 import make_axes_locatable
+        from scipy.ndimage import gaussian_filter
+        from scipy.stats import binned_statistic_2d
         self._d._require("pupil", "x", "y")
         obj = self._d
         

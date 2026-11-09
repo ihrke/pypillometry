@@ -5,9 +5,7 @@ pupil.py
 functions related to pupillary responses.
 """
 import numpy as np
-import scipy.optimize
 from loguru import logger
-from scipy.ndimage import uniform_filter1d
 
 __all__ = [
     "lowpass_filter_iterative", "pupil_signal_quality", "pupil_kernel_t",
@@ -187,6 +185,7 @@ def pupil_signal_quality(signal, fs, mask=None, lowpass_cutoff=4.0,
     >>> bool(np.mean(noise_cv[~mask]) < 0.01)  # below 1% noise
     True
     """
+    from scipy.ndimage import uniform_filter1d
     valid_metrics = ["snr", "snr_db", "noise_power", "noise_cv"]
     if metric not in valid_metrics:
         raise ValueError(f"metric must be one of {valid_metrics}, got '{metric}'")
@@ -478,6 +477,7 @@ def _nnls_gram(x, y):
     sse : float
         sum of squared residuals
     """
+    import scipy.optimize
     gram = np.dot(x, x.T)
     b = np.dot(x, y)
     yy = float(np.dot(y, y))
@@ -564,6 +564,7 @@ def pupil_response(tx, sy, event_onsets, fs, npar="free", tmax="free", verbose=1
         design matrix (nevents x len(tx)),
         see :py:func:`pupil_build_design_matrix()`
     """
+    import scipy.optimize
     sy = np.asarray(sy, dtype=float)
     valid = np.isfinite(sy) if valid is None else np.asarray(valid, dtype=bool) & np.isfinite(sy)
     if not valid.any():

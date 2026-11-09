@@ -8,7 +8,6 @@ and use algorithm-specific names (e.g., A0, cos_alpha for foreshortening).
 """
 
 import numpy as np
-from scipy import signal as sp_signal
 from ..eyedata.experimental_setup import ExperimentalSetup
 
 __all__ = [
@@ -63,6 +62,7 @@ def fake_pupil_baseline(duration, fs, mean=750, amplitude=100,
     >>> print(f"Mean: {pupil.mean():.2f}, Std: {pupil.std():.2f}")
     Mean: 743.57, Std: 100.00
     """
+    from scipy import signal as sp_signal
     rng = np.random.RandomState(seed)
     n_samples = int(duration * fs)
     

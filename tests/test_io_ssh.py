@@ -179,12 +179,13 @@ class TestSSHProgress(SSHTestCase):
     def setUp(self):
         super().setUp()
         self.bars = []
-        real_tqdm = io.tqdm
+        import tqdm as tqdm_module
+        real_tqdm = tqdm_module.tqdm
         def tqdm(*args, **kwargs):
             bar = real_tqdm(*args, file=StringIO(), **kwargs)
             self.bars.append(bar)
             return bar
-        p = patch.object(io, "tqdm", side_effect=tqdm)
+        p = patch.object(tqdm_module, "tqdm", side_effect=tqdm)
         p.start()
         self.addCleanup(p.stop)
 

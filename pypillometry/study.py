@@ -10,8 +10,6 @@ an OSF project, based on a user-provided configuration file
 
 import os
 import pickle
-import requests
-from tqdm import tqdm
 from typing import Dict, Optional
 from loguru import logger
 
@@ -23,7 +21,7 @@ __all__ = [
 ]
 
 
-def get_osf_project_files(osf_id: str, session: Optional[requests.Session] = None) -> Dict[str, Dict[str, str]]:
+def get_osf_project_files(osf_id: str, session: Optional["requests.Session"] = None) -> Dict[str, Dict[str, str]]:
     """
     Get all file IDs from an OSF project.
     
@@ -39,6 +37,7 @@ def get_osf_project_files(osf_id: str, session: Optional[requests.Session] = Non
     Dict[str, Dict[str, str]]
         Dictionary mapping file paths to their IDs, download URLs, and file sizes
     """
+    from tqdm import tqdm
     files = {}
     estimated_files = 100  # Start with estimate of 100 files
     
@@ -55,6 +54,7 @@ def get_osf_project_files(osf_id: str, session: Optional[requests.Session] = Non
         pbar : tqdm
             Progress bar instance
         """
+        import requests
         nonlocal estimated_files
         
         if session is not None:
@@ -134,7 +134,7 @@ def _select_subjects(subjects, raw_data) -> list:
     return list(subjects)
 
 
-def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_download: bool = False, config_file: str = "pypillometry_conf.py", session: Optional[requests.Session] = None):
+def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_download: bool = False, config_file: str = "pypillometry_conf.py", session: Optional["requests.Session"] = None):
     """
     Read a study from OSF using the configuration file.
     Example: https://osf.io/p2u74/
@@ -171,6 +171,8 @@ def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_dow
     config : module
         Module containing the configuration (pypillometry_conf.py imported as a module)
     """
+    import requests
+    from tqdm import tqdm
     logger.info(f"Loading study from OSF project '{osf_id}'")
     # Create cache directory if it doesn't exist
     os.makedirs(path, exist_ok=True)
@@ -330,6 +332,7 @@ def load_study_local(path: str, config_file: str = "pypillometry_conf.py", subje
     config : module
         Module containing the configuration (pypillometry_conf.py imported as a module)
     """
+    from tqdm import tqdm
     import shutil
     import tempfile
 

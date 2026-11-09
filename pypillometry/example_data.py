@@ -10,7 +10,6 @@ OSF: https://osf.io/p2u74/
 """
 
 import numpy as np
-import pandas as pd
 from .eyedata import EyeData
 from importlib.resources import files
 import inspect
@@ -58,6 +57,7 @@ class DatasetDict(dict):
     
     def _repr_html_(self):
         """Return HTML representation for Jupyter display."""
+        import pandas as pd
         # Parse the dictionary to create DataFrame
         data = []
         for key, info in self.items():
@@ -171,6 +171,7 @@ def get_rlmw_002(cache_dir=None):
     EyeData
         the example dataset
     """
+    import pandas as pd
     # download files from osf (or use the cached copies)
     cache_dir = cache_dir or _user_cache_dir()
     fname_samples = fetch_url(example_datasets["rlmw_002"]["samples_asc"],
@@ -252,6 +253,7 @@ def get_rlmw_002_short():
     EyeData
         the example dataset
     """
+    import pandas as pd
     fname_samples = example_datasets["rlmw_002_short"]["sample_asc"]
     fname_events = example_datasets["rlmw_002_short"]["events_asc"]
     df=pd.read_table(fname_samples, index_col=False,

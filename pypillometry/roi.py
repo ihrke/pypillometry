@@ -19,8 +19,6 @@ Coordinate Systems
 
 from typing import Union, Tuple, Optional, TYPE_CHECKING
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
 
 
 __all__ = [
@@ -340,6 +338,8 @@ class CircularROI(ROI):
         :meth:`d.plot.plot_scanpath() <pypillometry.plot.PlotNamespace.plot_scanpath>` can also draw them
         (``rois=[left, right]``).
         """
+        import matplotlib.pyplot as plt
+        import matplotlib.patches as patches
         if ax is None:
             ax = plt.gca()
             
@@ -584,6 +584,8 @@ class RectangularROI(ROI):
         :meth:`d.plot.plot_scanpath() <pypillometry.plot.PlotNamespace.plot_scanpath>` can also draw them
         (``rois=[left, right]``).
         """
+        import matplotlib.pyplot as plt
+        import matplotlib.patches as patches
         if ax is None:
             ax = plt.gca()
             
