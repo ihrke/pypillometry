@@ -76,7 +76,7 @@ on each side and replaced by a smooth curve (green):
 
    raw = pp.get_example_data("rlmw_002_short")
    d = raw | pp.pupil.blinks_detect() | pp.pupil.blinks_interpolate()
-   t0, t1 = 21000, 23000
+   t0, t1 = 31800, 32900
    sel = (raw.tx >= t0) & (raw.tx < t1)
    t = raw.tx[sel] / 1000
 
