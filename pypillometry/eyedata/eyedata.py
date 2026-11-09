@@ -7,14 +7,12 @@ The helpers it uses (and that the namespaces ``d.pupil``/``d.gaze`` use as
 well) are in :mod:`pypillometry.eyedata.generic`.
 """
 
-import base64
 import copy
 import inspect
 import numbers
 import sys
 import warnings
 from collections.abc import Iterable
-from io import BytesIO
 from random import choice
 from typing import Callable, Dict, List, Optional, Tuple, Union
 
@@ -29,7 +27,7 @@ from ..events import Events, _pair_with_next, _warn_if_needs_sync
 from ..intervals import Intervals, _as_intervals
 from ..plot import PlotNamespace
 from ..signal import baseline
-from ..templates import render
+from ..templates import render, sparkline
 from ..units import (UNSET, _has_units, _time_values_and_units, parse_time, _ms_to_samples,
                      _samples_to_ms)
 from .eyedatadict import EyeDataDict, REC_LAYERS, _join_key
@@ -1718,43 +1716,15 @@ class EyeData(state.VersionedState):
             )
 
         sparklines = []
-        try:
-            from matplotlib.figure import Figure
-            from matplotlib.backends.backend_agg import FigureCanvasAgg
-            for key in sorted(self.data.keys()):
-                eye, var = key if isinstance(key, tuple) else (None, key)
-                label = f"{eye} {var}".strip() if eye else var
-                data = self[key]  # Use accessor to get masked array
-                if data is None or len(data) == 0:
-                    continue
-                # Average over ~200 bins, ignoring NaN/masked samples, so
-                # sparse data still shows up (bins without data stay NaN)
-                values = np.ma.filled(np.ma.asarray(data, dtype=float), np.nan)
-                valid = ~np.isnan(values)
-                nbins = min(200, len(values))
-                starts = np.linspace(0, len(values), nbins + 1).astype(int)[:-1]
-                sums = np.add.reduceat(np.where(valid, values, 0.0), starts)
-                counts = np.add.reduceat(valid.astype(int), starts)
-                with np.errstate(invalid="ignore", divide="ignore"):
-                    sample = np.where(counts > 0, sums / counts, np.nan)
-                fig = Figure(figsize=(1.8, 0.6), dpi=100)
-                ax = fig.subplots()
-                ax.plot(sample, color="#1f77b4", linewidth=1)
-                ax.axis("off")
-                canvas = FigureCanvasAgg(fig)
-                buf = BytesIO()
-                canvas.print_png(buf)
-                buf.seek(0)
-                img_b64 = base64.b64encode(buf.read()).decode("ascii")
-                sparklines.append(
-                    {
-                        "label": label,
-                        "data": f"data:image/png;base64,{img_b64}",
-                    }
-                )
-        except Exception as exc:  # pragma: no cover - optional feature
-            logger.debug(f"Could not render sparklines: {exc}")
-            sparklines = []
+        for key in sorted(self.data.keys()):
+            eye, var = key if isinstance(key, tuple) else (None, key)
+            label = f"{eye} {var}".strip() if eye else var
+            data = self[key]  # Use accessor to get masked array
+            if data is None or len(data) == 0:
+                continue
+            image = sparkline(data)
+            if image is not None:
+                sparklines.append({"label": label, "image": image})
 
         context = {
             "class_name": self.__class__.__name__,
