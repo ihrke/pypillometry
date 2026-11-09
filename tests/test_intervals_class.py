@@ -1665,7 +1665,7 @@ class TestConversionWithData(unittest.TestCase):
         seg_ms = self.d.get_segments(self.d.get_epochs("", (-100, 200), units="ms"), "left_pupil")
         seg_ix = self.d.get_segments(self.d.get_epochs("", (-10, 20), units="samples"), "left_pupil")
         np.testing.assert_allclose(seg_ms.tx, seg_ix.tx)
-        self.assertEqual(seg_ms.data.shape, seg_ix.data.shape)
+        self.assertEqual(seg_ms["left_pupil"].shape, seg_ix["left_pupil"].shape)
 
     def test_units_none_rejected(self):
         """sample indices are units="samples"; units=None raises"""

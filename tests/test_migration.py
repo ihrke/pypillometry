@@ -196,7 +196,7 @@ class TestMigratedState:
     def test_segments_epochs(self):
         old = format2_state("segmented.h5")
         st = state.migrate(format2_state("segmented.h5"), "SegmentedEyeData")
-        ep = st["intervals"]
+        ep = st["epochs"]
         assert ep["class"] == "Epochs"
         assert set(ep) == {"class", "events", "window", "label"}
         assert ep["events"]["units"] == "ms"
@@ -226,7 +226,7 @@ class TestMigratedState:
         st["intervals"]["interval_window"] = None
         s = state.from_state(st)
         assert isinstance(s.epochs, pp.Intervals)
-        assert state.to_state(s)["intervals"]["class"] == "Intervals"
+        assert state.to_state(s)["epochs"]["class"] == "Intervals"
         assert s.epochs.intervals == [tuple(r) for r in
                                          format2_state("segmented.h5")["intervals"]["intervals"]]
 

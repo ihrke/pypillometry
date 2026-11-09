@@ -112,7 +112,7 @@ class TestPickleRoundTrip(unittest.TestCase):
         iv = d.get_epochs("F_", window=(-200, 800), units="ms")
         seg = d.get_segments(iv, "left_pupil")
         seg2 = self.roundtrip(seg)
-        np.testing.assert_array_equal(seg2.data.mask, seg.data.mask)
+        np.testing.assert_array_equal(seg2["left_pupil"].mask, seg["left_pupil"].mask)
         self.assertEqual(seg2.epochs, seg.epochs)
         self.roundtrip(pp.group_segments([seg, seg]))
 
@@ -242,7 +242,7 @@ class TestFormatVersion0(unittest.TestCase):
     def test_segmented(self):
         s = self.load("segmented_v0.pkl")
         self.assertIsInstance(s, pp.SegmentedEyeData)
-        self.assertEqual(s.variable, "left_pupil")
+        self.assertEqual(s.channels, ["left_pupil"])
         self.assertEqual(s.epochs.label, "F_")
         g = self.load("group_segmented_v0.pkl")
         self.assertIsInstance(g, pp.GroupLevelSegmentedData)

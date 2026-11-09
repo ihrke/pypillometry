@@ -1,629 +1,681 @@
 """
-Tests for the SegmentedEyeData class.
+Tests for SegmentedEyeData, its namespaces (seg.pupil, seg.gaze) and
+GroupLevelSegmentedData.
 """
+import os
+import tempfile
 import unittest
+
 import matplotlib
 matplotlib.use('Agg')  # Use non-interactive backend for testing
 import matplotlib.pyplot as plt
-import sys
-sys.path.insert(0, "..")
-import pypillometry as pp
 import numpy as np
 import numpy.ma as ma
-from pypillometry.segmented import SegmentedEyeData, GroupLevelSegmentedData, group_segments
+
+import pypillometry as pp
+from pypillometry import state
 from pypillometry.intervals import Intervals
+from pypillometry.segmented import SegmentedEyeData, GroupLevelSegmentedData, group_segments
 
 
-class TestSegmentedEyeDataCreation(unittest.TestCase):
-    """Test SegmentedEyeData creation methods"""
-    
-    def test_creation_from_masked_array(self):
-        """Test creating SegmentedEyeData from masked array"""
-        n_timepoints = 100
-        n_segments = 10
-        tx = np.linspace(-200, 800, n_timepoints)
-        data = np.random.randn(n_timepoints, n_segments)
-        mask = np.zeros((n_timepoints, n_segments), dtype=bool)
-        mask[0:5, 0] = True  # Mask first 5 timepoints of first segment
-        
-        masked_data = ma.masked_array(data, mask=mask)
-        
-        seg = SegmentedEyeData.from_masked_array(
-            data=masked_data,
-            tx=tx,
-            variable="left_pupil",
-            name="test_segments"
-        )
-        
+def make(data, tx, channel="left_pupil", name="segments", mask=None, **kw):
+    """Segments with one channel."""
+    if mask is not None:
+        data = ma.masked_array(data, mask=mask)
+    return SegmentedEyeData(name=name, tx=tx, data={channel: data}, **kw)
+
+
+def eyedata(n_samples=1000, fs=100, onsets=(1000, 3000, 5000, 7000), labels=None, **channels):
+    """EyeData with events (default: a left pupil)."""
+    if not channels:
+        channels = {"left_pupil": np.sin(np.linspace(0, 10 * np.pi, n_samples)) * 100 + 500}
+    labels = labels or [f"stim{i + 1}" for i in range(len(onsets))]
+    return pp.EyeData(sampling_rate=fs, event_onsets=list(onsets), event_labels=labels,
+                      **channels)
+
+
+def gaze_eyedata():
+    """EyeData with pupil and gaze of both eyes; the left eye looks at (100, 100)
+    from 0 to 200 ms after the events "a", at (900, 900) otherwise."""
+    fs, n = 100, 1000
+    tx = np.arange(n) * 10.
+    onsets = [1000., 3000., 5000., 7000.]
+    lx, ly = np.full(n, 900.), np.full(n, 900.)
+    for on in onsets[:2]:
+        sel = (tx >= on) & (tx < on + 200)
+        lx[sel], ly[sel] = 100., 100.
+    rng = np.random.default_rng(0)
+    return pp.EyeData(sampling_rate=fs, left_x=lx, left_y=ly,
+                      left_pupil=rng.normal(5, 0.1, n), right_x=np.full(n, 900.),
+                      right_y=np.full(n, 900.), right_pupil=rng.normal(5, 0.1, n),
+                      event_onsets=onsets, event_labels=["a", "a", "b", "b"])
+
+
+class TestCreation(unittest.TestCase):
+
+    def test_creation_from_dict(self):
+        tx = np.linspace(-200, 800, 100)
+        data = np.random.randn(100, 10)
+        mask = np.zeros((100, 10), dtype=bool)
+        mask[0:5, 0] = True
+        seg = make(data, tx, name="test_segments", mask=mask)
         self.assertEqual(seg.name, "test_segments")
-        self.assertEqual(seg.variable, "left_pupil")
-        self.assertEqual(seg.n_timepoints, n_timepoints)
-        self.assertEqual(seg.n_segments, n_segments)
-        self.assertEqual(seg.eye, "left")
-        self.assertEqual(seg.var, "pupil")
+        self.assertEqual(seg.channels, ["left_pupil"])
+        self.assertEqual(seg.eyes, ["left"])
+        self.assertEqual(seg.variables, ["pupil"])
+        self.assertEqual(seg.n_timepoints, 100)
+        self.assertEqual(seg.n_segments, 10)
         np.testing.assert_array_equal(seg.tx, tx)
-        self.assertTrue(seg.data.mask[0, 0])
-        self.assertFalse(seg.data.mask[10, 0])
-    
-    def test_creation_with_separate_mask(self):
-        """Test creating SegmentedEyeData with separate mask array"""
-        n_timepoints = 50
-        n_segments = 5
-        tx = np.linspace(-100, 400, n_timepoints)
-        data = np.random.randn(n_timepoints, n_segments)
-        mask = np.zeros((n_timepoints, n_segments), dtype=bool)
-        mask[:, 2] = True  # Mask entire segment 2
-        
-        seg = SegmentedEyeData.from_masked_array(
-            data=data,
-            tx=tx,
-            variable="right_x",
-            mask=mask
-        )
-        
-        self.assertEqual(seg.var, "x")
-        self.assertEqual(seg.eye, "right")
-        self.assertTrue(np.all(seg.data.mask[:, 2]))
-        self.assertFalse(np.any(seg.data.mask[:, 0]))
-    
-    def test_creation_from_eyedata(self):
-        """Test creating SegmentedEyeData from EyeData via get_segments"""
-        # Create pupil-only EyeData with events
-        n_samples = 1000
-        fs = 100
-        pupil = np.sin(np.linspace(0, 10*np.pi, n_samples)) * 100 + 500
-        event_onsets = [1000, 3000, 5000, 7000]  # in ms
-        event_labels = ["stim1", "stim2", "stim3", "stim4"]
-        
-        data = pp.EyeData(
-            sampling_rate=fs,
-            left_pupil=pupil,
-            event_onsets=event_onsets,
-            event_labels=event_labels
-        )
-        
-        # Get intervals and segments
-        intervals = data.get_epochs("stim", window=(-100, 200), units="ms")
-        segments = data.get_segments(intervals, "left_pupil")
-        
-        self.assertIsInstance(segments, SegmentedEyeData)
-        self.assertEqual(segments.variable, "left_pupil")
-        self.assertEqual(segments.n_segments, 4)
-        self.assertIsNotNone(segments.sampling_rate)
-    
-    def test_variable_format_validation(self):
-        """Test that variable must be in eye_variable format"""
-        tx = np.linspace(-100, 100, 50)
-        data = np.random.randn(50, 5)
-        
-        with self.assertRaises(ValueError):
-            SegmentedEyeData.from_masked_array(
-                data=data,
-                tx=tx,
-                variable="pupil"  # Missing eye prefix
-            )
-    
-    def test_variable_not_found_error(self):
-        """Test error when variable doesn't exist in eyedata"""
-        data = pp.EyeData(
-            sampling_rate=100,
-            left_pupil=np.random.randn(100),
-            event_onsets=[500],
-            event_labels=["test"]
-        )
-        
-        intervals = data.get_epochs("test", window=(-50, 100), units="ms")
-        
-        with self.assertRaises(KeyError):
-            data.get_segments(intervals, "right_pupil")  # Only left exists
+        self.assertTrue(seg["left_pupil"].mask[0, 0])
+        self.assertFalse(seg["left_pupil"].mask[10, 0])
+
+    def test_nan_masked(self):
+        data = np.ones((5, 3))
+        data[:, 2] = np.nan
+        seg = make(data, np.arange(5.), "right_x")
+        self.assertTrue(np.all(seg["right_x"].mask[:, 2]))
+        self.assertFalse(np.any(seg["right_x"].mask[:, 0]))
+
+    def test_several_channels(self):
+        seg = SegmentedEyeData("s", np.arange(5.), {"left_pupil": np.ones((5, 3)),
+                                                    "left_x": np.zeros((5, 3))})
+        self.assertEqual(seg.channels, ["left_pupil", "left_x"])
+        self.assertEqual(seg.variables, ["pupil", "x"])
+        self.assertIn("left_x", seg)
+        self.assertNotIn("right_x", seg)
+
+    def test_invalid(self):
+        tx = np.arange(5.)
+        with self.assertRaisesRegex(ValueError, "<eye>_<variable>"):
+            make(np.ones((5, 2)), tx, "pupil")
+        with self.assertRaisesRegex(ValueError, "at least one channel"):
+            SegmentedEyeData("s", tx, {})
+        with self.assertRaises(TypeError):
+            SegmentedEyeData("s", tx, np.ones((5, 2)))
+        with self.assertRaisesRegex(ValueError, "must have shape"):
+            make(np.ones((4, 2)), tx)
+        with self.assertRaisesRegex(ValueError, "segments, the others"):
+            SegmentedEyeData("s", tx, {"left_x": np.ones((5, 2)), "left_y": np.ones((5, 3))})
+        with self.assertRaisesRegex(ValueError, "3 epochs for 2 segments"):
+            make(np.ones((5, 2)), tx, epochs=pp.Epochs([1, 2, 3], (0, 5)))
+
+    def test_from_eyedata(self):
+        d = eyedata()
+        seg = d.get_segments(d.get_epochs("stim", window=(-100, 200), units="ms"), "left_pupil")
+        self.assertIsInstance(seg, SegmentedEyeData)
+        self.assertEqual(seg.channels, ["left_pupil"])
+        self.assertEqual(seg.n_segments, 4)
+        self.assertEqual(seg.sampling_rate, 100)
+
+    def test_from_eyedata_all_channels(self):
+        d = gaze_eyedata()
+        ep = d.get_epochs("", window=(-100, 500), units="ms")
+        seg = d.get_segments(ep)
+        self.assertEqual(seg.channels, list(d.data.keys()))
+        self.assertEqual(d.get_segments(ep, variables="pupil").channels,
+                         ["left_pupil", "right_pupil"])
+        self.assertEqual(d.get_segments(ep, eyes="left", variables=["x", "y"]).channels,
+                         ["left_x", "left_y"])
+        self.assertEqual(d.get_segments(ep, ["right_x", "left_x"]).channels,
+                         ["right_x", "left_x"])
+        # the same data as one channel at a time
+        for ch in seg.channels:
+            one = d.get_segments(ep, ch)
+            np.testing.assert_array_equal(ma.getdata(one[ch]), ma.getdata(seg[ch]))
+            np.testing.assert_array_equal(ma.getmaskarray(one[ch]), ma.getmaskarray(seg[ch]))
+
+    def test_from_eyedata_errors(self):
+        d = eyedata()
+        ep = d.get_epochs("stim", window=(-50, 100), units="ms")
+        with self.assertRaisesRegex(KeyError, "available channels"):
+            d.get_segments(ep, "right_pupil")
+        with self.assertRaisesRegex(KeyError, "available channels"):
+            d.get_segments(ep, eyes="right")
+        with self.assertRaisesRegex(ValueError, "not both"):
+            d.get_segments(ep, "left_pupil", eyes="left")
+
+    def test_name_from_epochs_label(self):
+        d = eyedata(n_samples=500, onsets=(1000, 2000, 3000), labels=["cue"] * 3)
+        seg = d.get_segments(d.get_epochs("cue", window=(-100, 200), units="ms"))
+        self.assertEqual(seg.name, "cue")
+
+    def test_epochs_kept(self):
+        iv = Intervals([(0, 100), (200, 300)], units="ms", label="test_intervals",
+                       event_labels=["ev1", "ev2"])
+        seg = make(np.random.randn(50, 2), np.linspace(0, 100, 50), epochs=iv)
+        self.assertIs(seg.epochs, iv)
+        self.assertFalse(hasattr(seg, "intervals"))
 
 
-class TestSegmentedEyeDataProperties(unittest.TestCase):
-    """Test SegmentedEyeData properties"""
-    
+class TestChannels(unittest.TestCase):
+
     def setUp(self):
-        """Create test segment data"""
-        self.n_timepoints = 100
-        self.n_segments = 10
-        self.tx = np.linspace(-200, 800, self.n_timepoints)
-        data = np.random.randn(self.n_timepoints, self.n_segments)
-        
-        self.seg = SegmentedEyeData.from_masked_array(
-            data=data,
-            tx=self.tx,
-            variable="left_pupil",
-            name="test",
-            sampling_rate=500.0
-        )
-    
-    def test_n_timepoints(self):
-        """Test n_timepoints property"""
-        self.assertEqual(self.seg.n_timepoints, self.n_timepoints)
-    
-    def test_n_segments(self):
-        """Test n_segments property"""
-        self.assertEqual(self.seg.n_segments, self.n_segments)
-    
-    def test_eye_property(self):
-        """Test eye property extraction"""
-        self.assertEqual(self.seg.eye, "left")
-    
-    def test_var_property(self):
-        """Test var property extraction"""
-        self.assertEqual(self.seg.var, "pupil")
-    
+        d = gaze_eyedata()
+        self.seg = d.get_segments(d.get_epochs("", window=(-100, 500), units="ms"))
+
+    def test_getitem_missing(self):
+        with self.assertRaisesRegex(KeyError, "available channels: left_x"):
+            self.seg["left_z"]
+
+    def test_setitem(self):
+        seg = self.seg
+        seg["left_zero"] = np.zeros((seg.n_timepoints, seg.n_segments))
+        self.assertIn("left_zero", seg.channels)
+        with self.assertRaisesRegex(ValueError, "must have shape"):
+            seg["left_bad"] = np.zeros((3, seg.n_segments))
+        with self.assertRaisesRegex(ValueError, "segments, the others"):
+            seg["left_bad"] = np.zeros((seg.n_timepoints, 2))
+
+    def test_select_channels(self):
+        sel = self.seg.select_channels(variables="pupil")
+        self.assertEqual(sel.channels, ["left_pupil", "right_pupil"])
+        self.assertEqual(sel.epochs, self.seg.epochs)
+        self.assertEqual(self.seg.select_channels("left_x").channels, ["left_x"])
+        self.assertEqual(self.seg.select_channels(eyes="right").channels,
+                         ["right_x", "right_y", "right_pupil"])
+        # copies: changing the selection does not change the original
+        sel["left_pupil"][:] = 0
+        self.assertFalse(np.all(ma.getdata(self.seg["left_pupil"]) == 0))
+        with self.assertRaisesRegex(KeyError, "available channels"):
+            self.seg.select_channels(eyes="mean")
+        with self.assertRaisesRegex(ValueError, "not both"):
+            self.seg.select_channels("left_x", eyes="left")
+
+    def test_drop_channels(self):
+        rest = self.seg.drop_channels("left_x", "left_y")
+        self.assertEqual(rest.channels, ["left_pupil", "right_x", "right_y", "right_pupil"])
+        with self.assertRaises(KeyError):
+            self.seg.drop_channels("left_z")
+        with self.assertRaisesRegex(ValueError, "all channels"):
+            self.seg.drop_channels(*self.seg.channels)
+
+
+class TestTrialSelection(unittest.TestCase):
+
+    def setUp(self):
+        d = gaze_eyedata()
+        ep = d.get_epochs("", window=(-100, 500), units="ms")
+        ep = ep.set_meta("cond", ["easy", "hard", "easy", "hard"])
+        self.seg = d.get_segments(ep)
+
+    def test_keep(self):
+        mask = np.array([True, False, True, True])
+        kept = self.seg.keep(mask)
+        self.assertEqual(kept.n_segments, 3)
+        for ch in self.seg.channels:
+            np.testing.assert_array_equal(ma.getdata(kept[ch]), ma.getdata(self.seg[ch])[:, mask])
+        np.testing.assert_array_equal(kept.epochs.onsets, self.seg.epochs.onsets[mask])
+        self.assertEqual(self.seg.n_segments, 4)
+        with self.assertRaisesRegex(ValueError, "boolean array with one value per segment"):
+            self.seg.keep([True, False])
+        with self.assertRaisesRegex(ValueError, "boolean array"):
+            self.seg.keep(np.array([1, 0, 1, 1]))
+
+    def test_filter(self):
+        easy = self.seg.filter(cond="easy")
+        self.assertEqual(easy.n_segments, 2)
+        self.assertEqual(list(easy.epochs.meta["cond"]), ["easy", "easy"])
+        self.assertEqual(self.seg.filter("a", exact=True).n_segments, 2)
+        self.assertEqual(self.seg.filter("b", cond="hard").n_segments, 1)
+        with self.assertRaisesRegex(KeyError, "no metadata column"):
+            self.seg.filter(block=1)
+
+    def test_filter_needs_epochs(self):
+        seg = make(np.ones((5, 2)), np.arange(5.))
+        with self.assertRaisesRegex(ValueError, "no epochs"):
+            seg.filter("a")
+        self.assertEqual(seg.keep(np.array([True, False])).n_segments, 1)
+
+    def test_keep_intervals(self):
+        iv = Intervals([(0, 100), (200, 300), (400, 500)], units="ms", label="iv",
+                       event_labels=["a", "b", "c"], event_onsets=[0, 200, 400],
+                       event_meta={"x": [1, 2, 3]})
+        seg = make(np.ones((5, 3)), np.arange(5.), epochs=iv)
+        kept = seg.keep(np.array([True, False, True]))
+        self.assertEqual(kept.epochs.intervals, [(0, 100), (400, 500)])
+        self.assertEqual(list(kept.epochs.event_labels), ["a", "c"])
+        np.testing.assert_array_equal(kept.epochs.event_meta["x"], [1, 3])
+
+
+class TestDisplay(unittest.TestCase):
+
+    def setUp(self):
+        self.seg = make(np.random.randn(100, 10), np.linspace(-200, 800, 100),
+                        name="test", sampling_rate=500.0)
+
     def test_window_property(self):
-        """Test window property"""
-        window = self.seg.window
-        self.assertEqual(window[0], -200)
-        self.assertEqual(window[1], 800)
-    
+        self.assertEqual(self.seg.window, (-200, 800))
+
     def test_summary(self):
-        """Test summary method"""
         summary = self.seg.summary()
-        
         self.assertEqual(summary["name"], "test")
-        self.assertEqual(summary["variable"], "left_pupil")
-        self.assertEqual(summary["n_segments"], self.n_segments)
-        self.assertEqual(summary["n_timepoints"], self.n_timepoints)
+        self.assertEqual(summary["channels"], ["left_pupil"])
+        self.assertEqual(summary["n_segments"], 10)
+        self.assertEqual(summary["n_timepoints"], 100)
         self.assertEqual(summary["sampling_rate"], 500.0)
-        self.assertIn("percent_masked", summary)
+        self.assertEqual(summary["percent_masked"], {"left_pupil": 0.0})
         self.assertIn("window", summary)
-    
+
+    def test_percent_masked_in_summary(self):
+        mask = np.zeros((100, 10), dtype=bool)
+        mask[0:10, :] = True
+        seg = make(np.random.randn(100, 10), np.linspace(-200, 800, 100), mask=mask)
+        self.assertAlmostEqual(seg.summary()["percent_masked"]["left_pupil"], 10.0)
+
     def test_repr(self):
-        """Test string representation"""
-        repr_str = repr(self.seg)
-        
-        self.assertIn("SegmentedEyeData(test)", repr_str)
-        self.assertIn("variable", repr_str)
-        self.assertIn("n_segments", repr_str)
-    
+        r = repr(self.seg)
+        self.assertIn("SegmentedEyeData(test)", r)
+        self.assertIn("10 segments x 100 time points", r)
+        self.assertIn("left_pupil", r)
+
     def test_repr_html(self):
-        """Test HTML representation for notebooks"""
         html = self.seg._repr_html_()
-        
-        self.assertIn("SegmentedEyeData", html)
-        self.assertIn("test", html)  # name
-        self.assertIn("left_pupil", html)  # variable
-        self.assertIn("Segments", html)
-        self.assertIn("Time points", html)
+        for text in ("SegmentedEyeData", "test", "left_pupil", "Segments", "Time points"):
+            self.assertIn(text, html)
 
 
-class TestSegmentedEyeDataBaselineCorrection(unittest.TestCase):
-    """Test baseline correction functionality"""
-    
-    def test_baseline_correct_single_point(self):
-        """Test baseline correction at single time point"""
-        n_timepoints = 100
-        n_segments = 5
-        tx = np.linspace(-200, 800, n_timepoints)
-        
-        # Create data where each segment has different baseline
-        data = np.zeros((n_timepoints, n_segments))
-        for i in range(n_segments):
-            data[:, i] = i * 10 + np.random.randn(n_timepoints) * 0.1
-        
-        seg = SegmentedEyeData.from_masked_array(
-            data=data,
-            tx=tx,
-            variable="left_pupil"
-        )
-        
-        # Baseline correct at t=0
-        seg_bc = seg.baseline_correct(window=0, inplace=False)
-        
-        # After correction, values at t=0 should be close to 0
-        t0_idx = np.argmin(np.abs(tx))
-        for i in range(n_segments):
-            self.assertAlmostEqual(seg_bc.data[t0_idx, i], 0, places=1)
-    
-    def test_baseline_correct_window(self):
-        """Test baseline correction with time window"""
-        n_timepoints = 100
-        n_segments = 5
-        tx = np.linspace(-200, 800, n_timepoints)
-        
-        # Create data with known offsets
-        data = np.zeros((n_timepoints, n_segments))
-        for i in range(n_segments):
-            data[:, i] = (i + 1) * 100  # Constant value per segment
-        
-        seg = SegmentedEyeData.from_masked_array(
-            data=data,
-            tx=tx,
-            variable="left_pupil"
-        )
-        
-        # Baseline correct using window (-200, 0)
-        seg_bc = seg.baseline_correct(window=(-200, 0), inplace=False)
-        
-        # After correction, all segments should be at 0
-        for i in range(n_segments):
-            self.assertAlmostEqual(seg_bc.data[:, i].mean(), 0, places=5)
-    
-    def test_baseline_correct_with_units(self):
-        """window with units gives the same result as plain ms (bug 1.2)"""
+class TestBaselineCorrection(unittest.TestCase):
+
+    def test_single_point(self):
+        tx = np.linspace(-200, 800, 100)
+        data = np.zeros((100, 5))
+        for i in range(5):
+            data[:, i] = i * 10 + np.random.randn(100) * 0.1
+        bc = make(data, tx).pupil.baseline_correct(window=0, inplace=False)
+        t0 = np.argmin(np.abs(tx))
+        np.testing.assert_allclose(bc["left_pupil"][t0], 0, atol=1e-12)
+
+    def test_window(self):
+        tx = np.linspace(-200, 800, 100)
+        data = np.tile((np.arange(5) + 1) * 100., (100, 1))
+        bc = make(data, tx).pupil.baseline_correct(window=(-200, 0), inplace=False)
+        np.testing.assert_allclose(bc["left_pupil"].mean(axis=0), 0, atol=1e-9)
+
+    def test_same_as_per_segment_loop(self):
+        """vectorized correction = subtracting the mean of each segment (with masks)"""
+        rng = np.random.default_rng(3)
+        tx = np.arange(-100, 200, 10.)
+        data = rng.normal(size=(30, 6))
+        mask = rng.random((30, 6)) < 0.2
+        mask[:, 4] = True  # all masked
+        seg = make(data, tx, mask=mask, sampling_rate=100)
+        bc = seg.pupil.baseline_correct((-50, 0), inplace=False)["left_pupil"]
+        ref = seg["left_pupil"].copy()
+        i0, i1 = np.argmin(np.abs(-50 - tx)), np.argmin(np.abs(0 - tx))
+        for i in range(6):
+            ref[:, i] -= np.mean(ref[i0:i1, i])
+        np.testing.assert_array_equal(ma.getmaskarray(bc), ma.getmaskarray(ref))
+        np.testing.assert_allclose(ma.getdata(bc), ma.getdata(ref), rtol=1e-12)
+
+    def test_with_units(self):
         from pypillometry import u
         tx = np.linspace(-200, 800, 100)
-        data = np.random.default_rng(1).normal(size=(100, 3))
-        seg = SegmentedEyeData.from_masked_array(data=data, tx=tx, variable="left_pupil")
-        ref = seg.baseline_correct(window=(-200, 0), inplace=False).data
-        np.testing.assert_allclose(seg.baseline_correct(window=(-200, 0) * u.ms, inplace=False).data, ref)
-        np.testing.assert_allclose(seg.baseline_correct(window=(-0.2 * u.sec, 0 * u.sec), inplace=False).data, ref)
-        np.testing.assert_allclose(seg.baseline_correct(window=-100 * u.ms, inplace=False).data,
-                                   seg.baseline_correct(window=-100, inplace=False).data)
+        seg = make(np.random.default_rng(1).normal(size=(100, 3)), tx)
 
-    def test_baseline_correct_none(self):
-        """Test that None window returns original data"""
-        tx = np.linspace(-200, 800, 100)
-        data = np.random.randn(100, 5)
-        
-        seg = SegmentedEyeData.from_masked_array(
-            data=data,
-            tx=tx,
-            variable="left_pupil"
-        )
-        
-        seg_bc = seg.baseline_correct(window=None, inplace=False)
-        
-        # Should return same object reference since no correction applied
-        self.assertIs(seg_bc, seg)
-    
-    def test_baseline_correct_returns_new_instance(self):
-        """Test that baseline correction returns new instance"""
-        tx = np.linspace(-200, 800, 100)
-        data = np.random.randn(100, 5) + 100
-        
-        seg = SegmentedEyeData.from_masked_array(
-            data=data,
-            tx=tx,
-            variable="left_pupil"
-        )
-        original_mean = seg.data.mean()
-        
-        seg_bc = seg.baseline_correct(window=0, inplace=False)
-        
-        # Original should be unchanged
-        self.assertAlmostEqual(seg.data.mean(), original_mean)
-        # New instance should be different
-        self.assertIsNot(seg_bc, seg)
+        def bc(w):
+            return seg.pupil.baseline_correct(window=w, inplace=False)["left_pupil"]
+        ref = bc((-200, 0))
+        np.testing.assert_allclose(bc((-200, 0) * u.ms), ref)
+        np.testing.assert_allclose(bc((-0.2 * u.sec, 0 * u.sec)), ref)
+        np.testing.assert_allclose(bc(-100 * u.ms), bc(-100))
 
+    def test_none(self):
+        seg = make(np.random.randn(100, 5), np.linspace(-200, 800, 100))
+        self.assertIs(seg.pupil.baseline_correct(window=None, inplace=False), seg)
 
-class TestSegmentedEyeDataMasking(unittest.TestCase):
-    """Test mask handling in SegmentedEyeData"""
-    
-    def test_mask_preserved_from_eyedata(self):
-        """Test that masks from source data are preserved"""
-        n_samples = 500
-        fs = 100
-        pupil = np.random.randn(n_samples) + 500
-        pupil[100:120] = np.nan  # Create missing data
-        
-        data = pp.EyeData(
-            sampling_rate=fs,
-            left_pupil=pupil,
-            event_onsets=[1000, 2000, 3000],
-            event_labels=["stim"] * 3
-        )
-        
-        intervals = data.get_epochs("stim", window=(-50, 150), units="ms")
-        segments = data.get_segments(intervals, "left_pupil")
-        
-        # Check that mask exists
-        self.assertIsInstance(segments.data, ma.MaskedArray)
-    
-    def test_percent_masked_in_summary(self):
-        """Test percent_masked calculation in summary"""
-        n_timepoints = 100
-        n_segments = 10
-        tx = np.linspace(-200, 800, n_timepoints)
-        data = np.random.randn(n_timepoints, n_segments)
-        
-        # Mask 10% of data
-        mask = np.zeros((n_timepoints, n_segments), dtype=bool)
-        mask[0:10, :] = True  # First 10 timepoints masked
-        
-        seg = SegmentedEyeData.from_masked_array(
-            data=data,
-            tx=tx,
-            variable="left_pupil",
-            mask=mask
-        )
-        
-        summary = seg.summary()
-        self.assertAlmostEqual(summary["percent_masked"], 10.0)
+    def test_inplace(self):
+        seg = make(np.random.randn(100, 5) + 100, np.linspace(-200, 800, 100))
+        orig = seg["left_pupil"].copy()
+        bc = seg.pupil.baseline_correct(window=0, inplace=False)
+        self.assertIsNot(bc, seg)
+        np.testing.assert_array_equal(seg["left_pupil"], orig)
+        self.assertIs(seg.pupil.baseline_correct(window=0, inplace=True), seg)
+        np.testing.assert_allclose(seg["left_pupil"], bc["left_pupil"])
+
+    def test_only_pupil_channels(self):
+        d = gaze_eyedata()
+        seg = d.get_segments(d.get_epochs("", window=(-100, 500), units="ms"))
+        bc = seg.pupil.baseline_correct((-100, 0), inplace=False)
+        for ch in ("left_x", "left_y", "right_x", "right_y"):
+            self.assertIs(bc[ch], seg[ch])
+        self.assertFalse(np.allclose(bc["left_pupil"], seg["left_pupil"]))
+        left = seg.pupil.baseline_correct((-100, 0), eyes="left", inplace=False)
+        self.assertIs(left["right_pupil"], seg["right_pupil"])
+        np.testing.assert_allclose(left["left_pupil"], bc["left_pupil"])
+
+    def test_no_pupil_raises(self):
+        seg = make(np.ones((5, 2)), np.arange(5.), "left_x")
+        with self.assertRaisesRegex(KeyError, "available channels: left_x"):
+            seg.pupil.baseline_correct(0)
+
+    def test_group(self):
+        segs = [make(np.random.randn(20, 4) + i, np.arange(20.)) for i in range(2)]
+        group = group_segments(segs)
+        bc = group.pupil.baseline_correct((0, 5), inplace=False)
+        self.assertIsInstance(bc, GroupLevelSegmentedData)
+        np.testing.assert_allclose(bc["left_pupil"][:5].mean(axis=0), 0, atol=1e-12)
 
 
-class TestSegmentedEyeDataPlotting(unittest.TestCase):
-    """Test plotting functionality"""
-    
+class TestPlotting(unittest.TestCase):
+
     def setUp(self):
-        """Create test data"""
-        n_timepoints = 100
-        n_segments = 20
-        self.tx = np.linspace(-200, 800, n_timepoints)
-        data = np.random.randn(n_timepoints, n_segments)
-        
-        self.seg = SegmentedEyeData.from_masked_array(
-            data=data,
-            tx=self.tx,
-            variable="left_pupil",
-            name="test_plot"
-        )
-    
+        self.tx = np.linspace(-200, 800, 100)
+        self.seg = make(np.random.randn(100, 20), self.tx, name="test_plot")
+
+    def tearDown(self):
+        plt.close("all")
+
     def test_plot_runs(self):
-        """Test that plot method runs without error"""
         fig, ax = plt.subplots()
         self.seg.plot(ax=ax)
-        plt.close(fig)
-    
+        self.seg.pupil.plot(ax=ax)
+
     def test_plot_standalone(self):
-        """Test standalone plot sets title and ylabel"""
-        fig, ax = plt.subplots()
-        returned_ax = self.seg.plot()
-        self.assertIsNotNone(returned_ax)
-        self.assertEqual(returned_ax.get_title(), "test_plot")
-        plt.close(fig)
-    
+        plt.figure()
+        ax = self.seg.pupil.plot()
+        self.assertEqual(ax.get_title(), "test_plot")
+        self.assertEqual(ax.get_ylabel(), "mean pupil")
+
     def test_plot_with_ax_no_title(self):
-        """Test that title is not set when ax is provided"""
         fig, ax = plt.subplots()
         ax.set_title("Original Title")
         self.seg.plot(ax=ax)
-        # Title should remain unchanged when ax is provided
         self.assertEqual(ax.get_title(), "Original Title")
-        plt.close(fig)
-    
+
     def test_plot_with_kwargs(self):
-        """Test plot with matplotlib kwargs"""
         fig, ax = plt.subplots()
         self.seg.plot(ax=ax, color='red', linewidth=2, linestyle='--')
-        plt.close(fig)
-    
+
     def test_plot_with_custom_label(self):
-        """Test plot with custom label for legend"""
         fig, ax = plt.subplots()
         self.seg.plot(ax=ax, label="Custom Label", show_legend=True)
-        # Check that the label appears in legend handles
-        handles, labels = ax.get_legend_handles_labels()
-        self.assertIn("Custom Label", labels)
-        plt.close(fig)
-    
+        self.assertIn("Custom Label", ax.get_legend_handles_labels()[1])
+
     def test_plot_overlay_multiple(self):
-        """Test overlaying multiple segments"""
-        # Create second segment
-        seg2 = SegmentedEyeData.from_masked_array(
-            data=np.random.randn(100, 20),
-            tx=self.tx,
-            variable="right_pupil",
-            name="test_plot2"
-        )
-        
+        seg2 = make(np.random.randn(100, 20), self.tx, "right_pupil", name="test_plot2")
         fig, ax = plt.subplots()
         self.seg.plot(ax=ax, color='blue', label='Left')
         seg2.plot(ax=ax, color='red', label='Right')
-        ax.legend()
-        
-        handles, labels = ax.get_legend_handles_labels()
-        self.assertEqual(len(labels), 2)
-        plt.close(fig)
-    
+        self.assertEqual(len(ax.get_legend_handles_labels()[1]), 2)
+
+    def test_plot_several_channels(self):
+        seg = SegmentedEyeData("s", self.tx, {"left_pupil": np.random.randn(100, 5),
+                                              "right_pupil": np.random.randn(100, 5),
+                                              "left_x": np.random.randn(100, 5)})
+        fig, ax = plt.subplots()
+        seg.pupil.plot(ax=ax, show_legend=True)
+        self.assertEqual(ax.get_legend_handles_labels()[1], ["left_pupil", "right_pupil"])
+        fig, ax = plt.subplots()
+        seg.pupil.plot(ax=ax, label="cue", show_legend=True)
+        self.assertEqual(ax.get_legend_handles_labels()[1], ["cue left_pupil", "cue right_pupil"])
+        with self.assertRaisesRegex(ValueError, "several variables"):
+            seg.plot()
+        fig, ax = plt.subplots()
+        seg.plot("left_x", ax=ax, show_legend=True)
+        self.assertEqual(ax.get_legend_handles_labels()[1], ["s"])
+
     def test_plot_with_missing_overlay(self):
-        """Test plot with missing data overlay in overlay mode"""
         fig, ax = plt.subplots()
         self.seg.plot(ax=ax, show_missing=True, show_legend=True)
-        # Should have legend even with show_missing
         self.assertIsNotNone(ax.get_legend())
-        plt.close(fig)
-    
+
     def test_plot_standalone_shows_missing_by_default(self):
-        """Test that standalone mode shows missing data by default"""
         fig = plt.figure()
-        self.seg.plot()  # standalone mode
-        # Should have two axes (main + twinx for missing)
+        self.seg.plot()
         self.assertEqual(len(fig.axes), 2)
-        plt.close(fig)
-    
+
     def test_plot_returns_axes(self):
-        """Test that plot returns the axes object"""
         fig, ax = plt.subplots()
-        returned_ax = self.seg.plot(ax=ax)
-        self.assertIs(returned_ax, ax)
-        plt.close(fig)
-    
+        self.assertIs(self.seg.plot(ax=ax), ax)
+        self.assertIs(self.seg.pupil.plot(ax=ax), ax)
+
     def test_plot_no_zero_line(self):
-        """Test plot without zero line"""
         fig, ax = plt.subplots()
         self.seg.plot(ax=ax, show_zero_line=False)
-        plt.close(fig)
 
 
-class TestSegmentedEyeDataIO(unittest.TestCase):
-    """Test file I/O functionality"""
-    
+class TestGaze(unittest.TestCase):
+
+    def setUp(self):
+        d = gaze_eyedata()
+        self.seg = d.get_segments(d.get_epochs("", window=(-100, 500), units="ms"))
+        self.roi = pp.RectangularROI((0, 0), (200, 200), name="corner")
+
+    def tearDown(self):
+        plt.close("all")
+
+    def test_roi_hits(self):
+        seg = self.seg.gaze.roi_hits(self.roi, inplace=False)
+        self.assertEqual(seg.channels[-2:], ["left_corner", "right_corner"])
+        self.assertNotIn("left_corner", self.seg)
+        hits = seg["left_corner"]
+        inside = (self.seg.tx >= 0) & (self.seg.tx < 200)
+        # trials 1 and 2 ("a") look at the corner from 0 to 200 ms
+        np.testing.assert_array_equal(hits[:, 0], inside.astype(float))
+        np.testing.assert_array_equal(hits[:, 2], 0.)
+        np.testing.assert_array_equal(seg["right_corner"], 0.)
+        # the mean over trials is the share of trials in the ROI
+        np.testing.assert_allclose(hits.mean(axis=1)[inside], 0.5)
+
+    def test_roi_hits_masked_where_gaze_is(self):
+        seg = self.seg
+        x = seg["left_x"].copy()
+        x[5:10, 1] = ma.masked
+        seg["left_x"] = x
+        hits = seg.gaze.roi_hits(self.roi, eyes="left", inplace=False)["left_corner"]
+        self.assertTrue(hits.mask[5:10, 1].all())
+        self.assertFalse(hits.mask[5:10, 0].any())
+
+    def test_roi_hits_inplace_and_name(self):
+        out = self.seg.gaze.roi_hits(self.roi, name="target", eyes="left", inplace=True)
+        self.assertIs(out, self.seg)
+        self.assertIn("left_target", self.seg)
+        self.assertNotIn("right_target", self.seg)
+
+    def test_roi_hits_errors(self):
+        with self.assertRaisesRegex(ValueError, "no name"):
+            self.seg.gaze.roi_hits(pp.CircularROI((0, 0), 10), inplace=False)
+        with self.assertRaisesRegex(ValueError, "cannot be called"):
+            self.seg.gaze.roi_hits(self.roi, name="x", inplace=False)
+        with self.assertRaisesRegex(KeyError, "no gaze channels"):
+            self.seg.gaze.roi_hits(self.roi, eyes="mean", inplace=False)
+        with self.assertRaisesRegex(KeyError, "no gaze channels"):
+            self.seg.select_channels(variables="pupil").gaze.roi_hits(self.roi, inplace=False)
+
+    def test_dwell_time(self):
+        table = self.seg.gaze.dwell_time(self.roi)
+        np.testing.assert_allclose(table["left_corner"], [200., 200., 0., 0.])
+        np.testing.assert_allclose(table["right_corner"], 0.)
+        np.testing.assert_array_equal(table["onset"], self.seg.epochs.onsets)
+        self.assertEqual(list(table["label"]), ["a", "a", "b", "b"])
+        # only a part of the segments
+        np.testing.assert_allclose(self.seg.gaze.dwell_time(self.roi, window=(100, None))
+                                   ["left_corner"], [100., 100., 0., 0.])
+        # from an ROI channel
+        seg = self.seg.gaze.roi_hits(self.roi, inplace=False)
+        np.testing.assert_allclose(seg.gaze.dwell_time("corner")["left_corner"],
+                                   table["left_corner"])
+        with self.assertRaisesRegex(KeyError, "roi_hits"):
+            self.seg.gaze.dwell_time("corner", eyes="left")
+
+    def test_dwell_time_all_masked_is_nan(self):
+        x = self.seg["left_x"].copy()
+        x[:, 3] = ma.masked
+        self.seg["left_x"] = x
+        table = self.seg.gaze.dwell_time(self.roi, eyes="left")
+        self.assertTrue(np.isnan(table["left_corner"][3]))
+        self.assertNotIn("right_corner", table)
+
+    def test_first_entry(self):
+        table = self.seg.gaze.first_entry(self.roi, eyes="left")
+        np.testing.assert_allclose(table["left_corner"], [0., 0., np.nan, np.nan])
+        table = self.seg.gaze.first_entry(self.roi, eyes="left", window=(50, None))
+        np.testing.assert_allclose(table["left_corner"], [50., 50., np.nan, np.nan])
+        table = self.seg.gaze.first_entry(self.roi, eyes="left", window=None)
+        np.testing.assert_allclose(table["left_corner"], [0., 0., np.nan, np.nan])
+
+    def test_table_has_meta(self):
+        seg = self.seg
+        seg.epochs = seg.epochs.set_meta("cond", ["x", "y", "x", "y"])
+        self.assertEqual(list(seg.gaze.dwell_time(self.roi)["cond"]), ["x", "y", "x", "y"])
+
+    def test_plot_roi(self):
+        fig, ax = plt.subplots()
+        self.seg.gaze.plot_roi(self.roi, ax=ax, show_legend=True)
+        self.assertEqual(ax.get_legend_handles_labels()[1], ["left_corner", "right_corner"])
+        self.assertNotIn("left_corner", self.seg)
+        plt.figure()
+        seg = self.seg.gaze.roi_hits(self.roi, inplace=False)
+        ax = seg.gaze.plot_roi("corner", eyes="left")
+        self.assertEqual(ax.get_ylabel(), "share of trials in corner")
+
+    def test_group_fixation_curve(self):
+        seg = self.seg.gaze.roi_hits(self.roi, inplace=False)
+        group = group_segments({"s1": seg, "s2": seg}, channels=["left_corner"])
+        inside = (seg.tx >= 0) & (seg.tx < 200)
+        np.testing.assert_allclose(group["left_corner"].mean(axis=1)[inside], 0.5)
+        fig, ax = plt.subplots()
+        group.gaze.plot_roi("corner", ax=ax)
+
+
+class TestIO(unittest.TestCase):
+
+    def roundtrip(self, obj, ext=".pypil"):
+        with tempfile.TemporaryDirectory() as tmp:
+            fname = os.path.join(tmp, "seg" + ext)
+            obj.write_file(fname)
+            return type(obj).from_file(fname)
+
     def test_write_and_read(self):
-        """Test writing and reading SegmentedEyeData"""
-        import tempfile
-        import os
-        
-        n_timepoints = 50
-        n_segments = 5
-        tx = np.linspace(-100, 400, n_timepoints)
-        data = np.random.randn(n_timepoints, n_segments)
-        
-        seg = SegmentedEyeData.from_masked_array(
-            data=data,
-            tx=tx,
-            variable="left_pupil",
-            name="io_test",
-            sampling_rate=500.0
-        )
-        
-        # Write to temp file
-        with tempfile.NamedTemporaryFile(suffix=".pkl", delete=False) as f:
-            fname = f.name
-        
-        try:
-            seg.write_file(fname)
-            
-            # Read back
-            seg_loaded = SegmentedEyeData.from_file(fname)
-            
-            self.assertEqual(seg_loaded.name, "io_test")
-            self.assertEqual(seg_loaded.variable, "left_pupil")
-            self.assertEqual(seg_loaded.n_timepoints, n_timepoints)
-            self.assertEqual(seg_loaded.n_segments, n_segments)
-            self.assertEqual(seg_loaded.sampling_rate, 500.0)
-            np.testing.assert_array_almost_equal(seg_loaded.tx, tx)
-            np.testing.assert_array_almost_equal(seg_loaded.data, seg.data)
-        finally:
-            os.unlink(fname)
+        tx = np.linspace(-100, 400, 50)
+        seg = SegmentedEyeData("io_test", tx, {"left_pupil": np.random.randn(50, 5),
+                                               "left_x": np.random.randn(50, 5)},
+                               sampling_rate=500.0)
+        for ext in (".pypil", ".h5"):
+            loaded = self.roundtrip(seg, ext)
+            self.assertEqual(loaded.name, "io_test")
+            self.assertEqual(loaded.channels, ["left_pupil", "left_x"])
+            self.assertEqual(loaded.sampling_rate, 500.0)
+            np.testing.assert_array_almost_equal(loaded.tx, tx)
+            for ch in seg.channels:
+                np.testing.assert_array_almost_equal(loaded[ch], seg[ch])
+
+    def test_group_roundtrip(self):
+        d = gaze_eyedata()
+        seg = d.get_segments(d.get_epochs("", window=(-100, 500), units="ms"))
+        for meanfct in (np.mean, None):
+            group = group_segments({"a": seg, "b": seg}, meanfct=meanfct)
+            for ext in (".pypil", ".h5"):
+                loaded = self.roundtrip(group, ext)
+                self.assertEqual(loaded.subjects, ["a", "b"])
+                self.assertEqual(loaded.stacked, meanfct is None)
+                np.testing.assert_array_equal(loaded.subject, group.subject)
+                self.assertEqual(loaded.epochs, group.epochs)
+                for ch in group.channels:
+                    np.testing.assert_array_equal(loaded.mask_percent[ch], group.mask_percent[ch])
+
+    def single_channel_state(self, group=False):
+        """State of segments with one channel (layout of development versions of 2.2)."""
+        data = ma.masked_array(np.arange(12.).reshape(4, 3), mask=np.eye(4, 3, dtype=bool))
+        st = {"format_version": 3, "class": "SegmentedEyeData", "name": "old",
+              "variable": "left_pupil", "tx": np.arange(4.),
+              "data": {"values": ma.getdata(data), "mask": ma.getmaskarray(data)},
+              "intervals": {"class": "Epochs",
+                            "events": {"onsets": np.array([0., 10., 20.]),
+                                       "labels": np.array(["a", "b", "c"]), "units": "ms",
+                                       "data_time_range": None, "meta": {}, "needs_sync": False},
+                            "window": (0., 4.), "label": "a"},
+              "sampling_rate": 1000.}
+        if group:
+            st.update({"class": "GroupLevelSegmentedData", "n_subjects": 3,
+                       "mask_percent": np.array([10., 20., 30., 40.])})
+        return st
+
+    def test_single_channel_layout(self):
+        s = state.from_state(self.single_channel_state())
+        self.assertEqual(s.channels, ["left_pupil"])
+        self.assertEqual(s.epochs.label, "a")
+        self.assertTrue(s["left_pupil"].mask[0, 0])
+        self.assertNotIn("variable", state.to_state(s))
+
+    def test_single_channel_layout_group(self):
+        g = state.from_state(self.single_channel_state(group=True))
+        self.assertIsInstance(g, GroupLevelSegmentedData)
+        self.assertEqual(g.n_subjects, 3)
+        self.assertFalse(g.stacked)
+        self.assertIsNone(g.epochs)
+        np.testing.assert_allclose(g.mask_percent["left_pupil"], [10., 20., 30., 40.])
+        # stacked trials of unknown subjects
+        st = self.single_channel_state(group=True)
+        st["n_subjects"] = 2
+        g = state.from_state(st)
+        self.assertTrue(g.stacked)
+        self.assertIsNone(g.subject)
+        with self.assertRaisesRegex(ValueError, "subjects of the trials are not known"):
+            g.keep(np.array([True, False, True]))
 
 
-class TestSegmentedEyeDataFromIntervals(unittest.TestCase):
-    """Test integration with Intervals class"""
-    
-    def test_intervals_metadata_preserved(self):
-        """Test that Intervals reference is stored"""
-        intervals = Intervals(
-            [(0, 100), (200, 300)],
-            units="ms",
-            label="test_intervals",
-            event_labels=["ev1", "ev2"]
-        )
-        
-        tx = np.linspace(0, 100, 50)
-        data = np.random.randn(50, 2)
-        
-        seg = SegmentedEyeData.from_masked_array(
-            data=data,
-            tx=tx,
-            variable="left_pupil",
-            epochs=intervals
-        )
-        
-        self.assertIs(seg.epochs, intervals)
-        self.assertEqual(seg.epochs.label, "test_intervals")
-    
-    def test_intervals_renamed(self):
-        seg = SegmentedEyeData.from_masked_array(np.ones((5, 2)), np.arange(5.), "left_pupil")
-        self.assertFalse(hasattr(seg, "intervals"))
+class TestTimeAxis(unittest.TestCase):
 
-    def test_name_from_intervals_label(self):
-        """Test that name defaults to intervals label"""
-        # Create pupil-only EyeData
-        data = pp.EyeData(
-            sampling_rate=100,
-            left_pupil=np.random.randn(500) + 500,
-            event_onsets=[1000, 2000, 3000],
-            event_labels=["cue"] * 3
-        )
-        
-        intervals = data.get_epochs("cue", window=(-100, 200), units="ms")
-        segments = data.get_segments(intervals, "left_pupil")
-        
-        # Name should come from intervals label which was set by get_epochs
-        self.assertEqual(segments.name, "cue")
-
-
-class TestSegmentedEyeDataTimeAxis(unittest.TestCase):
-    """Test that time axis is correctly computed with interval_window"""
-    
     def test_time_axis_is_relative_to_event(self):
-        """Test that time axis uses interval_window for event-locked intervals"""
-        # Create pupil-only EyeData with events
-        n_samples = 1000
-        fs = 100
-        pupil = np.random.randn(n_samples) + 500
-        event_onsets = [2000, 5000, 8000]  # in ms (2s, 5s, 8s)
-        event_labels = ["stim"] * 3
-        
-        data = pp.EyeData(
-            sampling_rate=fs,
-            left_pupil=pupil,
-            event_onsets=event_onsets,
-            event_labels=event_labels
-        )
-        
-        # Get intervals with window (-200, 800)
-        intervals = data.get_epochs("stim", window=(-200, 800), units="ms")
-        
-        # event-locked: Epochs with the window
-        self.assertEqual(intervals.window, (-200, 800))
-        
-        # Get segments
-        segments = data.get_segments(intervals, "left_pupil")
-        
-        # Time axis should go from -200 to 800, NOT from absolute times
-        self.assertLess(segments.tx[0], 0)  # Should start negative
-        self.assertGreater(segments.tx[-1], 0)  # Should end positive
-        self.assertAlmostEqual(segments.tx[0], -200, delta=50)  # Close to -200
-        self.assertAlmostEqual(segments.tx[-1], 800, delta=50)  # Close to 800
-        
-        # Zero should be approximately in the middle of the window
-        zero_idx = np.argmin(np.abs(segments.tx))
-        expected_zero_idx = int(segments.n_timepoints * 200 / 1000)  # 200ms into a 1000ms window
-        self.assertAlmostEqual(zero_idx, expected_zero_idx, delta=5)
+        d = eyedata(onsets=(2000, 5000, 8000), labels=["stim"] * 3,
+                    left_pupil=np.random.randn(1000) + 500)
+        ep = d.get_epochs("stim", window=(-200, 800), units="ms")
+        self.assertEqual(ep.window, (-200, 800))
+        seg = d.get_segments(ep, "left_pupil")
+        self.assertAlmostEqual(seg.tx[0], -200, delta=50)
+        self.assertAlmostEqual(seg.tx[-1], 800, delta=50)
+        self.assertAlmostEqual(np.argmin(np.abs(seg.tx)), int(seg.n_timepoints * 0.2), delta=5)
+
+    def test_length_independent_of_event_timing(self):
+        onsets = 2000 + np.arange(10) * 1000.7  # not on the sample grid
+        labels = [f"ev{i}" for i in range(10)]
+        d = pp.EyeData(sampling_rate=500, left_pupil=np.random.randn(10000) + 500,
+                       event_onsets=onsets, event_labels=labels)
+        lengths = {d.get_segments(d.get_epochs(lab, window=(-500, 2000), units="ms"),
+                                  "left_pupil").n_timepoints for lab in labels}
+        self.assertEqual(lengths, {1250})
 
 
 class TestGroupLevelSegmentedData(unittest.TestCase):
-    """Test GroupLevelSegmentedData class"""
-    
+
     def setUp(self):
-        """Create test segment data for multiple subjects"""
-        self.n_timepoints = 100
-        self.n_segments = 20
+        self.n_timepoints, self.n_segments = 100, 20
         self.tx = np.linspace(-200, 800, self.n_timepoints)
-        
-        # Create 3 subjects with different data
         self.segments = []
         for i in range(3):
-            data = np.random.randn(self.n_timepoints, self.n_segments) + i * 10
-            # Add some missing data
             mask = np.zeros((self.n_timepoints, self.n_segments), dtype=bool)
-            mask[0:5, :] = True  # First 5 timepoints masked
-            
-            seg = SegmentedEyeData.from_masked_array(
-                data=data,
-                tx=self.tx,
-                variable="left_pupil",
-                name=f"subject_{i+1}",
-                mask=mask
-            )
-            self.segments.append(seg)
-    
+            mask[0:5, :] = True  # first 5 time points masked
+            self.segments.append(make(np.random.randn(self.n_timepoints, self.n_segments) + i * 10,
+                                      self.tx, name=f"subject_{i + 1}", mask=mask))
+
+    def tearDown(self):
+        plt.close("all")
+
     def test_from_segments_aggregate(self):
-        """Test combining segments with aggregation"""
         group = GroupLevelSegmentedData.from_segments(self.segments, meanfct=np.mean)
-        
-        self.assertIsInstance(group, GroupLevelSegmentedData)
         self.assertEqual(group.n_subjects, 3)
-        self.assertEqual(group.n_timepoints, self.n_timepoints)
-        # In aggregate mode, n_segments = n_subjects
+        self.assertEqual(group.subjects, ["subject_1", "subject_2", "subject_3"])
+        self.assertFalse(group.stacked)
         self.assertEqual(group.n_segments, 3)
-        self.assertEqual(group.variable, "left_pupil")
-    
+        self.assertEqual(group.channels, ["left_pupil"])
+        self.assertIsNone(group.epochs)
+
     def test_from_segments_stack(self):
-        """Test combining segments with stacking (meanfct=None)"""
         group = GroupLevelSegmentedData.from_segments(self.segments, meanfct=None)
-        
-        self.assertIsInstance(group, GroupLevelSegmentedData)
         self.assertEqual(group.n_subjects, 3)
-        self.assertEqual(group.n_timepoints, self.n_timepoints)
-        # In stack mode, n_segments = sum of all segments
+        self.assertTrue(group.stacked)
         self.assertEqual(group.n_segments, self.n_segments * 3)
-    
+        np.testing.assert_array_equal(group.subject, np.repeat([0, 1, 2], self.n_segments))
+
     def test_mask_percent_computed(self):
-        """Test that mask_percent is correctly computed"""
         group = GroupLevelSegmentedData.from_segments(self.segments)
-        
-        self.assertEqual(group.mask_percent.shape, (self.n_timepoints,))
-        # First 5 timepoints were masked for all subjects
-        # 100% missing in those timepoints
-        np.testing.assert_array_almost_equal(group.mask_percent[0:5], 100.0)
-        # Rest should be 0%
-        np.testing.assert_array_almost_equal(group.mask_percent[5:], 0.0)
-    
+        mp = group.mask_percent["left_pupil"]
+        self.assertEqual(mp.shape, (self.n_timepoints,))
+        np.testing.assert_array_almost_equal(mp[0:5], 100.0)
+        np.testing.assert_array_almost_equal(mp[5:], 0.0)
+        self.assertEqual(group.subject_mask_percent["left_pupil"].shape, (self.n_timepoints, 3))
+
     def junk_segments(self):
         """Two subjects, value 10 everywhere except masked junk (padding 0, blink 999)."""
         segs = []
@@ -632,27 +684,26 @@ class TestGroupLevelSegmentedData(unittest.TestCase):
             m = np.zeros((5, 4), dtype=bool)
             d[1, 0], m[1, 0] = 0., True
             d[3, 1], m[3, 1] = 999., True
-            segs.append(SegmentedEyeData(name=name, variable="left_pupil", tx=np.arange(5.),
-                                         data=ma.masked_array(d, mask=m), sampling_rate=1000))
+            segs.append(SegmentedEyeData(name=name, tx=np.arange(5.),
+                                         data={"left_pupil": ma.masked_array(d, mask=m)},
+                                         sampling_rate=1000))
         return segs
 
     def test_stack_keeps_mask(self):
-        """Stacking keeps each segment's mask, so masked junk is not averaged (H5)"""
         group = GroupLevelSegmentedData.from_segments(self.junk_segments(), meanfct=None)
-        self.assertEqual(group.data.shape, (5, 8))
-        self.assertEqual(int(group.data.mask.sum()), 4)
-        np.testing.assert_array_equal(np.mean(group.data, axis=1), 10.)
+        data = group["left_pupil"]
+        self.assertEqual(data.shape, (5, 8))
+        self.assertEqual(int(data.mask.sum()), 4)
+        np.testing.assert_array_equal(np.mean(data, axis=1), 10.)
 
     def test_aggregate_keeps_mask(self):
-        """A subject's mean stays masked where all of their segments are masked (M5)"""
         segs = self.junk_segments()
-        segs[1].data[2, :] = ma.masked
+        segs[1]["left_pupil"][2, :] = ma.masked
         group = GroupLevelSegmentedData.from_segments(segs, meanfct=np.mean)
-        np.testing.assert_array_equal(group.data.mask[2], [False, True])
-        np.testing.assert_array_equal(np.mean(group.data, axis=1), 10.)
+        np.testing.assert_array_equal(group["left_pupil"].mask[2], [False, True])
+        np.testing.assert_array_equal(np.mean(group["left_pupil"], axis=1), 10.)
 
     def test_warns_for_mask_ignoring_meanfct(self):
-        """A meanfct that ignores masks (np.median) triggers a warning"""
         from loguru import logger
         messages = []
         hid = logger.add(lambda m: messages.append(m), level="WARNING")
@@ -666,7 +717,6 @@ class TestGroupLevelSegmentedData(unittest.TestCase):
             logger.remove(hid)
 
     def test_function_without_axis_raises_clear_error(self):
-        """meanfct/varfct without an `axis` argument raise an explanatory TypeError"""
         segs = self.junk_segments()
         no_axis = lambda x: np.mean(x)
         with self.assertRaisesRegex(TypeError, "must accept an `axis`"):
@@ -678,13 +728,10 @@ class TestGroupLevelSegmentedData(unittest.TestCase):
             with self.assertRaisesRegex(TypeError, "varfct.*must accept an `axis`"):
                 obj.plot(varfct=no_axis)
             plt.close("all")
-        # functions taking **kwargs are accepted
         GroupLevelSegmentedData.from_segments(segs, meanfct=lambda x, **kw: np.mean(x, **kw))
 
     def test_plot_warns_for_mask_ignoring_functions(self):
-        """plot() warns if meanfct/varfct ignore masks, not for the defaults"""
         from loguru import logger
-        import scipy.stats
         segs = self.junk_segments()
         group = GroupLevelSegmentedData.from_segments(segs, meanfct=None)
         messages = []
@@ -702,158 +749,135 @@ class TestGroupLevelSegmentedData(unittest.TestCase):
             logger.remove(hid)
 
     def test_summary(self):
-        """Test summary includes group-level info"""
-        group = GroupLevelSegmentedData.from_segments(self.segments)
-        summary = group.summary()
-        
-        self.assertIn('n_subjects', summary)
-        self.assertIn('mean_mask_percent', summary)
+        summary = GroupLevelSegmentedData.from_segments(self.segments).summary()
         self.assertEqual(summary['n_subjects'], 3)
-    
+        self.assertFalse(summary['stacked'])
+        self.assertAlmostEqual(summary['percent_masked']['left_pupil'], 5.0)
+
     def test_repr(self):
-        """Test string representation"""
-        group = GroupLevelSegmentedData.from_segments(self.segments)
-        repr_str = repr(group)
-        
-        self.assertIn("GroupLevelSegmentedData", repr_str)
-        self.assertIn("n_subjects", repr_str)
-    
+        r = repr(GroupLevelSegmentedData.from_segments(self.segments))
+        self.assertIn("GroupLevelSegmentedData", r)
+        self.assertIn("3 subjects", r)
+
     def test_repr_html(self):
-        """Test HTML representation"""
-        group = GroupLevelSegmentedData.from_segments(self.segments)
-        html = group._repr_html_()
-        
+        html = GroupLevelSegmentedData.from_segments(self.segments)._repr_html_()
         self.assertIn("GroupLevelSegmentedData", html)
         self.assertIn("Subjects", html)
-    
-    def test_plot_runs(self):
-        """Test that plot method runs without error"""
+
+    def test_plot(self):
         group = GroupLevelSegmentedData.from_segments(self.segments)
         fig, ax = plt.subplots()
         group.plot(ax=ax)
-        plt.close(fig)
-    
-    def test_plot_standalone(self):
-        """Test standalone plot"""
-        group = GroupLevelSegmentedData.from_segments(self.segments)
-        fig = plt.figure()
-        ax = group.plot()
-        self.assertIsNotNone(ax)
-        plt.close(fig)
-    
-    def test_validation_variable_mismatch(self):
-        """Test that mismatched variables raise error"""
-        # Create segment with different variable
-        bad_seg = SegmentedEyeData.from_masked_array(
-            data=np.random.randn(self.n_timepoints, self.n_segments),
-            tx=self.tx,
-            variable="right_pupil",
-            name="bad_subject"
-        )
-        
-        with self.assertRaises(ValueError):
-            GroupLevelSegmentedData.from_segments([self.segments[0], bad_seg])
-    
+        plt.figure()
+        ax = group.pupil.plot()
+        self.assertEqual(ax.figure.axes[1].get_ylabel(), "avg % missing")
+
+    def test_missing_channel(self):
+        bad = make(np.random.randn(self.n_timepoints, self.n_segments), self.tx, "right_pupil")
+        with self.assertRaisesRegex(KeyError, "no channel.*left_pupil"):
+            GroupLevelSegmentedData.from_segments([self.segments[0], bad])
+
+    def test_channels(self):
+        segs = [SegmentedEyeData(f"s{i}", self.tx, {"left_pupil": np.ones((100, 3)),
+                                                    "left_x": np.ones((100, 3))})
+                for i in range(2)]
+        self.assertEqual(group_segments(segs).channels, ["left_pupil", "left_x"])
+        group = group_segments(segs, channels="left_x")
+        self.assertEqual(group.channels, ["left_x"])
+        self.assertEqual(list(group.subject_mask_percent), ["left_x"])
+        self.assertEqual(list(group_segments(segs).drop_channels("left_x").subject_mask_percent),
+                         ["left_pupil"])
+
     def test_validation_timepoints_mismatch(self):
-        """Test that mismatched timepoints raise error"""
-        # Create segment with different number of timepoints
-        bad_seg = SegmentedEyeData.from_masked_array(
-            data=np.random.randn(50, self.n_segments),  # Different n_timepoints
-            tx=np.linspace(-200, 800, 50),
-            variable="left_pupil",
-            name="bad_subject"
-        )
-        
+        bad = make(np.random.randn(50, self.n_segments), np.linspace(-200, 800, 50))
         with self.assertRaises(ValueError):
-            GroupLevelSegmentedData.from_segments([self.segments[0], bad_seg])
-    
+            GroupLevelSegmentedData.from_segments([self.segments[0], bad])
+
     def test_validation_empty_list(self):
-        """Test that empty list raises error"""
         with self.assertRaises(ValueError):
             GroupLevelSegmentedData.from_segments([])
-    
-    def test_custom_name(self):
-        """Test custom name parameter"""
-        group = GroupLevelSegmentedData.from_segments(
-            self.segments, 
-            name="my_group"
-        )
-        self.assertEqual(group.name, "my_group")
-    
-    def test_default_name(self):
-        """Test default name generation"""
-        group = GroupLevelSegmentedData.from_segments(self.segments)
-        self.assertEqual(group.name, "group_subject_1")
+
+    def test_names(self):
+        self.assertEqual(GroupLevelSegmentedData.from_segments(self.segments, name="my_group").name,
+                         "my_group")
+        self.assertEqual(GroupLevelSegmentedData.from_segments(self.segments).name,
+                         "group_subject_1")
+        # segments with the same name: subjects are numbered
+        same = [make(np.ones((5, 2)), np.arange(5.)) for _ in range(2)]
+        self.assertEqual(group_segments(same).subjects, ["1", "2"])
+
+
+class TestGroupSelection(unittest.TestCase):
+
+    def setUp(self):
+        d = gaze_eyedata()
+        ep = d.get_epochs("", window=(-100, 500), units="ms")
+        self.seg = d.get_segments(ep.set_meta("cond", ["easy", "hard", "easy", "hard"]))
+        x = self.seg["left_pupil"].copy()
+        x[:, 0] = ma.masked  # trial 1 all missing
+        self.seg["left_pupil"] = x
+
+    def test_stacked_epochs_with_subject(self):
+        group = group_segments({"s1": self.seg, "s2": self.seg.keep(np.array([1, 1, 0, 1], bool))},
+                               meanfct=None)
+        self.assertEqual(len(group.epochs), 7)
+        self.assertEqual(list(group.epochs.meta["subject"]), ["s1"] * 4 + ["s2"] * 3)
+        self.assertEqual(list(group.epochs.meta["cond"]), ["easy", "hard", "easy", "hard",
+                                                           "easy", "hard", "hard"])
+
+    def test_stacked_filter(self):
+        group = group_segments({"s1": self.seg, "s2": self.seg}, meanfct=None)
+        easy = group.filter(cond="easy")
+        self.assertEqual(easy.n_segments, 4)
+        self.assertEqual(easy.subjects, ["s1", "s2"])
+        np.testing.assert_array_equal(easy.subject, [0, 0, 1, 1])
+        # masked trials per subject are recomputed: one of two easy trials is missing
+        np.testing.assert_allclose(easy.mask_percent["left_pupil"], 50.)
+        np.testing.assert_allclose(group.mask_percent["left_pupil"], 25.)
+        s2 = group.filter(subject="s2")
+        self.assertEqual(s2.subjects, ["s2"])
+        np.testing.assert_array_equal(s2.subject, 0)
+
+    def test_aggregate_keep_selects_subjects(self):
+        group = group_segments({"s1": self.seg, "s2": self.seg.filter(cond="hard")})
+        np.testing.assert_allclose(group.mask_percent["left_pupil"], 12.5)
+        s2 = group.keep(np.array([False, True]))
+        self.assertEqual(s2.subjects, ["s2"])
+        np.testing.assert_allclose(s2.mask_percent["left_pupil"], 0.)
+        with self.assertRaisesRegex(ValueError, "no epochs"):
+            group.filter(cond="easy")
+
+    def test_new_channel_of_stacked_group(self):
+        group = group_segments({"s1": self.seg, "s2": self.seg}, meanfct=None)
+        group = group.gaze.roi_hits(pp.RectangularROI((0, 0), (200, 200), name="c"),
+                                    inplace=False)
+        self.assertEqual(group.subject_mask_percent["left_c"].shape, (group.n_timepoints, 2))
 
 
 class TestGroupSegmentsFunction(unittest.TestCase):
-    """Test group_segments convenience function"""
-    
+
     def setUp(self):
-        """Create test segment data"""
-        self.n_timepoints = 50
-        self.n_segments = 10
-        self.tx = np.linspace(-100, 400, self.n_timepoints)
-        
-        self.segments = []
-        for i in range(3):
-            seg = SegmentedEyeData.from_masked_array(
-                data=np.random.randn(self.n_timepoints, self.n_segments),
-                tx=self.tx,
-                variable="left_pupil",
-                name=f"subj_{i}"
-            )
-            self.segments.append(seg)
-    
+        tx = np.linspace(-100, 400, 50)
+        self.segments = [make(np.random.randn(50, 10), tx, name=f"subj_{i}") for i in range(3)]
+
     def test_from_list(self):
-        """Test group_segments with list input"""
         group = group_segments(self.segments)
-        
         self.assertIsInstance(group, GroupLevelSegmentedData)
         self.assertEqual(group.n_subjects, 3)
-    
+
     def test_from_dict(self):
-        """Test group_segments with dict input"""
-        seg_dict = {f"S{i:02d}": seg for i, seg in enumerate(self.segments)}
-        group = group_segments(seg_dict)
-        
-        self.assertIsInstance(group, GroupLevelSegmentedData)
-        self.assertEqual(group.n_subjects, 3)
-    
+        group = group_segments({f"S{i:02d}": seg for i, seg in enumerate(self.segments)})
+        self.assertEqual(group.subjects, ["S00", "S01", "S02"])
+
     def test_stack_mode(self):
-        """Test group_segments with meanfct=None (stack mode)"""
-        group = group_segments(self.segments, meanfct=None)
-        
-        self.assertEqual(group.n_segments, self.n_segments * 3)
-    
+        self.assertEqual(group_segments(self.segments, meanfct=None).n_segments, 30)
+
     def test_custom_name(self):
-        """Test group_segments with custom name"""
-        group = group_segments(self.segments, name="my_group")
-        
-        self.assertEqual(group.name, "my_group")
-    
+        self.assertEqual(group_segments(self.segments, name="my_group").name, "my_group")
+
     def test_available_via_pp(self):
-        """Test that group_segments is available via pp namespace"""
-        self.assertTrue(hasattr(pp, 'group_segments'))
         self.assertTrue(callable(pp.group_segments))
 
 
 if __name__ == '__main__':
     unittest.main()
-
-
-
-class TestSegmentedEyeDataLength(unittest.TestCase):
-    """Segments with the same window have the same length"""
-
-    def test_length_independent_of_event_timing(self):
-        fs = 500
-        onsets = 2000 + np.arange(10) * 1000.7  # not on the sample grid
-        labels = [f"ev{i}" for i in range(10)]
-        data = pp.EyeData(sampling_rate=fs, left_pupil=np.random.randn(10000) + 500,
-                            event_onsets=onsets, event_labels=labels)
-        lengths = set()
-        for lab in labels:
-            iv = data.get_epochs(lab, window=(-500, 2000), units="ms")
-            lengths.add(data.get_segments(iv, "left_pupil").n_timepoints)
-        self.assertEqual(lengths, {1250})

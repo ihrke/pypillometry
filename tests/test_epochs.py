@@ -225,24 +225,24 @@ class TestSegmentsFromEpochs:
         s = d.get_segments(pp.Epochs([100., 1500.], (-200, 300)), "left_pupil")
         assert s.n_timepoints == 500
         i0 = np.flatnonzero(s.tx == 0)[0]
-        assert s.data[i0, 0] == 100 and s.data[i0, 1] == 1500
-        mask = np.ma.getmaskarray(s.data)
+        assert s["left_pupil"][i0, 0] == 100 and s["left_pupil"][i0, 1] == 1500
+        mask = np.ma.getmaskarray(s["left_pupil"])
         assert mask[:100, 0].all() and not mask[100:, 0].any()
         assert not mask[:, 1].any()
 
     def test_padded_at_end(self):
         d = self.ramp()
         s = d.get_segments(pp.Epochs([2900.], (-100, 300)), "left_pupil")
-        mask = np.ma.getmaskarray(s.data)[:, 0]
+        mask = np.ma.getmaskarray(s["left_pupil"])[:, 0]
         assert not mask[:200].any() and mask[200:].all()
-        assert s.data[199, 0] == 2999
+        assert s["left_pupil"][199, 0] == 2999
         # the padding is NaN (not 0)
-        assert np.isnan(np.ma.getdata(s.data)[200:, 0]).all()
+        assert np.isnan(np.ma.getdata(s["left_pupil"])[200:, 0]).all()
 
     def test_window_outside_the_data(self):
         d = self.ramp()
         s = d.get_segments(pp.Epochs([5000.], (0, 100)), "left_pupil")
-        assert s.data.mask.all()
+        assert s["left_pupil"].mask.all()
 
     def test_keeps_the_epochs(self):
         d = self.ramp()
@@ -255,7 +255,7 @@ class TestSegmentsFromEpochs:
         d = self.ramp().mask_intervals(pp.Intervals([(1500, 1510)], "ms"),
                                        eyes="left", variables="pupil", inplace=False)
         s = d.get_segments(pp.Epochs([1500.], (-10, 20)), "left_pupil")
-        np.testing.assert_array_equal(np.ma.getmaskarray(s.data)[:, 0],
+        np.testing.assert_array_equal(np.ma.getmaskarray(s["left_pupil"])[:, 0],
                                       (np.arange(30) >= 10) & (np.arange(30) < 20))
 
 
@@ -291,7 +291,7 @@ class TestGetEpochsAndIntervals:
             ep = d.get_epochs("ev", window=window)
             assert ep.to_intervals("samples", d).intervals[0] == (-100, 400)
             s = d.get_segments(ep, "left_pupil")
-            assert s.data[s.tx == 0, 0] == 100
+            assert s["left_pupil"][s.tx == 0, 0] == 100
         ep = d.get_epochs("x", window=(-100, 300))
         assert list(ep) == [(2800., 3200.)]
 
@@ -318,18 +318,18 @@ class TestSegmentsFromIntervals:
                           event_labels=["a", "b"], event_meta={"t": [1, 2]}, label="x")
         s = d.get_segments(iv, "left_pupil")
         assert s.n_timepoints == 300 and s.tx[0] == 0 and s.tx[-1] == 299
-        np.testing.assert_array_equal(s.data[0], [100, 1500])
+        np.testing.assert_array_equal(s["left_pupil"][0], [100, 1500])
         assert isinstance(s.epochs, pp.Epochs)
         assert s.epochs.labels.tolist() == ["a", "b"]
         assert s.epochs.meta["t"].tolist() == [1, 2]
         assert s.name == "x"
         repr(s)
-        s.baseline_correct((0, 10), inplace=False)
+        s.pupil.baseline_correct((0, 10), inplace=False)
 
     def test_same_length_in_samples(self):
         d = self.make()
         s = d.get_segments(pp.Intervals([(100, 400), (1500, 1800)], "samples"), "left_pupil")
-        np.testing.assert_array_equal(s.data[0], [100, 1500])
+        np.testing.assert_array_equal(s["left_pupil"][0], [100, 1500])
         assert s.n_timepoints == 300
 
     def test_empty_or_zero_length(self):
@@ -363,19 +363,19 @@ class TestBaselineWindow:
     ])
     def test_outside_raises(self, window, msg):
         with pytest.raises(ValueError, match=msg):
-            self.segments().baseline_correct(window, inplace=False)
+            self.segments().pupil.baseline_correct(window, inplace=False)
 
     @pytest.mark.parametrize("window", [(-200, 0), (0, 800), -200, 790, 0, (-200, 800)])
     def test_within(self, window):
-        s = self.segments().baseline_correct(window, inplace=False)
-        assert not np.ma.getmaskarray(s.data).all()
+        s = self.segments().pupil.baseline_correct(window, inplace=False)
+        assert not np.ma.getmaskarray(s["left_pupil"]).all()
 
     def test_values(self):
         s = self.segments()
-        b = s.baseline_correct((-200, 0), inplace=False)
+        b = s.pupil.baseline_correct((-200, 0), inplace=False)
         # mean of the 20 samples before the event: 280 ... 299
-        np.testing.assert_allclose(b.data[20, 0], 300 - 289.5)
-        np.testing.assert_allclose(s.baseline_correct(0, inplace=False).data[20, :], 0)
+        np.testing.assert_allclose(b["left_pupil"][20, 0], 300 - 289.5)
+        np.testing.assert_allclose(s.pupil.baseline_correct(0, inplace=False)["left_pupil"][20, :], 0)
 
 
 def test_plot_intervals_past_the_end():

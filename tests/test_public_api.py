@@ -32,6 +32,7 @@ INTERNAL = {
     "pypillometry.intervals": {"stat_event_interval"},
     "pypillometry.io": {"is_ssh_url"},
     "pypillometry.plot": {"PlotNamespace"},
+    "pypillometry.segmented": {"SegmentedPupilNamespace", "SegmentedGazeNamespace"},
     "pypillometry.plot.generic": {"GenericPlots"},
     "pypillometry.plot.pupil": {"PupilPlots"},
     "pypillometry.plot.gaze": {"GazePlots"},
