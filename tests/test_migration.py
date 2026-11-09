@@ -274,7 +274,7 @@ class TestFormat3RoundTrip:
 
     @pytest.mark.parametrize("fname", ["eyedata_v0.pkl", "pupildata_v0.pkl", "gazedata_v0.pkl",
                                        "fakeeyedata_v0.pkl", "segmented_v0.pkl",
-                                       "group_segmented_v0.pkl", "eyedata_v1.pypil",
+                                       "eyedata_v1.pypil",
                                        "eyedata_v1.h5", "segmented_v1.h5"])
     @pytest.mark.parametrize("ext", ["pypil", "h5"])
     def test_format0_and_1(self, fname, ext, tmp_path):

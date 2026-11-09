@@ -574,16 +574,13 @@ class TestIO(unittest.TestCase):
                     np.testing.assert_array_equal(loaded[ch], group[ch])
                     np.testing.assert_array_equal(loaded._valid_share(ch), group._valid_share(ch))
 
-    def single_channel_state(self, group=False):
+    def single_channel_state(self):
         """Format-2 state of segments with one channel (pypillometry 2.1)."""
         data = ma.masked_array(np.arange(12.).reshape(4, 3), mask=np.eye(4, 3, dtype=bool))
         st = {"format_version": 2, "class": "SegmentedEyeData", "name": "old",
               "variable": "left_pupil", "tx": np.arange(4.),
               "data": {"values": ma.getdata(data), "mask": ma.getmaskarray(data)},
               "intervals": None, "sampling_rate": 1000.}
-        if group:
-            st.update({"class": "GroupLevelSegmentedData", "n_subjects": 3,
-                       "mask_percent": np.array([10., 20., 30., 40.])})
         return st
 
     def test_single_channel_layout(self):
@@ -592,27 +589,6 @@ class TestIO(unittest.TestCase):
         self.assertIsNone(s.epochs)
         self.assertTrue(s["left_pupil"].mask[0, 0])
         self.assertNotIn("variable", state.to_state(s))
-
-    def test_single_channel_layout_group(self):
-        g = state.from_state(self.single_channel_state(group=True))
-        self.assertIs(type(g), SegmentedEyeData)
-        self.assertEqual(g.epochs.meta["subject"].tolist(), ["1", "2", "3"])
-        self.assertTrue(np.isnan(g.epochs.meta["n_trials"]).all())
-        self.assertTrue(g._averaged().all())
-        self.assertIn("3 averages x", repr(g))
-        np.testing.assert_allclose(g._percent_missing("left_pupil"), [10., 20., 30., 40.])
-        self.assertEqual(g.filter(subject="2").n_segments, 1)
-        # stacked trials of unknown subjects
-        st = self.single_channel_state(group=True)
-        st["n_subjects"] = 2
-        g = state.from_state(st)
-        self.assertIsNone(g.epochs)
-        self.assertFalse(g._averaged().any())
-        self.assertEqual(g.valid_share, {})
-
-    def test_group_class_name(self):
-        """files of GroupLevelSegmentedData are read as SegmentedEyeData"""
-        self.assertIs(state._find_class("GroupLevelSegmentedData"), SegmentedEyeData)
 
 
 class TestTimeAxis(unittest.TestCase):

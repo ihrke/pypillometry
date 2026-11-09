@@ -56,9 +56,7 @@ Version history
     (`epochs`: an Events state in ms, `window` in ms, `label`) or, if not
     event-locked, Intervals, with the class name in ``epochs["class"]``,
     and `valid_share` (channel -> share of usable trials of each value, for
-    averages); there are no group-level segments: GroupLevelSegmentedData
-    becomes SegmentedEyeData, whose columns are averages (Epochs without a
-    time, with the metadata `subject` and `n_trials`) or trials
+    averages)
 """
 
 import contextlib
@@ -80,9 +78,6 @@ _RENAMED_CLASSES = {
     # one class for all eyedata (pypillometry 2.2)
     ("pypillometry.eyedata.pupildata", "PupilData"): ("pypillometry.eyedata.eyedata", "EyeData"),
     ("pypillometry.eyedata.gazedata", "GazeData"): ("pypillometry.eyedata.eyedata", "EyeData"),
-    # averages are segments like the others (pypillometry 2.2)
-    ("pypillometry.segmented", "GroupLevelSegmentedData"):
-        ("pypillometry.segmented", "SegmentedEyeData"),
 }
 
 # list that collects (class name, format version) of the states passed to
@@ -385,7 +380,7 @@ def _convert(kind, value, direction):
 # must not change when the classes change later.
 # --------------------------------------------------------------------------
 
-_SEGMENTED_CLASSES = ("SegmentedEyeData", "GroupLevelSegmentedData")
+_SEGMENTED_CLASSES = ("SegmentedEyeData",)
 
 
 def _v0_dict(obj):
@@ -447,9 +442,6 @@ def _migrate_0_to_1(raw, class_name):
             "intervals": _v0_intervals(_v0_dict(raw.get("intervals"))),
             "sampling_rate": raw.get("sampling_rate"),
         }
-        if class_name == "GroupLevelSegmentedData":
-            state["mask_percent"] = raw["mask_percent"]
-            state["n_subjects"] = raw["n_subjects"]
         return state
 
     # eyedata classes (and subclasses defined by users)
@@ -736,41 +728,13 @@ def _v3_channels(state, class_name):
     Segments with one channel (`variable`, `data`, `intervals`; version 2
     after the conversion of the intervals) -> segments with several
     channels (version 3; see the version history).
-
-    Group-level segments become segments: if there is one column per
-    subject, they are averages with Epochs without a time (NaN onsets),
-    the metadata `subject` ("1", "2", ...) and `n_trials` (NaN: not known),
-    and each subject gets the stored average share of usable trials
-    (`valid_share`); otherwise they are stacked trials (whose subjects are
-    not known). The epochs (those of the first subject) are dropped.
     """
     state = dict(state)
     var = state.pop("variable")
     data = state["data"]
     state["data"] = {var: data}
-    epochs = state.pop("intervals", None)
+    state["epochs"] = state.pop("intervals", None)
     state["valid_share"] = {}
-    if class_name == "GroupLevelSegmentedData":
-        n_subjects = int(state.pop("n_subjects"))
-        mask_percent = np.asarray(state.pop("mask_percent"), dtype=float)
-        epochs = None
-        if np.shape(data["values"])[1] == n_subjects:
-            subjects = np.array([str(i + 1) for i in range(n_subjects)])
-            tx = np.asarray(state["tx"], dtype=float)
-            fs = state.get("sampling_rate")
-            step = 1000. / fs if fs else \
-                float(np.median(np.diff(tx))) if len(tx) > 1 else 1.
-            epochs = {"class": "Epochs",
-                      "events": {"onsets": np.full(n_subjects, np.nan), "labels": subjects,
-                                 "units": "ms", "data_time_range": None,
-                                 "meta": {"subject": subjects,
-                                          "n_trials": np.full(n_subjects, np.nan)},
-                                 "needs_sync": False},
-                      "window": (float(tx[0]), float(tx[-1]) + step), "label": None}
-            state["valid_share"] = {
-                var: np.tile(1. - mask_percent.reshape(-1, 1) / 100., (1, n_subjects))}
-    state["epochs"] = epochs
-    state["class"] = "SegmentedEyeData"
     return state
 
 

@@ -72,8 +72,7 @@ tables below for every changed call.
 - `GroupLevelSegmentedData` was removed: averages are `SegmentedEyeData`
   whose columns are averages (see "Added"). `group_segments()` returns
   `SegmentedEyeData` with one column per participant and the metadata
-  column `"subject"` (instead of `subjects`, `n_subjects`, `mask_percent`);
-  files with the old class load as `SegmentedEyeData`
+  column `"subject"` (instead of `subjects`, `n_subjects`, `mask_percent`)
 - `params["scale"]` and the `mean=`/`sd=` dicts of `scale()`/`unscale()`
   are keyed by channel (`{"left_pupil": 1000.}`, was
   `{"left": {"pupil": 1000.}}`), like `params["response"]`; stored
@@ -291,7 +290,7 @@ Calls whose arguments or results changed:
 | `seg.baseline_correct(w)` (always a copy) | `seg.pupil.baseline_correct(w, inplace=False)` |
 | `seg.plot()` | `seg.pupil.plot()` |
 | `seg.data`, `seg.variable` | `seg["left_pupil"]`, `seg.channels` |
-| `group.mask_percent` | `group.mask_percent["left_pupil"]` |
+| `group.subjects` | `group.epochs.meta["subject"]` |
 | `d.set_events(ev, inplace=False)` | `d.copy().set_events(ev)` |
 | `d.pupil_merge_eyes()` -> `merged_pupil` | `d.pupil.merge_eyes()` -> `mean_pupil` (`name=` to choose) |
 | `d.event_onsets`, `d.event_labels`, `d.event_meta` | `d.events.onsets`, `d.events.labels`, `d.events.meta` |

@@ -836,14 +836,6 @@ class SegmentedEyeData(state.VersionedState):
                                  f"of the channel {self[channel].shape}, got {share.shape}")
             self.valid_share[channel] = share
 
-    def __setstate__(self, st):
-        # files of the former GroupLevelSegmentedData are read as this class;
-        # their state is upgraded under its name (unversioned pickles have no
-        # "class", but the attribute "n_subjects")
-        name = st.get("class") or ("GroupLevelSegmentedData" if "n_subjects" in st
-                                   else type(self).__name__)
-        self._set_state(state.migrate(st, name))
-
     # ----------------------------------------------------------------------
     # Channels and shape
     # ----------------------------------------------------------------------
