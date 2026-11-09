@@ -72,6 +72,17 @@ new in ``seg.gaze``:
     erpd = d.get_segments(epochs, "left_pupil").pupil.baseline_correct((-200, 0))  # 2.2
     erpd.pupil.plot()                                                         # 2.2
 
+**No GroupLevelSegmentedData.** Averages are :class:`SegmentedEyeData`
+objects whose columns are averages (see :doc:`events_intervals`).
+:func:`group_segments` returns one with one column per participant; the
+participants are in the metadata of its epochs instead of ``subjects``
+and ``n_subjects``:
+
+.. code-block:: python
+
+    group.subjects                                   # 2.1
+    group.epochs.meta["subject"]                     # 2.2
+
 
 Changes that do not raise an error
 ----------------------------------
@@ -135,5 +146,7 @@ What happens to the contents of old files:
   corrected from the time vector, with a warning.
 - Segments with event-locked intervals get :class:`Epochs`.
 - Segments hold their one variable as a channel (``seg["left_pupil"]``).
-  Groups of stacked trials from old files do not know the participant of
-  each trial, so their trials cannot be selected.
+- Groups (``GroupLevelSegmentedData``) load as :class:`SegmentedEyeData`.
+  Averages of participants get the participants "1", "2", ... (metadata
+  ``subject``) and an unknown number of trials (``n_trials`` is NaN);
+  stacked trials do not know their participant.
