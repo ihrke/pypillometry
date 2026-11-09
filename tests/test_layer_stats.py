@@ -64,6 +64,7 @@ def test_blink_stats_is_a_shortcut():
     stats = d.blink_stats()
     assert stats == {"left_pupil": {"n": 2, "mean": 15., "sd": 5., "min": 10., "max": 20.,
                                     "total_duration": 30., "units": "ms"}}
+    assert all(type(k) is str for k in stats)
     assert not hasattr(d, "nblinks")
     assert d.summary()["nblinks"] == {"left_pupil": 2}
 

@@ -1099,7 +1099,7 @@ class EyeData(state.VersionedState):
         t = self.layer_stats("blink", eyes=eyes, variables="pupil", units=units)
         stats = ("n", "mean", "sd", "min", "max", "total_duration")
         return {ch: {**{k: t[k][i].item() for k in stats}, "units": units}
-                for i, ch in enumerate(t["channel"])}
+                for i, ch in enumerate(t["channel"].tolist())}
 
 
     def quality_report(self, thresholds: Optional[dict] = None, eyes: str|list = [],
