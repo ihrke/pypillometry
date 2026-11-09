@@ -12,21 +12,6 @@ eye tracker recorded, for one or both eyes: pupil size, gaze position
 :class:`ExperimentalSetup`) and the calibration results can be stored with
 any of them.
 
-.. mermaid::
-
-   classDiagram
-    EyeData <|-- EyeData
-    EyeData <|-- FakeEyeData
-    EyeData: data (EyeDataDict)
-    EyeData: events, layers, history, experimental_setup, calibration
-    EyeData: get_epochs(), get_intervals(), get_segments(), ...
-    EyeData: plot (PlotNamespace)
-    EyeData: pupil (PupilNamespace)
-    EyeData: gaze (GazeNamespace)
-    PupilNamespace: blinks_detect(), lowpass_filter(), ...
-    PupilNamespace: correct_foreshortening(), ...
-    GazeNamespace: mask_offscreen(), mask_divergences()
-
 The generic methods (events, intervals, masks, downsampling, slicing, ...)
 work for any data. The methods that need pupil data are in the namespace
 ``d.pupil`` (e.g., ``d.pupil.blinks_detect()``); they raise an error if
