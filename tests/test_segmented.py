@@ -392,6 +392,63 @@ class TestPlotting(unittest.TestCase):
     def tearDown(self):
         plt.close("all")
 
+    def carpet(self, seg, **kw):
+        """the image (segments x time points) and axes of plot_carpet()"""
+        fig, ax = plt.subplots()
+        seg.plot_carpet(ax=ax, **kw)
+        return ax.images[0], ax
+
+    def test_carpet(self):
+        data = np.arange(12.).reshape(4, 3)     # 4 time points x 3 segments
+        seg = make(data, np.arange(4.) * 10)
+        im, ax = self.carpet(seg)
+        np.testing.assert_array_equal(im.get_array(), data.T)   # one row per segment
+        self.assertEqual(ax.get_title(), "")
+        self.assertEqual(ax.get_xlabel(), "time (ms)")
+        self.assertEqual(len(ax.figure.axes), 2)                  # with colorbar
+        plt.figure()
+        ax = seg.plot_carpet()
+        self.assertEqual(ax.get_title(), "segments")
+
+    def test_carpet_masked_and_scale(self):
+        data = ma.masked_array([[-2., 1.], [3., 4.]], mask=[[0, 1], [0, 0]])
+        seg = make(data, np.arange(2.))
+        im, _ = self.carpet(seg)
+        self.assertTrue(im.get_array().mask[1, 0])               # masked sample stays empty
+        lo, hi = im.get_clim()
+        self.assertEqual(lo, -hi)                                 # centered: both signs
+        self.assertEqual(im.get_cmap().name, "RdBu_r")
+        im, _ = self.carpet(make(np.array([[1., 2.], [3., 4.]]), np.arange(2.)))
+        self.assertGreater(im.get_clim()[0], 0)                   # positive only
+        self.assertEqual(im.get_cmap().name, "viridis")
+        im, _ = self.carpet(seg, vmin=-1, vmax=5, cmap="magma", center=False)
+        self.assertEqual(im.get_clim(), (-1, 5))
+        self.assertEqual(im.get_cmap().name, "magma")
+
+    def test_carpet_sort(self):
+        d = gaze_eyedata()
+        ep = d.get_epochs("", window=(-100, 500), units="ms").set_meta("rt", [400, 100, 300, 200])
+        seg = d.get_segments(ep, "left_pupil")
+        im, ax = self.carpet(seg, sort_by="rt")
+        np.testing.assert_array_equal(im.get_array(), seg["left_pupil"][:, [1, 3, 2, 0]].T)
+        self.assertEqual(ax.get_ylabel(), "segment (sorted by rt)")
+        im, _ = self.carpet(seg, sort_by=[3, 2, 1, 0])
+        np.testing.assert_array_equal(im.get_array(), seg["left_pupil"][:, ::-1].T)
+        with self.assertRaisesRegex(KeyError, "'cond'.*available: rt"):
+            seg.plot_carpet(sort_by="cond")
+        with self.assertRaisesRegex(ValueError, "one value per segment"):
+            seg.plot_carpet(sort_by=[1, 2])
+
+    def test_carpet_channel(self):
+        seg = SegmentedEyeData("s", np.arange(3.), {"left_pupil": np.ones((3, 2)),
+                                                    "left_x": np.zeros((3, 2))})
+        with self.assertRaisesRegex(ValueError, "several channels.*channel="):
+            seg.plot_carpet()
+        im, _ = self.carpet(seg, channel="left_x", colorbar=False)
+        np.testing.assert_array_equal(im.get_array(), np.zeros((2, 3)))
+        with self.assertRaisesRegex(KeyError, "no channel 'right_x'"):
+            seg.plot_carpet("right_x")
+
     def test_plot_runs(self):
         fig, ax = plt.subplots()
         self.seg.plot(ax=ax)

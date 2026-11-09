@@ -1554,6 +1554,135 @@ class SegmentedEyeData(state.VersionedState):
             ax1.legend()
         return ax1
 
+    def plot_carpet(self, channel: str = None, sort_by=None, cmap: str = None,
+                    vmin: float = None, vmax: float = None, center: bool = None,
+                    show_zero_line: bool = True, colorbar: bool = True,
+                    title: str = None, ax=None, **kwargs):
+        """
+        Plot all segments of one channel as an image ("carpet plot").
+
+        Each row is one segment (e.g., a trial), the x-axis is the time
+        relative to the event, and the color is the value. Masked samples
+        are left empty (white). Unlike the mean in :meth:`plot`, this shows
+        how the response varies between trials, e.g., trials with artifacts
+        or a change over the session; sorting the rows by a property of the
+        trials (`sort_by`, e.g., the reaction time) shows how the response
+        depends on it.
+
+        Parameters
+        ----------
+        channel : str, optional
+            channel to plot (e.g., ``"left_pupil"``); default: the only
+            channel of the segments
+        sort_by : str or array-like, optional
+            order of the rows: a metadata column of the epochs (e.g.,
+            ``"rt"``) or one value per segment; the rows are sorted by it in
+            ascending order (from the top), ties keep their order; default:
+            the order of the segments
+        cmap : str or Colormap, optional
+            colormap; default ``"RdBu_r"`` if the color scale is centered at
+            0, ``"viridis"`` otherwise
+        vmin, vmax : float, optional
+            limits of the color scale; default: the 2nd and 98th percentile
+            of the usable values (so that a few extreme values do not set
+            the scale), symmetric around 0 if `center`
+        center : bool or None, optional
+            center the color scale at 0 (e.g., for baseline-corrected data,
+            so that increases and decreases have different colors); default
+            (None): if the values have both signs
+        show_zero_line : bool, optional
+            draw a vertical line at the event onset (time 0); default True
+        colorbar : bool, optional
+            add a colorbar (labelled with the channel); default True
+        title : str, optional
+            title; default: the name of the segments if `ax` is None, none
+            otherwise
+        ax : matplotlib.axes.Axes, optional
+            axes to plot into; default: the current axes
+        **kwargs
+            passed to :meth:`matplotlib.axes.Axes.imshow`
+
+        Returns
+        -------
+        ax : matplotlib.axes.Axes
+            the axes of the plot
+
+        Raises
+        ------
+        ValueError
+            if `channel` is None and the segments have several channels, or
+            `sort_by` does not have one value per segment
+        KeyError
+            if the channel or the metadata column does not exist
+
+        Examples
+        --------
+        .. plot::
+
+           >>> import pypillometry as pp
+           >>> from pypillometry import u
+           >>> d = pp.get_example_data("rlmw_002_short")
+           >>> d = d | pp.pupil.blinks_detect() | pp.pupil.lowpass_filter(5)
+           >>> seg = d.get_segments(d.get_epochs("S_", (-500, 2500) * u.ms), "left_pupil")
+           >>> seg = seg.pupil.baseline_correct((-200, 0))
+           >>> ax = seg.plot_carpet()
+        """
+        import matplotlib.pyplot as plt
+        from .epochs import Epochs
+
+        if channel is None:
+            if len(self.channels) > 1:
+                raise ValueError(f"the segments have several channels "
+                                 f"({', '.join(self.channels)}); choose one with channel=")
+            channel = self.channels[0]
+        data = self[channel]                    # time points x segments
+        order = np.arange(self.n_segments)
+        if sort_by is not None:
+            if isinstance(sort_by, str):
+                if not isinstance(self.epochs, Epochs) or sort_by not in self.epochs.meta:
+                    available = [] if not isinstance(self.epochs, Epochs) else list(self.epochs.meta)
+                    raise KeyError(f"no metadata column {sort_by!r} in the epochs of the "
+                                   f"segments (available: {', '.join(available) or 'none'})")
+                values = np.asarray(self.epochs.meta[sort_by])
+            else:
+                values = np.asarray(sort_by)
+            if values.shape != (self.n_segments,):
+                raise ValueError(f"sort_by must have one value per segment "
+                                 f"({self.n_segments}), got shape {values.shape}")
+            order = np.argsort(values, kind="stable")
+        image = data[:, order].T                # segments x time points
+
+        usable = np.ma.compressed(image)
+        usable = usable[np.isfinite(usable)]
+        lo, hi = np.percentile(usable, [2, 98]) if usable.size else (0., 1.)
+        if center is None:
+            center = bool(lo < 0 < hi)
+        if center:
+            lim = max(abs(lo), abs(hi))
+            lo, hi = -lim, lim
+        vmin = lo if vmin is None else vmin
+        vmax = hi if vmax is None else vmax
+        if cmap is None:
+            cmap = "RdBu_r" if center else "viridis"
+
+        standalone = ax is None
+        ax = plt.gca() if standalone else ax
+        step = float(np.median(np.diff(self.tx))) if self.n_timepoints > 1 else 1.
+        extent = [self.tx[0] - step / 2, self.tx[-1] + step / 2, self.n_segments, 0]
+        kwargs.setdefault("interpolation", "nearest")
+        im = ax.imshow(np.ma.masked_invalid(image), aspect="auto", cmap=cmap,
+                       vmin=vmin, vmax=vmax, extent=extent, **kwargs)
+        if show_zero_line:
+            ax.axvline(0, color="k", lw=0.8, ls="--")
+        ax.set_xlabel("time (ms)")
+        ax.set_ylabel("segment" if sort_by is None else
+                      f"segment (sorted by {sort_by if isinstance(sort_by, str) else 'sort_by'})")
+        if title is not None or standalone:
+            ax.set_title(title if title is not None else self.name)
+        if colorbar:
+            ax.figure.colorbar(im, ax=ax, label=channel)
+        return ax
+
     # ----------------------------------------------------------------------
     # Files
     # ----------------------------------------------------------------------
