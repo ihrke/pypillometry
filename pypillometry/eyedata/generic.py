@@ -103,15 +103,47 @@ def _per_pair(pairs, fct):
     return {f"{eye}_{var}": fct(eye, var) for eye, var in pairs}
 
 
-def _check_per_pair(pairs, mean, sd):
-    """Raise a ValueError if `mean` or `sd` miss a value for one of the `pairs`."""
-    for name, values in (("mean", mean), ("sd", sd)):
+def _check_per_pair(pairs, **dicts):
+    """Raise a ValueError if one of the `dicts` (name -> dict keyed by channel)
+    misses a value for one of the `pairs`."""
+    for name, values in dicts.items():
         if any(isinstance(v, dict) for v in values.values()):
             raise ValueError(f"{name} must be keyed by channel, e.g. "
                              "{'left_pupil': 1000.}, not {'left': {'pupil': 1000.}}")
         for eye, var in pairs:
             if f"{eye}_{var}" not in values:
                 raise ValueError(f"{name} has no value for {eye}_{var}")
+
+
+#: methods of EyeData.scale()
+_SCALE_METHODS = ("z", "robust", "minmax", "percent")
+
+
+def _scale_stats(x, method):
+    """(center, scale) of the values `x` (NaN: unusable) for a method of
+    EyeData.scale() (see there)."""
+    if method == "z":
+        return float(np.nanmean(x)), float(np.nanstd(x))
+    if method == "robust":
+        med = np.nanmedian(x)
+        return float(med), float(np.nanmedian(np.abs(x - med)))
+    if method == "minmax":
+        lo, hi = np.nanmin(x), np.nanmax(x)
+        return float(lo), float(hi - lo)
+    m = float(np.nanmean(x))   # "percent"
+    return m, m / 100.
+
+
+def _per_channel_values(pairs, value, name, default):
+    """`value` (None, a number or a dict keyed by channel) as a dict keyed
+    by channel; None gives `default`."""
+    if value is None:
+        return default
+    if isinstance(value, numbers.Real):
+        return _per_pair(pairs, lambda eye, var: value)
+    if isinstance(value, dict):
+        return value
+    raise ValueError(f"{name} must be None, a number or a dict")
 
 
 def _merge_usage(d, keys, policy):

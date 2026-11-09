@@ -18,13 +18,13 @@ class TestGazeData(unittest.TestCase):
         d=d.scale(["x",'y'])
         self.assertEqual(d.data["left","x"].mean(), 0)
         self.assertEqual(d.data["left","y"].mean(), 0)
-        self.assertEqual(d.params["scale"]["mean"]["left_x"], 1.5)
-        self.assertEqual(d.params["scale"]["mean"]["left_y"], 3.5)
+        self.assertEqual(d.params["scale"]["center"]["left_x"], 1.5)
+        self.assertEqual(d.params["scale"]["center"]["left_y"], 3.5)
     def test_scale_fixed(self):
         d = pp.EyeData(sampling_rate=10, left_x=[1,2,1,2], left_y=[3,4,3,4])
         scalepars = {"left_x": 1, "left_y": 3}
         sdpars = {"left_x": 0.5, "left_y": 0.5}
-        d=d.scale(["x",'y'], mean=scalepars, sd=sdpars)
+        d=d.scale(["x",'y'], center=scalepars, scale=sdpars)
         self.assertEqual(d.data["left","x"].mean(), 1)
         self.assertEqual(d.data["left","y"].mean(), 1)
     def test_unscale(self):
@@ -40,11 +40,11 @@ class TestGazeData(unittest.TestCase):
         d = pp.EyeData(sampling_rate=10, left_x=x, left_y=y)
         d.scale("x").scale("y").unscale("x")
         np.testing.assert_allclose(d.data["left_x"], x)
-        self.assertEqual(list(d.params["scale"]["mean"]), ["left_y"])
+        self.assertEqual(list(d.params["scale"]["center"]), ["left_y"])
         d.unscale("y")
         np.testing.assert_allclose(d.data["left_y"], y)
-        self.assertEqual(d.params["scale"], {"mean": {}, "sd": {}})
-        d.scale().scale(mean=1., sd=2.).unscale()
+        self.assertEqual(d.params["scale"], {"center": {}, "scale": {}, "method": {}})
+        d.scale().scale(center=1., scale=2.).unscale()
         np.testing.assert_allclose(d.data["left_x"], x)
         np.testing.assert_allclose(d.data["left_y"], y)
 
@@ -637,8 +637,8 @@ class TestMaskOffscreenCoords(unittest.TestCase):
     
     def test_mask_offscreen_coords_chaining(self):
         """Test that mask_offscreen_coords can be chained with other operations"""
-        left_x = np.array([100, 1500, 300, 1600])
-        left_y = np.array([100, 200, 1200, 400])
+        left_x = np.array([100, 1500, 300, 1600, 500])
+        left_y = np.array([100, 200, 1200, 400, 600])
         
         d = pp.EyeData(
             sampling_rate=10,

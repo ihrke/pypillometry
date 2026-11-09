@@ -51,7 +51,8 @@ Version history
     Intervals have no `event_indices`, `data_time_range` and
     `interval_window`; the response and scaling
     parameters (``params["response"]``, ``params["scale"]``) are keyed by
-    channel (``"left_pupil"``); segments hold several channels (`data`:
+    channel (``"left_pupil"``); the scaling parameters are `center`,
+    `scale` and `method` (were `mean` and `sd`); segments hold several channels (`data`:
     channel -> masked array, no `variable`) and store their Epochs
     (`epochs`: an Events state in ms, `window` in ms, `label`) or, if not
     event-locked, Intervals, with the class name in ``epochs["class"]``,
@@ -708,8 +709,9 @@ def _by_channel(values):
 def _v2_params(state):
     """Key the response and scaling parameters of a version-2 eyedata state
     by channel (``params["response"]["left"]`` -> ``["left_pupil"]``,
-    ``params["scale"]["mean"]["left"]["pupil"]`` -> ``["mean"]["left_pupil"]``;
-    replaces `state["params"]` by a new dict)."""
+    ``params["scale"]["mean"]["left"]["pupil"]`` -> ``["center"]["left_pupil"]``;
+    the scaling parameters `mean` and `sd` become `center` and `scale`, with
+    the method "z"; replaces `state["params"]` by a new dict)."""
     params = state.get("params")
     if not isinstance(params, dict):
         return
@@ -718,8 +720,10 @@ def _v2_params(state):
         params["response"] = {(k if "_" in k else f"{k}_pupil"): v
                               for k, v in params["response"].items()}
     if isinstance(params.get("scale"), dict):
-        params["scale"] = {stat: _by_channel(values)
-                           for stat, values in params["scale"].items()}
+        old = {stat: _by_channel(values) for stat, values in params["scale"].items()}
+        center, scale = old.get("mean", {}), old.get("sd", {})
+        params["scale"] = {"center": center, "scale": scale,
+                           "method": {k: "z" for k in center}}
     state["params"] = params
 
 

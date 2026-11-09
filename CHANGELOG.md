@@ -73,10 +73,13 @@ tables below for every changed call.
   whose columns are averages (see "Added"). `group_segments()` returns
   `SegmentedEyeData` with one column per participant and the metadata
   column `"subject"` (instead of `subjects`, `n_subjects`, `mask_percent`)
-- `params["scale"]` and the `mean=`/`sd=` dicts of `scale()`/`unscale()`
+- `params["scale"]` and the `center=`/`scale=` dicts of `scale()`/`unscale()`
   are keyed by channel (`{"left_pupil": 1000.}`, was
   `{"left": {"pupil": 1000.}}`), like `params["response"]`; stored
   parameters of older files are converted when they are read
+- `scale()`/`unscale()`: `mean=`/`sd=` are `center=`/`scale=`, and
+  `params["scale"]` holds `center`, `scale` and `method` (was `mean` and
+  `sd`); a scale of 0 raises a ValueError (was division by zero)
 - `Intervals.as_pandas()`: the columns `event_label`/`event_onset` are
   `label`/`onset` (as in `Epochs.as_pandas()` and `Events.to_table()`)
 - `pp.downsample` is the pipeline step for `d.downsample()`; the array
@@ -101,6 +104,8 @@ tables below for every changed call.
 
 ### Added
 
+- `scale(method=...)`: `"z"` (default), `"robust"` (median and raw MAD),
+  `"minmax"` (0 to 1) and `"percent"` (% change from the mean)
 - `import pypillometry` takes about 0.4 s instead of 2.4 s: matplotlib, scipy,
   pandas, h5py and requests are imported when they are first used
 - Namespaces `d.pupil`, `d.gaze` and `d.plot`
@@ -311,7 +316,7 @@ Calls whose arguments or results changed:
 | `d.pupil_plot(...); iv.to_units("sec").plot_highlight(color=c)` | `d.plot.pupil_plot(..., highlight=iv, highlight_color=c)` |
 | `segments.intervals` | `segments.epochs` |
 | `isinstance(d, pp.GenericEyeData)` | `isinstance(d, pp.EyeData)` |
-| `d.scale(mean={"left": {"pupil": m}}, sd=...)`, `d.params["scale"]["mean"]["left"]["pupil"]` | `d.scale(mean={"left_pupil": m}, sd=...)`, `d.params["scale"]["mean"]["left_pupil"]` |
+| `d.scale(mean={"left": {"pupil": m}}, sd=...)`, `d.params["scale"]["mean"]["left"]["pupil"]` | `d.scale(center={"left_pupil": m}, scale=...)`, `d.params["scale"]["center"]["left_pupil"]` |
 | `pp.smooth_window(...)`, `pp.pupil_kernel(...)`, ... (array functions) | `pp.signal.smooth_window(...)`, `pp.signal.pupil_kernel(...)`, ... |
 | `pp.zscale(x)` | `pp.signal.zscale(x)` |
 | `d.params["response"]["left"]` | `d.params["response"]["left_pupil"]` |

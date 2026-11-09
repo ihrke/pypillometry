@@ -17,15 +17,15 @@ class TestPupilData(unittest.TestCase):
         d=d.scale("pupil")
         self.assertEqual(d.data["left","pupil"].mean(), 0)
         self.assertEqual(d.data["right","pupil"].mean(), 0)
-        self.assertEqual(d.params["scale"]["mean"]["left_pupil"], 1.5)
-        self.assertEqual(d.params["scale"]["mean"]["right_pupil"], 3.5)
+        self.assertEqual(d.params["scale"]["center"]["left_pupil"], 1.5)
+        self.assertEqual(d.params["scale"]["center"]["right_pupil"], 3.5)
     def test_scale_ignores_masked(self):
         # masked (non-NaN) and NaN samples do not enter mean/sd
         d = pp.EyeData(sampling_rate=10, left_pupil=[1., 3., 1., 3., 999., np.nan])
         d.data.add_mask("left_pupil", np.s_[4])
         d = d.scale("pupil", inplace=False)
-        self.assertEqual(d.params["scale"]["mean"]["left_pupil"], 2.)
-        self.assertEqual(d.params["scale"]["sd"]["left_pupil"], 1.)
+        self.assertEqual(d.params["scale"]["center"]["left_pupil"], 2.)
+        self.assertEqual(d.params["scale"]["scale"]["left_pupil"], 1.)
     def test_scale_masked_samples(self):
         # masked samples are scaled as well and stay masked
         d = pp.EyeData(sampling_rate=10, left_pupil=[1., 3., 1., 3., 5.])
@@ -40,16 +40,17 @@ class TestPupilData(unittest.TestCase):
         d = pp.EyeData(sampling_rate=10, left_pupil=[1,2,1,2], right_pupil=[3,4,3,4])
         scalepars = {"left_pupil": 1, "right_pupil": 3}
         sdpars = {"left_pupil": 0.5, "right_pupil": 0.5}
-        d=d.scale("pupil", mean=scalepars, sd=sdpars)
+        d=d.scale("pupil", center=scalepars, scale=sdpars)
         self.assertEqual(d.data["left","pupil"].mean(), 1)
         self.assertEqual(d.data["right","pupil"].mean(), 1)
-        self.assertEqual(d.params["scale"], {"mean": scalepars, "sd": sdpars})
+        self.assertEqual(d.params["scale"], {"center": scalepars, "scale": sdpars,
+                                             "method": {"left_pupil": "z", "right_pupil": "z"}})
     def test_scale_dict_by_channel(self):
         d = pp.EyeData(sampling_rate=10, left_pupil=[1,2,1,2], right_pupil=[3,4,3,4])
         with self.assertRaisesRegex(ValueError, "keyed by channel"):
-            d.scale("pupil", mean={"left": {"pupil": 1}, "right": {"pupil": 3}}, sd=1)
-        with self.assertRaisesRegex(ValueError, "mean has no value for right_pupil"):
-            d.scale("pupil", mean={"left_pupil": 1}, sd=1)
+            d.scale("pupil", center={"left": {"pupil": 1}, "right": {"pupil": 3}}, scale=1)
+        with self.assertRaisesRegex(ValueError, "center has no value for right_pupil"):
+            d.scale("pupil", center={"left_pupil": 1}, scale=1)
     def test_unscale(self):
         d = pp.EyeData(sampling_rate=10, left_pupil=[1,2,1,2], right_pupil=[3,4,3,4])
         d=d.scale("pupil")
@@ -60,10 +61,43 @@ class TestPupilData(unittest.TestCase):
         # scale() and unscale() accept ints and floats
         d = pp.EyeData(sampling_rate=10, left_pupil=[1,2,1,2], right_pupil=[3,4,3,4])
         for mean, sd in [(1, 2), (1.0, 2.0), (np.float32(1), np.int64(2))]:
-            s = d.scale("pupil", mean=mean, sd=sd, inplace=False)
+            s = d.scale("pupil", center=mean, scale=sd, inplace=False)
             self.assertEqual(s.data["left","pupil"].mean(), 0.25)
-            u = s.unscale("pupil", mean=mean, sd=sd, inplace=False)
+            u = s.unscale("pupil", center=mean, scale=sd, inplace=False)
             np.testing.assert_allclose(u.data["left","pupil"], [1,2,1,2])
+
+    def test_scale_methods(self):
+        x = np.array([1., 2., 3., 4., 100.])
+        d = pp.EyeData(sampling_rate=10, left_pupil=x)
+        r = d.scale("pupil", method="robust", inplace=False)
+        # median 3, raw MAD 1 (not multiplied by 1.4826)
+        np.testing.assert_allclose(r.data["left_pupil"], x - 3)
+        self.assertEqual(r.params["scale"]["method"], {"left_pupil": "robust"})
+        m = d.scale("pupil", method="minmax", inplace=False)
+        np.testing.assert_allclose(m.data["left_pupil"], (x - 1) / 99)
+        pc = d.scale("pupil", method="percent", inplace=False)
+        np.testing.assert_allclose(pc.data["left_pupil"], (x - 22) / 22 * 100)
+        for s in (r, m, pc):
+            np.testing.assert_allclose(s.unscale("pupil", inplace=False).data["left_pupil"], x)
+    def test_scale_methods_use_policy(self):
+        # the masked outlier does not enter min and max
+        d = pp.EyeData(sampling_rate=10, left_pupil=[1., 2., 3., 100.])
+        d.data.add_mask("left_pupil", np.s_[3])
+        m = d.scale("pupil", method="minmax", inplace=False)
+        np.testing.assert_allclose(m.data["left_pupil"], [0, 0.5, 1, 49.5])
+    def test_scale_method_combined(self):
+        d = pp.EyeData(sampling_rate=10, left_pupil=[1., 2., 3., 4.])
+        d.scale("pupil").scale("pupil", method="minmax")
+        self.assertEqual(d.params["scale"]["method"], {"left_pupil": "z, minmax"})
+        np.testing.assert_allclose(d.unscale("pupil").data["left_pupil"], [1, 2, 3, 4])
+    def test_scale_errors(self):
+        d = pp.EyeData(sampling_rate=10, left_pupil=[1., 1., 1., 5.])
+        with self.assertRaisesRegex(ValueError, "unknown method 'mad'"):
+            d.scale(method="mad")
+        with self.assertRaisesRegex(ValueError, "the scale is 0.0"):
+            d.scale(method="robust")   # MAD 0
+        with self.assertRaisesRegex(ValueError, "the scale is 0"):
+            d.scale(scale=0)
 
     def test_constructor_history_empty(self):
         # filling time gaps in the constructor is not a user operation

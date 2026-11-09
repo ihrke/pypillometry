@@ -154,7 +154,7 @@ class TestIncompleteScaleMerge:
         d = incomplete_eyedata
         orig = {k: v.copy() for k, v in d.data.data.items()}
         d.scale()
-        assert set(d.params["scale"]["mean"]) == {"left_pupil", "left_x", "left_y",
+        assert set(d.params["scale"]["center"]) == {"left_pupil", "left_x", "left_y",
                                                    "right_pupil"}
         np.testing.assert_allclose(np.nanmean(d.data["right_pupil"][d.data.mask["right_pupil"] == 0]),
                                    0, atol=1e-10)
@@ -182,7 +182,7 @@ class TestIncompleteScaleMerge:
         d = incomplete_eyedata
         d.merge_eyes(variables="pupil")
         d.scale()
-        assert "mean_pupil" in d.params["scale"]["mean"]
+        assert "mean_pupil" in d.params["scale"]["center"]
 
 
 class TestIncompleteIntervals:

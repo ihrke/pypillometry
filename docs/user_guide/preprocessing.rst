@@ -126,7 +126,7 @@ Scaling
 -------
 
 Pupil size is measured in arbitrary units that depend on the eye tracker
-and the setup. To compare participants, the data are often z-scored:
+and the setup. To compare participants, the data are often scaled:
 
 .. autosummary::
    :nosignatures:
@@ -134,8 +134,23 @@ and the setup. To compare participants, the data are often z-scored:
    EyeData.scale
    EyeData.unscale
 
-The mean and standard deviation that were used are stored with the
-object, and :meth:`~EyeData.unscale` undoes the scaling.
+:meth:`~EyeData.scale` subtracts a center and divides by a scale, both
+computed from the usable samples of each channel. ``method`` chooses them:
+
+.. code-block:: python
+
+    d.scale("pupil")                       # z-scores (mean and SD)
+    d.scale("pupil", method="robust")      # median and MAD: units of the MAD
+    d.scale("pupil", method="minmax")      # between 0 and 1
+    d.scale("pupil", method="percent")     # % change from the mean
+
+The robust scaling uses the raw median absolute deviation (not multiplied
+by 1.4826), so artefacts that were not removed have little influence. The
+values that were used are stored with the object (``d.params["scale"]``),
+and :meth:`~EyeData.unscale` undoes the scaling. For a percent change
+relative to a baseline before each event, see
+``seg.pupil.baseline_correct(window, method="percent")``
+(:doc:`events_intervals`).
 
 
 Combining the eyes

@@ -381,8 +381,9 @@ for _fsd in (250, 100):
 def _scale(dataset):
     d = preprocessed(dataset).scale()
     out = {}
-    for stat in ("mean", "sd"):
-        for key, v in d.params["scale"][stat].items():
+    # the stored parameters were "mean" and "sd" (now "center" and "scale")
+    for stat, new in (("mean", "center"), ("sd", "scale")):
+        for key, v in d.params["scale"][new].items():
             eye, var = key.split("_", 1)
             # the keys of the case are "<variable>_<eye>" (as before step 25)
             out[f"param_{stat}.{var}_{eye}"] = float(v)

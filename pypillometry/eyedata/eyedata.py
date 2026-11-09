@@ -34,7 +34,8 @@ from .experimental_setup import ExperimentalSetup
 from .gaze import GazeNamespace
 from .generic import (_check_per_pair, _check_timebase, _decimate_dict,
                       _decimate_factor, _history_arg, _insert_dict, _keep_dict, _merge_usage,
-                      _per_pair, _some, _store_merged, keephistory)
+                      _per_channel_values, _per_pair, _scale_stats, _SCALE_METHODS, _some,
+                      _store_merged, keephistory)
 from .namespace import accessor
 from .pipes import step, Step, Pipeline, _missing_call
 from .pupil import PupilNamespace
@@ -2356,37 +2357,47 @@ class EyeData(state.VersionedState):
 
     @step
     @keephistory
-    def scale(self, variables=[], mean: Union[float,dict,None]=None, 
-              sd: Union[float,dict,None]=None, eyes=[], policy="default", inplace=None):
+    def scale(self, variables=[], method: str = "z", center: Union[float, dict, None] = None,
+              scale: Union[float, dict, None] = None, eyes=[], policy="default", inplace=None):
         """
-        Scale the signal by subtracting `mean` and dividing by `sd`.
-        If these variables are not provided, use the signal's mean and std.
-        Specify whether to scale `x`, `y`, `pupil` or other variables.
-        
+        Scale the signal: subtract `center` and divide by `scale`.
+
+        `method` says how `center` and `scale` are computed from the usable
+        samples of each channel (under `policy`) if they are not given:
+
+        - ``"z"`` (default): mean and standard deviation (z-scores)
+        - ``"robust"``: median and median absolute deviation (MAD; the
+          raw MAD, not multiplied by 1.4826), so the result is in units of
+          the MAD and outliers (e.g., artefacts) have little influence
+        - ``"minmax"``: minimum and range (max - min), so the result lies
+          between 0 and 1
+        - ``"percent"``: mean and mean / 100, so the result is the change in
+          % of the mean (for a percent change relative to a baseline before
+          each event, see :meth:`SegmentedEyeData.pupil.baseline_correct
+          <pypillometry.segmented.SegmentedPupilNamespace.baseline_correct>`)
+
         Parameters
         ----------
         variables : str or list of str, optional
             variables to scale; can be "pupil", "x","y", "baseline", "response" or any other variable
             that is available in the dataset; either a string or a list of strings;
             available variables can be checked with `obj.variables`; empty list means all variables
-        mean : None, float or dict, optional
-            mean to subtract from signal; if `None`, use the signal's mean
-            (of the usable samples under `policy`);
-            if float, use the same value for all eyes and variables;
-            if dict, provide mean for each channel as
+        method : str, optional
+            how `center` and `scale` are computed if they are None: ``"z"``
+            (default), ``"robust"``, ``"minmax"`` or ``"percent"`` (see above)
+        center : None, float or dict, optional
+            value to subtract; if `None`, computed with `method`; a number
+            (same for all eyes and variables) or one per channel as
             ``{"left_pupil": value, ...}``
-        sd : None, float or dict, optional
-            sd to scale with; if `None`, use the signal's std (of the
-            usable samples under `policy`);
-            if float, use the same value for all eyes and variables;
-            if dict, provide sd for each channel as
-            ``{"left_pupil": value, ...}``
+        scale : None, float or dict, optional
+            value to divide by; if `None`, computed with `method`; a number
+            or one per channel as ``{"left_pupil": value, ...}``
         eyes : str or list of str, optional
             eye(s) to consider; if empty, all available eyes
         policy : str, MaskPolicy or list of str
-            mask policy that decides which samples are used for the mean
-            and sd (see :meth:`mask`); default ``"default"`` (interpolated
-            samples are used)
+            mask policy that decides which samples are used for `center`
+            and `scale` (see :meth:`mask`); default ``"default"``
+            (interpolated samples are used)
         inplace : bool or None, optional
             if `True`, make change in-place and return the object;
             if `False`, make and return copy before making changes;
@@ -2397,64 +2408,81 @@ class EyeData(state.VersionedState):
         :class:`~pypillometry.EyeData`
             the scaled object (`self` or a copy, depending on `inplace`)
 
+        Raises
+        ------
+        ValueError
+            if `method` is unknown, or `scale` is 0 or not finite for a
+            channel (e.g., a constant signal, or a MAD of 0)
+
         Notes
         -----
-        Scaling-parameters are being saved in the `params["scale"]` attribute
-        (``{"mean": {"left_pupil": ...}, "sd": {...}}``) and are used by
-        :meth:`unscale`. Scaling a
-        variable again combines the parameters, so that :meth:`unscale`
-        restores the values before the first `scale`.
+        The scaling parameters are stored in ``params["scale"]``
+        (``{"center": {"left_pupil": ...}, "scale": {...}, "method": {...}}``)
+        and used by :meth:`unscale`. Scaling a variable again combines the
+        parameters, so that :meth:`unscale` restores the values before the
+        first `scale`.
+
+        Examples
+        --------
+        >>> import pypillometry as pp
+        >>> d = pp.get_example_data("rlmw_002_short")
+        >>> z = d.scale("pupil", inplace=False)                     # z-scores
+        >>> r = d.scale("pupil", method="robust", inplace=False)    # units of the MAD
+        >>> p = d.scale("pupil", method="minmax", inplace=False)
+        >>> bool(p["left_pupil"].min() == 0 and p["left_pupil"].max() == 1)
+        True
         """
+        if method not in _SCALE_METHODS:
+            raise ValueError(f"unknown method {method!r}; use one of "
+                             f"{', '.join(map(repr, _SCALE_METHODS))}")
         obj = self._get_inplace(inplace)
         pairs = obj.data.select(eyes, variables)
 
-        if mean is None:
-            # use only the usable samples
-            mean = _per_pair(pairs, lambda eye, var: np.nanmean(obj.get_values(eye, var, policy)))
-        elif isinstance(mean, numbers.Real):
-            mean = _per_pair(pairs, lambda eye, var, val=mean: val)
-        elif not isinstance(mean, dict):
-            raise ValueError("mean must be None, a number or dict")
-
-        if sd is None:
-            sd = _per_pair(pairs, lambda eye, var: np.nanstd(obj.get_values(eye, var, policy)))
-        elif isinstance(sd, numbers.Real):
-            sd = _per_pair(pairs, lambda eye, var, val=sd: val)
-        elif not isinstance(sd, dict):
-            raise ValueError("sd must be None, a number or dict")
-        logger.debug("Mean: %s" % _plain_values(mean))
-        logger.debug("SD: %s" % _plain_values(sd))
-
-        # check that all eye/var combinations are present in mean/sd
-        _check_per_pair(pairs, mean, sd)
+        stats = {}
+        if center is None or scale is None:
+            stats = _per_pair(pairs, lambda eye, var: _scale_stats(
+                obj.get_values(eye, var, policy), method))
+        center = _per_channel_values(pairs, center, "center",
+                                     {k: c for k, (c, _) in stats.items()})
+        scale = _per_channel_values(pairs, scale, "scale",
+                                    {k: s for k, (_, s) in stats.items()})
+        _check_per_pair(pairs, center=center, scale=scale)
+        for eye, var in pairs:
+            s = scale[f"{eye}_{var}"]
+            if not np.isfinite(s) or s == 0:
+                raise ValueError(f"cannot scale {eye}_{var}: the scale is {s} (e.g., a "
+                                 f"constant signal or no usable samples)")
+        logger.debug("center: %s" % _plain_values(center))
+        logger.debug("scale: %s" % _plain_values(scale))
 
         # store scaling parameters (per channel; combined with those of an
         # earlier scale() of the same channel, so that unscale() undoes both)
         stored = obj.params.get("scale") or {}
-        smean, ssd = dict(stored.get("mean", {})), dict(stored.get("sd", {}))
+        scenter, sscale, smethod = (dict(stored.get(k, {})) for k in ("center", "scale", "method"))
         for eye, var in pairs:
             key = f"{eye}_{var}"
-            m0, s0 = smean.get(key, 0.), ssd.get(key, 1.)
-            smean[key] = m0 + mean[key] * s0
-            ssd[key] = s0 * sd[key]
-        obj.params["scale"] = {"mean": smean, "sd": ssd}
+            c0, s0 = scenter.get(key, 0.), sscale.get(key, 1.)
+            scenter[key] = c0 + center[key] * s0
+            sscale[key] = s0 * scale[key]
+            smethod[key] = method if key not in smethod else f"{smethod[key]}, {method}"
+        obj.params["scale"] = {"center": scenter, "scale": sscale, "method": smethod}
 
         for eye, var in pairs:
             # scale the masked samples too, keep the layers
             key = f"{eye}_{var}"
-            obj.data.set_with_mask(key, (obj.data[key] - mean[key]) / sd[key],
+            obj.data.set_with_mask(key, (obj.data[key] - center[key]) / scale[key],
                                    preserve_mask=True)
         return obj
-        
+
     @step
-    @keephistory    
-    def unscale(self, variables=[], mean=None, sd=None, eyes=[], inplace=None):
+    @keephistory
+    def unscale(self, variables=[], center=None, scale=None, eyes=[], inplace=None):
         """
         Scale back to original values using either values provided as arguments
         or the values stored in `params["scale"]` by :meth:`scale`.
 
-        The signal is multiplied by `sd` and `mean` is added. The stored
-        parameters of the unscaled channels are removed.
+        The signal is multiplied by `scale` and `center` is added. The
+        stored parameters of the unscaled channels are removed.
 
         Parameters
         ----------
@@ -2462,14 +2490,14 @@ class EyeData(state.VersionedState):
             variables to unscale; can be "pupil", "x","y", "baseline", "response" or any other variable
             that is available in the dataset; either a string or a list of strings;
             available variables can be checked with `obj.variables`; empty list means all variables
-        mean : None, float or dict, optional
-            mean to add to the signal; a number (same for all eyes and
+        center : None, float or dict, optional
+            value to add to the signal; a number (same for all eyes and
             variables) or ``{"left_pupil": value, ...}``;
-            if `None`, use the mean stored by :meth:`scale`
-        sd : None, float or dict, optional
-            sd to multiply the signal with; a number (same for all eyes and
-            variables) or ``{"left_pupil": value, ...}``;
-            if `None`, use the sd stored by :meth:`scale`
+            if `None`, use the value stored by :meth:`scale`
+        scale : None, float or dict, optional
+            value to multiply the signal with; a number (same for all eyes
+            and variables) or ``{"left_pupil": value, ...}``;
+            if `None`, use the value stored by :meth:`scale`
         eyes : str or list of str, optional
             eye(s) to consider; if empty, all available eyes
         inplace : bool or None, optional
@@ -2486,37 +2514,24 @@ class EyeData(state.VersionedState):
         pairs = obj.data.select(eyes, variables)
 
         # if no parameters are provided, use the stored ones (normal)
-        if mean is None:
-            mean=obj.params["scale"]["mean"]
-        elif isinstance(mean, numbers.Real):
-            mean = _per_pair(pairs, lambda eye, var, val=mean: val)
-        elif not isinstance(mean, dict):
-            raise ValueError("mean must be None, a number or dict")
-        if sd is None:
-            sd=obj.params["scale"]["sd"]
-        elif isinstance(sd, numbers.Real):
-            sd = _per_pair(pairs, lambda eye, var, val=sd: val)
-        elif not isinstance(sd, dict):
-            raise ValueError("sd must be None, a number or dict")
-        
-        # check whether unscaling parameters are provided
-        _check_per_pair(pairs, mean, sd)
+        stored = obj.params.get("scale") or {}
+        center = _per_channel_values(pairs, center, "center", stored.get("center", {}))
+        scale = _per_channel_values(pairs, scale, "scale", stored.get("scale", {}))
+        _check_per_pair(pairs, center=center, scale=scale)
 
         for eye, var in pairs:
             # unscale the masked samples too, keep the layers
             key = f"{eye}_{var}"
-            obj.data.set_with_mask(key, obj.data[key] * sd[key] + mean[key],
+            obj.data.set_with_mask(key, obj.data[key] * scale[key] + center[key],
                                    preserve_mask=True)
         # the unscaled channels have no scaling parameters any more
-        stored = obj.params.get("scale")
         if stored:
             keys = {f"{eye}_{var}" for eye, var in pairs}
             obj.params["scale"] = {stat: {k: v for k, v in stored.get(stat, {}).items()
                                           if k not in keys}
-                                   for stat in ("mean", "sd")}
-        return obj    
+                                   for stat in ("center", "scale", "method")}
+        return obj
 
-    
     @step
     @keephistory
     def downsample(self, fsd: float, dsfac: bool=False, policy="default", inplace=None):
