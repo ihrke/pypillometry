@@ -21,3 +21,14 @@ Data cut into segments around events (see
    :nosignatures:
 
    group_segments
+
+Methods for pupil segments (``seg.pupil``) and for gaze segments and
+regions of interest (``seg.gaze``):
+
+.. autosummary::
+   :toctree: generated
+   :template: class.rst
+   :nosignatures:
+
+   segmented.SegmentedPupilNamespace
+   segmented.SegmentedGazeNamespace

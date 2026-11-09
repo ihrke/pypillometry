@@ -63,8 +63,8 @@ d = (d | pp.pupil.blinks_detect()       # detect and mask blinks
 
 # pupil response from 500 ms before to 2.5 s after each stimulus
 epochs = d.get_epochs("S_", (-500, 2500) * u.ms)
-erpd = d.get_segments(epochs, "left_pupil").baseline_correct((-500, 0))
-erpd.plot()
+erpd = d.get_segments(epochs, "left_pupil").pupil.baseline_correct((-500, 0))
+erpd.pupil.plot()
 ```
 
 The [quickstart](https://ihrke.github.io/pypillometry/getting_started/quickstart.html)

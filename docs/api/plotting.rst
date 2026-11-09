@@ -48,8 +48,10 @@ Experimental setup and foreshortening
    plot.PlotNamespace.plot_experimental_setup
    plot.PlotNamespace.plot_pupil_foreshortening_error_surface
 
-The segmented data have their own ``plot()`` method
-(:meth:`SegmentedEyeData.plot`).
+The segmented data have their own plots
+(:meth:`SegmentedEyeData.plot`,
+:meth:`seg.pupil.plot() <segmented.SegmentedPupilNamespace.plot>`,
+:meth:`seg.gaze.plot_roi() <segmented.SegmentedGazeNamespace.plot_roi>`).
 
 All plots
 ---------
