@@ -122,6 +122,61 @@ A policy can also be a list of layers (only these and NaN make a sample
 unusable), e.g. ``policy=["blink"]``, or a :class:`MaskPolicy` of your
 own.
 
+The figure shows the layers of the left pupil during a few seconds of a
+recording after blink detection and interpolation, with a period excluded
+and a period masked by hand, and which samples each policy leaves out:
+
+.. plot::
+   :include-source: False
+
+   from pypillometry import u
+
+   d = pp.get_example_data("rlmw_002_short")
+   d.pupil.blinks_detect()
+   d.pupil.blinks_interpolate()
+   d.exclude_intervals([(19500, 20300)])                        # e.g. a break
+   d.mask_intervals({"left_pupil": pp.Intervals([(23000, 23400)], "ms")})  # by hand
+
+   t0, t1 = 17000, 24500
+   sel = (d.tx >= t0) & (d.tx < t1)
+   t = d.tx[sel] / 1000
+   key = "left_pupil"
+
+   def runs(mask):
+       """(start, width) in s of the runs of True in `mask`."""
+       m = np.concatenate([[False], mask, [False]]).astype(int)
+       starts, ends = np.flatnonzero(np.diff(m) == 1), np.flatnonzero(np.diff(m) == -1)
+       return [(t[a], t[b - 1] - t[a] + 0.002) for a, b in zip(starts, ends)]
+
+   rows = [("blink", d.data.get_layer(key, "blink")[sel], "C3"),
+           ("interpolated", d.data.get_layer(key, "interpolated")[sel], "C2"),
+           ("user", d.data.get_layer(key, "user")[sel], "C4"),
+           ("excluded", d.data.get_rec_layer("excluded")[sel], "0.4"),
+           ('unusable, "default"', d.mask(key)[sel], "k"),
+           ('unusable, "strict"', d.mask(key, policy="strict")[sel], "k")]
+
+   fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(9, 4.6), sharex=True,
+                                  gridspec_kw={"height_ratios": [1.3, 1.6]})
+   v = d.data[key][sel]
+   interp = d.data.get_layer(key, "interpolated")[sel]
+   ax1.plot(t, np.where(interp, np.nan, v), color="C0", lw=1, label="recorded")
+   ax1.plot(t, np.where(interp, v, np.nan), color="C2", lw=1.5, label="interpolated")
+   ax1.set_ylabel("left pupil")
+   ax1.axvspan(19.5, 20.3, color="0.4", alpha=0.15, lw=0)
+   ax1.axvspan(23.0, 23.4, color="C4", alpha=0.15, lw=0)
+   ax1.legend(loc="upper right", fontsize=8, ncol=2, frameon=False)
+   for i, (name, mask, color) in enumerate(rows):
+       y = len(rows) - 1 - i
+       ax2.broken_barh(runs(mask), (y - 0.35, 0.7), color=color)
+       if i == 4:
+           ax2.axhline(y + 0.6, color="0.7", lw=0.8)
+   ax2.set_yticks(range(len(rows)))
+   ax2.set_yticklabels([r[0] for r in rows][::-1])
+   ax2.set_ylim(-0.6, len(rows) - 0.4)
+   ax2.set_xlabel("time (s)")
+   ax2.set_xlim(t[0], t[-1])
+   fig.tight_layout()
+
 .. note::
 
    Under the default policy, an interpolated sample is usable even if

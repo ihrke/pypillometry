@@ -258,6 +258,45 @@ Epochs can be used wherever the methods take intervals (e.g.,
 beyond the recording are not cut off: the methods that read the data use
 the part within it (in segments, the rest is masked).
 
+Epochs and intervals compared: :meth:`~EyeData.get_epochs` gives the same
+window around each selected event (here, the stimuli "S"),
+:meth:`~EyeData.get_intervals` the spans between two events (here, from
+the fixation cross "F" to the response "R" of each trial), which differ
+in length:
+
+.. plot::
+   :include-source: False
+
+   from pypillometry import u
+   import matplotlib.patches as patches
+
+   d = pp.get_example_data("rlmw_002_short")
+   epochs = d.get_epochs("S_", (-200, 1000) * u.ms)
+   intervals = d.get_intervals(start="F_", end="R_")
+   t0, t1 = 4500, 15000
+
+   fig, ax = plt.subplots(figsize=(9, 3))
+   for on, lab in zip(d.events.onsets, d.events.labels):
+       if t0 <= on <= t1:
+           ax.axvline(on / 1000, color="0.75", lw=0.8, zorder=0)
+           ax.text(on / 1000, 2.55, lab.split("_")[0], ha="center", fontsize=9)
+   for (a, b), on in zip(epochs, epochs.onsets):
+       if a < t1:
+           ax.add_patch(patches.Rectangle((a / 1000, 1.15), (b - a) / 1000, 0.7, color="C0", alpha=0.6))
+           ax.plot([on / 1000] * 2, [1.15, 1.85], color="C0", lw=2)
+   for a, b in intervals.intervals:
+       if a < t1:
+           ax.add_patch(patches.Rectangle((a / 1000, 0.15), (b - a) / 1000, 0.7, color="C1", alpha=0.6))
+   ax.set_yticks([0.5, 1.5])
+   ax.set_yticklabels(['get_intervals(start="F_", end="R_")', 'get_epochs("S_", (-200, 1000) ms)'])
+   ax.set_ylim(0, 2.9)
+   ax.set_xlim(t0 / 1000, t1 / 1000)
+   ax.set_xlabel("time (s); events: F, S, C, R of each trial")
+   for s in ("top", "right", "left"):
+       ax.spines[s].set_visible(False)
+   ax.tick_params(axis="y", length=0)
+   fig.tight_layout()
+
 Intervals
 ---------
 
@@ -377,6 +416,36 @@ the methods for the pupil are in ``seg.pupil`` and those for the gaze in
     erpd = erpd.pupil.baseline_correct((-200, 0))   # subtract the pre-stimulus mean
     erpd.pupil.plot()
     erpd["left_pupil"]                               # masked array, time points x segments
+
+The segments of a channel form a matrix of time points × trials (top, one
+row per trial, here for the 10 stimuli of the short example dataset); its
+mean over the trials is the ERPD (bottom, with the standard error):
+
+.. plot::
+   :include-source: False
+
+   from pypillometry import u
+
+   d = (pp.get_example_data("rlmw_002_short") | pp.pupil.blinks_detect()
+        | pp.pupil.blinks_interpolate() | pp.pupil.lowpass_filter(5))
+   seg = d.get_segments(d.get_epochs("S_", (-500, 2500) * u.ms), "left_pupil")
+   seg = seg.pupil.baseline_correct((-200, 0))
+   x = seg["left_pupil"]
+
+   fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(7, 5.5), sharex=True,
+                                  gridspec_kw={"height_ratios": [2, 1]})
+   lim = np.nanpercentile(np.abs(np.ma.filled(x, np.nan)), 98)
+   im = ax1.imshow(np.ma.filled(x, np.nan).T, aspect="auto", cmap="RdBu_r", vmin=-lim, vmax=lim,
+                   extent=[seg.tx[0], seg.tx[-1], seg.n_segments, 0], interpolation="nearest")
+   ax1.axvline(0, color="k", lw=0.8, ls="--")
+   ax1.set_ylabel("trial")
+   ax1.set_title('seg["left_pupil"]: time points x trials', fontsize=10)
+   fig.colorbar(im, ax=ax1, label="change from baseline")
+   seg.pupil.plot(ax=ax2)
+   ax2.set_title("mean over trials: the ERPD", fontsize=10)
+   ax2.set_xlabel("time (ms)")
+   fig.colorbar(im, ax=ax2).ax.set_visible(False)   # same width as above
+   fig.tight_layout()
 
 All channels share the epochs, so trials are selected once for all of
 them: :meth:`~SegmentedEyeData.filter` selects by label or metadata of
