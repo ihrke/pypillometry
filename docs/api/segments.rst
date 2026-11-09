@@ -4,8 +4,9 @@ Segmented data
 ==============
 
 Data cut into segments around events (see
-:meth:`EyeData.get_segments` and the tutorial
-:doc:`/notebooks/erpds`).
+:meth:`EyeData.get_segments`, the user guide pages
+:doc:`/user_guide/events_intervals` and :doc:`/user_guide/rois`, and the
+tutorials :doc:`/notebooks/erpds` and :doc:`/notebooks/rois`).
 
 .. autosummary::
    :toctree: generated

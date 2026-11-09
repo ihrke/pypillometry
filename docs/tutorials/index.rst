@@ -129,6 +129,13 @@ Events and event-related analyses
 
       Average pupil responses per condition and across participants.
 
+   .. grid-item-card:: Gaze in regions of interest
+      :link: /notebooks/rois
+      :link-type: doc
+
+      Where participants look after an event: fixation curves, dwell
+      time and first entry per trial, combined with the pupil.
+
 
 Modeling and complete analyses
 ------------------------------
@@ -184,6 +191,7 @@ More examples for the experimental features are in
    /notebooks/event_metadata
    /notebooks/intervals
    /notebooks/erpds
+   /notebooks/rois
 
 .. toctree::
    :hidden:

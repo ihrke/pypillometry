@@ -69,7 +69,8 @@ tables below for every changed call.
   `seg.pupil.baseline_correct()` (pupil channels only); `plot()` takes
   `channels=` (`seg.pupil.plot()` plots the pupil). `GroupLevelSegmentedData`:
   `mask_percent` is a dict of channels, `n_subjects` comes from the new
-  `subjects`; averaged groups have no epochs
+  `subjects`; averaged groups have no epochs; the error ribbons of the
+  segment plots have the color of their line (were grey without `color=`)
 - `params["scale"]` and the `mean=`/`sd=` dicts of `scale()`/`unscale()`
   are keyed by channel (`{"left_pupil": 1000.}`, was
   `{"left": {"pupil": 1000.}}`), like `params["response"]`; stored
@@ -106,6 +107,8 @@ tables below for every changed call.
   whose mean is the share of trials in the ROI), `plot_roi()` (fixation
   curve), `dwell_time()` and `first_entry()` (tables per trial with the
   epochs' metadata)
+- User guide page "Regions of interest" and the tutorial "Gaze in regions
+  of interest around events"
 - `group_segments()` stores the subjects (names from dict keys); stacked
   trials keep the epochs of all subjects, with the column `"subject"`, so
   they can be selected with `filter()`

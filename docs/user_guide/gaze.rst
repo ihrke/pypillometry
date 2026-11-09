@@ -192,9 +192,7 @@ samples fall into them and can be drawn into the gaze plots (``rois=``):
 For event-related analyses, ``seg.gaze`` of the segments
 (:meth:`~EyeData.get_segments`) uses ROIs: the share of trials in which
 the gaze is in an ROI over time, and the dwell time and first entry per
-trial (see :doc:`events_intervals`).
-
-These classes are experimental (see :doc:`/experimental/gaze_rois`).
+trial. See :doc:`rois` and the tutorial :doc:`/notebooks/rois`.
 
 
 Pupil foreshortening

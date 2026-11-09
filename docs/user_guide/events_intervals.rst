@@ -402,7 +402,7 @@ it raises an error. The baseline window of
 :doc:`gaze`): :meth:`~segmented.SegmentedGazeNamespace.roi_hits` adds a
 channel per eye that is 1 where the gaze is in the ROI and 0 outside, so
 its mean over the segments is the share of trials in which the gaze is
-in the ROI at each time point (a fixation curve);
+in the ROI at each time point (a fixation curve, see :doc:`rois`);
 :meth:`~segmented.SegmentedGazeNamespace.dwell_time` and
 :meth:`~segmented.SegmentedGazeNamespace.first_entry` give one value per
 trial, in a table with the metadata of the epochs:
