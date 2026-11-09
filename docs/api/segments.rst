@@ -14,13 +14,13 @@ tutorials :doc:`/notebooks/erpds` and :doc:`/notebooks/rois`).
    :nosignatures:
 
    SegmentedEyeData
-   GroupLevelSegmentedData
 
 .. autosummary::
    :toctree: generated
    :template: function.rst
    :nosignatures:
 
+   concat_segments
    group_segments
 
 Methods for pupil segments (``seg.pupil``) and for gaze segments and

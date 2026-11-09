@@ -67,10 +67,13 @@ tables below for every changed call.
   constructor takes this dict, and `variable`, `eye`, `var` and
   `from_masked_array()` were removed. `baseline_correct()` is
   `seg.pupil.baseline_correct()` (pupil channels only); `plot()` takes
-  `channels=` (`seg.pupil.plot()` plots the pupil). `GroupLevelSegmentedData`:
-  `mask_percent` is a dict of channels, `n_subjects` comes from the new
-  `subjects`; averaged groups have no epochs; the error ribbons of the
+  `channels=` (`seg.pupil.plot()` plots the pupil); the error ribbons of the
   segment plots have the color of their line (were grey without `color=`)
+- `GroupLevelSegmentedData` was removed: averages are `SegmentedEyeData`
+  whose columns are averages (see "Added"). `group_segments()` returns
+  `SegmentedEyeData` with one column per participant and the metadata
+  column `"subject"` (instead of `subjects`, `n_subjects`, `mask_percent`);
+  files with the old class load as `SegmentedEyeData`
 - `params["scale"]` and the `mean=`/`sd=` dicts of `scale()`/`unscale()`
   are keyed by channel (`{"left_pupil": 1000.}`, was
   `{"left": {"pupil": 1000.}}`), like `params["response"]`; stored
@@ -109,9 +112,13 @@ tables below for every changed call.
   epochs' metadata)
 - User guide page "Regions of interest" and the tutorial "Gaze in regions
   of interest around events"
-- `group_segments()` stores the subjects (names from dict keys); stacked
-  trials keep the epochs of all subjects, with the column `"subject"`, so
-  they can be selected with `filter()`
+- `seg.average(by=...)` averages all trials or groups of them (by metadata
+  columns of the epochs); the averages keep the grouping columns and the
+  number of trials (`"n_trials"`) as metadata of epochs without a time (NaN
+  onsets), and the share of usable trials (`valid_share`)
+- `concat_segments()` stacks the segments of several participants, with the
+  metadata column `"subject"`; `group_segments()` is `concat_segments()`
+  plus `average(by="subject")`, and `meanfct=None` stacks the trials
 - Pipelines: `d | pp.pupil.blinks_detect() | pp.pupil.lowpass_filter(4)`;
   `pp.pupil.*`, `pp.gaze.*` and the generic steps (`pp.crop`,
   `pp.downsample`, `pp.scale`, ...) make `pp.Step`s, combined into a

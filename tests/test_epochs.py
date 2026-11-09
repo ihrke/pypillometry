@@ -43,7 +43,12 @@ class TestConstruction:
 
     def test_invalid_onsets_and_labels(self):
         with pytest.raises(ValueError, match="finite"):
-            pp.Epochs([0, np.nan], (0, 1))
+            pp.Epochs([0, np.inf], (0, 1))
+        # NaN: epochs without a time (averages), which have no spans
+        ep = pp.Epochs([0, np.nan], (0, 1))
+        with pytest.raises(ValueError, match="no time"):
+            list(ep)
+        assert ep == pp.Epochs([0, np.nan], (0, 1))
         with pytest.raises(ValueError, match="2 labels for 3 onsets"):
             pp.Epochs([0, 1, 2], (0, 1), labels=["a", "b"])
         with pytest.raises(ValueError, match="metadata column 'x' has 2 values"):

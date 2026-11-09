@@ -14,7 +14,7 @@ stimulus appears or a response is given. Analyses then look at the data in
      E["<b>Events</b><br/>onsets + labels + metadata"] -- "get_epochs(event, window)" --> P["<b>Epochs</b><br/>onsets + one window"]
      E -- "get_intervals(start=event1, end=event2)" --> I["<b>Intervals</b><br/>(start, end) pairs"]
      P -- "get_segments()" --> S["<b>SegmentedEyeData</b><br/>channels: segments x time"]
-     S -- "group_segments()" --> G["<b>GroupLevelSegmentedData</b><br/>participants x time"]
+     S -- "average(by=...), group_segments()" --> G["<b>SegmentedEyeData</b><br/>channels: averages x time"]
      P -- "stat_per_event()" --> N["one value<br/>per event"]
      P -- "to_intervals()" --> I
 
@@ -415,12 +415,47 @@ trial, in a table with the metadata of the epochs:
     import pandas as pd
     pd.DataFrame(seg.gaze.dwell_time(target, window=(0, 1000)))
 
-:func:`group_segments` averages the segments of several participants
-(each channel, e.g., ERPDs and fixation curves) into a
-:class:`GroupLevelSegmentedData` object, which has the same methods.
-With ``meanfct=None``, it stacks all trials instead; their epochs then
-have the participant in the metadata column ``"subject"``. Both can be
-saved with ``write_file()``.
+Averages
+~~~~~~~~
+
+:meth:`~SegmentedEyeData.average` averages the trials, all of them or
+by groups defined by metadata columns of the epochs. The result is a
+:class:`SegmentedEyeData` object with one column per group, so it has the
+same methods (plots, baseline correction, selection, ``write_file()``).
+Its epochs have no time (their onsets are NaN); their metadata are the
+grouping columns, the columns that were the same in all trials of a group,
+and the number of trials (``n_trials``):
+
+.. code-block:: python
+
+    by_cond = seg.average(by="cond")               # one column per condition
+    by_cond.epochs.meta                             # {"cond": [...], "n_trials": [...]}
+    by_cond.filter(cond="easy").pupil.plot()
+
+An average is masked where all its trials are masked. The share of its
+trials that were usable at each time point is kept (``valid_share``), and
+the missing data shown by :meth:`~SegmentedEyeData.plot` are the missing
+trials.
+
+Several participants are combined in two steps: :func:`concat_segments`
+stacks their segments, with the participant in the metadata column
+``"subject"``, and :meth:`~SegmentedEyeData.average` averages them.
+:func:`group_segments` does both for the usual case of one average per
+participant:
+
+.. code-block:: python
+
+    segs = {"P01": seg1, "P02": seg2}
+    group = pp.group_segments(segs)                  # one column per participant
+    group.pupil.plot()                               # mean and error across participants
+
+    allseg = pp.concat_segments(segs)                # all trials, with "subject"
+    means = allseg.average(by=["subject", "cond"])   # per participant and condition
+    means.filter(cond="easy").pupil.plot()           # across participants, easy trials
+
+Averaging averages gives each of them the same weight (e.g., each
+participant). Measures that only make sense for single trials (ROI hits,
+first entry, see :doc:`rois`) raise an error for averages.
 
 For statistical models of trial-by-trial data, it is often easier to work
 with one number per trial. :meth:`~EyeData.stat_per_event` applies a

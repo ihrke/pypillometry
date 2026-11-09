@@ -171,18 +171,23 @@ epochs (``seg.filter(side=1)``).
 Several participants
 ~~~~~~~~~~~~~~~~~~~~
 
-:func:`group_segments` combines the segments of several participants into
-a :class:`GroupLevelSegmentedData` object. By default it averages the
-trials of each participant, so the fixation curve of the group is the mean
-of the participants' curves (with their standard error); with
-``meanfct=None`` it keeps all trials. Choose the channels to combine with
-``channels=``:
+:func:`group_segments` averages the segments of each participant (see
+:doc:`events_intervals`), so the fixation curve of the group is the mean
+of the participants' curves (with their standard error). Choose the
+channels to combine with ``channels=``:
 
 .. code-block:: python
 
     group = pp.group_segments({"P01": seg1, "P02": seg2},
                               channels=["left_leftopt", "left_rightopt"])
     group.gaze.plot_roi("leftopt")
+
+ROI channels must be added before averaging: averaged x and y say nothing
+about where the gaze was in the trials, so
+:meth:`~segmented.SegmentedGazeNamespace.roi_hits` and
+:meth:`~segmented.SegmentedGazeNamespace.first_entry` raise an error for
+averages. :meth:`~segmented.SegmentedGazeNamespace.dwell_time` of an
+average is the mean dwell time of its trials.
 
 
 What is not included

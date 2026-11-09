@@ -245,8 +245,10 @@ class TestFormatVersion0(unittest.TestCase):
         self.assertEqual(s.channels, ["left_pupil"])
         self.assertEqual(s.epochs.label, "F_")
         g = self.load("group_segmented_v0.pkl")
-        self.assertIsInstance(g, pp.GroupLevelSegmentedData)
-        self.assertEqual(g.n_subjects, 2)
+        # former GroupLevelSegmentedData: averages of two subjects
+        self.assertIs(type(g), pp.SegmentedEyeData)
+        self.assertEqual(g.epochs.meta["subject"].tolist(), ["1", "2"])
+        self.assertTrue(g._averaged().all())
 
 
 class TestMigrate(unittest.TestCase):
