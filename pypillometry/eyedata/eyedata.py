@@ -14,7 +14,6 @@ import numbers
 import sys
 import warnings
 from collections.abc import Iterable
-from importlib import resources
 from io import BytesIO
 from random import choice
 from typing import Callable, Dict, List, Optional, Tuple, Union
@@ -30,6 +29,7 @@ from ..events import Events, _pair_with_next, _warn_if_needs_sync
 from ..intervals import Intervals, _as_intervals
 from ..plot import PlotNamespace
 from ..signal import baseline
+from ..templates import render
 from ..units import (UNSET, _has_units, _time_values_and_units, parse_time, _ms_to_samples,
                      _samples_to_ms)
 from .eyedatadict import EyeDataDict, REC_LAYERS, _join_key
@@ -1674,7 +1674,6 @@ class EyeData(state.VersionedState):
     @requires_package("jinja2")
     def _repr_html_(self):
         """Rich HTML representation for notebooks using Jinja templates."""
-        from jinja2 import Environment
 
         summary = self.summary()
         blink_stats_raw = summary.get("blinks", {}) or {}
@@ -1767,10 +1766,7 @@ class EyeData(state.VersionedState):
             "sparklines": sparklines,
         }
 
-        template_source = resources.read_text("pypillometry.templates", "eyedata_repr.html")
-        # autoescape, so that names, labels etc. with "<" or "&" are shown as text
-        template = Environment(autoescape=True).from_string(template_source)
-        return template.render(**context)
+        return render("eyedata_repr.html", **context)
 
     def copy(self, new_name: Optional[str]=None):
         """

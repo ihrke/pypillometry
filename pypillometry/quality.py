@@ -24,7 +24,6 @@ it makes sense, a measure is labeled as "good", "ok", "poor" or "bad" based
 on thresholds (see :data:`DEFAULT_QUALITY_THRESHOLDS`).
 """
 
-import functools
 import os
 import sys
 import textwrap
@@ -32,6 +31,8 @@ from dataclasses import dataclass
 from typing import Optional, Union
 
 import numpy as np
+
+from .templates import render
 
 __all__ = ["QualityReport", "QualityMetric"]
 
@@ -157,21 +158,6 @@ def _ansi_label(label, width=0, color=True) -> str:
         return " " * width
     txt = label.ljust(width)
     return _ANSI_COLORS[label] + txt + _ANSI_RESET if color else txt
-
-
-@functools.lru_cache(maxsize=None)
-def _jinja_env():
-    """Jinja environment for the templates in pypillometry/templates (autoescaped)."""
-    import jinja2
-    env = jinja2.Environment(loader=jinja2.PackageLoader("pypillometry", "templates"),
-                             autoescape=True, trim_blocks=True, lstrip_blocks=True)
-    env.filters["bounds"] = _bounds_text
-    return env
-
-
-def _render(template: str, **context) -> str:
-    """Render one of the quality-report templates."""
-    return _jinja_env().get_template(template).render(**context)
 
 
 def _supports_color(stream=None) -> bool:
@@ -497,7 +483,7 @@ class QualityReport:
 
     def _repr_html_(self) -> str:
         """Rich HTML representation for Jupyter notebooks."""
-        return _render("quality_report.html", **self._html_context())
+        return render("quality_report.html", **self._html_context())
 
 
 # ----------------------------------------------------------------------
@@ -574,7 +560,7 @@ def _html_page(entries, names=None, tooltips=None) -> str:
                        tooltip=tooltips[i] if tooltips else None,
                        labels=[row["overall"]] + [row["sections"][s] for s in sections])
         context.update(rows=rows, sections=[SECTION_TITLES[s] for s in sections])
-    return _render("quality_page.html", **context)
+    return render("quality_page.html", **context)
 
 
 # ----------------------------------------------------------------------

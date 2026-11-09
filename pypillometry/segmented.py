@@ -24,6 +24,7 @@ from . import config, state
 from .units import parse_time, _ms_to_samples
 from .convenience import _warn_if_ignores_mask, _check_accepts_axis, _plain_values
 from .eyedata.namespace import Namespace, accessor
+from .templates import render
 
 __all__ = [
     "SegmentedEyeData", "GroupLevelSegmentedData", "group_segments",
@@ -215,15 +216,6 @@ def _sparkline(tx, values):
         logger.debug(f"Could not render sparkline: {exc}")
         return None
     return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode("ascii")
-
-
-def _render_template(template, **context):
-    """Render the template `template` of pypillometry/templates (autoescaped, so
-    that names and labels with "<" or "&" are shown as text)."""
-    from importlib import resources
-    from jinja2 import Environment
-    source = resources.read_text("pypillometry.templates", template)
-    return Environment(autoescape=True).from_string(source).render(**context)
 
 
 # --------------------------------------------------------------------------
@@ -1167,7 +1159,7 @@ class SegmentedEyeData(state.VersionedState):
                      "sparkline": _sparkline(self.tx, np.ma.filled(
                          np.mean(arr, axis=1).astype(float), np.nan))}
                     for ch, arr in self.data.items()]
-        return _render_template(
+        return render(
             "segmented_repr.html", class_name=type(self).__name__, name=self.name,
             overview=self._overview(), channels=channels, columns=self._columns_text(),
             epochs=None if self.epochs is None else repr(self.epochs))
