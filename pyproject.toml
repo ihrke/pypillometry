@@ -57,7 +57,7 @@ version = { file = "VERSION" }
 include = ["pypillometry*"]
 
 [tool.setuptools.package-data]
-pypillometry = ["templates/*.html"]
+"pypillometry.templates" = ["*.html"]
 "pypillometry.data" = ["*.asc"]
 "pypillometry.stan" = ["*.stan"]
 

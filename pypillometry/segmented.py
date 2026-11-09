@@ -24,6 +24,7 @@ from . import config, state
 from .units import parse_time, _ms_to_samples
 from .convenience import _warn_if_ignores_mask, _check_accepts_axis, _plain_values
 from .eyedata.namespace import Namespace, accessor
+from .templates import render, sparkline
 
 __all__ = [
     "SegmentedEyeData", "GroupLevelSegmentedData", "group_segments",
@@ -193,37 +194,6 @@ def _window_mask(tx, window):
         raise ValueError(f"window ({lo:g}, {hi:g}) ms contains no time point of the "
                          f"segments ({tx[0]:g} to {tx[-1]:g} ms)")
     return sel
-
-
-def _sparkline(tx, values):
-    """Small PNG (data URI) of `values` over `tx` with a line at time 0, or
-    None if matplotlib cannot draw it."""
-    import base64
-    from io import BytesIO
-    try:
-        from matplotlib.figure import Figure
-        from matplotlib.backends.backend_agg import FigureCanvasAgg
-        fig = Figure(figsize=(1.8, 0.6), dpi=100)
-        ax = fig.subplots()
-        ax.plot(tx, values, color="#1f77b4", linewidth=1)
-        ax.axvline(x=0, color="#d62728", linewidth=1, linestyle="--", alpha=0.7)
-        ax.set_xlim(tx[0], tx[-1])
-        ax.axis("off")
-        buf = BytesIO()
-        FigureCanvasAgg(fig).print_png(buf)
-    except Exception as exc:  # pragma: no cover - optional feature
-        logger.debug(f"Could not render sparkline: {exc}")
-        return None
-    return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode("ascii")
-
-
-def _render_template(template, **context):
-    """Render the template `template` of pypillometry/templates (autoescaped, so
-    that names and labels with "<" or "&" are shown as text)."""
-    from importlib import resources
-    from jinja2 import Environment
-    source = resources.read_text("pypillometry.templates", template)
-    return Environment(autoescape=True).from_string(source).render(**context)
 
 
 # --------------------------------------------------------------------------
@@ -1162,12 +1132,10 @@ class SegmentedEyeData(state.VersionedState):
     def _repr_html_(self) -> str:
         """Rich HTML representation for Jupyter notebooks (template
         templates/segmented_repr.html)."""
-        channels = [{"name": ch,
-                     "missing": f"{np.mean(self._percent_missing(ch)):.1f}%",
-                     "sparkline": _sparkline(self.tx, np.ma.filled(
-                         np.mean(arr, axis=1).astype(float), np.nan))}
+        channels = [{"label": f"{ch} ({np.mean(self._percent_missing(ch)):.1f}% missing)",
+                     "image": sparkline(np.mean(arr, axis=1), x=self.tx, mark_x=0)}
                     for ch, arr in self.data.items()]
-        return _render_template(
+        return render(
             "segmented_repr.html", class_name=type(self).__name__, name=self.name,
             overview=self._overview(), channels=channels, columns=self._columns_text(),
             epochs=None if self.epochs is None else repr(self.epochs))

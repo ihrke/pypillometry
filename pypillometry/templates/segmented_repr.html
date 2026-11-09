@@ -1,30 +1,10 @@
+{% import "repr_macros.html" as m %}
 <div style="font-family:system-ui, sans-serif; border:1px solid #ddd; border-radius:6px; padding:12px; max-width: min(600px, 50vw); min-width: 300px;">
   <h3 style="margin-top:0;">{{ class_name }} — <span style="color:#555;">{{ name }}</span></h3>
 
-  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:8px; margin-bottom:10px;">
-    {% for label, value in overview %}
-    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
-      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">{{ label }}</div>
-      <div style="font-weight:600;">{{ value }}</div>
-    </div>
-    {% endfor %}
-  </div>
+  {{ m.overview_grid(overview, min_width=140) }}
 
-  {% if channels %}
-  <details open style="margin-bottom:8px;">
-    <summary style="cursor:pointer; font-weight:600;">Channels (mean over {{ columns }}; red line = event onset)</summary>
-    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:8px; margin-top:8px;">
-      {% for ch in channels %}
-      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
-        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">{{ ch.name }} ({{ ch.missing }} missing)</div>
-        {% if ch.sparkline %}
-        <img src="{{ ch.sparkline }}" alt="{{ ch.name }} mean" style="height:60px; width:100%; object-fit:cover;">
-        {% endif %}
-      </div>
-      {% endfor %}
-    </div>
-  </details>
-  {% endif %}
+  {{ m.sparkline_grid("Channels (mean over " ~ columns ~ "; red line = event onset)", channels, min_width=180) }}
 
   {% if epochs %}
   <details style="margin-top:8px;">

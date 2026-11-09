@@ -38,6 +38,7 @@ INTERNAL = {
     "pypillometry.plot.gaze": {"GazePlots"},
     "pypillometry.units": {"normalize_unit"},
     "pypillometry.signal.preproc": {"helper_merge_blinks"},
+    "pypillometry.templates": {"render", "sparkline"},
     "pypillometry.state": {"to_state", "from_state", "migrate", "Field",
                            "Stateful", "VersionedState"},
     "pypillometry.hdf5": {"write_state", "read_state", "is_hdf5"},
