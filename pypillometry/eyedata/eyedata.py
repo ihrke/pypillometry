@@ -1297,7 +1297,7 @@ class EyeData(state.VersionedState):
 
     def write_file(self, fname:str, compress:bool=True):
         """
-        Save to file (using :func:`~pypillometry.io.write_pickle`).
+        Save to file (using :func:`~pypillometry.io.write_file`).
 
         The format follows from the extension: HDF5 for ``.h5`` and
         ``.hdf5``, pickle otherwise (e.g., ``.pypil``).
@@ -1309,7 +1309,7 @@ class EyeData(state.VersionedState):
         compress: bool
             compress the file (default True; pickle: zstd, HDF5: gzip)
         """
-        io.write_pickle(self, fname, compress=compress)
+        io.write_file(self, fname, compress=compress)
 
 
     @classmethod
@@ -1319,7 +1319,7 @@ class EyeData(state.VersionedState):
         or HDF5 file (see :meth:`write_file`).
         Use as ``pypillometry.EyeData.from_file("yourfile.pypil")``.
 
-        The file is read with :func:`pypillometry.io.read_pickle`, so
+        The file is read with :func:`pypillometry.io.read_file`, so
         `fname` can also be an HTTP(S) or SSH URL. Files written by older
         versions of pypillometry are upgraded to the current version.
         Pickle files can run arbitrary code when they are read: only read
@@ -1330,7 +1330,7 @@ class EyeData(state.VersionedState):
         fname : str
             filename (or URL)
         **kwargs
-            passed to :func:`pypillometry.io.read_pickle` (e.g.,
+            passed to :func:`pypillometry.io.read_file` (e.g.,
             `cache_file`, `cache_dir`, `cache_layout`, `autodelete`,
             `session`)
 
@@ -1340,7 +1340,7 @@ class EyeData(state.VersionedState):
             the object stored in the file (its class is the one that was
             stored, independent of the class this method is called on)
         """
-        r=io.read_pickle(fname, **kwargs)
+        r=io.read_file(fname, **kwargs)
         return r
 
     @classmethod

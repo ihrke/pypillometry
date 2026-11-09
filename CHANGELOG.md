@@ -301,6 +301,7 @@ Calls whose arguments or results changed:
 | `d.set_event_onsets(on, lab, meta)` | `d.set_events(pp.Events(on, lab, meta=meta))` |
 | `pp.PupilData(...)`, `pp.GazeData(...)` | `pp.EyeData(...)` |
 | `d.sub_slice(start, end)` (deprecated in 2.1) | `d.crop(start, end)` |
+| `pp.read_pickle(f)`, `pp.write_pickle(obj, f)` | `pp.read_file(f)`, `pp.write_file(obj, f)` (pickle or HDF5) |
 | `d.to_pupildata()` | `d.drop_data(variables=["x", "y"], inplace=False)` |
 | `d.to_gazedata()` | `d.drop_data(variables="pupil", inplace=False)` |
 | `pp.downsample(x, factor)` (array) | `pp.signal.downsample(x, factor)` |

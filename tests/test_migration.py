@@ -236,14 +236,14 @@ class TestFormat3RoundTrip:
     @pytest.mark.parametrize("ext", ["pypil", "h5"])
     def test_fixture(self, fname, ext, tmp_path):
         with pp.nologging():
-            obj = pp.read_pickle(os.path.join(FIXTURE_DIR, fname))
+            obj = pp.read_file(os.path.join(FIXTURE_DIR, fname))
         if isinstance(obj, dict) and ext == "h5":
             pytest.skip("HDF5 stores eyedata and segmented objects only")
         out = str(tmp_path / f"out.{ext}")
-        pp.write_pickle(obj, out)
+        pp.write_file(obj, out)
         if ext == "h5":
             assert hdf5.read_state(out)["format_version"] == 3
-        obj2 = pp.read_pickle(out)
+        obj2 = pp.read_file(out)
         if isinstance(obj, dict):
             assert set(obj2) == set(obj)
             for k in obj:
@@ -256,17 +256,17 @@ class TestFormat3RoundTrip:
 
     @pytest.mark.parametrize("fname", ["pupildata.h5", "eyedata.h5", "segmented.h5"])
     def test_format3_file_not_migrated(self, fname, tmp_path):
-        obj = pp.read_pickle(os.path.join(FIXTURE_DIR, fname))
+        obj = pp.read_file(os.path.join(FIXTURE_DIR, fname))
         out = str(tmp_path / "out.h5")
-        pp.write_pickle(obj, out)
+        pp.write_file(obj, out)
         st = hdf5.read_state(out)
         assert state.migrate(st, st["class"]) is st
         # written again: the same state
-        pp.write_pickle(pp.read_pickle(out), str(tmp_path / "again.h5"))
+        pp.write_file(pp.read_file(out), str(tmp_path / "again.h5"))
         assert_state_equal(unittest.TestCase(), st, hdf5.read_state(str(tmp_path / "again.h5")))
 
     def test_pickle_holds_format3_state(self):
-        obj = pp.read_pickle(os.path.join(FIXTURE_DIR, "eyedata.pypil"))
+        obj = pp.read_file(os.path.join(FIXTURE_DIR, "eyedata.pypil"))
         stored = []
         with patch.object(pp.EyeData, "__setstate__", lambda self, st: stored.append(st)):
             pickle.loads(pickle.dumps(obj))
@@ -279,20 +279,20 @@ class TestFormat3RoundTrip:
     @pytest.mark.parametrize("ext", ["pypil", "h5"])
     def test_format0_and_1(self, fname, ext, tmp_path):
         """Older files go through the whole chain of migrations."""
-        obj = pp.read_pickle(os.path.join(STATE_DIR, fname))
+        obj = pp.read_file(os.path.join(STATE_DIR, fname))
         out = str(tmp_path / f"out.{ext}")
-        pp.write_pickle(obj, out)
-        assert_same_state(obj, pp.read_pickle(out))
+        pp.write_file(obj, out)
+        assert_same_state(obj, pp.read_file(out))
 
 
 class TestRecordingVersions:
 
     def test_versions_of_loaded_objects(self):
         with state._recording_versions() as seen:
-            pp.read_pickle(os.path.join(FIXTURE_DIR, "eyedata.pypil"))
+            pp.read_file(os.path.join(FIXTURE_DIR, "eyedata.pypil"))
         # the object and its original
         assert seen == [("EyeData", 2), ("EyeData", 2)]
         with state._recording_versions() as seen:
-            pp.read_pickle(os.path.join(FIXTURE_DIR, "dict_of_eyedata.pypil"))
+            pp.read_file(os.path.join(FIXTURE_DIR, "dict_of_eyedata.pypil"))
         assert {v for _, v in seen} == {2} and len(seen) == 3
         assert state._versions_seen is None

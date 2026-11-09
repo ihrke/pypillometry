@@ -261,9 +261,9 @@ class TestLocalCopy(SSHTestCase):
         shutil.rmtree(tmpdir)
 
     def test_read_pickle_removes_temp_dir(self):
-        io.write_pickle({"a": 1}, os.path.join(self.server_root, "data", "obj.pkl"))
+        io.write_file({"a": 1}, os.path.join(self.server_root, "data", "obj.pkl"))
         before = set(os.listdir(tempfile.gettempdir()))
-        self.assertEqual(io.read_pickle("ssh://server/data/obj.pkl"), {"a": 1})
+        self.assertEqual(io.read_file("ssh://server/data/obj.pkl"), {"a": 1})
         after = set(os.listdir(tempfile.gettempdir()))
         self.assertEqual([d for d in after - before if d.startswith("pypillometry_")], [])
 
@@ -291,8 +291,8 @@ class TestReadEyelinkSSH(SSHTestCase):
 
 class TestReadPickleSSH(SSHTestCase):
     def test_read_pickle(self):
-        io.write_pickle({"a": 1}, os.path.join(self.server_root, "data", "obj.pkl"))
-        obj = io.read_pickle("ssh://server/data/obj.pkl", cache_dir=self.cache, autodelete=True)
+        io.write_file({"a": 1}, os.path.join(self.server_root, "data", "obj.pkl"))
+        obj = io.read_file("ssh://server/data/obj.pkl", cache_dir=self.cache, autodelete=True)
         self.assertEqual(obj, {"a": 1})
         self.assertFalse(os.path.exists(os.path.join(self.cache, "obj.pkl")))
 
@@ -311,7 +311,7 @@ class TestHTTPLikeSSH(SSHTestCase):
         super().setUp()
         shutil.copy(os.path.join(DATA_DIR, "test.edf"),
                     os.path.join(self.server_root, "data", "test.edf"))
-        io.write_pickle({"a": 1}, os.path.join(self.server_root, "data", "obj.pkl"))
+        io.write_file({"a": 1}, os.path.join(self.server_root, "data", "obj.pkl"))
         self.downloads = []
 
         def fake_download(url, fname, session=None):
@@ -349,21 +349,21 @@ class TestHTTPLikeSSH(SSHTestCase):
         self.assertFalse(os.path.exists(cache_file))
 
     def test_read_pickle_temp_autodelete(self):
-        obj = io.read_pickle("https://example.com/data/obj.pkl", autodelete=True)
+        obj = io.read_file("https://example.com/data/obj.pkl", autodelete=True)
         self.assertEqual(obj, {"a": 1})
         tmpfile = self.downloads[0][1][:-len(".part")]
         self.assertFalse(os.path.exists(os.path.dirname(tmpfile)))
 
     def test_read_pickle_session_and_force(self):
         session = object()
-        io.read_pickle("https://example.com/data/obj.pkl", cache_dir=self.cache, session=session)
-        io.read_pickle("https://example.com/data/obj.pkl", cache_dir=self.cache, force_download=True)
+        io.read_file("https://example.com/data/obj.pkl", cache_dir=self.cache, session=session)
+        io.read_file("https://example.com/data/obj.pkl", cache_dir=self.cache, force_download=True)
         self.assertEqual(len(self.downloads), 2)
         self.assertIs(self.downloads[0][2], session)
 
     def test_ssh_cache_file(self):
         cache_file = os.path.join(self.cache, "mine.pkl")
-        obj = io.read_pickle("ssh://server/data/obj.pkl", cache_file=cache_file)
+        obj = io.read_file("ssh://server/data/obj.pkl", cache_file=cache_file)
         self.assertEqual(obj, {"a": 1})
         self.assertTrue(os.path.exists(cache_file))
 

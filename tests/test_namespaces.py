@@ -72,8 +72,8 @@ class TestNamespaceBase:
         d = _data()
         d.copy().demo.scale_pupil(2)
         fname = str(tmp_path / "d.pkl")
-        pp.write_pickle(d, fname)
-        assert pp.read_pickle(fname).demo.first() == 1
+        pp.write_file(d, fname)
+        assert pp.read_file(fname).demo.first() == 1
 
 
 class TestRenamedMethods:

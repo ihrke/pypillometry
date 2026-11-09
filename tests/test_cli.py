@@ -90,7 +90,7 @@ class TestPypilview(CLITestCase):
         d = pp.EyeData(left_pupil=np.ones(100), sampling_rate=100, name="saved")
         for ext in (".pkl", ".pypil", ""):
             fname = os.path.join(self.tmp, "data" + ext)
-            pp.write_pickle(d, fname)
+            pp.write_file(d, fname)
             with patch.object(pp, "view") as view:
                 pypilview_main([fname, "--eyes", "left"])
             shown = view.call_args.args[0]
@@ -100,7 +100,7 @@ class TestPypilview(CLITestCase):
 
     def test_pickle_without_eyedata(self):
         fname = os.path.join(self.tmp, "other.pkl")
-        pp.write_pickle({"a": 1}, fname)
+        pp.write_file({"a": 1}, fname)
         self.assert_exits([fname])
 
     def test_unknown_format(self):
@@ -141,14 +141,14 @@ class TestEdf2pypil(CLITestCase):
 
     def test_default_output(self):
         self.assertEqual(self.run_main([self.edf]), 0)
-        d = pp.read_pickle(os.path.join(self.tmp, "rec.pkl"))
+        d = pp.read_file(os.path.join(self.tmp, "rec.pkl"))
         self.assertIsInstance(d, pp.EyeData)
         self.assertEqual(len(d), len(pp.EyeData.from_eyelink(EDF)))
 
     def test_output_option(self):
         out = os.path.join(self.tmp, "out.pypil")
         self.run_main([self.edf, "-o", out])
-        self.assertIsInstance(pp.read_pickle(out), pp.EyeData)
+        self.assertIsInstance(pp.read_file(out), pp.EyeData)
         self.assertFalse(os.path.exists(os.path.join(self.tmp, "rec.pkl")))
 
     def test_output_hdf5(self):
@@ -156,7 +156,7 @@ class TestEdf2pypil(CLITestCase):
         self.run_main([self.edf, "-o", out])
         with open(out, "rb") as f:
             self.assertEqual(f.read(4), b"\x89HDF")
-        self.assertIsInstance(pp.read_pickle(out), pp.EyeData)
+        self.assertIsInstance(pp.read_file(out), pp.EyeData)
 
     def test_keep_triggers(self):
         with patch.object(pp.EyeData, "from_eyelink", return_value={"a": 1}) as read:
@@ -171,11 +171,11 @@ class TestEdf2pypil(CLITestCase):
         with open(out) as f:
             self.assertEqual(f.read(), "old")
         self.run_main([self.edf, "--force"])
-        self.assertIsInstance(pp.read_pickle(out), pp.EyeData)
+        self.assertIsInstance(pp.read_file(out), pp.EyeData)
 
     def test_not_an_edf(self):
         fname = os.path.join(self.tmp, "data.edf")
-        pp.write_pickle({"a": 1}, fname)
+        pp.write_file({"a": 1}, fname)
         self.assert_exits([fname])
         self.assertFalse(os.path.exists(os.path.join(self.tmp, "data.pkl")))
 
@@ -209,7 +209,7 @@ class TestPypilinfo(CLITestCase):
     def test_pickle(self):
         d = pp.get_example_data("rlmw_002_short")
         fname = os.path.join(self.tmp, "rec.pkl")
-        pp.write_pickle(d, fname)
+        pp.write_file(d, fname)
         status, out, _ = self.run_main([fname])
         self.assertEqual(status, 0)
         self.assertIn(f"{fname} (PICKLE, ", out)
@@ -219,7 +219,7 @@ class TestPypilinfo(CLITestCase):
     def test_hdf5(self):
         d = pp.get_example_data("rlmw_002_short")
         fname = os.path.join(self.tmp, "rec.h5")
-        pp.write_pickle(d, fname)
+        pp.write_file(d, fname)
         status, out, _ = self.run_main([fname])
         self.assertEqual(status, 0)
         self.assertIn(f"{fname} (HDF5, ", out)
@@ -235,7 +235,7 @@ class TestPypilinfo(CLITestCase):
 
     def test_bad_files_are_skipped(self):
         good = os.path.join(self.tmp, "good.pkl")
-        pp.write_pickle({"a": 1}, good)
+        pp.write_file({"a": 1}, good)
         bad = os.path.join(self.tmp, "bad.txt")
         with open(bad, "w") as f:
             f.write("hello")
@@ -249,7 +249,7 @@ class TestPypilinfo(CLITestCase):
     def test_quality(self):
         d = pp.get_example_data("rlmw_002_short")
         fname = os.path.join(self.tmp, "rec.pkl")
-        pp.write_pickle(d, fname)
+        pp.write_file(d, fname)
         status, out, _ = self.run_main([fname, "--quality"])
         self.assertEqual(status, 0)
         self.assertIn("Quality report: rlmw_002_short (EyeData)", out)
@@ -259,7 +259,7 @@ class TestPypilinfo(CLITestCase):
     def test_quality_descriptions(self):
         d = pp.get_example_data("rlmw_002_short")
         fname = os.path.join(self.tmp, "rec.pkl")
-        pp.write_pickle(d, fname)
+        pp.write_file(d, fname)
         _, out, _ = self.run_main([fname, "-Q"])
         self.assertNotIn("labels: good", out)
         _, out, _ = self.run_main([fname, "-Q", "-d"])
@@ -269,7 +269,7 @@ class TestPypilinfo(CLITestCase):
 
     def test_quality_needs_eyedata(self):
         fname = os.path.join(self.tmp, "dict.pkl")
-        pp.write_pickle({"a": 1}, fname)
+        pp.write_file({"a": 1}, fname)
         status, _, err = self.run_main([fname, "-Q"])
         self.assertEqual(status, 1)
         self.assertIn("no quality report for dict objects", err)
@@ -278,7 +278,7 @@ class TestPypilinfo(CLITestCase):
         d = pp.get_example_data("rlmw_002_short")
         fnames = [os.path.join(self.tmp, f"rec{i}.pkl") for i in range(2)]
         for fname in fnames:
-            pp.write_pickle(d, fname)
+            pp.write_file(d, fname)
         html = os.path.join(self.tmp, "report.html")
         with patch("webbrowser.open") as wopen:
             status, out, _ = self.run_main(fnames + ["--html", "-o", html])
@@ -301,7 +301,7 @@ class TestPypilinfo(CLITestCase):
         d = pp.get_example_data("rlmw_002_short")
         fnames = [os.path.join(self.tmp, f"rec{i}.pkl") for i in range(2)]
         for fname in fnames:
-            pp.write_pickle(d, fname)
+            pp.write_file(d, fname)
         status, out, _ = self.run_main(fnames + ["-Q"])
         self.assertEqual(status, 0)
         self.assertTrue(out.startswith("Summary of 2 files"))
@@ -311,7 +311,7 @@ class TestPypilinfo(CLITestCase):
     def test_single_file_has_no_summary(self):
         d = pp.get_example_data("rlmw_002_short")
         fname = os.path.join(self.tmp, "rec.pkl")
-        pp.write_pickle(d, fname)
+        pp.write_file(d, fname)
         html = os.path.join(self.tmp, "report.html")
         status, out, _ = self.run_main([fname, "-Q", "--html", "--no-open", "-o", html])
         self.assertNotIn("Summary", out)
@@ -326,7 +326,7 @@ class TestPypilinfo(CLITestCase):
     def test_html_temp_file_no_open(self):
         d = pp.get_example_data("rlmw_002_short")
         fname = os.path.join(self.tmp, "rec.pkl")
-        pp.write_pickle(d, fname)
+        pp.write_file(d, fname)
         with patch("webbrowser.open") as wopen:
             status, out, _ = self.run_main([fname, "--html", "--no-open", "-Q"])
         self.assertEqual(status, 0)
@@ -378,7 +378,7 @@ class TestPypilUpgrade(CLITestCase):
     def versions(self, fname):
         from pypillometry import state
         with state._recording_versions() as seen:
-            obj = pp.read_pickle(fname)
+            obj = pp.read_file(fname)
         return obj, {v for _, v in seen}
 
     def snapshot(self):
@@ -437,8 +437,8 @@ class TestPypilUpgrade(CLITestCase):
         from tests.test_state import assert_state_equal
         self.run_main(["-r", "-o", os.path.join(self.tmp, "out"), self.src])
         for name in self.FILES + [os.path.join("sub", "segmented.h5")]:
-            old = pp.read_pickle(os.path.join(self.src, name))
-            new = pp.read_pickle(os.path.join(self.tmp, "out", name))
+            old = pp.read_file(os.path.join(self.src, name))
+            new = pp.read_file(os.path.join(self.tmp, "out", name))
             if isinstance(old, dict):
                 old, new = old["eye"], new["eye"]
             assert_state_equal(self, state.to_state(old), state.to_state(new))
@@ -465,7 +465,7 @@ class TestPypilUpgrade(CLITestCase):
         status, out, _ = self.run_main(["-o", target, os.path.join(self.src, "eyedata.h5")])
         self.assertEqual(status, 0)
         self.assertIn(f"written to {target}", out)
-        self.assertIsInstance(pp.read_pickle(target), pp.EyeData)
+        self.assertIsInstance(pp.read_file(target), pp.EyeData)
 
     def test_output_is_input(self):
         fname = os.path.join(self.src, "eyedata.h5")
@@ -474,7 +474,7 @@ class TestPypilUpgrade(CLITestCase):
     def test_unreadable_and_foreign_pickles(self):
         with open(os.path.join(self.src, "broken.pkl"), "wb") as f:
             f.write(b"\x80\x05 not a pickle")
-        pp.write_pickle({"a": [1, 2]}, os.path.join(self.src, "other.pkl"))
+        pp.write_file({"a": [1, 2]}, os.path.join(self.src, "other.pkl"))
         status, out, err = self.run_main(["-i", self.src])
         self.assertEqual(status, 1)
         self.assertIn("broken.pkl: cannot read", err)

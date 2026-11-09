@@ -94,9 +94,9 @@ Processed objects, including their history, are saved with
     d = pp.EyeData.from_file("subject01.pypil")
 
 Files are pickle files compressed with zstd (pass ``compress=False`` to
-turn this off). :func:`write_pickle` and :func:`read_pickle` do the same
+turn this off). :func:`write_file` and :func:`read_file` do the same
 for any Python object, e.g., a list of objects or a
-:class:`SegmentedEyeData`. :func:`read_pickle` also reads files from a URL.
+:class:`SegmentedEyeData`. :func:`read_file` also reads files from a URL.
 
 .. warning::
 

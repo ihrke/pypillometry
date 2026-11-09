@@ -153,8 +153,8 @@ class TestExcluded(unittest.TestCase):
         d = _make_data().exclude_intervals([(7000, 8000)])
         with tempfile.TemporaryDirectory() as tmp:
             fname = os.path.join(tmp, "d.pypil")
-            pp.write_pickle(d, fname)
-            r = pp.read_pickle(fname)
+            pp.write_file(d, fname)
+            r = pp.read_file(fname)
         np.testing.assert_array_equal(r.get_excluded().intervals, [(7000, 8000)])
         # HDF5
         with tempfile.TemporaryDirectory() as tmp:

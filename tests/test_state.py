@@ -203,7 +203,7 @@ class TestFormatVersion0(unittest.TestCase):
     """Pickles written before the state was versioned (pypillometry 2.0)."""
 
     def load(self, name):
-        return pp.read_pickle(os.path.join(DATA, name))
+        return pp.read_file(os.path.join(DATA, name))
 
     def test_eyedata(self):
         d = self.load("eyedata_v0.pkl")
@@ -317,7 +317,7 @@ class TestMigrate(unittest.TestCase):
                 fname = os.path.join(tmp, "d.pkl")
                 with open(fname, "wb") as f:
                     f.write(data)
-                self.assertIsInstance(pp.read_pickle(fname), pp.EyeData)
+                self.assertIsInstance(pp.read_file(fname), pp.EyeData)
         finally:
             state._RENAMED_CLASSES.clear()
             state._RENAMED_CLASSES.update(old)

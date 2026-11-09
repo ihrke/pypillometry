@@ -22,7 +22,7 @@ import numpy as np
 import numpy.ma as ma
 from loguru import logger
 
-from .io import write_pickle, read_pickle
+from .io import write_file, read_file
 from . import config, state
 from .units import parse_time, _ms_to_samples
 from .convenience import _warn_if_ignores_mask, _check_accepts_axis, _plain_values
@@ -1541,7 +1541,7 @@ class SegmentedEyeData(state.VersionedState):
 
     def write_file(self, fname: str, compress: bool = True):
         """
-        Save to file (see :func:`~pypillometry.io.write_pickle`).
+        Save to file (see :func:`~pypillometry.io.write_file`).
 
         The format follows from the extension: HDF5 for ``.h5`` and
         ``.hdf5``, pickle otherwise.
@@ -1553,7 +1553,7 @@ class SegmentedEyeData(state.VersionedState):
         compress : bool, optional
             compress the file (default True; pickle: zstd, HDF5: gzip)
         """
-        write_pickle(self, fname, compress=compress)
+        write_file(self, fname, compress=compress)
 
     @classmethod
     def from_file(cls, fname: str, **kwargs) -> 'SegmentedEyeData':
@@ -1565,7 +1565,7 @@ class SegmentedEyeData(state.VersionedState):
         fname : str
             Filename (or HTTP(S)/SSH URL) to read from
         **kwargs
-            passed to :func:`~pypillometry.io.read_pickle` (e.g.,
+            passed to :func:`~pypillometry.io.read_file` (e.g.,
             `cache_file`, `cache_dir`, `cache_layout`, `autodelete`,
             `session`)
 
@@ -1574,7 +1574,7 @@ class SegmentedEyeData(state.VersionedState):
         SegmentedEyeData
             Loaded instance
         """
-        return read_pickle(fname, **kwargs)
+        return read_file(fname, **kwargs)
 
 
 # --------------------------------------------------------------------------

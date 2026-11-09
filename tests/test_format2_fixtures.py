@@ -159,7 +159,7 @@ def load_manifest():
 
 def load_fixture(fname):
     """Load a fixture file (pickle or HDF5, any class)."""
-    return pp.read_pickle(os.path.join(FIXTURE_DIR, fname))
+    return pp.read_file(os.path.join(FIXTURE_DIR, fname))
 
 
 def test_manifest_lists_all_files():

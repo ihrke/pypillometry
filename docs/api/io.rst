@@ -16,8 +16,8 @@ Files and URLs
    :nosignatures:
 
    read_eyelink
-   read_pickle
-   write_pickle
+   read_file
+   write_file
    download
    fetch_url
    local_copy

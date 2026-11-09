@@ -68,7 +68,7 @@ def _read_file(source, keep_triggers=False):
             d = pp.EyeData.from_eyelink(
                 local, remove_eyelink_triggers=not keep_triggers)
         elif fmt in ("pickle", "hdf5"):
-            d = pp.read_pickle(local)
+            d = pp.read_file(local)
         else:
             raise ValueError(f"{source} is neither an EDF file nor a pickle "
                              f"or HDF5 file")
@@ -87,7 +87,7 @@ def _pypilview_parser():
     parser = argparse.ArgumentParser(
         prog="pypilview",
         description="Open the pypillometry viewer for an Eyelink EDF file or "
-                    "an eyedata object saved with pp.write_pickle() (e.g., "
+                    "an eyedata object saved with pp.write_file() (e.g., "
                     ".pkl, .pypil or .h5). The format is detected from the file "
                     "content. Press H in the viewer for the keyboard controls.")
     # `file` is optional for argparse so that it may follow --eyes/--variables
@@ -135,7 +135,7 @@ def pypilview_main(argv=None):
 
     Reads an EDF file with :meth:`~pypillometry.EyeData.from_eyelink` or an
     eyedata object saved in a pickle or HDF5 file with
-    :func:`~pypillometry.read_pickle` (the format is detected from the first
+    :func:`~pypillometry.read_file` (the format is detected from the first
     bytes of the file, so the extension does not matter) and opens it with :func:`~pypillometry.view`. URLs are
     downloaded to a temporary directory first. Only open pickle files you
     trust: unpickling can run arbitrary code.
@@ -189,7 +189,7 @@ def _edf2pypil_parser():
         prog="edf2pypil",
         description="Read an Eyelink EDF file and save it as an EyeData object "
                     "in a pickle file, or an HDF5 file if the output ends in "
-                    ".h5 or .hdf5 (read it with pp.read_pickle() or open "
+                    ".h5 or .hdf5 (read it with pp.read_file() or open "
                     "it with pypilview).")
     parser.add_argument("file",
                         help="EDF file, HTTP(S) URL or SSH URL "
@@ -212,7 +212,7 @@ def edf2pypil_main(argv=None):
     Entry point of the ``edf2pypil`` command.
 
     Reads an EDF file with :meth:`~pypillometry.EyeData.from_eyelink` and
-    saves the object with :func:`~pypillometry.write_pickle` (as HDF5 if the
+    saves the object with :func:`~pypillometry.write_file` (as HDF5 if the
     output file ends in ``.h5`` or ``.hdf5``).
 
     Parameters
@@ -245,7 +245,7 @@ def edf2pypil_main(argv=None):
             parser.error(f"{args.file} is not an EDF file")
         d = pp.EyeData.from_eyelink(
             local, remove_eyelink_triggers=not args.keep_triggers)
-    pp.write_pickle(d, output)
+    pp.write_file(d, output)
     if not args.quiet:
         print(f"Saved {output}")
     return 0
@@ -255,7 +255,7 @@ def _pypilinfo_parser():
     parser = argparse.ArgumentParser(
         prog="pypilinfo",
         description="Print a summary of Eyelink EDF files or eyedata objects "
-                    "saved with pp.write_pickle() (e.g., .pkl, .pypil or .h5). The "
+                    "saved with pp.write_file() (e.g., .pkl, .pypil or .h5). The "
                     "format is detected from the file content. Reading EDF "
                     "files is slow (about a minute for 90 MB); convert them "
                     "with edf2pypil first if you need them more than once.")
@@ -399,7 +399,7 @@ def _upgrade_parser():
     parser = argparse.ArgumentParser(
         prog="pypil-upgrade",
         description="Convert pickle and HDF5 files saved with an older version of "
-                    "pypillometry (e.g., with pp.write_pickle() or write_file()) to the "
+                    "pypillometry (e.g., with pp.write_pickle() or d.write_file()) to the "
                     "current file format. Old files are also upgraded whenever they are "
                     "read; this converts them once. Each file keeps its format (pickle "
                     "or HDF5, detected from the content); other files are left alone. "
@@ -456,9 +456,9 @@ def _load_versions(fname):
     """Load `fname` (pickle or HDF5); return the object and the format versions
     of the pypillometry objects in it (before they were upgraded)."""
     from . import state
-    from .io import read_pickle
+    from .io import read_file
     with state._recording_versions() as seen:
-        obj = read_pickle(fname)
+        obj = read_file(fname)
     return obj, [version for _, version in seen]
 
 
@@ -477,7 +477,7 @@ def _write_like(obj, fmt, source, target):
     """Write `obj` to `target` in the format of `source` (`fmt`: "pickle" or
     "hdf5"; pickles compressed if `source` was); via a temporary file."""
     from . import hdf5, state
-    from .io import write_pickle
+    from .io import write_file
     folder = os.path.dirname(os.path.abspath(target))
     os.makedirs(folder, exist_ok=True)
     tmp = os.path.join(folder, f".{os.path.basename(target)}.pypil-upgrade.tmp")
@@ -487,7 +487,7 @@ def _write_like(obj, fmt, source, target):
         else:
             with open(source, "rb") as f:
                 plain = f.read(1) == b"\x80"
-            write_pickle(obj, tmp, compress=not plain)
+            write_file(obj, tmp, compress=not plain)
         if os.path.exists(target):
             import shutil
             shutil.copymode(target, tmp)
@@ -502,7 +502,7 @@ def pypil_upgrade_main(argv=None):
     Entry point of the ``pypil-upgrade`` command.
 
     Reads each pickle or HDF5 file (the format is detected from the file
-    content) with :func:`~pypillometry.read_pickle`, which upgrades the
+    content) with :func:`~pypillometry.read_file`, which upgrades the
     objects saved with an older version of pypillometry, and writes it again
     in the same format: in place (``-i``) or to ``-o``. Files that are
     already in the current format are not written; files that are neither

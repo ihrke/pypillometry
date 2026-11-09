@@ -80,23 +80,23 @@ class TestObjects(HDF5TestCase):
     def test_read_pickle_detects_hdf5(self):
         d = make_eyedata(keep_orig=False)
         fname = self.fname("d.hdf5")
-        pp.write_pickle(d, fname)
+        pp.write_file(d, fname)
         with open(fname, "rb") as f:
             self.assertEqual(f.read(4), b"\x89HDF")
         shutil.copy(fname, self.fname("other_extension.pypil"))
-        self.assertIsInstance(pp.read_pickle(self.fname("other_extension.pypil")),
+        self.assertIsInstance(pp.read_file(self.fname("other_extension.pypil")),
                               pp.EyeData)
 
     def test_no_state(self):
         with self.assertRaises(TypeError):
-            pp.write_pickle({"a": 1}, self.fname())
+            pp.write_file({"a": 1}, self.fname())
 
     def test_newer_version(self):
         st = state.to_state(make_eyedata(keep_orig=False))
         st["format_version"] = state.FORMAT_VERSION + 1
         hdf5.write_state(st, self.fname())
         with self.assertRaisesRegex(ValueError, "newer version"):
-            pp.read_pickle(self.fname())
+            pp.read_file(self.fname())
 
 
 class TestFixtures(HDF5TestCase):
@@ -106,17 +106,17 @@ class TestFixtures(HDF5TestCase):
         for name in ["eyedata", "pupildata", "gazedata", "fakeeyedata",
                      "segmented"]:
             with self.subTest(name=name):
-                obj = pp.read_pickle(os.path.join(DATA, f"{name}_v0.pkl"))
+                obj = pp.read_file(os.path.join(DATA, f"{name}_v0.pkl"))
                 st = state.to_state(obj)
                 assert_state_equal(self, st, self.roundtrip_state(st))
 
     def test_v1_files(self):
-        d = pp.read_pickle(os.path.join(DATA, "eyedata_v0.pkl"))
+        d = pp.read_file(os.path.join(DATA, "eyedata_v0.pkl"))
         for name in ["eyedata_v1.pypil", "eyedata_v1.h5"]:
             with self.subTest(name=name):
-                d1 = pp.read_pickle(os.path.join(DATA, name))
+                d1 = pp.read_file(os.path.join(DATA, name))
                 assert_state_equal(self, state.to_state(d), state.to_state(d1))
-        s = pp.read_pickle(os.path.join(DATA, "segmented_v1.h5"))
+        s = pp.read_file(os.path.join(DATA, "segmented_v1.h5"))
         self.assertIsInstance(s, pp.SegmentedEyeData)
         self.assertEqual(s.epochs.label, "F_")
 

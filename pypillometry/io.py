@@ -3,7 +3,7 @@ Reading and writing data.
 
 - Eyelink EDF files: :func:`read_eyelink` (usually used through
   :meth:`~pypillometry.EyeData.from_eyelink`)
-- saved objects: :func:`write_pickle` and :func:`read_pickle` (pickle or
+- saved objects: :func:`write_file` and :func:`read_file` (pickle or
   HDF5 files; usually used through :meth:`~pypillometry.EyeData.write_file`
   and :meth:`~pypillometry.EyeData.from_file`)
 - files from URLs (HTTP(S), SSH, OSF) and the download cache:
@@ -29,15 +29,15 @@ try:
 except ImportError:
     from backports import zstd
 
-#: zstd compression level used by :func:`write_pickle`
+#: zstd compression level used by :func:`write_file`
 ZSTD_LEVEL = 3
 _ZSTD_MAGIC = b"\x28\xb5\x2f\xfd"
 _GZIP_MAGIC = b"\x1f\x8b"
 _HDF5_EXTENSIONS = (".h5", ".hdf5")
 
 __all__ = [
-    "osf_authenticate", "download", "fetch_url", "local_copy", "write_pickle",
-    "read_pickle", "read_eyelink",
+    "osf_authenticate", "download", "fetch_url", "local_copy", "write_file",
+    "read_file", "read_eyelink",
 ]
 
 
@@ -529,12 +529,12 @@ def _is_hdf5_name(fname) -> bool:
     return str(fname).lower().endswith(_HDF5_EXTENSIONS)
 
 
-def write_pickle(obj, fname, compress: bool = True):
+def write_file(obj, fname, compress: bool = True):
     """
     Store any Python object in a file using :mod:`pickle` (or HDF5).
 
     By default, the file is compressed with zstd (about 13 times smaller
-    for eyedata objects). :func:`read_pickle` detects the compression
+    for eyedata objects). :func:`read_file` detects the compression
     automatically.
 
     If `fname` ends with ``.h5`` or ``.hdf5``, the object is stored in an
@@ -580,7 +580,7 @@ def _open_maybe_compressed(fname):
 
 
 
-def read_pickle(
+def read_file(
     fname: str,
     cache_file: Optional[str] = None,
     force_download: bool = False,
@@ -592,7 +592,7 @@ def read_pickle(
     Read a Python object from a file using :mod:`pickle` (or HDF5).
 
     Plain, zstd- and gzip-compressed pickle files and HDF5 files written
-    by :func:`write_pickle` are supported (the format is detected from the
+    by :func:`write_file` are supported (the format is detected from the
     file content). Objects saved with an older version of pypillometry are
     upgraded to the current version.
 

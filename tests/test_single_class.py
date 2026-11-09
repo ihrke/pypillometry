@@ -119,7 +119,7 @@ class TestSetupAndCalibration(unittest.TestCase):
             with self.subTest(ext=ext), tempfile.TemporaryDirectory() as tmp:
                 fname = os.path.join(tmp, "d" + ext)
                 p.write_file(fname)
-                q = pp.read_pickle(fname)
+                q = pp.read_file(fname)
                 self.assertEqual(sorted(q.data.keys()), ["left_pupil", "right_pupil"])
                 self.assertEqual(q.experimental_setup.screen_resolution, (1280, 1024))
                 self.assertEqual(list(q.calibration), ["left"])
@@ -143,7 +143,7 @@ class TestOldClassesLoad(unittest.TestCase):
 
     def load(self, fname):
         with pp.nologging():
-            return pp.read_pickle(os.path.join(self.FIXTURES, fname))
+            return pp.read_file(os.path.join(self.FIXTURES, fname))
 
     def test_format2_files(self):
         for fname in ("pupildata.pypil", "pupildata.h5", "gazedata.pypil", "gazedata.h5"):

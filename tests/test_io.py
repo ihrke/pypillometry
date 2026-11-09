@@ -7,7 +7,7 @@ import numpy as np
 import pickle
 import requests
 from unittest.mock import patch, MagicMock
-from pypillometry.io import write_pickle, read_pickle, read_eyelink, download
+from pypillometry.io import write_file, read_file, read_eyelink, download
 
 TEST_EDF = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "test.edf")
 
@@ -123,7 +123,7 @@ class TestIO(unittest.TestCase):
         
         # Test writing different types of objects
         for key, value in self.test_data.items():
-            write_pickle(value, test_file)
+            write_file(value, test_file)
             self.assertTrue(os.path.exists(test_file))
             
             # Verify file is not empty
@@ -136,10 +136,10 @@ class TestIO(unittest.TestCase):
         # Test reading different types of objects
         for key, value in self.test_data.items():
             # Write the object
-            write_pickle(value, test_file)
+            write_file(value, test_file)
             
             # Read it back
-            loaded = read_pickle(test_file)
+            loaded = read_file(test_file)
             
             # Compare original and loaded object
             if isinstance(value, np.ndarray):
@@ -148,27 +148,27 @@ class TestIO(unittest.TestCase):
                 self.assertEqual(value, loaded)
                 
     def test_write_pickle_compressed_by_default(self):
-        """write_pickle writes zstd files by default, plain ones on request."""
+        """write_file writes zstd files by default, plain ones on request."""
         test_file = os.path.join(self.temp_dir, 'test.pkl')
         value = np.zeros(10000)
-        write_pickle(value, test_file)
+        write_file(value, test_file)
         with open(test_file, "rb") as f:
             self.assertEqual(f.read(4), b"\x28\xb5\x2f\xfd")
         compressed_size = os.path.getsize(test_file)
-        np.testing.assert_array_equal(read_pickle(test_file), value)
+        np.testing.assert_array_equal(read_file(test_file), value)
 
-        write_pickle(value, test_file, compress=False)
+        write_file(value, test_file, compress=False)
         with open(test_file, "rb") as f:
             self.assertEqual(pickle.load(f).shape, value.shape)
         self.assertLess(compressed_size, os.path.getsize(test_file))
 
     def test_read_pickle_gzip(self):
-        """read_pickle reads gzip-compressed pickle files."""
+        """read_file reads gzip-compressed pickle files."""
         import gzip
         test_file = os.path.join(self.temp_dir, 'test.pkl.gz')
         with gzip.open(test_file, "wb") as f:
             pickle.dump(self.test_data["dict"], f)
-        self.assertEqual(read_pickle(test_file), self.test_data["dict"])
+        self.assertEqual(read_file(test_file), self.test_data["dict"])
 
     def _fake_download(self, content):
         def fake(url, fname, session=None):
@@ -181,7 +181,7 @@ class TestIO(unittest.TestCase):
         """Test reading objects from URL."""
         with patch("pypillometry.io.download",
                    side_effect=self._fake_download(pickle.dumps(self.test_data))) as mock_dl:
-            loaded = read_pickle('http://example.com/test.pkl', autodelete=True)
+            loaded = read_file('http://example.com/test.pkl', autodelete=True)
         mock_dl.assert_called_once()
         for key, value in self.test_data.items():
             if isinstance(value, np.ndarray):
@@ -194,12 +194,12 @@ class TestIO(unittest.TestCase):
         with patch("pypillometry.io.download",
                    side_effect=self._fake_download(b'invalid pickle data')):
             with self.assertRaises(pickle.UnpicklingError):
-                read_pickle('http://invalid-url.com/nonexistent.pkl', autodelete=True)
+                read_file('http://invalid-url.com/nonexistent.pkl', autodelete=True)
             
     def test_read_pickle_invalid_file(self):
         """Test reading from invalid local file."""
         with self.assertRaises(FileNotFoundError):
-            read_pickle(os.path.join(self.temp_dir, 'nonexistent.pkl'))
+            read_file(os.path.join(self.temp_dir, 'nonexistent.pkl'))
 
     def test_read_eyelink_local_file(self):
         """Test reading EDF file using read_eyelink function."""

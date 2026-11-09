@@ -138,7 +138,7 @@ class TestEventsSaved(unittest.TestCase):
             for fname in ("d.pypil", "d.h5"):
                 path = os.path.join(tmp, fname)
                 d.write_file(path)
-                d2 = pp.read_pickle(path)
+                d2 = pp.read_file(path)
                 np.testing.assert_array_equal(d2.events.onsets, d.events.onsets)
                 np.testing.assert_array_equal(d2.events.labels, d.events.labels)
                 np.testing.assert_array_equal(d2.events.meta["k"], d.events.meta["k"])
