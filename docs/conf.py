@@ -148,11 +148,6 @@ html_theme_options = {
     "secondary_sidebar_items": ["page-toc", "edit-this-page", "sourcelink"],
     "footer_start": ["copyright"],
     "footer_end": ["sphinx-version", "theme-version"],
-    "announcement": (
-        "pypillometry v2 is a major rewrite and not compatible with v1. "
-        "The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>"
-        "v1 documentation</a> is still available."
-    ),
 }
 
 # the landing page has no sidebar

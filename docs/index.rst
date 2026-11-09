@@ -26,6 +26,10 @@ event-related segments and plots the results. Pupil size and gaze position
 of one or both eyes are kept together in a single object, and every
 processing step is recorded in the object's history.
 
+Version 2 is a major rewrite and not compatible with version 1; the
+`documentation of version 1 <https://ihrke.github.io/pypillometry/v1/html/index.html>`_
+is still available.
+
 .. code-block:: python
 
    import pypillometry as pp
