@@ -57,8 +57,8 @@ class DatasetDict(dict):
     
     def _repr_html_(self):
         """Return HTML representation for Jupyter display."""
-        import pandas as pd
-        # Parse the dictionary to create DataFrame
+        from .table import Table
+        # one row per dataset
         data = []
         for key, info in self.items():
             description = info.get("description", "No description available")
@@ -82,8 +82,8 @@ class DatasetDict(dict):
                 "Description": description
             })
         
-        df = pd.DataFrame(data)
-        return df._repr_html_()
+        return Table({col: [row[col] for row in data]
+                      for col in ("Dataset", "Type", "Description")})._repr_html_()
 
 
 def get_available_datasets():

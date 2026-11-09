@@ -513,13 +513,14 @@ class SegmentedGazeNamespace(Namespace):
         return [_split_channel(ch)[0] for ch in chs]
 
     def _table(self, values):
-        """Table (dict of columns) with the epochs' onsets, labels and metadata
-        (if the segments have Epochs) and `values`."""
+        """Table with the epochs' onsets, labels and metadata (if the
+        segments have Epochs) and `values`."""
         from .epochs import Epochs
+        from .table import Table
         ep = self._d.epochs
-        table = ep.events.to_table() if isinstance(ep, Epochs) else {}
-        table.update(values)
-        return table
+        columns = dict(ep.events.to_table()) if isinstance(ep, Epochs) else {}
+        columns.update(values)
+        return Table(columns)
 
     def roi_hits(self, roi, name: str = None, eyes=[], inplace=None):
         """
@@ -584,7 +585,7 @@ class SegmentedGazeNamespace(Namespace):
             out[ch] = values
         return out
 
-    def dwell_time(self, roi, eyes=[], window=None) -> dict:
+    def dwell_time(self, roi, eyes=[], window=None) -> "Table":
         """
         Time the gaze spends in a region of interest in each trial (ms).
 
@@ -608,11 +609,11 @@ class SegmentedGazeNamespace(Namespace):
 
         Returns
         -------
-        dict
+        Table
             a table (column name -> array with one value per trial): the
             onsets, labels and metadata of the epochs (if the segments have
             them) and the dwell time of each eye in ms (``"<eye>_<roi
-            name>"``); can be passed to ``pandas.DataFrame()``
+            name>"``), displayed as a table (see :class:`~pypillometry.Table`)
 
         Examples
         --------
@@ -636,7 +637,7 @@ class SegmentedGazeNamespace(Namespace):
             values[f"{eye}_{name}"] = np.asarray(n_in, dtype=float) * step
         return self._table(values)
 
-    def first_entry(self, roi, eyes=[], window=(0, None)) -> dict:
+    def first_entry(self, roi, eyes=[], window=(0, None)) -> "Table":
         """
         Time of the first usable sample in a region of interest in each trial (ms).
 
@@ -661,11 +662,11 @@ class SegmentedGazeNamespace(Namespace):
 
         Returns
         -------
-        dict
+        Table
             a table (column name -> array with one value per trial): the
             onsets, labels and metadata of the epochs (if the segments have
             them) and the time of the first entry of each eye in ms
-            (``"<eye>_<roi name>"``); can be passed to ``pandas.DataFrame()``
+            (``"<eye>_<roi name>"``), displayed as a table (see :class:`~pypillometry.Table`)
 
         Examples
         --------

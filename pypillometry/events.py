@@ -443,16 +443,17 @@ class Events(Stateful):
         return {"onset": self.onsets[i].item(), "label": str(self.labels[i]),
                 **{name: col[i].item() for name, col in self.meta.items()}}
 
-    def to_table(self) -> dict:
+    def to_table(self) -> "Table":
         """
-        Events as a table: a dict of columns (copies).
+        Events as a table (copies of the columns).
 
         The columns are "onset", "label" and the metadata columns. The
-        result can be passed to ``pandas.DataFrame()``.
+        result is a :class:`~pypillometry.Table` (a dict of columns that is
+        displayed as a table; ``pandas.DataFrame(table)`` converts it).
 
         Returns
         -------
-        dict
+        Table
             column name -> numpy array
 
         Examples
@@ -463,8 +464,9 @@ class Events(Stateful):
         >>> import pandas as pd
         >>> df = pd.DataFrame(ev.to_table())
         """
-        return {"onset": self.onsets.copy(), "label": self.labels.copy(),
-                **{name: col.copy() for name, col in self.meta.items()}}
+        from .table import Table
+        return Table({"onset": self.onsets.copy(), "label": self.labels.copy(),
+                      **{name: col.copy() for name, col in self.meta.items()}})
 
     @classmethod
     def from_table(cls, table, columns, units: Optional[str] = UNSET,
