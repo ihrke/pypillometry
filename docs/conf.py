@@ -82,6 +82,9 @@ intersphinx_mapping = {
 # `.. plot::` blocks (e.g., in the Examples of the plotting functions) are
 # run during the build; they use the example data shipped with the package
 plot_include_source = True
+# run the plots in docs/ (e.g., to read ../data/test.edf), wherever the
+# build is started
+plot_working_directory = str(Path(__file__).parent.absolute())
 plot_html_show_source_link = False
 plot_html_show_formats = False
 plot_formats = [("png", 100)]

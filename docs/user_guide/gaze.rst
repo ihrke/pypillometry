@@ -30,6 +30,43 @@ upper left corner of the screen; this is the EyeLink convention). Samples
 in which the tracker lost the eye are NaN. The gaze plots draw the screen
 as it is seen, so y increases downward (see :doc:`plotting`).
 
+.. plot::
+   :include-source: False
+
+   import matplotlib.patches as patches
+
+   W, H = 1280, 1024
+   fig, ax = plt.subplots(figsize=(6.4, 5.2))
+   ax.add_patch(patches.Rectangle((0, 0), W, H, fill=False, lw=2))
+   # pixel coordinates: origin top left, x to the right, y down
+   arrow = dict(arrowstyle="->", lw=2, color="C0")
+   ax.annotate("", xy=(330, 0), xytext=(0, 0), arrowprops=arrow)
+   ax.annotate("", xy=(0, 330), xytext=(0, 0), arrowprops=arrow)
+   ax.text(345, 30, "x (px)", color="C0", va="center", fontsize=11)
+   ax.text(25, 360, "y (px)", color="C0", ha="left", va="top", fontsize=11)
+   for (x, y), ha, va in [((0, 0), "left", "bottom"), ((W, 0), "right", "bottom"),
+                          ((0, H), "left", "top"), ((W, H), "right", "top")]:
+       ax.text(x, y + (-12 if va == "bottom" else 12), f"({x}, {y})", ha=ha, va=va,
+               color="C0", fontsize=10)
+   # mm and degrees (ROIs, setup): origin at the center, y up
+   grey = dict(arrowstyle="->", lw=1.5, color="0.45")
+   ax.annotate("", xy=(W / 2 + 230, H / 2), xytext=(W / 2, H / 2), arrowprops=grey)
+   ax.annotate("", xy=(W / 2, H / 2 - 230), xytext=(W / 2, H / 2), arrowprops=grey)
+   ax.plot(W / 2, H / 2, "o", color="0.45")
+   ax.text(W / 2 + 15, H / 2 + 25, f"center ({W // 2}, {H // 2}) px\n= (0, 0) mm or deg",
+           color="0.45", va="top", fontsize=10)
+   ax.text(W / 2 + 240, H / 2, "x (mm, deg)", color="0.45", va="center", fontsize=10)
+   ax.text(W / 2, H / 2 - 245, "y (mm, deg)", color="0.45", ha="center", fontsize=10)
+   ax.set_xlim(-60, W + 60)
+   ax.set_ylim(H + 70, -70)   # y downward, as on the screen
+   ax.set_aspect("equal")
+   ax.axis("off")
+   ax.set_title("Screen coordinates (here 1280 x 1024 px)")
+
+Positions in mm or degrees (e.g., for regions of interest or in the
+experimental setup) are relative to the screen center, with y upward; they
+are converted to pixels with the setup (see below).
+
 Blinks are detected on the pupil only (see :doc:`preprocessing`), so the
 gaze channels of a blink are not masked unless you copy the blinks to them
 (see below).
@@ -173,7 +210,15 @@ Calibration
 of the EDF file into ``d.calibration`` (one :class:`SpatialCalibration` per
 eye: the target points, the measured points and their errors).
 :meth:`~EyeData.plot.plot_calibration` shows them, and the quality report
-lists the calibration errors (see :doc:`quality`).
+lists the calibration errors (see :doc:`quality`). Here, for a recording with
+a 9-point validation (black crosses: targets, blue plus signs: measured
+gaze; the background shows the error between the points):
+
+.. plot::
+
+   d = pp.EyeData.from_eyelink("../data/test.edf")   # data folder of the repository
+   d.calibration          # {'left': <SpatialCalibration: left eye, HV9, n=9, ...>, ...}
+   fig, axes = d.plot.plot_calibration(figsize=(6, 5))
 
 
 Regions of interest
