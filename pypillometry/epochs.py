@@ -23,6 +23,11 @@ class Epochs(Stateful):
     window. Spans of time that are not locked to one event (e.g., between
     two events) are :class:`~pypillometry.Intervals`.
 
+    The columns of averaged segments (see
+    :meth:`~pypillometry.SegmentedEyeData.average`) have Epochs without a
+    time: their onsets are NaN. Such epochs can be selected and their
+    metadata used, but they have no spans in the data.
+
     Epochs iterate like spans (``(onset + window[0], onset + window[1])`` in
     ms), so they can be used wherever the eyedata methods take Intervals
     (e.g., :meth:`~pypillometry.EyeData.mask_intervals` or
@@ -41,7 +46,8 @@ class Epochs(Stateful):
     Parameters
     ----------
     onsets : array-like or Quantity
-        onsets of the events in ms (or with units, e.g., ``[1, 2] * u.sec``)
+        onsets of the events in ms (or with units, e.g., ``[1, 2] * u.sec``);
+        NaN for epochs without a time (averages)
     window : tuple (start, end) or Quantity
         the window relative to each onset in ms (or with units, e.g.,
         ``(-200, 800) * u.ms``); `start` < `end`
@@ -97,8 +103,8 @@ class Epochs(Stateful):
         """Set the attributes (`events` in ms) after checking them."""
         if events.units != "ms":
             raise ValueError(f"the events of Epochs must be in ms, got {events.units}")
-        if not np.isfinite(events.onsets).all():
-            raise ValueError("onsets must be finite")
+        if np.isinf(events.onsets).any():
+            raise ValueError("onsets must be finite (or NaN for epochs without a time)")
         window = np.asarray(parse_time(window, to="ms"), dtype=float)
         if window.shape != (2,) or not np.isfinite(window).all() or window[0] >= window[1]:
             raise ValueError(f"window must be (start, end) with finite start < end, "
@@ -165,8 +171,13 @@ class Epochs(Stateful):
         """Number of epochs."""
         return len(self.events)
 
-    def _spans(self) -> np.ndarray:
-        """(n, 2) array of absolute (start, end) in ms."""
+    def _spans(self, check: bool = True) -> np.ndarray:
+        """(n, 2) array of absolute (start, end) in ms; raises a ValueError
+        for epochs without a time (NaN onsets) if `check`."""
+        if check and np.isnan(self.onsets).any():
+            raise ValueError("these epochs have no time (their onsets are NaN, e.g., "
+                             "the columns of averaged segments), so they have no "
+                             "spans in the data")
         return np.stack([self.onsets + self.window[0], self.onsets + self.window[1]],
                         axis=1).reshape(-1, 2)
 
@@ -302,11 +313,11 @@ class Epochs(Stateful):
         Returns
         -------
         pandas.DataFrame
-            columns ``onset``, ``start``, ``end`` (in ms), ``label`` and
-            the metadata columns
+            columns ``onset``, ``start``, ``end`` (in ms; NaN for epochs
+            without a time), ``label`` and the metadata columns
         """
         import pandas as pd
-        spans = self._spans()
+        spans = self._spans(check=False)
         df = pd.DataFrame({"onset": self.onsets, "start": spans[:, 0],
                            "end": spans[:, 1], "label": self.labels})
         for name, col in self.meta.items():
@@ -317,7 +328,7 @@ class Epochs(Stateful):
         if not isinstance(other, Epochs):
             return NotImplemented
         return (self.window == other.window and self.label == other.label
-                and np.array_equal(self.onsets, other.onsets)
+                and np.array_equal(self.onsets, other.onsets, equal_nan=True)
                 and np.array_equal(self.labels, other.labels)
                 and self.meta.keys() == other.meta.keys()
                 and all(np.array_equal(v, other.meta[k], equal_nan=v.dtype.kind == "f")
@@ -327,5 +338,6 @@ class Epochs(Stateful):
 
     def __repr__(self):
         name = "Epochs" if self.label is None else f"Epochs '{self.label}'"
-        return (f"{name} | {len(self)} epochs, window ({self.window[0]:g}, "
+        untimed = " without time" if len(self) and np.isnan(self.onsets).all() else ""
+        return (f"{name} | {len(self)} epochs{untimed}, window ({self.window[0]:g}, "
                 f"{self.window[1]:g}) ms")

@@ -1,6 +1,6 @@
 """
-Tests for SegmentedEyeData, its namespaces (seg.pupil, seg.gaze) and
-GroupLevelSegmentedData.
+Tests for SegmentedEyeData, its namespaces (seg.pupil, seg.gaze), averages,
+concat_segments() and group_segments().
 """
 import os
 import tempfile
@@ -15,7 +15,7 @@ import numpy.ma as ma
 import pypillometry as pp
 from pypillometry import state
 from pypillometry.intervals import Intervals
-from pypillometry.segmented import SegmentedEyeData, GroupLevelSegmentedData, group_segments
+from pypillometry.segmented import SegmentedEyeData, group_segments
 
 
 def make(data, tx, channel="left_pupil", name="segments", mask=None, **kw):
@@ -360,7 +360,6 @@ class TestBaselineCorrection(unittest.TestCase):
         segs = [make(np.random.randn(20, 4) + i, np.arange(20.)) for i in range(2)]
         group = group_segments(segs)
         bc = group.pupil.baseline_correct((0, 5), inplace=False)
-        self.assertIsInstance(bc, GroupLevelSegmentedData)
         np.testing.assert_allclose(bc["left_pupil"][:5].mean(axis=0), 0, atol=1e-12)
 
 
@@ -537,13 +536,6 @@ class TestGaze(unittest.TestCase):
         ax = seg.gaze.plot_roi("corner", eyes="left")
         self.assertEqual(ax.get_ylabel(), "share of trials in corner")
 
-    def test_group_fixation_curve(self):
-        seg = self.seg.gaze.roi_hits(self.roi, inplace=False)
-        group = group_segments({"s1": seg, "s2": seg}, channels=["left_corner"])
-        inside = (seg.tx >= 0) & (seg.tx < 200)
-        np.testing.assert_allclose(group["left_corner"].mean(axis=1)[inside], 0.5)
-        fig, ax = plt.subplots()
-        group.gaze.plot_roi("corner", ax=ax)
 
 
 class TestIO(unittest.TestCase):
@@ -572,15 +564,15 @@ class TestIO(unittest.TestCase):
         d = gaze_eyedata()
         seg = d.get_segments(d.get_epochs("", window=(-100, 500), units="ms"))
         for meanfct in (np.mean, None):
-            group = group_segments({"a": seg, "b": seg}, meanfct=meanfct)
+            group = group_segments({"a": seg, "b": seg.keep(np.array([1, 0, 1, 1], bool))},
+                                   meanfct=meanfct)
             for ext in (".pypil", ".h5"):
                 loaded = self.roundtrip(group, ext)
-                self.assertEqual(loaded.subjects, ["a", "b"])
-                self.assertEqual(loaded.stacked, meanfct is None)
-                np.testing.assert_array_equal(loaded.subject, group.subject)
                 self.assertEqual(loaded.epochs, group.epochs)
+                self.assertEqual(sorted(loaded.valid_share), sorted(group.valid_share))
                 for ch in group.channels:
-                    np.testing.assert_array_equal(loaded.mask_percent[ch], group.mask_percent[ch])
+                    np.testing.assert_array_equal(loaded[ch], group[ch])
+                    np.testing.assert_array_equal(loaded._valid_share(ch), group._valid_share(ch))
 
     def single_channel_state(self, group=False):
         """State of segments with one channel (layout of development versions of 2.2)."""
@@ -608,19 +600,24 @@ class TestIO(unittest.TestCase):
 
     def test_single_channel_layout_group(self):
         g = state.from_state(self.single_channel_state(group=True))
-        self.assertIsInstance(g, GroupLevelSegmentedData)
-        self.assertEqual(g.n_subjects, 3)
-        self.assertFalse(g.stacked)
-        self.assertIsNone(g.epochs)
-        np.testing.assert_allclose(g.mask_percent["left_pupil"], [10., 20., 30., 40.])
+        self.assertIs(type(g), SegmentedEyeData)
+        self.assertEqual(g.epochs.meta["subject"].tolist(), ["1", "2", "3"])
+        self.assertTrue(np.isnan(g.epochs.meta["n_trials"]).all())
+        self.assertTrue(g._averaged().all())
+        self.assertIn("3 averages x", repr(g))
+        np.testing.assert_allclose(g._percent_missing("left_pupil"), [10., 20., 30., 40.])
+        self.assertEqual(g.filter(subject="2").n_segments, 1)
         # stacked trials of unknown subjects
         st = self.single_channel_state(group=True)
         st["n_subjects"] = 2
         g = state.from_state(st)
-        self.assertTrue(g.stacked)
-        self.assertIsNone(g.subject)
-        with self.assertRaisesRegex(ValueError, "subjects of the trials are not known"):
-            g.keep(np.array([True, False, True]))
+        self.assertIsNone(g.epochs)
+        self.assertFalse(g._averaged().any())
+        self.assertEqual(g.valid_share, {})
+
+    def test_group_class_name(self):
+        """files of GroupLevelSegmentedData are read as SegmentedEyeData"""
+        self.assertIs(state._find_class("GroupLevelSegmentedData"), SegmentedEyeData)
 
 
 class TestTimeAxis(unittest.TestCase):
@@ -645,246 +642,245 @@ class TestTimeAxis(unittest.TestCase):
         self.assertEqual(lengths, {1250})
 
 
-class TestGroupLevelSegmentedData(unittest.TestCase):
+class TestAverage(unittest.TestCase):
 
     def setUp(self):
-        self.n_timepoints, self.n_segments = 100, 20
-        self.tx = np.linspace(-200, 800, self.n_timepoints)
-        self.segments = []
-        for i in range(3):
-            mask = np.zeros((self.n_timepoints, self.n_segments), dtype=bool)
-            mask[0:5, :] = True  # first 5 time points masked
-            self.segments.append(make(np.random.randn(self.n_timepoints, self.n_segments) + i * 10,
-                                      self.tx, name=f"subject_{i + 1}", mask=mask))
+        d = gaze_eyedata()
+        ep = d.get_epochs("", window=(-100, 500), units="ms")
+        self.seg = d.get_segments(ep.set_meta("cond", ["easy", "hard", "easy", "hard"])
+                                    .set_meta("block", [1, 1, 2, 2]))
+        x = self.seg["left_pupil"].copy()
+        x[:, 0] = ma.masked  # trial 1 all missing
+        self.seg["left_pupil"] = x
 
     def tearDown(self):
         plt.close("all")
 
-    def test_from_segments_aggregate(self):
-        group = GroupLevelSegmentedData.from_segments(self.segments, meanfct=np.mean)
-        self.assertEqual(group.n_subjects, 3)
-        self.assertEqual(group.subjects, ["subject_1", "subject_2", "subject_3"])
-        self.assertFalse(group.stacked)
-        self.assertEqual(group.n_segments, 3)
-        self.assertEqual(group.channels, ["left_pupil"])
-        self.assertIsNone(group.epochs)
+    def test_all_trials(self):
+        avg = self.seg.average()
+        self.assertEqual(avg.n_segments, 1)
+        self.assertEqual(avg.channels, self.seg.channels)
+        np.testing.assert_allclose(avg["left_x"][:, 0], np.mean(self.seg["left_x"], axis=1))
+        self.assertTrue(np.isnan(avg.epochs.onsets).all())
+        self.assertEqual(avg.epochs.window, self.seg.epochs.window)
+        self.assertEqual(avg.epochs.meta["n_trials"].tolist(), [4])
+        self.assertEqual(avg.epochs.labels.tolist(), ["average"])
+        self.assertEqual(avg.name, self.seg.name)
 
-    def test_from_segments_stack(self):
-        group = GroupLevelSegmentedData.from_segments(self.segments, meanfct=None)
-        self.assertEqual(group.n_subjects, 3)
-        self.assertTrue(group.stacked)
-        self.assertEqual(group.n_segments, self.n_segments * 3)
-        np.testing.assert_array_equal(group.subject, np.repeat([0, 1, 2], self.n_segments))
+    def test_by_column(self):
+        avg = self.seg.average(by="cond", name="by cond")
+        self.assertEqual(avg.name, "by cond")
+        self.assertEqual(avg.epochs.meta["cond"].tolist(), ["easy", "hard"])
+        self.assertEqual(avg.epochs.labels.tolist(), ["easy", "hard"])
+        # "block" differs within the groups and is dropped
+        self.assertEqual(sorted(avg.epochs.meta), ["cond", "n_trials"])
+        hard = self.seg.filter(cond="hard")["right_x"]
+        np.testing.assert_allclose(avg["right_x"][:, 1], np.mean(hard, axis=1))
+        self.assertTrue(avg._averaged().all())
+        self.assertEqual(avg.filter(cond="hard").n_segments, 1)
 
-    def test_mask_percent_computed(self):
-        group = GroupLevelSegmentedData.from_segments(self.segments)
-        mp = group.mask_percent["left_pupil"]
-        self.assertEqual(mp.shape, (self.n_timepoints,))
-        np.testing.assert_array_almost_equal(mp[0:5], 100.0)
-        np.testing.assert_array_almost_equal(mp[5:], 0.0)
-        self.assertEqual(group.subject_mask_percent["left_pupil"].shape, (self.n_timepoints, 3))
+    def test_constant_columns_and_labels_kept(self):
+        avg = self.seg.average(by=["cond", "block"])
+        self.assertEqual(avg.n_segments, 4)
+        self.assertEqual(avg.epochs.labels.tolist(), ["a", "a", "b", "b"])
+        avg = self.seg.average(by="label")
+        self.assertEqual(avg.epochs.labels.tolist(), ["a", "b"])
+        self.assertEqual(avg.epochs.meta["block"].tolist(), [1, 2])
 
-    def junk_segments(self):
-        """Two subjects, value 10 everywhere except masked junk (padding 0, blink 999)."""
-        segs = []
-        for name in ["a", "b"]:
-            d = np.full((5, 4), 10.)
-            m = np.zeros((5, 4), dtype=bool)
-            d[1, 0], m[1, 0] = 0., True
-            d[3, 1], m[3, 1] = 999., True
-            segs.append(SegmentedEyeData(name=name, tx=np.arange(5.),
-                                         data={"left_pupil": ma.masked_array(d, mask=m)},
-                                         sampling_rate=1000))
-        return segs
+    def test_nan_metadata_is_one_group(self):
+        ep = self.seg.epochs.set_meta("rt", [np.nan, 1., np.nan, 1.])
+        seg = self.seg._copy()
+        seg.epochs = ep
+        self.assertEqual(seg.average(by="rt").epochs.meta["n_trials"].tolist(), [2, 2])
 
-    def test_stack_keeps_mask(self):
-        group = GroupLevelSegmentedData.from_segments(self.junk_segments(), meanfct=None)
-        data = group["left_pupil"]
-        self.assertEqual(data.shape, (5, 8))
-        self.assertEqual(int(data.mask.sum()), 4)
-        np.testing.assert_array_equal(np.mean(data, axis=1), 10.)
+    def test_missing_column(self):
+        with self.assertRaisesRegex(KeyError, "'rt'.*available: label, cond, block"):
+            self.seg.average(by="rt")
 
-    def test_aggregate_keeps_mask(self):
-        segs = self.junk_segments()
-        segs[1]["left_pupil"][2, :] = ma.masked
-        group = GroupLevelSegmentedData.from_segments(segs, meanfct=np.mean)
-        np.testing.assert_array_equal(group["left_pupil"].mask[2], [False, True])
-        np.testing.assert_array_equal(np.mean(group["left_pupil"], axis=1), 10.)
+    def test_valid_share(self):
+        avg = self.seg.average(by="cond")
+        # the easy average has one of its two trials missing
+        np.testing.assert_allclose(avg.valid_share["left_pupil"][:, 0], 0.5)
+        np.testing.assert_allclose(avg.valid_share["left_pupil"][:, 1], 1.)
+        np.testing.assert_allclose(avg._percent_missing("left_pupil"), 25.)
+        np.testing.assert_allclose(self.seg._percent_missing("left_pupil"), 25.)
+        self.assertEqual(avg.summary()["n_averages"], 2)
+        self.assertEqual(avg.summary()["n_trials"], 4)
 
-    def test_warns_for_mask_ignoring_meanfct(self):
+    def test_masked_where_all_trials_masked(self):
+        seg = self.seg.filter(cond="easy")
+        x = seg["left_pupil"].copy()
+        x[:3, 1] = ma.masked
+        seg["left_pupil"] = x
+        avg = seg.average()
+        self.assertTrue(avg["left_pupil"].mask[:3, 0].all())
+        self.assertFalse(avg["left_pupil"].mask[3:, 0].any())
+
+    def test_average_of_averages(self):
+        both = pp.concat_segments({"s1": self.seg, "s2": self.seg.filter(cond="hard")})
+        per_subject = both.average(by=["subject", "cond"])
+        self.assertEqual(per_subject.epochs.meta["n_trials"].tolist(), [2, 2, 2])
+        by_cond = per_subject.average(by="cond")
+        self.assertEqual(by_cond.epochs.meta["n_trials"].tolist(), [2, 4])
+        # each average has the same weight
+        np.testing.assert_allclose(by_cond["right_x"][:, 1],
+                                   np.mean(per_subject.filter(cond="hard")["right_x"], axis=1))
+        # shares weighted by the number of trials: 1 of 2 easy trials missing
+        np.testing.assert_allclose(by_cond.valid_share["left_pupil"][:, 0], 0.5)
+
+    def test_baseline_and_channels_keep_share(self):
+        avg = self.seg.average(by="cond").pupil.baseline_correct((-100, 0), inplace=False)
+        np.testing.assert_allclose(avg.valid_share["left_pupil"][:, 0], 0.5)
+        self.assertEqual(sorted(avg.select_channels("left_pupil").valid_share), ["left_pupil"])
+        self.assertEqual(avg.keep(np.array([False, True])).valid_share["left_pupil"].shape,
+                         (avg.n_timepoints, 1))
+        avg["new_x"] = avg["left_x"]
+        self.assertNotIn("new_x", avg.valid_share)
+
+    def test_valid_share_validated(self):
+        with self.assertRaisesRegex(ValueError, "valid_share"):
+            make(np.ones((5, 2)), np.arange(5.), valid_share={"left_pupil": np.ones((5, 3))})
+
+    def test_no_epochs(self):
+        seg = make(np.arange(10.).reshape(5, 2), np.arange(5.), sampling_rate=1000)
+        avg = seg.average()
+        np.testing.assert_allclose(avg["left_pupil"][:, 0], [0.5, 2.5, 4.5, 6.5, 8.5])
+        self.assertEqual(avg.epochs.window, (0., 5.))
+        with self.assertRaisesRegex(KeyError, "available: none"):
+            seg.average(by="cond")
+
+    def test_meanfct(self):
         from loguru import logger
         messages = []
         hid = logger.add(lambda m: messages.append(m), level="WARNING")
         try:
-            GroupLevelSegmentedData.from_segments(self.junk_segments(), meanfct=np.ma.median)
+            self.seg.average(meanfct=np.ma.median)
             self.assertEqual(messages, [])
-            GroupLevelSegmentedData.from_segments(self.junk_segments(), meanfct=np.median)
+            self.seg.average(meanfct=np.median)
             self.assertEqual(len(messages), 1)
-            self.assertIn("does not ignore masked", messages[0])
         finally:
             logger.remove(hid)
-
-    def test_function_without_axis_raises_clear_error(self):
-        segs = self.junk_segments()
-        no_axis = lambda x: np.mean(x)
         with self.assertRaisesRegex(TypeError, "must accept an `axis`"):
-            GroupLevelSegmentedData.from_segments(segs, meanfct=no_axis)
-        group = GroupLevelSegmentedData.from_segments(segs)
-        for obj in (segs[0], group):
-            with self.assertRaisesRegex(TypeError, "meanfct.*must accept an `axis`"):
-                obj.plot(meanfct=no_axis)
-            with self.assertRaisesRegex(TypeError, "varfct.*must accept an `axis`"):
-                obj.plot(varfct=no_axis)
-            plt.close("all")
-        GroupLevelSegmentedData.from_segments(segs, meanfct=lambda x, **kw: np.mean(x, **kw))
+            self.seg.average(meanfct=lambda x: np.mean(x))
 
-    def test_plot_warns_for_mask_ignoring_functions(self):
-        from loguru import logger
-        segs = self.junk_segments()
-        group = GroupLevelSegmentedData.from_segments(segs, meanfct=None)
-        messages = []
-        hid = logger.add(lambda m: messages.append(m), level="WARNING")
-        try:
-            for obj in (segs[0], group):
-                obj.plot()
-                obj.plot(meanfct=np.ma.median, varfct=np.std)
-                self.assertEqual(messages, [])
-                obj.plot(meanfct=np.median, varfct=lambda a, axis: np.percentile(a, 50, axis=axis))
-                self.assertEqual(len(messages), 2)
-                messages.clear()
-                plt.close("all")
-        finally:
-            logger.remove(hid)
+    def test_display(self):
+        avg = self.seg.average(by="cond")
+        self.assertIn("2 averages (of 4 trials)", repr(avg))
+        html = avg._repr_html_()
+        self.assertIn("Averages", html)
+        self.assertIn("Trials", html)
+        mixed = pp.concat_segments({"t": self.seg, "a": avg})
+        self.assertIn("4 segments and 2 averages", repr(mixed))
 
-    def test_summary(self):
-        summary = GroupLevelSegmentedData.from_segments(self.segments).summary()
-        self.assertEqual(summary['n_subjects'], 3)
-        self.assertFalse(summary['stacked'])
-        self.assertAlmostEqual(summary['percent_masked']['left_pupil'], 5.0)
+    def test_plot_missing_axis(self):
+        ax = self.seg.average(by="cond").pupil.plot("left")
+        self.assertEqual(ax.figure.axes[1].get_ylabel(), "% missing")
 
-    def test_repr(self):
-        r = repr(GroupLevelSegmentedData.from_segments(self.segments))
-        self.assertIn("GroupLevelSegmentedData", r)
-        self.assertIn("3 subjects", r)
+    def test_gaze_needs_trials(self):
+        roi = pp.RectangularROI((0, 0), (200, 200), name="corner")
+        seg = self.seg.gaze.roi_hits(roi, inplace=False)
+        avg = seg.average(by="cond")
+        with self.assertRaisesRegex(ValueError, "needs single trials"):
+            avg.gaze.roi_hits(roi)
+        with self.assertRaisesRegex(ValueError, "needs single trials"):
+            avg.gaze.first_entry("corner")
+        # dwell time of an average: mean dwell time of its trials
+        trials = seg.gaze.dwell_time("corner", eyes="left")["left_corner"]
+        dwell = avg.gaze.dwell_time("corner", eyes="left")["left_corner"]
+        np.testing.assert_allclose(dwell, [trials[[0, 2]].mean(), trials[[1, 3]].mean()])
+        avg.gaze.plot_roi("corner")
 
-    def test_repr_html(self):
-        html = GroupLevelSegmentedData.from_segments(self.segments)._repr_html_()
-        self.assertIn("GroupLevelSegmentedData", html)
-        self.assertIn("Subjects", html)
-
-    def test_plot(self):
-        group = GroupLevelSegmentedData.from_segments(self.segments)
-        fig, ax = plt.subplots()
-        group.plot(ax=ax)
-        plt.figure()
-        ax = group.pupil.plot()
-        self.assertEqual(ax.figure.axes[1].get_ylabel(), "avg % missing")
-
-    def test_missing_channel(self):
-        bad = make(np.random.randn(self.n_timepoints, self.n_segments), self.tx, "right_pupil")
-        with self.assertRaisesRegex(KeyError, "no channel.*left_pupil"):
-            GroupLevelSegmentedData.from_segments([self.segments[0], bad])
-
-    def test_channels(self):
-        segs = [SegmentedEyeData(f"s{i}", self.tx, {"left_pupil": np.ones((100, 3)),
-                                                    "left_x": np.ones((100, 3))})
-                for i in range(2)]
-        self.assertEqual(group_segments(segs).channels, ["left_pupil", "left_x"])
-        group = group_segments(segs, channels="left_x")
-        self.assertEqual(group.channels, ["left_x"])
-        self.assertEqual(list(group.subject_mask_percent), ["left_x"])
-        self.assertEqual(list(group_segments(segs).drop_channels("left_x").subject_mask_percent),
-                         ["left_pupil"])
-
-    def test_validation_timepoints_mismatch(self):
-        bad = make(np.random.randn(50, self.n_segments), np.linspace(-200, 800, 50))
-        with self.assertRaises(ValueError):
-            GroupLevelSegmentedData.from_segments([self.segments[0], bad])
-
-    def test_validation_empty_list(self):
-        with self.assertRaises(ValueError):
-            GroupLevelSegmentedData.from_segments([])
-
-    def test_names(self):
-        self.assertEqual(GroupLevelSegmentedData.from_segments(self.segments, name="my_group").name,
-                         "my_group")
-        self.assertEqual(GroupLevelSegmentedData.from_segments(self.segments).name,
-                         "group_subject_1")
-        # segments with the same name: subjects are numbered
-        same = [make(np.ones((5, 2)), np.arange(5.)) for _ in range(2)]
-        self.assertEqual(group_segments(same).subjects, ["1", "2"])
+    def test_epochs_without_time(self):
+        ep = self.seg.average(by="cond").epochs
+        with self.assertRaisesRegex(ValueError, "no time"):
+            ep.to_intervals()
+        with self.assertRaisesRegex(ValueError, "no time"):
+            gaze_eyedata().get_segments(ep)
+        self.assertTrue(np.isnan(ep.as_pandas()["start"]).all())
+        with self.assertRaisesRegex(ValueError, "finite"):
+            pp.Epochs([np.inf], (0, 1))
 
 
-class TestGroupSelection(unittest.TestCase):
+class TestConcatAndGroup(unittest.TestCase):
 
     def setUp(self):
         d = gaze_eyedata()
         ep = d.get_epochs("", window=(-100, 500), units="ms")
         self.seg = d.get_segments(ep.set_meta("cond", ["easy", "hard", "easy", "hard"]))
-        x = self.seg["left_pupil"].copy()
-        x[:, 0] = ma.masked  # trial 1 all missing
-        self.seg["left_pupil"] = x
 
-    def test_stacked_epochs_with_subject(self):
-        group = group_segments({"s1": self.seg, "s2": self.seg.keep(np.array([1, 1, 0, 1], bool))},
-                               meanfct=None)
-        self.assertEqual(len(group.epochs), 7)
-        self.assertEqual(list(group.epochs.meta["subject"]), ["s1"] * 4 + ["s2"] * 3)
-        self.assertEqual(list(group.epochs.meta["cond"]), ["easy", "hard", "easy", "hard",
-                                                           "easy", "hard", "hard"])
+    def tearDown(self):
+        plt.close("all")
 
-    def test_stacked_filter(self):
-        group = group_segments({"s1": self.seg, "s2": self.seg}, meanfct=None)
-        easy = group.filter(cond="easy")
-        self.assertEqual(easy.n_segments, 4)
-        self.assertEqual(easy.subjects, ["s1", "s2"])
-        np.testing.assert_array_equal(easy.subject, [0, 0, 1, 1])
-        # masked trials per subject are recomputed: one of two easy trials is missing
-        np.testing.assert_allclose(easy.mask_percent["left_pupil"], 50.)
-        np.testing.assert_allclose(group.mask_percent["left_pupil"], 25.)
-        s2 = group.filter(subject="s2")
-        self.assertEqual(s2.subjects, ["s2"])
-        np.testing.assert_array_equal(s2.subject, 0)
+    def test_concat(self):
+        both = pp.concat_segments({"s1": self.seg, "s2": self.seg.keep(np.array([1, 1, 0, 1], bool))})
+        self.assertIsInstance(both, SegmentedEyeData)
+        self.assertEqual(both.n_segments, 7)
+        self.assertEqual(list(both.epochs.meta["subject"]), ["s1"] * 4 + ["s2"] * 3)
+        self.assertEqual(list(both.epochs.meta["cond"]), ["easy", "hard", "easy", "hard",
+                                                          "easy", "hard", "hard"])
+        np.testing.assert_array_equal(both.epochs.onsets[:4], self.seg.epochs.onsets)
+        self.assertEqual(both.valid_share, {})
+        self.assertEqual(both.filter(subject="s2", cond="hard").n_segments, 2)
 
-    def test_aggregate_keep_selects_subjects(self):
+    def test_concat_names_and_key(self):
+        same = [make(np.ones((5, 2)), np.arange(5.)) for _ in range(2)]
+        self.assertEqual(pp.concat_segments(same).epochs.meta["subject"].tolist(),
+                         ["1", "1", "2", "2"])
+        named = [make(np.ones((5, 2)), np.arange(5.), name=n) for n in ("a", "b")]
+        both = pp.concat_segments(named, key="session", name="x")
+        self.assertEqual(both.epochs.meta["session"].tolist(), ["a", "a", "b", "b"])
+        self.assertEqual(both.name, "x")
+        self.assertEqual(sorted(pp.concat_segments(named, key=None).epochs.meta), [])
+        with self.assertRaisesRegex(ValueError, "already have a metadata column 'subject'"):
+            pp.concat_segments([pp.concat_segments(named)])
+
+    def test_concat_checks(self):
+        with self.assertRaisesRegex(ValueError, "no segments"):
+            pp.concat_segments([])
+        bad = make(np.ones((4, 2)), np.arange(4.))
+        with self.assertRaisesRegex(ValueError, "time axes"):
+            pp.concat_segments([make(np.ones((5, 2)), np.arange(5.)), bad])
+        with self.assertRaisesRegex(KeyError, "no channel.*left_x"):
+            pp.concat_segments([self.seg, make(np.ones((60, 2)), self.seg.tx)])
+
+    def test_concat_channels(self):
+        both = pp.concat_segments([self.seg, self.seg], channels="left_x")
+        self.assertEqual(both.channels, ["left_x"])
+
+    def test_concat_trials_and_averages(self):
+        both = pp.concat_segments({"t": self.seg, "a": self.seg.average()})
+        self.assertEqual(both.epochs.meta["n_trials"].tolist(), [1, 1, 1, 1, 4])
+        self.assertEqual(both._averaged().tolist(), [False] * 4 + [True])
+        self.assertEqual(both.valid_share["left_x"].shape, (both.n_timepoints, 5))
+
+    def test_group_segments(self):
         group = group_segments({"s1": self.seg, "s2": self.seg.filter(cond="hard")})
-        np.testing.assert_allclose(group.mask_percent["left_pupil"], 12.5)
-        s2 = group.keep(np.array([False, True]))
-        self.assertEqual(s2.subjects, ["s2"])
-        np.testing.assert_allclose(s2.mask_percent["left_pupil"], 0.)
-        with self.assertRaisesRegex(ValueError, "no epochs"):
-            group.filter(cond="easy")
+        self.assertIsInstance(group, SegmentedEyeData)
+        self.assertEqual(group.n_segments, 2)
+        self.assertEqual(group.epochs.meta["subject"].tolist(), ["s1", "s2"])
+        self.assertEqual(group.epochs.meta["n_trials"].tolist(), [4, 2])
+        self.assertEqual(group.epochs.labels.tolist(), ["s1", "s2"])
+        self.assertEqual(group.name, f"group_{self.seg.name}")
+        np.testing.assert_allclose(group["right_x"][:, 1],
+                                   np.mean(self.seg.filter(cond="hard")["right_x"], axis=1))
+        self.assertEqual(group.filter(subject="s2").n_segments, 1)
+        group.pupil.plot()
 
-    def test_new_channel_of_stacked_group(self):
-        group = group_segments({"s1": self.seg, "s2": self.seg}, meanfct=None)
-        group = group.gaze.roi_hits(pp.RectangularROI((0, 0), (200, 200), name="c"),
-                                    inplace=False)
-        self.assertEqual(group.subject_mask_percent["left_c"].shape, (group.n_timepoints, 2))
+    def test_group_segments_options(self):
+        segs = [make(np.random.randn(50, 10), np.arange(50.), name=f"subj_{i}") for i in range(3)]
+        self.assertEqual(group_segments(segs).epochs.meta["subject"].tolist(),
+                         ["subj_0", "subj_1", "subj_2"])
+        self.assertEqual(group_segments(segs, meanfct=None).n_segments, 30)
+        self.assertEqual(group_segments(segs, name="my_group").name, "my_group")
+        self.assertEqual(group_segments(segs, channels="left_pupil").channels, ["left_pupil"])
 
-
-class TestGroupSegmentsFunction(unittest.TestCase):
-
-    def setUp(self):
-        tx = np.linspace(-100, 400, 50)
-        self.segments = [make(np.random.randn(50, 10), tx, name=f"subj_{i}") for i in range(3)]
-
-    def test_from_list(self):
-        group = group_segments(self.segments)
-        self.assertIsInstance(group, GroupLevelSegmentedData)
-        self.assertEqual(group.n_subjects, 3)
-
-    def test_from_dict(self):
-        group = group_segments({f"S{i:02d}": seg for i, seg in enumerate(self.segments)})
-        self.assertEqual(group.subjects, ["S00", "S01", "S02"])
-
-    def test_stack_mode(self):
-        self.assertEqual(group_segments(self.segments, meanfct=None).n_segments, 30)
-
-    def test_custom_name(self):
-        self.assertEqual(group_segments(self.segments, name="my_group").name, "my_group")
-
-    def test_available_via_pp(self):
-        self.assertTrue(callable(pp.group_segments))
+    def test_group_fixation_curve(self):
+        roi = pp.RectangularROI((0, 0), (200, 200), name="corner")
+        seg = self.seg.gaze.roi_hits(roi, inplace=False)
+        group = group_segments({"s1": seg, "s2": seg}, channels=["left_corner"])
+        inside = (seg.tx >= 0) & (seg.tx < 200)
+        np.testing.assert_allclose(group["left_corner"].mean(axis=1)[inside], 0.5)
+        group.gaze.plot_roi("corner")
 
 
 if __name__ == '__main__':

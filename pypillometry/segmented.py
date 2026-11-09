@@ -10,6 +10,10 @@ events, with the epochs they were cut from once for all channels. As for
 :class:`~pypillometry.EyeData`, the methods for one kind of data are in
 namespaces: ``seg.pupil`` (baseline correction, plot of the event-related
 pupil dilation) and ``seg.gaze`` (regions of interest).
+
+The columns of the segments are single trials or averages of trials
+(:meth:`SegmentedEyeData.average`); the segments of several participants
+are combined with :func:`concat_segments` and :func:`group_segments`.
 """
 import copy
 from collections.abc import Mapping
@@ -27,7 +31,7 @@ from .eyedata.namespace import Namespace, accessor
 from .templates import render, sparkline
 
 __all__ = [
-    "SegmentedEyeData", "GroupLevelSegmentedData", "group_segments",
+    "SegmentedEyeData", "concat_segments", "group_segments",
 ]
 
 
@@ -45,6 +49,9 @@ def _extract_epochs(eyedata, epochs, variable, policy="default"):
     segment starts at the first sample at or after ``onset + w0``. Parts
     outside the data are masked (their values are NaN).
     """
+    if np.isnan(epochs.onsets).any():
+        raise ValueError("these epochs have no time (their onsets are NaN, e.g., the "
+                         "columns of averaged segments), so no segments can be cut")
     w0, w1 = epochs.window
     n = eyedata._samples(w1 - w0, rounding="nearest")
     tx = w0 + np.arange(n) * 1000. / eyedata.fs
@@ -126,11 +133,6 @@ def _select_channels(channels, eyes=None, variables=None):
     return out
 
 
-def _percent_masked(arr, axis=1):
-    """Percentage of masked values of `arr` along `axis`."""
-    return np.mean(ma.getmaskarray(arr), axis=axis) * 100.
-
-
 def _keep_epochs(epochs, mask):
     """The epochs (Epochs, Intervals or None) where `mask` is True."""
     from .epochs import Epochs
@@ -196,6 +198,42 @@ def _window_mask(tx, window):
     return sel
 
 
+def _time_step(tx, sampling_rate):
+    """Time between two time points in ms."""
+    if sampling_rate:
+        return 1000. / sampling_rate
+    return float(np.median(np.diff(tx))) if len(tx) > 1 else 1.
+
+
+def _untimed_epochs(n, tx, sampling_rate, window=None, labels=None, meta=None, label=None):
+    """Epochs without a time (NaN onsets) for `n` columns of segments with
+    time axis `tx` (window: `window`, or that of the time axis)."""
+    from .epochs import Epochs
+    if window is None:
+        window = (float(tx[0]), float(tx[-1]) + _time_step(tx, sampling_rate))
+    return Epochs(np.full(n, np.nan), window, labels=labels, meta=meta, label=label)
+
+
+def _all_equal(values) -> bool:
+    """Whether all `values` (1-d array) are equal (NaN equal to NaN)."""
+    v = np.asarray(values)
+    if len(v) < 2:
+        return True
+    same = v == v[0]
+    if v.dtype.kind == "f":
+        same |= np.isnan(v) & np.isnan(v[0])
+    return bool(np.all(same))
+
+
+def _group_key(value):
+    """`value` as a key for grouping (NaN -> None, so that NaNs form one group)."""
+    if isinstance(value, np.generic):
+        value = value.item()
+    if isinstance(value, float) and np.isnan(value):
+        return None
+    return value
+
+
 # --------------------------------------------------------------------------
 # Namespaces
 # --------------------------------------------------------------------------
@@ -207,8 +245,9 @@ class SegmentedPupilNamespace(Namespace):
 
     The methods work on the pupil channels (``<eye>_pupil``) of a
     :class:`~pypillometry.SegmentedEyeData` object (all eyes, or those given
-    in `eyes`) and raise a KeyError if there is none. Averaging across
-    subjects (:func:`~pypillometry.group_segments`) works for all channels.
+    in `eyes`) and raise a KeyError if there is none. Averaging
+    (:meth:`~pypillometry.SegmentedEyeData.average`,
+    :func:`~pypillometry.group_segments`) works for all channels.
     """
 
     _name = "pupil"
@@ -298,7 +337,8 @@ class SegmentedPupilNamespace(Namespace):
         if inplace is None:
             inplace = config.get_default_inplace()
         out = seg if inplace else seg._copy()
-        out.data.update(corrected)
+        for ch, arr in corrected.items():
+            out[ch] = arr
         return out
 
     def plot(self, eyes=[], meanfct=np.mean, varfct=scipy.stats.sem,
@@ -367,10 +407,17 @@ class SegmentedGazeNamespace(Namespace):
     1 (in the ROI) and 0 (outside), masked where x or y are masked
     (:meth:`roi_hits`). Its mean over the segments at each time point is the
     share of the (usable) trials in which the gaze is in the ROI (a fixation
-    curve, :meth:`plot_roi`); mean ± error plots and averaging across
-    subjects (:func:`~pypillometry.group_segments`) work for it like for any
-    channel. Measures per trial (:meth:`dwell_time`, :meth:`first_entry`)
-    are returned as tables with the epochs' onsets, labels and metadata.
+    curve, :meth:`plot_roi`); mean ± error plots and averaging
+    (:meth:`~pypillometry.SegmentedEyeData.average`,
+    :func:`~pypillometry.group_segments`) work for it like for any channel.
+    Measures per trial (:meth:`dwell_time`, :meth:`first_entry`) are
+    returned as tables with the epochs' onsets, labels and metadata.
+
+    Where the gaze is in an ROI is a property of single trials: the ROI
+    channels must be added before averaging (the mean gaze position of
+    several trials says nothing about where the gaze was), and
+    :meth:`roi_hits` and :meth:`first_entry` raise a ValueError for averaged
+    segments.
     """
 
     _name = "gaze"
@@ -400,8 +447,16 @@ class SegmentedGazeNamespace(Namespace):
             raise ValueError(f"an ROI cannot be called {name!r} (a channel of the gaze or pupil)")
         return name
 
+    def _check_single_trials(self, what):
+        """Raise a ValueError if some columns of the segments are averages."""
+        if self._d._averaged().any():
+            raise ValueError(f"{what} needs single trials, but the segments contain "
+                             f"averages (see their metadata column 'n_trials'); use "
+                             f"the segments before averaging")
+
     def _hits(self, roi, eye):
         """1 where the gaze of `eye` is in `roi`, 0 outside (masked where x or y are)."""
+        self._check_single_trials("where the gaze is in an ROI")
         seg = self._d
         x, y = seg[f"{eye}_x"], seg[f"{eye}_y"]
         xv, yv = ma.getdata(x), ma.getdata(y)
@@ -510,7 +565,9 @@ class SegmentedGazeNamespace(Namespace):
 
         The dwell time is the number of usable samples in the ROI times the
         sampling interval; masked samples are not counted. Trials without
-        usable samples in the window get NaN.
+        usable samples in the window get NaN. For averaged segments, whose
+        ROI channels are shares of trials, it is the mean dwell time of the
+        trials of each average.
 
         Parameters
         ----------
@@ -545,8 +602,7 @@ class SegmentedGazeNamespace(Namespace):
         """
         seg = self._d
         sel = _window_mask(seg.tx, window)
-        step = 1000. / seg.sampling_rate if seg.sampling_rate else \
-            float(np.median(np.diff(seg.tx)))
+        step = _time_step(seg.tx, seg.sampling_rate)
         name = roi if isinstance(roi, str) else self._roi_name(roi)
         values = {}
         for eye in self._roi_eyes(roi, eyes):
@@ -562,7 +618,8 @@ class SegmentedGazeNamespace(Namespace):
         The time is relative to the event onset, from the start of `window`
         (by default, the onset): a trial in which the gaze is in the ROI at
         the onset gets 0. Trials in which the gaze is never in the ROI (in
-        the usable samples of the window) get NaN.
+        the usable samples of the window) get NaN. Averaged segments have no
+        first entry (a ValueError is raised).
 
         Parameters
         ----------
@@ -596,6 +653,7 @@ class SegmentedGazeNamespace(Namespace):
         >>> len(table["left_center"]) == seg.n_segments
         True
         """
+        self._check_single_trials("first_entry()")
         seg = self._d
         sel = _window_mask(seg.tx, window)
         tx = seg.tx[sel]
@@ -674,8 +732,6 @@ class SegmentedEyeData(state.VersionedState):
     :class:`~pypillometry.Epochs` returned by
     :meth:`~pypillometry.EyeData.get_epochs`, e.g.,
     ``d.get_segments(d.get_epochs("F", window=(-200, 800) * u.ms))``.
-    Segments of several subjects are combined with
-    :func:`~pypillometry.group_segments`.
 
     A channel is read with ``seg["left_pupil"]`` and set with
     ``seg["left_pupil"] = values``. The methods of the object work on all
@@ -690,6 +746,18 @@ class SegmentedEyeData(state.VersionedState):
     - ``seg.gaze`` (:class:`~pypillometry.segmented.SegmentedGazeNamespace`):
       regions of interest (where the gaze is in an ROI, fixation curves,
       dwell time and first entry per trial)
+
+    **Averages.** A column of the segments is a single trial or an average
+    of trials: :meth:`average` averages all trials or groups of them (e.g.,
+    by condition), :func:`~pypillometry.concat_segments` stacks the segments
+    of several participants (with the metadata column ``"subject"``) and
+    :func:`~pypillometry.group_segments` averages them per participant.
+    Averages are segments like the others; their epochs have no time (NaN
+    onsets) and their metadata are the grouping columns, the columns that
+    were the same in all their trials, and the number of trials
+    (``"n_trials"``). An average is masked where all its trials are masked;
+    `valid_share` holds the share of its trials that were usable at each
+    time point (used for the missing data in :meth:`plot`).
 
     Parameters
     ----------
@@ -707,13 +775,18 @@ class SegmentedEyeData(state.VersionedState):
         these Intervals
     sampling_rate : float, optional
         sampling rate in Hz
+    valid_share : dict, optional
+        channel name -> share (0 to 1) of the trials of each value that are
+        usable, an array of the shape of the channel (for averages; created
+        by :meth:`average`); channels that are not in it have 1 where they
+        are not masked and 0 where they are
 
     Raises
     ------
     ValueError
         if there are no channels, a channel name does not have the form
-        ``"<eye>_<variable>"``, or the shapes of the channels, the time axis
-        and the epochs do not match
+        ``"<eye>_<variable>"``, or the shapes of the channels, the time axis,
+        the epochs and `valid_share` do not match
 
     Examples
     --------
@@ -726,6 +799,8 @@ class SegmentedEyeData(state.VersionedState):
     >>> seg["left_pupil"].shape  # (time points, segments)
     (1500, 10)
     >>> seg = seg.pupil.baseline_correct((-200, 0))
+    >>> seg.average()["left_pupil"].shape  # (time points, averages)
+    (1500, 1)
     """
 
     pupil = accessor(SegmentedPupilNamespace)
@@ -733,13 +808,10 @@ class SegmentedEyeData(state.VersionedState):
 
     # state (see pypillometry.state); `epochs` is Epochs or Intervals
     _STATE_FIELDS = ("name", "tx", ("data", "dict:masked"), ("epochs", "tagged"),
-                     "sampling_rate")
-
-    #: label of the missing-data axis of :meth:`plot`
-    _missing_label = "% missing"
+                     "sampling_rate", "valid_share")
 
     def __init__(self, name: str, tx: np.ndarray, data: dict, epochs=None,
-                 sampling_rate: float = None):
+                 sampling_rate: float = None, valid_share: dict = None):
         if not isinstance(data, Mapping):
             raise TypeError(f"data must be a dict (channel name -> array of shape "
                             f"(time points, segments)), got {type(data).__name__}")
@@ -751,17 +823,33 @@ class SegmentedEyeData(state.VersionedState):
             raise ValueError(f"tx must be one-dimensional, got shape {self.tx.shape}")
         self.sampling_rate = None if sampling_rate is None else float(sampling_rate)
         self.data = {}
+        self.valid_share = {}
         for channel, values in data.items():
             self[channel] = values
         if epochs is not None and len(epochs) != self.n_segments:
             raise ValueError(f"{len(epochs)} epochs for {self.n_segments} segments")
         self.epochs = epochs
+        for channel, share in (valid_share or {}).items():
+            share = np.asarray(share, dtype=float)
+            if share.shape != self[channel].shape:
+                raise ValueError(f"valid_share of channel {channel!r} must have the shape "
+                                 f"of the channel {self[channel].shape}, got {share.shape}")
+            self.valid_share[channel] = share
+
+    def __setstate__(self, st):
+        # files of the former GroupLevelSegmentedData are read as this class;
+        # their state is upgraded under its name (unversioned pickles have no
+        # "class", but the attribute "n_subjects")
+        name = st.get("class") or ("GroupLevelSegmentedData" if "n_subjects" in st
+                                   else type(self).__name__)
+        self._set_state(state.migrate(st, name))
 
     def _set_state(self, st: dict):
         """Set the attributes from a state of the current version (segments
-        with one channel from development versions of 2.2 are converted)."""
+        from development versions of 2.2 are converted)."""
         if "variable" in st:
-            st = state._v3_channels(st, type(self).__name__)
+            st = state._v3_channels(st, st.get("class", type(self).__name__))
+        st = {"valid_share": {}, **st}
         super()._set_state(st)
 
     # ----------------------------------------------------------------------
@@ -824,6 +912,14 @@ class SegmentedEyeData(state.VersionedState):
             raise ValueError(f"channel {channel!r} has {values.shape[1]} segments, "
                              f"the others {self.data[others[0]].shape[1]}")
         self.data[channel] = values
+        # a channel that is replaced keeps its share of usable trials (none
+        # where it is masked now)
+        share = self.valid_share.get(channel)
+        if share is not None:
+            if share.shape == values.shape:
+                self.valid_share[channel] = np.where(ma.getmaskarray(values), 0., share)
+            else:
+                del self.valid_share[channel]
 
     def __contains__(self, channel) -> bool:
         return channel in self.data
@@ -832,12 +928,15 @@ class SegmentedEyeData(state.VersionedState):
         """Shallow copy with its own dict of channels."""
         new = copy.copy(self)
         new.data = dict(self.data)
+        new.valid_share = dict(self.valid_share)
         return new
 
     def _with_channels(self, channels):
         """New object with `channels` only (copies of their arrays)."""
         new = self._copy()
         new.data = {ch: self.data[ch].copy() for ch in channels}
+        new.valid_share = {ch: share.copy() for ch, share in self.valid_share.items()
+                           if ch in channels}
         return new
 
     def select_channels(self, channels=None, eyes=[], variables=[]) -> 'SegmentedEyeData':
@@ -919,6 +1018,7 @@ class SegmentedEyeData(state.VersionedState):
         """New object with the segments where `mask` (bool, one per segment) is True."""
         new = self._copy()
         new.data = {ch: arr[:, mask] for ch, arr in self.data.items()}
+        new.valid_share = {ch: share[:, mask] for ch, share in self.valid_share.items()}
         new.epochs = _keep_epochs(self.epochs, mask)
         return new
 
@@ -985,7 +1085,7 @@ class SegmentedEyeData(state.VersionedState):
         Raises
         ------
         ValueError
-            if the segments have no Epochs (e.g., group averages)
+            if the segments have no Epochs (e.g., from old files)
 
         Examples
         --------
@@ -1002,6 +1102,137 @@ class SegmentedEyeData(state.VersionedState):
         if not isinstance(self.epochs, Epochs):
             raise ValueError("the segments have no epochs to select from; use keep()")
         return self._take(self.epochs.events._filter_mask(selector, exact, **conditions))
+
+    # ----------------------------------------------------------------------
+    # Averages
+    # ----------------------------------------------------------------------
+
+    def _valid_share(self, channel) -> np.ndarray:
+        """Share of usable trials of each value of `channel` (time points x columns)."""
+        share = self.valid_share.get(channel)
+        if share is None:
+            share = 1. - ma.getmaskarray(self[channel])
+        return share
+
+    def _n_trials(self) -> np.ndarray:
+        """Number of trials of each column (metadata ``n_trials``, otherwise 1;
+        NaN where it is not known)."""
+        from .epochs import Epochs
+        if isinstance(self.epochs, Epochs) and "n_trials" in self.epochs.meta:
+            return np.asarray(self.epochs.meta["n_trials"], dtype=float)
+        return np.ones(self.n_segments)
+
+    def _averaged(self) -> np.ndarray:
+        """Whether each column is an average (of more than one or an unknown
+        number of trials)."""
+        return ~(self._n_trials() == 1)
+
+    def average(self, by=None, meanfct=np.mean, name: str = None) -> 'SegmentedEyeData':
+        """
+        Average the segments: all trials, or the trials of each group.
+
+        The groups are the combinations of the values of the metadata
+        columns `by` (e.g., ``by="cond"`` or ``by=["subject", "cond"]``), in
+        the order in which they first occur. The result has one column per
+        group, with :class:`~pypillometry.Epochs` without a time (NaN
+        onsets) whose metadata are the `by` columns, the other columns that
+        have the same value in all trials of each group, and the number of
+        trials (``"n_trials"``). Its label is the label of the trials if
+        they all have the same, otherwise the values of `by` (joined with
+        "/").
+
+        Averaging segments that are averages themselves (e.g., participant
+        means, see :func:`~pypillometry.group_segments`) gives each of them
+        the same weight. An average is masked where all its trials are
+        masked; its share of usable trials (`valid_share`) is kept for the
+        missing data in :meth:`plot`.
+
+        Parameters
+        ----------
+        by : str or list of str, optional
+            metadata columns of the epochs that define the groups; ``"label"``
+            uses the event labels (if there is no metadata column of this
+            name); default: one average of all trials
+        meanfct : callable
+            function that averages the trials, called as ``meanfct(data,
+            axis=1)``; it must accept an `axis` argument and ignore masked
+            values (e.g., np.mean or np.ma.median, but not np.median; a
+            warning is logged otherwise)
+        name : str, optional
+            name of the result (default: the name of the segments)
+
+        Returns
+        -------
+        SegmentedEyeData
+            the averages (one column per group), with all channels
+
+        Raises
+        ------
+        KeyError
+            if a column of `by` is not in the metadata of the epochs
+
+        Examples
+        --------
+        >>> import pypillometry as pp
+        >>> from pypillometry import u
+        >>> d = pp.get_example_data("rlmw_002_short")
+        >>> ep = d.get_epochs("S_", (-500, 2500) * u.ms)
+        >>> ep = ep.set_meta("half", np.where(np.arange(len(ep)) < 5, "first", "second"))
+        >>> avg = d.get_segments(ep).average(by="half")
+        >>> avg["left_pupil"].shape  # (time points, groups)
+        (1500, 2)
+        >>> {k: v.tolist() for k, v in avg.epochs.meta.items()}
+        {'half': ['first', 'second'], 'n_trials': [5, 5]}
+        """
+        from .epochs import Epochs
+        _check_accepts_axis(meanfct, "meanfct")
+        _warn_if_ignores_mask(meanfct, "meanfct", axis=1)
+        by = _as_list(by)
+        ep = self.epochs if isinstance(self.epochs, Epochs) else None
+        table = {} if ep is None else {"label": ep.labels, **ep.meta}
+        missing = [b for b in by if b not in table]
+        if missing:
+            raise KeyError(f"no metadata column(s) {', '.join(map(repr, missing))} in the "
+                           f"epochs of the segments (available: "
+                           f"{', '.join(table) or 'none'})")
+
+        # the groups: unique combinations of the `by` columns
+        groups = {}
+        for i in range(self.n_segments):
+            key = tuple(_group_key(table[b][i]) for b in by)
+            groups.setdefault(key, []).append(i)
+        idx = [np.array(g) for g in groups.values()]
+        firsts = [g[0] for g in idx]
+
+        n_trials = self._n_trials()
+        data, shares = {}, {}
+        for ch, arr in self.data.items():
+            share = self._valid_share(ch)
+            cols, share_cols = [], []
+            for g in idx:
+                cols.append(ma.asarray(meanfct(arr[:, g], axis=1)))
+                w = n_trials[g] if np.isfinite(n_trials[g]).all() else np.ones(len(g))
+                share_cols.append(share[:, g] @ w / w.sum())
+            data[ch] = ma.column_stack(cols)
+            shares[ch] = np.column_stack(share_cols)
+            data[ch][shares[ch] == 0] = ma.masked   # no usable trial
+
+        meta = {col: values[firsts] for col, values in table.items()
+                if col not in ("label", "n_trials")
+                and (col in by or all(_all_equal(values[g]) for g in idx))}
+        total = np.array([n_trials[g].sum() for g in idx])
+        meta["n_trials"] = total.astype(int) if np.isfinite(total).all() else total
+        if ep is not None and all(_all_equal(ep.labels[g]) for g in idx):
+            labels = ep.labels[firsts]
+        else:
+            labels = ["/".join(str(table[b][g[0]]) for b in by) or "average" for g in idx]
+        epochs = _untimed_epochs(len(idx), self.tx, self.sampling_rate,
+                                 window=None if ep is None else ep.window,
+                                 labels=labels, meta=meta,
+                                 label=None if ep is None else ep.label)
+        return type(self)(name=self.name if name is None else name, tx=self.tx.copy(),
+                          data=data, epochs=epochs, sampling_rate=self.sampling_rate,
+                          valid_share=shares)
 
     # ----------------------------------------------------------------------
     # Creating
@@ -1083,9 +1314,12 @@ class SegmentedEyeData(state.VersionedState):
         -------
         dict
             name, channels, n_segments, n_timepoints, window,
-            percent_masked (dict: channel -> percentage of masked values)
-            and sampling_rate
+            percent_masked (dict: channel -> percentage of missing values;
+            for averages, of missing trials), sampling_rate, n_averages
+            (the number of columns that are averages) and n_trials (the
+            number of trials in all columns; None if not known)
         """
+        n_trials = float(np.sum(self._n_trials()))
         return _plain_values(dict(
             name=self.name,
             channels=self.channels,
@@ -1095,10 +1329,26 @@ class SegmentedEyeData(state.VersionedState):
             percent_masked={ch: float(np.mean(self._percent_missing(ch)))
                             for ch in self.channels},
             sampling_rate=self.sampling_rate,
+            n_averages=int(self._averaged().sum()),
+            n_trials=int(n_trials) if np.isfinite(n_trials) else None,
         ))
 
+    def _columns_text(self) -> str:
+        """What the columns of the data are ("segments", "averages" or both)."""
+        n_avg = int(self._averaged().sum())
+        if n_avg == 0:
+            return "segments"
+        return "averages" if n_avg == self.n_segments else "segments and averages"
+
     def _shape_text(self) -> str:
-        return f"{self.n_segments} segments x {self.n_timepoints} time points"
+        n_avg = int(self._averaged().sum())
+        s = f"{self.n_segments} {self._columns_text()}"
+        if 0 < n_avg < self.n_segments:
+            s = f"{self.n_segments - n_avg} segments and {n_avg} averages"
+        n_trials = np.sum(self._n_trials())
+        if self._averaged().any() and np.isfinite(n_trials):
+            s += f" (of {int(n_trials)} trials)"
+        return f"{s} x {self.n_timepoints} time points"
 
     def __repr__(self) -> str:
         """Return a string representation of the segments."""
@@ -1118,13 +1368,15 @@ class SegmentedEyeData(state.VersionedState):
         s = self.summary()
         w = s["window"]
         items = [
-            ("Segments", f"{s['n_segments']:,}"),
+            (self._columns_text().capitalize(), f"{s['n_segments']:,}"),
             ("Time points", f"{s['n_timepoints']:,}"),
             ("Window", f"{w[0]:.0f} to {w[1]:.0f} ms"),
             ("Missing", f"{np.mean(list(s['percent_masked'].values())):.1f}%"),
         ]
         if s["sampling_rate"]:
             items.append(("Sampling rate", f"{s['sampling_rate']:.0f} Hz"))
+        if s["n_averages"] and s["n_trials"] is not None:
+            items.insert(1, ("Trials", f"{s['n_trials']:,}"))
         if self.epochs is not None and self.epochs.label:
             items.insert(0, ("Epochs", self.epochs.label))
         return items
@@ -1140,17 +1392,14 @@ class SegmentedEyeData(state.VersionedState):
             overview=self._overview(), channels=channels, columns=self._columns_text(),
             epochs=None if self.epochs is None else repr(self.epochs))
 
-    def _columns_text(self) -> str:
-        """What the columns of the data are (for the HTML display)."""
-        return "segments"
-
     # ----------------------------------------------------------------------
     # Plotting
     # ----------------------------------------------------------------------
 
     def _percent_missing(self, channel) -> np.ndarray:
-        """Percentage of missing data of `channel` at each time point."""
-        return _percent_masked(self[channel])
+        """Percentage of missing data of `channel` at each time point (for
+        averages: the mean percentage of their missing trials)."""
+        return 100. * (1. - np.mean(self._valid_share(channel), axis=1))
 
     def _plot_channels(self, channels):
         if channels is None:
@@ -1284,9 +1533,9 @@ class SegmentedEyeData(state.VersionedState):
                          color="orange" if single else line.get_color())
             ax2.set_ylim(0, 100)
             if single:
-                ax2.set_ylabel(self._missing_label, color="orange")
+                ax2.set_ylabel("% missing", color="orange")
             else:
-                ax2.set_ylabel(self._missing_label)
+                ax2.set_ylabel("% missing")
             # restore ax1 as current axes so plt.legend() works for the user
             plt.sca(ax1)
 
@@ -1339,357 +1588,182 @@ class SegmentedEyeData(state.VersionedState):
 
 
 # --------------------------------------------------------------------------
-# Segments of several subjects
+# Segments of several participants
 # --------------------------------------------------------------------------
 
-def _concat_epochs(segments, subjects):
+def _named_segments(segments):
+    """(names, list of segments) of a list or dict of SegmentedEyeData: the
+    dict keys, otherwise the names of the segments, or numbers if these are
+    not unique."""
+    if isinstance(segments, Mapping):
+        return [str(k) for k in segments], list(segments.values())
+    segments = list(segments)
+    names = [str(s.name) for s in segments]
+    if len(set(names)) != len(names):
+        names = [str(i + 1) for i in range(len(segments))]
+    return names, segments
+
+
+def concat_segments(segments, name: str = None, channels=None,
+                    key: str = "subject") -> SegmentedEyeData:
     """
-    Epochs of all `segments` one after the other, with the metadata column
-    ``"subject"``, or None if they do not all have Epochs with one window.
-    """
-    from .epochs import Epochs
-    from .events import _concat_meta
-    eps = [s.epochs for s in segments]
-    if not all(isinstance(e, Epochs) for e in eps) or len({e.window for e in eps}) != 1:
-        return None
-    lengths = [len(e) for e in eps]
-    meta = _concat_meta([e.meta for e in eps], lengths)
-    meta["subject"] = np.repeat(np.array(subjects, dtype=str), lengths)
-    return Epochs(np.concatenate([e.onsets for e in eps]), eps[0].window,
-                  labels=np.concatenate([e.labels for e in eps]), meta=meta,
-                  label=eps[0].label)
+    Stack the segments of several participants (or sessions) into one object.
 
-
-class GroupLevelSegmentedData(SegmentedEyeData):
-    """
-    Segments of several subjects combined (e.g., group-level ERPD).
-
-    Combines one :class:`~pypillometry.SegmentedEyeData` object per subject,
-    either by averaging within each subject (one column per subject) or by
-    stacking all their segments (one column per trial). It has the same
-    channels, methods and namespaces as SegmentedEyeData (e.g.,
-    ``group.pupil.plot()``, ``group.gaze.plot_roi("target")``); mean and
-    error are taken over the columns.
-
-    Usually created with :func:`~pypillometry.group_segments` (or
-    :meth:`from_segments`) from a list or dict of
-    :class:`~pypillometry.SegmentedEyeData` objects, one per subject.
-
-    The data keep their mask: stacked segments keep their own mask, and in
-    aggregate mode a subject's mean is masked where all of their segments are
-    masked. In addition, `subject_mask_percent` stores the percentage of
-    masked trials of each subject at each time point, and `mask_percent`
-    its average across subjects.
-
-    Stacked segments keep the epochs of all subjects, with the subject in
-    the metadata column ``"subject"`` (so trials can be selected with
-    :meth:`~SegmentedEyeData.filter`, e.g., ``group.filter(cond="easy")``).
-    Averages have no epochs; :meth:`~SegmentedEyeData.keep` selects
-    subjects.
-
-    Parameters
-    ----------
-    name : str
-        name of the dataset
-    tx : np.ndarray
-        time axis relative to the event onsets (in ms)
-    data : dict
-        channel name -> array of shape (time points, subjects) or (time
-        points, trials of all subjects)
-    subjects : list of str
-        names of the subjects
-    subject_mask_percent : dict
-        channel name -> percentage of masked trials of each subject at each
-        time point (shape: time points x subjects)
-    stacked : bool, optional
-        True if the columns are trials, False (default) if they are subject
-        averages
-    subject : np.ndarray, optional
-        index (into `subjects`) of the subject of each column; default: one
-        column per subject (None for stacked segments from old files, whose
-        subjects are unknown)
-    epochs : Epochs, optional
-        the epochs of the columns (stacked segments only)
-    sampling_rate : float, optional
-        sampling rate in Hz
-    """
-
-    # state (see pypillometry.state): adds to that of SegmentedEyeData
-    _STATE_FIELDS = ("subjects", "subject", "subject_mask_percent", "stacked")
-
-    _missing_label = "avg % missing"
-
-    def __init__(self, name: str, tx: np.ndarray, data: dict, subjects, subject_mask_percent: dict,
-                 stacked: bool = False, subject=None, epochs=None, sampling_rate: float = None):
-        super().__init__(name=name, tx=tx, data=data, epochs=epochs,
-                         sampling_rate=sampling_rate)
-        self.subjects = [str(s) for s in subjects]
-        self.stacked = bool(stacked)
-        if subject is None and not self.stacked:
-            subject = np.arange(len(self.subjects))
-        self.subject = None if subject is None else np.asarray(subject, dtype=int)
-        if self.subject is not None and self.subject.shape != (self.n_segments,):
-            raise ValueError(f"subject must have one value per column ({self.n_segments})")
-        self.subject_mask_percent = {ch: np.asarray(p, dtype=float)
-                                     for ch, p in subject_mask_percent.items()}
-
-    @property
-    def n_subjects(self) -> int:
-        """Number of subjects."""
-        return len(self.subjects)
-
-    @property
-    def mask_percent(self) -> dict:
-        """Average percentage of masked trials per subject at each time point
-        (channel -> array with one value per time point)."""
-        return {ch: self._percent_missing(ch) for ch in self.channels}
-
-    def _percent_missing(self, channel) -> np.ndarray:
-        if channel in self.subject_mask_percent:
-            return np.mean(self.subject_mask_percent[channel], axis=1)
-        return _percent_masked(self[channel])
-
-    def _subject_percent(self, arr):
-        """Percentage of masked trials of each subject (stacked columns)."""
-        return np.column_stack([_percent_masked(arr[:, self.subject == j])
-                                for j in range(self.n_subjects)])
-
-    def __setitem__(self, channel, values):
-        new = channel not in self.data
-        super().__setitem__(channel, values)
-        # a new channel of stacked trials (e.g., ROI hits): masked trials per subject
-        if new and getattr(self, "stacked", False) and self.subject is not None:
-            self.subject_mask_percent[channel] = self._subject_percent(self.data[channel])
-
-    def _copy(self):
-        new = super()._copy()
-        new.subject_mask_percent = dict(self.subject_mask_percent)
-        return new
-
-    def _with_channels(self, channels):
-        new = super()._with_channels(channels)
-        new.subject_mask_percent = {ch: p for ch, p in self.subject_mask_percent.items()
-                                    if ch in channels}
-        return new
-
-    def _take(self, mask):
-        if not self.stacked:
-            # the columns are subjects
-            new = super()._take(mask)
-            idx = np.flatnonzero(mask)
-            new.subjects = [self.subjects[i] for i in idx]
-            new.subject = np.arange(len(idx))
-            new.subject_mask_percent = {ch: p[:, idx] for ch, p in self.subject_mask_percent.items()}
-            return new
-        if self.subject is None:
-            raise ValueError("the subjects of the trials are not known (segments saved "
-                             "with an older version of pypillometry), so trials cannot "
-                             "be selected")
-        new = super()._take(mask)
-        sub = self.subject[mask]
-        present = [j for j in range(self.n_subjects) if j in set(sub.tolist())]
-        remap = {old: i for i, old in enumerate(present)}
-        new.subjects = [self.subjects[j] for j in present]
-        new.subject = np.array([remap[s] for s in sub.tolist()], dtype=int)
-        new.subject_mask_percent = {ch: new._subject_percent(new.data[ch])
-                                    for ch in self.subject_mask_percent}
-        return new
-
-    @classmethod
-    def from_segments(cls, segments, meanfct=np.mean, name: str = None,
-                      channels=None) -> 'GroupLevelSegmentedData':
-        """
-        Combine SegmentedEyeData objects (one per subject).
-
-        Parameters
-        ----------
-        segments : list or dict of SegmentedEyeData
-            one object per subject; for a dict, the keys are the names of
-            the subjects (otherwise the names of the segments, or numbers
-            if these are not unique)
-        meanfct : callable or None
-            Function to aggregate within each subject, called as
-            ``meanfct(data, axis=1)``; it must accept an `axis` argument and
-            ignore masked values (e.g., np.mean or np.ma.median, but not
-            np.median; a warning is logged otherwise).
-            If None, all segments from all subjects are stacked (concatenated).
-        name : str, optional
-            Name for the group-level dataset. If None, uses ``"group_"`` + first
-            segment's name
-        channels : str or list of str, optional
-            channels to combine (default: those of the first segments); all
-            segments must have them
-
-        Returns
-        -------
-        GroupLevelSegmentedData
-            New instance with combined data
-
-        Raises
-        ------
-        ValueError
-            if `segments` is empty or the time axes differ
-        KeyError
-            if segments lack a channel
-
-        Examples
-        --------
-        One SegmentedEyeData per subject (here: the example recording twice):
-
-        >>> import pypillometry as pp
-        >>> from pypillometry import u
-        >>> d = pp.get_example_data("rlmw_002_short")
-        >>> epochs = d.get_epochs("S_", (-500, 2500) * u.ms)
-        >>> subj1 = d.get_segments(epochs, variables="pupil")
-        >>> subj2 = d.get_segments(epochs, variables="pupil")
-
-        >>> # Aggregate within subjects, then combine
-        >>> group = pp.GroupLevelSegmentedData.from_segments({"S01": subj1, "S02": subj2})
-        >>> group["left_pupil"].shape  # (time points, subjects)
-        (1500, 2)
-
-        >>> # Stack all trials from all subjects
-        >>> group = pp.GroupLevelSegmentedData.from_segments([subj1, subj2], meanfct=None)
-        >>> group["left_pupil"].shape  # (time points, trials)
-        (1500, 20)
-        """
-        if isinstance(segments, Mapping):
-            subjects = [str(k) for k in segments]
-            segments = list(segments.values())
-        else:
-            segments = list(segments)
-            names = [str(s.name) for s in segments]
-            subjects = names if len(set(names)) == len(names) else \
-                [str(i + 1) for i in range(len(segments))]
-        if not segments:
-            raise ValueError("segments list cannot be empty")
-
-        first = segments[0]
-        channels = first.channels if channels is None else _as_list(channels)
-        for i, seg in enumerate(segments, start=1):
-            missing = [ch for ch in channels if ch not in seg]
-            if missing:
-                raise KeyError(f"segments {i} ({seg.name}) have no channel(s) "
-                               f"{', '.join(missing)} (available channels: "
-                               f"{', '.join(seg.channels)})")
-            if seg.n_timepoints != first.n_timepoints:
-                raise ValueError(f"Timepoint mismatch: segment 1 has {first.n_timepoints}, "
-                                 f"segment {i} has {seg.n_timepoints}")
-            if not np.allclose(seg.tx, first.tx):
-                raise ValueError(f"Time axis mismatch between segment 1 and segment {i}")
-
-        # percentage of masked trials of each subject at each time point
-        smp = {ch: np.column_stack([_percent_masked(seg[ch]) for seg in segments])
-               for ch in channels}
-        if meanfct is None:
-            # stack mode: all segments of all subjects (keep their masks)
-            data = {ch: ma.concatenate([seg[ch] for seg in segments], axis=1)
-                    for ch in channels}
-            subject = np.concatenate([np.full(seg.n_segments, i, dtype=int)
-                                      for i, seg in enumerate(segments)])
-            epochs = _concat_epochs(segments, subjects)
-        else:
-            # aggregate mode: meanfct within each subject; a time point where
-            # all of a subject's segments are masked stays masked
-            _check_accepts_axis(meanfct, "meanfct")
-            _warn_if_ignores_mask(meanfct, "meanfct", axis=1)
-            data = {ch: ma.column_stack([ma.asarray(meanfct(seg[ch], axis=1))
-                                         for seg in segments])
-                    for ch in channels}
-            subject, epochs = None, None
-
-        return cls(name=f"group_{first.name}" if name is None else name,
-                   tx=first.tx.copy(), data=data, subjects=subjects,
-                   subject_mask_percent=smp, stacked=meanfct is None, subject=subject,
-                   epochs=epochs, sampling_rate=first.sampling_rate)
-
-    def summary(self) -> dict:
-        """
-        Return a summary of the GroupLevelSegmentedData object.
-
-        Returns
-        -------
-        dict
-            the summary of :meth:`SegmentedEyeData.summary` (`percent_masked`:
-            the average percentage of masked trials per subject), with
-            n_subjects and stacked
-        """
-        s = super().summary()
-        s["n_subjects"] = self.n_subjects
-        s["stacked"] = self.stacked
-        return s
-
-    def _shape_text(self) -> str:
-        cols = "trials" if self.stacked else "subject averages"
-        return (f"{self.n_subjects} subjects, {self.n_segments} {cols} x "
-                f"{self.n_timepoints} time points")
-
-    def _columns_text(self) -> str:
-        return "trials" if self.stacked else "subject averages"
-
-    def _overview(self):
-        items = super()._overview()
-        i = [k for k, _ in items].index("Segments")
-        items[i] = ("Trials" if self.stacked else "Columns", f"{self.n_segments:,}")
-        items.insert(i, ("Subjects", f"{self.n_subjects}"))
-        i = [k for k, _ in items].index("Missing")
-        items[i] = ("Avg missing", items[i][1])
-        return items
-
-
-def group_segments(segments, meanfct=np.mean, name: str = None,
-                   channels=None) -> GroupLevelSegmentedData:
-    """
-    Combine multiple SegmentedEyeData objects into a GroupLevelSegmentedData.
-
-    Convenience function that wraps GroupLevelSegmentedData.from_segments().
+    The columns (trials or averages) of all segments are put one after the
+    other, with their epochs; the metadata column `key` (default
+    ``"subject"``) says which segments each column comes from. The result
+    can be selected and averaged like the segments of one participant, e.g.,
+    ``concat_segments(segs).average(by=["subject", "cond"])``.
 
     Parameters
     ----------
     segments : list or dict of SegmentedEyeData
-        one object per subject; for a dict, the keys are the names of the
-        subjects
-    meanfct : callable or None
-        Function to aggregate within each subject, called as
-        ``meanfct(data, axis=1)``; it must accept an `axis` argument and
-        ignore masked values (e.g., np.mean or np.ma.median, but not
-        np.median; a warning is logged otherwise).
-        If None, all segments from all subjects are stacked (concatenated).
+        the segments, e.g., one object per participant; for a dict, the
+        keys are the values of `key` (otherwise the names of the segments,
+        or numbers if these are not unique). All must have the same time
+        axis.
     name : str, optional
-        Name for the group-level dataset. If None, uses ``"group_"`` + first
-        segment's name
+        name of the result (default: the name of the first segments)
     channels : str or list of str, optional
-        channels to combine (default: those of the first segments)
+        channels to combine (default: those of the first segments); all
+        segments must have them
+    key : str or None, optional
+        metadata column for the names of the segments (default
+        ``"subject"``); None adds no column
 
     Returns
     -------
-    GroupLevelSegmentedData
-        Combined group-level data
+    SegmentedEyeData
+        the stacked segments
+
+    Raises
+    ------
+    ValueError
+        if `segments` is empty, the time axes differ, or the epochs already
+        have a metadata column `key`
+    KeyError
+        if segments lack a channel
 
     Examples
     --------
-    One SegmentedEyeData per subject (here: the example recording twice):
+    One SegmentedEyeData per participant (here: the example recording twice):
 
     >>> import pypillometry as pp
     >>> from pypillometry import u
     >>> d = pp.get_example_data("rlmw_002_short")
     >>> epochs = d.get_epochs("S_", (-500, 2500) * u.ms)
-    >>> subj1_seg = d.get_segments(epochs, name="S01")
-    >>> subj2_seg = d.get_segments(epochs, name="S02")
-
-    >>> # From a list
-    >>> group = pp.group_segments([subj1_seg, subj2_seg])
-    >>> group.subjects
-    ['S01', 'S02']
-
-    >>> # From a dict, pupil channels only
-    >>> segments = {"S01": subj1_seg, "S02": subj2_seg}
-    >>> group = pp.group_segments(segments, channels=["left_pupil", "right_pupil"])
-
-    >>> # Stack all trials instead of averaging
-    >>> group = pp.group_segments(segments, meanfct=None)
-    >>> group.filter(subject="S01").n_segments
+    >>> seg = d.get_segments(epochs, variables="pupil")
+    >>> both = pp.concat_segments({"S01": seg, "S02": seg})
+    >>> both.n_segments
+    20
+    >>> both.filter(subject="S01").n_segments
     10
     """
-    return GroupLevelSegmentedData.from_segments(segments, meanfct=meanfct, name=name,
-                                                 channels=channels)
+    from .epochs import Epochs
+    from .events import _concat_meta
+    names, segments = _named_segments(segments)
+    if not segments:
+        raise ValueError("no segments to combine")
+    first = segments[0]
+    channels = first.channels if channels is None else _as_list(channels)
+    for i, seg in enumerate(segments, start=1):
+        missing = [ch for ch in channels if ch not in seg]
+        if missing:
+            raise KeyError(f"segments {i} ({seg.name}) have no channel(s) "
+                           f"{', '.join(missing)} (available channels: "
+                           f"{', '.join(seg.channels)})")
+        if seg.n_timepoints != first.n_timepoints or not np.allclose(seg.tx, first.tx):
+            raise ValueError(f"the time axes of segments 1 ({first.n_timepoints} time "
+                             f"points) and {i} ({seg.n_timepoints}) differ")
+
+    # epochs: those of the segments (without a time if they have none)
+    eps = [seg.epochs if isinstance(seg.epochs, Epochs) else
+           _untimed_epochs(seg.n_segments, seg.tx, seg.sampling_rate)
+           for seg in segments]
+    if key is not None and any(key in ep.meta for ep in eps):
+        raise ValueError(f"the epochs already have a metadata column {key!r}; pass "
+                         f"another name as key= (or key=None)")
+    metas = [dict(ep.meta) for ep in eps]
+    if any("n_trials" in m for m in metas):
+        for m, ep in zip(metas, eps):
+            m.setdefault("n_trials", np.ones(len(ep), dtype=int))
+    lengths = [len(ep) for ep in eps]
+    meta = _concat_meta(metas, lengths)
+    if key is not None:
+        meta[key] = np.repeat(np.array(names, dtype=str), lengths)
+    epochs = Epochs(np.concatenate([ep.onsets for ep in eps]), eps[0].window,
+                    labels=np.concatenate([ep.labels for ep in eps]), meta=meta,
+                    label=eps[0].label)
+
+    data = {ch: ma.concatenate([seg[ch] for seg in segments], axis=1) for ch in channels}
+    shares = {ch: np.concatenate([seg._valid_share(ch) for seg in segments], axis=1)
+              for ch in channels if any(ch in seg.valid_share for seg in segments)}
+    return SegmentedEyeData(name=first.name if name is None else name, tx=first.tx.copy(),
+                            data=data, epochs=epochs, sampling_rate=first.sampling_rate,
+                            valid_share=shares)
+
+
+def group_segments(segments, meanfct=np.mean, name: str = None,
+                   channels=None) -> SegmentedEyeData:
+    """
+    Average the segments of several participants per participant.
+
+    Shortcut for ``concat_segments(segments).average(by="subject")``: the
+    result has one column per participant (the average of their trials),
+    with the metadata column ``"subject"``. Mean and error over the columns
+    (e.g., ``group.pupil.plot()``) are those across participants.
+
+    Parameters
+    ----------
+    segments : list or dict of SegmentedEyeData
+        one object per participant; for a dict, the keys are the names of
+        the participants (otherwise the names of the segments, or numbers
+        if these are not unique)
+    meanfct : callable or None
+        function that averages the trials of each participant, called as
+        ``meanfct(data, axis=1)``; it must accept an `axis` argument and
+        ignore masked values (e.g., np.mean or np.ma.median, but not
+        np.median; a warning is logged otherwise). If None, the trials are
+        not averaged (as :func:`concat_segments`).
+    name : str, optional
+        name of the result (default: ``"group_"`` and the name of the first
+        segments)
+    channels : str or list of str, optional
+        channels to combine (default: those of the first segments)
+
+    Returns
+    -------
+    SegmentedEyeData
+        the averages of the participants (or all their trials)
+
+    Examples
+    --------
+    One SegmentedEyeData per participant (here: the example recording twice):
+
+    >>> import pypillometry as pp
+    >>> from pypillometry import u
+    >>> d = pp.get_example_data("rlmw_002_short")
+    >>> epochs = d.get_epochs("S_", (-500, 2500) * u.ms)
+    >>> segments = {"S01": d.get_segments(epochs), "S02": d.get_segments(epochs)}
+    >>> group = pp.group_segments(segments, channels=["left_pupil", "right_pupil"])
+    >>> group["left_pupil"].shape  # (time points, participants)
+    (1500, 2)
+    >>> group.epochs.meta["subject"].tolist()
+    ['S01', 'S02']
+
+    Means per participant and condition, then the mean of the participants
+    per condition (here, the condition is the half of the session):
+
+    >>> ep = epochs.set_meta("half", np.where(np.arange(len(epochs)) < 5, "first", "second"))
+    >>> both = pp.concat_segments({"S01": d.get_segments(ep), "S02": d.get_segments(ep)})
+    >>> means = both.average(by=["subject", "half"]).average(by="half")
+    >>> means.epochs.meta["n_trials"].tolist()
+    [10, 10]
+    """
+    names, segs = _named_segments(segments)
+    if name is None and segs:
+        name = f"group_{segs[0].name}"
+    stacked = concat_segments(dict(zip(names, segs)), name=name, channels=channels)
+    if meanfct is None:
+        return stacked
+    return stacked.average(by="subject", meanfct=meanfct)

@@ -61,7 +61,7 @@ from .eyedata.steps import (
     fill_time_discontinuities,
 )
 from .segmented import (
-    SegmentedEyeData, GroupLevelSegmentedData, group_segments,
+    SegmentedEyeData, concat_segments, group_segments,
 )
 from .events import Events, ClockSync, sync_clocks
 from .intervals import Intervals, concat_intervals
@@ -111,7 +111,7 @@ __all__ = [
     "keep_intervals", "remove_intervals", "merge_masks", "clear_layer",
     "set_blinks", "set_events", "add_events", "set_experimental_setup",
     "drop_data", "drop_original", "fill_time_discontinuities",
-    "SegmentedEyeData", "GroupLevelSegmentedData", "group_segments",
+    "SegmentedEyeData", "concat_segments", "group_segments",
     "Events", "ClockSync", "sync_clocks",
     "Intervals", "concat_intervals", "Epochs",
     "ROI", "CircularROI", "RectangularROI",
