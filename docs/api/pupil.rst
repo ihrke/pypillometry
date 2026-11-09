@@ -20,7 +20,7 @@ the same arguments (see :doc:`pipelines`):
     d = d | (pp.pupil.blinks_detect() | pp.pupil.lowpass_filter(cutoff=4))  # steps
 
 The blink getters and setters (:meth:`~EyeData.get_blinks`,
-:meth:`~EyeData.set_blinks`, :meth:`~EyeData.nblinks`, ...)
+:meth:`~EyeData.set_blinks`, :meth:`~EyeData.blink_stats`, ...)
 work on mask layers of any variable and are methods of the data object
 itself.
 

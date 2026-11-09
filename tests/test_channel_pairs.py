@@ -127,7 +127,7 @@ class TestIncompleteBlinkStores:
         d.set_blinks(iv)
         assert set(d.get_blinks()) == {"left_pupil", "left_x", "left_y", "right_pupil"}
         assert d.data.mask["right_pupil"][10:20].all()
-        assert d.nblinks() == {"left_pupil": 1, "left_x": 1, "left_y": 1, "right_pupil": 1}
+        assert {k: len(iv) for k, iv in d.get_blinks().items()} == {"left_pupil": 1, "left_x": 1, "left_y": 1, "right_pupil": 1}
         assert set(d.get_blinks(variables="x")) == {"left_x"}
         with pytest.raises(KeyError, match="right_x"):
             d.get_blinks("right", "x")["right_x"]
@@ -207,10 +207,10 @@ class TestIncompleteIntervals:
         iv = pp.Intervals([(10, 20), (22, 30)], units="samples")
         d.set_blinks(iv)
         merged = d.pupil.blinks_merge_close(distance=5, units="samples", inplace=False)
-        assert merged.nblinks() == {   # pupil channels only
+        assert {k: len(iv) for k, iv in merged.get_blinks().items()} == {   # pupil channels only
             "left_pupil": 1, "left_x": 2, "left_y": 2, "right_pupil": 1}
         d.pupil.blinks_merge_close(distance=5, units="samples")
-        assert d.nblinks() == {"left_pupil": 1, "left_x": 2, "left_y": 2, "right_pupil": 1}
+        assert {k: len(iv) for k, iv in d.get_blinks().items()} == {"left_pupil": 1, "left_x": 2, "left_y": 2, "right_pupil": 1}
 
     def test_stat_per_event(self, incomplete_eyedata):
         import pypillometry as pp
@@ -238,7 +238,7 @@ class TestIncompletePupilMethods:
 
     def test_blinks(self, d):
         d.pupil.blinks_detect()
-        nb = d.nblinks(variables="pupil")
+        nb = {k: len(iv) for k, iv in d.get_blinks(variables="pupil").items()}
         assert set(nb) == {"left_pupil", "right_pupil"}
         d.pupil.blinks_interpolate()
         assert set(d.get_interpolated(variables="pupil")) == {"left_pupil", "right_pupil"}

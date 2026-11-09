@@ -65,3 +65,19 @@ See :meth:`EyeData.quality_report`.
 
    QualityReport
    QualityMetric
+
+Tables
+------
+
+Results with one row per channel, event or trial (e.g.,
+:meth:`EyeData.layer_stats`, :meth:`Events.to_table`,
+:meth:`SegmentedEyeData.gaze.dwell_time
+<pypillometry.segmented.SegmentedGazeNamespace.dwell_time>`) are tables:
+dicts of numpy columns that are displayed as a :class:`pandas.DataFrame`.
+
+.. autosummary::
+   :toctree: generated
+   :template: class.rst
+   :nosignatures:
+
+   Table

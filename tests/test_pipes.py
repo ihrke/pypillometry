@@ -125,8 +125,8 @@ class TestPipeline:
         d = _data()
         d.inplace = False
         r = d | (pp.pupil.blinks_detect(strategies=["zero"]) | pp.crop(100, 2900))
-        assert r.nblinks()["left_pupil"] == 1
-        assert d.nblinks()["left_pupil"] == 0
+        assert {k: len(iv) for k, iv in r.get_blinks().items()}["left_pupil"] == 1
+        assert {k: len(iv) for k, iv in d.get_blinks().items()}["left_pupil"] == 0
 
     def test_same_as_method_chain(self):
         d = _data()
@@ -141,8 +141,8 @@ class TestPipeline:
         data = {s: _data(s) for s in ("s1", "s2")}
         out = {s: d | PREPROC for s, d in data.items()}
         assert [d.name for d in out.values()] == ["s1", "s2"]
-        assert all(d.nblinks()["left_pupil"] == 1 for d in out.values())
-        assert all(d.nblinks()["left_pupil"] == 0 for d in data.values())
+        assert all({k: len(iv) for k, iv in d.get_blinks().items()}["left_pupil"] == 1 for d in out.values())
+        assert all({k: len(iv) for k, iv in d.get_blinks().items()}["left_pupil"] == 0 for d in data.values())
 
     def test_history_per_step(self):
         r = _data() | PREPROC | pp.downsample(100)

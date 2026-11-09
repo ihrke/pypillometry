@@ -606,15 +606,14 @@ class TestEyeData(unittest.TestCase):
         self.assertEqual(corrected.data.mask['left_pupil_corrected'][10], 1)
         self.assertEqual(corrected.data.mask['left_pupil_corrected'][0], 0)
 
-    def test_nblinks_returns_dict(self):
-        """nblinks returns (and is annotated as) a dict"""
-        import typing
+    def test_layer_stats_returns_table(self):
+        """layer_stats returns a Table with one row per channel and layer"""
         from pypillometry.intervals import Intervals
         self.eyedata.set_blinks(Intervals([(100, 200)], units="samples"),
                                 eyes=['left'], variables=['pupil'])
-        self.assertEqual(self.eyedata.nblinks(eyes='left', variables='pupil'), {'left_pupil': 1})
-        hint = typing.get_type_hints(pp.EyeData.nblinks)["return"]
-        self.assertIs(typing.get_origin(hint), dict)
+        t = self.eyedata.layer_stats("blink", eyes="left", variables="pupil")
+        self.assertIsInstance(t, pp.Table)
+        self.assertEqual(t["n"].tolist(), [1])
 
     def test_detectors_have_no_apply_mask(self):
         """the detectors set their layer (no apply_mask argument)"""

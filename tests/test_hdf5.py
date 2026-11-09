@@ -41,7 +41,7 @@ class TestObjects(HDF5TestCase):
     def test_eyedata(self):
         d = make_eyedata()
         d2 = self.roundtrip(d)
-        self.assertEqual(d2.nblinks(), d.nblinks())
+        self.assertEqual({k: len(iv) for k, iv in d2.get_blinks().items()}, {k: len(iv) for k, iv in d.get_blinks().items()})
         self.assertEqual(d2.events.labels.dtype, d.events.labels.dtype)
         self.assertEqual(d2.experimental_setup.screen_resolution, (1280, 1024))
         self.assertIsInstance(d2.original, pp.EyeData)

@@ -971,35 +971,116 @@ class EyeData(state.VersionedState):
         intervals_obj = Intervals.from_mask(mask)
         return intervals_obj.intervals
 
-    def nblinks(self, eyes=[], variables=[]) -> Dict[str, int]:
+    def layer_stats(self, layers=None, eyes: str|list = [], variables: str|list = [],
+                    units: str = "ms", policy="default") -> "Table":
         """
-        Return number of detected blinks. Should be run after
-        :meth:`d.pupil.blinks_detect() <pypillometry.eyedata.pupil.PupilNamespace.blinks_detect>`.
+        Statistics of the mask layers: how often and how long each channel is
+        marked by each layer.
 
-        By default, all eyes and variables are considered.
+        One row per channel and layer: the number of stretches (runs of
+        marked samples), their mean, SD, minimum, maximum and total
+        duration, and the percentage of the samples that are marked. The
+        row ``"masked"`` of a channel counts all samples that are unusable
+        under `policy` (all layers together, and NaN; a sample can be in
+        several layers, so the percentages of the layers do not add up to
+        it). The row ``"excluded"`` (channel ``"all"``) describes the
+        excluded periods, which apply to all channels.
+
+        Stretches and percentages refer to the included time (excluded
+        periods left out; for ``"excluded"``, to the whole recording), as in
+        the quality report (:meth:`quality_report`).
 
         Parameters
         ----------
+        layers : str or list of str, optional
+            layers to describe (e.g., ``"blink"``, ``["offscreen",
+            "masked"]``); default: all layers that are set on a channel (a
+            pupil channel has no ``"offscreen"`` row, for example),
+            ``"masked"`` and, if periods are excluded, ``"excluded"``
         eyes : str or list of str, optional
-            eye(s) to consider; if empty, all available eyes
+            eyes to consider; if empty, all available eyes
         variables : str or list of str, optional
-            variable(s) to consider; if empty, all available variables
+            variables to consider; if empty, all available variables
+        units : str, optional
+            units of the durations: "ms" (default), "sec", "min", "h" or
+            "samples"
+        policy : str, MaskPolicy or list of str, optional
+            mask policy of the row ``"masked"`` (see :meth:`mask`); default
+            ``"default"``
 
         Returns
         -------
-        dict
-            number of detected blinks per eye/variable, with keys like
-            "left_pupil" (0 for combinations without blinks)
+        Table
+            columns ``channel``, ``layer``, ``n``, ``mean``, ``sd``,
+            ``min``, ``max``, ``total_duration`` (in `units`) and
+            ``percent``; displayed as a table (see
+            :class:`~pypillometry.Table`)
+
+        See Also
+        --------
+        blink_stats : the statistics of the blinks only
+        get_layer_intervals : the stretches of a layer as Intervals
+        plot.PlotNamespace.plot_masked : plot of the unusable stretches
+
+        Examples
+        --------
+        >>> import pypillometry as pp
+        >>> d = pp.get_example_data("rlmw_002_short")
+        >>> d = d | pp.pupil.blinks_detect() | pp.gaze.mask_offscreen()
+        >>> t = d.layer_stats(eyes="left")
+        >>> list(zip(t["channel"].tolist(), t["layer"].tolist()))   # doctest: +NORMALIZE_WHITESPACE
+        [('left_x', 'offscreen'), ('left_x', 'masked'), ('left_y', 'offscreen'),
+         ('left_y', 'masked'), ('left_pupil', 'blink'), ('left_pupil', 'masked')]
+        >>> int(t["n"][4])                        # blinks of the left pupil
+        14
         """
-        return {key: len(iv) for key, iv in self.get_blinks(eyes, variables).items()}
+        from ..table import Table
+        requested = None if layers is None else (
+            [layers] if isinstance(layers, str) else list(layers))
+        channel_layers = [n for n in self.data.layer_names if n not in REC_LAYERS]
+        excluded = self._excluded_mask()
+        included = ~excluded
+        n_included = int(included.sum())
+
+        def percent(mask, base):
+            return 100. * float(mask[base].sum()) / base.sum() if base.any() else np.nan
+
+        rows = []
+        def add(channel, layer, intervals, pct):
+            st = intervals.to_units(units, self).stats() if len(intervals) else \
+                Intervals([], units).stats()
+            rows.append({"channel": channel, "layer": layer, "n": int(st["n"]),
+                         "mean": st["mean"], "sd": st["sd"], "min": st["min"],
+                         "max": st["max"], "total_duration": st["total_duration"],
+                         "percent": pct})
+
+        for e, v in self.data.select(eyes, variables):
+            key = f"{e}_{v}"
+            if requested is None:
+                names = [n for n in channel_layers if self.data.get_layer(key, n).any()]
+                names.append("masked")
+            else:
+                names = [n for n in requested if n != "excluded"]
+            for name in names:
+                mask = self.mask(key, policy=policy) if name == "masked" else \
+                    self.data.get_layer(key, name)
+                # stretches and percentage within the included time
+                runs = Intervals.from_mask(mask & included, self, units="ms")
+                add(key, name, runs, percent(mask, included))
+        if (requested is None and excluded.any()) or (requested and "excluded" in requested):
+            add("all", "excluded", self.get_excluded(units="ms"),
+                100. * float(excluded.mean()) if len(excluded) else np.nan)
+        columns = ("channel", "layer", "n", "mean", "sd", "min", "max",
+                   "total_duration", "percent")
+        return Table({c: [r[c] for r in rows] for c in columns})
 
 
     def blink_stats(self, eyes: list = [], units: str = "ms") -> dict:
         """
         Return statistics on blink durations.
 
-        Uses the blinks stored for the "pupil" variable of each eye
-        (see :meth:`~pypillometry.Intervals.stats`).
+        Uses the blinks stored for the "pupil" variable of each eye; a
+        shortcut for the rows ``"blink"`` of :meth:`layer_stats`, as a dict.
 
         Parameters
         ----------
@@ -1015,8 +1096,10 @@ class EyeData(state.VersionedState):
             blinks; number 0 and NaN without blinks) for each eye with pupil
             data, with keys like "left_pupil"
         """
-        return {key: blinks.stats()
-                for key, blinks in self.get_blinks(eyes, "pupil", units=units).items()}
+        t = self.layer_stats("blink", eyes=eyes, variables="pupil", units=units)
+        stats = ("n", "mean", "sd", "min", "max", "total_duration")
+        return {ch: {**{k: t[k][i].item() for k in stats}, "units": units}
+                for i, ch in enumerate(t["channel"])}
 
 
     def quality_report(self, thresholds: Optional[dict] = None, eyes: str|list = [],
@@ -1605,7 +1688,8 @@ class EyeData(state.VersionedState):
         if self._excluded_mask().any():
             summary["excluded_minutes"] = self.excluded_duration("min")
         if "blink" in self.data.layer_names and "pupil" in self.variables:
-            summary["nblinks"] = self.nblinks(variables="pupil")
+            summary["nblinks"] = {k: len(iv) for k, iv in
+                                  self.get_blinks(variables="pupil").items()}
             summary["blinks"] = self.blink_stats()
         else:
             summary["nblinks"] = {}

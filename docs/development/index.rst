@@ -118,8 +118,12 @@ follow them too; ``tests/test_api_conventions.py`` checks them.
 3. **Getters with per-channel results always return a dict** keyed by
    the channel name ``"<eye>_<variable>"`` (e.g., ``"left_pupil"``), also
    for a single channel, and with an entry for every selected channel (e.g.,
-   :meth:`~EyeData.nblinks` gives 0 for a channel without blinks).
-   The keys are the same strings as in ``d["left_pupil"]`` and ``d.data``.
+   :meth:`~EyeData.get_blinks` gives empty Intervals for a channel without
+   blinks). The keys are the same strings as in ``d["left_pupil"]`` and
+   ``d.data``. Results that are tables (one row per channel, event or
+   trial, e.g. :meth:`~EyeData.layer_stats`, :meth:`Events.to_table`) are
+   a :class:`Table`: a dict of numpy columns that is displayed as a
+   DataFrame.
 
 4. **Plain numbers are ms**: windows, durations, margins, and the default
    units of returned times and intervals
