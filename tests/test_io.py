@@ -387,5 +387,38 @@ class TestIO(unittest.TestCase):
         finally:
             shutil.rmtree(tmpdir, ignore_errors=True)
 
+    @patch("pypillometry.io._osf_client_url_to_download_url", side_effect=lambda url, session=None: url)
+    def test_download_progress_bar_follows_logging(self, mock_osf_url):
+        """no progress bar with logging disabled or a level above INFO"""
+        import pypillometry as pp
+        from pypillometry.logging import _show_progress, logging_get_level
+        level = logging_get_level()
+        try:
+            pp.logging_set_level("INFO")
+            self.assertTrue(_show_progress())
+            with pp.nologging():
+                self.assertFalse(_show_progress())
+            self.assertTrue(_show_progress())
+            pp.logging_set_level("WARNING")
+            self.assertFalse(_show_progress())
+            # the bar of download() is disabled accordingly
+            session = MagicMock()
+            response = MagicMock()
+            response.iter_content.return_value = [b"data"]
+            response.headers = {"content-length": "4"}
+            session.get.return_value.__enter__.return_value = response
+            session.get.return_value.__exit__.return_value = False
+            tmpdir = tempfile.mkdtemp()
+            try:
+                with patch("tqdm.tqdm") as mock_tqdm:
+                    mock_tqdm.return_value.__enter__.return_value = MagicMock()
+                    download("https://example.com/rec.edf",
+                             fname=os.path.join(tmpdir, "rec.edf"), session=session)
+                    self.assertTrue(mock_tqdm.call_args.kwargs["disable"])
+            finally:
+                shutil.rmtree(tmpdir, ignore_errors=True)
+        finally:
+            pp.logging_set_level(level)
+
 if __name__ == '__main__':
     unittest.main()

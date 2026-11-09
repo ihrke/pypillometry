@@ -15,6 +15,7 @@ from loguru import logger
 
 from .convenience import change_dir
 from .io import fetch_url, is_ssh_url, _cache_path
+from .logging import _show_progress
 
 __all__ = [
     "get_osf_project_files", "load_study_osf", "load_study_local",
@@ -108,7 +109,8 @@ def get_osf_project_files(osf_id: str, session: Optional["requests.Session"] = N
     
     # Process files with progress bar starting at estimated count
     root_url = f"https://api.osf.io/v2/nodes/{osf_id}/files/osfstorage/"
-    with tqdm(total=estimated_files, desc="Processing files") as pbar:
+    with tqdm(total=estimated_files, desc="Processing files",
+              disable=not _show_progress()) as pbar:
         process_files(root_url, "", pbar)
     
     return files
@@ -264,6 +266,7 @@ def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_dow
                 unit='iB',
                 unit_scale=True,
                 unit_divisor=1024,
+                disable=not _show_progress(),
             ) as bar:
                 for data in response.iter_content(chunk_size=1024):
                     size = f.write(data)
@@ -384,7 +387,8 @@ def load_study_local(path: str, config_file: str = "pypillometry_conf.py", subje
         # Load the data using the read_subject function from the config module
         study_data = {}
         logger.info("Loading subject data")
-        for subject_id in tqdm(subject_ids, desc="Loading subjects", unit="subject"):
+        for subject_id in tqdm(subject_ids, desc="Loading subjects", unit="subject",
+                               disable=not _show_progress()):
             logger.debug(f"Loading subject {subject_id}")
             info = config.raw_data[subject_id]
             downloaded = []
