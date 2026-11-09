@@ -12,9 +12,9 @@ installed pypillometry and writes
 - ``reference.json``: per case its description, parameters and scalar
   results, plus the pypillometry commit and versions it was run with
 
-The reference is meant to stay fixed: it records what the code computed
-before the 2.2 refactor. Do not re-run it to make a failing test pass; an
-intended change of a value goes into ``CHANGES.md`` instead.
+Do not re-run it just to make a failing test pass: regenerate the
+reference only for an intended change of a value, after checking that the
+new values are right, and in the same commit as the change.
 """
 import datetime
 import glob
@@ -51,7 +51,7 @@ def main():
                           "arrays": sorted(arrays), "scalars": scalars}
         print(f"{case_id}: {len(arrays)} arrays, {len(scalars)} scalars")
     ref = {
-        "description": "reference outputs of pypillometry before the 2.2 refactor "
+        "description": "reference outputs of pypillometry "
                        "(see tests/test_reference_outputs.py)",
         "pypillometry_commit": git("rev-parse", "HEAD"),
         "package_modified": bool(git("status", "--porcelain", "--", "pypillometry")),

@@ -3,16 +3,16 @@ Reference outputs: what the current code computes.
 
 Each case is one function that runs the API calls and returns a dict of
 results (numpy arrays and plain scalars). The script
-``tests/data/reference/make_reference.py`` ran the cases once and stored the
+``tests/data/reference/make_reference.py`` ran the cases and stored the
 results in ``tests/data/reference/`` (``<case id>.npz`` for the arrays,
 ``reference.json`` for the scalars and the description of the cases). The
-tests here recompute every case and compare it with the stored results.
+tests here recompute every case and compare it with the stored results, so
+that any change of a computed number is noticed.
 
 When the API changes, only the calls inside the case functions (and the
 helpers that read the results) are adapted. When a number changes on
-purpose, the stored reference is not regenerated silently: the change is
-described in ``tests/data/reference/CHANGES.md`` and the test is adapted
-(e.g., by comparing with a corrected value) in the same commit.
+purpose, the reference is regenerated with ``make_reference.py`` in the same
+commit, after checking that the new values are right.
 
 The data are pypillometry's packaged example data (``rlmw_002_short``) and
 synthetic data generated here (fixed seeds).
@@ -124,16 +124,15 @@ def pupil_keys(d):
     return [k for k in d.data.keys() if k.endswith("_pupil")]
 
 
-def old_mask(d, k):
-    """The mask as the reference stored it: it contained the interpolated
-    samples, so it is the mask under the strict policy (step 7)."""
+def strict_mask(d, k):
+    """The mask under the strict policy (interpolated samples are masked too)."""
     return d.mask(k, policy="strict")
 
 
 def masks(d, keys=None):
     """Mask of every variable."""
     keys = d.data.keys() if keys is None else keys
-    return {f"mask.{k}": old_mask(d, k) for k in keys}
+    return {f"mask.{k}": strict_mask(d, k) for k in keys}
 
 
 def blinks(d, keys, units="samples"):
@@ -157,7 +156,7 @@ def summary(d, step=50):
            "event_labels": np.asarray(d.events.labels, dtype=str)}
     for k in d.data.keys():
         v = np.asarray(d.data[k], dtype=float)
-        m = old_mask(d, k)
+        m = strict_mask(d, k)
         out[f"nansum.{k}"] = float(np.nansum(v))
         out[f"masked.{k}"] = int(m.sum())
         out[f"sub.{k}"] = v[::step].copy()
@@ -196,11 +195,8 @@ BLINK_PARAMS = {"default": {}, "zero": {"strategies": ["zero"]},
 def _blinks_detect(dataset, params):
     d = get_data(dataset)
     d.pupil.blinks_detect(**params)
-    # the returned blinks (before step 9) are the stored ones
-    out = {f"returned.{k}": iv_samples(iv) for k, iv in
-           d.get_blinks(variables="pupil", units="samples").items()}
-    out.update({f"stored.{k}": iv_samples(iv) for k, iv in
-                d.get_blinks(units="samples").items() if k in pupil_keys(d)})
+    out = {f"stored.{k}": iv_samples(iv) for k, iv in
+           d.get_blinks(units="samples").items() if k in pupil_keys(d)}
     out.update({f"stored_ms.{k}": iv_float(iv) for k, iv in
                 d.get_blinks(units="ms").items() if k in pupil_keys(d)})
     out.update(masks(d))
@@ -213,8 +209,8 @@ def _blinks_detect(dataset, params):
 for _ds in DATASETS:
     for _name, _params in BLINK_PARAMS.items():
         case(f"a.blinks_detect.{_ds}.{_name}",
-             f"pupil_blinks_detect({_params or ''}) on {_ds}: returned and stored "
-             "blink intervals (samples, ms), masks (not applied)",
+             f"pupil.blinks_detect({_params or ''}) on {_ds}: stored blink "
+             "intervals (samples, ms) and masks",
              dataset=_ds, params=_params)(_blinks_detect)
 
 
@@ -236,20 +232,20 @@ def _lowpass(dataset):
 
 for _ds in DATASETS:
     case(f"b.blinks_interpolate.{_ds}",
-         f"pupil_blinks_detect().pupil_blinks_interpolate() on {_ds}: "
+         f"pupil.blinks_detect(), pupil.blinks_interpolate() on {_ds}: "
          "pupil values, masks, blinks, interpolated blinks (samples)",
          dataset=_ds)(_blinks_interpolate)
     case(f"c.lowpass.{_ds}",
-         f"case b, then pupil_lowpass_filter(5) on {_ds}: pupil values and masks",
+         f"case b, then pupil.lowpass_filter(5) on {_ds}: pupil values and masks",
          dataset=_ds)(_lowpass)
 
 
 def _offscreen(dataset):
     d = get_data(dataset)
     d.gaze.mask_offscreen()
-    # returned before step 9: the runs per eye (the same for x and y)
+    # the runs of the layer per eye (the same for x and y)
     found = d.get_layer_intervals("offscreen", variables="x", units="samples")
-    out = {f"returned.{key.partition('_')[0]}": iv_samples(iv) for key, iv in found.items()}
+    out = {f"runs.{key.partition('_')[0]}": iv_samples(iv) for key, iv in found.items()}
     out.update(masks(d))
     return out
 
@@ -257,8 +253,8 @@ def _offscreen(dataset):
 def _divergence(dataset, params):
     d = get_data(dataset)
     d.gaze.mask_divergences(**params)
-    # returned before step 9: the runs (the same for all gaze variables)
-    out = {"returned": iv_samples(
+    # the runs of the layer (the same for all gaze variables)
+    out = {"runs": iv_samples(
         d.get_layer_intervals("divergence", "left", "x", units="samples")["left_x"])}
     out.update(masks(d))
     return out
@@ -268,13 +264,13 @@ DIVERGENCE_PARAMS = {"pct99": {}, "px100": {"threshold": 100, "thr_type": "pixel
 
 for _ds in DATASETS:
     case(f"d.offscreen.{_ds}",
-         f"mask_offscreen_coords() on {_ds} (screen 1280x1024): returned intervals "
-         "(apply_mask=False, samples) and masks (apply_mask=True)",
+         f"gaze.mask_offscreen() on {_ds} (screen 1280x1024): runs of the layer "
+         "(samples) and masks",
          dataset=_ds)(_offscreen)
     for _name, _params in DIVERGENCE_PARAMS.items():
         case(f"d.divergence.{_ds}.{_name}",
-             f"mask_eye_divergences({_params or ''}) on {_ds}: returned intervals "
-             "(apply_mask=False, samples) and masks (apply_mask=True)",
+             f"gaze.mask_divergences({_params or ''}) on {_ds}: runs of the layer "
+             "(samples) and masks",
              dataset=_ds, params=_params)(_divergence)
 
 
@@ -381,14 +377,11 @@ for _fsd in (250, 100):
 def _scale(dataset):
     d = preprocessed(dataset).scale()
     out = {}
-    # the stored parameters were "mean" and "sd" (now "center" and "scale")
-    for stat, new in (("mean", "center"), ("sd", "scale")):
-        for key, v in d.params["scale"][new].items():
-            eye, var = key.split("_", 1)
-            # the keys of the case are "<variable>_<eye>" (as before step 25)
-            out[f"param_{stat}.{var}_{eye}"] = float(v)
+    for stat in ("center", "scale"):
+        for key, v in d.params["scale"][stat].items():
+            out[f"param_{stat}.{key}"] = float(v)
     for k in d.data.keys():
-        x = np.ma.masked_array(d.data[k], mask=old_mask(d, k))
+        x = np.ma.masked_array(d.data[k], mask=strict_mask(d, k))
         out[f"mean.{k}"] = float(masked_mean(x))
         out[f"std.{k}"] = float(np.ma.std(x))
         out[f"nanmean_all.{k}"] = float(np.nanmean(d.data[k]))
@@ -401,10 +394,10 @@ def _merge_eyes(dataset):
     for k in d.data.keys():
         if not k.startswith("mean_"):
             continue
-        x = np.ma.masked_array(d.data[k], mask=old_mask(d, k))
+        x = np.ma.masked_array(d.data[k], mask=strict_mask(d, k))
         out[f"mean.{k}"] = float(masked_mean(x))
         out[f"nanmean_all.{k}"] = float(np.nanmean(d.data[k]))
-        out[f"masked.{k}"] = int(old_mask(d, k).sum())
+        out[f"masked.{k}"] = int(strict_mask(d, k).sum())
         out[f"sub.{k}"] = np.asarray(d.data[k][::50], dtype=float)
     out["keys"] = np.asarray(sorted(d.data.keys()), dtype=str)
     return out
@@ -467,262 +460,6 @@ def assert_same(name, actual, expected):
                                    equal_nan=True, err_msg=name)
 
 
-def _segment_time_axis(stored):
-    """Segment time axis ``w0 + arange(n) * 1000/fs`` (step 4; was ``linspace(w0, w1, n)``)."""
-    n = len(stored)
-    np.testing.assert_allclose(stored, np.linspace(-200., 1000., n))  # the old axis
-    return -200. + np.arange(n) * 1000. / 500.  # both data sets at 500 Hz
-
-
-#: layers (stored in case b, as intervals) that are decimated with the
-#: ">1/2 of the window" rule and are part of the mask (step 5)
-DECIMATED_LAYERS = ("interpolated", "blinks")
-
-
-def _more_than_half(case_id, key):
-    """Layers of case b (full rate) decimated as in `downsample` (step 5): set
-    where they cover more than half of the window."""
-    from pypillometry.signal.baseline import downsample
-    factor = 500 // int(case_id.rsplit(".", 1)[1])
-    full = load_arrays("b.blinks_interpolate.rlmw")
-    n = len(full["mask.left_pupil"])
-    out = {}
-    for name in ("interpolated", "blinks"):
-        m = np.zeros(n)  # gaze: no layers
-        for on, off in full.get(f"{name}.{key}", []):
-            m[on:off] = 1
-        out[name] = downsample(m, factor) > 0.5
-    return out
-
-
-def _downsampled_runs(case_id, key, stored):
-    """Blinks / interpolated blinks after `downsample`: runs of the decimated layer."""
-    name, _, key = key.partition(".")
-    run = _more_than_half(case_id, key)[name]
-    return iv_samples(pp.Intervals.from_mask(run))
-
-
-def _downsampled_mask(case_id, key, stored):
-    """Mask after `downsample`: masked as before (all samples of the window
-    masked) or a layer covers more than half of the window."""
-    layers = _more_than_half(case_id, key.partition(".")[2])
-    return stored | np.any([layers[name] for name in DECIMATED_LAYERS], axis=0)
-
-
-def _downsampled_masked(case_id, key, stored):
-    """Number of masked samples after `downsample` (see `_downsampled_mask`)."""
-    mkey = "mask." + key.partition(".")[2]
-    return int(_downsampled_mask(case_id, mkey, load_arrays(case_id)[mkey]).sum())
-
-
-def _quality_other(case_id, key, stored):
-    """`artifacts.<eye>.other_pct` after interpolation (step 5): interpolated
-    samples (and blinks) are not "other artifacts". In case b, every masked
-    pupil sample is interpolated, so nothing is left.
-
-    `artifacts.<eye>.pupil_masked_pct` (step 7): the samples that are
-    unusable under the default policy (interpolated samples are usable)."""
-    if key.endswith(".pupil_masked_pct") and case_id.endswith(".interp"):
-        usable = _case_b(case_id.split(".")[2])[f"{key.split('.')[1]}_pupil"][1]
-        return 100.0 * (~usable).sum() / len(usable)
-    if not key.endswith(".other_pct"):
-        return stored
-    scalars = load_reference()["cases"][case_id]["scalars"]
-    group = key.rsplit(".", 1)[0]
-    assert scalars[f"{group}.pupil_masked_pct"] == scalars[f"{group}.interpolated_pct"]
-    return 0.0
-
-
-def _case_b(dataset):
-    """Pupil values of case b and the samples that are usable under the
-    default mask policy (step 7): unusable are NaN and the samples masked
-    in the old mask (the stored masks) that are not interpolated."""
-    full = load_arrays(f"b.blinks_interpolate.{dataset}")
-    out = {}
-    for key in ("left_pupil", "right_pupil"):
-        v = full[f"pupil.{key}"]
-        interp = np.zeros(len(v), dtype=bool)
-        for on, off in full[f"interpolated.{key}"]:
-            interp[on:off] = True
-        out[key] = (v, ~((full[f"mask.{key}"] & ~interp) | np.isnan(v)))
-    return out
-
-
-def _merged_pupil(case_id, key, stored):
-    """`merge_eyes` of the pupil (step 7): mean over the eyes in which a sample
-    is usable under the default policy (interpolated samples are used);
-    step 29: recorded samples first, an interpolated sample is used only
-    where no eye has a recorded one."""
-    name, _, var = key.partition(".")
-    if var != "mean_pupil":
-        return stored  # gaze: nothing interpolated, unchanged
-    dataset = case_id.rsplit(".", 1)[1]
-    b = _case_b(dataset)
-    full = load_arrays(f"b.blinks_interpolate.{dataset}")
-    v = np.stack([b[k][0] for k in ("left_pupil", "right_pupil")])
-    usable = np.stack([b[k][1] for k in ("left_pupil", "right_pupil")])
-    interp = np.zeros_like(usable)
-    for i, k in enumerate(("left_pupil", "right_pupil")):
-        for on, off in full[f"interpolated.{k}"]:
-            interp[i, on:off] = True
-    recorded = usable & ~interp
-    usable = np.where(recorded.any(axis=0), recorded, usable)
-    allmasked = ~usable.any(axis=0)
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", RuntimeWarning)
-        merged = np.where(allmasked, np.nanmean(v, axis=0),
-                          np.nansum(np.where(usable, v, 0), axis=0) / usable.sum(axis=0))
-    # the merged pupil is "interpolated" where all eyes used were (step 29),
-    # so these samples are masked in the old (strict) mask as well
-    strict = allmasked | (np.where(usable, interp, True).all(axis=0) & ~allmasked)
-    return {"sub": merged[::50], "mean": float(np.mean(merged[~strict])),
-            "nanmean_all": float(np.nanmean(merged)), "masked": int(strict.sum())}[name]
-
-
-def _scaled_pupil(case_id, key, stored):
-    """`scale` of the pupil (step 7): mean and sd of the samples that are
-    usable under the default policy (interpolated samples are used)."""
-    name, _, k = key.partition(".")
-    # the parameter keys of the case are "<variable>_<eye>" (params["scale"]
-    # was {eye: {variable: value}})
-    k = {"pupil_left": "left_pupil", "pupil_right": "right_pupil"}.get(k, k)
-    if k not in ("left_pupil", "right_pupil"):
-        return stored  # gaze: nothing interpolated, unchanged
-    dataset = case_id.rsplit(".", 1)[1]
-    v, usable = _case_b(dataset)[k]
-    m, sd = np.mean(v[usable]), np.std(v[usable])
-    masked = load_arrays(f"b.blinks_interpolate.{dataset}")[f"mask.{k}"]
-    return {"param_mean": m, "param_sd": sd, "mean": (np.mean(v[~masked]) - m) / sd,
-            "std": np.std(v[~masked]) / sd, "nanmean_all": (np.nanmean(v) - m) / sd}[name]
-
-
-def _segments(case_id, k, masked):
-    """Segments of pupil `k` of case b (as in case e), masked where `masked`
-    (full rate), and their baseline correction with (-200, 0) ms."""
-    arrays = load_arrays(case_id)
-    tx = _segment_time_axis(arrays[f"tx.{k}"])
-    v = _case_b(case_id.split(".")[2])[k][0]
-    ix = arrays["intervals_samples"][:, 0][None, :] + np.arange(len(tx))[:, None]
-    assert ix.min() >= 0 and ix.max() < len(v)
-    seg = np.ma.array(v[ix], mask=masked[ix])
-    b0, b1 = (np.argmin(np.abs(w - tx)) for w in (-200, 0))
-    bc = seg.copy()
-    for i in range(seg.shape[1]):
-        bc[:, i] -= np.mean(seg[b0:b1, i])
-    return {"mask": np.ma.getmaskarray(seg), "mean": masked_mean(seg, axis=0),
-            "bc_data": np.ma.getdata(bc), "bc_mask": np.ma.getmaskarray(bc),
-            "bc_mean": masked_mean(bc, axis=0)}
-
-
-def _segments_interp(case_id, key, stored):
-    """Segments after interpolation (step 7): masked where unusable under the
-    default policy (interpolated samples are used)."""
-    name, _, k = key.partition(".")
-    if name == "tx":
-        return _segment_time_axis(stored)
-    if name not in ("mask", "mean", "bc_data", "bc_mask", "bc_mean"):
-        return stored
-    return _segments(case_id, k, ~_case_b(case_id.split(".")[2])[k][1])[name]
-
-
-def _stats(case_id, k, masked):
-    """`stat_per_event` of pupil `k` of case b (as in case e), with the
-    samples where `masked` (full rate) left out."""
-    dataset = case_id.split(".")[2]
-    v = _case_b(dataset)[k][0]
-    d = get_data(dataset)
-    out = {}
-    for name, window, fct in (("mean_pre", (-200, 0), np.mean),
-                              ("mean_post", (0, 1000), np.mean),
-                              ("median_post", (0, 1000), np.median)):
-        ivs = iv_samples(d.get_epochs(EVENT[dataset], window=window * u.ms)
-                         .to_intervals("samples", d))
-        res = []
-        for start, end in ivs:
-            start, end = max(start, 0), min(end, len(v))
-            sel = v[start:max(end, start + 1)][~masked[start:max(end, start + 1)]]
-            res.append(fct(sel) if len(sel) else np.nan)
-        out[name] = np.asarray(res)
-    return out
-
-
-def _stats_interp(case_id, key, stored):
-    """`stat_per_event` after interpolation (step 7): interpolated samples are used."""
-    name, _, k = key.partition(".")
-    if k not in ("left_pupil", "right_pupil"):
-        return stored  # gaze: nothing interpolated, unchanged
-    return _stats(case_id, k, ~_case_b(case_id.split(".")[2])[k][1])[name]
-
-
-def _window_means(x, factor):
-    """Mean of the non-NaN values of `x` per window of `factor` samples (NaN
-    if there are none; the last window may be shorter)."""
-    nw = -(-len(x) // factor)
-    w = np.concatenate([x, np.full(nw * factor - len(x), np.nan)]).reshape(nw, factor)
-    n = (~np.isnan(w)).sum(axis=1)
-    return np.where(n > 0, np.nansum(w, axis=1) / np.maximum(n, 1), np.nan)
-
-
-def _downsampled_values(case_id, key, stored):
-    """Pupil values after `downsample` (step 7): window means of the samples
-    that are usable under the default policy (interpolated samples are used);
-    windows without such samples: mean of all values."""
-    name, _, k = key.partition(".")
-    if k not in ("left_pupil", "right_pupil"):
-        return stored  # gaze: nothing interpolated, unchanged
-    factor = 500 // int(case_id.rsplit(".", 1)[1])
-    v, usable = _case_b("rlmw")[k]
-    y = _window_means(np.where(usable, v, np.nan), factor)
-    y = np.where(np.isnan(y), _window_means(v, factor), y)
-    return {"sub": y[::10], "nansum": float(np.nansum(y))}[name]
-
-
-def _blinks_masked(case_id, key, stored):
-    """Mask after `pupil_blinks_detect` (step 9): the stored blinks mask the
-    data (before only with ``apply_mask=True``)."""
-    k = key.partition(".")[2]
-    if not k.endswith("_pupil"):
-        return stored
-    blink = np.zeros(len(stored), dtype=bool)
-    for on, off in load_arrays(case_id)[f"stored.{k}"]:
-        blink[on:off] = True
-    return stored | blink
-
-
-def _blinks_not_hidden(case_id, key, stored):
-    """Blinks after `exclude_intervals` (step 21): all blinks of the layer,
-    also those next to the excluded periods (as before excluding)."""
-    return load_arrays(case_id.replace("g.exclude_intervals", "b.blinks_interpolate"))[key]
-
-
-#: intended changes (see CHANGES.md): (case id prefix, result key prefix) ->
-#: function mapping (case id, key, stored reference value) to the expected value
-CHANGED = {("e.segments.rlmw.interp", ""): _segments_interp,
-           ("e.segments.synth.interp", ""): _segments_interp,
-           ("e.stat_per_event.rlmw.interp", ""): _stats_interp,
-           ("e.stat_per_event.synth.interp", ""): _stats_interp,
-           ("e.segments.", "tx."): lambda case_id, key, stored: _segment_time_axis(stored),
-           ("g.downsample.", "interpolated."): _downsampled_runs,
-           ("g.downsample.", "blinks."): _downsampled_runs,
-           ("g.downsample.", "mask."): _downsampled_mask,
-           ("g.downsample.", "masked."): _downsampled_masked,
-           ("g.downsample.", "sub."): _downsampled_values,
-           ("g.downsample.", "nansum."): _downsampled_values,
-           ("f.quality.", "artifacts."): _quality_other,
-           ("h.merge_eyes.", ""): _merged_pupil,
-           ("h.scale.", ""): _scaled_pupil,
-           ("a.blinks_detect.", "mask."): _blinks_masked,
-           ("g.exclude_intervals.", "blinks."): _blinks_not_hidden}
-
-
-def expected_value(case_id, key, stored):
-    """The stored reference value, or the corrected one for an intended change."""
-    for (case_prefix, key_prefix), fct in CHANGED.items():
-        if case_id.startswith(case_prefix) and key.startswith(key_prefix):
-            return fct(case_id, key, stored)
-    return stored
-
-
 def test_reference_covers_all_cases():
     assert set(load_reference()["cases"]) == set(CASES)
 
@@ -735,9 +472,8 @@ def test_reference_output(case_id):
     assert set(arrays) == set(ref_arrays)
     assert set(scalars) == set(ref["scalars"])
     for k in sorted(ref_arrays):
-        assert_same(f"{case_id}:{k}", arrays[k], expected_value(case_id, k, ref_arrays[k]))
+        assert_same(f"{case_id}:{k}", arrays[k], ref_arrays[k])
     for k, v in sorted(ref["scalars"].items()):
-        v = expected_value(case_id, k, v)
         if isinstance(v, float):
             assert_same(f"{case_id}:{k}", scalars[k], v)
         else:

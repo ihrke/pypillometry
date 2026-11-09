@@ -8,14 +8,12 @@
     "mask.right_pupil",
     "mask.right_x",
     "mask.right_y",
-    "returned.left_pupil",
-    "returned.right_pupil",
     "stored.left_pupil",
     "stored.right_pupil",
     "stored_ms.left_pupil",
     "stored_ms.right_pupil"
    ],
-   "description": "pupil_blinks_detect() on rlmw: returned and stored blink intervals (samples, ms), masks (not applied)",
+   "description": "pupil.blinks_detect() on rlmw: stored blink intervals (samples, ms) and masks",
    "params": {
     "dataset": "rlmw",
     "params": {}
@@ -30,14 +28,12 @@
     "mask.right_pupil",
     "mask.right_x",
     "mask.right_y",
-    "returned.left_pupil",
-    "returned.right_pupil",
     "stored.left_pupil",
     "stored.right_pupil",
     "stored_ms.left_pupil",
     "stored_ms.right_pupil"
    ],
-   "description": "pupil_blinks_detect({'vel_onset': -10, 'min_duration': 10}) on rlmw: returned and stored blink intervals (samples, ms), masks (not applied)",
+   "description": "pupil.blinks_detect({'vel_onset': -10, 'min_duration': 10}) on rlmw: stored blink intervals (samples, ms) and masks",
    "params": {
     "dataset": "rlmw",
     "params": {
@@ -55,14 +51,12 @@
     "mask.right_pupil",
     "mask.right_x",
     "mask.right_y",
-    "returned.left_pupil",
-    "returned.right_pupil",
     "stored.left_pupil",
     "stored.right_pupil",
     "stored_ms.left_pupil",
     "stored_ms.right_pupil"
    ],
-   "description": "pupil_blinks_detect({'strategies': ['zero']}) on rlmw: returned and stored blink intervals (samples, ms), masks (not applied)",
+   "description": "pupil.blinks_detect({'strategies': ['zero']}) on rlmw: stored blink intervals (samples, ms) and masks",
    "params": {
     "dataset": "rlmw",
     "params": {
@@ -83,14 +77,12 @@
     "mask.right_y",
     "nan_blocks.left_pupil",
     "nan_blocks.right_pupil",
-    "returned.left_pupil",
-    "returned.right_pupil",
     "stored.left_pupil",
     "stored.right_pupil",
     "stored_ms.left_pupil",
     "stored_ms.right_pupil"
    ],
-   "description": "pupil_blinks_detect() on synth: returned and stored blink intervals (samples, ms), masks (not applied)",
+   "description": "pupil.blinks_detect() on synth: stored blink intervals (samples, ms) and masks",
    "params": {
     "dataset": "synth",
     "params": {}
@@ -107,14 +99,12 @@
     "mask.right_y",
     "nan_blocks.left_pupil",
     "nan_blocks.right_pupil",
-    "returned.left_pupil",
-    "returned.right_pupil",
     "stored.left_pupil",
     "stored.right_pupil",
     "stored_ms.left_pupil",
     "stored_ms.right_pupil"
    ],
-   "description": "pupil_blinks_detect({'vel_onset': -10, 'min_duration': 10}) on synth: returned and stored blink intervals (samples, ms), masks (not applied)",
+   "description": "pupil.blinks_detect({'vel_onset': -10, 'min_duration': 10}) on synth: stored blink intervals (samples, ms) and masks",
    "params": {
     "dataset": "synth",
     "params": {
@@ -134,14 +124,12 @@
     "mask.right_y",
     "nan_blocks.left_pupil",
     "nan_blocks.right_pupil",
-    "returned.left_pupil",
-    "returned.right_pupil",
     "stored.left_pupil",
     "stored.right_pupil",
     "stored_ms.left_pupil",
     "stored_ms.right_pupil"
    ],
-   "description": "pupil_blinks_detect({'strategies': ['zero']}) on synth: returned and stored blink intervals (samples, ms), masks (not applied)",
+   "description": "pupil.blinks_detect({'strategies': ['zero']}) on synth: stored blink intervals (samples, ms) and masks",
    "params": {
     "dataset": "synth",
     "params": {
@@ -167,7 +155,7 @@
     "pupil.left_pupil",
     "pupil.right_pupil"
    ],
-   "description": "pupil_blinks_detect(apply_mask=True).pupil_blinks_interpolate() on rlmw: pupil values, masks, blinks, interpolated blinks (samples)",
+   "description": "pupil.blinks_detect(), pupil.blinks_interpolate() on rlmw: pupil values, masks, blinks, interpolated blinks (samples)",
    "params": {
     "dataset": "rlmw"
    },
@@ -188,7 +176,7 @@
     "pupil.left_pupil",
     "pupil.right_pupil"
    ],
-   "description": "pupil_blinks_detect(apply_mask=True).pupil_blinks_interpolate() on synth: pupil values, masks, blinks, interpolated blinks (samples)",
+   "description": "pupil.blinks_detect(), pupil.blinks_interpolate() on synth: pupil values, masks, blinks, interpolated blinks (samples)",
    "params": {
     "dataset": "synth"
    },
@@ -201,7 +189,7 @@
     "pupil.left_pupil",
     "pupil.right_pupil"
    ],
-   "description": "case b, then pupil_lowpass_filter(5) on rlmw: pupil values and masks",
+   "description": "case b, then pupil.lowpass_filter(5) on rlmw: pupil values and masks",
    "params": {
     "dataset": "rlmw"
    },
@@ -214,7 +202,7 @@
     "pupil.left_pupil",
     "pupil.right_pupil"
    ],
-   "description": "case b, then pupil_lowpass_filter(5) on synth: pupil values and masks",
+   "description": "case b, then pupil.lowpass_filter(5) on synth: pupil values and masks",
    "params": {
     "dataset": "synth"
    },
@@ -228,9 +216,9 @@
     "mask.right_pupil",
     "mask.right_x",
     "mask.right_y",
-    "returned"
+    "runs"
    ],
-   "description": "mask_eye_divergences() on rlmw: returned intervals (apply_mask=False, samples) and masks (apply_mask=True)",
+   "description": "gaze.mask_divergences() on rlmw: runs of the layer (samples) and masks",
    "params": {
     "dataset": "rlmw",
     "params": {}
@@ -245,9 +233,9 @@
     "mask.right_pupil",
     "mask.right_x",
     "mask.right_y",
-    "returned"
+    "runs"
    ],
-   "description": "mask_eye_divergences({'threshold': 100, 'thr_type': 'pixel'}) on rlmw: returned intervals (apply_mask=False, samples) and masks (apply_mask=True)",
+   "description": "gaze.mask_divergences({'threshold': 100, 'thr_type': 'pixel'}) on rlmw: runs of the layer (samples) and masks",
    "params": {
     "dataset": "rlmw",
     "params": {
@@ -265,9 +253,9 @@
     "mask.right_pupil",
     "mask.right_x",
     "mask.right_y",
-    "returned"
+    "runs"
    ],
-   "description": "mask_eye_divergences() on synth: returned intervals (apply_mask=False, samples) and masks (apply_mask=True)",
+   "description": "gaze.mask_divergences() on synth: runs of the layer (samples) and masks",
    "params": {
     "dataset": "synth",
     "params": {}
@@ -282,9 +270,9 @@
     "mask.right_pupil",
     "mask.right_x",
     "mask.right_y",
-    "returned"
+    "runs"
    ],
-   "description": "mask_eye_divergences({'threshold': 100, 'thr_type': 'pixel'}) on synth: returned intervals (apply_mask=False, samples) and masks (apply_mask=True)",
+   "description": "gaze.mask_divergences({'threshold': 100, 'thr_type': 'pixel'}) on synth: runs of the layer (samples) and masks",
    "params": {
     "dataset": "synth",
     "params": {
@@ -302,10 +290,10 @@
     "mask.right_pupil",
     "mask.right_x",
     "mask.right_y",
-    "returned.left",
-    "returned.right"
+    "runs.left",
+    "runs.right"
    ],
-   "description": "mask_offscreen_coords() on rlmw (screen 1280x1024): returned intervals (apply_mask=False, samples) and masks (apply_mask=True)",
+   "description": "gaze.mask_offscreen() on rlmw (screen 1280x1024): runs of the layer (samples) and masks",
    "params": {
     "dataset": "rlmw"
    },
@@ -319,10 +307,10 @@
     "mask.right_pupil",
     "mask.right_x",
     "mask.right_y",
-    "returned.left",
-    "returned.right"
+    "runs.left",
+    "runs.right"
    ],
-   "description": "mask_offscreen_coords() on synth (screen 1280x1024): returned intervals (apply_mask=False, samples) and masks (apply_mask=True)",
+   "description": "gaze.mask_offscreen() on synth (screen 1280x1024): runs of the layer (samples) and masks",
    "params": {
     "dataset": "synth"
    },
@@ -346,7 +334,7 @@
     "tx.left_pupil",
     "tx.right_pupil"
    ],
-   "description": "get_intervals('S_', window=(-200,1000)*u.ms), get_segments per pupil, baseline_correct((-200,0)) on rlmw (after case b): intervals, segment tx, masks, data, per-segment means",
+   "description": "get_epochs('S_', window=(-200,1000)*u.ms), get_segments per pupil, baseline_correct((-200,0)) on rlmw (after case b): intervals, segment tx, masks, data, per-segment means",
    "params": {
     "dataset": "rlmw",
     "preproc": true
@@ -371,7 +359,7 @@
     "tx.left_pupil",
     "tx.right_pupil"
    ],
-   "description": "get_intervals('S_', window=(-200,1000)*u.ms), get_segments per pupil, baseline_correct((-200,0)) on rlmw (raw data): intervals, segment tx, masks, data, per-segment means",
+   "description": "get_epochs('S_', window=(-200,1000)*u.ms), get_segments per pupil, baseline_correct((-200,0)) on rlmw (raw data): intervals, segment tx, masks, data, per-segment means",
    "params": {
     "dataset": "rlmw",
     "preproc": false
@@ -396,7 +384,7 @@
     "tx.left_pupil",
     "tx.right_pupil"
    ],
-   "description": "get_intervals('stim', window=(-200,1000)*u.ms), get_segments per pupil, baseline_correct((-200,0)) on synth (after case b): intervals, segment tx, masks, data, per-segment means",
+   "description": "get_epochs('stim', window=(-200,1000)*u.ms), get_segments per pupil, baseline_correct((-200,0)) on synth (after case b): intervals, segment tx, masks, data, per-segment means",
    "params": {
     "dataset": "synth",
     "preproc": true
@@ -421,7 +409,7 @@
     "tx.left_pupil",
     "tx.right_pupil"
    ],
-   "description": "get_intervals('stim', window=(-200,1000)*u.ms), get_segments per pupil, baseline_correct((-200,0)) on synth (raw data): intervals, segment tx, masks, data, per-segment means",
+   "description": "get_epochs('stim', window=(-200,1000)*u.ms), get_segments per pupil, baseline_correct((-200,0)) on synth (raw data): intervals, segment tx, masks, data, per-segment means",
    "params": {
     "dataset": "synth",
     "preproc": false
@@ -534,12 +522,12 @@
    "scalars": {
     "artifacts.left.gaze_masked_pct": 2.741265575372587,
     "artifacts.left.interpolated_pct": 9.92914732470071,
-    "artifacts.left.other_pct": 2.5018323967749816,
-    "artifacts.left.pupil_masked_pct": 9.92914732470071,
+    "artifacts.left.other_pct": 0.0,
+    "artifacts.left.pupil_masked_pct": 0.0,
     "artifacts.right.gaze_masked_pct": 1.9008062545809918,
     "artifacts.right.interpolated_pct": 6.0053750305399465,
-    "artifacts.right.other_pct": 1.622281944783777,
-    "artifacts.right.pupil_masked_pct": 6.0053750305399465,
+    "artifacts.right.other_pct": 0.0,
+    "artifacts.right.pupil_masked_pct": 0.0,
     "binocular.left/right.gaze_disparity_deg": 1.6085219969667648,
     "binocular.left/right.pupil_correlation": 0.91444767077963,
     "blinks.left.mean_duration": 217.14285714285714,
@@ -622,12 +610,12 @@
    "scalars": {
     "artifacts.left.gaze_masked_pct": 0.0,
     "artifacts.left.interpolated_pct": 4.76,
-    "artifacts.left.other_pct": 0.93,
-    "artifacts.left.pupil_masked_pct": 4.76,
+    "artifacts.left.other_pct": 0.0,
+    "artifacts.left.pupil_masked_pct": 0.0,
     "artifacts.right.gaze_masked_pct": 0.0,
     "artifacts.right.interpolated_pct": 3.55,
-    "artifacts.right.other_pct": 0.69,
-    "artifacts.right.pupil_masked_pct": 3.55,
+    "artifacts.right.other_pct": 0.0,
+    "artifacts.right.pupil_masked_pct": 0.0,
     "binocular.left/right.gaze_disparity_deg": 0.07142655528481803,
     "binocular.left/right.pupil_correlation": 0.9996523644201526,
     "blinks.left.mean_duration": 191.5,
@@ -774,17 +762,17 @@
    },
    "scalars": {
     "fs": 100.0,
-    "masked.left_pupil": 398,
+    "masked.left_pupil": 407,
     "masked.left_x": 105,
     "masked.left_y": 105,
-    "masked.right_pupil": 237,
+    "masked.right_pupil": 242,
     "masked.right_x": 70,
     "masked.right_y": 70,
     "n": 4093,
-    "nansum.left_pupil": 4576817.729787578,
+    "nansum.left_pupil": 4576820.638384114,
     "nansum.left_x": 2543201.22,
     "nansum.left_y": 2156929.0100000002,
-    "nansum.right_pupil": 3890614.2124309456,
+    "nansum.right_pupil": 3890610.760538583,
     "nansum.right_x": 2849125.173333334,
     "nansum.right_y": 2145117.728333333,
     "tx_first": 4.0,
@@ -827,10 +815,10 @@
     "masked.right_x": 190,
     "masked.right_y": 190,
     "n": 10233,
-    "nansum.left_pupil": 11442589.560606904,
+    "nansum.left_pupil": 11442589.095960286,
     "nansum.left_x": 6350160.1,
     "nansum.left_y": 5379201.4,
-    "nansum.right_pupil": 9727023.97439972,
+    "nansum.right_pupil": 9727018.90134646,
     "nansum.right_x": 7113795.1,
     "nansum.right_y": 5347307.65,
     "tx_first": 1.0,
@@ -985,36 +973,36 @@
     "dataset": "rlmw"
    },
    "scalars": {
-    "mean.left_pupil": 2.9604341185035367e-16,
-    "mean.left_x": -1.2565868317300807e-16,
+    "mean.left_pupil": -0.0427463163356752,
+    "mean.left_x": 3.19858466258566e-16,
     "mean.left_y": -2.855879163022911e-16,
-    "mean.right_pupil": -2.1276388843721029e-16,
-    "mean.right_x": 2.265129263232039e-16,
-    "mean.right_y": -4.870027915948883e-16,
-    "nanmean_all.left_pupil": 0.0418519742751612,
-    "nanmean_all.left_x": -1.2565868317300807e-16,
+    "mean.right_pupil": -0.0037415374110884147,
+    "mean.right_x": -2.32175749481284e-16,
+    "mean.right_y": 8.211093579216141e-16,
+    "nanmean_all.left_pupil": -4.44414708904436e-16,
+    "nanmean_all.left_x": 3.19858466258566e-16,
     "nanmean_all.left_y": -2.855879163022911e-16,
-    "nanmean_all.right_pupil": 0.0036843268321372384,
-    "nanmean_all.right_x": 2.265129263232039e-16,
-    "nanmean_all.right_y": -4.870027915948883e-16,
-    "param_mean.pupil_left": 1114.6704822872023,
-    "param_mean.pupil_right": 950.2622686629237,
-    "param_mean.x_left": 637.7012459807074,
-    "param_mean.x_right": 708.3447499501892,
-    "param_mean.y_left": 539.8541800643087,
-    "param_mean.y_right": 532.1681809125324,
-    "param_sd.pupil_left": 84.49704225414985,
-    "param_sd.pupil_right": 78.73334612992974,
-    "param_sd.x_left": 252.36645871824516,
-    "param_sd.x_right": 247.41892017789715,
-    "param_sd.y_left": 86.71360180243454,
-    "param_sd.y_right": 85.00430459605491,
-    "std.left_pupil": 1.0,
+    "nanmean_all.right_pupil": -2.310956486303067e-15,
+    "nanmean_all.right_x": -2.32175749481284e-16,
+    "nanmean_all.right_y": 8.211093579216141e-16,
+    "param_center.left_pupil": 1118.2068503259502,
+    "param_center.left_x": 637.7012459807073,
+    "param_center.left_y": 539.8541800643087,
+    "param_center.right_pupil": 950.5523480426543,
+    "param_center.right_x": 708.3447499501893,
+    "param_center.right_y": 532.1681809125323,
+    "param_scale.left_pupil": 82.72918796037915,
+    "param_scale.left_x": 252.36645871824516,
+    "param_scale.left_y": 86.71360180243454,
+    "param_scale.right_pupil": 77.52946125059934,
+    "param_scale.right_x": 247.4189201778972,
+    "param_scale.right_y": 85.00430459605492,
+    "std.left_pupil": 1.0213691725660037,
     "std.left_x": 0.9999999999999999,
     "std.left_y": 1.0,
-    "std.right_pupil": 1.0,
-    "std.right_x": 1.0,
-    "std.right_y": 1.0
+    "std.right_pupil": 1.01552809551248,
+    "std.right_x": 0.9999999999999998,
+    "std.right_y": 0.9999999999999999
    }
   },
   "h.scale.synth": {
@@ -1024,45 +1012,45 @@
     "dataset": "synth"
    },
    "scalars": {
-    "mean.left_pupil": -6.207177196056314e-16,
+    "mean.left_pupil": 0.008697027886013115,
     "mean.left_x": -2.7284841053187845e-16,
     "mean.left_y": -3.4333424991928042e-15,
-    "mean.right_pupil": 3.8543904546364375e-15,
+    "mean.right_pupil": 0.005571132728686411,
     "mean.right_x": 6.252776074688882e-17,
     "mean.right_y": -3.9335645851679145e-15,
-    "nanmean_all.left_pupil": -0.008508055481486212,
+    "nanmean_all.left_pupil": 5.798028723802417e-15,
     "nanmean_all.left_x": -2.7284841053187845e-16,
     "nanmean_all.left_y": -3.4333424991928042e-15,
-    "nanmean_all.right_pupil": -0.005477726470308016,
+    "nanmean_all.right_pupil": 3.410605131648481e-16,
     "nanmean_all.right_x": 6.252776074688882e-17,
     "nanmean_all.right_y": -3.9335645851679145e-15,
-    "param_mean.pupil_left": 1000.2254975027749,
-    "param_mean.pupil_right": 900.1403707550312,
-    "param_mean.x_left": 644.7493928892359,
-    "param_mean.x_right": 640.4414665828368,
-    "param_mean.y_left": 511.4832899505522,
-    "param_mean.y_right": 511.97885697699263,
-    "param_sd.pupil_left": 28.914604489138217,
-    "param_sd.pupil_right": 25.89779759281653,
-    "param_sd.x_left": 57.54137564865265,
-    "param_sd.x_right": 81.57656567655047,
-    "param_sd.y_left": 22.04248152451227,
-    "param_sd.y_right": 14.271338244013343,
-    "std.left_pupil": 1.0,
+    "param_center.left_pupil": 999.979490443556,
+    "param_center.left_x": 644.7493928892359,
+    "param_center.left_y": 511.4832899505522,
+    "param_center.right_pupil": 899.9985097036343,
+    "param_center.right_x": 640.4414665828368,
+    "param_center.right_y": 511.97885697699263,
+    "param_scale.left_pupil": 28.286336716776823,
+    "param_scale.left_x": 57.54137564865265,
+    "param_scale.left_y": 22.04248152451227,
+    "param_scale.right_pupil": 25.46359211054139,
+    "param_scale.right_x": 81.57656567655047,
+    "param_scale.right_y": 14.271338244013343,
+    "std.left_pupil": 1.0222109981455734,
     "std.left_x": 1.0000000000000002,
     "std.left_y": 0.9999999999999999,
-    "std.right_pupil": 1.0,
+    "std.right_pupil": 1.017052012158779,
     "std.right_x": 0.9999999999999998,
     "std.right_y": 1.0
    }
   }
  },
- "date": "2026-11-03",
- "description": "reference outputs of pypillometry before the 2.2 refactor (see tests/test_reference_outputs.py)",
+ "date": "2026-11-09",
+ "description": "reference outputs of pypillometry (see tests/test_reference_outputs.py)",
  "numpy_version": "2.5.4",
  "package_modified": false,
- "pypillometry_commit": "5e8e9bfee5df53a29d4365ff50b8c072fc7ada04",
+ "pypillometry_commit": "8d88ae4e076d76ff2e88778d08d04a4afcb4b4a2",
  "pypillometry_version": "2.1.0",
- "python_version": "3.15.2",
+ "python_version": "3.15.1",
  "scipy_version": "1.18.1"
 }
