@@ -1557,7 +1557,7 @@ class SegmentedEyeData(state.VersionedState):
     def plot_carpet(self, channel: str = None, sort_by=None, cmap: str = None,
                     vmin: float = None, vmax: float = None, center: bool = None,
                     show_zero_line: bool = True, colorbar: bool = True,
-                    title: str = None, ax=None, **kwargs):
+                    show_mean: bool = False, title: str = None, ax=None, **kwargs):
         """
         Plot all segments of one channel as an image ("carpet plot").
 
@@ -1594,6 +1594,9 @@ class SegmentedEyeData(state.VersionedState):
             draw a vertical line at the event onset (time 0); default True
         colorbar : bool, optional
             add a colorbar (labelled with the channel); default True
+        show_mean : bool, optional
+            show the mean over the segments with its standard error below
+            the image, on the same time axis (as :meth:`plot`); default False
         title : str, optional
             title; default: the name of the segments if `ax` is None, none
             otherwise
@@ -1605,7 +1608,8 @@ class SegmentedEyeData(state.VersionedState):
         Returns
         -------
         ax : matplotlib.axes.Axes
-            the axes of the plot
+            the axes of the image; with `show_mean`, a tuple ``(ax,
+            ax_mean)`` with the axes of the mean as well
 
         Raises
         ------
@@ -1626,8 +1630,21 @@ class SegmentedEyeData(state.VersionedState):
            >>> seg = d.get_segments(d.get_epochs("S_", (-500, 2500) * u.ms), "left_pupil")
            >>> seg = seg.pupil.baseline_correct((-200, 0))
            >>> ax = seg.plot_carpet()
+
+        With the mean below the image:
+
+        .. plot::
+
+           >>> import pypillometry as pp
+           >>> from pypillometry import u
+           >>> d = pp.get_example_data("rlmw_002_short")
+           >>> d = d | pp.pupil.blinks_detect() | pp.pupil.lowpass_filter(5)
+           >>> seg = d.get_segments(d.get_epochs("S_", (-500, 2500) * u.ms), "left_pupil")
+           >>> seg = seg.pupil.baseline_correct((-200, 0))
+           >>> ax, ax_mean = seg.plot_carpet(show_mean=True)
         """
         import matplotlib.pyplot as plt
+        from mpl_toolkits.axes_grid1 import make_axes_locatable
         from .epochs import Epochs
 
         if channel is None:
@@ -1674,14 +1691,32 @@ class SegmentedEyeData(state.VersionedState):
                        vmin=vmin, vmax=vmax, extent=extent, **kwargs)
         if show_zero_line:
             ax.axvline(0, color="k", lw=0.8, ls="--")
-        ax.set_xlabel("time (ms)")
         ax.set_ylabel("segment" if sort_by is None else
                       f"segment (sorted by {sort_by if isinstance(sort_by, str) else 'sort_by'})")
         if title is not None or standalone:
             ax.set_title(title if title is not None else self.name)
+
+        # colorbar and mean attached to the image, so that the mean has
+        # the width of the image (and the same time axis)
+        divider = make_axes_locatable(ax)
         if colorbar:
-            ax.figure.colorbar(im, ax=ax, label=channel)
-        return ax
+            cax = divider.append_axes("right", size="4%", pad=0.1)
+            ax.figure.colorbar(im, cax=cax, label=channel)
+        if not show_mean:
+            ax.set_xlabel("time (ms)")
+            if standalone:
+                ax.figure.tight_layout()
+            return ax
+        ax_mean = divider.append_axes("bottom", size="45%", pad=0.15, sharex=ax)
+        self.plot(channel, ax=ax_mean, show_missing=False, show_legend=False,
+                  show_zero_line=show_zero_line)
+        ax_mean.set_ylabel("mean")
+        ax_mean.set_xlim(extent[0], extent[1])
+        ax.tick_params(labelbottom=False)
+        if standalone:
+            ax.figure.tight_layout()
+        plt.sca(ax)
+        return ax, ax_mean
 
     # ----------------------------------------------------------------------
     # Files

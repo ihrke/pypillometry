@@ -439,6 +439,20 @@ class TestPlotting(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "one value per segment"):
             seg.plot_carpet(sort_by=[1, 2])
 
+    def test_carpet_show_mean(self):
+        data = np.arange(12.).reshape(4, 3)
+        seg = make(data, np.arange(4.) * 10)
+        fig, ax0 = plt.subplots()
+        ax, ax_mean = seg.plot_carpet(ax=ax0, show_mean=True)
+        self.assertIs(ax, ax0)
+        self.assertEqual(len(fig.axes), 3)                       # image, colorbar, mean
+        np.testing.assert_allclose(ax_mean.lines[0].get_ydata(), data.mean(axis=1))
+        self.assertEqual(ax_mean.get_xlabel(), "time (ms)")
+        self.assertEqual(ax.get_xlim(), ax_mean.get_xlim())     # same time axis
+        plt.figure()
+        ax, ax_mean = seg.plot_carpet(show_mean=True, colorbar=False)
+        self.assertEqual(len(ax.figure.axes), 2)
+
     def test_carpet_channel(self):
         seg = SegmentedEyeData("s", np.arange(3.), {"left_pupil": np.ones((3, 2)),
                                                     "left_x": np.zeros((3, 2))})

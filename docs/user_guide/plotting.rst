@@ -149,12 +149,12 @@ instead of their mean: one row per trial, the value as color (a "carpet
 plot"). It shows how the response varies between trials, e.g., trials with
 artifacts or a change over the session; ``sort_by=`` orders the rows by
 a property of the trials (e.g., a metadata column such as the reaction
-time):
+time), and ``show_mean=True`` adds the mean below the image:
 
 .. plot::
    :context: close-figs
 
-   erpd.plot_carpet()
+   erpd.plot_carpet(show_mean=True)
 
 .. autosummary::
    :nosignatures:
