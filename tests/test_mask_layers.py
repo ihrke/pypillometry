@@ -224,7 +224,7 @@ class TestSampleOperations:
 
 
 class TestPolicies:
-    """mask(eye, var, policy) / values(eye, var, policy)."""
+    """mask(eye, var, policy) / get_values(eye, var, policy)."""
 
     def data(self):
         import pypillometry as pp
@@ -257,10 +257,10 @@ class TestPolicies:
 
     def test_values(self):
         d = self.data()
-        v = d.values("left", "pupil")
+        v = d.get_values("left", "pupil")
         assert list(np.flatnonzero(np.isnan(v))) == [0, 2, 8]
         assert v[3] == 3. and d.data["left_pupil"][2] == 2.  # stored values unchanged
-        np.testing.assert_array_equal(d.values("left", "pupil", policy="raw")[1:],
+        np.testing.assert_array_equal(d.get_values("left", "pupil", policy="raw")[1:],
                                       np.arange(1, 10))
 
     def test_add_mask_sets_the_user_layer(self):

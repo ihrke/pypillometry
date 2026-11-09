@@ -156,7 +156,7 @@ Reading masks and values
      - result
    * - ``d.mask(eye, var, policy=)``
      - boolean array, True where unusable
-   * - ``d.values(eye, var, policy=)``
+   * - ``d.get_values(eye, var, policy=)``
      - copy of the values with NaN where unusable
    * - ``d["left_pupil"]``, ``d.data.mask``
      - masked array and 0/1 masks under the default policy
@@ -378,7 +378,7 @@ Things to watch for
 - **Masked samples keep their values.** ``d.data["left_pupil"]`` holds
   the stored values, including those in blinks (e.g., the unfiltered
   values after :meth:`~EyeData.pupil.lowpass_filter`). Use
-  ``d.values(...)`` or ``d["left_pupil"]`` to get the usable samples only.
+  ``d.get_values(...)`` or ``d["left_pupil"]`` to get the usable samples only.
 - **Merged eyes keep only the common layers.** Where one eye was
   interpolated and the other recorded, ``mean_pupil`` holds the recorded
   value and no ``"interpolated"`` layer; where a sample is masked in the

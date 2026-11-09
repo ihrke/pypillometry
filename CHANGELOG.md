@@ -124,7 +124,7 @@ tables below for every changed call.
   `pp.Pipeline` with `|`
 - Mask layers per channel (`blink`, `interpolated`, `offscreen`,
   `divergence`, `user`) and a recording-wide `excluded` layer;
-  `d.clear_layer()`, `d.get_layer_intervals()`, `d.mask()`, `d.values()`
+  `d.clear_layer()`, `d.get_layer_intervals()`, `d.mask()`, `d.get_values()`
 - `pp.MaskPolicy` and the policies `"default"`, `"strict"` and `"raw"`
   (`policy=` in all processing and analysis methods)
 - `pp.Epochs` (event-locked windows): the events (`ep.events`) and one

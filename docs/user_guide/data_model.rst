@@ -196,7 +196,7 @@ the usable samples; masked samples keep their values. Segments,
 :meth:`~EyeData.stat_per_event`, :meth:`~EyeData.scale`,
 :meth:`~EyeData.merge_eyes`, :meth:`~EyeData.downsample` and
 the quality report leave out the unusable samples.
-:meth:`~EyeData.mask` and :meth:`~EyeData.values` give the
+:meth:`~EyeData.mask` and :meth:`~EyeData.get_values` give the
 mask (or the values with NaN) of a channel under a policy; ``d["left_pupil"]``
 (a masked array) and ``d.data.mask`` use the default policy:
 
@@ -204,7 +204,7 @@ mask (or the values with NaN) of a channel under a policy; ``d["left_pupil"]``
 
     d.mask("left", "pupil")                     # True where unusable (default policy)
     d.mask("left", "pupil", policy="strict")    # interpolated samples too
-    d.values("left", "pupil")                   # values, NaN where masked
+    d.get_values("left", "pupil")               # values, NaN where masked
     seg = d.get_segments(epochs, "left_pupil", policy="strict")  # without interpolated samples
     d.stat_per_event(epochs, policy="strict")
 

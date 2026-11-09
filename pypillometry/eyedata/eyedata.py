@@ -281,7 +281,7 @@ class EyeData(state.VersionedState):
         """
         Provide dict-style access to data arrays, returning masked arrays
         (masked: unusable under the default mask policy, see :meth:`mask`;
-        e.g., interpolated samples are not masked). Use :meth:`values` or
+        e.g., interpolated samples are not masked). Use :meth:`get_values` or
         :meth:`mask` for other policies.
         Supports special keys for retrieving time in different units.
         """
@@ -768,7 +768,7 @@ class EyeData(state.VersionedState):
         """
         return self.data.get_policy_mask(self._channel_key(eye, var), policy)
 
-    def values(self, eye: str, var: str|None = None, policy="default") -> np.ndarray:
+    def get_values(self, eye: str, var: str|None = None, policy="default") -> np.ndarray:
         """
         Values of a channel with NaN where the sample is unusable under `policy`.
 
@@ -2463,14 +2463,14 @@ class EyeData(state.VersionedState):
 
         if mean is None:
             # use only the usable samples
-            mean = _per_pair(pairs, lambda eye, var: np.nanmean(obj.values(eye, var, policy)))
+            mean = _per_pair(pairs, lambda eye, var: np.nanmean(obj.get_values(eye, var, policy)))
         elif isinstance(mean, numbers.Real):
             mean = _per_pair(pairs, lambda eye, var, val=mean: val)
         elif not isinstance(mean, dict):
             raise ValueError("mean must be None, a number or dict")
 
         if sd is None:
-            sd = _per_pair(pairs, lambda eye, var: np.nanstd(obj.values(eye, var, policy)))
+            sd = _per_pair(pairs, lambda eye, var: np.nanstd(obj.get_values(eye, var, policy)))
         elif isinstance(sd, numbers.Real):
             sd = _per_pair(pairs, lambda eye, var, val=sd: val)
         elif not isinstance(sd, dict):

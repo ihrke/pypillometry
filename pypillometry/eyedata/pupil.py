@@ -122,7 +122,7 @@ class PupilNamespace(Namespace):
         eyes=self._d._eyes_with(eyes, "pupil")
 
         for eye in eyes:
-            x = obj.values(eye, "pupil", policy)  # NaN: unusable
+            x = obj.get_values(eye, "pupil", policy)  # NaN: unusable
             usable = ~np.isnan(x)
             out = obj.data[eye, "pupil"].copy()
             out[usable] = lowpass_filter_iterative(x, cutoff, obj.fs, order)[usable]
@@ -173,7 +173,7 @@ class PupilNamespace(Namespace):
 
         # process requested eyes
         for eye in eyes:
-            x = obj.values(eye, "pupil", policy)  # NaN: unusable
+            x = obj.get_values(eye, "pupil", policy)  # NaN: unusable
             usable = ~np.isnan(x)
             if not usable.any():
                 continue
@@ -591,7 +591,7 @@ class PupilNamespace(Namespace):
 
             # pupil data: unusable samples are NaN, unless the existing mask
             # is ignored
-            pupil_data = obj.values(eye, "pupil", "raw" if ignore_existing_mask else "strict")
+            pupil_data = obj.get_values(eye, "pupil", "raw" if ignore_existing_mask else "strict")
             
             ## detect blinks with the different strategies
             if "velocity" in strategies:
@@ -937,7 +937,7 @@ class PupilNamespace(Namespace):
 
         for eye in eyes:
             logger.debug("Estimating baseline for eye %s"%eye)
-            sy = self._d.values(eye, variable, policy)
+            sy = self._d.get_values(eye, variable, policy)
             unusable = np.isnan(sy)
             if unusable.all():
                 raise ValueError(f"'{eye}_{variable}' has no usable samples; the "
