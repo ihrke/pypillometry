@@ -29,11 +29,16 @@ Setup classes:
 Simulation classes:
 
 - :class:`FakeEyeData`: Synthetic eye-tracking data for testing and validation.
+
+Head-mounted eye trackers:
+
+- :class:`HeadMountedEyeData`: data from eye-tracking glasses (scene video,
+  motion sensors).
 """
 
 __all__ = ["EyeDataDict", "MaskPolicy", "EyeData",
            "SpatialCalibration", "ForeshorteningCalibration", "FakeEyeData",
-           "ExperimentalSetup", "keephistory"]
+           "HeadMountedEyeData", "ExperimentalSetup", "keephistory"]
 
 from .eyedatadict import EyeDataDict, MaskPolicy
 from .history import keephistory
@@ -41,4 +46,5 @@ from .eyedata import EyeData
 from .spatial_calibration import SpatialCalibration
 from .foreshortening_calibration import ForeshorteningCalibration
 from .fake_eyedata import FakeEyeData
+from .head_mounted import HeadMountedEyeData
 from .experimental_setup import ExperimentalSetup

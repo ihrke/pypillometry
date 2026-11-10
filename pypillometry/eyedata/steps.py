@@ -6,6 +6,8 @@ The pipeline steps available at the top level of the package:
 
 - ``pp.pupil`` and ``pp.gaze``: the pupil and gaze methods
   (e.g., ``pp.pupil.blinks_detect()``),
+- ``pp.scene``: the methods for head-mounted eye trackers
+  (:class:`~pypillometry.HeadMountedEyeData`),
 - ``pp.crop``, ``pp.downsample``, ...: the generic methods.
 
 Each step factory has the signature and docstring of the method it calls
@@ -17,8 +19,9 @@ from .eyedata import EyeData
 from .pipes import generic_step
 from .pupil import PupilNamespace
 from .gaze import GazeNamespace
+from .head_mounted import SceneNamespace
 
-__all__ = ["pupil", "gaze",
+__all__ = ["pupil", "gaze", "scene",
            "crop", "downsample", "scale", "unscale", "merge_eyes", "reset_time",
            "mask_intervals", "interpolate_intervals", "exclude_intervals",
            "keep_intervals", "remove_intervals", "merge_masks", "clear_layer",
@@ -29,6 +32,8 @@ __all__ = ["pupil", "gaze",
 pupil = PupilNamespace()
 #: pipeline steps for gaze data (``d | pp.gaze.mask_offscreen()``)
 gaze = GazeNamespace()
+#: pipeline steps for head-mounted eye trackers (``d | pp.scene.luminance()``)
+scene = SceneNamespace()
 
 crop = generic_step(EyeData.crop)
 downsample = generic_step(EyeData.downsample)

@@ -19,7 +19,8 @@ Example
 Overview
 --------
 EyeData
-    The main data class; ``SegmentedEyeData`` for data cut into segments.
+    The main data class; ``SegmentedEyeData`` for data cut into segments,
+    ``HeadMountedEyeData`` for eye-tracking glasses.
 pupil, gaze
     Pipeline steps for pupil and gaze data, used as ``d | pp.pupil.<step>()``.
     General steps (``crop``, ``downsample``, ...) are at the top level.
@@ -44,7 +45,7 @@ import os.path
 # ---------------------------------------------------------------------------
 # Data classes
 from .eyedata import (
-    EyeData, FakeEyeData,
+    EyeData, FakeEyeData, HeadMountedEyeData,
     EyeDataDict, MaskPolicy, ExperimentalSetup, SpatialCalibration,
     ForeshorteningCalibration, keephistory,
 )
@@ -53,7 +54,7 @@ from .eyedata.pipes import Step, Pipeline
 # ---------------------------------------------------------------------------
 # Pipeline steps: d | pp.pupil.blinks_detect() | pp.crop(...) | ...
 from .eyedata.steps import (
-    pupil, gaze,
+    pupil, gaze, scene,
     crop, downsample, scale, unscale, merge_eyes, reset_time,
     mask_intervals, interpolate_intervals, exclude_intervals, keep_intervals,
     remove_intervals, merge_masks, clear_layer, set_blinks, set_events,
@@ -103,11 +104,11 @@ from loguru import logger  # available as pp.logger, not part of __all__
 
 __all__ = [
     # data classes
-    "EyeData", "FakeEyeData",
+    "EyeData", "FakeEyeData", "HeadMountedEyeData",
     "EyeDataDict", "MaskPolicy", "ExperimentalSetup", "SpatialCalibration",
     "ForeshorteningCalibration", "keephistory", "Step", "Pipeline",
     # pipeline steps
-    "pupil", "gaze",
+    "pupil", "gaze", "scene",
     "crop", "downsample", "scale", "unscale", "merge_eyes", "reset_time",
     "mask_intervals", "interpolate_intervals", "exclude_intervals",
     "keep_intervals", "remove_intervals", "merge_masks", "clear_layer",
