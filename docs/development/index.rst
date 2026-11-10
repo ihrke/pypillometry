@@ -69,6 +69,15 @@ uses ``self._d`` (and ``self._d._require(...)`` for the channels it needs).
 There is no forwarding of unknown attributes: ``d.plot_pupil()`` does not
 exist, only ``d.plot.plot_pupil()``.
 
+All plotting functions (also those outside ``d.plot``) are named
+``plot_*`` (or ``plot``) and follow the conventions in
+``plot/_axes.py``: one-panel plots take ``ax=None``, draw with ``ax.*``
+(never with ``plt.*`` state functions) and return the axes; multi-panel
+plots take ``axes=None`` and ``figsize=None`` and return the figure; plots
+with several figures return the list of figures. All take ``title=``, and
+none calls ``plt.show()``. ``tests/test_plotting_conventions.py`` checks
+each function.
+
 Every transforming method can also be used as a pipeline step
 (``eyedata/pipes.py``): decorated with ``@step``, the same method runs
 when it is called on data (``d.crop(...)``, ``d.pupil.blinks_detect()``)

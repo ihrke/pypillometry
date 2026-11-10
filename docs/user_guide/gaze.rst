@@ -245,7 +245,7 @@ gaze; the background shows the error between the points):
 
    d = pp.EyeData.from_eyelink("../data/test.edf")   # data folder of the repository
    d.calibration          # {'left': <SpatialCalibration: left eye, HV9, n=9, ...>, ...}
-   fig, axes = d.plot.plot_calibration(figsize=(6, 5))
+   fig = d.plot.plot_calibration(figsize=(12, 5))
 
 
 Regions of interest
