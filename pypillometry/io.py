@@ -17,7 +17,10 @@ import gzip
 import pickle
 import os
 from contextlib import contextmanager
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
+
+if TYPE_CHECKING:     # imported where used (slow)
+    import requests
 from loguru import logger
 from .convenience import is_url, suppress_all_output, requires_package
 from .logging import logging_get_level, _show_progress

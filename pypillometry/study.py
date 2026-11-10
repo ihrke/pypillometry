@@ -10,7 +10,10 @@ an OSF project, based on a user-provided configuration file
 
 import os
 import pickle
-from typing import Dict, Optional
+from typing import TYPE_CHECKING, Dict, Optional
+
+if TYPE_CHECKING:     # imported where used (slow)
+    import requests
 from loguru import logger
 
 from .convenience import change_dir

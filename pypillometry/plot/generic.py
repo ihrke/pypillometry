@@ -1,4 +1,8 @@
-from typing import Iterable, Optional, Tuple
+from typing import TYPE_CHECKING, Iterable, Optional, Tuple
+
+if TYPE_CHECKING:     # imported where used (slow)
+    import matplotlib
+    import matplotlib.axes
 from ..eyedata.namespace import Namespace
 from ..intervals import Intervals, _as_intervals
 from ..epochs import Epochs
