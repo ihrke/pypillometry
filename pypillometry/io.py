@@ -9,6 +9,8 @@ Reading and writing data.
 - files from URLs (HTTP(S), SSH, OSF) and the download cache:
   :func:`fetch_url`, :func:`local_copy`, :func:`download`,
   :func:`osf_authenticate`
+- files from public figshare items: :func:`get_figshare_files`,
+  :func:`fetch_figshare_file`
 
 See the user guide (Loading and saving data) for an overview.
 """
@@ -40,7 +42,7 @@ _HDF5_EXTENSIONS = (".h5", ".hdf5")
 
 __all__ = [
     "osf_authenticate", "download", "fetch_url", "local_copy", "write_file",
-    "read_file", "read_eyelink",
+    "read_file", "read_eyelink", "get_figshare_files", "fetch_figshare_file",
 ]
 
 
@@ -467,6 +469,167 @@ def fetch_url(
     if os.path.isdir(cache_file):
         shutil.rmtree(cache_file)
     os.replace(part, cache_file)
+    return cache_file
+
+
+_FIGSHARE_API = "https://api.figshare.com/v2"
+
+
+def _figshare_article(article) -> tuple:
+    """(item ID, version or None) from an item ID, a figshare URL or a DOI."""
+    import re
+    s = str(article).strip()
+    if s.isdigit():
+        return s, None
+    if "figshare" in s:
+        # DOI: 10.6084/m9.figshare.<id>[.v<version>]
+        m = re.search(r"figshare\.(\d+)(?:\.v(\d+))?/?$", s)
+        # URL: https://figshare.com/articles/<type>/<title>/<id>[/<version>]
+        m = m or re.search(r"/(\d+)(?:/(\d+))?/?(?:[?#].*)?$", s)
+        if m:
+            return m.group(1), int(m.group(2)) if m.group(2) else None
+    raise ValueError(f"Not a figshare item ID, URL or DOI: '{article}'")
+
+
+def get_figshare_files(article, version: Optional[int] = None) -> dict:
+    """List the files of a public figshare item.
+
+    Parameters
+    ----------
+    article : int or str
+        figshare item ID (e.g., ``28776617``), the item's URL
+        (``https://figshare.com/articles/dataset/<title>/28776617``) or its
+        DOI (``10.6084/m9.figshare.28776617``)
+    version : int, optional
+        version of the item; default the latest one (or the version in the
+        URL or DOI, if it contains one)
+
+    Returns
+    -------
+    dict
+        file name -> dict with the file's ``id``, ``download_url``, ``size``
+        (bytes) and ``md5`` checksum
+
+    Examples
+    --------
+    >>> files = get_figshare_files(28776617)  # doctest: +SKIP
+    >>> files["sub-001_ses-1.pypil"]["size"]  # doctest: +SKIP
+    30879440
+    """
+    import requests
+    article_id, url_version = _figshare_article(article)
+    if version is None:
+        version = url_version
+    url = f"{_FIGSHARE_API}/articles/{article_id}"
+    if version is not None:
+        url += f"/versions/{version}"
+    url += "/files"
+
+    files = {}
+    page, page_size = 1, 1000
+    while True:
+        resp = requests.get(url, params={"page": page, "page_size": page_size},
+                            timeout=30)
+        if resp.status_code == 404:
+            which = f"item {article_id}" + (f", version {version}," if version else "")
+            raise ValueError(f"figshare {which} not found (only public items "
+                             "are supported)")
+        resp.raise_for_status()
+        batch = resp.json()
+        for f in batch:
+            files[f["name"]] = {
+                "id": f["id"],
+                "download_url": f["download_url"],
+                "size": f.get("size", 0),
+                "md5": f.get("computed_md5") or f.get("supplied_md5") or "",
+            }
+        if len(batch) < page_size:
+            return files
+        page += 1
+
+
+def _md5(fname: str) -> str:
+    import hashlib
+    h = hashlib.md5()
+    with open(fname, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def fetch_figshare_file(
+    article,
+    name: str,
+    version: Optional[int] = None,
+    cache_dir: Optional[str] = None,
+    force_download: bool = False,
+    cache_layout: str = "flat") -> str:
+    """Download a file from a public figshare item, with caching.
+
+    The download is checked against the MD5 checksum that figshare provides.
+
+    Parameters
+    ----------
+    article : int or str
+        figshare item ID, URL or DOI (see :func:`get_figshare_files`)
+    name : str
+        name of the file in the item (see :func:`get_figshare_files`)
+    version : int, optional
+        version of the item; default the latest one (or the version in the
+        URL or DOI, if it contains one)
+    cache_dir : str, optional
+        directory to store the download in; if None, a new temporary
+        directory is used
+    force_download : bool, optional
+        if False (default), an existing local copy is reused (without
+        contacting figshare); if True, the file is downloaded again
+    cache_layout : str, optional
+        ``"flat"`` (default) stores the file as ``cache_dir/<name>``,
+        ``"mirror"`` as ``cache_dir/figshare.com/<id>/<version>/<name>``
+        (``latest`` if no version is given), so that files with the same
+        name from different items do not share a local copy
+
+    Returns
+    -------
+    str
+        local path of the downloaded file
+
+    Examples
+    --------
+    >>> fname = fetch_figshare_file(28776617, "sub-001_ses-1.pypil",
+    ...                             cache_dir="data")  # doctest: +SKIP
+    >>> d = EyeData.from_file(fname)  # doctest: +SKIP
+    """
+    import tempfile
+    article_id, url_version = _figshare_article(article)
+    if version is None:
+        version = url_version
+    if os.path.basename(name) != name or name in ("", ".", ".."):
+        raise ValueError(f"Not a file name: '{name}'")
+    if cache_dir is None:
+        cache_dir = tempfile.mkdtemp(prefix="pypillometry_")
+    if cache_layout == "flat":
+        cache_file = os.path.join(cache_dir, name)
+    elif cache_layout == "mirror":
+        cache_file = os.path.join(cache_dir, "figshare.com", article_id,
+                                  f"v{version}" if version else "latest", name)
+    else:
+        raise ValueError(f"cache_layout must be 'flat' or 'mirror', not '{cache_layout}'")
+
+    if os.path.exists(cache_file) and not force_download:
+        logger.info(f"Using cached copy of '{name}' (figshare {article_id}): {cache_file}")
+        return cache_file
+
+    files = get_figshare_files(article_id, version)
+    if name not in files:
+        raise ValueError(f"File '{name}' not found in figshare item {article_id}; "
+                         f"available: {', '.join(files)}")
+    info = files[name]
+    fetch_url(info["download_url"], cache_file=cache_file, force_download=True)
+    if info["md5"] and _md5(cache_file) != info["md5"]:
+        os.remove(cache_file)
+        raise ValueError(f"Download of '{name}' (figshare {article_id}) is "
+                         "corrupted (MD5 checksum does not match); try again")
     return cache_file
 
 

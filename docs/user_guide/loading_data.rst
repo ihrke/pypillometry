@@ -28,6 +28,16 @@ Instead of a local file name, you can also pass an HTTP(S) URL or an SSH
 URL (``ssh://server/folder/file.edf``). The file is then downloaded and
 cached (see :func:`fetch_url`).
 
+Files from public `figshare <https://figshare.com>`_ items are listed with
+:func:`get_figshare_files` and downloaded (cached, checksum-verified) with
+:func:`fetch_figshare_file`, using the item's ID, URL or DOI:
+
+.. code-block:: python
+
+    pp.get_figshare_files(28776617)    # file name -> id, url, size, md5
+    fname = pp.fetch_figshare_file(28776617, "001_rlmw_samples.asc",
+                                   cache_dir="data")
+
 Reading large EDF files is slow (about a minute for a 90 MB file). Save
 the result (see below), which is read in well under a second, or convert
 the file once with the :doc:`command-line tool </getting_started/cli>`

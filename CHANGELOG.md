@@ -14,6 +14,10 @@
 - `plot_scanpath()` draws on `ax=` instead of making a figure of `figsize=`
 - `plot_range` is the first argument of all plots that have it (changed for `plot_pupil_foreshortening_error_surface()`, where it came after `eyes`)
 - `plot_timeseries_segments()` and `plot_pupil_segments()` return the figures also with `pdf_file=`
+- `get_figshare_files()` and `fetch_figshare_file()`: list and download files from public figshare items
+- `get_figshare_files()` and `fetch_figshare_file()`: list and download files from public figshare items
+- Example dataset `nback_001` (N-back task, downloaded from figshare; behavioural log merged into the events' metadata) and a case-study notebook that analyses it
+- Example dataset entries list their files under `files` (e.g., `files["samples"]` instead of `samples_asc`) and show their `source` and `filetype`
 
 ## 2.2.0 (2026-11-10)
 

@@ -34,7 +34,7 @@ def test_dataset_dict():
     assert isinstance(ds, pp.RecordDict)
     assert "rlmw_002_short" in ds and "description" in ds["rlmw_002"]
     df = ds.to_pandas()
-    assert df.loc["rlmw_010_edf", "type"] == "EDF" and df.index.name == "dataset"
+    assert df.loc["rlmw_010_edf", "filetype"] == "edf" and df.index.name == "dataset"
 
 
 def data():
