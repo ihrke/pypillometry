@@ -337,12 +337,11 @@ def get_nback_001(cache_dir=None):
 
     # run, screen, block, task and trial from the event labels, e.g.
     # "run-1_scr-grey_block-1_task-0b_trial-1_stim_target-1"
-    events = d.events
-    events = events.parse_labels(r"run-(?P<run>\d+)")
-    events = events.parse_labels(r"scr-(?P<screen>[a-z]+)")
-    events = events.parse_labels(r"block-(?P<block>\d+)")
-    events = events.parse_labels(r"task-(?P<task>[^_]+)")
-    events = events.parse_labels(r"trial-(?P<trial>\d+)")
+    events = (d.events.parse_labels(r"run-(?P<run>\d+)")
+                      .parse_labels(r"scr-(?P<screen>[a-z]+)")
+                      .parse_labels(r"block-(?P<block>\d+)")
+                      .parse_labels(r"task-(?P<task>[^_]+)")
+                      .parse_labels(r"trial-(?P<trial>\d+)"))
 
     # add each trial's row of the log to all its events (fixation, stimulus,
     # response), matched by run, block, task and trial
