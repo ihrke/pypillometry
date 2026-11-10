@@ -13,7 +13,9 @@ functions take ``eyes=``, ``variables=``, ``plot_range=`` and ``units=``
 arguments. ``units=`` is the unit of the time axis and of plain numbers
 in ``plot_range`` (and ``interv`` of the ``*_segments`` plots):
 ``plot_range=(0, 20), units="sec"`` plots the first 20 seconds. Values
-with units are converted, e.g., ``plot_range=(0, 20) * u.sec``.
+with units are converted, e.g., ``plot_range=(0, 20) * u.sec``. In all
+plots that have it, ``plot_range`` is the first argument, so it can be
+given without its name: ``d.plot.plot_pupil((0, 20) * u.sec)``.
 
 The examples on this page use the short example dataset with detected
 blinks:

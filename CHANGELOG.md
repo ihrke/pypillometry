@@ -12,6 +12,7 @@
 - `plot_timeseries()`, `plot_heatmap()` and `plot_pupil_foreshortening_error_surface()` make a new figure instead of using the current one, and return it; use `axes=` to draw on existing axes
 - `plot_calibration()` and the experimental setup plots return the figure instead of `(fig, axes)`; `figsize` of `plot_calibration()` is the size of the whole figure; the setup plots take `axes=` instead of `ax=`
 - `plot_scanpath()` draws on `ax=` instead of making a figure of `figsize=`
+- `plot_range` is the first argument of all plots that have it (changed for `plot_pupil_foreshortening_error_surface()`, where it came after `eyes`)
 - `plot_timeseries_segments()` and `plot_pupil_segments()` return the figures also with `pdf_file=`
 
 ## 2.2.0 (2026-11-10)

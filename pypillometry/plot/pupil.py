@@ -405,8 +405,8 @@ class PupilPlots(GenericPlots):
 
     def plot_pupil_foreshortening_error_surface(
         self,
-        eyes: str | List[str] = [],
         plot_range: tuple = (-np.inf, +np.inf),
+        eyes: str | List[str] = [],
         units: str = "sec",
         show_screen: bool = True,
         cmap: str = "jet",
@@ -430,14 +430,14 @@ class PupilPlots(GenericPlots):
         
         Parameters
         ----------
-        eyes : str or list, optional
-            Which eye(s) to plot: "left", "right", "average", or a list of these.
-            Default is [] which plots all eyes with pupil and gaze data; a
-            requested eye without them raises a KeyError.
         plot_range : tuple, optional
             The time range to include in the analysis (plain numbers are
             in `units`, or with units, e.g. ``(3, 5) * u.min``). Default is (-np.inf, +np.inf),
             i.e. all data.
+        eyes : str or list, optional
+            Which eye(s) to plot: "left", "right", "average", or a list of these.
+            Default is [] which plots all eyes with pupil and gaze data; a
+            requested eye without them raises a KeyError.
         units : str, optional
             Time units of the plot. Default is "sec".
         show_screen : bool, optional

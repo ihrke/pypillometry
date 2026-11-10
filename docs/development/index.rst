@@ -74,7 +74,9 @@ All plotting functions (also those outside ``d.plot``) are named
 ``plot/_axes.py``: one-panel plots take ``ax=None`` (``get_ax()``), draw
 with ``ax.*`` (not with ``plt.plot()`` etc.) and return the axes; multi-panel
 plots take ``axes=None`` and ``figsize=None`` and return the figure; plots
-with several figures return the list of figures. All take ``title=``, and
+with several figures return the list of figures. A ``plot_range`` is the
+first argument (so that ``plot_pupil((0, 20) * u.sec)`` works). All take
+``title=``, and
 none calls ``plt.show()``. ``tests/test_plotting_conventions.py`` checks
 each function.
 

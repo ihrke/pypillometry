@@ -141,6 +141,27 @@ class TestSinglePanel(ConventionTest):
         self.assertSinglePanel(seg.plot_carpet)
 
 
+class TestPlotRange(ConventionTest):
+    def test_plot_range_is_first(self):
+        """plots with a plot_range take it as the first argument"""
+        import inspect
+        for name in dir(self.d.plot):
+            fct = getattr(self.d.plot, name)
+            if name.startswith("_") or not callable(fct):
+                continue
+            params = list(inspect.signature(fct).parameters)
+            if "plot_range" in params:
+                with self.subTest(name):
+                    self.assertEqual(params[0], "plot_range")
+
+    def test_positional_plot_range(self):
+        fig, ax = plt.subplots()
+        self.d.plot.plot_pupil((0, 5) * u.sec, ax=ax, units="sec")
+        self.assertLessEqual(ax.lines[0].get_xdata().max(), 5)
+        fig = self.d.plot.plot_pupil_foreshortening_error_surface((0, 5) * u.sec, eyes="left")
+        self.assertIsInstance(fig, plt.Figure)
+
+
 class TestMultiPanel(ConventionTest):
     @classmethod
     def setUpClass(cls):
