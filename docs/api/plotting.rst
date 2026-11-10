@@ -39,6 +39,14 @@ Gaze
    plot.PlotNamespace.plot_scanpath
    plot.PlotNamespace.plot_calibration
 
+Scene video (:class:`HeadMountedEyeData`)
+-----------------------------------------
+
+.. autosummary::
+   :nosignatures:
+
+   plot.HeadMountedPlotNamespace.plot_scene_scanpath
+
 Experimental setup and foreshortening
 -------------------------------------
 

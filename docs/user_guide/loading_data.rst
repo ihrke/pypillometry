@@ -46,6 +46,45 @@ the file once with the :doc:`command-line tool </getting_started/cli>`
 See :doc:`/notebooks/importdata_edf`.
 
 
+Tobii Pro Glasses (Tobii Pro Lab exports)
+-----------------------------------------
+
+Recordings of Tobii Pro Glasses 3 are read from the data export of Tobii
+Pro Lab (an Excel or tab-separated file) with
+:meth:`HeadMountedEyeData.from_tobii_prolab`:
+
+.. code-block:: python
+
+    d = pp.HeadMountedEyeData.from_tobii_prolab("rec.xlsx")   # and rec.mp4
+
+    d = d.scene.luminance()                    # luminance of the scene video
+    d.plot.plot_scene_scanpath((10, 12))       # gaze on a frame of the video
+
+The result is a :class:`HeadMountedEyeData` object, an :class:`EyeData`
+object with the additional data of eye-tracking glasses:
+
+- ``left_pupil``, ``right_pupil``: the pupil diameter in mm
+- ``both_x``, ``both_y``: the gaze position in the video of the scene
+  camera (pixels; one position for both eyes)
+- ``d.aux``: channels that do not belong to an eye, e.g. the gyroscope
+  (``d.aux["gyro_x"]``), the accelerometer and the magnetometer,
+  interpolated to the times of the eye-tracker samples, and the 3D gaze
+  point
+- the name of the scene video (the file with the name of the export and
+  the extension ``.mp4``, or the argument ``video``)
+
+The methods in ``d.scene`` add channels to ``d.aux`` that can be used as
+covariates of the pupil size: the luminance of the scene video
+(:meth:`~eyedata.head_mounted.SceneNamespace.luminance`), the viewing
+distance (:meth:`~eyedata.head_mounted.SceneNamespace.distance`) and the
+speed of the head rotation
+(:meth:`~eyedata.head_mounted.SceneNamespace.head_movement`).
+
+Excel files need the package `openpyxl`, the scene video the package `av`
+(both are optional: ``pip install openpyxl av``). Reading the Excel file
+is slow; save the result (see below).
+
+
 Text files and your own arrays
 ------------------------------
 
