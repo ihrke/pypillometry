@@ -129,6 +129,11 @@ class TestSinglePanel(ConventionTest):
         self.assertSinglePanel(cal.plot, title="T")
         self.assertEqual(plt.gca().get_title(), "T")
 
+    def test_plot_scanpath(self):
+        self.assertSinglePanel(self.d.plot.plot_scanpath, plot_range=(10, 12) * u.sec,
+                               eyes="left", title="T")
+        self.assertEqual(plt.gca().get_title(), "T")
+
 
 if __name__ == "__main__":
     unittest.main()

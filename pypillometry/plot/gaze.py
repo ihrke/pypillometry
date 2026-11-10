@@ -1,4 +1,5 @@
 from .generic import GenericPlots
+from ._axes import get_ax, get_axes
 import numpy as np
 from collections.abc import Iterable
 from typing import List, Union, Optional, Tuple
@@ -289,10 +290,9 @@ class GazePlots(GenericPlots):
             rois: List[ROI]=None,
             roi_style: dict={},
             show_onsets: bool=True,
-            title: str="",
+            title: str=None,
             units: str="sec",
-            figsize: tuple=(10,10)
-            ) -> None:
+            ax=None):
         """
         Plot EyeData as a scanpath. Typically used for single trials
         or another small amount of data. To plot a larger amount of data,
@@ -301,8 +301,8 @@ class GazePlots(GenericPlots):
         If several eyes are available, they are plotted in the same figure
         in different colors. You can choose between them using the `eyes`
         parameter. The samples are drawn as dots colored by time.
-        A new figure is created for the plot. The y-axis points down (screen
-        pixel coordinates, as in :meth:`plot_calibration`).
+        The y-axis points down (screen pixel coordinates, as in
+        :meth:`plot_calibration`).
 
         Parameters
         ----------
@@ -331,13 +331,18 @@ class GazePlots(GenericPlots):
         show_onsets : bool
             Whether to plot the event labels at the gaze position at event
             onset. Plotted only for the first eye. Default is True.
-        title : str
-            The title of the plot. Default is "".
+        title : str, optional
+            The title of the plot.
         units : str
             The units of the time axis and of plain numbers in `plot_range`
             ("ms", "sec", "min", "h"). Default "sec".
-        figsize : tuple
-            The figure size (width, height) in inches. Default is (10,10).
+        ax : matplotlib.axes.Axes, optional
+            axes to plot on; default: the current axes
+
+        Returns
+        -------
+        matplotlib.axes.Axes
+            the axes of the plot
 
         Raises
         ------
@@ -354,9 +359,9 @@ class GazePlots(GenericPlots):
            >>> from pypillometry import u
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
-           >>> d.plot.plot_scanpath(plot_range=(10, 12) * u.sec, eyes="left")
+           >>> fig, ax = plt.subplots(figsize=(6, 5))
+           >>> ax = d.plot.plot_scanpath(plot_range=(10, 12) * u.sec, eyes="left", ax=ax)
         """
-        import matplotlib.pyplot as plt
         import matplotlib.patches as patches
         from matplotlib import cm
         self._d._require("x", "y")
@@ -390,9 +395,7 @@ class GazePlots(GenericPlots):
         # which eyes to plot
         eyes = obj._eyes_with(eyes, ["x", "y"])
 
-        fig, ax = plt.subplots(1,1)
-        fig.set_figheight(figsize[1])
-        fig.set_figwidth(figsize[0])
+        ax = get_ax(ax)
 
         tnorm = tx[startix:endix].copy()
         tnorm = (tnorm - tnorm.min()) / (tnorm.max() - tnorm.min())
@@ -423,8 +426,9 @@ class GazePlots(GenericPlots):
             for roi in rois:
                 roi.plot(ax, **roi_style)
         ax.legend()
-        ax.set_title(title)
-        fig.tight_layout()
+        if title is not None:
+            ax.set_title(title)
+        return ax
     
     def plot_calibration(self, eyes: Union[str, list, None] = None, show_surface: bool = True, 
                         interpolation: str = 'rbf', figsize: tuple = (10, 8)):
