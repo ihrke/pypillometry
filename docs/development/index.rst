@@ -71,8 +71,8 @@ exist, only ``d.plot.plot_pupil()``.
 
 All plotting functions (also those outside ``d.plot``) are named
 ``plot_*`` (or ``plot``) and follow the conventions in
-``plot/_axes.py``: one-panel plots take ``ax=None``, draw with ``ax.*``
-(never with ``plt.*`` state functions) and return the axes; multi-panel
+``plot/_axes.py``: one-panel plots take ``ax=None`` (``get_ax()``), draw
+with ``ax.*`` (not with ``plt.plot()`` etc.) and return the axes; multi-panel
 plots take ``axes=None`` and ``figsize=None`` and return the figure; plots
 with several figures return the list of figures. All take ``title=``, and
 none calls ``plt.show()``. ``tests/test_plotting_conventions.py`` checks

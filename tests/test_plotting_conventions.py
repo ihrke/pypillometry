@@ -134,6 +134,12 @@ class TestSinglePanel(ConventionTest):
                                eyes="left", title="T")
         self.assertEqual(plt.gca().get_title(), "T")
 
+    def test_segment_plots(self):
+        seg = self.d.get_segments(self.d.get_epochs("S_", (-500, 1500) * u.ms), "left_pupil")
+        self.assertSinglePanel(seg.plot)
+        self.assertSinglePanel(seg.pupil.plot)
+        self.assertSinglePanel(seg.plot_carpet)
+
 
 class TestMultiPanel(ConventionTest):
     @classmethod

@@ -1495,9 +1495,10 @@ class SegmentedEyeData(state.VersionedState):
         """
         import matplotlib.pyplot as plt
 
+        from .plot._axes import get_ax
         channels = self._plot_channels(channels)
         standalone = ax is None
-        ax1 = plt.gca() if standalone else ax
+        ax1 = get_ax(ax)
 
         _check_accepts_axis(meanfct, "meanfct")
         _warn_if_ignores_mask(meanfct, "meanfct", axis=1)
@@ -1647,6 +1648,7 @@ class SegmentedEyeData(state.VersionedState):
         import matplotlib.pyplot as plt
         from mpl_toolkits.axes_grid1 import make_axes_locatable
         from .epochs import Epochs
+        from .plot._axes import get_ax
 
         if channel is None:
             if len(self.channels) > 1:
@@ -1684,7 +1686,7 @@ class SegmentedEyeData(state.VersionedState):
             cmap = "RdBu_r" if center else "viridis"
 
         standalone = ax is None
-        ax = plt.gca() if standalone else ax
+        ax = get_ax(ax)
         step = float(np.median(np.diff(self.tx))) if self.n_timepoints > 1 else 1.
         extent = [self.tx[0] - step / 2, self.tx[-1] + step / 2, self.n_segments, 0]
         kwargs.setdefault("interpolation", "nearest")

@@ -338,10 +338,9 @@ class CircularROI(ROI):
         :meth:`d.plot.plot_scanpath() <pypillometry.plot.PlotNamespace.plot_scanpath>` can also draw them
         (``rois=[left, right]``).
         """
-        import matplotlib.pyplot as plt
         import matplotlib.patches as patches
-        if ax is None:
-            ax = plt.gca()
+        from .plot._axes import get_ax
+        ax = get_ax(ax)
             
         # Set default style if not provided
         if 'facecolor' not in kwargs:
@@ -584,10 +583,9 @@ class RectangularROI(ROI):
         :meth:`d.plot.plot_scanpath() <pypillometry.plot.PlotNamespace.plot_scanpath>` can also draw them
         (``rois=[left, right]``).
         """
-        import matplotlib.pyplot as plt
         import matplotlib.patches as patches
-        if ax is None:
-            ax = plt.gca()
+        from .plot._axes import get_ax
+        ax = get_ax(ax)
             
         # Set default style if not provided
         if 'facecolor' not in kwargs:
