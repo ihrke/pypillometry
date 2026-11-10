@@ -3,6 +3,9 @@ Reading and writing data.
 
 - Eyelink EDF files: :func:`read_eyelink` (usually used through
   :meth:`~pypillometry.EyeData.from_eyelink`)
+- data exports of Tobii Pro Lab (Tobii Pro Glasses):
+  :func:`read_tobii_prolab` (usually used through
+  :meth:`~pypillometry.HeadMountedEyeData.from_tobii_prolab`)
 - saved objects: :func:`write_file` and :func:`read_file` (pickle or
   HDF5 files; usually used through :meth:`~pypillometry.EyeData.write_file`
   and :meth:`~pypillometry.EyeData.from_file`)
@@ -42,7 +45,8 @@ _HDF5_EXTENSIONS = (".h5", ".hdf5")
 
 __all__ = [
     "osf_authenticate", "download", "fetch_url", "local_copy", "write_file",
-    "read_file", "read_eyelink", "get_figshare_files", "fetch_figshare_file",
+    "read_file", "read_eyelink", "read_tobii_prolab", "get_figshare_files",
+    "fetch_figshare_file",
 ]
 
 
@@ -895,6 +899,108 @@ def _read_edf(fname: str):
             edf = eyelinkio.read_edf(fname)
 
     return edf
+
+
+#: columns of a Tobii Pro Lab data export that describe the recording
+_TOBII_INFO_COLUMNS = {
+    "Project name": "project", "Participant name": "participant",
+    "Recording name": "recording", "Recording date": "date",
+    "Recording start time": "start_time", "Recording duration": "duration_ms",
+    "Recording Fixation filter name": "fixation_filter", "Export date": "export_date",
+    "Recording media name": "media_name", "Recording media width": "media_width",
+    "Recording media height": "media_height",
+}
+#: the sensors in the export: key in the result -> (name in the column
+#: "Sensor", prefix of its data columns)
+_TOBII_IMU = {"gyro": ("Gyroscope", "Gyro"), "acc": ("Accelerometer", "Accelerometer"),
+              "mag": ("Magnetometer", "Magnetometer")}
+
+
+@requires_package("openpyxl")
+def _read_excel(fname: str):
+    """Read the first sheet of an Excel file as a pandas.DataFrame."""
+    import pandas as pd
+    return pd.read_excel(fname)
+
+
+def read_tobii_prolab(fname: str) -> dict:
+    """
+    Read a data export of Tobii Pro Lab (recordings of Tobii Pro Glasses).
+
+    The export ("Data Export" in Tobii Pro Lab) is one table with one row
+    per sample of one of the sensors (eye tracker, gyroscope,
+    accelerometer, magnetometer) or per event. This function splits it
+    into one table per sensor.
+
+    Reading Excel files requires the optional package `openpyxl` and is
+    slow (about half a minute for a three-minute recording); exports as
+    tab-separated text (``.tsv``) are read much faster.
+
+    Parameters
+    ----------
+    fname : str
+        filename of the export: an Excel file (``.xlsx``) or a
+        tab-separated text file (any other extension)
+
+    Returns
+    -------
+    dict
+        - ``"eye"``: :class:`pandas.DataFrame` with the samples of the eye
+          tracker: ``time`` (ms) and the gaze and pupil columns of the
+          export under their original names (e.g., ``"Gaze point X"``,
+          ``"Pupil diameter left"``)
+        - ``"gyro"``, ``"acc"``, ``"mag"``: DataFrames with the samples of
+          the gyroscope (deg/s), accelerometer (m/s²) and magnetometer
+          (µT): ``time`` (ms), ``x``, ``y``, ``z``; empty if the export
+          has no such data
+        - ``"events"``: DataFrame with ``time`` (ms) and ``label``
+        - ``"info"``: dict that describes the recording (e.g.,
+          ``"participant"``, ``"recording"``, ``"date"``)
+
+    See Also
+    --------
+    pypillometry.HeadMountedEyeData.from_tobii_prolab : create a data object from the export
+    """
+    import pandas as pd
+    if str(fname).lower().endswith((".xlsx", ".xlsm")):
+        tab = _read_excel(fname)
+    else:
+        tab = pd.read_csv(fname, sep="\t", low_memory=False)
+    for col in ("Recording timestamp", "Sensor"):
+        if col not in tab.columns:
+            raise ValueError(f"'{fname}' is not a Tobii Pro Lab data export: "
+                             f"no column '{col}'")
+    tab = tab.rename(columns={"Recording timestamp": "time"})
+    # recordings exported with a decimal comma are read as text
+    skip = set(_TOBII_INFO_COLUMNS) | {"Sensor", "Event", "Validity left", "Validity right",
+                                       "Eye movement type"}
+    for col in tab.columns:
+        if col not in skip and not pd.api.types.is_numeric_dtype(tab[col]):
+            tab[col] = pd.to_numeric(tab[col].astype(str).str.replace(",", "."),
+                                     errors="coerce")
+
+    info = {key: tab[col].iloc[0] for col, key in _TOBII_INFO_COLUMNS.items()
+            if col in tab.columns and len(tab) > 0}
+    info = {k: (v.item() if hasattr(v, "item") else v) for k, v in info.items()}
+
+    eye = tab[tab["Sensor"] == "Eye Tracker"]
+    eye_cols = [c for c in tab.columns
+                if c.startswith(("Gaze ", "Pupil ", "Validity ", "Eye movement", "Fixation point"))]
+    res = {"eye": eye[["time"] + eye_cols].reset_index(drop=True)}
+    for key, (sensor, prefix) in _TOBII_IMU.items():
+        cols = [f"{prefix} {ax}" for ax in "XYZ"]
+        if all(c in tab.columns for c in cols):
+            imu = tab.loc[tab["Sensor"] == sensor, ["time"] + cols]
+        else:
+            imu = pd.DataFrame(columns=["time"] + cols)
+        res[key] = imu.set_axis(["time", "x", "y", "z"], axis=1).reset_index(drop=True)
+    if "Event" in tab.columns:
+        events = tab.loc[tab["Event"].notna(), ["time", "Event"]]
+    else:
+        events = pd.DataFrame(columns=["time", "Event"])
+    res["events"] = events.rename(columns={"Event": "label"}).reset_index(drop=True)
+    res["info"] = info
+    return res
 
 
 @contextmanager

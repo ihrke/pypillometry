@@ -23,7 +23,7 @@ EyeData
 pupil, gaze
     Pipeline steps for pupil and gaze data, used as ``d | pp.pupil.<step>()``.
     General steps (``crop``, ``downsample``, ...) are at the top level.
-read_eyelink, read_file, load_study_local, get_example_data
+read_eyelink, read_tobii_prolab, read_file, load_study_local, get_example_data
     Reading and writing data.
 Events, Intervals, Epochs
     Event markers, time intervals and event-related segments.
@@ -73,7 +73,8 @@ from .quality import QualityReport, QualityMetric
 # ---------------------------------------------------------------------------
 # Reading and writing data
 from .io import (
-    read_eyelink, read_file, write_file, download, fetch_url, local_copy,
+    read_eyelink, read_tobii_prolab, read_file, write_file, download, fetch_url,
+    local_copy,
     osf_authenticate, get_figshare_files, fetch_figshare_file,
 )
 from .study import load_study_local, load_study_osf, get_osf_project_files
@@ -118,7 +119,7 @@ __all__ = [
     "ROI", "CircularROI", "RectangularROI",
     "QualityReport", "QualityMetric",
     # reading and writing data
-    "read_eyelink", "read_file", "write_file", "download", "fetch_url",
+    "read_eyelink", "read_tobii_prolab", "read_file", "write_file", "download", "fetch_url",
     "local_copy", "osf_authenticate", "get_figshare_files",
     "fetch_figshare_file",
     "load_study_local", "load_study_osf", "get_osf_project_files",
