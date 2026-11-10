@@ -3,13 +3,17 @@
 Plotting
 ========
 
-Every data object has a ``plot`` attribute with the plotting functions
-that fit its data: a :class:`PupilPlotter` for :class:`PupilData`, a
-:class:`GazePlotter` for :class:`GazeData` and an :class:`EyePlotter` (with
-both sets of functions) for :class:`EyeData`. All plots use
+Every data object has a ``plot`` namespace with the plotting functions
+(:class:`~pypillometry.plot.PlotNamespace`), e.g. ``d.plot.pupil_plot()``;
+``dir(d.plot)`` lists them. Pupil plots need pupil data and gaze plots need
+gaze data; they raise an error if the data are missing. Gaze plots draw the
+screen as it is seen: pixel y increases downward. All plots use
 :mod:`matplotlib`, so they can be adjusted and saved as usual. Most
 functions take ``eyes=``, ``variables=``, ``plot_range=`` and ``units=``
-arguments.
+arguments. ``units=`` is the unit of the time axis and of plain numbers
+in ``plot_range`` (and ``interv`` of the ``*_segments`` plots):
+``plot_range=(0, 20), units="sec"`` plots the first 20 seconds. Values
+with units are converted, e.g., ``plot_range=(0, 20) * u.sec``.
 
 The examples on this page use the short example dataset with detected
 blinks:
@@ -23,7 +27,7 @@ blinks:
    import matplotlib.pyplot as plt
 
    d = pp.get_example_data("rlmw_002_short")
-   d.pupil_blinks_detect(apply_mask=True)
+   d.pupil.blinks_detect()
 
 Each function's API documentation has another example.
 
@@ -34,11 +38,11 @@ Time series
 .. autosummary::
    :nosignatures:
 
-   PupilPlotter.pupil_plot
-   PupilPlotter.plot_timeseries
-   PupilPlotter.plot_masked
+   EyeData.plot.pupil_plot
+   EyeData.plot.plot_timeseries
+   EyeData.plot.plot_masked
 
-:meth:`~PupilPlotter.pupil_plot` shows the pupil size of all eyes in one
+:meth:`~EyeData.plot.pupil_plot` shows the pupil size of all eyes in one
 plot, with blinks (red) and events (grey lines):
 
 .. plot::
@@ -47,7 +51,7 @@ plot, with blinks (red) and events (grey lines):
    plt.figure(figsize=(10, 3))
    d.plot.pupil_plot(plot_range=(0, 20) * u.sec)
 
-:meth:`~PupilPlotter.plot_timeseries` plots each variable (here: gaze and
+:meth:`~EyeData.plot.plot_timeseries` plots each variable (here: gaze and
 pupil) in its own panel:
 
 .. plot::
@@ -71,8 +75,8 @@ multi-page PDF file with ``pdf_file=``. For interactive browsing, the
 .. autosummary::
    :nosignatures:
 
-   PupilPlotter.plot_timeseries_segments
-   PupilPlotter.pupil_plot_segments
+   EyeData.plot.plot_timeseries_segments
+   EyeData.plot.pupil_plot_segments
 
 
 Blinks and intervals
@@ -81,13 +85,12 @@ Blinks and intervals
 .. autosummary::
    :nosignatures:
 
-   PupilPlotter.plot_blinks
-   PupilPlotter.plot_intervals
+   EyeData.plot.plot_blinks
+   EyeData.plot.plot_intervals
    Intervals.plot
-   Intervals.plot_highlight
    Events.plot
 
-:meth:`~PupilPlotter.plot_blinks` draws one small plot per blink, e.g., to
+:meth:`~EyeData.plot.plot_blinks` draws one small plot per blink, e.g., to
 check blink detection and interpolation:
 
 .. plot::
@@ -96,49 +99,70 @@ check blink detection and interpolation:
    d.plot.plot_blinks(eyes="left", nrow=3, ncol=5, figsize=(12, 6),
                       units="sec")
 
-:meth:`~PupilPlotter.plot_intervals` does the same for any
+:meth:`~EyeData.plot.plot_intervals` does the same for any
 :class:`Intervals`, here the three seconds around each stimulus:
 
 .. plot::
    :context: close-figs
 
-   intervals = d.get_intervals("S_", (-500, 2500) * u.ms)
-   d.plot.plot_intervals(intervals, variables="pupil", nrow=2, ncol=5,
+   epochs = d.get_epochs("S_", (-500, 2500) * u.ms)
+   d.plot.plot_intervals(epochs, variables="pupil", nrow=2, ncol=5,
                          figsize=(12, 4))
 
-:meth:`Intervals.plot_highlight` shades intervals on an existing plot:
+The plots with a time axis (:meth:`~EyeData.plot.pupil_plot`,
+:meth:`~EyeData.plot.plot_timeseries`, :meth:`~EyeData.plot.plot_masked`
+and the ``*_segments`` plots) shade :class:`Intervals` or :class:`Epochs`
+with ``highlight=``. They are converted to the units of the time axis. A
+list of them gets one color each from ``highlight_color=``:
 
 .. plot::
    :context: close-figs
 
-   intervals = d.get_intervals("S_", (0, 1000) * u.ms, units="sec")
+   trials = d.get_intervals(start="F_", end="R_")
+   stim = d.get_epochs("S_", (0, 1000) * u.ms)
    plt.figure(figsize=(10, 3))
    d.plot.pupil_plot(eyes="left", plot_range=(0, 20) * u.sec,
-                     show_events=False)
-   intervals.plot_highlight(color="green", alpha=0.2)
-   plt.xlim(0, 20)
+                     show_events=False, highlight=[trials, stim],
+                     highlight_color=["lightgrey", "green"])
 
 
 Event-related pupil dilation
 ----------------------------
 
-The segments returned by :meth:`~GenericEyeData.get_segments` have their
-own ``plot()`` method that shows the mean (with its standard error) and the
-percentage of missing data (see :doc:`events_intervals`):
+The segments returned by :meth:`~EyeData.get_segments` have their
+own plots that show the mean (with its standard error) and the
+percentage of missing data: ``seg.pupil.plot()`` for the pupil (the
+event-related pupil dilation), ``seg.gaze.plot_roi()`` for the share of
+trials in which the gaze is in a region of interest, and ``seg.plot()``
+for any channel (see :doc:`events_intervals`):
 
 .. plot::
    :context: close-figs
 
-   d.pupil_blinks_interpolate()
-   intervals = d.get_intervals("S_", (-500, 2500) * u.ms)
-   erpd = d.get_segments(intervals, "left_pupil").baseline_correct((-500, 0))
-   erpd.plot()
+   d.pupil.blinks_interpolate()
+   epochs = d.get_epochs("S_", (-500, 2500) * u.ms)
+   erpd = d.get_segments(epochs, "left_pupil").pupil.baseline_correct((-500, 0))
+   erpd.pupil.plot()
+
+:meth:`~SegmentedEyeData.plot_carpet` shows all segments of a channel
+instead of their mean: one row per trial, the value as color (a "carpet
+plot"). It shows how the response varies between trials, e.g., trials with
+artifacts or a change over the session; ``sort_by=`` orders the rows by
+a property of the trials (e.g., a metadata column such as the reaction
+time), and ``show_mean=True`` adds the mean below the image:
+
+.. plot::
+   :context: close-figs
+
+   erpd.plot_carpet(show_mean=True)
 
 .. autosummary::
    :nosignatures:
 
+   segmented.SegmentedPupilNamespace.plot
+   segmented.SegmentedGazeNamespace.plot_roi
    SegmentedEyeData.plot
-   GroupLevelSegmentedData.plot
+   SegmentedEyeData.plot_carpet
 
 
 Gaze
@@ -147,9 +171,9 @@ Gaze
 .. autosummary::
    :nosignatures:
 
-   GazePlotter.plot_heatmap
-   GazePlotter.plot_scanpath
-   GazePlotter.plot_calibration
+   EyeData.plot.plot_heatmap
+   EyeData.plot.plot_scanpath
+   EyeData.plot.plot_calibration
 
 .. plot::
    :context: close-figs
@@ -157,7 +181,7 @@ Gaze
    d.plot.plot_heatmap(eyes="left")
    d.plot.plot_scanpath(plot_range=(10, 12) * u.sec, eyes="left")
 
-:meth:`~GazePlotter.plot_calibration` shows the calibration and validation
+:meth:`~EyeData.plot.plot_calibration` shows the calibration and validation
 results of the eye tracker (see :doc:`/experimental/spatial_calibration`).
 Regions of interest can be drawn on top of heatmaps and scan paths (see
 :doc:`/experimental/gaze_rois`).
@@ -172,7 +196,7 @@ give each a ``label_prefix`` and a ``style``:
 .. plot::
    :context: close-figs
 
-   filtered = d.pupil_lowpass_filter(cutoff=4, inplace=False)
+   filtered = d | pp.pupil.lowpass_filter(cutoff=4)
 
    plt.figure(figsize=(10, 3))
    d.plot.pupil_plot(eyes="left", plot_range=(5, 15) * u.sec,

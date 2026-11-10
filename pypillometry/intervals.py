@@ -8,175 +8,127 @@ from pypillometry.units import (UNSET, _has_units, _time_values_and_units, parse
                                 _ms_to_samples, _samples_to_ms)
 from pypillometry.state import Stateful
 from pypillometry.events import _meta_dict, _concat_meta
+from pypillometry.epochs import Epochs
 
 __all__ = [
-    "Intervals", "merge_intervals",
+    "Intervals", "concat_intervals",
 ]
 
 _MS_PER_UNIT = {"ms": 1.0, "sec": 1000.0, "min": 60000.0, "h": 3600000.0}
 
-def merge_intervals(*args, label: str = 'merged'):
-    """Combine multiple Intervals objects into a single Intervals object.
-    
-    Takes multiple Intervals objects and concatenates them into one, preserving
-    all intervals and their metadata. Does NOT merge overlapping intervals - 
-    call .merge() on the result if you want to merge overlapping intervals.
-    All input Intervals must have the same units.
-    
+def concat_intervals(*args, label: str = "combined"):
+    """
+    Put the intervals of several Intervals objects into one.
+
+    The same as ``a + b + c`` (see :meth:`Intervals.__add__`), for any
+    number of objects or a list or dict of them (e.g., the blinks of all
+    channels from :meth:`~pypillometry.EyeData.get_blinks`). The intervals
+    are concatenated, with their labels, onsets and metadata; overlapping
+    intervals are kept as they are (:meth:`Intervals.merge` merges them).
+    The units of the first object are used (the others are converted).
+
     Parameters
     ----------
-    *args : Intervals objects, list, or dict
-        Variable number of Intervals objects, or a single list/dict of Intervals.
-        If dict, keys are ignored and all Intervals are combined.
+    *args : Intervals, list or dict
+        Intervals objects, or a single list or dict of them (the keys of a
+        dict are ignored)
     label : str, optional
-        Label for the resulting Intervals object. Default is "merged".
-        
+        label of the result; default "combined"
+
     Returns
     -------
     Intervals
-        A single Intervals object containing all intervals from all input
-        Intervals objects with their metadata preserved.
-        
+        all intervals of all objects, in the given order
+
     Raises
     ------
     ValueError
-        If no Intervals objects are provided or if units don't match.
+        if no Intervals are given, or if time units and sample indices are
+        mixed
     TypeError
-        If any argument is not an Intervals object (or a list/dict of them).
+        if an argument is not an Intervals object
 
     Examples
     --------
-    Combine multiple Intervals objects:
-    
-    >>> intervals1 = Intervals([(0, 100), (200, 300)], units="ms", event_labels=["a", "b"])
-    >>> intervals2 = Intervals([(50, 150), (400, 500)], units="ms", event_labels=["c", "d"])
-    >>> combined = merge_intervals(intervals1, intervals2)
-    >>> len(combined)
-    4
-    >>> combined.event_labels
+    >>> a = Intervals([(0, 100), (200, 300)], units="ms", event_labels=["a", "b"])
+    >>> b = Intervals([(50, 150), (400, 500)], units="ms", event_labels=["c", "d"])
+    >>> both = concat_intervals(a, b)
+    >>> both.event_labels
     ['a', 'b', 'c', 'd']
-    
-    Combine from a list:
-    
-    >>> intervals_list = [intervals1, intervals2]
-    >>> combined = merge_intervals(intervals_list)
-    
-    Combine from a dict:
-    
-    >>> intervals_dict = {"left_pupil": intervals1, "right_pupil": intervals2}
-    >>> combined = merge_intervals(intervals_dict)
-    
-    Then merge overlapping intervals if needed:
-    
-    >>> combined.merge()
+    >>> len(both), len(both.merge())   # merge() merges the overlaps
+    (4, 3)
+    >>> both = concat_intervals({"left_pupil": a, "right_pupil": b})
     """
-    
-    # Parse input to get list of Intervals objects
-    intervals_list = []
-    
-    if len(args) == 1:
-        arg = args[0]
-        if isinstance(arg, dict):
-            # Dict of Intervals
-            intervals_list = list(arg.values())
-        elif isinstance(arg, list):
-            # List of Intervals
-            intervals_list = arg
-        elif isinstance(arg, Intervals):
-            # Single Intervals object
-            intervals_list = [arg]
-        else:
-            raise TypeError(f"Expected Intervals, list, or dict, got {type(arg)}")
+    if len(args) == 1 and isinstance(args[0], dict):
+        intervals_list = list(args[0].values())
+    elif len(args) == 1 and isinstance(args[0], (list, tuple)):
+        intervals_list = list(args[0])
     else:
-        # Multiple Intervals objects as *args
         intervals_list = list(args)
-    
-    # Validate we have Intervals objects
     if not intervals_list:
-        raise ValueError("No Intervals objects provided")
-    
+        raise ValueError("no Intervals given")
     for i, obj in enumerate(intervals_list):
         if not isinstance(obj, Intervals):
-            raise TypeError(f"Argument {i} is not an Intervals object: {type(obj)}")
-    
-    # Check that all have the same units
-    first_units = intervals_list[0].units
+            raise TypeError(f"argument {i} is not an Intervals object: {type(obj).__name__}")
+    combined = intervals_list[0]
     for obj in intervals_list[1:]:
-        if obj.units != first_units:
-            raise ValueError(
-                f"All Intervals must have the same units. "
-                f"Found {first_units} and {obj.units}"
-            )
-    
-    # Collect all intervals and metadata
-    all_intervals = []
-    all_event_labels = []
-    all_event_indices = []
-    all_event_onsets = []
-    metas = []
-    has_labels = False
-    has_indices = False
-    has_onsets = False
-    
-    for obj in intervals_list:
-        all_intervals.extend(obj.intervals)
-        
-        # Collect metadata if present in any object
-        if obj.event_labels is not None:
-            has_labels = True
-            all_event_labels.extend(obj.event_labels)
-        else:
-            # Pad with None for this object's intervals
-            all_event_labels.extend([None] * len(obj.intervals))
-        
-        if obj.event_indices is not None:
-            has_indices = True
-            all_event_indices.extend(obj.event_indices)
-        else:
-            all_event_indices.extend([None] * len(obj.intervals))
-        
-        if obj.event_onsets is not None:
-            has_onsets = True
-            all_event_onsets.extend(obj.event_onsets)
-        else:
-            all_event_onsets.extend([None] * len(obj.intervals))
+        combined = combined + obj
+    return combined._copy_with(label=label)
 
-        metas.append(obj.event_meta or {})
-    
-    if not all_intervals:
-        # All were empty
-        return Intervals([], units=first_units, label=label,
-                        data_time_range=intervals_list[0].data_time_range,
-                        interval_window=intervals_list[0].interval_window)
-    
-    # Use data_time_range from first object if available
-    data_time_range = intervals_list[0].data_time_range if intervals_list[0].data_time_range is not None else None
-    
-    # Only preserve interval_window if all objects have the same value
-    combined_window = intervals_list[0].interval_window
-    for obj in intervals_list[1:]:
-        if obj.interval_window != combined_window:
-            combined_window = None
-            break
-    
-    return Intervals(
-        all_intervals,
-        units=first_units,
-        label=label,
-        event_labels=all_event_labels if has_labels else None,
-        event_indices=all_event_indices if has_indices else None,
-        event_onsets=all_event_onsets if has_onsets else None,
-        data_time_range=data_time_range,
-        interval_window=combined_window,
-        event_meta=_concat_meta(metas, [len(obj) for obj in intervals_list]) or None
-    )
+
+def _concat_rows(intervals_list):
+    """
+    The per-interval table (event labels, onsets, metadata) of several
+    Intervals, concatenated row by row. A column that is missing in some of
+    them is filled with "" (labels), NaN (onsets) or as in
+    :func:`~pypillometry.events._concat_meta`; None if all of them lack it.
+    """
+    lengths = [len(obj) for obj in intervals_list]
+
+    def column(get, fill):
+        if all(get(obj) is None for obj in intervals_list):
+            return None
+        return [v for obj, k in zip(intervals_list, lengths)
+                for v in (list(get(obj)) if get(obj) is not None else [fill] * k)]
+    labels = column(lambda obj: obj.event_labels, "")
+    onsets = column(lambda obj: obj.event_onsets, np.nan)
+    meta = _concat_meta([obj.event_meta or {} for obj in intervals_list], lengths) or None
+    return labels, onsets, meta
+
+
+def _check_pairs(pairs):
+    """Raise a ValueError unless `pairs` are (start, end) with finite start <= end."""
+    for i, pair in enumerate(pairs):
+        if len(pair) != 2:
+            raise ValueError(f"interval {i} is {pair}; intervals must be (start, end) pairs")
+        start, end = pair
+        try:
+            finite = np.isfinite(start) and np.isfinite(end)
+        except TypeError:
+            raise ValueError(f"interval {i} is {pair}; start and end must be "
+                             "numbers") from None
+        if not finite:
+            raise ValueError(f"interval {i} is {pair}; start and end must be finite")
+        if start > end:
+            raise ValueError(f"interval {i} is {pair}; its start is after its end")
+
+
+def _as_intervals(obj, what="intervals"):
+    """`obj` as Intervals: Intervals as they are, Epochs converted to spans in ms."""
+    if isinstance(obj, Intervals):
+        return obj
+    if isinstance(obj, Epochs):
+        return obj.to_intervals()
+    raise TypeError(f"{what} must be Intervals or Epochs, got {type(obj).__name__}")
+
 
 def stat_event_interval(tx,sy,intervals,statfct=np.mean):
     """
     Return result of applying a statistical function to pupillometric data in
     each of a list of intervals. For example, extract mean pupil-size in the
     interval before each trial onset (intervals as returned by
-    :meth:`~pypillometry.GenericEyeData.get_intervals`).
+    :meth:`~pypillometry.EyeData.get_intervals` or
+    :meth:`~pypillometry.EyeData.get_epochs`).
 
     Parameters
     ----------
@@ -188,7 +140,9 @@ def stat_event_interval(tx,sy,intervals,statfct=np.mean):
         intervals where all samples are masked give NaN
     intervals : list of tuples (start, end)
         absolute start and end times of the intervals, in the same units as
-        `tx`; each is matched to the closest sample in `tx`
+        `tx`; each is matched to the closest sample in `tx` (an end after
+        the last sample includes it). Only the part of an interval within
+        `tx` is used; intervals entirely outside give NaN
     statfct : callable
         function mapping np.array to a single number (default: `np.mean`)
 
@@ -204,8 +158,11 @@ def stat_event_interval(tx,sy,intervals,statfct=np.mean):
     res=np.zeros(len(starts))
 
     for i,interv in enumerate(zip(starts,ends)):
+        if interv[1] <= tx[0] or interv[0] > tx[-1]:
+            res[i]=np.nan  # no sample within the interval (end exclusive)
+            continue
         start_ix=np.argmin(np.abs(interv[0]-tx))
-        end_ix=np.argmin(np.abs(interv[1]-tx))
+        end_ix=len(tx) if interv[1] > tx[-1] else np.argmin(np.abs(interv[1]-tx))
         if start_ix==end_ix:
             end_ix+=1
         seg=sy[start_ix:end_ix]
@@ -228,14 +185,17 @@ class Intervals(Stateful):
 
     Usually, Intervals objects are not created directly but returned by
     methods of the eye-data classes, e.g.,
-    :meth:`~pypillometry.GenericEyeData.get_intervals` (event-locked
-    intervals, input for :meth:`~pypillometry.GenericEyeData.get_segments`),
-    :meth:`~pypillometry.GenericEyeData.get_blinks` or
-    :meth:`~pypillometry.GenericEyeData.mask_as_intervals`.
+    :meth:`~pypillometry.EyeData.get_intervals` (spans between two
+    events; windows around single events are
+    :class:`~pypillometry.Epochs` from
+    :meth:`~pypillometry.EyeData.get_epochs`, see
+    :meth:`~pypillometry.Epochs.to_intervals`),
+    :meth:`~pypillometry.EyeData.get_blinks` or
+    :meth:`~pypillometry.EyeData.mask_as_intervals`.
     Detection methods such as
-    :meth:`~pypillometry.PupilData.pupil_blinks_detect` store their results
+    :meth:`d.pupil.blinks_detect() <pypillometry.eyedata.pupil.PupilNamespace.blinks_detect>` store their results
     as Intervals. Several Intervals can be combined with ``+`` or
-    :func:`~pypillometry.merge_intervals` and subtracted with ``-``.
+    :func:`~pypillometry.concat_intervals` and subtracted with ``-``.
 
     Intervals in sample indices are only valid for the data object they
     came from. Converting between sample indices and time needs that data
@@ -257,19 +217,8 @@ class Intervals(Stateful):
         Descriptive label for the interval collection
     event_labels : list, optional
         Event labels corresponding to each interval
-    event_indices : np.ndarray, optional
-        Indices (into the dataset's events) of the event corresponding to
-        each interval
-    data_time_range : tuple, optional
-        Range (min, max) of the original dataset (in same units as
-        intervals); used for clipping in :meth:`pad` and for plotting
     event_onsets : list or np.ndarray, optional
         Original event onset times (in same units as intervals)
-    interval_window : tuple, optional
-        The relative time window around events, in same units as intervals
-        (e.g., (-200, 800) for 200ms before to 800ms after). When set, indicates that intervals are event-locked and
-        zero corresponds to event onset. Used by
-        :class:`~pypillometry.SegmentedEyeData` to create the appropriate time axis.
     event_meta : dict, optional
         Metadata of the event corresponding to each interval (column name
         -> array with one value per interval; see
@@ -277,24 +226,28 @@ class Intervals(Stateful):
 
     Examples
     --------
+    >>> from pypillometry import u
     >>> intervals = Intervals([(0, 100), (200, 300)], units="ms", label="stimulus")
     >>> intervals = Intervals([(0, 100), (200, 300)] * u.ms, label="stimulus")
     >>> len(intervals)
     2
     >>> for start, end in intervals:
     ...     print(f"{start}-{end}")
+    0.0-100.0
+    200.0-300.0
     """
     
     # state (see pypillometry.state); intervals as (n, 2) array
     _STATE_FIELDS = (("intervals", "pairs"), "units", "label", "event_labels",
-                     "event_indices", "event_onsets", "data_time_range",
-                     "interval_window", "event_meta")
+                     "event_onsets", "event_meta")
 
     def __init__(self, intervals, units=UNSET, label=None, event_labels=None,
-                 event_indices=None, data_time_range=None, event_onsets=None,
-                 interval_window=None, event_meta=None):
+                 event_onsets=None, event_meta=None):
         """
         Initialize an Intervals object (see class docstring for parameters).
+
+        Raises a ValueError if a start or end is not finite or a start is
+        after its end.
         """
         try:
             intervals, self.units = _time_values_and_units(intervals, units)
@@ -310,23 +263,23 @@ class Intervals(Stateful):
             self.intervals = [tuple(row) for row in intervals]
         else:
             self.intervals = [tuple(i) for i in intervals]
-        
+        _check_pairs(self.intervals)
+
         self.label = label
+        for name, col in (("event_labels", event_labels), ("event_onsets", event_onsets)):
+            if col is not None and len(col) != len(self.intervals):
+                raise ValueError(f"{name} has {len(col)} values for "
+                                 f"{len(self.intervals)} intervals")
         self.event_labels = event_labels
-        self.event_indices = event_indices
-        self.data_time_range = data_time_range
         self.event_onsets = event_onsets
-        self.interval_window = interval_window
         self.event_meta = None if event_meta is None \
             else _meta_dict(event_meta, len(self.intervals))
 
     def _copy_with(self, **changes):
         """New Intervals with the attributes of this one, except `changes`."""
         kwargs = dict(intervals=self.intervals, units=self.units, label=self.label,
-                      event_labels=self.event_labels, event_indices=self.event_indices,
-                      data_time_range=self.data_time_range,
+                      event_labels=self.event_labels,
                       event_onsets=self.event_onsets,
-                      interval_window=self.interval_window,
                       event_meta=self.event_meta)
         kwargs.update(changes)
         return Intervals(**kwargs)
@@ -366,7 +319,7 @@ class Intervals(Stateful):
         
         Parameters
         ----------
-        data : GenericEyeData
+        data : EyeData
             data object the intervals belong to (anything with a time
             vector `tx` in ms and a sampling rate `fs`); the mask has one
             entry per sample of `data`
@@ -378,8 +331,12 @@ class Intervals(Stateful):
             
         Examples
         --------
-        >>> blinks = d.get_blinks("left", "pupil")
+        >>> import pypillometry as pp
+        >>> d = pp.get_example_data("rlmw_002_short").pupil.blinks_detect()
+        >>> blinks = d.get_blinks("left", "pupil")["left_pupil"]
         >>> mask = blinks.to_mask(d)
+        >>> len(mask) == len(d)
+        True
         """
         n = len(data.tx)
         mask = np.zeros(n, dtype=np.int8)
@@ -400,7 +357,7 @@ class Intervals(Stateful):
         mask : np.ndarray
             Binary array where non-zero values indicate interval membership,
             one entry per sample.
-        data : GenericEyeData, optional
+        data : EyeData, optional
             data object the mask belongs to (anything with `tx` and `fs`);
             needed for time units.
         units : str, optional
@@ -430,7 +387,7 @@ class Intervals(Stateful):
         starts = np.where(diff == 1)[0]
         ends = np.where(diff == -1)[0]
         intervals = cls(list(zip(starts.tolist(), ends.tolist())), units="samples",
-                        label=label, data_time_range=(0, len(mask_bool)))
+                        label=label)
         return intervals.to_units(units, data)
 
     @staticmethod
@@ -493,8 +450,7 @@ class Intervals(Stateful):
             if s < e:
                 result.append((s, e))
         return Intervals(result, self.units,
-                         label=f"{self.label or 'intervals'} - {other.label or 'intervals'}",
-                         data_time_range=self.data_time_range)
+                         label=f"{self.label or 'intervals'} - {other.label or 'intervals'}")
 
     def _same_units(self, other):
         """`other` converted to the units of self (only between time units)."""
@@ -513,9 +469,8 @@ class Intervals(Stateful):
         
         The intervals are concatenated and metadata is merged appropriately:
         - Units: other is converted to self's units if different
-        - data_time_range: expanded to cover both
         - label: combined with ' + '
-        - event_labels/indices/onsets: concatenated
+        - event_labels/onsets/meta: concatenated
         
         Parameters
         ----------
@@ -561,75 +516,9 @@ class Intervals(Stateful):
         else:
             combined_label = self.label or other.label
         
-        # Combine event_labels
-        if self.event_labels is not None and other.event_labels is not None:
-            combined_event_labels = list(self.event_labels) + list(other.event_labels)
-        elif self.event_labels is not None:
-            combined_event_labels = list(self.event_labels)
-        elif other.event_labels is not None:
-            combined_event_labels = list(other.event_labels)
-        else:
-            combined_event_labels = None
-        
-        # Combine event_indices
-        if self.event_indices is not None and other.event_indices is not None:
-            combined_event_indices = np.concatenate([
-                np.asarray(self.event_indices), 
-                np.asarray(other.event_indices)
-            ])
-        elif self.event_indices is not None:
-            combined_event_indices = np.asarray(self.event_indices)
-        elif other.event_indices is not None:
-            combined_event_indices = np.asarray(other.event_indices)
-        else:
-            combined_event_indices = None
-        
-        # Combine event_onsets (convert other's if needed)
-        if self.event_onsets is not None and other_converted.event_onsets is not None:
-            combined_event_onsets = np.concatenate([
-                np.asarray(self.event_onsets),
-                np.asarray(other_converted.event_onsets)
-            ])
-        elif self.event_onsets is not None:
-            combined_event_onsets = np.asarray(self.event_onsets)
-        elif other_converted.event_onsets is not None:
-            combined_event_onsets = np.asarray(other_converted.event_onsets)
-        else:
-            combined_event_onsets = None
-        
-        # Combine data_time_range (expand to cover both)
-        if self.data_time_range is not None and other_converted.data_time_range is not None:
-            combined_range = (
-                min(self.data_time_range[0], other_converted.data_time_range[0]),
-                max(self.data_time_range[1], other_converted.data_time_range[1])
-            )
-        elif self.data_time_range is not None:
-            combined_range = self.data_time_range
-        elif other_converted.data_time_range is not None:
-            combined_range = other_converted.data_time_range
-        else:
-            combined_range = None
-        
-        combined_meta = _concat_meta([self.event_meta or {}, other.event_meta or {}],
-                                     [len(self), len(other)]) or None
-
-        # Only preserve interval_window if both have the same value
-        combined_interval_window = None
-        if self.interval_window is not None and other_converted.interval_window is not None:
-            if self.interval_window == other_converted.interval_window:
-                combined_interval_window = self.interval_window
-        
-        return Intervals(
-            combined_intervals,
-            self.units,
-            label=combined_label,
-            event_labels=combined_event_labels,
-            event_indices=combined_event_indices,
-            data_time_range=combined_range,
-            event_onsets=combined_event_onsets,
-            interval_window=combined_interval_window,
-            event_meta=combined_meta
-        )
+        labels, onsets, meta = _concat_rows([self, other_converted])
+        return Intervals(combined_intervals, self.units, label=combined_label,
+                         event_labels=labels, event_onsets=onsets, event_meta=meta)
     
     def __array__(self, dtype=None, copy=None) -> np.ndarray:
         """
@@ -650,8 +539,11 @@ class Intervals(Stateful):
             
         Examples
         --------
-        >>> intervals = data.get_intervals("stim", (-200, 800), units="ms")
-        >>> arr = np.array(intervals)
+        >>> import pypillometry as pp
+        >>> d = pp.get_example_data("rlmw_002_short")
+        >>> intervals = d.get_intervals(start="F_", end="R_")  # feedback to response
+        >>> np.array(intervals).shape
+        (10, 2)
         """
         if copy is False:
             raise ValueError("Intervals cannot be converted to an array without a copy")
@@ -680,7 +572,7 @@ class Intervals(Stateful):
         target_units : str
             Target units: "ms", "sec", "min", "h", or "samples" for sample
             indices (aliases such as "seconds" or "indices" work, too).
-        data : GenericEyeData, optional
+        data : EyeData, optional
             data object the intervals belong to (anything with a time vector
             `tx` in ms and a sampling rate `fs`); needed to convert between
             sample indices and time
@@ -697,15 +589,18 @@ class Intervals(Stateful):
         
         Examples
         --------
-        >>> intervals = data.get_intervals("stim", (-200, 800), units="ms")
+        >>> import pypillometry as pp
+        >>> d = pp.get_example_data("rlmw_002_short")
+        >>> intervals = d.get_intervals(start="F_", end="R_", units="ms")
         >>> intervals_sec = intervals.to_units("sec")
         >>> intervals_seconds = intervals.to_units("seconds")  # alias works too
-        
+
         Convert between indices and time units (needs the data object):
-        
-        >>> blinks = data.get_blinks("left", "pupil")
-        >>> blinks_ms = blinks.to_units("ms", data)
-        >>> blinks_idx = blinks_ms.to_units("samples", data)
+
+        >>> d = d.pupil.blinks_detect()
+        >>> blinks = d.get_blinks("left", "pupil")["left_pupil"]
+        >>> blinks_idx = blinks.to_units("samples", d)
+        >>> blinks_ms = blinks_idx.to_units("ms", d)
         """
         # Normalize target units (source units already normalized in __init__)
         target_units = normalize_unit(target_units)
@@ -716,48 +611,33 @@ class Intervals(Stateful):
         if self.units != "samples" and target_units != "samples":
             # between time units: rescale
             fac = _MS_PER_UNIT[self.units] / _MS_PER_UNIT[target_units]
-            def scale(pair):
-                return None if pair is None else tuple(v * fac for v in pair)
             return self._copy_with(
                 intervals=[(s * fac, e * fac) for s, e in self.intervals],
                 units=target_units,
-                data_time_range=scale(self.data_time_range),
                 event_onsets=None if self.event_onsets is None
-                else np.asarray(self.event_onsets) * fac,
-                interval_window=scale(self.interval_window))
+                else np.asarray(self.event_onsets) * fac)
 
         if data is None:
             raise ValueError(
                 "Converting between sample indices and time needs the data object "
                 "the intervals belong to, e.g., intervals.to_units('ms', d)")
 
-        n = len(data.tx)
         # absolute positions via ms
         starts_ends = self._positions_to_ms(np.reshape(self.intervals, (-1, 2)), data)
         onsets = None if self.event_onsets is None \
             else self._positions_to_ms(self.event_onsets, data)
-        window = self.interval_window
         if target_units == "samples":
             converted = _ms_to_samples(data, starts_ends).reshape(-1, 2)
             if onsets is not None:
-                onsets = np.clip(_ms_to_samples(data, onsets), 0, n - 1)
-            data_time_range = (0, n)
-            if window is not None:
-                # durations relative to the event
-                window = tuple(int(round(w * _MS_PER_UNIT[self.units] * data.fs / 1000.))
-                               for w in window)
+                onsets = _ms_to_samples(data, onsets)
         else:
             fac = 1.0 / _MS_PER_UNIT[target_units]
             converted = starts_ends * fac
             if onsets is not None:
                 onsets = onsets * fac
-            data_time_range = (float(data.tx[0]) * fac, float(data.tx[-1]) * fac)
-            if window is not None:
-                window = tuple(w * 1000. / data.fs * fac for w in window)
         return self._copy_with(
             intervals=[tuple(row) for row in np.asarray(converted).tolist()],
-            units=target_units, data_time_range=data_time_range,
-            event_onsets=onsets, interval_window=window)
+            units=target_units, event_onsets=onsets)
     
     def merge(self, merge_sep='_', distance: float = 0):
         """
@@ -765,7 +645,6 @@ class Intervals(Stateful):
         
         When intervals are merged, metadata is handled as follows:
         - event_labels: Labels of merged intervals are joined with merge_sep
-        - event_indices: First index of merged group is kept
         - event_onsets: First onset of merged group is kept
         - event_meta: Metadata of the first interval of merged group is kept
         
@@ -824,7 +703,6 @@ class Intervals(Stateful):
         
         # Build merged metadata
         merged_labels = None
-        merged_indices = None
         merged_onsets = None
         
         if self.event_labels is not None:
@@ -832,10 +710,6 @@ class Intervals(Stateful):
             for group in merged_groups:
                 group_labels = [str(self.event_labels[i]) for i in group]
                 merged_labels.append(merge_sep.join(group_labels))
-        
-        if self.event_indices is not None:
-            # Keep the first index from each merge group
-            merged_indices = [self.event_indices[group[0]] for group in merged_groups]
         
         if self.event_onsets is not None:
             # Keep the first onset from each merge group
@@ -846,64 +720,48 @@ class Intervals(Stateful):
             first = [group[0] for group in merged_groups]
             merged_meta = {name: col[first] for name, col in self.event_meta.items()}
 
-        # interval_window is not preserved after merge (merged intervals aren't event-locked)
         return Intervals(merged, self.units, self.label, 
                         event_labels=merged_labels,
-                        event_indices=merged_indices,
-                        data_time_range=self.data_time_range,
                         event_onsets=merged_onsets,
-                        interval_window=None,
                         event_meta=merged_meta)
 
-    def complement(self, data=None) -> 'Intervals':
+    def complement(self, data) -> 'Intervals':
         """
-        Return the periods not covered by the intervals.
+        Return the periods of the recording not covered by the intervals.
 
         These are the gaps between the intervals and before the first and
-        after the last one, within the whole recording (if `data` is given)
-        or within `data_time_range`. Overlapping intervals are merged first.
-        Event information (labels, onsets) is not kept.
+        after the last one, within the whole recording. Overlapping
+        intervals are merged first. Event information (labels, onsets) is
+        not kept.
 
         Parameters
         ----------
-        data : GenericEyeData, optional
+        data : EyeData
             data object the intervals belong to; the complement is taken
             within the whole recording, from the first sample to the end of
             the last one (one sample past it, as intervals are
-            end-exclusive). If not given, `data_time_range` is used; in time
-            units, its end is the time of the last sample, so the last
-            sample is not covered.
+            end-exclusive)
 
         Returns
         -------
         Intervals
             the periods not covered, in the units of this object
 
-        Raises
-        ------
-        ValueError
-            if `data` is not given and `data_time_range` is not set
-
         Examples
         --------
-        >>> iv = Intervals([(10, 20), (50, 60)], units="samples", data_time_range=(0, 100))
-        >>> iv.complement().intervals
+        >>> import pypillometry as pp
+        >>> d = pp.EyeData(left_pupil=np.ones(100), sampling_rate=100)
+        >>> iv = Intervals([(10, 20), (50, 60)], units="samples")
+        >>> iv.complement(d).intervals
         [(0, 10), (20, 50), (60, 100)]
         """
-        if data is not None:
-            n = len(data.tx)
-            if self.units == "samples":
-                full, data_time_range = (0, n), (0, n)
-            else:
-                fac = 1.0 / _MS_PER_UNIT[self.units]
-                full = (float(data.tx[0]) * fac, float(_samples_to_ms(data, n)) * fac)
-                data_time_range = (float(data.tx[0]) * fac, float(data.tx[-1]) * fac)
-        elif self.data_time_range is None:
-            raise ValueError("complement() needs the data object or data_time_range, "
-                             "e.g., intervals.complement(d)")
+        n = len(data.tx)
+        if self.units == "samples":
+            full = (0, n)
         else:
-            full = data_time_range = tuple(self.data_time_range)
-        result = Intervals([full], self.units, data_time_range=data_time_range) - self
+            fac = 1.0 / _MS_PER_UNIT[self.units]
+            full = (float(data.tx[0]) * fac, float(_samples_to_ms(data, n)) * fac)
+        result = Intervals([full], self.units) - self
         result.label = f"not {self.label}" if self.label else "complement"
         return result
 
@@ -915,10 +773,9 @@ class Intervals(Stateful):
         it carries units (e.g., ``left=50 * u.ms``).
         Padding is applied independently to each interval without merging.
         Use `.merge()` after padding if you want to merge overlapping intervals.
-        
-        Intervals are clipped to stay within valid bounds:
-        - If data_time_range is set, intervals are clipped to that range
-        - Otherwise, intervals in sample indices are clipped to start at 0
+        The intervals are not clipped to the data (e.g., a padded interval
+        in sample indices may start before 0); the methods that read the
+        data handle the parts outside of it.
         
         Parameters
         ----------
@@ -932,7 +789,7 @@ class Intervals(Stateful):
         Returns
         -------
         Intervals
-            New Intervals object with padded intervals, clipped to valid bounds.
+            New Intervals object with padded intervals.
             
         Examples
         --------
@@ -941,51 +798,34 @@ class Intervals(Stateful):
         >>> padded.intervals
         [(90, 220), (290, 420)]
         
-        >>> # Padding that would go out of bounds is clipped
-        >>> intervals = Intervals([(10, 50)], units="ms", data_time_range=(0, 100))
-        >>> intervals.pad(left=20).intervals  # Would go to -10, clipped to 0
-        [(0, 50)]
-        
         >>> # Pad and then merge overlapping intervals
-        >>> intervals.pad(left=50, right=50).merge()
+        >>> intervals.pad(left=50, right=50).merge().intervals
+        [(50, 450)]
         
         Notes
         -----
         - Negative padding values will shrink intervals (left adds to start, 
-          right subtracts from end)
+          right subtracts from end); a ValueError is raised if an interval
+          would end before it starts
         """
         if not self.intervals:
             return self
         left, right = self._in_own_units(left), self._in_own_units(right)
         
-        # Determine bounds for clipping
-        if self.data_time_range is not None:
-            min_bound = self.data_time_range[0]
-            max_bound = self.data_time_range[1]
-        else:
-            min_bound = 0 if self.units == "samples" else -float('inf')
-            max_bound = float('inf')
-        
-        # Apply padding and clip to bounds
-        padded = [
-            (max(min_bound, start - left), min(max_bound, end + right))
-            for start, end in self.intervals
-        ]
-        
-        # Update interval_window if it exists
-        padded_window = None
-        if self.interval_window is not None:
-            padded_window = (self.interval_window[0] - left, self.interval_window[1] + right)
+        for i, (start, end) in enumerate(self.intervals):
+            if start - left > end + right:
+                raise ValueError(
+                    f"padding (left={left}, right={right}) would make interval {i} "
+                    f"({start}, {end}) end before it starts")
+
+        padded = [(start - left, end + right) for start, end in self.intervals]
         
         return Intervals(
             padded, 
             self.units, 
             self.label,
             event_labels=self.event_labels,
-            event_indices=self.event_indices,
-            data_time_range=self.data_time_range,
             event_onsets=self.event_onsets,
-            interval_window=padded_window,
             event_meta=self.event_meta
         )
     
@@ -1012,11 +852,11 @@ class Intervals(Stateful):
             }
         return {
             "n": len(self.intervals),
-            "mean": np.mean(durations),
-            "sd": np.std(durations),
-            "min": np.min(durations),
-            "max": np.max(durations),
-            "total_duration": np.sum(durations),
+            "mean": float(np.mean(durations)),
+            "sd": float(np.std(durations)),
+            "min": float(np.min(durations)),
+            "max": float(np.max(durations)),
+            "total_duration": float(np.sum(durations)),
             "units": self.units
         }
 
@@ -1090,10 +930,7 @@ class Intervals(Stateful):
                 units=self.units,
                 label=self.label,
                 event_labels=None,
-                event_indices=None,
-                data_time_range=self.data_time_range,
-                event_onsets=None,
-                interval_window=self.interval_window
+                event_onsets=None
             )
         
         min_duration = self._in_own_units(min_duration)
@@ -1137,10 +974,6 @@ class Intervals(Stateful):
         if self.event_labels is not None:
             filtered_event_labels = [self.event_labels[i] for i in indices]
         
-        filtered_event_indices = None
-        if self.event_indices is not None:
-            filtered_event_indices = np.array([self.event_indices[i] for i in indices])
-        
         filtered_event_onsets = None
         if self.event_onsets is not None:
             filtered_event_onsets = np.array([self.event_onsets[i] for i in indices])
@@ -1154,10 +987,7 @@ class Intervals(Stateful):
             units=self.units,
             label=self.label,
             event_labels=filtered_event_labels,
-            event_indices=filtered_event_indices,
-            data_time_range=self.data_time_range,
             event_onsets=filtered_event_onsets,
-            interval_window=self.interval_window,
             event_meta=filtered_meta
         )
 
@@ -1169,10 +999,12 @@ class Intervals(Stateful):
         Returns
         -------
         pandas.DataFrame
-            DataFrame with columns ``start``, ``end``, and ``duration``. When metadata
-            is available, columns ``event_label``, ``event_index``, and ``event_onset``
-            are included, and the column ``units`` gives the units. The
-            metadata of the events (`event_meta`) are added as columns.
+            DataFrame with columns ``start``, ``end``, ``duration`` and
+            ``units``. When metadata is available, the columns ``label`` and
+            ``onset`` (from `event_labels` and `event_onsets`, named as in
+            :meth:`Epochs.as_pandas` and :meth:`Events.to_table`) are
+            included, and the metadata of the events (`event_meta`) are
+            added as columns.
 
         Raises
         ------
@@ -1190,11 +1022,9 @@ class Intervals(Stateful):
             }
             record["units"] = self.units
             if self.event_labels is not None and idx < len(self.event_labels):
-                record["event_label"] = self.event_labels[idx]
-            if self.event_indices is not None and idx < len(self.event_indices):
-                record["event_index"] = self.event_indices[idx]
+                record["label"] = self.event_labels[idx]
             if self.event_onsets is not None and idx < len(self.event_onsets):
-                record["event_onset"] = self.event_onsets[idx]
+                record["onset"] = self.event_onsets[idx]
             for name, col in (self.event_meta or {}).items():
                 record[name] = col[idx].item()
             records.append(record)
@@ -1228,8 +1058,8 @@ class Intervals(Stateful):
            >>> from pypillometry import u
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
-           >>> intervals = d.get_intervals("S_", (-500, 2500) * u.ms, units="sec")
-           >>> plt.figure(figsize=(8, 3))
+           >>> intervals = d.get_epochs("S_", (-500, 2500) * u.ms).to_intervals("sec")
+           >>> fig = plt.figure(figsize=(8, 3))
            >>> intervals.plot()
         """
         import matplotlib.pyplot as plt
@@ -1239,13 +1069,9 @@ class Intervals(Stateful):
         
         ax = plt.gca()
         
-        # Determine x-axis range
-        if self.data_time_range is not None:
-            x_min, x_max = self.data_time_range
-        else:
-            # Fallback: use min/max of intervals
-            all_values = [val for interval in self.intervals for val in interval]
-            x_min, x_max = min(all_values), max(all_values)
+        # x-axis range of the intervals
+        all_values = [val for interval in self.intervals for val in interval]
+        x_min, x_max = min(all_values), max(all_values)
         
         # Set x-axis limits with some padding
         padding = (x_max - x_min) * 0.05
@@ -1286,89 +1112,6 @@ class Intervals(Stateful):
         # Set title from global label
         if self.label is not None:
             ax.set_title(self.label)
-    
-    def plot_highlight(self, ax=None, color='lightblue', alpha=0.3, **kwargs):
-        """
-        Draw highlighted backgrounds for each interval on existing plot(s).
-        
-        Uses matplotlib's axvspan to draw semi-transparent vertical spans
-        for each interval. This is useful for highlighting regions of interest
-        on top of timeseries plots.
-        
-        Parameters
-        ----------
-        ax : Axes, list of Axes, Figure, or None
-            Where to draw highlights:
-            - None: Apply to ALL axes in current figure (useful after plot_timeseries)
-            - Single Axes: Apply only to that axes
-            - List of Axes: Apply to each axes in the list
-            - Figure: Apply to all axes in that figure
-        color : str
-            Color for the highlighted regions (default 'lightblue')
-        alpha : float
-            Transparency level, 0-1 (default 0.3)
-        **kwargs : dict
-            Additional keyword arguments passed to ax.axvspan()
-            (e.g., label, linestyle, edgecolor, zorder); `zorder` defaults
-            to 0 (behind the data)
-            
-        Returns
-        -------
-        list
-            List of matplotlib patches created
-            
-        Notes
-        -----
-        Make sure the intervals are in the same units as the plot's x-axis.
-        Use `intervals.to_units("sec")` to convert if needed.
-
-        Examples
-        --------
-        Highlight the first second after each stimulus on a pupil plot:
-
-        .. plot::
-
-           >>> import pypillometry as pp
-           >>> from pypillometry import u
-           >>> import matplotlib.pyplot as plt
-           >>> d = pp.get_example_data("rlmw_002_short")
-           >>> intervals = d.get_intervals("S_", (0, 1000) * u.ms, units="sec")
-           >>> plt.figure(figsize=(10, 3))
-           >>> d.plot.pupil_plot(eyes="left", plot_range=(0, 20) * u.sec,
-           ...                   show_events=False)
-           >>> intervals.plot_highlight(color="green", alpha=0.2)
-           >>> plt.xlim(0, 20)
-
-        After :meth:`~pypillometry.GenericPlotter.plot_timeseries`, the intervals
-        are highlighted in all subplots; use ``ax=`` to highlight only one of them.
-        """
-        import matplotlib.pyplot as plt
-        
-        if len(self.intervals) == 0:
-            return []
-        
-        # Determine which axes to use
-        if ax is None:
-            # Default: all axes in current figure
-            axes_list = plt.gcf().axes
-        elif isinstance(ax, plt.Figure):
-            axes_list = ax.axes
-        elif hasattr(ax, '__iter__') and not isinstance(ax, plt.Axes):
-            axes_list = list(ax)
-        else:
-            axes_list = [ax]
-        
-        if not axes_list:
-            return []
-        
-        kwargs.setdefault("zorder", 0)
-        patches = []
-        for axes in axes_list:
-            for start, end in self.intervals:
-                patch = axes.axvspan(start, end, color=color, alpha=alpha, **kwargs)
-                patches.append(patch)
-        
-        return patches
     
     def __repr__(self):
         """

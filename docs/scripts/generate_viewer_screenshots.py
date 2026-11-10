@@ -28,7 +28,7 @@ from imageio import imwrite
 
 import pypillometry as pp
 from pypillometry.viewer.canvas import ViewerCanvas
-from pypillometry.viewer.tweak import TweakCanvas, TweakViewer
+from pypillometry.viewer.tweak_canvas import TweakCanvas, TweakViewer
 
 # Import Qt for window screenshots
 try:
@@ -286,7 +286,7 @@ def screenshot_tweak_eyedata():
     params = {'cutoff': 4.0}
     
     # Apply lowpass filter
-    filtered_data = eyedata.pupil_lowpass_filter(cutoff=params['cutoff'], inplace=False)
+    filtered_data = eyedata | pp.pupil.lowpass_filter(cutoff=params['cutoff'])
     filtered = np.array(filtered_data['left_pupil'], dtype=np.float32)
     
     # Get mask
@@ -304,7 +304,7 @@ def screenshot_tweak_eyedata():
         original_mask=mask,
         overlay_data={'filtered': filtered},
         sampling_rate=eyedata.fs,
-        title='Tweak: pupil_lowpass_filter'
+        title='Tweak: pupil.lowpass_filter'
     )
     
     # Create the full TweakViewer with parameter panel
@@ -315,7 +315,7 @@ def screenshot_tweak_eyedata():
         canvas=canvas,
         params=params,
         on_change=on_change,
-        title='Tweak: pupil_lowpass_filter'
+        title='Tweak: pupil.lowpass_filter'
     )
     
     save_window_screenshot(viewer.main_window, 'tweak_eyedata.png')
@@ -335,11 +335,10 @@ def screenshot_tweak_intervals():
     params = {'vel_onset': -5.0, 'vel_offset': 5.0}
     
     # Detect blinks to get intervals
-    blinks = eyedata.pupil_blinks_detect(
-        apply_mask=False, 
+    blinks = (eyedata | pp.pupil.blinks_detect(
         vel_onset=params['vel_onset'],
         vel_offset=params['vel_offset']
-    )
+    )).get_blinks()
     blink_intervals = blinks.get('left_pupil')
     
     # Convert Intervals to list of (start, end) tuples in seconds
@@ -355,7 +354,7 @@ def screenshot_tweak_intervals():
         original_data=original,
         overlay_intervals={'blinks': intervals_list} if intervals_list else None,
         sampling_rate=eyedata.fs,
-        title='Tweak: pupil_blinks_detect'
+        title='Tweak: pupil.blinks_detect'
     )
     
     # Create the full TweakViewer with parameter panel
@@ -366,7 +365,7 @@ def screenshot_tweak_intervals():
         canvas=canvas,
         params=params,
         on_change=on_change,
-        title='Tweak: pupil_blinks_detect'
+        title='Tweak: pupil.blinks_detect'
     )
     
     save_window_screenshot(viewer.main_window, 'tweak_intervals.png')

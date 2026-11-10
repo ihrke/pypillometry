@@ -1,9 +1,9 @@
 """Main VisPy canvas with subplot grid for GPU viewer with LOD support."""
 
 import numpy as np
-from vispy import app, scene
+from vispy import scene
 from vispy.scene import SceneCanvas
-from typing import List, Dict, Union, Optional
+from typing import List, Dict, Optional
 
 from .visuals import LODLine, DynamicMaskRegions, DynamicEventMarkers, SelectionRegion, HighlightRegion
 from .navigation import NavigationHandler
@@ -106,9 +106,7 @@ class ViewerCanvas(SceneCanvas):
         
         self.has_events = (
             mode == 'eyedata' and
-            hasattr(data, 'event_onsets') and 
-            data.event_onsets is not None and 
-            len(data.event_onsets) > 0
+            len(data.events) > 0
         )
         
         # Visibility states
@@ -322,8 +320,8 @@ class ViewerCanvas(SceneCanvas):
         event_times = None
         event_labels = None
         if self.has_events:
-            event_times = self.eyedata.event_onsets.astype(np.float32) * 0.001
-            event_labels = list(self.eyedata.event_labels)
+            event_times = self.eyedata.events.onsets.astype(np.float32) * 0.001
+            event_labels = list(self.eyedata.events.labels)
         
         # Colors for extra_plots arrays
         array_colors = [

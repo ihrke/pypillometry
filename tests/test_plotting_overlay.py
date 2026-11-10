@@ -165,7 +165,7 @@ class TestPlottingOverlayMultipleEyes(unittest.TestCase):
     
     def setUp(self):
         """Create test data with both eyes"""
-        self.data = pp.PupilData(
+        self.data = pp.EyeData(
             sampling_rate=100,
             left_pupil=np.sin(np.linspace(0, 10*np.pi, 1000)),
             right_pupil=np.cos(np.linspace(0, 10*np.pi, 1000))

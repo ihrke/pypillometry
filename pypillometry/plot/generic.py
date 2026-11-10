@@ -1,28 +1,69 @@
-import itertools
-from typing import Iterable, Optional, Tuple, Union
-from ..eyedata import GenericEyeData
-from ..intervals import Intervals
-from ..units import parse_time, normalize_unit
+from typing import TYPE_CHECKING, Iterable, Optional, Tuple
+
+if TYPE_CHECKING:     # imported where used (slow)
+    import matplotlib
+    import matplotlib.axes
+from ..eyedata.namespace import Namespace
+from ..intervals import Intervals, _as_intervals
+from ..epochs import Epochs
+from ..units import parse_time, normalize_unit, parse_angle, u, _ms_to
 import numpy as np
 from loguru import logger
 from pathlib import Path
 
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-from matplotlib import cm
-import matplotlib as mpl
-from mpl_toolkits.axes_grid1 import make_axes_locatable
-from matplotlib.backends.backend_pdf import PdfPages
 
-class GenericPlotter:
+class GenericPlots(Namespace):
     """
-    Abstract Class for plotting eye data. This class is not meant to be used directly.
+    Plots for any channels (time series, intervals, masks) and for the
+    experimental setup; part of the plotting namespace ``d.plot``
+    (:class:`~pypillometry.plot.PlotNamespace`).
     """
-    obj: GenericEyeData # link to the data object
+
+    #: a ``*_segments`` plot with more figures than this warns
+    WARN_SEGMENTS = 500
+
+    @classmethod
+    def _check_nsegments(cls, duration, interv):
+        """Warn if `duration` / `interv` (same units) gives very many figures."""
+        if not interv > 0:
+            raise ValueError(f"interv must be positive, got {interv}")
+        n = int(np.ceil(duration / interv))
+        if n > cls.WARN_SEGMENTS:
+            logger.warning(f"interv gives {n} figures; plain numbers are in `units`")
+
+    def _draw_highlight(self, axes, highlight, highlight_color, units, xrange):
+        """
+        Shade the intervals in `highlight` (Intervals, Epochs or a list or tuple
+        of them) on all `axes`, whose time axis is in `units`, limited to
+        `xrange` = (start, end) of the plotted data.
+        """
+        from matplotlib.colors import is_color_like
+        if highlight is None:
+            return
+        items = list(highlight) if isinstance(highlight, (list, tuple)) else [highlight]
+        for item in items:
+            if not isinstance(item, (Intervals, Epochs)):
+                raise TypeError(f"highlight must be Intervals or Epochs (or a list or "
+                                f"tuple of them), got {type(item).__name__}")
+        if is_color_like(highlight_color):
+            colors = [highlight_color] * len(items)
+        else:
+            colors = list(highlight_color)
+            if len(colors) != len(items):
+                raise ValueError(f"{len(colors)} highlight colors for {len(items)} "
+                                 "highlight objects; give one color or one per object")
+        lo, hi = xrange
+        for item, color in zip(items, colors):
+            for start, end in _as_intervals(item).to_units(units, self._d).intervals:
+                start, end = max(start, lo), min(end, hi)
+                if start < end:
+                    for ax in axes:
+                        ax.axvspan(start, end, color=color, alpha=0.3, zorder=0,
+                                   linewidth=0)
 
     @staticmethod
     def _plot_range_in(plot_range, units: str = "ms") -> tuple:
-        """`plot_range` in `units`; plain numbers are already in `units`."""
+        """`plot_range` in `units` (the units of the time axis); plain numbers are in `units`."""
         start, end = parse_time(plot_range, to=units, default=units)
         return float(start), float(end)
 
@@ -40,19 +81,20 @@ class GenericPlotter:
         Raises
         ------
         ValueError
-            If plot_range does not overlap with data time range
+            If plot_range does not overlap with data time range or if its
+            start is not before its end
         """
         start, end = plot_range
+        if not start < end:
+            raise ValueError(f"plot_range ({start}, {end}): start must be before end")
         
         # Handle infinite bounds (always valid)
         if start == -np.inf and end == np.inf:
             return
         
         # Get data time range in the specified units
-        fac = self.obj._unit_fac(units)
-        
-        data_start = float(np.min(self.obj.tx) * fac)
-        data_end = float(np.max(self.obj.tx) * fac)
+        data_start = float(_ms_to(np.min(self._d.tx), units))
+        data_end = float(_ms_to(np.max(self._d.tx), units))
         
         # Replace infinite bounds with data bounds for comparison
         eff_start = data_start if start == -np.inf else start
@@ -84,7 +126,8 @@ class GenericPlotter:
         Plotting data around intervals.
 
         Intervals can be extracted with
-        :meth:`~pypillometry.GenericEyeData.get_intervals`.
+        :meth:`~pypillometry.EyeData.get_epochs` or
+        :meth:`~pypillometry.EyeData.get_intervals`.
         Each interval gets a separate subplot.
         The data is plotted for each eye and variable in different colors.
         The x-axis is plotted in the units of the Intervals object.
@@ -93,9 +136,10 @@ class GenericPlotter:
 
         Parameters
         ----------
-        intervals : Intervals
-            :class:`~pypillometry.Intervals` object containing the intervals
-            to plot (from :meth:`~pypillometry.GenericEyeData.get_intervals`)
+        intervals : Intervals or Epochs
+            the intervals to plot (e.g., from
+            :meth:`~pypillometry.EyeData.get_epochs`); Epochs are
+            plotted in ms, with a line at each event onset
         eyes : str or list
             eyes to plot; if empty, all available eyes are plotted
         variables : str or list
@@ -110,7 +154,8 @@ class GenericPlotter:
         figsize : Tuple[int,int]
             size (width, height) of each figure in inches
         show_mask : bool
-            shade samples masked in any of the plotted eyes/variables
+            shade samples masked (default mask policy) in any of the plotted
+            eyes/variables
         show_index : bool
             plot a number with the interval's index (e.g., for identifying abnormal blinks)
 
@@ -123,7 +168,8 @@ class GenericPlotter:
         Raises
         ------
         TypeError
-            if `intervals` is not an :class:`~pypillometry.Intervals` object
+            if `intervals` is not an :class:`~pypillometry.Intervals` or
+            :class:`~pypillometry.Epochs` object
 
         Examples
         --------
@@ -135,23 +181,24 @@ class GenericPlotter:
            >>> from pypillometry import u
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
-           >>> intervals = d.get_intervals("S_", (-500, 2500) * u.ms)
-           >>> d.plot.plot_intervals(intervals, variables="pupil", nrow=2, ncol=5,
-           ...                       figsize=(12, 4))
+           >>> epochs = d.get_epochs("S_", (-500, 2500) * u.ms)
+           >>> figs = d.plot.plot_intervals(epochs, variables="pupil", nrow=2, ncol=5,
+           ...                              figsize=(12, 4))
         """
-        if not isinstance(intervals, Intervals):
-            raise TypeError("intervals must be an Intervals object. Use get_intervals() to create one.")
+        import matplotlib.pyplot as plt
+        from matplotlib.backends.backend_pdf import PdfPages
+        intervals = _as_intervals(intervals)
         
-        obj = self.obj  # PupilData object
+        obj = self._d  # EyeData object
         nsubplots = nrow * ncol  # number of subplots per figure
         
         # x-axis in the units of the Intervals (sample numbers for indices)
         if intervals.units == "samples":
             xvals = np.arange(len(obj.tx), dtype=float)
         else:
-            xvals = obj.tx * obj._unit_fac(intervals.units)
+            xvals = _ms_to(obj.tx, intervals.units)
         
-        eyes, variables = obj._get_eye_var(eyes, variables)
+        pairs = obj.data.select(eyes, variables)
         
         # Convert Intervals to indices for data slicing
         intervals_idx = intervals.to_units("samples", obj).intervals
@@ -174,7 +221,7 @@ class GenericPlotter:
                 iinterv += 1
                 slic = slice(max(int(start), 0), max(int(end), 0))
                 ax = axs[ix]
-                for eye, var in itertools.product(eyes, variables):
+                for eye, var in pairs:
                     ax.plot(xvals[slic], obj.data[eye, var][slic], label="%s_%s" % (eye, var))
 
                 # Plot vertical line at event onset
@@ -185,9 +232,10 @@ class GenericPlotter:
 
                 if show_mask:
                     # union of the masks of all plotted eyes/variables
-                    mask = np.zeros(slic.stop - slic.start, dtype=bool)
-                    for eye, var in itertools.product(eyes, variables):
-                        mask |= obj.data.mask[eye + "_" + var][slic].astype(bool)
+                    # (the slice may run past the end of the data)
+                    mask = np.zeros(len(xvals[slic]), dtype=bool)
+                    for eye, var in pairs:
+                        mask |= obj.data.get_policy_mask(eye + "_" + var)[slic]
                     txm = xvals[slic]
                     mint = obj._mask_to_intervals_list(mask)
                     for sm, em in mint:
@@ -220,12 +268,14 @@ class GenericPlotter:
             plot_range: tuple=(-np.inf, +np.inf),
             variables: list=[], 
             eyes: list=[],
-            units: str="ms",
+            units: str="sec",
             show_onsets: str="line",
             show_masked: bool=True,
             show_mask_highlight: bool=True,
             label_prefix: str="",
-            style: dict=None
+            style: dict=None,
+            highlight=None,
+            highlight_color="lightblue"
             ) -> None:
         """
         Plot a part of the EyeData. Each data type is plotted in a separate subplot.
@@ -235,7 +285,9 @@ class GenericPlotter:
         Parameters
         ----------
         plot_range : tuple
-            The time range to plot (in `units`). Default is (-np.inf, +np.inf), i.e. all data.
+            The time range to plot; plain numbers are in `units`, values with
+            units are converted (e.g. ``(0, 20) * u.sec``). Default is
+            (-np.inf, +np.inf), i.e. all data.
         variables : list
             The data to plot. Default is [], which means all available data will be plotted.
             Available data are ["x","y","pupil"] but can be extended by the user.
@@ -243,8 +295,8 @@ class GenericPlotter:
             The eyes to plot. Default is [], which means all available data ("left", "right",
             "average", "regression", ...)
         units : str
-            The units of `plot_range` and the time axis ("ms", "sec", "min", "h").
-            Default "ms" (the units of the time vector).
+            The units of the time axis and of plain numbers in `plot_range`
+            ("ms", "sec", "min", "h"). Default "sec".
         show_onsets : str
             Whether to plot markers for the event onsets. One of "line" (vertical lines),
             "label" (text label), "both" (both lines and labels), or "none" (no markers).
@@ -253,7 +305,9 @@ class GenericPlotter:
             Whether to plot the data in masked regions. If True (default), plots all data including
             masked regions. If False, masked data points are not plotted (gaps in the line).
         show_mask_highlight : bool
-            Whether to highlight masked regions with a light red background. Default is True.
+            Whether to highlight masked regions (default mask policy:
+            interpolated samples are not masked) with a light red background.
+            Default is True.
         label_prefix : str
             Prefix to add to labels in the legend. Useful for overlaying multiple datasets.
             Default is "" (no prefix).
@@ -264,6 +318,13 @@ class GenericPlotter:
             - Dict of dicts: Per-eye styling (e.g., {'left': {'linestyle': '-'}, 'right': {'linestyle': '--'}})
 
             Default is None (uses matplotlib defaults with automatic per-eye colors and linestyles).
+        highlight : Intervals, Epochs or list of them, optional
+            periods to shade in the background (e.g., trials from
+            :meth:`~pypillometry.EyeData.get_intervals`), converted to the
+            units of the time axis
+        highlight_color : color or list of colors, optional
+            color of the shading: one for all or one per element of
+            `highlight`; default "lightblue"
 
         Raises
         ------
@@ -279,19 +340,34 @@ class GenericPlotter:
            >>> from pypillometry import u
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
-           >>> plt.figure(figsize=(10, 6))
+           >>> fig = plt.figure(figsize=(10, 6))
            >>> d.plot.plot_timeseries(plot_range=(0, 20) * u.sec, units="sec")
+
+        The first second after each stimulus, shaded in all subplots:
+
+        .. plot::
+
+           >>> import pypillometry as pp
+           >>> from pypillometry import u
+           >>> import matplotlib.pyplot as plt
+           >>> d = pp.get_example_data("rlmw_002_short")
+           >>> fig = plt.figure(figsize=(10, 6))
+           >>> d.plot.plot_timeseries(plot_range=(0, 20) * u.sec,
+           ...                        highlight=d.get_epochs("S_", (0, 1000) * u.ms),
+           ...                        highlight_color="green")
         """
-        obj = self.obj
-        eyes,variables=obj._get_eye_var(eyes, variables)
+        import matplotlib.pyplot as plt
+        obj = self._d
+        pairs = obj.data.select(eyes, variables)
+        eyes = list(dict.fromkeys(eye for eye, _ in pairs))
+        variables = list(dict.fromkeys(var for _, var in pairs))
         
         # Validate plot_range
         plot_range = self._plot_range_in(plot_range, units)
         self._validate_plot_range(plot_range, units)
         
-        fac=obj._unit_fac(units)
-        tx = obj.tx*fac
-        evon = obj.event_onsets*fac
+        tx = _ms_to(obj.tx, units)
+        evon = _ms_to(obj.events.onsets, units)
         xlab=units
 
         # plot_range
@@ -304,10 +380,9 @@ class GenericPlotter:
         if end==np.inf:
             endix=tx.size
         else:
-            endix=np.argmin(np.abs(tx-end))
+            endix=np.argmin(np.abs(tx-end)) + 1  # the end sample is plotted too
         
         # which data to plot
-        variables = [v for v in variables if v not in getattr(self, 'ignore_vars', [])]
 
         # how to plot onsets
         if show_onsets=="line":
@@ -327,7 +402,7 @@ class GenericPlotter:
         
         tx=tx[startix:endix]
         ixx=np.logical_and(evon>=start, evon<end)
-        evlab=obj.event_labels[ixx]
+        evlab=obj.events.labels[ixx]
         evon=evon[ixx]
 
         nplots = len(variables)
@@ -405,14 +480,17 @@ class GenericPlotter:
                     ax.plot(tx, data_to_plot, **plot_kwargs)
                     
                     # Highlight masked regions with axvspan (automatically extends full height)
-                    if show_mask_highlight and vname in obj.data.mask:
-                        mask = obj.data.mask[vname][startix:endix]
+                    if show_mask_highlight and vname in obj.data:
+                        mask = obj.data.get_policy_mask(vname)[startix:endix]
                         mask_intervals = obj._mask_to_intervals_list(mask)
                         for start_ix, end_ix in mask_intervals:
                             # Convert indices to time values, clamp end_ix to valid range
                             end_ix = min(end_ix, len(tx) - 1)
                             ax.axvspan(tx[start_ix], tx[end_ix], color='red', alpha=0.2, zorder=0)
             
+            if len(tx):
+                self._draw_highlight([ax], highlight, highlight_color, units,
+                                     (tx[0], tx[-1]))
             if ev_line:
                 ax.vlines(evon, *ax.get_ylim(), color="grey", alpha=0.5)
             if ev_label:
@@ -425,9 +503,9 @@ class GenericPlotter:
         plt.legend()
         plt.xlabel(xlab)
         
-    def plot_timeseries_segments(self, pdf_file: str=None, interv: float=1, figsize=(15,5), 
+    def plot_timeseries_segments(self, pdf_file: str=None, interv: float="1 min", figsize=(15,5), 
                                   ylim=None, eyes: list=[], variables: list=[], 
-                                  units: str="min", **kwargs):
+                                  units: str="sec", **kwargs):
         """
         Plot the whole dataset chunked up into segments (usually to a PDF file).
 
@@ -436,8 +514,8 @@ class GenericPlotter:
         pdf_file : str or None
             file name to store the PDF; if None, no PDF is written
         interv : float, str or Quantity
-            duration of each of the segments to be plotted (in the units
-            specified by `units`, or with units, e.g. ``10 * u.sec``)
+            duration of each of the segments to be plotted (plain numbers
+            are in `units`, or with units, e.g. ``10 * u.sec``); default 1 min
         figsize : Tuple[int,int]
             dimensions of the figures
         ylim : Tuple[float,float] or None
@@ -447,10 +525,11 @@ class GenericPlotter:
         variables : list
             list of variables to plot; if empty, all available variables are plotted
         units : str
-            units for the time axis; default is "min" (minutes).
-            The `interv` parameter is also interpreted in these units.
+            units for the time axis (and plain numbers in `interv`); default
+            "sec"
         **kwargs
-            additional arguments passed to :meth:`plot_timeseries`
+            additional arguments passed to :meth:`plot_timeseries` (e.g.,
+            `highlight` and `highlight_color`)
 
         Returns
         -------
@@ -468,7 +547,7 @@ class GenericPlotter:
            >>> from pypillometry import u
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
-           >>> figs = d.plot.plot_timeseries_segments(interv=10, units="sec",
+           >>> figs = d.plot.plot_timeseries_segments(interv=10 * u.sec, units="sec",
            ...                                        variables="pupil", figsize=(10, 3))
            >>> for f in figs[1:]:
            ...     plt.close(f)
@@ -477,12 +556,14 @@ class GenericPlotter:
         instead.
         """
 
+        import matplotlib.pyplot as plt
+        from matplotlib.backends.backend_pdf import PdfPages
         # Calculate start and end times in the specified units
-        obj=self.obj
-        fac=obj._unit_fac(units)
+        obj=self._d
         interv = parse_time(interv, to=units, default=units)
-        stime = obj.tx.min() * fac
-        etime = obj.tx.max() * fac
+        stime = float(_ms_to(obj.tx.min(), units))
+        etime = float(_ms_to(obj.tx.max(), units))
+        self._check_nsegments(etime - stime, interv)
         
         # Create segments
         segments=[]
@@ -498,7 +579,7 @@ class GenericPlotter:
         for start,end in segments:
             # Create a new figure for each segment
             fig = plt.figure(figsize=figsize)
-            self.plot_timeseries(plot_range=(start,end), units=units, 
+            self.plot_timeseries(plot_range=(start, end), units=units, 
                                eyes=eyes, variables=variables, **kwargs)
             if ylim is not None:
                 for ax in fig.axes:
@@ -524,8 +605,10 @@ class GenericPlotter:
         return figs if pdf_file is None else None
 
     def plot_masked(self, eyes: str|list = [], variables: str|list = [], 
-                    units: str = "min", merge: bool = False, 
-                    show_labels: bool = True, show_events: bool = False, **kwargs):
+                    units: str = "sec", merge: bool = False, 
+                    show_labels: bool = True, show_events: bool = False,
+                    policy="default", highlight=None, highlight_color="lightblue",
+                    **kwargs):
         """
         Plot masked intervals for specified eyes and variables.
         
@@ -543,7 +626,7 @@ class GenericPlotter:
         units : str, optional
             Time units for x-axis: "ms", "sec", "min", "h", or "samples" for
             sample indices.
-            Default is "min".
+            Default is "sec".
         merge : bool, optional
             If True, merge all masks into a single set of intervals for plotting.
             If False, plot each eye/variable separately with different colors.
@@ -552,6 +635,18 @@ class GenericPlotter:
             Whether to show labels for each interval group. Default is True.
         show_events : bool, optional
             Whether to show vertical grey stripes at event positions. Default is False.
+        policy : str, MaskPolicy or list of str
+            mask policy that decides which samples are masked (see
+            :meth:`~pypillometry.EyeData.mask_as_intervals`); e.g.,
+            ``"strict"`` also shows the interpolated samples, ``["interpolated"]``
+            only those. Default ``"default"``.
+        highlight : Intervals, Epochs or list of them, optional
+            periods to shade in the background (e.g., trials from
+            :meth:`~pypillometry.EyeData.get_intervals`), converted to the
+            units of the time axis
+        highlight_color : color or list of colors, optional
+            color of the shading: one for all or one per element of
+            `highlight`; default "lightblue"
         **kwargs : dict
             Additional keyword arguments passed to matplotlib plot()
             
@@ -570,37 +665,31 @@ class GenericPlotter:
            >>> from pypillometry import u
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
-           >>> d.pupil_blinks_detect(apply_mask=True)
-           >>> plt.figure(figsize=(8, 4))
+           >>> d = d.pupil.blinks_detect()
+           >>> fig = plt.figure(figsize=(8, 4))
            >>> d.plot.plot_masked(variables="pupil", units="sec")
 
         With ``merge=True``, the masks of all eyes and variables are combined;
         ``show_events=True`` adds the event markers.
         """
-        from ..intervals import merge_intervals
+        import matplotlib.pyplot as plt
+        from ..intervals import concat_intervals
         
-        obj = self.obj
+        obj = self._d
         
         # Get masked intervals for specified eyes/variables
-        intervals_result = obj.mask_as_intervals(eyes, variables, units=units)
+        intervals_dict = obj.mask_as_intervals(eyes, variables, units=units, policy=policy)
         
         # Handle empty result
-        if isinstance(intervals_result, dict):
-            if len(intervals_result) == 0:
-                logger.warning("No masked intervals found")
-                return
-            intervals_dict = intervals_result
-        else:
-            # Single Intervals object - convert to dict for uniform handling
-            eyes_list, variables_list = obj._get_eye_var(eyes, variables)
-            key = f"{eyes_list[0]}_{variables_list[0]}"
-            intervals_dict = {key: intervals_result}
+        if len(intervals_dict) == 0:
+            logger.warning("No masked intervals found")
+            return
         
         ax = plt.gca()
         
         if merge:
             # Merge all intervals and plot as one set
-            merged = merge_intervals(intervals_dict, label='All masked intervals')
+            merged = concat_intervals(intervals_dict, label='All masked intervals')
             merged = merged.merge()
             
             # Use Intervals.plot style
@@ -669,14 +758,20 @@ class GenericPlotter:
             if show_labels:
                 ax.set_title('Masked Intervals')
         
+        if normalize_unit(units) == "samples":
+            xrange = (0, len(obj.tx))
+        else:
+            xrange = tuple(_ms_to(obj.tx[[0, -1]], units))
+        self._draw_highlight([ax], highlight, highlight_color, units, xrange)
+
         # Plot event markers as vertical grey lines
         if show_events:
             # Get events in appropriate units
             if normalize_unit(units) == "samples":
                 # x-axis is in sample indices
-                onsets = np.interp(obj.event_onsets, obj.tx, np.arange(len(obj.tx)))
+                onsets = np.interp(obj.events.onsets, obj.tx, np.arange(len(obj.tx)))
             else:
-                onsets = obj.get_events(units=units).onsets
+                onsets = obj.events.to_units(units).onsets
             
             # Plot vertical lines at event positions
             for ev in onsets:
@@ -687,3 +782,104 @@ class GenericPlotter:
             ax.set_xlabel(f'Time ({units})')
         else:
             ax.set_xlabel('Samples')
+
+    def plot_experimental_setup(
+        self,
+        theta: Optional[float] = None,
+        phi: Optional[float] = None,
+        calibration = None,
+        show_gaze_samples: bool = True,
+        n_gaze_samples: int = 9,
+        ax: Optional["matplotlib.axes.Axes"] = None,
+        viewing_angle: tuple = None,
+        projection: str = '2d'
+    ) -> tuple:
+        """
+        Plot visualization of eye-tracking experimental setup geometry.
+        
+        Shows the spatial relationship between eye, camera, and screen using
+        the experimental parameters stored in the EyeData object. Delegates
+        to ExperimentalSetup.plot().
+        
+        Parameters
+        ----------
+        theta : float or str, optional
+            Camera polar angle; a float is interpreted as radians, a string
+            can carry units (e.g., "20 deg"). If None, uses calibration's theta
+            (if `calibration` is given), else setup's theta.
+        phi : float or str, optional
+            Camera azimuthal angle; a float is interpreted as radians, a string
+            can carry units (e.g., "-90 deg"). If None, uses calibration's phi
+            (if `calibration` is given), else setup's phi.
+        calibration : ForeshorteningCalibration, optional
+            Fitted calibration object containing theta and phi.
+        show_gaze_samples : bool, default True
+            Show sample gaze vectors to screen positions
+        n_gaze_samples : int, default 9
+            Number of sample gaze positions
+        ax : matplotlib axis, optional
+            Existing axis to plot on (only for '3d' projection)
+        viewing_angle : tuple, optional
+            Viewing angle for 3D projection (elev, azim) or (elev, azim, roll).
+            Plain numbers are in degrees (as in matplotlib's ``view_init``);
+            strings with units (e.g., ``("30 deg", "-60 deg")``) are parsed.
+        projection : str, default '2d'
+            '2d' for three orthogonal views, '3d' for interactive 3D view
+
+        Returns
+        -------
+        fig : matplotlib Figure
+        ax : matplotlib axis or array of axes
+
+        Raises
+        ------
+        ValueError
+            if the data object has no `experimental_setup`
+
+        Examples
+        --------
+        Camera geometry from the experimental setup:
+
+        .. plot::
+
+           >>> import pypillometry as pp
+           >>> from pypillometry import u
+           >>> import matplotlib.pyplot as plt
+           >>> d = pp.get_example_data("rlmw_002_short")
+           >>> d = d.set_experimental_setup(camera_spherical=("20 deg", "-90 deg", "70 cm"))
+           >>> fig, axs = d.plot.plot_experimental_setup()
+
+        To show fitted angles, pass the result of
+        :meth:`d.pupil.fit_foreshortening() <pypillometry.eyedata.pupil.PupilNamespace.fit_foreshortening>` as ``calibration=``, or
+        set ``theta``/``phi`` directly.
+        """
+        obj = self._d
+        setup = obj.experimental_setup
+        
+        if setup is None:
+            raise ValueError("experimental_setup is not set on this EyeData object")
+        
+        # Get theta and phi from calibration if provided
+        if calibration is not None:
+            if theta is None:
+                theta = calibration.theta * u.rad  # fitted angles are in radians
+                logger.info(f"Using theta={np.degrees(calibration.theta):.1f}° from calibration")
+            if phi is None:
+                phi = calibration.phi * u.rad
+                logger.info(f"Using phi={np.degrees(calibration.phi):.1f}° from calibration")
+        
+        # Parse angles if provided as strings
+        if theta is not None:
+            theta = parse_angle(theta)
+        if phi is not None:
+            phi = parse_angle(phi)
+        
+        return setup.plot(
+            theta=theta,
+            phi=phi,
+            projection=projection,
+            show_gaze_samples=show_gaze_samples,
+            n_gaze_samples=n_gaze_samples,
+            ax=ax,
+            viewing_angle=viewing_angle,
+        )

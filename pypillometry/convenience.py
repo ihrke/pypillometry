@@ -7,15 +7,11 @@ Some convenience functions.
 
 
 import numpy as np
-import pandas as pd
 from typing import Union, Dict
 from contextlib import contextmanager
 import os, sys
-from tqdm import tqdm
 
-__all__ = [
-    "zscale",
-]
+__all__ = []
 
 @contextmanager
 def change_dir(path: Union[str]):
@@ -28,10 +24,13 @@ def change_dir(path: Union[str]):
         
     Examples
     --------
-    >>> with change_dir("/path/to/dir"):
-    ...     # do something in that directory
-    ...     pass
-    >>> # back in original directory
+    >>> import os, tempfile
+    >>> before = os.getcwd()
+    >>> with tempfile.TemporaryDirectory() as tmp:
+    ...     with change_dir(tmp):
+    ...         pass  # do something in that directory
+    >>> os.getcwd() == before
+    True
     """
     old_dir = os.getcwd()
     try:
@@ -83,137 +82,6 @@ def suppress_all_output():
         os.close(original_stderr_fd)
         os.close(devnull_fd)
 
-def nprange(ar):
-    """
-    Return minimum and maximum of an array.
-
-    Parameters
-    ----------
-    ar : np.ndarray
-        input array
-
-    Returns
-    -------
-    tuple
-        `(min, max)` of `ar` (NaNs are not ignored)
-    """
-    return (ar.min(),ar.max())
-
-import pickle
-from hashlib import md5
-
-def zscale(y):
-    """
-    Z-transform an array, ignoring NaNs.
-
-    Parameters
-    ----------
-    y : np.ndarray
-        input array
-
-    Returns
-    -------
-    np.ndarray
-        `y` with mean subtracted and divided by its standard deviation
-        (both computed with :func:`numpy.nanmean`/:func:`numpy.nanstd`);
-        NaNs are kept
-    """
-    return (y-np.nanmean(y))/np.nanstd(y)
-
-
-def p_asym_laplac(y, mu, sigma, tau):
-    """
-    Asymmetric laplace distribution https://en.wikipedia.org/wiki/Asymmetric_Laplace_distribution;
-    Parametrization as here: https://github.com/stan-dev/stan/issues/2312
-
-    Parameters
-    ----------
-    y : float or np.ndarray
-        value(s) at which to evaluate the density
-    mu : float
-        location parameter
-    sigma : float
-        scale parameter (> 0)
-    tau : float
-        asymmetry parameter in [0,1] (0.5 is symmetric)
-
-    Returns
-    -------
-    float or np.ndarray
-        density evaluated at `y`
-    """
-    I=np.array(y<=mu, dtype=int)
-    return (2*tau*(1-tau))/sigma*np.exp(-2/sigma * ( (1-tau)*I*(mu-y) + tau*(1-I)*(y-mu) ) )
-
-def p_asym_laplac_kappa(y, mu, lam, kappa):
-    """
-    Asymmetric laplace distribution https://en.wikipedia.org/wiki/Asymmetric_Laplace_distribution;
-    Wikipedia parametrization.
-
-    Parameters
-    ----------
-    y : float or np.ndarray
-        value(s) at which to evaluate the density
-    mu : float
-        location parameter
-    lam : float
-        scale parameter (lambda, > 0)
-    kappa : float
-        asymmetry parameter in [0, infty] where 1 means symmetry
-
-    Returns
-    -------
-    float or np.ndarray
-        density evaluated at `y`
-    """
-    I=np.array(y<=mu, dtype=int)
-    return (lam)/(kappa+1./kappa)*np.exp( ( (lam/kappa)*I*(y-mu) - lam*kappa*(1-I)*(y-mu) ) )
-
-
-def trans_logistic_vec(x, a, b, inverse=False):
-    """
-    Transform bounded variables to an unbounded range and back.
-
-    Goes from [a,b] to [-inf,+inf] and back (elementwise, so `a` and
-    `b` can be arrays of the same shape as `x`); if a or b is +/-infty,
-    a logarithmic/exponential transform is used; if both are infinite,
-    `x` is returned unchanged.
-
-    Parameters
-    ----------
-    x : float or np.ndarray
-        values to transform
-    a : float or np.ndarray
-        lower bound(s), can be `-np.inf`
-    b : float or np.ndarray
-        upper bound(s), can be `np.inf`
-    inverse : bool
-        if False (default): [a,b] -> [-inf, +inf];
-        if True: [-inf,+inf] -> [a,b]
-
-    Returns
-    -------
-    np.ndarray
-        transformed values
-    """
-    eps=1e-15
-    if inverse==False:
-        # variables from [a,inf]
-        x=np.where( (a>-np.inf) & (b==np.inf), np.log(np.maximum(x-a, eps)), x)
-        # variables from [-inf, b]
-        x=np.where( (a==-np.inf) & (b<np.inf), np.log(np.maximum(b-x, eps)), x)
-        # variables from [a, b]
-        x=np.where( (a>-np.inf) & (b<np.inf), -np.log( (b-a)/(x-a)-1 ), x)
-    elif inverse==True:
-        # variables from [-inf,inf] -> [a,inf]
-        x=np.where( (a>-np.inf) & (b==np.inf), np.exp(x)+a, x)
-        # variables from [-inf, inf] -> [-inf, b]
-        x=np.where( (a==-np.inf) & (b<np.inf), b-np.exp(x), x)
-        # variables from [-inf,inf] -> [a, b]
-        x=np.where( (a>-np.inf) & (b<np.inf), (1./(1.+np.exp(-x)))*(b-a)+a, x)
-    
-    return x
-
 
 def sizeof_fmt(num, suffix='B'):
     """
@@ -237,6 +105,18 @@ def sizeof_fmt(num, suffix='B'):
             return "%3.1f%s%s" % (num, unit, suffix)
         num /= 1024.0
     return "%.1f%s%s" % (num, 'Yi', suffix)
+
+
+def _plain_values(value):
+    """numpy scalars (also in nested dicts, lists and tuples) as Python
+    numbers, e.g. for summaries (``500.0``, not ``np.float64(500.0)``)."""
+    if isinstance(value, dict):
+        return {k: _plain_values(v) for k, v in value.items()}
+    if isinstance(value, (list, tuple)):
+        return type(value)(_plain_values(v) for v in value)
+    if isinstance(value, np.generic):
+        return value.item()
+    return value
 
 
 def _round_values(value, decimals=4):
@@ -308,7 +188,7 @@ def test_selector(obj, selfun, **kwargs):
 
     Parameters
     ----------
-    obj : GenericEyeData
+    obj : EyeData
         object to test the selector function on
     selfun : function
         function that takes a single event label as input and returns True/False
@@ -346,7 +226,8 @@ def test_selector(obj, selfun, **kwargs):
     """
     if not callable(selfun):
         raise ValueError("selfun must be a function")
-    return obj.event_labels[np.array([selfun(evlab, **kwargs) for evlab in obj.event_labels])]
+    labels = obj.events.labels
+    return labels[np.array([selfun(evlab, **kwargs) for evlab in labels])]
 
 def _user_cache_dir():
     """User cache directory of the package (``$XDG_CACHE_HOME/pypillometry``)."""

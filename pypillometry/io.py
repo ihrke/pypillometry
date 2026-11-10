@@ -1,39 +1,29 @@
 """
-io.py
-=====
+Reading and writing data.
 
-Read/Write data from/to disk.
+- Eyelink EDF files: :func:`read_eyelink` (usually used through
+  :meth:`~pypillometry.EyeData.from_eyelink`)
+- saved objects: :func:`write_file` and :func:`read_file` (pickle or
+  HDF5 files; usually used through :meth:`~pypillometry.EyeData.write_file`
+  and :meth:`~pypillometry.EyeData.from_file`)
+- files from URLs (HTTP(S), SSH, OSF) and the download cache:
+  :func:`fetch_url`, :func:`local_copy`, :func:`download`,
+  :func:`osf_authenticate`
 
-Reading EDF files is slow: :func:`read_eyelink` (and
-:meth:`~pypillometry.GenericEyeData.from_eyelink`) takes about a minute
-for a 90 MB EDF file (64 min of binocular data at 1000 Hz), mostly in the
-`eyelinkio` package. It is therefore recommended to convert EDF files once
-and to work with the converted files, e.g., with the command-line program
-``edf2pypil`` (``edf2pypil recording.edf`` writes ``recording.pkl``) or
-with :func:`write_pickle`. Reading the pickle file with :func:`read_pickle`
-is more than 100 times faster. :func:`write_pickle` compresses the file
-with zstd by default: a 400 MB pickle (90 MB EDF file) shrinks to about
-31 MB, takes 0.5 s to write and 0.35 s to read (uncompressed: 0.2 s from
-a warm cache, more from a slow disk or network). Pickle files should only
-be read from trusted sources.
-
-Eyedata and segmented objects can also be saved in HDF5 files (filename
-ending in ``.h5`` or ``.hdf5``), which other programs can read as well and
-which do not run code when read. Both formats store the same versioned
-state of the object (see :mod:`pypillometry.state`), so files written by
-older versions of pypillometry keep loading.
+See the user guide (Loading and saving data) for an overview.
 """
 
 import gzip
 import pickle
 import os
-import requests
 from contextlib import contextmanager
-from tqdm import tqdm
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
+
+if TYPE_CHECKING:     # imported where used (slow)
+    import requests
 from loguru import logger
 from .convenience import is_url, suppress_all_output, requires_package
-from .logging import logging_get_level
+from .logging import logging_get_level, _show_progress
 from . import state
 from . import hdf5
 
@@ -42,24 +32,24 @@ try:
 except ImportError:
     from backports import zstd
 
-#: zstd compression level used by :func:`write_pickle`
+#: zstd compression level used by :func:`write_file`
 ZSTD_LEVEL = 3
 _ZSTD_MAGIC = b"\x28\xb5\x2f\xfd"
 _GZIP_MAGIC = b"\x1f\x8b"
 _HDF5_EXTENSIONS = (".h5", ".hdf5")
 
 __all__ = [
-    "osf_authenticate", "download", "fetch_url", "local_copy", "write_pickle",
-    "read_pickle", "read_eyelink",
+    "osf_authenticate", "download", "fetch_url", "local_copy", "write_file",
+    "read_file", "read_eyelink",
 ]
 
 
 def osf_authenticate(
     access_token: str,
     validate: bool = True,
-    session: Optional[requests.Session] = None,
+    session: Optional["requests.Session"] = None,
     timeout: float = 10.0,
-) -> requests.Session:
+) -> "requests.Session":
     """
     Authenticate against the OSF API using a personal access token.
 
@@ -84,6 +74,7 @@ def osf_authenticate(
     ValueError
         If no access token is provided or validation fails.
     """
+    import requests
     if not access_token or not isinstance(access_token, str):
         raise ValueError("A non-empty OSF access token string is required.")
 
@@ -115,7 +106,7 @@ def osf_authenticate(
     return session
 
 
-def _osf_client_url_to_download_url(url: str, session: Optional[requests.Session] = None) -> str:
+def _osf_client_url_to_download_url(url: str, session: Optional["requests.Session"] = None) -> str:
     """
     Convert an OSF client URL to a download URL.
     Parameters
@@ -129,6 +120,7 @@ def _osf_client_url_to_download_url(url: str, session: Optional[requests.Session
     str
         Download URL
     """
+    import requests
     # is it an OSF client URL?
     if not url.startswith("https://osf.io/"):
         logger.debug(f"URL is not an OSF client URL: {url!r}")
@@ -159,7 +151,7 @@ def _osf_client_url_to_download_url(url: str, session: Optional[requests.Session
 
 
 
-def download(url: str, fname: str = None, chunk_size: int = 1024, session: Optional[requests.Session] = None) -> str:
+def download(url: str, fname: str = None, chunk_size: int = 1024, session: Optional["requests.Session"] = None) -> str:
     """Download a file from a URL to a local file.
 
     See https://gist.github.com/yanqd0/c13ed29e29432e3cf3e7c38467f42f51.
@@ -180,6 +172,8 @@ def download(url: str, fname: str = None, chunk_size: int = 1024, session: Optio
     str
         Local filename of the downloaded file.
     """
+    import requests
+    from tqdm import tqdm
     import tempfile
 
     # Create temporary file if fname is None
@@ -218,6 +212,7 @@ def download(url: str, fname: str = None, chunk_size: int = 1024, session: Optio
                 unit="iB",
                 unit_scale=True,
                 unit_divisor=1024,
+                disable=not _show_progress(),
             ) as bar:
                 for data in resp.iter_content(chunk_size=chunk_size):
                     size = file.write(data)
@@ -345,6 +340,7 @@ def _scp(url: str, target: str):
     Shows a progress bar that follows the size of `target` while ``scp``
     is running.
     """
+    from tqdm import tqdm
     import subprocess
     import shutil
     import threading
@@ -371,7 +367,8 @@ def _scp(url: str, target: str):
     worker = threading.Thread(target=run, daemon=True)
     worker.start()
     with tqdm(desc=os.path.basename(path.rstrip("/")), total=total,
-              unit="iB", unit_scale=True, unit_divisor=1024) as bar:
+              unit="iB", unit_scale=True, unit_divisor=1024,
+              disable=not _show_progress()) as bar:
         while worker.is_alive():
             worker.join(0.2)
             bar.update(_local_size(target) - bar.n)
@@ -394,7 +391,7 @@ def fetch_url(
     cache_file: Optional[str] = None,
     cache_dir: Optional[str] = None,
     force_download: bool = False,
-    session: Optional[requests.Session] = None,
+    session: Optional["requests.Session"] = None,
     cache_layout: str = "flat") -> str:
     """Download an HTTP(S) or SSH URL to a local file, with caching.
 
@@ -480,7 +477,7 @@ def local_copy(
     cache_dir: Optional[str] = None,
     autodelete: Optional[bool] = None,
     force_download: bool = False,
-    session: Optional[requests.Session] = None,
+    session: Optional["requests.Session"] = None,
     cache_layout: str = "flat"):
     """Context manager that gives a local filename for `source`.
 
@@ -537,12 +534,12 @@ def _is_hdf5_name(fname) -> bool:
     return str(fname).lower().endswith(_HDF5_EXTENSIONS)
 
 
-def write_pickle(obj, fname, compress: bool = True):
+def write_file(obj, fname, compress: bool = True):
     """
     Store any Python object in a file using :mod:`pickle` (or HDF5).
 
     By default, the file is compressed with zstd (about 13 times smaller
-    for eyedata objects). :func:`read_pickle` detects the compression
+    for eyedata objects). :func:`read_file` detects the compression
     automatically.
 
     If `fname` ends with ``.h5`` or ``.hdf5``, the object is stored in an
@@ -588,11 +585,11 @@ def _open_maybe_compressed(fname):
 
 
 
-def read_pickle(
+def read_file(
     fname: str,
     cache_file: Optional[str] = None,
     force_download: bool = False,
-    session: Optional[requests.Session] = None,
+    session: Optional["requests.Session"] = None,
     cache_dir: Optional[str] = None,
     autodelete: Optional[bool] = None,
     cache_layout: str = "flat"):
@@ -600,7 +597,7 @@ def read_pickle(
     Read a Python object from a file using :mod:`pickle` (or HDF5).
 
     Plain, zstd- and gzip-compressed pickle files and HDF5 files written
-    by :func:`write_pickle` are supported (the format is detected from the
+    by :func:`write_file` are supported (the format is detected from the
     file content). Objects saved with an older version of pypillometry are
     upgraded to the current version.
 
@@ -636,6 +633,11 @@ def read_pickle(
     -------
     object
         loaded object
+
+    Warnings
+    --------
+    Pickle files can run arbitrary code when they are read. Only read pickle
+    files from sources you trust; HDF5 files do not run code.
     """
     with local_copy(fname, cache_file=cache_file, cache_dir=cache_dir,
                     autodelete=autodelete, force_download=force_download,
@@ -651,7 +653,7 @@ def read_eyelink(
     source: str, 
     cache_file: Optional[str] = None, 
     force_download: bool = False, 
-    session: Optional[requests.Session] = None,
+    session: Optional["requests.Session"] = None,
     cache_dir: Optional[str] = None,
     autodelete: Optional[bool] = None,
     cache_layout: str = "flat"):
@@ -694,9 +696,16 @@ def read_eyelink(
     eyelinkio.EDF
         object returned by :func:`eyelinkio.read_edf`
 
+    Notes
+    -----
+    Reading EDF files is slow (about a minute for a 90 MB file, mostly in
+    `eyelinkio`). Convert them once and work with the saved files, which
+    are read in well under a second: with the command-line program
+    ``edf2pypil`` or with :meth:`~pypillometry.EyeData.write_file`.
+
     See Also
     --------
-    pypillometry.GenericEyeData.from_eyelink : create an eyedata object from an EDF file
+    pypillometry.EyeData.from_eyelink : create an eyedata object from an EDF file
     """
     with local_copy(source, cache_file=cache_file, cache_dir=cache_dir,
                     autodelete=autodelete, force_download=force_download,
@@ -715,10 +724,28 @@ def _read_edf(fname: str):
     if show_eyelinkio_output:
         logger.debug(f"Loading EDF file: {fname}")
         logger.debug("eyelinkio output will be displayed below:")
-        edf = eyelinkio.read_edf(fname)
+        with _c_time_locale():
+            edf = eyelinkio.read_edf(fname)
     else:
         logger.info(f"Loading EDF file: {fname} (current log level: {current_level}, set to DEBUG to see eyelinkio output)")
-        with suppress_all_output():
+        with suppress_all_output(), _c_time_locale():
             edf = eyelinkio.read_edf(fname)
 
     return edf
+
+
+@contextmanager
+def _c_time_locale():
+    """Use the "C" locale for times while reading an EDF file.
+
+    eyelinkio parses the English date in the file header ("Fri Feb 14
+    ...") with ``strptime``, which fails if a program activated a locale
+    with other names of days and months (e.g., Norwegian).
+    """
+    import locale
+    old = locale.setlocale(locale.LC_TIME)
+    try:
+        locale.setlocale(locale.LC_TIME, "C")
+        yield
+    finally:
+        locale.setlocale(locale.LC_TIME, old)

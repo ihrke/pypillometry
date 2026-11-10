@@ -32,7 +32,7 @@ class TestPlottingPDFGeneration(unittest.TestCase):
     def test_plot_intervals_creates_pdf(self):
         """Test that plot_intervals creates PDF file"""
         pdf_path = os.path.join(self.temp_dir, "test_intervals.pdf")
-        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
+        intervals = self.data.get_epochs("F", window=(-200, 200), units="ms")
         
         figs = self.data.plot.plot_intervals(intervals, pdf_file=pdf_path)
         
@@ -45,7 +45,7 @@ class TestPlottingPDFGeneration(unittest.TestCase):
         
         figs = self.data.plot.plot_timeseries_segments(
             pdf_file=pdf_path, 
-            interv=1.0
+            interv="1 min"
         )
         
         self.assertTrue(os.path.exists(pdf_path))
@@ -57,7 +57,7 @@ class TestPlottingPDFGeneration(unittest.TestCase):
         
         figs = self.data.plot.pupil_plot_segments(
             pdf_file=pdf_path, 
-            interv=1.0
+            interv="1 min"
         )
         
         self.assertTrue(os.path.exists(pdf_path))
@@ -96,7 +96,7 @@ class TestPlottingPDFDirectoryCreation(unittest.TestCase):
     def test_plot_intervals_nested_directories(self):
         """Test that nested directories are created for plot_intervals"""
         pdf_path = os.path.join(self.temp_dir, "subdir1", "subdir2", "test.pdf")
-        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
+        intervals = self.data.get_epochs("F", window=(-200, 200), units="ms")
         
         # Directory should not exist before
         self.assertFalse(os.path.exists(os.path.dirname(pdf_path)))
@@ -115,7 +115,7 @@ class TestPlottingPDFDirectoryCreation(unittest.TestCase):
         
         figs = self.data.plot.plot_timeseries_segments(
             pdf_file=pdf_path, 
-            interv=1.0
+            interv="1 min"
         )
         
         self.assertTrue(os.path.exists(os.path.dirname(pdf_path)))
@@ -129,7 +129,7 @@ class TestPlottingPDFDirectoryCreation(unittest.TestCase):
         
         figs = self.data.plot.pupil_plot_segments(
             pdf_file=pdf_path, 
-            interv=1.0
+            interv="1 min"
         )
         
         self.assertTrue(os.path.exists(os.path.dirname(pdf_path)))
@@ -153,7 +153,7 @@ class TestPlottingPDFNoDisplay(unittest.TestCase):
     def test_plot_intervals_figures_closed(self):
         """Test that figures are closed when saving to PDF"""
         pdf_path = os.path.join(self.temp_dir, "test.pdf")
-        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
+        intervals = self.data.get_epochs("F", window=(-200, 200), units="ms")
         
         # Count figures before
         n_figs_before = len(plt.get_fignums())
@@ -172,7 +172,7 @@ class TestPlottingPDFNoDisplay(unittest.TestCase):
         
         figs = self.data.plot.plot_timeseries_segments(
             pdf_file=pdf_path, 
-            interv=1.0
+            interv="1 min"
         )
         
         n_figs_after = len(plt.get_fignums())

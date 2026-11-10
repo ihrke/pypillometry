@@ -1,0 +1,33 @@
+{#- Shared macros for the HTML displays of EyeData and SegmentedEyeData. -#}
+{% set card = "background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;" %}
+
+{#- Grid of (label, value) pairs. -#}
+{% macro overview_grid(items, min_width=220) %}
+  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax({{ min_width }}px,1fr)); gap:8px; margin-bottom:10px;">
+    {% for label, value in items %}
+    <div style="{{ card }}">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">{{ label }}</div>
+      <div style="font-weight:600;">{{ value }}</div>
+    </div>
+    {% endfor %}
+  </div>
+{% endmacro %}
+
+{#- Collapsible grid of sparklines (dicts with "label" and "image", a data URI or None). -#}
+{% macro sparkline_grid(title, items, min_width=220) %}
+  {% if items %}
+  <details open style="margin-bottom:8px;">
+    <summary style="cursor:pointer; font-weight:600;">{{ title }}</summary>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax({{ min_width }}px,1fr)); gap:8px; margin-top:8px;">
+      {% for item in items %}
+      <div style="{{ card }} text-align:center;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">{{ item.label }}</div>
+        {% if item.image %}
+        <img src="{{ item.image }}" alt="{{ item.label }} sparkline" style="height:60px; width:100%; object-fit:cover;">
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </details>
+  {% endif %}
+{% endmacro %}

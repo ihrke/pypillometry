@@ -1,0 +1,15 @@
+{% import "repr_macros.html" as m %}
+<div style="font-family:system-ui, sans-serif; border:1px solid #ddd; border-radius:6px; padding:12px; max-width: min(600px, 50vw); min-width: 300px;">
+  <h3 style="margin-top:0;">{{ class_name }} — <span style="color:#555;">{{ name }}</span></h3>
+
+  {{ m.overview_grid(overview, min_width=140) }}
+
+  {{ m.sparkline_grid("Channels (mean over " ~ columns ~ "; red line = event onset)", channels, min_width=180) }}
+
+  {% if epochs %}
+  <details style="margin-top:8px;">
+    <summary style="cursor:pointer; font-weight:600;">Epochs</summary>
+    <pre style="margin-top:8px; background:#f9f9f9; padding:8px; border-radius:4px;">{{ epochs }}</pre>
+  </details>
+  {% endif %}
+</div>

@@ -15,7 +15,11 @@ By default, methods change the object they are called on (see
     pp.get_default_inplace()        # False
 
 A value given to an object's constructor (``inplace=...``) or to a single
-method call takes precedence.
+method call takes precedence. This holds for every method that changes the
+data (also :meth:`~EyeData.drop_data`, blink detection and
+:meth:`seg.pupil.baseline_correct() <segmented.SegmentedPupilNamespace.baseline_correct>`); all of them return the
+(changed) object. Only the ``set_*`` methods (e.g.,
+:meth:`~EyeData.set_events`) always change the object itself.
 
 .. autosummary::
    :nosignatures:
@@ -39,10 +43,10 @@ problems, or ``DEBUG`` to see everything:
     pp.logging_enable()
 
     with pp.loglevel("DEBUG"):      # temporarily, for a block of code
-        d.pupil_blinks_detect()
+        d.pupil.blinks_detect()
 
     with pp.nologging():            # temporarily silent
-        d.pupil_blinks_detect()
+        d.pupil.blinks_detect()
 
 To see detailed messages from one part of the package only:
 

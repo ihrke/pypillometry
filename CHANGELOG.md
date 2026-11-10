@@ -1,5 +1,81 @@
 # Changelog
 
+## 2.2.0 (unreleased)
+
+This version is a major refactor of the package without changing functionality (many bugs fixed, though). Scripts will need update to the new syntax.
+
+### Breaking changes
+
+- One data class, `EyeData` instead of per modality, pupil methods are in `d.pupil`, gaze methods in `d.gaze`
+- similarly,  plotter classes (`EyePlotter`, `PupilPlotter`, `GazePlotter`) were removed
+- Mask layers: multiple layers for reasons data may be masked
+- Plain numbers are ms everywhere
+- `get_intervals()` and `get_epochs(event, window)`
+- `GenericEyeData` removed
+- `SegmentedEyeData.intervals` is `SegmentedEyeData.epochs` 
+- `SegmentedEyeData` holds several channels
+- `GroupLevelSegmentedData` was removed
+- `scale()`/`unscale()`: `center=`/`scale=`
+- The functions for numpy arrays are only in `pp.signal`
+- `merge_intervals()` is `concat_intervals()` 
+- `Intervals.plot_highlight()` was removed; the plots shade intervals with `highlight=`
+- `downsample()` stores the actual sampling rate (`fs/factor`)
+- Gaze plots (heatmap, scanpath) draw y downward (screen pixels)
+- The time axis of all plots is in seconds by default 
+- `nblinks()` was removed (use `blink_stats()` or `layer_stats()`)
+
+### Added
+
+- `scale(method=...)` for common transformations
+- `seg.pupil.baseline_correct(method=...)`
+- faster `import pypillometry`
+- Namespaces `d.pupil`, `d.gaze` and `d.plot`
+- Segments of several channels share their epochs
+- `seg.gaze` for regions of interest: `roi_hits()`
+- User guide page "Regions of interest" 
+- `seg.average(by=...)` averages all trials or groups of them - `concat_segments()` 
+- Pipelines with pipe operator: `d | pp.pupil.blinks_detect()`
+- Mask layers per channel 
+- `pp.MaskPolicy` to decide which samples to mask
+- `pp.Epochs` (event-locked windows)
+- Warning for events on another clock
+- `Events.onset(label)` find onset of a special event 
+- `highlight=` and `highlight_color=` in `pupil_plot`
+- `pypil-upgrade`: converts saved files to the current format
+- `d.plot.plot_masked(policy=...)` to show the
+  interpolated stretches
+- `"<start>"` and `"<end>"` for interval selectors
+- `d.layer_stats()`: stats for each mask layer per channel
+- `pp.Table` and `pp.RecordDict`
+- `seg.plot_carpet()`: all segments of a channel as an image
+
+### Fixed
+
+- `from_eyelink()` with non-English day and month names
+- Download progress bars hidden in `pp.nologging()` 
+- `fs` after `downsample` did not match the time vector
+- `reset_time` did not shift blinks stored in time units
+- `FakeEyeData.sim_data` was not cut or downsampled 
+- Masks only grew: re-running a detector added to the old mask
+- Experimental setup and calibration were sometimes lost
+- `plot_heatmap(show_masked=True)` with NaN samples
+- A `plot_range` with start after end raises an error
+- The sample at the end of `plot_range` was not plotted
+- `scale()` twice then `unscale()` left the data scaled
+- `pypilview --eyes right FILE` took the file for an eye
+- `CircularROI.from_degrees`/`RectangularROI.from_degrees` 
+- `pypillometry.viewer.tweak` (the function) was replaced by its submodule
+- `pupil.estimate_response(eyes=...)` removed parameters
+- `pupil.estimate_response()` on data without events raises a `ValueError`
+- `pp.nologging()` could leave logging disabled
+- `summary()`, `Intervals.stats()` return Python
+  numbers
+- `pupil.blinks_detect()` with an unknown strategy 
+- `crop()` with start after end or outside the data
+- Re-running `pupil.blinks_detect()` after `pupil.blinks_interpolate()`
+  found no blinks (it read the interpolated values) and cleared the blink
+  layer
+
 ## 2.1.0 (2026-11-02)
 
 ### Breaking changes

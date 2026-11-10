@@ -5,9 +5,7 @@ pupil.py
 functions related to pupillary responses.
 """
 import numpy as np
-import scipy.optimize
 from loguru import logger
-from scipy.ndimage import uniform_filter1d
 
 __all__ = [
     "lowpass_filter_iterative", "pupil_signal_quality", "pupil_kernel_t",
@@ -18,13 +16,29 @@ __all__ = [
 ]
 
 
+def _bridge_gaps(signal):
+    """
+    Copy of `signal` with the NaN values replaced by a linear bridge
+    between the neighbouring valid samples (before the first and after
+    the last valid sample: its value). All-NaN signals are returned as
+    they are.
+    """
+    signal = np.asarray(signal, dtype=float)
+    valid = ~np.isnan(signal)
+    out = signal.copy()
+    if valid.any() and not valid.all():
+        idx = np.arange(len(signal))
+        out[~valid] = np.interp(idx[~valid], idx[valid], signal[valid])
+    return out
+
+
 def lowpass_filter_iterative(signal, cutoff, fs, order=2, max_iter=5):
     """
     Lowpass filter that handles NaN values via iterative interpolation.
     
-    NaN values are initially filled with the signal mean, then iteratively
-    replaced with filtered values until convergence. This avoids sharp
-    artifacts at gap boundaries that would occur with simple interpolation.
+    NaN values are initially bridged linearly between the neighbouring
+    valid samples (see :func:`_bridge_gaps`), then iteratively replaced
+    with filtered values.
     
     Parameters
     ----------
@@ -47,7 +61,7 @@ def lowpass_filter_iterative(signal, cutoff, fs, order=2, max_iter=5):
     Notes
     -----
     The iterative approach works by:
-    1. Fill NaN positions with the signal mean
+    1. Fill NaN positions by a linear bridge between the valid samples
     2. Apply lowpass filter to the filled signal
     3. Replace NaN positions with the filtered values
     4. Repeat steps 2-3 until max_iter reached
@@ -57,8 +71,11 @@ def lowpass_filter_iterative(signal, cutoff, fs, order=2, max_iter=5):
     
     Examples
     --------
-    >>> signal = np.array([1, 2, np.nan, np.nan, 5, 6])
+    >>> signal = np.sin(np.arange(1000) / 100)
+    >>> signal[300:320] = np.nan  # a gap
     >>> filtered = lowpass_filter_iterative(signal, cutoff=2.0, fs=100)
+    >>> bool(np.isnan(filtered).any())
+    False
     """
     valid = ~np.isnan(signal)
     n_valid = np.sum(valid)
@@ -74,9 +91,9 @@ def lowpass_filter_iterative(signal, cutoff, fs, order=2, max_iter=5):
         # No NaN - just apply regular filter
         return butter_lowpass_filter(signal, cutoff, fs, order)
     
-    # Initialize: fill NaN with signal mean
-    filled = signal.copy()
-    filled[~valid] = np.nanmean(signal)
+    # Initialize: bridge the gaps linearly (starting from the global mean
+    # biases the valid samples next to the gaps, finding 3.3)
+    filled = _bridge_gaps(signal)
     
     # Iterative filtering
     for _ in range(max_iter):
@@ -152,18 +169,23 @@ def pupil_signal_quality(signal, fs, mask=None, lowpass_cutoff=4.0,
     
     Examples
     --------
+    >>> rng = np.random.default_rng(0)
+    >>> pupil = 4000 + 100 * np.sin(np.arange(5000) / 500) + rng.normal(0, 10, 5000)
+    >>> pupil[1000:1100] = 0  # a blink
     >>> # With explicit mask
     >>> mask = pupil == 0  # e.g., blinks marked as 0
     >>> snr = pupil_signal_quality(pupil, fs=500, mask=mask, metric="snr")
-    >>> 
+
     >>> # With masked array
     >>> pupil_ma = np.ma.array(pupil, mask=(pupil == 0))
     >>> snr = pupil_signal_quality(pupil_ma, fs=500, metric="snr")
-    >>> 
-    >>> # Get noise as coefficient of variation (percentage)
+
+    >>> # Get noise as coefficient of variation (fraction)
     >>> noise_cv = pupil_signal_quality(pupil, fs=500, mask=mask, metric="noise_cv")
-    >>> print(f"Average noise level: {np.mean(noise_cv[~mask])*100:.1f}%")
+    >>> bool(np.mean(noise_cv[~mask]) < 0.01)  # below 1% noise
+    True
     """
+    from scipy.ndimage import uniform_filter1d
     valid_metrics = ["snr", "snr_db", "noise_power", "noise_cv"]
     if metric not in valid_metrics:
         raise ValueError(f"metric must be one of {valid_metrics}, got '{metric}'")
@@ -304,7 +326,7 @@ def pupil_kernel(duration=4000, fs=1000, npar=10.1, tmax=930.0):
     $$h(t)=\frac{1}{h_{max}} h_{HL}(t)$$
     where $$h_{max} = \max_t{\left(h_{HL}(t)\right)} = e^{-n}t_{max}^{n}$$
     which yields a maximum value of 1 for this function.
-    The function $h(t)$ is implemented in `pp.pupil_kernel()`.
+    The function $h(t)$ is implemented in `pp.signal.pupil_kernel()`.
 
     Parameters
     ----------
@@ -359,8 +381,8 @@ def plot_prf(npar=10.1,tmax=930,max_duration="estimate",fs=500,**kwargs):
 
        >>> import pypillometry as pp
        >>> import matplotlib.pyplot as plt
-       >>> pp.plot_prf()
-       >>> pp.plot_prf(npar=5, tmax=500)
+       >>> pp.signal.plot_prf()
+       >>> pp.signal.plot_prf(npar=5, tmax=500)
     """
     if max_duration=="estimate":
         max_duration=pupil_get_max_duration(npar,tmax)
@@ -455,6 +477,7 @@ def _nnls_gram(x, y):
     sse : float
         sum of squared residuals
     """
+    import scipy.optimize
     gram = np.dot(x, x.T)
     b = np.dot(x, y)
     yy = float(np.dot(y, y))
@@ -541,6 +564,7 @@ def pupil_response(tx, sy, event_onsets, fs, npar="free", tmax="free", verbose=1
         design matrix (nevents x len(tx)),
         see :py:func:`pupil_build_design_matrix()`
     """
+    import scipy.optimize
     sy = np.asarray(sy, dtype=float)
     valid = np.isfinite(sy) if valid is None else np.asarray(valid, dtype=bool) & np.isfinite(sy)
     if not valid.any():
@@ -716,14 +740,25 @@ def pupil_eye_offset(left, right, fs, left_mask=None, right_mask=None,
     
     Examples
     --------
+    >>> rng = np.random.default_rng(0)
+    >>> left = 4000 + 100 * np.sin(np.arange(5000) / 500) + rng.normal(0, 10, 5000)
+    >>> right = left - 200 + rng.normal(0, 10, 5000)
+    >>> left_mask = np.zeros(5000, dtype=bool)
+    >>> left_mask[1000:1100] = True
+    >>> right_mask = np.zeros(5000, dtype=bool)
+    >>> right_mask[3000:3100] = True
+    >>> left_ma = np.ma.array(left, mask=left_mask)
+    >>> right_ma = np.ma.array(right, mask=right_mask)
     >>> # With masked arrays
     >>> offset = pupil_eye_offset(left_ma, right_ma, fs=500)
     >>> right_corrected = right_ma + offset
-    >>> 
+    >>> round(float(np.mean(offset)), -1)
+    200.0
+
     >>> # With explicit masks
     >>> offset = pupil_eye_offset(left, right, fs=500, 
     ...                           left_mask=left_mask, right_mask=right_mask)
-    >>> 
+
     >>> # Merge eyes using the offset
     >>> both_valid = ~left_mask & ~right_mask
     >>> merged = np.where(both_valid, 

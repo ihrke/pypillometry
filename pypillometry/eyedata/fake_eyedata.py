@@ -1,6 +1,5 @@
 """Synthetic eye-tracking data for testing and validation."""
 
-import inspect
 from .eyedata import EyeData
 from .eyedatadict import EyeDataDict
 from .experimental_setup import ExperimentalSetup
@@ -15,7 +14,8 @@ class FakeEyeData(EyeData):
     - sim_fct: Reference to the function used to generate this data
     - sim_fct_name: Name of the generation function (str)
     - sim_params: Dictionary with generation parameters (excludes function reference)
-    - sim_data: EyeDataDict with ground truth time series
+    - sim_data: EyeDataDict with ground truth time series (one value per
+      sample; cut, decimated and filled in together with the data)
     
     This class enables:
 
@@ -28,6 +28,8 @@ class FakeEyeData(EyeData):
     # stored as its name ("module:qualname") and imported when loading
     _STATE_FIELDS = (("sim_fct", "function"), "sim_fct_name", "sim_params",
                      ("sim_data", "EyeDataDict"))
+    # the ground truth follows crop, downsample etc. with the data
+    _SAMPLE_ALIGNED = ("data", "sim_data")
 
     def __init__(self, 
                  time, left_x=None, left_y=None, left_pupil=None,
@@ -53,6 +55,8 @@ class FakeEyeData(EyeData):
         **kwargs : dict
             additional parameters passed to :class:`~pypillometry.EyeData`
         """
+        # set before the constructor, which may fill in time discontinuities
+        self.sim_data = sim_data if sim_data is not None else EyeDataDict()
         super().__init__(time=time, left_x=left_x, left_y=left_y, 
                         left_pupil=left_pupil, right_x=right_x, 
                         right_y=right_y, right_pupil=right_pupil, **kwargs)
@@ -60,7 +64,6 @@ class FakeEyeData(EyeData):
         self.sim_fct = sim_fct
         self.sim_fct_name = sim_fct_name or (sim_fct.__name__ if sim_fct else None)
         self.sim_params = sim_params or {}
-        self.sim_data = sim_data if sim_data is not None else EyeDataDict()
 
     def get_generation_call(self):
         """
@@ -73,9 +76,10 @@ class FakeEyeData(EyeData):
         
         Examples
         --------
-        >>> data = generate_foreshortening_data(duration=60, seed=42)
-        >>> print(data.get_generation_call())
-        generate_foreshortening_data(duration=60, fs=1000, eye='left', ...)
+        >>> import pypillometry as pp
+        >>> data = pp.signal.generate_foreshortening_data(duration=10, seed=42)
+        >>> print(data.get_generation_call())  # doctest: +ELLIPSIS
+        generate_foreshortening_data(experimental_setup={...}, duration=10, fs=1000, eye='left', ...)
         """
         if not self.sim_fct_name:
             return "Unknown generation function"
@@ -105,10 +109,12 @@ class FakeEyeData(EyeData):
         
         Examples
         --------
-        >>> setup = ExperimentalSetup(...)
-        >>> data = generate_foreshortening_data(setup, duration=60, seed=42)
-        >>> data2 = data.regenerate(seed=43)  # Same params, different seed
-        >>> data3 = data.regenerate(duration=120, seed=44)  # Different duration
+        >>> import pypillometry as pp
+        >>> data = pp.signal.generate_foreshortening_data(duration=10, seed=42)
+        >>> data2 = data.regenerate(seed=43)  # same parameters, different seed
+        >>> data3 = data.regenerate(duration=20, seed=44)  # different duration
+        >>> len(data3)
+        20000
         """
         if self.sim_fct is None:
             raise ValueError("Cannot regenerate: sim_fct is None")

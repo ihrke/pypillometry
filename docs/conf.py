@@ -82,6 +82,9 @@ intersphinx_mapping = {
 # `.. plot::` blocks (e.g., in the Examples of the plotting functions) are
 # run during the build; they use the example data shipped with the package
 plot_include_source = True
+# run the plots in docs/ (e.g., to read ../data/test.edf), wherever the
+# build is started
+plot_working_directory = str(Path(__file__).parent.absolute())
 plot_html_show_source_link = False
 plot_html_show_formats = False
 plot_formats = [("png", 100)]
@@ -148,11 +151,6 @@ html_theme_options = {
     "secondary_sidebar_items": ["page-toc", "edit-this-page", "sourcelink"],
     "footer_start": ["copyright"],
     "footer_end": ["sphinx-version", "theme-version"],
-    "announcement": (
-        "pypillometry v2 is a major rewrite and not compatible with v1. "
-        "The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>"
-        "v1 documentation</a> is still available."
-    ),
 }
 
 # the landing page has no sidebar
@@ -168,10 +166,14 @@ pygments_dark_style = "monokai"
 #
 # Docstrings often link to the module where an object is defined, e.g.
 # :func:`pypillometry.signal.pupil.pupil_response`, but the API reference
-# documents everything under its public name (pypillometry.pupil_response).
+# documents everything under its public name (pypillometry.signal.pupil_response).
 # This hook redirects such links (and bare method names) to the public name.
 
-_PUBLIC_CLASSES = ["GenericEyeData", "PupilData", "GazeData", "EyeData"]
+_PUBLIC_CLASSES = ["EyeData"]
+# d.pupil / d.gaze / d.plot: EyeData.pupil.<method> is documented on the namespace class
+_NAMESPACES = {"pupil": "pypillometry.eyedata.pupil.PupilNamespace",
+               "gaze": "pypillometry.eyedata.gaze.GazeNamespace",
+               "plot": "pypillometry.plot.PlotNamespace"}
 
 
 def _resolve_public_name(app, env, node, contnode):
@@ -183,12 +185,16 @@ def _resolve_public_name(app, env, node, contnode):
     if target.startswith("pypillometry."):
         candidates += [f"pypillometry.{parts[-1]}",
                        f"pypillometry.{'.'.join(parts[-2:])}"]
+        if target.startswith("pypillometry.signal."):
+            candidates.insert(0, f"pypillometry.signal.{parts[-1]}")
     elif len(parts) == 1:
         cls = node.get("py:class")
         if cls:
             candidates.append(f"pypillometry.{cls.split('.')[-1]}.{target}")
         candidates += [f"pypillometry.{target}"]
         candidates += [f"pypillometry.{c}.{target}" for c in _PUBLIC_CLASSES]
+    if len(parts) >= 2 and parts[-2] in _NAMESPACES:
+        candidates.insert(0, f"{_NAMESPACES[parts[-2]]}.{parts[-1]}")
     py = env.get_domain("py")
     for cand in candidates:
         if cand in py.objects:

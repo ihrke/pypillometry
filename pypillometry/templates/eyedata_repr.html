@@ -1,28 +1,10 @@
+{% import "repr_macros.html" as m %}
 <div style="font-family:system-ui, sans-serif; border:1px solid #ddd; border-radius:6px; padding:12px; max-width: min(600px, 50vw); min-width: 300px;">
   <h3 style="margin-top:0;">{{ class_name }} — <span style="color:#555;">{{ name }}</span></h3>
 
-  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px; margin-bottom:10px;">
-    {% for label, value in overview %}
-    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
-      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">{{ label }}</div>
-      <div style="font-weight:600;">{{ value }}</div>
-    </div>
-    {% endfor %}
-  </div>
+  {{ m.overview_grid(overview) }}
 
-  {% if sparklines %}
-  <details open style="margin-bottom:8px;">
-    <summary style="cursor:pointer; font-weight:600;">Signal overview</summary>
-    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px; margin-top:8px;">
-      {% for spark in sparklines %}
-      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
-        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">{{ spark.label }}</div>
-        <img src="{{ spark.data }}" alt="{{ spark.label }} sparkline" style="height:60px; width:100%; object-fit:cover;">
-      </div>
-      {% endfor %}
-    </div>
-  </details>
-  {% endif %}
+  {{ m.sparkline_grid("Signal overview", sparklines) }}
 
   {% if blink_stats %}
   <details open style="margin-bottom:8px;">

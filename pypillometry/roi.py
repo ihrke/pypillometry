@@ -17,13 +17,9 @@ Coordinate Systems
   Requires eye-to-screen distance from ExperimentalSetup.
 """
 
-from typing import Dict, Union, Tuple, Optional, TYPE_CHECKING
+from typing import Union, Tuple, Optional, TYPE_CHECKING
 import numpy as np
-from loguru import logger
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
 
-from pypillometry.units import parse_angle
 
 __all__ = [
     "ROI", "CircularROI", "RectangularROI",
@@ -225,12 +221,12 @@ class CircularROI(ROI):
             (x, y) center in visual angle from screen center.
             Positive x = right, positive y = up.
             Each coordinate can be:
-            - float: assumed to be radians
+            - float: degrees
             - str: with units, e.g., "5 deg", "0.087 rad"
             - with a unit, e.g., 5 * u.deg
         radius : float or str
             Radius in visual angle. Can be:
-            - float: assumed to be radians
+            - float: degrees
             - str: with units, e.g., "2 deg", "0.035 rad"
             - with a unit, e.g., 5 * u.deg
         setup : ExperimentalSetup
@@ -254,7 +250,7 @@ class CircularROI(ROI):
         ...     eye_to_screen_center="60 cm"
         ... )
         >>> roi = CircularROI.from_degrees(center=("5 deg", "2.5 deg"), radius="2 deg", setup=setup)
-        >>> roi = CircularROI.from_degrees(center=(0.087, 0.044), radius=0.035, setup=setup)  # radians
+        >>> roi = CircularROI.from_degrees(center=(5, 2.5), radius=2, setup=setup)  # degrees
         """
         # Validate setup
         if not setup.has_screen_info():
@@ -266,17 +262,10 @@ class CircularROI(ROI):
                 "ExperimentalSetup must have eye_to_screen_center set for degree conversion."
             )
         
-        # Parse angles (converts to radians)
-        cx_rad = parse_angle(center[0])
-        cy_rad = parse_angle(center[1])
-        radius_rad = parse_angle(radius)
-        
-        # Convert center from radians to mm
-        cx_mm = setup.d * np.tan(cx_rad)
-        cy_mm = setup.d * np.tan(cy_rad)
-        
-        # Convert radius from radians to mm (at screen center approximation)
-        radius_mm = setup.d * np.tan(radius_rad)
+        # angles to mm (plain numbers are degrees, see degrees_to_mm)
+        cx_mm, cy_mm = setup.degrees_to_mm(center[0], center[1])
+        # radius at the screen center (approximation)
+        radius_mm = setup.degrees_to_mm(radius, 0)[0]
         
         return cls.from_mm((cx_mm, cy_mm), radius_mm, setup=setup, name=name)
     
@@ -342,13 +331,15 @@ class CircularROI(ROI):
            >>> right = pp.RectangularROI((850, 350), (1150, 650), name="right stimulus")
            >>> d.plot.plot_heatmap(eyes="left")
            >>> ax = plt.gcf().axes[0]  # the heatmap (axes[1] is the colorbar)
-           >>> left.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)
-           >>> right.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)
+           >>> patch = left.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)
+           >>> patch = right.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)
 
-        :meth:`~pypillometry.GazePlotter.plot_heatmap` and
-        :meth:`~pypillometry.GazePlotter.plot_scanpath` can also draw them
+        :meth:`d.plot.plot_heatmap() <pypillometry.plot.PlotNamespace.plot_heatmap>` and
+        :meth:`d.plot.plot_scanpath() <pypillometry.plot.PlotNamespace.plot_scanpath>` can also draw them
         (``rois=[left, right]``).
         """
+        import matplotlib.pyplot as plt
+        import matplotlib.patches as patches
         if ax is None:
             ax = plt.gca()
             
@@ -473,14 +464,14 @@ class RectangularROI(ROI):
             (x, y) first corner in visual angle from screen center.
             Positive x = right, positive y = up.
             Each coordinate can be:
-            - float: assumed to be radians
+            - float: degrees
             - str: with units, e.g., "-5 deg", "-0.087 rad"
             - with a unit, e.g., 5 * u.deg
         corner2 : Tuple[float or str, float or str]
             (x, y) second corner in visual angle from screen center.
             Positive x = right, positive y = up.
             Each coordinate can be:
-            - float: assumed to be radians
+            - float: degrees
             - str: with units, e.g., "5 deg", "0.087 rad"
             - with a unit, e.g., 5 * u.deg
         setup : ExperimentalSetup
@@ -518,15 +509,9 @@ class RectangularROI(ROI):
                 "ExperimentalSetup must have eye_to_screen_center set for degree conversion."
             )
         
-        # Parse angles (converts to radians)
-        c1x_rad = parse_angle(corner1[0])
-        c1y_rad = parse_angle(corner1[1])
-        c2x_rad = parse_angle(corner2[0])
-        c2y_rad = parse_angle(corner2[1])
-        
-        # Convert corners from radians to mm
-        c1_mm = (setup.d * np.tan(c1x_rad), setup.d * np.tan(c1y_rad))
-        c2_mm = (setup.d * np.tan(c2x_rad), setup.d * np.tan(c2y_rad))
+        # angles to mm (plain numbers are degrees, see degrees_to_mm)
+        c1_mm = setup.degrees_to_mm(corner1[0], corner1[1])
+        c2_mm = setup.degrees_to_mm(corner2[0], corner2[1])
         
         return cls.from_mm(c1_mm, c2_mm, setup=setup, name=name)
     
@@ -592,13 +577,15 @@ class RectangularROI(ROI):
            >>> right = pp.RectangularROI((850, 350), (1150, 650), name="right stimulus")
            >>> d.plot.plot_heatmap(eyes="left")
            >>> ax = plt.gcf().axes[0]  # the heatmap (axes[1] is the colorbar)
-           >>> left.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)
-           >>> right.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)
+           >>> patch = left.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)
+           >>> patch = right.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)
 
-        :meth:`~pypillometry.GazePlotter.plot_heatmap` and
-        :meth:`~pypillometry.GazePlotter.plot_scanpath` can also draw them
+        :meth:`d.plot.plot_heatmap() <pypillometry.plot.PlotNamespace.plot_heatmap>` and
+        :meth:`d.plot.plot_scanpath() <pypillometry.plot.PlotNamespace.plot_scanpath>` can also draw them
         (``rois=[left, right]``).
         """
+        import matplotlib.pyplot as plt
+        import matplotlib.patches as patches
         if ax is None:
             ax = plt.gca()
             

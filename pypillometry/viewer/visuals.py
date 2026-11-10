@@ -3,7 +3,7 @@
 import numpy as np
 from vispy import scene
 from vispy.color import Color
-from typing import List, Optional, Tuple, Dict
+from typing import List, Tuple, Dict
 import numpy.ma as ma
 
 
@@ -275,7 +275,6 @@ class DynamicMaskRegions:
         rgba[3] = self.alpha
         
         if self.mesh is None:
-            from vispy.visuals.filters import Alpha
             self.mesh = scene.Mesh(
                 vertices=vertices, faces=faces, color=rgba,
                 parent=self.viewbox.scene

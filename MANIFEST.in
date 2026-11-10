@@ -1,2 +1,3 @@
 # the tests and their data in the source distribution (not installed)
-recursive-include tests *.py *.edf
+graft tests
+global-exclude __pycache__ *.py[cod]

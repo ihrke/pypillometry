@@ -233,6 +233,9 @@ class ExperimentalSetup(Stateful):
         """
         if eye_to_screen_center is not None:
             dist_center = parse_distance(eye_to_screen_center)
+            if not dist_center > 0:
+                raise ValueError(f"eye_to_screen_center must be positive, got "
+                                 f"{eye_to_screen_center!r} ({dist_center} mm)")
             delta_x, delta_y = self._screen_offset
             d_squared = dist_center**2 - delta_x**2 - delta_y**2
             if d_squared < 0:
@@ -727,8 +730,12 @@ class ExperimentalSetup(Stateful):
         
         Only validates parameters that are set; incomplete setups are allowed.
         """
-        # Screen resolution must be positive (if set)
+        # Screen resolution must be two positive whole numbers (if set)
         if self._screen_resolution is not None:
+            if len(self._screen_resolution) != 2 or any(
+                    not float(v).is_integer() for v in self._screen_resolution):
+                raise ValueError("Screen resolution must be two whole numbers (width, height) "
+                                 f"in pixels, got {self._screen_resolution}")
             if self._screen_resolution[0] <= 0 or self._screen_resolution[1] <= 0:
                 raise ValueError(
                     f"Screen resolution must be positive, got {self._screen_resolution}"
@@ -1004,9 +1011,6 @@ class ExperimentalSetup(Stateful):
            >>> fig, ax = setup.plot()  # 2D views
            >>> fig, ax = setup.plot(projection='3d')  # 3D view
         """
-        import matplotlib.pyplot as plt
-        import matplotlib.patches as mpatches
-        from matplotlib.patches import Arc
         
         # Validate required parameters
         if not self.has_screen_info():

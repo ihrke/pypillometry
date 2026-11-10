@@ -770,3 +770,20 @@ class TestExperimentalSetupCopy:
 if __name__ == '__main__':
     pytest.main([__file__, '-v'])
 
+
+@pytest.mark.parametrize("kwargs", [
+    {"eye_to_screen_center": "-65 cm"},          # sign was dropped (650 mm)
+    {"eye_to_screen_center": 0},
+    {"screen_resolution": (1920.5, 1080)},
+    {"screen_resolution": (1920, 1080, 3)},
+    {"screen_resolution": (1920,)},
+])
+def test_invalid_setup_raises(kwargs):
+    args = dict(screen_resolution=(1920, 1080), physical_screen_size=("52 cm", "29 cm"),
+                eye_to_screen_center="65 cm")
+    args.update(kwargs)
+    with pytest.raises(ValueError):
+        ExperimentalSetup(**args)
+    # whole numbers given as floats are fine
+    assert ExperimentalSetup(screen_resolution=(1920., 1080.)).screen_resolution == (1920., 1080.)
+

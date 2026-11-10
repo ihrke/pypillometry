@@ -58,6 +58,13 @@ class TestLoadStudySSH(SSHTestCase):
         self.assertEqual(list(data), ["s2"])
         self.assertFalse(os.path.exists(os.path.join(self.cache, "server", "study", "s1")))
 
+    def test_subjects_string_and_missing(self):
+        # finding 5.5: a string was iterated per character, missing IDs skipped
+        data, _ = ppstudy.load_study_local(self.study, subjects="s2")
+        self.assertEqual(list(data), ["s2"])
+        with self.assertRaisesRegex(ValueError, "not found in the study: s3"):
+            ppstudy.load_study_local(self.study, subjects=["s1", "s3"])
+
     def test_ssh_autodelete(self):
         data, _ = ppstudy.load_study_local("ssh://server/study/", cache_dir=self.cache, autodelete=True)
         self.assertEqual(data["s1"], ("data s1", "control"))
@@ -130,7 +137,7 @@ class TestLoadStudyOSF(unittest.TestCase):
         stdout = io.StringIO()
         try:
             with patch.object(ppstudy, "get_osf_project_files", return_value=self.files), \
-                 patch.object(ppstudy.requests, "get", side_effect=self.get), \
+                 patch("requests.get", side_effect=self.get), \
                  redirect_stdout(stdout):
                 data, _ = ppstudy.load_study_osf("abcde", self.path, **kwargs)
         finally:

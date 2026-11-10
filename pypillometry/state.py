@@ -1,8 +1,8 @@
 """
 Versioned state of the objects that can be saved to a file.
 
-The eyedata objects (:class:`~pypillometry.PupilData`,
-:class:`~pypillometry.GazeData`, :class:`~pypillometry.EyeData`, ...) and the
+The eyedata objects (:class:`~pypillometry.EyeData`,
+:class:`~pypillometry.FakeEyeData`) and the
 segmented data (:class:`~pypillometry.SegmentedEyeData`, ...) define their
 content as a *state*: a dict that contains only numbers, strings, None,
 lists, tuples, dicts and numpy arrays (plus whatever the user stored in
@@ -40,8 +40,27 @@ Version history
     events: eyedata objects have `event_meta` (dict of arrays, one value
     per event), Intervals have `event_meta` (None or dict of arrays, one
     value per interval)
+3
+    eyedata objects store their events as one Events state (`events`:
+    `onsets` in `units`, `labels`, `data_time_range`, `meta`,
+    `needs_sync`); all eyedata objects have `experimental_setup` and
+    `calibration`; masks are layers: EyeDataDicts have `layers` (one uint16 bit-field per key),
+    `layer_names` (layer i is bit i) and `rec_layers` (recording-wide
+    layers, e.g. excluded periods) instead of `mask`; eyedata objects have
+    no `blinks`, `interpolated_blinks` and `excluded` (they are layers);
+    Intervals have no `event_indices`, `data_time_range` and
+    `interval_window`; the response and scaling
+    parameters (``params["response"]``, ``params["scale"]``) are keyed by
+    channel (``"left_pupil"``); the scaling parameters are `center`,
+    `scale` and `method` (were `mean` and `sd`); segments hold several channels (`data`:
+    channel -> masked array, no `variable`) and store their Epochs
+    (`epochs`: an Events state in ms, `window` in ms, `label`) or, if not
+    event-locked, Intervals, with the class name in ``epochs["class"]``,
+    and `valid_share` (channel -> share of usable trials of each value, for
+    averages)
 """
 
+import contextlib
 import importlib
 import pickle
 from collections import namedtuple
@@ -52,11 +71,19 @@ from loguru import logger
 __all__ = []
 
 #: version of the state written by this version of pypillometry
-FORMAT_VERSION = 2
+FORMAT_VERSION = 3
 
 # classes that moved: (old module, old name) -> (new module, new name),
-# used when reading pickle files (see _Unpickler)
-_RENAMED_CLASSES = {}
+# used when reading pickle files (see _Unpickler) and states (see _find_class)
+_RENAMED_CLASSES = {
+    # one class for all eyedata (pypillometry 2.2)
+    ("pypillometry.eyedata.pupildata", "PupilData"): ("pypillometry.eyedata.eyedata", "EyeData"),
+    ("pypillometry.eyedata.gazedata", "GazeData"): ("pypillometry.eyedata.eyedata", "EyeData"),
+}
+
+# list that collects (class name, format version) of the states passed to
+# migrate(), or None (see _recording_versions)
+_versions_seen = None
 
 
 def to_state(obj) -> dict:
@@ -124,6 +151,8 @@ def migrate(state: dict, class_name: str) -> dict:
         the state in the current version (may be `state` itself)
     """
     version = state.get("format_version", 0)
+    if _versions_seen is not None:
+        _versions_seen.append((class_name, version))
     if version > FORMAT_VERSION:
         raise ValueError(
             f"the data was saved with a newer version of pypillometry (format "
@@ -139,13 +168,33 @@ def migrate(state: dict, class_name: str) -> dict:
     return state
 
 
+@contextlib.contextmanager
+def _recording_versions():
+    """
+    Context manager that collects the format versions of the objects loaded
+    in its block.
+
+    Yields a list of ``(class name, format version)``, one entry for each
+    state passed to :func:`migrate` (each object, including nested ones such
+    as `original`), before it is upgraded.
+    """
+    global _versions_seen
+    outer, _versions_seen = _versions_seen, []
+    try:
+        yield _versions_seen
+    finally:
+        _versions_seen = outer
+
+
 def _find_class(name: str):
-    """The class (eyedata or segmented data) called `name`."""
-    from .eyedata.generic import GenericEyeData
+    """The class (eyedata or segmented data) called `name` (or renamed from `name`)."""
+    renamed = {old: new for (_, old), (_, new) in _RENAMED_CLASSES.items()}
+    name = renamed.get(name, name)
+    from .eyedata.eyedata import EyeData
     from .segmented import SegmentedEyeData
     # importing the package registers all its classes as subclasses
     from . import eyedata, segmented  # noqa: F401
-    todo = [GenericEyeData, SegmentedEyeData]
+    todo = [EyeData, SegmentedEyeData]
     while todo:
         cls = todo.pop()
         if cls.__name__ == name:
@@ -265,7 +314,10 @@ def _nested_class(name):
     from .eyedata.eyedatadict import EyeDataDict
     from .eyedata.experimental_setup import ExperimentalSetup
     from .eyedata.spatial_calibration import SpatialCalibration
-    return {"Intervals": Intervals, "EyeDataDict": EyeDataDict,
+    from .events import Events
+    from .epochs import Epochs
+    return {"Intervals": Intervals, "EyeDataDict": EyeDataDict, "Events": Events,
+            "Epochs": Epochs,
             "ExperimentalSetup": ExperimentalSetup,
             "SpatialCalibration": SpatialCalibration}[name]
 
@@ -276,6 +328,15 @@ def _pairs_to_state(pairs):
 
 def _pairs_from_state(arr):
     return [tuple(row) for row in np.asarray(arr).tolist()]
+
+
+def _tagged_to_state(obj):
+    return {"class": type(obj).__name__, **obj._to_state()}
+
+
+def _tagged_from_state(st):
+    st = dict(st)
+    return _nested_class(st.pop("class"))._from_state(st)
 
 
 def _masked_to_state(arr):
@@ -296,6 +357,9 @@ _KINDS = {
     "masked": (_masked_to_state, _masked_from_state),
     # function <-> "module:qualname"
     "function": (_function_name, _import_function),
+    # object of one of the classes in _nested_class() <-> its state with
+    # its class name in "class" (for attributes that can hold several classes)
+    "tagged": (_tagged_to_state, _tagged_from_state),
 }
 
 
@@ -317,8 +381,7 @@ def _convert(kind, value, direction):
 # must not change when the classes change later.
 # --------------------------------------------------------------------------
 
-_EYEDATA_CLASSES = ("PupilData", "GazeData", "EyeData", "FakeEyeData")
-_SEGMENTED_CLASSES = ("SegmentedEyeData", "GroupLevelSegmentedData")
+_SEGMENTED_CLASSES = ("SegmentedEyeData",)
 
 
 def _v0_dict(obj):
@@ -380,9 +443,6 @@ def _migrate_0_to_1(raw, class_name):
             "intervals": _v0_intervals(_v0_dict(raw.get("intervals"))),
             "sampling_rate": raw.get("sampling_rate"),
         }
-        if class_name == "GroupLevelSegmentedData":
-            state["mask_percent"] = raw["mask_percent"]
-            state["n_subjects"] = raw["n_subjects"]
         return state
 
     # eyedata classes (and subclasses defined by users)
@@ -459,5 +519,254 @@ def _migrate_1_to_2(state, class_name):
     return state
 
 
-_MIGRATIONS = [_migrate_0_to_1, _migrate_1_to_2]
+# layers that made up the mask of version 2 (the "compat" mask of version 3)
+_V2_MASK_LAYERS = ("user", "interpolated", "blink", "excluded",
+                   "offscreen", "divergence")
+_V2_MS_PER_UNIT = {"ms": 1., "sec": 1000., "min": 60000., "h": 3600000.}
+
+
+class _V3Layers:
+    """Layers of a version-3 EyeDataDict state (`st`, changed in place)."""
+
+    def __init__(self, st):
+        self.st = st
+
+    def bit(self, name):
+        """Bit of layer `name` (registered if new)."""
+        names = self.st["layer_names"]
+        if name not in names:
+            if len(names) == 16:
+                raise ValueError("more than 16 mask layers")
+            names.append(name)
+        return np.uint16(1 << names.index(name))
+
+    def bits(self, names):
+        """Bits of the registered layers among `names`."""
+        return np.uint16(sum(1 << i for i, n in enumerate(self.st["layer_names"])
+                             if n in names))
+
+    def get(self, key, name):
+        """Layer `name` of `key` (None: the recording-wide layer) as bool array."""
+        arr = self.st["rec_layers"] if key is None else self.st["layers"][key]
+        return (arr & self.bits([name])) != 0
+
+    def set(self, key, name, where):
+        """Set layer `name` of `key` (None: recording-wide) where `where` is True."""
+        arr = self.st["rec_layers"] if key is None else self.st["layers"][key]
+        arr[where] |= self.bit(name)
+
+    def clear(self, key, name, where):
+        self.st["layers"][key][where] &= ~self.bits([name])
+
+    def mask(self, key):
+        """The mask of `key` as version 2 had it (from the layers and NaN)."""
+        bits = self.bits(_V2_MASK_LAYERS)
+        return (((self.st["layers"][key] & bits) != 0) | ((self.st["rec_layers"] & bits) != 0)
+                | np.isnan(self.st["values"][key]))
+
+
+def _v2_eyedatadict(st):
+    """Version-3 state of an EyeDataDict (version-2 state `st`), with its _V3Layers.
+
+    The mask of version 2 (``mask``) becomes layers: masked samples that are
+    not NaN the ``"user"`` layer (NaN values are masked by their value).
+    """
+    st = dict(st)
+    values = st["values"]
+    st["layers"] = {k: np.zeros(np.shape(v), dtype=np.uint16) for k, v in values.items()}
+    st["layer_names"] = []
+    st["rec_layers"] = (np.zeros(np.shape(next(iter(values.values()))), dtype=np.uint16)
+                        if values else None)
+    layers = _V3Layers(st)
+    for key, m in (st.pop("mask", None) or {}).items():
+        m = np.asarray(m).astype(bool) & ~layers.mask(key)
+        if m.any():
+            layers.set(key, "user", m)
+    return st, layers
+
+
+def _v2_intervals_mask(st, tx):
+    """Samples (bool array) covered by an Intervals state `st` of version 2.
+
+    Times are converted to the first sample at or after them (as Intervals
+    did in version 2); the intervals are clipped to the recording.
+    """
+    n = len(tx)
+    out = np.zeros(n, dtype=bool)
+    ivs = np.asarray(st["intervals"], dtype=float).reshape(-1, 2)
+    if st["units"] != "samples" and n > 0:
+        tol = 1e-6 * (np.median(np.diff(tx)) if n > 1 else 1.)
+        ivs = np.searchsorted(tx, ivs * _V2_MS_PER_UNIT[st["units"]] - tol, side="left")
+    for start, end in ivs:
+        out[min(max(int(start), 0), n):min(max(int(end), 0), n)] = True
+    return out
+
+
+def _v2_spans(st, fs):
+    """Version-3 state (Epochs or Intervals, with "class") of the version-2
+    Intervals state `st` of segments (sampling rate `fs`).
+
+    Event-locked intervals (with `interval_window` and `event_onsets`) become
+    Epochs (in ms); onsets in sample indices are converted with `fs` (from the
+    first sample of the recording, whose time is unknown).
+    """
+    if st is None:
+        return None
+    locked = st.get("interval_window") is not None and st.get("event_onsets") is not None
+    if locked and st["units"] == "samples" and fs is None:
+        logger.warning("segments made from intervals in sample indices without a "
+                       "sampling rate: kept as Intervals")
+        locked = False
+    if not locked:
+        keys = ("intervals", "units", "label", "event_labels", "event_onsets", "event_meta")
+        return {"class": "Intervals", **{k: st.get(k) for k in keys}}
+    if st["units"] == "samples":
+        logger.warning("segments made from intervals in sample indices: event onsets "
+                       "converted to ms from the first sample of the recording")
+        fac = 1000. / fs
+    else:
+        fac = _V2_MS_PER_UNIT[st["units"]]
+    onsets = np.asarray(st["event_onsets"], dtype=float) * fac
+    labels = st["event_labels"]
+    if labels is None:
+        labels = np.full(len(onsets), "")
+    return {"class": "Epochs",
+            "events": {"onsets": onsets, "labels": labels, "units": "ms",
+                       "data_time_range": None, "meta": st.get("event_meta"),
+                       "needs_sync": False},
+            "window": tuple(float(w) * fac for w in st["interval_window"]),
+            "label": st.get("label")}
+
+
+def _v2_fix_fs(state):
+    """Correct the sampling rate of a version-2 eyedata state (in place) if it
+    does not fit the time vector (as after `downsample` before version 3, which
+    stored the requested rate instead of the actual one)."""
+    tx = np.asarray(state["tx"], dtype=float)
+    fs = state.get("fs")
+    if len(tx) < 2 or not isinstance(fs, (int, float, np.integer, np.floating)) or fs <= 0:
+        return
+    steps = (np.median(np.diff(tx)), (tx[-1] - tx[0]) / (len(tx) - 1))
+    if any(np.isclose(step, 1000. / fs, rtol=0.05, atol=0) for step in steps) \
+            or not steps[0] > 0:
+        return
+    new = 1000. / float(steps[0])
+    logger.warning(f"{state.get('name')}: the sampling rate ({fs:g} Hz) does not match "
+                   f"the time vector ({new:g} Hz, e.g. after downsample() in an older "
+                   f"version of pypillometry); set to {new:g} Hz")
+    state["fs"] = new
+
+
+def _v2_eyedata_layers(state):
+    """Move the masks, blinks, interpolated blinks and excluded periods of a
+    version-2 eyedata state into the layers of its data (in place)."""
+    had_layers = "layers" in state["data"]
+    had_rec_layers = "rec_layers" in state["data"]
+    state["data"], layers = _v2_eyedatadict(state["data"])
+    values = state["data"]["values"]
+    tx = np.asarray(state["tx"], dtype=float)
+    blinks = state.pop("blinks", None) or {}
+    interpolated = state.pop("interpolated_blinks", None) or {}
+    excluded = state.pop("excluded", None)
+    if not had_layers:
+        # the mask of version 2 (all in the user layer so far)
+        v2_mask = {key: layers.mask(key) for key in values}
+        # blinks mask the data (also those that were not applied as mask in
+        # version 2); the blink layer replaces the user layer there
+        for key, ivst in blinks.items():
+            if ivst is not None and key in values:
+                blink = _v2_intervals_mask(ivst, tx)
+                layers.set(key, "blink", blink)
+                layers.clear(key, "user", blink)
+        # interpolated blinks: only where they were (still) masked
+        for key, ivst in interpolated.items():
+            if ivst is not None and key in values:
+                interp = _v2_intervals_mask(ivst, tx) & v2_mask[key]
+                layers.set(key, "interpolated", interp)
+                layers.clear(key, "user", interp)
+    if not had_rec_layers and excluded is not None:
+        excl = _v2_intervals_mask(excluded, tx)
+        if excl.any():
+            layers.set(None, "excluded", excl)
+            for key in values:
+                layers.clear(key, "user", excl)
+    if state.get("sim_data") is not None:  # FakeEyeData
+        state["sim_data"] = _v2_eyedatadict(state["sim_data"])[0]
+
+
+def _by_channel(values):
+    """``{eye: {var: x}}`` -> ``{"<eye>_<var>": x}`` (keys that are already
+    channels are kept)."""
+    out = {}
+    for eye, vs in values.items():
+        if isinstance(vs, dict):
+            out.update({f"{eye}_{var}": x for var, x in vs.items()})
+        else:
+            out[eye] = vs
+    return out
+
+
+def _v2_params(state):
+    """Key the response and scaling parameters of a version-2 eyedata state
+    by channel (``params["response"]["left"]`` -> ``["left_pupil"]``,
+    ``params["scale"]["mean"]["left"]["pupil"]`` -> ``["center"]["left_pupil"]``;
+    the scaling parameters `mean` and `sd` become `center` and `scale`, with
+    the method "z"; replaces `state["params"]` by a new dict)."""
+    params = state.get("params")
+    if not isinstance(params, dict):
+        return
+    params = dict(params)
+    if isinstance(params.get("response"), dict):
+        params["response"] = {(k if "_" in k else f"{k}_pupil"): v
+                              for k, v in params["response"].items()}
+    if isinstance(params.get("scale"), dict):
+        old = {stat: _by_channel(values) for stat, values in params["scale"].items()}
+        center, scale = old.get("mean", {}), old.get("sd", {})
+        params["scale"] = {"center": center, "scale": scale,
+                           "method": {k: "z" for k in center}}
+    state["params"] = params
+
+
+def _v3_channels(state, class_name):
+    """
+    Segments with one channel (`variable`, `data`, `intervals`; version 2
+    after the conversion of the intervals) -> segments with several
+    channels (version 3; see the version history).
+    """
+    state = dict(state)
+    var = state.pop("variable")
+    data = state["data"]
+    state["data"] = {var: data}
+    state["epochs"] = state.pop("intervals", None)
+    state["valid_share"] = {}
+    return state
+
+
+def _migrate_2_to_3(state, class_name):
+    """Version 2 -> 3: the events of eyedata objects are one Events state
+    (`events`) instead of `event_onsets`, `event_labels` and `event_meta`;
+    masks are layers (see _v2_eyedata_layers); segments store Epochs (see
+    _v2_spans); a sampling rate that does not fit the time vector is
+    corrected (see _v2_fix_fs); all eyedata objects have an experimental
+    setup and calibration (None for PupilData); the response and scaling
+    parameters are keyed by channel (see _v2_params); segments hold several
+    channels (see _v3_channels)."""
+    state = dict(state)
+    if class_name in _SEGMENTED_CLASSES:
+        state["intervals"] = _v2_spans(state.get("intervals"), state.get("sampling_rate"))
+        return _v3_channels(state, class_name)
+    state["events"] = {"onsets": state.pop("event_onsets"),
+                       "labels": state.pop("event_labels"), "units": "ms",
+                       "data_time_range": None, "meta": state.pop("event_meta"),
+                       "needs_sync": False}
+    _v2_fix_fs(state)
+    _v2_eyedata_layers(state)
+    _v2_params(state)
+    # PupilData had no experimental setup and calibration
+    state.setdefault("experimental_setup", None)
+    state.setdefault("calibration", None)
+    return state
+
+
+_MIGRATIONS = [_migrate_0_to_1, _migrate_1_to_2, _migrate_2_to_3]
 assert len(_MIGRATIONS) == FORMAT_VERSION

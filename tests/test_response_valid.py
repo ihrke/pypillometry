@@ -3,6 +3,7 @@ Tests for the response estimation with excluded periods and missing samples.
 """
 import unittest
 import numpy as np
+import pytest
 import pypillometry as pp
 from pypillometry.signal.pupil import (pupil_response, pupil_response_coverage,
                                        pupil_build_design_matrix, pupil_kernel)
@@ -21,7 +22,7 @@ def fake_pupil(duration=60, fs=100, shift_at=30, shift=500., seed=1):
     x1 = pupil_build_design_matrix(tx, onsets, fs, 10, 900)
     resp = np.dot(x1.T, rng.uniform(50, 150, len(onsets)))
     sy = base + resp + rng.normal(0, 5, len(tx))
-    d = pp.PupilData(time=tx, left_pupil=sy, sampling_rate=fs,
+    d = pp.EyeData(time=tx, left_pupil=sy, sampling_rate=fs,
                      event_onsets=onsets, event_labels=["stim"] * len(onsets),
                      inplace=False)
     return d
@@ -39,9 +40,9 @@ class TestPupilResponseValid(unittest.TestCase):
         sy = d.data["left", "pupil"] - 3000
         garbage = sy.copy()
         garbage[~self.valid] = 1e6
-        a = pupil_response(d.tx, sy, d.event_onsets, d.fs, npar=10, tmax=900,
+        a = pupil_response(d.tx, sy, d.events.onsets, d.fs, npar=10, tmax=900,
                            valid=self.valid)
-        b = pupil_response(d.tx, garbage, d.event_onsets, d.fs, npar=10, tmax=900,
+        b = pupil_response(d.tx, garbage, d.events.onsets, d.fs, npar=10, tmax=900,
                            valid=self.valid)
         np.testing.assert_allclose(a[1], b[1])
         # the prediction covers all samples
@@ -52,9 +53,9 @@ class TestPupilResponseValid(unittest.TestCase):
         sy = d.data["left", "pupil"] - 3000
         withnan = sy.copy()
         withnan[~self.valid] = np.nan
-        a = pupil_response(d.tx, sy, d.event_onsets, d.fs, npar=10, tmax=900,
+        a = pupil_response(d.tx, sy, d.events.onsets, d.fs, npar=10, tmax=900,
                            valid=self.valid)
-        b = pupil_response(d.tx, withnan, d.event_onsets, d.fs, npar=10, tmax=900)
+        b = pupil_response(d.tx, withnan, d.events.onsets, d.fs, npar=10, tmax=900)
         np.testing.assert_allclose(a[1], b[1])
 
     def test_free_parameters_ignore_invalid(self):
@@ -62,7 +63,7 @@ class TestPupilResponseValid(unittest.TestCase):
         sy = d.data["left", "pupil"] - 3000
         garbage = sy.copy()
         garbage[~self.valid] = 1e6
-        tmax = [pupil_response(d.tx, y, d.event_onsets, d.fs, npar=10, tmax="free",
+        tmax = [pupil_response(d.tx, y, d.events.onsets, d.fs, npar=10, tmax="free",
                                valid=self.valid, display_progress=False)[3]
                 for y in (sy, garbage)]
         self.assertAlmostEqual(tmax[0], tmax[1])
@@ -71,21 +72,21 @@ class TestPupilResponseValid(unittest.TestCase):
         d = self.d
         sy = d.data["left", "pupil"] - 3000
         cov = pupil_response_coverage(
-            pupil_build_design_matrix(d.tx, d.event_onsets, d.fs, 10, 900), self.valid)
-        pred, coef, _, _, _ = pupil_response(d.tx, sy, d.event_onsets, d.fs, npar=10,
+            pupil_build_design_matrix(d.tx, d.events.onsets, d.fs, 10, 900), self.valid)
+        pred, coef, _, _, _ = pupil_response(d.tx, sy, d.events.onsets, d.fs, npar=10,
                                              tmax=900, valid=self.valid, min_valid=0.5)
         np.testing.assert_array_equal(np.isnan(coef), cov < 0.5)
         self.assertTrue(np.isnan(coef).any())
         self.assertFalse(np.isnan(pred).any())
         # default: all events
-        coef0 = pupil_response(d.tx, sy, d.event_onsets, d.fs, npar=10, tmax=900,
+        coef0 = pupil_response(d.tx, sy, d.events.onsets, d.fs, npar=10, tmax=900,
                                valid=self.valid)[1]
         self.assertFalse(np.isnan(coef0).any())
 
     def test_no_valid_samples(self):
         d = self.d
         with self.assertRaises(ValueError):
-            pupil_response(d.tx, d.data["left", "pupil"], d.event_onsets, d.fs,
+            pupil_response(d.tx, d.data["left", "pupil"], d.events.onsets, d.fs,
                            npar=10, tmax=900, valid=np.zeros(len(d.tx), dtype=bool))
 
     def test_coverage(self):
@@ -106,9 +107,9 @@ class TestResponseExcluded(unittest.TestCase):
         d.data["left_pupil"][2700:3300] = 0.
         d = d.exclude_intervals([(27000, 33000)])
         d = d.interpolate_intervals(d.get_excluded(), variables="pupil")
-        d = d.pupil_estimate_baseline(eyes="left", seed=1)
+        d = d.pupil.estimate_baseline(eyes="left", seed=1)
         cls.d = d
-        cls.est = d.pupil_estimate_response(eyes="left", npar=10, tmax=900, inplace=False)
+        cls.est = d.pupil.estimate_response(eyes="left", npar=10, tmax=900, inplace=False)
 
     def test_bridged_linearly(self):
         y = self.d.data["left", "pupil"]
@@ -116,19 +117,19 @@ class TestResponseExcluded(unittest.TestCase):
         self.assertTrue(self.d.data.mask["left_pupil"][2700:3300].all())
 
     def test_events_in_break_left_out(self):
-        par = self.est.params["response"]["left"]
+        par = self.est.params["response"]["left_pupil"]
         np.testing.assert_array_equal(np.isnan(par["coef"]), par["valid"] < 0.5)
-        self.assertTrue(np.isnan(par["coef"][self.est.event_onsets == 28500][0]))
+        self.assertTrue(np.isnan(par["coef"][self.est.events.onsets == 28500][0]))
         self.assertEqual(par["min_valid"], 0.5)
         # no huge values in the predicted response
         self.assertLess(np.max(self.est.data["left", "response"]), 1000)
-        est0 = self.d.pupil_estimate_response(eyes="left", npar=10, tmax=900,
+        est0 = self.d.pupil.estimate_response(eyes="left", npar=10, tmax=900,
                                               min_valid=0, inplace=False)
-        self.assertFalse(np.isnan(est0.params["response"]["left"]["coef"]).any())
+        self.assertFalse(np.isnan(est0.params["response"]["left_pupil"]["coef"]).any())
 
     def test_shares(self):
-        par = self.est.params["response"]["left"]
-        onsets = self.est.event_onsets
+        par = self.est.params["response"]["left_pupil"]
+        onsets = self.est.events.onsets
         self.assertEqual(len(par["valid"]), len(onsets))
         np.testing.assert_allclose(par["valid"][onsets < 20000], 1)
         # the response of the event at 28.5 s is in the break
@@ -140,17 +141,48 @@ class TestResponseExcluded(unittest.TestCase):
     def test_excluded_not_used(self):
         d = self.d.copy()
         d.data["left_pupil"][2700:3300] += 1e5
-        est = d.pupil_estimate_response(eyes="left", npar=10, tmax=900, inplace=False)
-        np.testing.assert_allclose(est.params["response"]["left"]["coef"],
-                                   self.est.params["response"]["left"]["coef"])
+        est = d.pupil.estimate_response(eyes="left", npar=10, tmax=900, inplace=False)
+        np.testing.assert_allclose(est.params["response"]["left_pupil"]["coef"],
+                                   self.est.params["response"]["left_pupil"]["coef"])
 
     def test_observed_lower_with_blinks(self):
         d = self.d.copy()
-        d.data.mask["left_pupil"][160:200] = 1     # an interpolated blink at 1.6 s
-        est = d.pupil_estimate_response(eyes="left", npar=10, tmax=900, inplace=False)
-        par = est.params["response"]["left"]
+        # an interpolated blink at 1.6 s
+        d.interpolate_intervals(pp.Intervals([(160, 200)], "samples"), inplace=True)
+        est = d.pupil.estimate_response(eyes="left", npar=10, tmax=900, inplace=False)
+        par = est.params["response"]["left_pupil"]
         self.assertLess(par["observed"][0], 1)
         self.assertAlmostEqual(par["valid"][0], 1)
+
+    def test_masked_samples_not_used(self):
+        """masked values (here zeros) are not used for the fit (D2)"""
+        d = self.d.copy()
+        d.data["left_pupil"][160:200] = 0.
+        d.mask_intervals(pp.Intervals([(160, 200)], "samples"), inplace=True)
+        est = d.pupil.estimate_response(eyes="left", npar=10, tmax=900, inplace=False)
+        par = est.params["response"]["left_pupil"]
+        self.assertLess(par["valid"][0], 0.99)
+        ref = self.d.pupil.estimate_response(eyes="left", npar=10, tmax=900, inplace=False)
+        np.testing.assert_allclose(par["coef"], ref.params["response"]["left_pupil"]["coef"],
+                                   rtol=0.05)
+
+
+def test_response_of_one_eye_keeps_the_other():
+    # finding 5.4: estimating one eye wiped the parameters of the other
+    d = fake_pupil(duration=20)
+    d.data["right_pupil"] = d.data["left_pupil"] + 10
+    d.pupil.estimate_response(npar=10, tmax=900, inplace=True)
+    left = d.params["response"]["left_pupil"]["coef"].copy()
+    d.pupil.estimate_response(eyes="right", npar=10, tmax=900, inplace=True)
+    assert sorted(d.params["response"]) == ["left_pupil", "right_pupil"]
+    np.testing.assert_array_equal(d.params["response"]["left_pupil"]["coef"], left)
+
+
+def test_response_without_events_raises():
+    d = fake_pupil(duration=20)
+    d.set_events(pp.Events([], [], units="ms"))
+    with pytest.raises(ValueError, match="needs events"):
+        d.pupil.estimate_response(npar=10, tmax=900)
 
 
 if __name__ == "__main__":

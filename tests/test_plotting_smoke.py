@@ -13,7 +13,7 @@ import numpy as np
 
 
 class TestPlottingSmokeGeneric(unittest.TestCase):
-    """Smoke tests for GenericPlotter methods"""
+    """Smoke tests for the generic plots"""
     
     def setUp(self):
         """Create test data once for all tests"""
@@ -44,18 +44,18 @@ class TestPlottingSmokeGeneric(unittest.TestCase):
     
     def test_plot_intervals_runs(self):
         """Test that plot_intervals completes without error using Intervals object"""
-        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
+        intervals = self.data.get_epochs("F", window=(-200, 200), units="ms")
         figs = self.data.plot.plot_intervals(intervals)
         self.assertIsNotNone(figs)
     
     def test_plot_timeseries_segments_runs(self):
         """Test that plot_timeseries_segments completes without error"""
-        figs = self.data.plot.plot_timeseries_segments(interv=0.5)
+        figs = self.data.plot.plot_timeseries_segments(interv="0.5 min")
         self.assertIsNotNone(figs)
 
 
 class TestPlottingSmokePupil(unittest.TestCase):
-    """Smoke tests for PupilPlotter methods"""
+    """Smoke tests for the pupil plots"""
     
     def setUp(self):
         """Create test data once for all tests"""
@@ -104,7 +104,7 @@ class TestPlottingSmokePupil(unittest.TestCase):
     
     def test_pupil_plot_segments_runs(self):
         """Test that pupil_plot_segments completes without error"""
-        figs = self.data.plot.pupil_plot_segments(interv=0.5)
+        figs = self.data.plot.pupil_plot_segments(interv="0.5 min")
         self.assertIsNotNone(figs)
     
     def test_plot_blinks_runs(self):
@@ -118,7 +118,7 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
     
     def setUp(self):
         """Create simple test data"""
-        self.data = pp.PupilData(
+        self.data = pp.EyeData(
             sampling_rate=100,
             left_pupil=np.sin(np.linspace(0, 10*np.pi, 1000)),
             right_pupil=np.cos(np.linspace(0, 10*np.pi, 1000))
@@ -143,7 +143,7 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
     
     def test_plot_masked_single_eye_variable(self):
         """Test plot_masked with single eye and variable"""
-        self.data.pupil_blinks_detect()
+        self.data.pupil.blinks_detect()
         fig = plt.figure()
         result = self.data.plot.plot_masked('left', 'pupil')
         self.assertIsNone(result)  # Should return None
@@ -151,7 +151,7 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
     
     def test_plot_masked_multiple_eyes_no_merge(self):
         """Test plot_masked with multiple eyes without merging"""
-        self.data.pupil_blinks_detect()
+        self.data.pupil.blinks_detect()
         # Only check if there are actual intervals
         intervals = self.data.mask_as_intervals(['left', 'right'], 'pupil')
         if sum(len(iv) for iv in intervals.values()) > 0:
@@ -171,7 +171,7 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
     
     def test_plot_masked_multiple_eyes_with_merge(self):
         """Test plot_masked with multiple eyes with merging"""
-        self.data.pupil_blinks_detect()
+        self.data.pupil.blinks_detect()
         fig = plt.figure()
         result = self.data.plot.plot_masked(['left', 'right'], 'pupil', merge=True)
         self.assertIsNone(result)
@@ -179,9 +179,9 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
     
     def test_plot_masked_with_units_ms(self):
         """Test plot_masked with milliseconds units"""
-        self.data.pupil_blinks_detect()
+        self.data.pupil.blinks_detect()
         # Check if there are intervals before checking labels
-        intervals = self.data.mask_as_intervals('left', 'pupil')
+        intervals = self.data.mask_as_intervals('left', 'pupil')['left_pupil']
         fig = plt.figure()
         self.data.plot.plot_masked('left', 'pupil', units='ms')
         self.assertIsNotNone(plt.gcf())
@@ -193,9 +193,9 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
     
     def test_plot_masked_with_units_sec(self):
         """Test plot_masked with seconds units"""
-        self.data.pupil_blinks_detect()
+        self.data.pupil.blinks_detect()
         # Check if there are intervals before checking labels
-        intervals = self.data.mask_as_intervals('left', 'pupil')
+        intervals = self.data.mask_as_intervals('left', 'pupil')['left_pupil']
         fig = plt.figure()
         self.data.plot.plot_masked('left', 'pupil', units='sec')
         self.assertIsNotNone(plt.gcf())
@@ -207,9 +207,9 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
     
     def test_plot_masked_with_units_none(self):
         """Test plot_masked with indices (units="samples")"""
-        self.data.pupil_blinks_detect()
+        self.data.pupil.blinks_detect()
         # Check if there are intervals before checking labels
-        intervals = self.data.mask_as_intervals('left', 'pupil')
+        intervals = self.data.mask_as_intervals('left', 'pupil')['left_pupil']
         fig = plt.figure()
         self.data.plot.plot_masked('left', 'pupil', units="samples")
         self.assertIsNotNone(plt.gcf())
@@ -221,7 +221,7 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
     
     def test_plot_masked_no_labels(self):
         """Test plot_masked with show_labels=False"""
-        self.data.pupil_blinks_detect()
+        self.data.pupil.blinks_detect()
         fig = plt.figure()
         self.data.plot.plot_masked(['left', 'right'], 'pupil', show_labels=False)
         self.assertIsNotNone(plt.gcf())
@@ -241,14 +241,14 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
     
     def test_plot_masked_all_eyes_all_variables(self):
         """Test plot_masked with default parameters (all eyes and variables)"""
-        self.data.pupil_blinks_detect()
+        self.data.pupil.blinks_detect()
         fig = plt.figure()
         self.data.plot.plot_masked([], [], merge=False)
         self.assertIsNotNone(plt.gcf())
     
     def test_plot_masked_with_kwargs(self):
         """Test plot_masked accepts additional kwargs for matplotlib"""
-        self.data.pupil_blinks_detect()
+        self.data.pupil.blinks_detect()
         fig = plt.figure()
         self.data.plot.plot_masked('left', 'pupil', linewidth=5, alpha=0.5)
         self.assertIsNotNone(plt.gcf())
@@ -257,7 +257,7 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
         """with units="samples", events are drawn at sample indices"""
         pupil = np.ones(1000)
         pupil[100:150] = np.nan
-        d = pp.PupilData(time=5000 + np.arange(1000) * 10.0, left_pupil=pupil,
+        d = pp.EyeData(time=5000 + np.arange(1000) * 10.0, left_pupil=pupil,
                          event_onsets=[6000, 9000], event_labels=["a", "b"])
         fig = plt.figure()
         d.plot.plot_masked('left', 'pupil', units="samples", show_events=True)
@@ -266,13 +266,48 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
         np.testing.assert_allclose(xs, [100, 400])
 
 
+class TestPlotRange(unittest.TestCase):
+    """plot_range is checked in all plots that take it"""
+
+    def test_reversed_plot_range_raises(self):
+        d = pp.EyeData(sampling_rate=100, left_pupil=np.ones(500),
+                       left_x=np.ones(500), left_y=np.ones(500))
+        for name in ["plot_timeseries", "pupil_plot", "plot_heatmap", "plot_scanpath",
+                     "plot_pupil_foreshortening_error_surface"]:
+            with self.subTest(plot=name):
+                with self.assertRaisesRegex(ValueError, "start must be before end"):
+                    getattr(d.plot, name)(plot_range=(4000, 1000))
+                plt.close("all")
+
+
+class TestPlotRequire(unittest.TestCase):
+    """plots that need channels the object lacks raise a ValueError"""
+
+    def test_gaze_only(self):
+        d = pp.EyeData(sampling_rate=100, left_x=np.ones(500), left_y=np.ones(500))
+        for name in ["pupil_plot", "pupil_plot_segments", "plot_blinks",
+                     "plot_pupil_foreshortening_error_surface"]:
+            with self.subTest(plot=name):
+                with self.assertRaisesRegex(ValueError, "no pupil data"):
+                    getattr(d.plot, name)()
+                plt.close("all")
+
+    def test_pupil_only(self):
+        d = pp.EyeData(sampling_rate=100, left_pupil=np.ones(500))
+        for name in ["plot_heatmap", "plot_scanpath"]:
+            with self.subTest(plot=name):
+                with self.assertRaisesRegex(ValueError, "no x, y data"):
+                    getattr(d.plot, name)()
+                plt.close("all")
+
+
 class TestPlottingGaze(unittest.TestCase):
-    """Smoke tests for GazePlotter methods"""
+    """Smoke tests for the gaze plots"""
 
     def setUp(self):
         rng = np.random.default_rng(1)
         n = 500
-        self.data = pp.GazeData(
+        self.data = pp.EyeData(
             sampling_rate=100,
             left_x=rng.uniform(0, 100, n), left_y=rng.uniform(0, 100, n),
             right_x=rng.uniform(0, 100, n), right_y=rng.uniform(0, 100, n),
@@ -288,6 +323,45 @@ class TestPlottingGaze(unittest.TestCase):
         self.data.plot.plot_heatmap(eyes="left")
         titles = [ax.get_title() for ax in plt.gcf().axes if ax.get_title()]
         self.assertEqual(titles, ["left"])
+
+    def test_plot_heatmap_show_masked_with_nan(self):
+        """show_masked=True leaves out NaN samples (finding 5.1)"""
+        self.data.data["left", "x"][10:20] = np.nan
+        for smooth in [None, 1]:
+            plt.figure()
+            self.data.plot.plot_heatmap(eyes="left", show_masked=True, smooth=smooth)
+            self.assertTrue(np.isfinite(plt.gcf().axes[0].get_xlim()).all())
+            plt.close("all")
+
+    def test_gaze_plots_y_points_down(self):
+        """pixel y increases downward, as in plot_calibration"""
+        for smooth in [None, 1]:
+            plt.figure()
+            self.data.plot.plot_heatmap(eyes="left", smooth=smooth)
+            self.assertTrue(plt.gcf().axes[0].yaxis_inverted())
+            plt.close("all")
+        self.data.plot.plot_scanpath(eyes="left")
+        self.assertTrue(plt.gca().yaxis_inverted())
+        plt.close("all")
+        d = pp.EyeData(sampling_rate=100, left_pupil=np.random.default_rng(2).normal(5, 1, 500),
+                       left_x=self.data.data["left", "x"], left_y=self.data.data["left", "y"])
+        plt.figure()
+        d.plot.plot_pupil_foreshortening_error_surface(min_samples=1)
+        self.assertTrue(plt.gcf().axes[0].yaxis_inverted())
+
+    def test_foreshortening_surface_only_eyes_with_data(self):
+        """eyes=[]: only eyes with pupil and gaze get a panel"""
+        rng = np.random.default_rng(2)
+        d = pp.EyeData(sampling_rate=100, left_pupil=rng.normal(5, 1, 500),
+                       left_x=rng.normal(500, 50, 500), left_y=rng.normal(500, 50, 500),
+                       right_pupil=rng.normal(5, 1, 500))
+        plt.figure()
+        d.plot.plot_pupil_foreshortening_error_surface(min_samples=1)
+        self.assertEqual([ax.get_title() for ax in plt.gcf().axes if ax.get_title()],
+                         ["left eye"])
+        plt.close("all")
+        with self.assertRaises(KeyError):
+            d.plot.plot_pupil_foreshortening_error_surface(eyes="right")
 
     def test_plot_scanpath_single_eye_string(self):
         """eyes="left" plots the left eye only"""

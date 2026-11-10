@@ -42,7 +42,7 @@ class TestEyeDataDict(unittest.TestCase):
         np.testing.assert_array_equal(c.mask['left_pupil'], [0, 1, 0])
         np.testing.assert_array_equal(c.data['left_pupil'], d.data['left_pupil'])
         # independent copy
-        c.mask['left_pupil'][0] = 1
+        c.add_mask('left_pupil', np.s_[0])
         self.assertEqual(d.mask['left_pupil'][0], 0)
 
     def test_set_item(self):
@@ -155,6 +155,20 @@ class TestEyeDataDict(unittest.TestCase):
         self.assertIn('left_pupil', pupil_data)
         self.assertIn('right_pupil', pupil_data)
 
+    def test_get_eye_and_variable_keep_layers(self):
+        """the subsets keep masks and layers (they were dropped)"""
+        d = EyeDataDict(**self.test_data)
+        blink = np.zeros(d.shape, dtype=bool)
+        blink[2:4] = True
+        d.set_layer("left_pupil", "blink", blink)
+        d.set_rec_layer("excluded", np.arange(d.length) == 0)
+        for sub in (d.get_eye("left"), d.get_variable("pupil")):
+            np.testing.assert_array_equal(sub.get_layer("left_pupil", "blink"), blink)
+            np.testing.assert_array_equal(sub.get_policy_mask("left_pupil"),
+                                          d.get_policy_mask("left_pupil"))
+            sub["left_pupil"][0] = -1.  # a copy
+        self.assertNotEqual(d["left_pupil"][0], -1.)
+
     def test_set_with_mask_explicit(self):
         """Test set_with_mask with explicit mask provided"""
         d = EyeDataDict()
@@ -179,7 +193,7 @@ class TestEyeDataDict(unittest.TestCase):
         initial_data = np.array([1.0, 2.0, 3.0, 4.0])
         initial_mask = np.array([0, 1, 0, 1])
         d['left_pupil'] = initial_data
-        d.mask['left_pupil'] = initial_mask
+        d.set_mask('left_pupil', initial_mask)
         
         # Update data while preserving mask
         new_data = np.array([10.0, 20.0, 30.0, 40.0])
@@ -198,7 +212,7 @@ class TestEyeDataDict(unittest.TestCase):
         initial_data = np.array([1.0, 2.0, 3.0, 4.0])
         initial_mask = np.array([0, 1, 0, 1])
         d['left_pupil'] = initial_data
-        d.mask['left_pupil'] = initial_mask
+        d.set_mask('left_pupil', initial_mask)
         
         # Update data with default behavior (resets mask)
         new_data = np.array([10.0, 20.0, 30.0, 40.0])
@@ -257,6 +271,13 @@ class TestEyeDataDict(unittest.TestCase):
         np.testing.assert_array_equal(d['left_pupil'], data)
         # Verify mask is created as zeros (since there was no mask to preserve)
         np.testing.assert_array_equal(d.mask['left_pupil'], np.zeros(3, dtype=int))
+
+    def test_add_mask(self):
+        d = EyeDataDict(left_x=[1, np.nan, 3, 4])
+        d.add_mask("left_x", [False, False, True, False])
+        np.testing.assert_array_equal(d.mask["left_x"], [0, 1, 1, 0])
+        with self.assertRaises(KeyError):
+            d.add_mask("right_x", [True] * 4)
 
     def test_count_masked(self):
         """Test counting missing values from masks"""

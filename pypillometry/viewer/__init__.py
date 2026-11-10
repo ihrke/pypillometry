@@ -27,7 +27,7 @@ Features
 - Support for viewing raw numpy arrays and masked arrays
 """
 
-from typing import Dict, Optional, Union, List, TYPE_CHECKING
+from typing import Dict, Optional, List, TYPE_CHECKING
 import numpy as np
 from types import SimpleNamespace
 
@@ -340,6 +340,9 @@ def view(data, variables=None, eyes=None, time=None,
     
     # Create the viewer based on mode
     if mode == 'eyedata':
+        if eyes:
+            # unknown eyes raise a KeyError (with the available channels)
+            eyes = list(dict.fromkeys(e for e, _ in plot_spec.data.select(eyes)))
         canvas = ViewerCanvas(
             plot_spec,  # EyeData object
             mode='eyedata',
@@ -534,7 +537,7 @@ def tweak(data, func, params, variable=None, time=None):
     >>> eyedata = pp.get_example_data("rlmw_002_short")  # doctest: +SKIP
     >>> 
     >>> def smooth(d, lp=5):
-    ...     return d.pupil_lowpass_filter(cutoff=lp, inplace=False)
+    ...     return d.pupil.lowpass_filter(cutoff=lp, inplace=False)
     >>> 
     >>> # Tweak lowpass filter cutoff, display left_pupil
     >>> params = pp.tweak(eyedata, smooth, {'lp': 5}, variable='left_pupil')  # doctest: +SKIP
@@ -731,7 +734,7 @@ def tweak(data, func, params, variable=None, time=None):
                 continue
     
     from vispy import app
-    from .tweak import TweakCanvas, TweakViewer
+    from .tweak_canvas import TweakCanvas, TweakViewer
     
     # Compute initial overlay - pass full data to function
     current_params = dict(params)

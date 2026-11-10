@@ -26,20 +26,26 @@ event-related segments and plots the results. Pupil size and gaze position
 of one or both eyes are kept together in a single object, and every
 processing step is recorded in the object's history.
 
+Version 2 is a major rewrite and not compatible with version 1; the
+`documentation of version 1 <https://ihrke.github.io/pypillometry/v1/html/index.html>`_
+is still available.
+What is new in each version is listed in the :doc:`changelog
+<development/changelog>`.
+
 .. code-block:: python
 
    import pypillometry as pp
    from pypillometry import u
 
    d = pp.EyeData.from_eyelink("recording.edf")   # read an Eyelink file
-   d.pupil_blinks_detect(apply_mask=True)           # detect and mask blinks
-   d.pupil_blinks_interpolate()                     # interpolate them
-   d.pupil_lowpass_filter(cutoff=4)                 # 4 Hz low-pass filter
+   d = (d | pp.pupil.blinks_detect()                # detect and mask blinks
+          | pp.pupil.blinks_interpolate()           # interpolate them
+          | pp.pupil.lowpass_filter(cutoff=4))      # 4 Hz low-pass filter
 
    # average pupil response from 200 ms before to 1 s after each stimulus
-   intervals = d.get_intervals("stim", (-200, 1000) * u.ms)
-   erpd = d.get_segments(intervals, "left_pupil").baseline_correct((-200, 0))
-   erpd.plot()                                          # event-related pupil dilation
+   epochs = d.get_epochs("stim", (-200, 1000) * u.ms)
+   erpd = d.get_segments(epochs, "left_pupil").pupil.baseline_correct((-200, 0))
+   erpd.pupil.plot()                                    # event-related pupil dilation
 
 
 .. grid:: 1 2 2 3

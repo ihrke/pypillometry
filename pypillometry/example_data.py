@@ -10,15 +10,12 @@ OSF: https://osf.io/p2u74/
 """
 
 import numpy as np
-import pandas as pd
 from .eyedata import EyeData
+from .table import RecordDict
 from importlib.resources import files
-from urllib.request import urlretrieve
 import inspect
 import os
 import os.path
-import requests
-from tqdm import tqdm
 from .io import fetch_url
 from .convenience import _user_cache_dir
 
@@ -51,64 +48,50 @@ example_datasets = {
     },
 }
 
-class DatasetDict(dict):
-    """A dictionary that displays as a pandas DataFrame in Jupyter.
-    
-    This class inherits from dict and behaves like a normal dictionary,
-    but when displayed in Jupyter notebooks, it automatically renders
-    as a nicely formatted pandas DataFrame showing dataset information.
+class DatasetDict(RecordDict):
+    """The example datasets: name -> properties (description, files).
+
+    A dict that is displayed as a table with the name, type and description
+    of each dataset (see :class:`~pypillometry.RecordDict`).
     """
-    
-    def _repr_html_(self):
-        """Return HTML representation for Jupyter display."""
-        # Parse the dictionary to create DataFrame
-        data = []
+
+    def __init__(self, data=None):
+        super().__init__(data, index_names=("dataset",))
+
+    def _rows(self) -> list:
+        rows = []
         for key, info in self.items():
-            description = info.get("description", "No description available")
-            
-            # Infer type from keys and values
             if "edf" in info:
                 source_type = "EDF"
             elif "samples_asc" in info or "sample_asc" in info:
-                sample_key = "samples_asc" if "samples_asc" in info else "sample_asc"
-                sample_value = str(info[sample_key])
-                if "osf.io" in sample_value:
-                    source_type = "ASC (OSF)"
-                else:
-                    source_type = "ASC (local)"
+                sample = str(info.get("samples_asc", info.get("sample_asc")))
+                source_type = "ASC (OSF)" if "osf.io" in sample else "ASC (local)"
             else:
-                source_type = "Unknown"
-            
-            data.append({
-                "Dataset": key,
-                "Type": source_type,
-                "Description": description
-            })
-        
-        df = pd.DataFrame(data)
-        return df._repr_html_()
+                source_type = "unknown"
+            rows.append(((key,), {"type": source_type,
+                                  "description": info.get("description", "")}))
+        return rows
 
 
 def get_available_datasets():
     """Return available example datasets.
     
-    Returns a dictionary that displays as a nicely formatted pandas DataFrame
-    in Jupyter notebooks but can be used as a normal dict otherwise.
+    Returns a dict (name -> properties) that is displayed as a table.
     
     Returns
     -------
     DatasetDict
-        A dictionary (subclass of dict) containing all dataset metadata.
-        When displayed in Jupyter, it will render as a pandas DataFrame
-        with columns for Dataset name, Type, and Description.
+        dataset name -> its properties (description, files); displayed as
+        a table with the name, type and description of each dataset
     
     Examples
     --------
     >>> datasets = get_available_datasets()
-    >>> # In Jupyter, this displays as a nice DataFrame
-    >>> datasets
-    >>> # But you can still use it like a normal dict
-    >>> datasets['rlmw_002']
+    >>> datasets  # in Jupyter, this displays as a table  # doctest: +SKIP
+    >>> "rlmw_002_short" in datasets  # but it is a normal dict
+    True
+    >>> datasets["rlmw_002"]["description"][:30]
+    'Binocular data from a 20-minut'
     """
     return DatasetDict(example_datasets)
 
@@ -127,8 +110,8 @@ def get_example_data(key, cache_dir=None):
 
     Returns
     -------
-    EyeData, GazeData or PupilData
-        The example dataset as an EyeData, GazeData or PupilData object.
+    EyeData
+        The example dataset.
     """
     if key not in example_datasets:
         raise ValueError(f"Key '{key}' not found in example datasets. "
@@ -173,6 +156,7 @@ def get_rlmw_002(cache_dir=None):
     EyeData
         the example dataset
     """
+    import pandas as pd
     # download files from osf (or use the cached copies)
     cache_dir = cache_dir or _user_cache_dir()
     fname_samples = fetch_url(example_datasets["rlmw_002"]["samples_asc"],
@@ -254,6 +238,7 @@ def get_rlmw_002_short():
     EyeData
         the example dataset
     """
+    import pandas as pd
     fname_samples = example_datasets["rlmw_002_short"]["sample_asc"]
     fname_events = example_datasets["rlmw_002_short"]["events_asc"]
     df=pd.read_table(fname_samples, index_col=False,
@@ -332,7 +317,6 @@ def get_rlmw_010_edf(cache_dir=None):
     EyeData
         the example dataset
     """
-    from .eyedata.experimental_setup import ExperimentalSetup
     cache_dir = cache_dir or _user_cache_dir()
     fname = fetch_url(example_datasets["rlmw_010_edf"]["edf"],
                       cache_file=os.path.join(cache_dir, "010_rlmw.edf"))

@@ -2,12 +2,16 @@
 """
 
 import re
+from types import MappingProxyType
 
+import numbers
 import numpy as np
 from typing import Optional, List, Tuple
 
 from loguru import logger
 from pypillometry.convenience import normalize_unit
+from pypillometry.state import Stateful
+from pypillometry.table import Table
 from pypillometry.units import (UNSET, Quantity, _has_units, _time_values_and_units,
                                 parse_time)
 
@@ -151,7 +155,7 @@ def _pair_with_next(on1, on2):
 
 
 
-class Events:
+class Events(Stateful):
     """
     Container for events with metadata.
     
@@ -161,18 +165,21 @@ class Events:
     Onsets are always times (not sample indices), so they stay valid when
     the data are sliced or resampled.
 
+    Events are immutable: onsets, labels and metadata cannot be changed in
+    place; all methods return new Events.
+
     The events of a dataset are obtained with
-    :meth:`~pypillometry.GenericEyeData.get_events`. An (e.g., filtered)
+    :attr:`~pypillometry.EyeData.events`. An (e.g., filtered)
     Events object can be passed as `event_select` to
-    :meth:`~pypillometry.GenericEyeData.get_intervals` or stored in a dataset
-    with :meth:`~pypillometry.GenericEyeData.set_events` or added with
-    :meth:`~pypillometry.GenericEyeData.add_events`. Events from a
+    :meth:`~pypillometry.EyeData.get_epochs` or stored in a dataset
+    with :meth:`~pypillometry.EyeData.set_events` or added with
+    :meth:`~pypillometry.EyeData.add_events`. Events from a
     behaviour log can be created with :meth:`from_table` and mapped to the
     eye-tracker clock with :func:`~pypillometry.sync_clocks`.
 
     Each event can have metadata (e.g., trial, condition, reaction time),
-    stored in `meta`: a dict that maps column names to numpy arrays with one
-    value per event. Missing values are NaN in numeric columns and "" in
+    stored in `meta`: a read-only mapping of column names to numpy arrays
+    with one value per event. Missing values are NaN in numeric columns and "" in
     string columns. Metadata come from a behaviour log (see
     :meth:`from_table`), from the labels of the events (see
     :meth:`parse_labels`) or are added with :meth:`set_meta` and
@@ -195,6 +202,15 @@ class Events:
     meta : dict or None, optional
         metadata: column name -> values (one per event); "onset" and
         "label" cannot be used as names
+    needs_sync : bool, optional
+        True if the onsets are on another clock than the eye tracker (e.g.,
+        from a behaviour log) and still have to be mapped with
+        :func:`~pypillometry.sync_clocks`; default False. Events from
+        :meth:`from_table` have it set; mapping them with a
+        :class:`~pypillometry.ClockSync` or :meth:`shift` clears it. Data
+        objects warn about such events (:meth:`~pypillometry.EyeData.add_events`,
+        :meth:`~pypillometry.EyeData.set_events`,
+        :meth:`~pypillometry.EyeData.get_epochs`).
 
     Raises
     ------
@@ -210,18 +226,25 @@ class Events:
     3
     >>> for onset, label in events:
     ...     print(f"{label} at {onset}")
+    A at 100.0
+    B at 500.0
+    C at 1000.0
     >>> events = Events([100, 500], ["stim", "resp"],
     ...                 meta={"trial": [1, 1], "cond": ["easy", "easy"]})
     >>> events.meta["cond"]
     array(['easy', 'easy'], dtype='<U4')
     """
 
+    # state (see pypillometry.state)
+    _STATE_FIELDS = ("onsets", "labels", "units", "data_time_range", ("meta", None, "_meta"),
+                     "needs_sync")
+
     def __init__(self,
                  onsets: np.ndarray | List,
                  labels: np.ndarray | List,
                  units: Optional[str] = UNSET,
                  data_time_range: Optional[Tuple[float, float]] = None,
-                 meta: Optional[dict] = None):
+                 meta: Optional[dict] = None, needs_sync: bool = False):
         """
         Initialize an Events object (see class docstring for parameters).
         """
@@ -239,7 +262,30 @@ class Events:
         # Validate that onsets and labels have same length
         if len(self.onsets) != len(self.labels):
             raise ValueError(f"onsets and labels must have same length, got {len(self.onsets)} and {len(self.labels)}")
-        self.meta = _meta_dict(meta, len(self.onsets))
+        self._meta = _meta_dict(meta, len(self.onsets))
+        self.needs_sync = bool(needs_sync)
+        # Events are immutable: methods return new objects
+        for arr in (self.onsets, self.labels, *self._meta.values()):
+            arr.flags.writeable = False
+
+    def _set_state(self, st: dict):
+        """Set the attributes from a state of the current version (checked like
+        the arguments of the constructor)."""
+        self.__init__(st["onsets"], st["labels"], units=st["units"],
+                      data_time_range=st["data_time_range"], meta=st["meta"],
+                      needs_sync=st.get("needs_sync", False))
+
+    @property
+    def meta(self):
+        """
+        Metadata of the events (read-only).
+
+        A mapping of column name -> numpy array (one value per event). It
+        cannot be changed in place; :meth:`set_meta`, :meth:`drop_meta`,
+        :meth:`parse_labels`, :meth:`fill_meta` and :meth:`add_latency`
+        return new Events with changed metadata.
+        """
+        return MappingProxyType(self._meta)
 
     def _take(self, idx) -> 'Events':
         """New Events with the events `idx` (index array, mask or slice)."""
@@ -248,8 +294,86 @@ class Events:
             labels=self.labels[idx],
             units=self.units,
             data_time_range=self.data_time_range,
-            meta={name: col[idx] for name, col in self.meta.items()}
+            meta={name: col[idx] for name, col in self.meta.items()},
+            needs_sync=self.needs_sync
         )
+
+    def shift(self, by) -> 'Events':
+        """
+        Events with shifted onsets.
+
+        Parameters
+        ----------
+        by : float or callable
+            a time offset (in the units of the events) that is added to all
+            onsets, or a time map: a function that takes an array of times
+            and returns the new times (an array of the same length)
+
+        Returns
+        -------
+        Events
+            new Events with the same labels and metadata; `data_time_range`
+            (if set) is moved in the same way. The events count as mapped to
+            the eye-tracker clock (`needs_sync` is False).
+
+        Raises
+        ------
+        ValueError
+            if the time map does not return one time per onset
+
+        Examples
+        --------
+        >>> Events([100, 500], ["A", "B"]).shift(-100).onsets
+        array([  0., 400.])
+        >>> Events([100, 500], ["A", "B"]).shift(lambda t: t * 2).onsets
+        array([ 200., 1000.])
+        """
+        if callable(by):
+            fct = by
+        else:
+            offset = float(by)
+            fct = lambda t: t + offset  # noqa: E731
+        onsets = np.asarray(fct(self.onsets), dtype=float)
+        if onsets.shape != self.onsets.shape:
+            raise ValueError(f"the time map returned {onsets.size} times for "
+                             f"{len(self)} onsets")
+        time_range = None
+        if self.data_time_range is not None:
+            time_range = tuple(float(t) for t in
+                               fct(np.asarray(self.data_time_range, dtype=float)))
+        return Events(onsets, self.labels, units=self.units,
+                      data_time_range=time_range, meta=self._meta)
+
+    def keep(self, mask) -> 'Events':
+        """
+        Events where `mask` is True.
+
+        Parameters
+        ----------
+        mask : array-like of bool
+            one value per event
+
+        Returns
+        -------
+        Events
+            new Events with the selected events (and their metadata)
+
+        Raises
+        ------
+        ValueError
+            if `mask` is not a boolean array with one value per event
+
+        Examples
+        --------
+        >>> ev = Events([100, 500, 900], ["A", "B", "C"])
+        >>> ev.keep(ev.onsets < 600).labels
+        array(['A', 'B'], dtype='<U1')
+        """
+        mask = np.asarray(mask)
+        if mask.dtype != bool or mask.shape != (len(self),):
+            raise ValueError(f"mask must be a boolean array with one value per "
+                             f"event ({len(self)}), got {mask.dtype} {mask.shape}")
+        return self._take(mask)
 
     def __len__(self) -> int:
         """Return number of events."""
@@ -320,16 +444,17 @@ class Events:
         return {"onset": self.onsets[i].item(), "label": str(self.labels[i]),
                 **{name: col[i].item() for name, col in self.meta.items()}}
 
-    def to_table(self) -> dict:
+    def to_table(self) -> Table:
         """
-        Events as a table: a dict of columns (copies).
+        Events as a table (copies of the columns).
 
         The columns are "onset", "label" and the metadata columns. The
-        result can be passed to ``pandas.DataFrame()``.
+        result is a :class:`~pypillometry.Table` (a dict of columns that is
+        displayed as a table; ``pandas.DataFrame(table)`` converts it).
 
         Returns
         -------
-        dict
+        Table
             column name -> numpy array
 
         Examples
@@ -340,12 +465,13 @@ class Events:
         >>> import pandas as pd
         >>> df = pd.DataFrame(ev.to_table())
         """
-        return {"onset": self.onsets.copy(), "label": self.labels.copy(),
-                **{name: col.copy() for name, col in self.meta.items()}}
+        return Table({"onset": self.onsets.copy(), "label": self.labels.copy(),
+                      **{name: col.copy() for name, col in self.meta.items()}})
 
     @classmethod
     def from_table(cls, table, columns, units: Optional[str] = UNSET,
-                   meta=None, row: Optional[str] = "row") -> 'Events':
+                   meta=None, row: Optional[str] = "row",
+                   needs_sync: bool = True) -> 'Events':
         """
         Create Events from a table with one row per trial.
 
@@ -358,6 +484,11 @@ class Events:
         Other columns of the table (e.g., condition, reaction time) can be
         given as `meta`; every event of a row gets the values of that row
         as metadata.
+
+        The times of a behaviour log are usually on another clock than the
+        eye tracker, so the events are marked as `needs_sync`: map them with
+        :func:`~pypillometry.sync_clocks` before adding them to a data
+        object (which warns otherwise).
 
         Parameters
         ----------
@@ -378,6 +509,10 @@ class Events:
             name of a metadata column with the position of the row in the
             table (0, 1, ...), which links the events of the same row;
             default "row"; None for no such column
+        needs_sync : bool, optional
+            if True (default), the times are on another clock and must be
+            mapped with :func:`~pypillometry.sync_clocks`; False if they
+            are on the eye-tracker clock already
 
         Returns
         -------
@@ -410,7 +545,11 @@ class Events:
         nrows = None
         for label, col in columns.items():
             times = table[col] if isinstance(col, str) else col
-            times = np.asarray(times, dtype=float)
+            try:
+                times = np.asarray(times, dtype=float)
+            except (TypeError, ValueError) as e:
+                name = f"column '{col}'" if isinstance(col, str) else f"the times for '{label}'"
+                raise ValueError(f"{name} must hold event times (numbers or NaN): {e}") from None
             if nrows is not None and len(times) != nrows:
                 raise ValueError(f"column for '{label}' has {len(times)} "
                                  f"values, expected {nrows}")
@@ -437,7 +576,8 @@ class Events:
         # stable sort, so events at the same time keep the column order
         order = np.argsort(onsets, kind="stable")
         return cls(onsets[order], labels[order], units=units,
-                   meta={name: col[order] for name, col in columns_meta.items()})
+                   meta={name: col[order] for name, col in columns_meta.items()},
+                   needs_sync=needs_sync)
 
     def __add__(self, other: 'Events') -> 'Events':
         """
@@ -457,7 +597,8 @@ class Events:
         order = np.argsort(onsets, kind="stable")
         return Events(onsets[order], labels[order], units=self.units,
                       data_time_range=self.data_time_range,
-                      meta={name: col[order] for name, col in meta.items()})
+                      meta={name: col[order] for name, col in meta.items()},
+                      needs_sync=self.needs_sync or other.needs_sync)
 
     def _with_columns(self, values: dict) -> 'Events':
         """
@@ -472,7 +613,8 @@ class Events:
                 vals = [o if v is None else v for v, o in zip(vals, old)]
             meta[name] = _column_from_values(vals)
         return Events(self.onsets, self.labels, units=self.units,
-                      data_time_range=self.data_time_range, meta=meta)
+                      data_time_range=self.data_time_range, meta=meta,
+                      needs_sync=self.needs_sync)
 
     def parse_labels(self, parser) -> 'Events':
         r"""
@@ -620,7 +762,8 @@ class Events:
         meta = dict(self.meta)
         meta[name] = _column_from_values(values)
         return Events(self.onsets, self.labels, units=self.units,
-                      data_time_range=self.data_time_range, meta=meta)
+                      data_time_range=self.data_time_range, meta=meta,
+                      needs_sync=self.needs_sync)
 
     def drop_meta(self, *names: str) -> 'Events':
         """
@@ -637,7 +780,8 @@ class Events:
                 raise KeyError(f"no metadata column '{name}'")
         meta = {} if not names else {k: v for k, v in self.meta.items() if k not in names}
         return Events(self.onsets, self.labels, units=self.units,
-                      data_time_range=self.data_time_range, meta=meta)
+                      data_time_range=self.data_time_range, meta=meta,
+                      needs_sync=self.needs_sync)
 
     def fill_meta(self, columns, by: str = "trial") -> 'Events':
         """
@@ -718,7 +862,7 @@ class Events:
         by : str or None, optional
             if None (default), each first event is paired with the next
             second event after it (as in
-            :meth:`~pypillometry.GenericEyeData.get_intervals`); if the
+            :meth:`~pypillometry.EyeData.get_intervals`); if the
             name of a metadata column (e.g., "trial"), with the next second
             event with the same value in this column
         exact : bool, optional
@@ -821,7 +965,8 @@ class Events:
             labels=self.labels.copy(),
             units=target_units,
             data_time_range=converted_range,
-            meta=self.meta
+            meta=self.meta,
+            needs_sync=self.needs_sync
         )
     
     def __repr__(self) -> str:
@@ -852,7 +997,9 @@ class Events:
 
         if self.meta:
             parts.append(f"meta=[{', '.join(self.meta)}]")
-        
+        if self.needs_sync:
+            parts.append("needs sync_clocks()")
+
         return " | ".join(parts)
     
     def _repr_html_(self) -> str:
@@ -910,6 +1057,8 @@ class Events:
         summary += f'Total: {len(self)} events'
         if self.data_time_range is not None:
             summary += f' | Data range: [{self.data_time_range[0]:.1f}, {self.data_time_range[1]:.1f}] {unit_str}'
+        if self.needs_sync:
+            summary += ' | on another clock: map with sync_clocks()'
         summary += '</p>'
         
         return html + summary
@@ -918,7 +1067,7 @@ class Events:
         self,
         show_labels: str = "auto",
         marker: str = ".",
-        units: Optional[str] = "min",
+        units: Optional[str] = "sec",
         **kwargs,
     ):
         """
@@ -932,7 +1081,7 @@ class Events:
         marker : str, optional
             Matplotlib marker style for the events (default '.').
         units : str or None, optional
-            Units to display in the plot. Defaults to "min". Use None to keep existing units.
+            Units to display in the plot. Defaults to "sec". Use None to keep existing units.
         **kwargs :
             Additional keyword arguments passed to :func:`matplotlib.axes.Axes.plot`.
 
@@ -948,11 +1097,10 @@ class Events:
         .. plot::
 
            >>> import pypillometry as pp
-           >>> from pypillometry import u
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
-           >>> plt.figure(figsize=(10, 3))
-           >>> d.get_events().filter("S_").plot(units="sec")
+           >>> fig = plt.figure(figsize=(10, 3))
+           >>> d.events.filter("S_").plot(units="sec")
         """
         import matplotlib.pyplot as plt
 
@@ -1043,6 +1191,7 @@ class Events:
         Filter events and return a new Events object.
         
         This method supports multiple types of selectors for flexible filtering:
+
         - String: matches labels containing the substring (or equal to
           it, if `exact` is True)
         - Callable: applies function to each label, keeps events where it returns True
@@ -1113,6 +1262,47 @@ class Events:
         >>> events.filter(cond="a", rt=lambda rt: rt < 500).onsets
         array([100.])
         """
+        return self._take(self._filter_mask(selector, exact, **conditions))
+
+    def onset(self, label: str, units: str = "ms") -> float:
+        """
+        Onset of the one event with the given label.
+
+        Parameters
+        ----------
+        label : str
+            label of the event; only a label equal to it matches
+        units : str, optional
+            units of the returned onset: "ms" (default), "sec", "min" or "h"
+
+        Returns
+        -------
+        float
+            onset of the event
+
+        Raises
+        ------
+        ValueError
+            if no event or more than one event has this label
+
+        See Also
+        --------
+        filter : select events (e.g., labels that occur several times)
+
+        Examples
+        --------
+        >>> events = Events([100, 2500], ["start", "stim"], units="ms")
+        >>> events.onset("stim", units="sec")
+        2.5
+        """
+        onsets = self.to_units(units).onsets[self.labels == label]
+        if len(onsets) != 1:
+            raise ValueError(f"expected one event with label '{label}', "
+                             f"found {len(onsets)}")
+        return float(onsets[0])
+
+    def _filter_mask(self, selector=None, exact: bool = False, **conditions) -> np.ndarray:
+        """Boolean mask of the events that match the criteria of :meth:`filter`."""
         mask = np.ones(len(self), dtype=bool) if selector is None \
             else self._mask(selector, exact)
         for name, crit in conditions.items():
@@ -1125,13 +1315,40 @@ class Events:
                 if m.shape != col.shape:
                     raise ValueError(f"the function for '{name}' must return one "
                                      f"bool per event, got shape {m.shape}")
-            elif isinstance(crit, (list, set, tuple, np.ndarray)):
-                m = np.isin(col, list(crit))
             else:
-                m = col == crit
+                values = list(crit) if isinstance(crit, (list, set, tuple, np.ndarray)) \
+                    else [crit]
+                _check_condition_types(name, col, values)
+                m = np.isin(col, values)
             mask &= m
-        return self._take(mask)
+        return mask
 
+
+
+def _warn_if_needs_sync(events, what="events"):
+    """Warn if `events` are on another clock (`needs_sync`)."""
+    if events.needs_sync:
+        logger.warning(
+            f"the {what} are on another clock than the eye tracker (e.g., from "
+            "Events.from_table()); map them with pp.sync_clocks() first, or use "
+            "Events.from_table(..., needs_sync=False) if they are on the eye-tracker "
+            "clock already")
+
+
+def _check_condition_types(name, col, values):
+    """Raise a TypeError if strings are compared with a numeric metadata column
+    or numbers with a column of strings (such a condition matches nothing)."""
+    if col.dtype.kind in "biuf":
+        bad = [v for v in values if isinstance(v, str)]
+        hint = "numbers"
+    elif col.dtype.kind == "U":
+        bad = [v for v in values if isinstance(v, (numbers.Number, np.number))]
+        hint = "strings"
+    else:
+        return
+    if bad:
+        raise TypeError(f"metadata column '{name}' holds {hint}; the condition "
+                        f"{name}={bad[0]!r} never matches")
 
 
 class ClockSync:
@@ -1145,7 +1362,8 @@ class ClockSync:
     Calling the object maps times: plain numbers are taken to be in
     `src_units` and are returned as an array in `dst_units`; numbers with
     units and :class:`Events` are converted first and returned in
-    `dst_units` (as :class:`Events` for :class:`Events`).
+    `dst_units` (as :class:`Events` for :class:`Events`, which are then no
+    longer marked as `needs_sync`).
 
     Attributes
     ----------
@@ -1168,7 +1386,7 @@ class ClockSync:
     --------
     >>> sync = sync_clocks([10, 70, 130], [5000, 65000.6, 125001.2],
     ...                    src_units="sec", dst_units="ms")
-    >>> sync(100.0)
+    >>> round(sync(100.0), 1)
     95000.9
     """
 
@@ -1238,7 +1456,7 @@ def sync_clocks(src, dst, src_units=UNSET, dst_units=UNSET,
         times on the source clock (e.g., from the behaviour log)
     dst : array-like, Quantity or Events
         times of the same moments on the target clock, in the same order
-        (e.g., ``d.get_events().filter("Start Block")``)
+        (e.g., ``d.events.filter("Start Block")``)
     src_units, dst_units : str or Unit, optional
         units of plain numbers in `src` and `dst` (e.g., "sec", "ms");
         needed unless the times carry units or are :class:`Events`
@@ -1263,10 +1481,15 @@ def sync_clocks(src, dst, src_units=UNSET, dst_units=UNSET,
 
     Examples
     --------
-    >>> starts = behav.groupby("block").trialstart.min()     # in sec
-    >>> sync = pp.sync_clocks(starts, d.get_events().filter("Start Block"),
-    ...                       src_units="sec")
-    >>> d.add_events(sync(pp.Events.from_table(behav, ["stim_on"], units="sec")))
+    Map the stimulus times of a behaviour log ``behav`` (a table with
+    times in sec) onto the eye-tracker clock of ``d``, using the start
+    of each block (a "Start Block" event in ``d``) as the common moments:
+
+    >>> starts = behav.groupby("block").trialstart.min()  # doctest: +SKIP
+    >>> sync = pp.sync_clocks(starts, d.events.filter("Start Block"),
+    ...                       src_units="sec")  # doctest: +SKIP
+    >>> d.add_events(sync(pp.Events.from_table(behav, ["stim_on"],
+    ...                                        units="sec")))  # doctest: +SKIP
     """
     def values(times, units, name):
         if isinstance(times, Events):

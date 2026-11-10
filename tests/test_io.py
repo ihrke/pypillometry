@@ -7,7 +7,7 @@ import numpy as np
 import pickle
 import requests
 from unittest.mock import patch, MagicMock
-from pypillometry.io import write_pickle, read_pickle, read_eyelink, download
+from pypillometry.io import write_file, read_file, read_eyelink, download
 
 TEST_EDF = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "test.edf")
 
@@ -123,7 +123,7 @@ class TestIO(unittest.TestCase):
         
         # Test writing different types of objects
         for key, value in self.test_data.items():
-            write_pickle(value, test_file)
+            write_file(value, test_file)
             self.assertTrue(os.path.exists(test_file))
             
             # Verify file is not empty
@@ -136,10 +136,10 @@ class TestIO(unittest.TestCase):
         # Test reading different types of objects
         for key, value in self.test_data.items():
             # Write the object
-            write_pickle(value, test_file)
+            write_file(value, test_file)
             
             # Read it back
-            loaded = read_pickle(test_file)
+            loaded = read_file(test_file)
             
             # Compare original and loaded object
             if isinstance(value, np.ndarray):
@@ -148,27 +148,27 @@ class TestIO(unittest.TestCase):
                 self.assertEqual(value, loaded)
                 
     def test_write_pickle_compressed_by_default(self):
-        """write_pickle writes zstd files by default, plain ones on request."""
+        """write_file writes zstd files by default, plain ones on request."""
         test_file = os.path.join(self.temp_dir, 'test.pkl')
         value = np.zeros(10000)
-        write_pickle(value, test_file)
+        write_file(value, test_file)
         with open(test_file, "rb") as f:
             self.assertEqual(f.read(4), b"\x28\xb5\x2f\xfd")
         compressed_size = os.path.getsize(test_file)
-        np.testing.assert_array_equal(read_pickle(test_file), value)
+        np.testing.assert_array_equal(read_file(test_file), value)
 
-        write_pickle(value, test_file, compress=False)
+        write_file(value, test_file, compress=False)
         with open(test_file, "rb") as f:
             self.assertEqual(pickle.load(f).shape, value.shape)
         self.assertLess(compressed_size, os.path.getsize(test_file))
 
     def test_read_pickle_gzip(self):
-        """read_pickle reads gzip-compressed pickle files."""
+        """read_file reads gzip-compressed pickle files."""
         import gzip
         test_file = os.path.join(self.temp_dir, 'test.pkl.gz')
         with gzip.open(test_file, "wb") as f:
             pickle.dump(self.test_data["dict"], f)
-        self.assertEqual(read_pickle(test_file), self.test_data["dict"])
+        self.assertEqual(read_file(test_file), self.test_data["dict"])
 
     def _fake_download(self, content):
         def fake(url, fname, session=None):
@@ -181,7 +181,7 @@ class TestIO(unittest.TestCase):
         """Test reading objects from URL."""
         with patch("pypillometry.io.download",
                    side_effect=self._fake_download(pickle.dumps(self.test_data))) as mock_dl:
-            loaded = read_pickle('http://example.com/test.pkl', autodelete=True)
+            loaded = read_file('http://example.com/test.pkl', autodelete=True)
         mock_dl.assert_called_once()
         for key, value in self.test_data.items():
             if isinstance(value, np.ndarray):
@@ -194,12 +194,12 @@ class TestIO(unittest.TestCase):
         with patch("pypillometry.io.download",
                    side_effect=self._fake_download(b'invalid pickle data')):
             with self.assertRaises(pickle.UnpicklingError):
-                read_pickle('http://invalid-url.com/nonexistent.pkl', autodelete=True)
+                read_file('http://invalid-url.com/nonexistent.pkl', autodelete=True)
             
     def test_read_pickle_invalid_file(self):
         """Test reading from invalid local file."""
         with self.assertRaises(FileNotFoundError):
-            read_pickle(os.path.join(self.temp_dir, 'nonexistent.pkl'))
+            read_file(os.path.join(self.temp_dir, 'nonexistent.pkl'))
 
     def test_read_eyelink_local_file(self):
         """Test reading EDF file using read_eyelink function."""
@@ -235,19 +235,17 @@ class TestIO(unittest.TestCase):
             # Just check that it's not a basic type
             self.assertNotIsInstance(edf_data, (str, int, float, list, dict))
 
-    def test_from_eyelink_all_classes(self):
-        """from_eyelink works for PupilData, GazeData and EyeData."""
+    def test_from_eyelink_eyedata(self):
+        """from_eyelink gives an EyeData object with pupil and gaze data."""
         try:
             import eyelinkio
         except ImportError:
             self.skipTest("eyelinkio package not available")
         import pypillometry as pp
-        fname = TEST_EDF
-        for cls in (pp.PupilData, pp.GazeData, pp.EyeData):
-            with self.subTest(cls=cls.__name__):
-                obj = cls.from_eyelink(fname)
-                self.assertIsInstance(obj, cls)
-                self.assertGreater(len(obj.tx), 0)
+        obj = pp.EyeData.from_eyelink(TEST_EDF)
+        self.assertIs(type(obj), pp.EyeData)
+        self.assertGreater(len(obj.tx), 0)
+        self.assertEqual(sorted(obj.variables), ["pupil", "x", "y"])
 
     def test_read_eyelink_url(self):
         """Test reading EDF file from URL using read_eyelink function."""
@@ -312,7 +310,7 @@ class TestIO(unittest.TestCase):
         self.assertEqual(type(edf_data_debug), type(edf_data_info))
 
     @patch("pypillometry.io._osf_client_url_to_download_url", return_value="https://files.osf.io/download")
-    @patch("pypillometry.io.tqdm")
+    @patch("tqdm.tqdm")
     def test_download_with_provided_session(self, mock_tqdm, mock_osf_url):
         """download should reuse provided session and respect OSF URL conversion."""
         session = MagicMock()
@@ -338,9 +336,9 @@ class TestIO(unittest.TestCase):
             if os.path.exists(fname):
                 os.remove(fname)
 
-    @patch("pypillometry.io.requests.Session")
+    @patch("requests.Session")
     @patch("pypillometry.io._osf_client_url_to_download_url", side_effect=lambda url, session=None: url)
-    @patch("pypillometry.io.tqdm")
+    @patch("tqdm.tqdm")
     def test_download_creates_session_when_missing(self, mock_tqdm, mock_osf_url, mock_session_cls):
         """download should create and close its own session when none supplied."""
         mock_session = MagicMock()
@@ -368,7 +366,7 @@ class TestIO(unittest.TestCase):
                 os.remove(fname)
 
     @patch("pypillometry.io._osf_client_url_to_download_url", side_effect=lambda url, session=None: url)
-    @patch("pypillometry.io.tqdm")
+    @patch("tqdm.tqdm")
     def test_download_progress_bar(self, mock_tqdm, mock_osf_url):
         """the bar shows the name without ".part" and has no total for an unknown size"""
         session = MagicMock()
@@ -388,6 +386,54 @@ class TestIO(unittest.TestCase):
                 self.assertEqual(kwargs["total"], total)
         finally:
             shutil.rmtree(tmpdir, ignore_errors=True)
+
+    @patch("pypillometry.io._osf_client_url_to_download_url", side_effect=lambda url, session=None: url)
+    def test_download_progress_bar_follows_logging(self, mock_osf_url):
+        """no progress bar with logging disabled or a level above INFO"""
+        import pypillometry as pp
+        from pypillometry.logging import _show_progress, logging_get_level
+        level = logging_get_level()
+        try:
+            pp.logging_set_level("INFO")
+            self.assertTrue(_show_progress())
+            with pp.nologging():
+                self.assertFalse(_show_progress())
+            self.assertTrue(_show_progress())
+            pp.logging_set_level("WARNING")
+            self.assertFalse(_show_progress())
+            # the bar of download() is disabled accordingly
+            session = MagicMock()
+            response = MagicMock()
+            response.iter_content.return_value = [b"data"]
+            response.headers = {"content-length": "4"}
+            session.get.return_value.__enter__.return_value = response
+            session.get.return_value.__exit__.return_value = False
+            tmpdir = tempfile.mkdtemp()
+            try:
+                with patch("tqdm.tqdm") as mock_tqdm:
+                    mock_tqdm.return_value.__enter__.return_value = MagicMock()
+                    download("https://example.com/rec.edf",
+                             fname=os.path.join(tmpdir, "rec.edf"), session=session)
+                    self.assertTrue(mock_tqdm.call_args.kwargs["disable"])
+            finally:
+                shutil.rmtree(tmpdir, ignore_errors=True)
+        finally:
+            pp.logging_set_level(level)
+
+    def test_edf_dates_independent_of_locale(self):
+        """EDF headers have English dates: they are read with the "C" time
+        locale, and the locale of the program is restored afterwards"""
+        import locale
+        import time
+        from pypillometry.io import _c_time_locale
+        before = locale.setlocale(locale.LC_TIME)
+        with _c_time_locale():
+            self.assertEqual(locale.setlocale(locale.LC_TIME), "C")
+            time.strptime("Fri Feb 14 08:48:33 2020", "%a %b  %d %H:%M:%S %Y")
+        self.assertEqual(locale.setlocale(locale.LC_TIME), before)
+        with self.assertRaises(RuntimeError), _c_time_locale():
+            raise RuntimeError
+        self.assertEqual(locale.setlocale(locale.LC_TIME), before)
 
 if __name__ == '__main__':
     unittest.main()

@@ -57,14 +57,14 @@ import pypillometry as pp
 from pypillometry import u
 
 d = pp.get_example_data("rlmw_002")     # or: pp.EyeData.from_eyelink("recording.edf")
-d.pupil_blinks_detect(apply_mask=True)  # detect and mask blinks
-d.pupil_blinks_interpolate()            # interpolate them
-d.pupil_lowpass_filter(cutoff=4)        # 4 Hz low-pass filter
+d = (d | pp.pupil.blinks_detect()       # detect and mask blinks
+       | pp.pupil.blinks_interpolate()  # interpolate them
+       | pp.pupil.lowpass_filter(cutoff=4))  # 4 Hz low-pass filter
 
 # pupil response from 500 ms before to 2.5 s after each stimulus
-intervals = d.get_intervals("S_", (-500, 2500) * u.ms)
-erpd = d.get_segments(intervals, "left_pupil").baseline_correct((-500, 0))
-erpd.plot()
+epochs = d.get_epochs("S_", (-500, 2500) * u.ms)
+erpd = d.get_segments(epochs, "left_pupil").pupil.baseline_correct((-500, 0))
+erpd.pupil.plot()
 ```
 
 The [quickstart](https://ihrke.github.io/pypillometry/getting_started/quickstart.html)
@@ -93,6 +93,7 @@ viewer is available from the command line:
 pypilview recording.edf            # view an Eyelink file or a saved object
 edf2pypil recording.edf            # convert EDF once, load much faster later
 pypilinfo data/*.pkl               # print a summary of one or more files
+pypil-upgrade -i data/             # convert files saved with older versions
 ```
 
 ![The pypilview viewer showing pupil size and gaze of both eyes](https://raw.githubusercontent.com/ihrke/pypillometry/master/docs/images/viewer_eyedata.png)

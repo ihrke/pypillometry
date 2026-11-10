@@ -41,19 +41,19 @@ class TestObjects(HDF5TestCase):
     def test_eyedata(self):
         d = make_eyedata()
         d2 = self.roundtrip(d)
-        self.assertEqual(d2.nblinks(), d.nblinks())
-        self.assertEqual(d2.event_labels.dtype, d.event_labels.dtype)
+        self.assertEqual({k: len(iv) for k, iv in d2.get_blinks().items()}, {k: len(iv) for k, iv in d.get_blinks().items()})
+        self.assertEqual(d2.events.labels.dtype, d.events.labels.dtype)
         self.assertEqual(d2.experimental_setup.screen_resolution, (1280, 1024))
         self.assertIsInstance(d2.original, pp.EyeData)
         self.assertEqual(d2.info["nested"]["b"], (1.5, "x"))
         self.assertEqual(list(d2.data.keys()), list(d.data.keys()))
         # the restored object can be processed further
-        d2.pupil_lowpass_filter(cutoff=5, inplace=False)
+        d2.pupil.lowpass_filter(cutoff=5, inplace=False)
 
-    def test_pupildata_gazedata(self):
+    def test_pupil_only_and_gaze_only(self):
         d = make_eyedata(keep_orig=False)
-        self.roundtrip(d.to_pupildata())
-        self.roundtrip(d.to_gazedata())
+        self.roundtrip(d.drop_data(variables=["x", "y"], inplace=False))
+        self.roundtrip(d.drop_data(variables=["pupil"], inplace=False))
 
     def test_fakeeyedata(self):
         f2 = self.roundtrip(generate_foreshortening_data(duration=1, fs=100, seed=1))
@@ -61,7 +61,7 @@ class TestObjects(HDF5TestCase):
 
     def test_segmented(self):
         d = make_eyedata(keep_orig=False)
-        seg = d.get_segments(d.get_intervals("F_", window=(-200, 800), units="ms"),
+        seg = d.get_segments(d.get_epochs("F_", window=(-200, 800), units="ms"),
                              "left_pupil")
         self.roundtrip(seg)
         self.roundtrip(pp.group_segments([seg, seg]))
@@ -80,23 +80,23 @@ class TestObjects(HDF5TestCase):
     def test_read_pickle_detects_hdf5(self):
         d = make_eyedata(keep_orig=False)
         fname = self.fname("d.hdf5")
-        pp.write_pickle(d, fname)
+        pp.write_file(d, fname)
         with open(fname, "rb") as f:
             self.assertEqual(f.read(4), b"\x89HDF")
         shutil.copy(fname, self.fname("other_extension.pypil"))
-        self.assertIsInstance(pp.read_pickle(self.fname("other_extension.pypil")),
+        self.assertIsInstance(pp.read_file(self.fname("other_extension.pypil")),
                               pp.EyeData)
 
     def test_no_state(self):
         with self.assertRaises(TypeError):
-            pp.write_pickle({"a": 1}, self.fname())
+            pp.write_file({"a": 1}, self.fname())
 
     def test_newer_version(self):
         st = state.to_state(make_eyedata(keep_orig=False))
         st["format_version"] = state.FORMAT_VERSION + 1
         hdf5.write_state(st, self.fname())
         with self.assertRaisesRegex(ValueError, "newer version"):
-            pp.read_pickle(self.fname())
+            pp.read_file(self.fname())
 
 
 class TestFixtures(HDF5TestCase):
@@ -104,21 +104,21 @@ class TestFixtures(HDF5TestCase):
 
     def test_v0_pickles_to_hdf5(self):
         for name in ["eyedata", "pupildata", "gazedata", "fakeeyedata",
-                     "segmented", "group_segmented"]:
+                     "segmented"]:
             with self.subTest(name=name):
-                obj = pp.read_pickle(os.path.join(DATA, f"{name}_v0.pkl"))
+                obj = pp.read_file(os.path.join(DATA, f"{name}_v0.pkl"))
                 st = state.to_state(obj)
                 assert_state_equal(self, st, self.roundtrip_state(st))
 
     def test_v1_files(self):
-        d = pp.read_pickle(os.path.join(DATA, "eyedata_v0.pkl"))
+        d = pp.read_file(os.path.join(DATA, "eyedata_v0.pkl"))
         for name in ["eyedata_v1.pypil", "eyedata_v1.h5"]:
             with self.subTest(name=name):
-                d1 = pp.read_pickle(os.path.join(DATA, name))
+                d1 = pp.read_file(os.path.join(DATA, name))
                 assert_state_equal(self, state.to_state(d), state.to_state(d1))
-        s = pp.read_pickle(os.path.join(DATA, "segmented_v1.h5"))
+        s = pp.read_file(os.path.join(DATA, "segmented_v1.h5"))
         self.assertIsInstance(s, pp.SegmentedEyeData)
-        self.assertEqual(s.intervals.label, "F_")
+        self.assertEqual(s.epochs.label, "F_")
 
 
 class TestGenericWriter(HDF5TestCase):

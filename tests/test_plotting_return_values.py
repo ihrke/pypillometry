@@ -26,13 +26,13 @@ class TestPlottingReturnValues(unittest.TestCase):
     
     def test_plot_intervals_returns_list(self):
         """Test that plot_intervals returns a list"""
-        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
+        intervals = self.data.get_epochs("F", window=(-200, 200), units="ms")
         figs = self.data.plot.plot_intervals(intervals, nrow=1, ncol=1)
         self.assertIsInstance(figs, list)
     
     def test_plot_intervals_returns_figures(self):
         """Test that plot_intervals returns Figure objects"""
-        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
+        intervals = self.data.get_epochs("F", window=(-200, 200), units="ms")
         figs = self.data.plot.plot_intervals(intervals, nrow=1, ncol=1)
         for fig in figs:
             self.assertIsInstance(fig, plt.Figure)
@@ -40,16 +40,10 @@ class TestPlottingReturnValues(unittest.TestCase):
     def test_plot_intervals_correct_figure_count(self):
         """Test that plot_intervals returns correct number of figures"""
         # With nrow=2, ncol=2, we have 4 subplots per figure
-        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
+        intervals = self.data.get_epochs("F", window=(-200, 200), units="ms")
         if len(intervals) >= 5:
             # Take first 5 intervals
-            from pypillometry.intervals import Intervals
-            intervals_subset = Intervals(
-                intervals.intervals[:5],
-                intervals.units,
-                intervals.label,
-                event_labels=intervals.event_labels[:5] if intervals.event_labels else None,
-                event_indices=intervals.event_indices[:5] if intervals.event_indices is not None else None)
+            intervals_subset = intervals.keep(np.arange(len(intervals)) < 5)
             figs = self.data.plot.plot_intervals(intervals_subset, nrow=2, ncol=2)
             self.assertEqual(len(figs), 2)
     
@@ -65,12 +59,12 @@ class TestPlottingReturnValues(unittest.TestCase):
     
     def test_plot_timeseries_segments_returns_list(self):
         """Test that plot_timeseries_segments returns a list"""
-        figs = self.data.plot.plot_timeseries_segments(interv=1.0)
+        figs = self.data.plot.plot_timeseries_segments(interv="1 min")
         self.assertIsInstance(figs, list)
     
     def test_plot_timeseries_segments_returns_figures(self):
         """Test that plot_timeseries_segments returns Figure objects"""
-        figs = self.data.plot.plot_timeseries_segments(interv=1.0)
+        figs = self.data.plot.plot_timeseries_segments(interv="1 min")
         for fig in figs:
             self.assertIsInstance(fig, plt.Figure)
     
@@ -82,17 +76,17 @@ class TestPlottingReturnValues(unittest.TestCase):
         interv = 1.0  # minutes
         expected_figs = int(np.ceil(duration_min / interv))
         
-        figs = self.data.plot.plot_timeseries_segments(interv=interv)
+        figs = self.data.plot.plot_timeseries_segments(interv=f"{interv} min")
         self.assertEqual(len(figs), expected_figs)
     
     def test_pupil_plot_segments_returns_list(self):
         """Test that pupil_plot_segments returns a list"""
-        figs = self.data.plot.pupil_plot_segments(interv=1.0)
+        figs = self.data.plot.pupil_plot_segments(interv="1 min")
         self.assertIsInstance(figs, list)
     
     def test_pupil_plot_segments_returns_figures(self):
         """Test that pupil_plot_segments returns Figure objects"""
-        figs = self.data.plot.pupil_plot_segments(interv=1.0)
+        figs = self.data.plot.pupil_plot_segments(interv="1 min")
         for fig in figs:
             self.assertIsInstance(fig, plt.Figure)
     
@@ -122,7 +116,7 @@ class TestPlottingEmptyReturns(unittest.TestCase):
     
     def test_plot_intervals_with_intervals_object(self):
         """Test with Intervals object"""
-        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
+        intervals = self.data.get_epochs("F", window=(-200, 200), units="ms")
         figs = self.data.plot.plot_intervals(intervals)
         self.assertIsInstance(figs, list)
         self.assertGreater(len(figs), 0)

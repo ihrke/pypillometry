@@ -27,7 +27,6 @@ Numbers are read back as Python numbers (numpy scalars become ``float``,
 import datetime
 import json
 
-import h5py
 import numpy as np
 from loguru import logger
 
@@ -43,7 +42,12 @@ _TYPES = "__types__"    # JSON dict: attribute name -> "datetime"/"date"/"repr"
 _ORDER = "__order__"    # JSON list of the keys (if attributes and members mix)
 _META = {_TYPE, _DTYPE, _TYPES, _ORDER, "pypillometry_version"}
 
-_STR_DTYPE = h5py.string_dtype("utf-8")
+
+def _str_dtype():
+    """dtype of UTF-8 text in HDF5 files."""
+    import h5py
+    return h5py.string_dtype("utf-8")
+
 
 # longer texts are stored as datasets (attributes are limited to 64 kB;
 # UTF-8 needs up to 4 bytes per character)
@@ -63,6 +67,7 @@ def write_state(st: dict, fname: str, compress: bool = True):
     compress : bool, optional
         if True (default), compress larger arrays with gzip
     """
+    import h5py
     # the file format of HDF5 1.10 stores small groups more compactly
     with h5py.File(fname, "w", track_order=True, libver="v110") as f:
         f.attrs["pypillometry_version"] = _package_version()
@@ -83,6 +88,7 @@ def read_state(fname: str) -> dict:
     dict
         the state (in the version it was written in)
     """
+    import h5py
     with h5py.File(fname, "r") as f:
         return _read_group(f)
 
@@ -136,6 +142,7 @@ def _write_dict(group, d, compress, path):
 
 def _write_value(group, key, value, compress, path):
     """Write `value` as `key` into `group`; return the type for ``__types__`` (or None)."""
+    import h5py
     if value is None:
         group.attrs[key] = h5py.Empty("f")
     elif isinstance(value, str):
@@ -168,7 +175,7 @@ def _write_text(group, key, text):
     if len(text) <= _MAX_ATTR_TEXT:
         group.attrs[key] = text
     else:
-        ds = group.create_dataset(key, data=text, dtype=_STR_DTYPE)
+        ds = group.create_dataset(key, data=text, dtype=_str_dtype())
         ds.attrs[_TYPE] = "str"
 
 
@@ -179,7 +186,7 @@ def _write_array(group, key, arr, compress):
                                  all(isinstance(x, str) for x in arr.flat)):
         attrs[_DTYPE] = arr.dtype.str
         arr = arr.astype(object)
-        dtype = _STR_DTYPE
+        dtype = _str_dtype()
     elif arr.dtype.kind in "biufcSV" and not arr.dtype.hasobject:
         dtype = arr.dtype
     else:
@@ -203,7 +210,7 @@ def _write_sequence(group, key, seq, compress, path):
     if simple:
         arr = np.array(seq, dtype=object if isinstance(seq[0], str) else None)
         ds = group.create_dataset(key, data=arr,
-                                  dtype=_STR_DTYPE if isinstance(seq[0], str) else arr.dtype)
+                                  dtype=_str_dtype() if isinstance(seq[0], str) else arr.dtype)
         ds.attrs[_TYPE] = kind
     else:
         sub = group.create_group(key, track_order=True)
@@ -217,6 +224,7 @@ def _write_sequence(group, key, seq, compress, path):
 
 def _read_group(group):
     """Dict (or list/tuple) with the content of `group`."""
+    import h5py
     types = json.loads(group.attrs.get(_TYPES, "{}"))
     # attributes first, then members; __order__ restores the key order
     items = {}
@@ -235,6 +243,7 @@ def _read_group(group):
 
 
 def _read_attr(value, kind):
+    import h5py
     if isinstance(value, h5py.Empty):
         return None
     if kind == "datetime":
@@ -249,6 +258,7 @@ def _read_attr(value, kind):
 
 
 def _read_dataset(ds):
+    import h5py
     kind = ds.attrs.get(_TYPE)
     dtype = ds.attrs.get(_DTYPE)
     if kind == "str":  # long text

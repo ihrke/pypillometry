@@ -9,7 +9,6 @@ cos(alpha), where alpha is this viewing angle.
 
 import numpy as np
 import numpy.ma as ma
-from scipy.interpolate import BSpline
 from typing import Optional, Union, Tuple, Dict
 from ..intervals import Intervals
 from .experimental_setup import ExperimentalSetup
@@ -196,6 +195,7 @@ def _create_bspline_basis(
     >>> basis = _create_bspline_basis(t, knots, degree=3)
     >>> print(f"Basis shape: {basis.shape}")  # doctest: +SKIP
     """
+    from scipy.interpolate import BSpline
     n_basis = len(knots) - degree - 1
     n_points = len(t)
     
@@ -415,7 +415,7 @@ class ForeshorteningCalibration:
     This class stores the fitted camera geometry and temporal pupil model
     needed to correct pupil size measurements for viewing angle effects.
     It is usually created by
-    :meth:`~pypillometry.EyeData.fit_foreshortening`.
+    :meth:`~pypillometry.eyedata.pupil.PupilNamespace.fit_foreshortening`.
     
     Parameters
     ----------
@@ -439,7 +439,7 @@ class ForeshorteningCalibration:
     fit_intervals : Intervals, optional
         Intervals used for fitting, if any
     fit_metrics : dict, optional
-        Fit quality metrics; :meth:`~pypillometry.EyeData.fit_foreshortening`
+        Fit quality metrics; :meth:`~pypillometry.eyedata.pupil.PupilNamespace.fit_foreshortening`
         stores 'r2', 'rmse', 'n_samples', 'loss', 'n_iterations' and
         'converged'. Default is an empty dict.
     
@@ -536,6 +536,7 @@ class ForeshorteningCalibration:
         fit_metrics : dict or None
             Fit quality metrics
         """
+        from scipy.interpolate import BSpline
         self.eye = eye
         self.theta = theta
         self.phi = phi
@@ -607,7 +608,7 @@ class ForeshorteningCalibration:
             If True (default), x and y are in pixels and are converted to mm
             with :meth:`~pypillometry.ExperimentalSetup.pixels_to_mm`
             (centered, positive y = up; as in
-            :meth:`~pypillometry.EyeData.fit_foreshortening`).
+            :meth:`~pypillometry.eyedata.pupil.PupilNamespace.fit_foreshortening`).
             If False, x and y are already in mm relative to screen center.
             Requires experimental_setup to have screen info when True.
         

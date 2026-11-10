@@ -7,7 +7,7 @@ Eyelink EDF files
 -----------------
 
 EDF files from SR Research Eyelink eye trackers are read with
-:meth:`~GenericEyeData.from_eyelink`, which uses the `eyelinkio
+:meth:`~EyeData.from_eyelink`, which uses the `eyelinkio
 <https://github.com/scott-huberty/eyelinkio>`_ package:
 
 .. code-block:: python
@@ -15,8 +15,7 @@ EDF files from SR Research Eyelink eye trackers are read with
     import pypillometry as pp
 
     d = pp.EyeData.from_eyelink("recording.edf")
-    p = pp.PupilData.from_eyelink("recording.edf")   # pupil only
-    g = pp.GazeData.from_eyelink("recording.edf")    # gaze only
+    p = d.drop_data(variables=["x", "y"], inplace=False)   # pupil only
 
 The result contains all samples, all messages (as events), the screen
 resolution and the calibration/validation results (as
@@ -29,7 +28,8 @@ Instead of a local file name, you can also pass an HTTP(S) URL or an SSH
 URL (``ssh://server/folder/file.edf``). The file is then downloaded and
 cached (see :func:`fetch_url`).
 
-Reading large EDF files is slow. Save the result (see below) or convert
+Reading large EDF files is slow (about a minute for a 90 MB file). Save
+the result (see below), which is read in well under a second, or convert
 the file once with the :doc:`command-line tool </getting_started/cli>`
 ``edf2pypil``.
 
@@ -55,8 +55,8 @@ constructors as arrays:
         name="subject01",
     )
 
-Any of the eyes or variables can be left out. :class:`PupilData` and
-:class:`GazeData` take the corresponding subset of arguments. Gaps in the
+Any of the eyes or variables can be left out (e.g., only ``left_pupil``
+for pupil data without gaze); the x and y of an eye go together. Gaps in the
 time vector (e.g., when recording was paused) are filled with masked
 samples, so the samples are evenly spaced.
 
@@ -85,8 +85,8 @@ Saving and loading objects
 --------------------------
 
 Processed objects, including their history, are saved with
-:meth:`~GenericEyeData.write_file` and loaded with
-:meth:`~GenericEyeData.from_file`:
+:meth:`~EyeData.write_file` and loaded with
+:meth:`~EyeData.from_file`:
 
 .. code-block:: python
 
@@ -94,9 +94,9 @@ Processed objects, including their history, are saved with
     d = pp.EyeData.from_file("subject01.pypil")
 
 Files are pickle files compressed with zstd (pass ``compress=False`` to
-turn this off). :func:`write_pickle` and :func:`read_pickle` do the same
+turn this off). :func:`write_file` and :func:`read_file` do the same
 for any Python object, e.g., a list of objects or a
-:class:`SegmentedEyeData`. :func:`read_pickle` also reads files from a URL.
+:class:`SegmentedEyeData`. :func:`read_file` also reads files from a URL.
 
 .. warning::
 
@@ -113,15 +113,17 @@ HDF5 file instead:
 
 HDF5 files do not run code when they are read, and other programs (e.g.,
 h5py, R or MATLAB) can read them: the data are datasets (``tx``,
-``data/values/left_pupil``, ``data/mask/left_pupil``, ...), the other information
-(name, sampling rate, blinks, history, ...) is stored in groups and
-attributes. They work for eyedata objects and :class:`SegmentedEyeData`
+``data/values/left_pupil``, ``data/layers/left_pupil``, ...; the mask layers
+are bits, bit *i* is the layer ``data/layer_names[i]``, e.g. ``"blink"``), the
+other information (name, sampling rate, events, history, ...) is stored in
+groups and attributes. They work for eyedata objects and :class:`SegmentedEyeData`
 (not for arbitrary Python objects). Values in ``info`` or ``params`` that
 HDF5 cannot store are saved as text (with a warning). The loading
 functions detect the format from the file content.
 
 Both formats store a versioned description of the object. Files written
-by older versions of pypillometry are upgraded when they are loaded.
+by older versions of pypillometry are upgraded when they are loaded;
+``pypil-upgrade`` converts them once (see :doc:`/getting_started/cli`).
 
 Saved files can be inspected with ``pypilinfo`` and opened in the viewer
 with ``pypilview`` (see :doc:`/getting_started/cli`).

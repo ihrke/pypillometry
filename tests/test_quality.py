@@ -115,15 +115,34 @@ class TestQualityReport(unittest.TestCase):
 
     def test_preprocessing_measures(self):
         d = _make_data(missing=[(1000, 1100), (5000, 5100)])
-        d.pupil_blinks_detect(apply_mask=True)
+        d.pupil.blinks_detect()
         r = d.quality_report()
         self.assertIn("blinks", r)
-        self.assertEqual(r["blinks"]["left"]["n"].value, len(d.get_blinks("left", "pupil")))
+        self.assertEqual(r["blinks"]["left"]["n"].value, len(d.get_blinks("left", "pupil")["left_pupil"]))
         self.assertIn("artifacts", r)
         self.assertGreaterEqual(r["artifacts"]["left"]["pupil_masked_pct"].value, 2.0)
-        d.pupil_blinks_interpolate()
+        d.pupil.blinks_interpolate()
         r = d.quality_report()
         self.assertIn("interpolated_pct", r["artifacts"]["left"])
+        # the interpolation margins are not "other artifacts" (finding 5.8)
+        self.assertGreater(r["artifacts"]["left"]["interpolated_pct"].value,
+                           r["blinks"]["left"]["time_pct"].value)
+        self.assertEqual(r["artifacts"]["left"]["other_pct"].value, 0)
+
+    def test_masked_time_by_layer(self):
+        d = _make_data()
+        d.set_experimental_setup(screen_resolution=(1000, 800))
+        x = d.data["left_x"].copy()
+        x[2000:2500] = 5000  # 5 % off-screen
+        d["left_x"] = x
+        d.gaze.mask_offscreen(eyes="left")
+        d.mask_intervals(pp.Intervals([(10000, 12000)], "ms"), eyes="left", variables="pupil")  # 10 %
+        a = d.quality_report()["artifacts"]["left"]
+        self.assertAlmostEqual(a["offscreen_pct"].value, 5)
+        self.assertAlmostEqual(a["user_pct"].value, 10)
+        self.assertAlmostEqual(a["other_pct"].value, 10)  # pupil: the user mask
+        self.assertAlmostEqual(a["gaze_masked_pct"].value, 5)
+        self.assertNotIn("divergence_pct", a)
 
     def test_calibration(self):
         d = _make_data()
@@ -134,13 +153,13 @@ class TestQualityReport(unittest.TestCase):
         self.assertEqual(r["calibration"]["left"]["mean_error"].label, "ok")
         self.assertEqual(r["calibration"]["left"]["model"].value, "HV9")
 
-    def test_pupildata_and_gazedata(self):
+    def test_pupil_only_and_gaze_only(self):
         d = _make_data()
-        r = d.to_pupildata("left").quality_report()
+        r = d.drop_data(eyes="right", variables=["x", "y"], inplace=False).quality_report()
         self.assertIn("pupil", r)
         self.assertNotIn("gaze", r)
         self.assertNotIn("binocular", r)
-        g = pp.GazeData(time=d.tx, left_x=d.data["left_x"], left_y=d.data["left_y"],
+        g = pp.EyeData(time=d.tx, left_x=d.data["left_x"], left_y=d.data["left_y"],
                         sampling_rate=d.fs)
         r = g.quality_report()
         self.assertNotIn("pupil", r)
@@ -166,6 +185,10 @@ class TestQualityReport(unittest.TestCase):
             d.quality_report(thresholds={"pupil.missing_pct": (1, 2)})
         with self.assertRaises(ValueError):
             d.quality_report(thresholds={"pupil.missing_pct": (1, 5, 2)})
+        # a single number (was a TypeError "'int' object is not iterable")
+        for bad in (5, "5", ("a", 1, 2)):
+            with self.assertRaisesRegex(ValueError, "pupil.missing_pct"):
+                d.quality_report(thresholds={"pupil.missing_pct": bad})
 
     def test_representations(self):
         d = _make_data(missing=[(1000, 4000)])
@@ -213,7 +236,7 @@ class TestQualityReport(unittest.TestCase):
         d.calibration = {"left": pp.SpatialCalibration(
             "left", "HV9", np.zeros((9, 2)), np.zeros((9, 2)),
             np.c_[np.full(9, 0.3), np.zeros((9, 2))])}
-        d.pupil_blinks_detect(apply_mask=True)
+        d.pupil.blinks_detect()
         r = d.quality_report()
         for section, group, m in r.metrics():
             self.assertTrue(m.description, f"{section}.{m.name} has no description")
@@ -279,9 +302,9 @@ class TestExcludedPeriods(unittest.TestCase):
         self.assertAlmostEqual(left["longest_dropout"].value, 100 / 500)
         self.assertAlmostEqual(left["dropout_rate"].value, 1 / (16 / 60))
         # the excluded samples are masked, but not counted as artifacts
-        e.pupil_blinks_detect(apply_mask=True, inplace=True)
+        e.pupil.blinks_detect(inplace=True)
         r = e.quality_report()
         self.assertAlmostEqual(r["blinks"]["left"]["rate"].value,
-                               len(e.get_blinks("left", "pupil")) / (16 / 60))
+                               len(e.get_blinks("left", "pupil")["left_pupil"]) / (16 / 60))
         self.assertLess(r["artifacts"]["right"]["pupil_masked_pct"].value, 1)
         self.assertLess(r["artifacts"]["right"]["other_pct"].value, 1)

@@ -427,19 +427,24 @@ def test_crop_with_units(eyedata):
         np.testing.assert_array_equal(d.tx, ref.tx)
 
 
-def test_get_intervals_with_units(eyedata):
-    ref = eyedata.get_intervals("F", (-200, 800), units="ms")
-    iv = eyedata.get_intervals("F", (-200, 800) * u.ms)
-    assert iv.units == "ms"
-    assert iv.intervals == ref.intervals
-    assert iv.interval_window == (-200, 800)
-    # converted to the requested units
-    iv = eyedata.get_intervals("F", (-0.2, 0.8) * u.sec, units="ms")
-    np.testing.assert_allclose(iv.intervals, ref.intervals)
-    # ... including sampling units
-    ix = eyedata.get_intervals("F", (-200, 800) * u.ms, units="samples")
+def test_get_epochs_with_units(eyedata):
+    ref = eyedata.get_epochs("F", (-200, 800), units="ms")
+    ep = eyedata.get_epochs("F", (-200, 800) * u.ms)
+    assert ep == ref
+    assert ep.window == (-200, 800)
+    # Epochs are in ms, whatever the units of the window
+    ep = eyedata.get_epochs("F", (-0.2, 0.8) * u.sec, units="ms")
+    np.testing.assert_allclose(ep.window, ref.window)
+    ep = eyedata.get_epochs("F", (-0.2, 0.8), units="sec")
+    np.testing.assert_allclose(ep.window, ref.window)
+    # plain numbers without units are ms (finding 2.5, step 9)
+    ep = eyedata.get_epochs("F", (-200, 800))
+    assert ep == ref
     n = int(eyedata.fs * 0.2)
-    assert ix.intervals == eyedata.get_intervals("F", (-n, 4 * n)).intervals
+    ep = eyedata.get_epochs("F", (-n, 4 * n), units="samples")
+    np.testing.assert_allclose(ep.window, ref.window)
+    assert ep.to_intervals("samples", eyedata).intervals == \
+        ref.to_intervals("samples", eyedata).intervals
 
 
 def test_stat_per_event_with_units(eyedata):
@@ -450,16 +455,16 @@ def test_stat_per_event_with_units(eyedata):
 
 
 def test_blink_parameters_with_units(eyedata):
-    ref = eyedata.pupil_blinks_detect(min_duration=20, winsize=11, inplace=False)
-    res = eyedata.pupil_blinks_detect(min_duration=20 * u.ms, winsize="11 ms",
+    ref = eyedata.pupil.blinks_detect(min_duration=20, winsize=11, inplace=False)
+    res = eyedata.pupil.blinks_detect(min_duration=20 * u.ms, winsize="11 ms",
                                       inplace=False)
-    assert {k: v.intervals for k, v in ref.items()} == \
-        {k: v.intervals for k, v in res.items()}
-    d = eyedata.pupil_blinks_detect(apply_mask=True, inplace=False)
-    ref = d.blinks_merge_close(distance=100)
-    res = d.blinks_merge_close(distance=0.1 * u.sec)
-    assert {k: v.intervals for k, v in ref.items()} == \
-        {k: v.intervals for k, v in res.items()}
+    assert {k: v.intervals for k, v in ref.get_blinks().items()} == \
+        {k: v.intervals for k, v in res.get_blinks().items()}
+    d = eyedata.pupil.blinks_detect(inplace=False)
+    ref = d.pupil.blinks_merge_close(distance=100, inplace=False)
+    res = d.pupil.blinks_merge_close(distance=0.1 * u.sec, inplace=False)
+    assert {k: v.intervals for k, v in ref.get_blinks().items()} == \
+        {k: v.intervals for k, v in res.get_blinks().items()}
 
 
 def test_plot_range_with_units(eyedata):

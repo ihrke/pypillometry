@@ -1,17 +1,42 @@
-"""Python-package to help with processing of pupillometric and eyetracking data.
+"""pypillometry - processing of pupillometric and eyetracking data.
 
-This package provides classes for handling pupillometric and eyetracking data
-as well as tools for plotting and analyzing these data.
+Reads recordings from eye trackers, cleans them (blinks, artifacts,
+filtering), cuts them into event-related segments and plots the results.
+Pupil size and gaze of one or both eyes are kept together in one object
+that records its own processing history.
 
-Unit Handling:
---------------
-Times, distances and angles can carry units, either from the `pypillometry.u`
-namespace (``3 * u.min``, ``(-200, 800) * u.ms``, ``60 * u.cm``,
-``20 * u.deg``) or as strings (``"3 min"``, ``"60 cm"``, ``"20 deg"``).
+Example
+-------
+::
+
+    import pypillometry as pp
+    from pypillometry import u
+
+    d = pp.get_example_data("rlmw_002")
+    d = d | pp.pupil.blinks_detect() | pp.pupil.blinks_interpolate()
+    epochs = d.get_epochs("S_", (-500, 2500) * u.ms)
+
+Overview
+--------
+EyeData
+    The main data class; ``SegmentedEyeData`` for data cut into segments.
+pupil, gaze
+    Pipeline steps for pupil and gaze data, used as ``d | pp.pupil.<step>()``.
+    General steps (``crop``, ``downsample``, ...) are at the top level.
+read_eyelink, read_file, load_study_local, get_example_data
+    Reading and writing data.
+Events, Intervals, Epochs
+    Event markers, time intervals and event-related segments.
+signal
+    Signal-processing functions that work on plain numpy arrays.
+u
+    Units for times, distances and angles (``3 * u.min``, ``60 * u.cm``);
+    strings like ``"200 ms"`` work too. See `pypillometry.units`.
+view
+    Interactive viewer for long recordings.
 
 - Github: https://github.com/ihrke/pypillometry
 - Documentation: https://ihrke.github.io/pypillometry
-
 """
 
 import os.path
@@ -19,23 +44,36 @@ import os.path
 # ---------------------------------------------------------------------------
 # Data classes
 from .eyedata import (
-    GenericEyeData, EyeData, PupilData, GazeData, FakeEyeData,
-    EyeDataDict, ExperimentalSetup, SpatialCalibration,
+    EyeData, FakeEyeData,
+    EyeDataDict, MaskPolicy, ExperimentalSetup, SpatialCalibration,
     ForeshorteningCalibration, keephistory,
 )
-from .plot import EyePlotter, PupilPlotter, GazePlotter
+from .eyedata.pipes import Step, Pipeline
+
+# ---------------------------------------------------------------------------
+# Pipeline steps: d | pp.pupil.blinks_detect() | pp.crop(...) | ...
+from .eyedata.steps import (
+    pupil, gaze,
+    crop, downsample, scale, unscale, merge_eyes, reset_time,
+    mask_intervals, interpolate_intervals, exclude_intervals, keep_intervals,
+    remove_intervals, merge_masks, clear_layer, set_blinks, set_events,
+    add_events, set_experimental_setup, drop_data, drop_original,
+    fill_time_discontinuities,
+)
 from .segmented import (
-    SegmentedEyeData, GroupLevelSegmentedData, group_segments,
+    SegmentedEyeData, concat_segments, group_segments,
 )
 from .events import Events, ClockSync, sync_clocks
-from .intervals import Intervals, merge_intervals
+from .intervals import Intervals, concat_intervals
+from .epochs import Epochs
+from .table import Table, RecordDict
 from .roi import ROI, CircularROI, RectangularROI
 from .quality import QualityReport, QualityMetric
 
 # ---------------------------------------------------------------------------
 # Reading and writing data
 from .io import (
-    read_eyelink, read_pickle, write_pickle, download, fetch_url, local_copy,
+    read_eyelink, read_file, write_file, download, fetch_url, local_copy,
     osf_authenticate,
 )
 from .study import load_study_local, load_study_osf, get_osf_project_files
@@ -45,25 +83,8 @@ from .example_data import (
 )
 
 # ---------------------------------------------------------------------------
-# Signal processing
-from .signal import (
-    # baseline
-    bspline, butter_lowpass, butter_lowpass_filter, downsample,
-    baseline_envelope, baseline_envelope_iter_bspline, baseline_pupil_model,
-    # preprocessing
-    smooth_window, velocity_savgol, detect_blinks_velocity,
-    detect_blinks_zero, blink_onsets_mahot,
-    # pupil response
-    lowpass_filter_iterative, pupil_signal_quality, pupil_kernel,
-    pupil_kernel_t, pupil_get_max_duration, plot_prf,
-    pupil_build_design_matrix, pupil_response, pupil_response_coverage,
-    pupilresponse_nnls,
-    pupil_eye_offset,
-    # synthetic data
-    fake_pupil_baseline, fake_gaze_fixations, add_measurement_noise,
-    generate_foreshortening_data,
-)
-from .convenience import zscale
+# Signal processing for numpy arrays: pp.signal.<function>
+from . import signal
 
 # ---------------------------------------------------------------------------
 # Viewer
@@ -81,35 +102,27 @@ from loguru import logger  # available as pp.logger, not part of __all__
 
 __all__ = [
     # data classes
-    "GenericEyeData", "EyeData", "PupilData", "GazeData", "FakeEyeData",
-    "EyeDataDict", "ExperimentalSetup", "SpatialCalibration",
-    "ForeshorteningCalibration", "keephistory",
-    "EyePlotter", "PupilPlotter", "GazePlotter",
-    "SegmentedEyeData", "GroupLevelSegmentedData", "group_segments",
+    "EyeData", "FakeEyeData",
+    "EyeDataDict", "MaskPolicy", "ExperimentalSetup", "SpatialCalibration",
+    "ForeshorteningCalibration", "keephistory", "Step", "Pipeline",
+    # pipeline steps
+    "pupil", "gaze",
+    "crop", "downsample", "scale", "unscale", "merge_eyes", "reset_time",
+    "mask_intervals", "interpolate_intervals", "exclude_intervals",
+    "keep_intervals", "remove_intervals", "merge_masks", "clear_layer",
+    "set_blinks", "set_events", "add_events", "set_experimental_setup",
+    "drop_data", "drop_original", "fill_time_discontinuities",
+    "SegmentedEyeData", "concat_segments", "group_segments",
     "Events", "ClockSync", "sync_clocks",
-    "Intervals", "merge_intervals",
+    "Intervals", "concat_intervals", "Epochs", "Table", "RecordDict",
     "ROI", "CircularROI", "RectangularROI",
     "QualityReport", "QualityMetric",
     # reading and writing data
-    "read_eyelink", "read_pickle", "write_pickle", "download", "fetch_url",
+    "read_eyelink", "read_file", "write_file", "download", "fetch_url",
     "local_copy", "osf_authenticate",
     "load_study_local", "load_study_osf", "get_osf_project_files",
     "get_available_datasets", "get_example_data", "get_rlmw_002",
     "get_rlmw_002_short", "get_rlmw_010_edf",
-    # signal processing
-    "bspline", "butter_lowpass", "butter_lowpass_filter", "downsample",
-    "baseline_envelope", "baseline_envelope_iter_bspline",
-    "baseline_pupil_model",
-    "smooth_window", "velocity_savgol", "detect_blinks_velocity",
-    "detect_blinks_zero", "blink_onsets_mahot",
-    "lowpass_filter_iterative", "pupil_signal_quality", "pupil_kernel",
-    "pupil_kernel_t", "pupil_get_max_duration", "plot_prf",
-    "pupil_build_design_matrix", "pupil_response", "pupil_response_coverage",
-    "pupilresponse_nnls",
-    "pupil_eye_offset",
-    "fake_pupil_baseline", "fake_gaze_fixations", "add_measurement_noise",
-    "generate_foreshortening_data",
-    "zscale",
     # viewer
     "view", "tweak",
     # units, settings and logging

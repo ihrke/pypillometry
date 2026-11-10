@@ -13,8 +13,8 @@ string:
     from pypillometry import u
 
     d.crop(3 * u.min, 5 * u.min)                    # or ("3 min", "5 min")
-    d.get_intervals("stim", (-200, 800) * u.ms)
-    d.pupil_blinks_detect(min_duration="20 ms")
+    d.get_epochs("stim", (-200, 800) * u.ms)
+    d.pupil.blinks_detect(min_duration="20 ms")
     d.plot.pupil_plot(plot_range=(3, 5) * u.min)
     d.set_experimental_setup(eye_to_screen_center=60 * u.cm,
                              screen_pitch="-5 deg")
@@ -38,15 +38,16 @@ Available units:
 Aliases such as ``u.seconds``, ``u.s`` or ``u.degree`` work as well.
 
 Internally, everything is stored in ms, mm and radians. Plain numbers
-(without units) are interpreted as described in each function's
-documentation, usually ms for times. Many functions also take a ``units=``
-argument that says how plain numbers should be read, or in which units a
-result should be returned:
+(without units) for times are ms everywhere (windows, durations,
+``plot_range``), and returned times are in ms unless asked otherwise. Many
+functions also take a ``units=`` argument that says how plain numbers
+should be read, or in which units a result should be returned (in plotting
+functions, ``units=`` is only the unit of the time axis):
 
 .. code-block:: python
 
     d.get_duration(units="min")
-    d.get_events(units="sec")
+    d.events.onset("Start Block 2", units="sec")
     d.crop(3, 5, units="min")
 
 Sample indices are ``units="samples"`` (aliases: "sample", "index",

@@ -1,6 +1,7 @@
 import unittest
 import sys
 import numpy as np
+import pytest
 import scipy.optimize
 import pypillometry as pp
 from pypillometry.signal.pupil import (
@@ -87,6 +88,15 @@ class TestLowpassFilterIterative(unittest.TestCase):
         gap_values = result[80:120]
         np.testing.assert_allclose(gap_values, 100, atol=1)
     
+    def test_gap_in_ramp_does_not_bias_neighbours(self):
+        """Gaps are bridged linearly, not filled with the global mean
+        (finding 3.3): a ramp with a gap stays a ramp next to the gap"""
+        ramp = np.linspace(500, 1500, 2000)
+        signal = ramp.copy()
+        signal[1600:1700] = np.nan  # the global mean (1000) is far off here
+        result = lowpass_filter_iterative(signal, cutoff=4.0, fs=500)
+        np.testing.assert_allclose(result[1500:1800], ramp[1500:1800], atol=0.01)
+
     def test_all_nan_returns_copy(self):
         """All NaN input should return NaN array"""
         signal = np.full(100, np.nan)
@@ -274,3 +284,11 @@ class TestNNLSGram(unittest.TestCase):
         coef, sse = _nnls_gram(np.zeros((0, 500)), self.y)
         self.assertEqual(len(coef), 0)
         self.assertAlmostEqual(sse, np.sum(self.y ** 2))
+
+
+@pytest.mark.parametrize("cutoff", [0, -1, 50, 300])
+def test_lowpass_cutoff_outside_range_raises(cutoff):
+    # finding 3.4: raw scipy message ("critical frequencies must be 0 < Wn < 1")
+    d = pp.EyeData(left_pupil=np.random.default_rng(1).normal(size=500), sampling_rate=100)
+    with pytest.raises(ValueError, match="fs/2 = 50 Hz"):
+        d.pupil.lowpass_filter(cutoff)

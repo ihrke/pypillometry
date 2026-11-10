@@ -1,39 +1,19 @@
-from ..eyedata import GenericEyeData
-from .genplotter import GenericPlotter
+from .generic import GenericPlots
 import numpy as np
 from collections.abc import Iterable
 from typing import List, Union, Optional, Tuple
 
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-from matplotlib import cm
-from mpl_toolkits.axes_grid1 import make_axes_locatable
-import matplotlib as mpl
-from matplotlib.backends.backend_pdf import PdfPages
 from ..roi import ROI
+from ..units import _ms_to
 from loguru import logger
-from scipy.ndimage import gaussian_filter
 
-class GazePlotter(GenericPlotter):
+class GazePlots(GenericPlots):
     """
-    Class for plotting gaze data. The class is initialized with a GenericEyeData
-    object and provides methods to plot the data in various ways.
-
-    It is usually not created directly; instead, it is available as the `plot`
-    attribute of a :class:`~pypillometry.GazeData` object, e.g.
+    Plots of gaze data (heatmap, scanpath, calibration); part of the plotting
+    namespace ``d.plot`` (:class:`~pypillometry.plot.PlotNamespace`), e.g.
     ``d.plot.plot_heatmap()``.
-
-    Parameters
-    ----------
-    obj : GenericEyeData
-        the data object to plot (stored as `obj`)
     """
-    obj: GenericEyeData # link to the data object
 
-    def __init__(self, obj: GenericEyeData):
-        self.ignore_vars = [] #["blinkmask", "pupilinterpolated"]
-        self.obj = obj
-    
     def plot_heatmap(
         self,
         plot_range: tuple = (-np.inf, +np.inf),
@@ -55,13 +35,14 @@ class GazePlotter(GenericPlotter):
         To plot a scanpath, use :meth:`.plot_scanpath()` instead.
         Each eye is plotted in a separate subplot of the current figure
         (a new figure is created if none exists); the colorbar shows the
-        number of samples per bin.
+        number of samples per bin. The y-axis points down (screen pixel
+        coordinates, as in :meth:`plot_calibration`).
 
         Parameters
         ----------
         plot_range : tuple
-            The time range to plot (in `units`, or with units, e.g.
-            ``(3, 5) * u.min``). Default is (-np.inf, +np.inf), i.e. all data.
+            The time range to plot (plain numbers are in `units`, or with
+            units, e.g. ``(3, 5) * u.min``). Default is (-np.inf, +np.inf), i.e. all data.
         eyes : str or list
             The eyes to plot. Default is [], which means all available data ("left", "right",
             average, regression, ...)
@@ -69,7 +50,8 @@ class GazePlotter(GenericPlotter):
             Whether to plot the screen limits (if an experimental setup is
             available). Default is True.
         show_masked : bool
-            Whether to plot the masked data (because of blinks, artifacts, ...). Default is False.
+            Whether to plot the masked data (because of blinks, artifacts, ...;
+            default mask policy). Default is False.
         rois : List[ROI], optional
             List of ROIs (:class:`~pypillometry.ROI`) to plot. Default is None.
         roi_style : dict, optional
@@ -84,7 +66,8 @@ class GazePlotter(GenericPlotter):
                 }
 
         units : str
-            The units of `plot_range` ("ms", "sec", "min", "h"). Default is "sec".
+            The units of plain numbers in `plot_range` and of messages ("ms",
+            "sec", "min", "h"). Default is "sec".
         cmap : str
             The colormap to use. Default is "jet".
         gridsize : int or str
@@ -118,14 +101,18 @@ class GazePlotter(GenericPlotter):
            >>> d = pp.get_example_data("rlmw_002_short")
            >>> d.plot.plot_heatmap(eyes="left")
         """
-        obj = self.obj
+        import matplotlib.pyplot as plt
+        import matplotlib.patches as patches
+        from mpl_toolkits.axes_grid1 import make_axes_locatable
+        from scipy.ndimage import gaussian_filter
+        self._d._require("x", "y")
+        obj = self._d
         
         # Validate plot_range
         plot_range = self._plot_range_in(plot_range, units)
         self._validate_plot_range(plot_range, units)
         
-        fac=obj._unit_fac(units)
-        tx=obj.tx*fac
+        tx = _ms_to(obj.tx, units)
 
         # plot_range
         start,end=plot_range
@@ -137,13 +124,10 @@ class GazePlotter(GenericPlotter):
         if end==np.inf:
             endix=tx.size
         else:
-            endix=np.argmin(np.abs(tx-end))    
+            endix=np.argmin(np.abs(tx-end)) + 1  # the end sample is plotted too
         
         # which eyes to plot
-        if isinstance(eyes, str):
-            eyes=[eyes]
-        if len(eyes)==0:
-            eyes=obj.eyes
+        eyes = obj._eyes_with(eyes, ["x", "y"])
 
         # choose gridsize
         if gridsize=="auto":
@@ -176,14 +160,17 @@ class GazePlotter(GenericPlotter):
             if vx in obj.data.keys() and vy in obj.data.keys():
                 x_data = obj.data[vx][startix:endix]
                 y_data = obj.data[vy][startix:endix]
-                if not show_masked and vx in obj.data.mask and vy in obj.data.mask:
-                    mask = obj.data.mask[vx][startix:endix] | obj.data.mask[vy][startix:endix]
-                    mask = mask.astype(bool)
+                if not show_masked:
+                    mask = (obj.data.get_policy_mask(vx)[startix:endix]
+                            | obj.data.get_policy_mask(vy)[startix:endix])
                     x_plot = x_data[~mask]
                     y_plot = y_data[~mask]
                 else:
                     x_plot = x_data
                     y_plot = y_data
+                # samples without a position (NaN, e.g. in blinks) cannot be binned
+                finite = np.isfinite(x_plot) & np.isfinite(y_plot)
+                x_plot, y_plot = x_plot[finite], y_plot[finite]
                 
                 # Determine limits
                 if limits is not None:
@@ -249,7 +236,7 @@ class GazePlotter(GenericPlotter):
                     
                     # Set axis limits
                     ax.set_xlim(xmin, xmax)
-                    ax.set_ylim(ymin, ymax)
+                    ax.set_ylim(ymax, ymin)  # pixel y points down, as on the screen
                 else:
                     # Determine min_samples threshold
                     if min_samples is None:
@@ -275,7 +262,7 @@ class GazePlotter(GenericPlotter):
                     
                     # Set axis limits for hexbin too
                     ax.set_xlim(xmin, xmax)
-                    ax.set_ylim(ymin, ymax)
+                    ax.set_ylim(ymax, ymin)  # pixel y points down, as on the screen
                 
                 divider = make_axes_locatable(ax)
                 cax = divider.append_axes('right', size='5%', pad=0.05)
@@ -303,7 +290,7 @@ class GazePlotter(GenericPlotter):
             roi_style: dict={},
             show_onsets: bool=True,
             title: str="",
-            units: str="ms",
+            units: str="sec",
             figsize: tuple=(10,10)
             ) -> None:
         """
@@ -314,13 +301,14 @@ class GazePlotter(GenericPlotter):
         If several eyes are available, they are plotted in the same figure
         in different colors. You can choose between them using the `eyes`
         parameter. The samples are drawn as dots colored by time.
-        A new figure is created for the plot.
+        A new figure is created for the plot. The y-axis points down (screen
+        pixel coordinates, as in :meth:`plot_calibration`).
 
         Parameters
         ----------
         plot_range : tuple
-            The time range to plot (in `units`, or with units, e.g.
-            ``(3, 5) * u.min``). Default is (-np.inf, +np.inf), i.e. all data.
+            The time range to plot (plain numbers are in `units`, or with
+            units, e.g. ``(3, 5) * u.min``). Default is (-np.inf, +np.inf), i.e. all data.
         eyes : str or list
             The eyes to plot. Default is [], which means all available data ("left", "right",
             average, regression, ...)
@@ -346,8 +334,8 @@ class GazePlotter(GenericPlotter):
         title : str
             The title of the plot. Default is "".
         units : str
-            The units of `plot_range` ("ms", "sec", "min", "h"). Default "ms"
-            (the units of the time vector).
+            The units of the time axis and of plain numbers in `plot_range`
+            ("ms", "sec", "min", "h"). Default "sec".
         figsize : tuple
             The figure size (width, height) in inches. Default is (10,10).
 
@@ -368,15 +356,18 @@ class GazePlotter(GenericPlotter):
            >>> d = pp.get_example_data("rlmw_002_short")
            >>> d.plot.plot_scanpath(plot_range=(10, 12) * u.sec, eyes="left")
         """
-        obj = self.obj
+        import matplotlib.pyplot as plt
+        import matplotlib.patches as patches
+        from matplotlib import cm
+        self._d._require("x", "y")
+        obj = self._d
 
         # Validate plot_range
         plot_range = self._plot_range_in(plot_range, units)
         self._validate_plot_range(plot_range, units)
 
-        fac=obj._unit_fac(units)
-        tx = obj.tx*fac
-        evon = obj.event_onsets*fac
+        tx = _ms_to(obj.tx, units)
+        evon = _ms_to(obj.events.onsets, units)
 
         # plot_range
         start,end=plot_range
@@ -388,19 +379,16 @@ class GazePlotter(GenericPlotter):
         if end==np.inf:
             endix=tx.size
         else:
-            endix=np.argmin(np.abs(tx-end))    
+            endix=np.argmin(np.abs(tx-end)) + 1  # the end sample is plotted too
         
         # get events in range
         evonixx=np.logical_and(evon>=start, evon<end)
-        evlab=obj.event_labels[evonixx]
+        evlab=obj.events.labels[evonixx]
         evon=evon[evonixx]
         evontix=np.argmin(np.abs(tx-evon[:,np.newaxis]), axis=1).astype(int)
 
         # which eyes to plot
-        if isinstance(eyes, str):
-            eyes=[eyes]
-        if len(eyes)==0:
-            eyes=obj.eyes
+        eyes = obj._eyes_with(eyes, ["x", "y"])
 
         fig, ax = plt.subplots(1,1)
         fig.set_figheight(figsize[1])
@@ -421,6 +409,7 @@ class GazePlotter(GenericPlotter):
                             fontsize=12, ha="center", va="center")
 
         ax.set_aspect("equal")
+        ax.invert_yaxis()  # pixel y points down, as on the screen
         #fig.colorbar()
         if show_screen and obj.experimental_setup is not None:
             setup = obj.experimental_setup
@@ -486,7 +475,8 @@ class GazePlotter(GenericPlotter):
         >>> # Plot specific eyes
         >>> fig, axes = data.plot.plot_calibration(eyes=['left', 'right'])  # doctest: +SKIP
         """
-        obj = self.obj
+        import matplotlib.pyplot as plt
+        obj = self._d
         
         # Check if calibration data exists
         if not hasattr(obj, 'calibration') or obj.calibration is None:

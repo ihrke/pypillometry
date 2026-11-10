@@ -5,15 +5,11 @@ baseline.py
 Functions for estimating tonic pupillary fluctuations (baseline).
 """
 import numpy as np
-import scipy.signal as signal
-import scipy
 import math
 import os
 from importlib.resources import files
 from loguru import logger
 
-import scipy.interpolate
-from scipy.interpolate import interp1d, splrep, splev
 
 from .pupil import pupil_kernel, pupil_response
 from ..convenience import _user_cache_dir
@@ -119,8 +115,17 @@ def butter_lowpass(cutoff, fs, order=5):
     b, a : np.ndarray
         numerator and denominator filter coefficients
         (see :func:`scipy.signal.butter`)
+
+    Raises
+    ------
+    ValueError
+        if `cutoff` is not between 0 and the Nyquist frequency (`fs`/2)
     """
+    import scipy.signal as signal
     nyq = 0.5 * fs
+    if not 0 < cutoff < nyq:
+        raise ValueError(f"lowpass cutoff must be between 0 and fs/2 = {nyq:g} Hz "
+                         f"(sampling rate {fs:g} Hz), got {cutoff!r}")
     normal_cutoff = cutoff / nyq
     b, a = signal.butter(order, normal_cutoff, btype='low', analog=False)
     return b, a
@@ -148,6 +153,7 @@ def butter_lowpass_filter(data, cutoff, fs, order=5):
     y : np.ndarray
         filtered data
     """
+    import scipy.signal as signal
     b, a = butter_lowpass(cutoff, fs, order=order)
     y = signal.filtfilt(b, a, data)
     return y
@@ -235,6 +241,7 @@ def baseline_envelope_iter_bspline(tx,sy,event_onsets,fs, fsd=10, lp=2,
     phasic pupil dynamics in humans. *Behavior Research Methods*, 57(9), 233.
     https://doi.org/10.3758/s13428-025-02755-7
     """
+    import scipy.signal as signal
     dsfac=int(fs/fsd) # calculate downsampling factor
     logger.debug("Downsampling factor is %i"%dsfac)
     
@@ -371,6 +378,9 @@ def baseline_envelope(tx,sy,event_onsets, fs=1000, lp=2, prominence_thr=80, inte
     ValueError
         if `interp_method` is not one of the supported methods
     """
+    import scipy.signal as signal
+    import scipy.interpolate
+    from scipy.interpolate import interp1d
     syc=butter_lowpass_filter(sy, fs=fs, order=2, cutoff=lp)
     peaks_ix=signal.find_peaks(-syc)[0]
     prominences=signal.peak_prominences(-syc, peaks_ix)[0]
@@ -432,6 +442,7 @@ def baseline_pupil_model(tx,sy,event_onsets, fs=1000, lp1=2, lp2=0.2):
     base : np.ndarray
         baseline estimate (same length as `sy`)
     """
+    import scipy.optimize
     syc=butter_lowpass_filter(sy, fs=fs, order=2, cutoff=lp1)
     
     # calculate indices for event-onsets

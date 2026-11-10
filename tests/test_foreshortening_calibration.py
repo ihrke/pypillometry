@@ -318,7 +318,7 @@ class TestForeshorteningCalibration:
 
 
 class TestFitForeshorteningMethod:
-    """Tests for EyeData.fit_foreshortening() method."""
+    """Tests for EyeData.pupil.fit_foreshortening() method."""
     
     def create_synthetic_data(self, n_samples=1000, fs=100.0):
         """Create synthetic eye-tracking data with known geometry."""
@@ -384,7 +384,7 @@ class TestFitForeshorteningMethod:
         data, *_ = self.create_synthetic_data(n_samples=500, fs=100.0)
         with warnings.catch_warnings():
             warnings.simplefilter("error", OptimizeWarning)
-            data.fit_foreshortening(eye='left', target_fs=50.0, lowpass_freq=3.0,
+            data.pupil.fit_foreshortening(eye='left', target_fs=50.0, lowpass_freq=3.0,
                                     verbose=True)
 
     def test_fit_basic(self):
@@ -392,7 +392,7 @@ class TestFitForeshorteningMethod:
         data, theta_true, phi_true, r_true, d_true = self.create_synthetic_data(n_samples=500, fs=100.0)
         
         # Fit the model
-        calib = data.fit_foreshortening(
+        calib = data.pupil.fit_foreshortening(
             eye='left',
             target_fs=50.0,
             lowpass_freq=3.0,
@@ -415,12 +415,12 @@ class TestFitForeshorteningMethod:
         from loguru import logger
         data, *_ = self.create_synthetic_data(n_samples=500, fs=100.0)
         data.data["left_pupil"][100:150] = 50.0   # junk, but finite and > 0
-        data.data.mask["left_pupil"][100:150] = 1
-        data.data.mask["left_x"][300:310] = 1
+        data.data.add_mask("left_pupil", np.s_[100:150])
+        data.data.add_mask("left_x", np.s_[300:310])
         messages = []
         hid = logger.add(lambda m: messages.append(str(m)), level="INFO")
         try:
-            data.fit_foreshortening(eye='left', target_fs=50.0, lowpass_freq=3.0, verbose=True)
+            data.pupil.fit_foreshortening(eye='left', target_fs=50.0, lowpass_freq=3.0, verbose=True)
         finally:
             logger.remove(hid)
         assert any("Valid samples after preprocessing: 440" in m for m in messages)
@@ -434,7 +434,7 @@ class TestFitForeshorteningMethod:
         # Create intervals for first half of data
         intervals = Intervals([(0, 5000)], units='ms')
         
-        calib = data.fit_foreshortening(
+        calib = data.pupil.fit_foreshortening(
             eye='left',
             intervals=intervals,
             verbose=False
@@ -455,7 +455,7 @@ class TestFitForeshorteningMethod:
             messages = []
             hid = logger.add(lambda m: messages.append(m.record["message"]), level="INFO")
             try:
-                data.fit_foreshortening(eye='left', intervals=iv, verbose=True)
+                data.pupil.fit_foreshortening(eye='left', intervals=iv, verbose=True)
             finally:
                 logger.remove(hid)
             n_used.append([m for m in messages if "from specified intervals" in m])
@@ -469,7 +469,7 @@ class TestFitForeshorteningMethod:
         data, theta_true, phi_true, r_true, d_true = self.create_synthetic_data(n_samples=100, fs=100.0)
         
         with pytest.raises(ValueError, match="Eye 'right' not found"):
-            data.fit_foreshortening(
+            data.pupil.fit_foreshortening(
                 eye='right',  # Only left eye exists
                 r=r_true,
                 d=d_true,
@@ -495,14 +495,14 @@ class TestFitForeshorteningMethod:
         )
         
         with pytest.raises(ValueError, match="Camera position not set"):
-            data.fit_foreshortening(eye='left', verbose=False)
+            data.pupil.fit_foreshortening(eye='left', verbose=False)
     
     def test_correction_reduces_spatial_variance(self):
         """Test that correction reduces gaze-position dependence."""
         data, theta_true, phi_true, r_true, d_true = self.create_synthetic_data(n_samples=500, fs=100.0)
         
         # Fit the model
-        calib = data.fit_foreshortening(
+        calib = data.pupil.fit_foreshortening(
             eye='left',
             verbose=False
         )
@@ -527,7 +527,7 @@ class TestFitForeshorteningMethod:
         """Test that fitted parameters are in reasonable ranges."""
         data, theta_true, phi_true, r_true, d_true = self.create_synthetic_data(n_samples=500, fs=100.0)
         
-        calib = data.fit_foreshortening(
+        calib = data.pupil.fit_foreshortening(
             eye='left',
             verbose=False
         )
@@ -604,7 +604,7 @@ class TestFitAndCorrection:
             self.create_synthetic_data_with_variation(n_samples=300, fs=100.0)
         
         # Fit the model
-        calib = data.fit_foreshortening(
+        calib = data.pupil.fit_foreshortening(
             eye='left',
             verbose=False
         )
@@ -630,13 +630,13 @@ class TestFitAndCorrection:
             self.create_synthetic_data_with_variation(n_samples=300, fs=100.0)
         
         # Fit with different knot spacings
-        calib_sparse = data.fit_foreshortening(
+        calib_sparse = data.pupil.fit_foreshortening(
             eye='left',
             knots_per_second=0.5,
             verbose=False
         )
         
-        calib_dense = data.fit_foreshortening(
+        calib_dense = data.pupil.fit_foreshortening(
             eye='left',
             knots_per_second=2.0,
             verbose=False
@@ -655,14 +655,14 @@ class TestFitAndCorrection:
             self.create_synthetic_data_with_variation(n_samples=300, fs=100.0)
         
         # Fit with low smoothness (more flexible)
-        calib_low = data.fit_foreshortening(
+        calib_low = data.pupil.fit_foreshortening(
             eye='left',
             lambda_smooth=0.1,
             verbose=False
         )
         
         # Fit with high smoothness (more constrained)
-        calib_high = data.fit_foreshortening(
+        calib_high = data.pupil.fit_foreshortening(
             eye='left',
             lambda_smooth=10.0,
             verbose=False
@@ -682,7 +682,7 @@ class TestFitAndCorrection:
         data, theta_true, phi_true, r_true, d_true, _, _ = \
             self.create_synthetic_data_with_variation(n_samples=300, fs=100.0)
         
-        calib = data.fit_foreshortening(
+        calib = data.pupil.fit_foreshortening(
             eye='left',
             verbose=False
         )
@@ -707,14 +707,14 @@ class TestFitAndCorrection:
             self.create_synthetic_data_with_variation(n_samples=300, fs=100.0)
         
         # Fit with different initial guesses
-        calib1 = data.fit_foreshortening(
+        calib1 = data.pupil.fit_foreshortening(
             eye='left',
             initial_theta=np.radians(90),
             initial_phi=0.0,
             verbose=False
         )
         
-        calib2 = data.fit_foreshortening(
+        calib2 = data.pupil.fit_foreshortening(
             eye='left',
             initial_theta=np.radians(80),
             initial_phi=np.radians(10),
@@ -734,7 +734,7 @@ class TestFitAndCorrection:
         data, theta_true, phi_true, r_true, d_true, _, _ = \
             self.create_synthetic_data_with_variation(n_samples=300, fs=100.0)
         
-        calib = data.fit_foreshortening(
+        calib = data.pupil.fit_foreshortening(
             eye='left',
             verbose=False
         )
@@ -750,7 +750,7 @@ class TestFitAndCorrection:
         data, theta_true, phi_true, r_true, d_true, _, _ = \
             self.create_synthetic_data_with_variation(n_samples=300, fs=100.0)
         
-        calib = data.fit_foreshortening(
+        calib = data.pupil.fit_foreshortening(
             eye='left',
             initial_phi=0.0,  # Camera on x-axis
             verbose=False
@@ -772,13 +772,13 @@ class TestFitAndCorrection:
             self.create_synthetic_data_with_variation(n_samples=300, fs=100.0)
         
         # Fit with different lowpass frequencies
-        calib_low = data.fit_foreshortening(
+        calib_low = data.pupil.fit_foreshortening(
             eye='left',
             lowpass_freq=2.0,
             verbose=False
         )
         
-        calib_high = data.fit_foreshortening(
+        calib_high = data.pupil.fit_foreshortening(
             eye='left',
             lowpass_freq=6.0,
             verbose=False
@@ -793,7 +793,7 @@ class TestFitAndCorrection:
         data, theta_true, phi_true, r_true, d_true, _, _ = \
             self.create_synthetic_data_with_variation(n_samples=300, fs=100.0)
         
-        calib = data.fit_foreshortening(
+        calib = data.pupil.fit_foreshortening(
             eye='left',
             verbose=False
         )
@@ -820,7 +820,7 @@ class TestFitAndCorrection:
         
         # Data already has experimental_setup from create_synthetic_data_with_variation
         # Fit without providing r and d (should use experimental_setup)
-        calib = data.fit_foreshortening(
+        calib = data.pupil.fit_foreshortening(
             eye='left',
             verbose=False
         )
@@ -845,7 +845,7 @@ class TestFitAndCorrection:
         
         # Should raise error when experimental_setup is not set
         with pytest.raises(ValueError, match="experimental_setup"):
-            data.fit_foreshortening(eye='left', verbose=False)
+            data.pupil.fit_foreshortening(eye='left', verbose=False)
     
     def test_fit_uses_setup_from_calibration(self):
         """Test that calibration object stores the experimental_setup."""
@@ -853,7 +853,7 @@ class TestFitAndCorrection:
             self.create_synthetic_data_with_variation(n_samples=300, fs=100.0)
         
         # Fit with data's experimental_setup
-        calib = data.fit_foreshortening(
+        calib = data.pupil.fit_foreshortening(
             eye='left',
             verbose=False
         )

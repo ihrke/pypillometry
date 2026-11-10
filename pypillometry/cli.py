@@ -7,9 +7,12 @@ Command-line programs of pypillometry.
   file
 - ``pypilinfo``: print a summary or a quality report of an Eyelink EDF file
   or a saved eyedata object
+- ``pypil-upgrade``: convert files saved with an older version of
+  pypillometry to the current file format
 """
 import argparse
 import os
+import sys
 
 # entry points of the command-line programs, not exported at the top level
 __all__ = []
@@ -65,7 +68,7 @@ def _read_file(source, keep_triggers=False):
             d = pp.EyeData.from_eyelink(
                 local, remove_eyelink_triggers=not keep_triggers)
         elif fmt in ("pickle", "hdf5"):
-            d = pp.read_pickle(local)
+            d = pp.read_file(local)
         else:
             raise ValueError(f"{source} is neither an EDF file nor a pickle "
                              f"or HDF5 file")
@@ -84,16 +87,17 @@ def _pypilview_parser():
     parser = argparse.ArgumentParser(
         prog="pypilview",
         description="Open the pypillometry viewer for an Eyelink EDF file or "
-                    "an eyedata object saved with pp.write_pickle() (e.g., "
+                    "an eyedata object saved with pp.write_file() (e.g., "
                     ".pkl, .pypil or .h5). The format is detected from the file "
                     "content. Press H in the viewer for the keyboard controls.")
-    parser.add_argument("file",
+    # `file` is optional for argparse so that it may follow --eyes/--variables
+    # (which take several values), see _file_after_list_option
+    parser.add_argument("file", nargs="?",
                         help="local file, HTTP(S) URL or SSH URL "
                              "(ssh://server/folder/file.edf)")
     parser.add_argument("--eyes", nargs="+", metavar="EYE",
                         help="eyes to show (e.g., left right); default: all")
     parser.add_argument("--variables", nargs="+", metavar="VAR",
-                        choices=["pupil", "x", "y"],
                         help="variables to show (pupil, x, y); default: all")
     parser.add_argument("--keep-triggers", action="store_true",
                         help="EDF only: keep Eyelink triggers (calibration, "
@@ -102,13 +106,36 @@ def _pypilview_parser():
     return parser
 
 
+_VIEW_VARIABLES = ("pupil", "x", "y")
+
+
+def _file_after_list_option(parser, args, argv):
+    """pypilview: take the file from the end of --eyes/--variables if it was
+    given after them (``pypilview --eyes right FILE``), check the variables."""
+    if args.file is None:
+        # (argparse also accepts abbreviations, e.g. --eye)
+        given = [(i, opt) for i, a in enumerate(argv)
+                 for opt in ("eyes", "variables")
+                 if len(a) > 3 and f"--{opt}".startswith(a)]
+        values = getattr(args, max(given)[1]) if given else None
+        if not values:
+            parser.error("the following arguments are required: file")
+        args.file = values.pop()
+        if not values:
+            parser.error(f"--{max(given)[1]} needs at least one value before the file")
+    bad = [v for v in args.variables or [] if v not in _VIEW_VARIABLES]
+    if bad:
+        parser.error(f"argument --variables: invalid choice: {', '.join(map(repr, bad))} "
+                     f"(choose from {', '.join(_VIEW_VARIABLES)})")
+
+
 def pypilview_main(argv=None):
     """
     Entry point of the ``pypilview`` command.
 
     Reads an EDF file with :meth:`~pypillometry.EyeData.from_eyelink` or an
     eyedata object saved in a pickle or HDF5 file with
-    :func:`~pypillometry.read_pickle` (the format is detected from the first
+    :func:`~pypillometry.read_file` (the format is detected from the first
     bytes of the file, so the extension does not matter) and opens it with :func:`~pypillometry.view`. URLs are
     downloaded to a temporary directory first. Only open pickle files you
     trust: unpickling can run arbitrary code.
@@ -125,7 +152,9 @@ def pypilview_main(argv=None):
         exit status (0 on success)
     """
     parser = _pypilview_parser()
+    argv = sys.argv[1:] if argv is None else list(argv)
     args = parser.parse_args(argv)
+    _file_after_list_option(parser, args, argv)
     _set_verbosity(args)
 
     is_url = "://" in args.file
@@ -139,7 +168,7 @@ def pypilview_main(argv=None):
         d, fmt, _ = _read_file(args.file, keep_triggers=args.keep_triggers)
     except ValueError as e:
         parser.error(str(e))
-    if fmt != "edf" and not isinstance(d, pp.GenericEyeData):
+    if fmt != "edf" and not isinstance(d, pp.EyeData):
         parser.error(f"{args.file} does not contain an eyedata object "
                      f"(found {type(d).__name__})")
 
@@ -160,7 +189,7 @@ def _edf2pypil_parser():
         prog="edf2pypil",
         description="Read an Eyelink EDF file and save it as an EyeData object "
                     "in a pickle file, or an HDF5 file if the output ends in "
-                    ".h5 or .hdf5 (read it with pp.read_pickle() or open "
+                    ".h5 or .hdf5 (read it with pp.read_file() or open "
                     "it with pypilview).")
     parser.add_argument("file",
                         help="EDF file, HTTP(S) URL or SSH URL "
@@ -183,7 +212,7 @@ def edf2pypil_main(argv=None):
     Entry point of the ``edf2pypil`` command.
 
     Reads an EDF file with :meth:`~pypillometry.EyeData.from_eyelink` and
-    saves the object with :func:`~pypillometry.write_pickle` (as HDF5 if the
+    saves the object with :func:`~pypillometry.write_file` (as HDF5 if the
     output file ends in ``.h5`` or ``.hdf5``).
 
     Parameters
@@ -216,7 +245,7 @@ def edf2pypil_main(argv=None):
             parser.error(f"{args.file} is not an EDF file")
         d = pp.EyeData.from_eyelink(
             local, remove_eyelink_triggers=not args.keep_triggers)
-    pp.write_pickle(d, output)
+    pp.write_file(d, output)
     if not args.quiet:
         print(f"Saved {output}")
     return 0
@@ -226,7 +255,7 @@ def _pypilinfo_parser():
     parser = argparse.ArgumentParser(
         prog="pypilinfo",
         description="Print a summary of Eyelink EDF files or eyedata objects "
-                    "saved with pp.write_pickle() (e.g., .pkl, .pypil or .h5). The "
+                    "saved with pp.write_file() (e.g., .pkl, .pypil or .h5). The "
                     "format is detected from the file content. Reading EDF "
                     "files is slow (about a minute for 90 MB); convert them "
                     "with edf2pypil first if you need them more than once.")
@@ -281,7 +310,7 @@ def pypilinfo_main(argv=None):
     Reads each file like ``pypilview`` (EDF, pickle or HDF5, detected from
     the file content) and prints its format, size and a summary of the stored
     object (its :func:`repr`). With ``--quality``, the data-quality report
-    (:meth:`~pypillometry.GenericEyeData.quality_report`) is printed
+    (:meth:`~pypillometry.EyeData.quality_report`) is printed
     instead (with ``--descriptions``, each measure is explained); for several
     files, a summary table comes first. With ``--html``, the quality reports of all files are written
     to an HTML file (``-o``, default: a temporary file), which is opened in
@@ -364,3 +393,205 @@ def pypilinfo_main(argv=None):
             import webbrowser
             webbrowser.open(pathlib.Path(fname).resolve().as_uri())
     return status
+
+
+def _upgrade_parser():
+    parser = argparse.ArgumentParser(
+        prog="pypil-upgrade",
+        description="Convert pickle and HDF5 files saved with an older version of "
+                    "pypillometry (e.g., with pp.write_pickle() or d.write_file()) to the "
+                    "current file format. Old files are also upgraded whenever they are "
+                    "read; this converts them once. Each file keeps its format (pickle "
+                    "or HDF5, detected from the content); other files are left alone. "
+                    "Only convert pickle files you trust: unpickling can run arbitrary "
+                    "code.")
+    parser.add_argument("paths", nargs="+", metavar="path",
+                        help="files or folders (the files directly in a folder; with -r, "
+                             "also those in its subfolders)")
+    target = parser.add_mutually_exclusive_group()
+    target.add_argument("-o", "--output", metavar="PATH",
+                        help="write the converted files here: a file name for a single "
+                             "input file, otherwise a folder (created if needed; files "
+                             "of an input folder keep their paths relative to it); "
+                             "files that are up to date are not copied")
+    target.add_argument("-i", "--in-place", action="store_true",
+                        help="replace the old files with the converted ones")
+    parser.add_argument("-n", "--dry-run", action="store_true",
+                        help="only report what would be converted (no -o/-i needed)")
+    parser.add_argument("-f", "--force", action="store_true",
+                        help="with -o: overwrite existing output files")
+    parser.add_argument("-r", "--recursive", action="store_true",
+                        help="also convert the files in subfolders of the given folders")
+    _add_verbosity(parser)
+    return parser
+
+
+def _upgrade_sources(paths, recursive):
+    """List of (file, path relative to the given folder or None) for `paths`."""
+    out = []
+    for path in paths:
+        if os.path.isfile(path):
+            out.append((path, None))
+            continue
+        for root, dirs, files in os.walk(path):
+            dirs.sort()
+            if not recursive:
+                dirs.clear()
+            for name in sorted(files):
+                fname = os.path.join(root, name)
+                out.append((fname, os.path.relpath(fname, path)))
+    return out
+
+
+def _upgrade_targets(sources, output, single):
+    """Output file for each source (None: in place)."""
+    if output is None:
+        return [None] * len(sources)
+    if single and not (os.path.isdir(output) or output.endswith(os.sep)):
+        return [output]
+    return [os.path.join(output, rel or os.path.basename(src)) for src, rel in sources]
+
+
+def _load_versions(fname):
+    """Load `fname` (pickle or HDF5); return the object and the format versions
+    of the pypillometry objects in it (before they were upgraded)."""
+    from . import state
+    from .io import read_file
+    with state._recording_versions() as seen:
+        obj = read_file(fname)
+    return obj, [version for _, version in seen]
+
+
+def _is_pickle(fname):
+    """True if `fname` (detected as "pickle") starts with the pickle protocol
+    marker after decompression (e.g., not some other gzip file)."""
+    from .io import _open_maybe_compressed
+    try:
+        with _open_maybe_compressed(fname) as f:
+            return f.read(1) == b"\x80"
+    except Exception:
+        return False
+
+
+def _write_like(obj, fmt, source, target):
+    """Write `obj` to `target` in the format of `source` (`fmt`: "pickle" or
+    "hdf5"; pickles compressed if `source` was); via a temporary file."""
+    from . import hdf5, state
+    from .io import write_file
+    folder = os.path.dirname(os.path.abspath(target))
+    os.makedirs(folder, exist_ok=True)
+    tmp = os.path.join(folder, f".{os.path.basename(target)}.pypil-upgrade.tmp")
+    try:
+        if fmt == "hdf5":
+            hdf5.write_state(state.to_state(obj), tmp)
+        else:
+            with open(source, "rb") as f:
+                plain = f.read(1) == b"\x80"
+            write_file(obj, tmp, compress=not plain)
+        if os.path.exists(target):
+            import shutil
+            shutil.copymode(target, tmp)
+        os.replace(tmp, target)
+    finally:
+        if os.path.exists(tmp):
+            os.remove(tmp)
+
+
+def pypil_upgrade_main(argv=None):
+    """
+    Entry point of the ``pypil-upgrade`` command.
+
+    Reads each pickle or HDF5 file (the format is detected from the file
+    content) with :func:`~pypillometry.read_file`, which upgrades the
+    objects saved with an older version of pypillometry, and writes it again
+    in the same format: in place (``-i``) or to ``-o``. Files that are
+    already in the current format are not written; files that are neither
+    pickle nor HDF5 files, or contain no pypillometry objects, are left
+    alone. A line for each file (unless ``-q``) and a summary are printed;
+    with ``-n``, nothing is written.
+
+    Parameters
+    ----------
+    argv : list of str, optional
+        command-line arguments (without the program name); if None
+        (default), ``sys.argv[1:]`` is used
+
+    Returns
+    -------
+    int
+        exit status (0 if no file failed, 1 otherwise)
+    """
+    import sys
+    parser = _upgrade_parser()
+    args = parser.parse_args(argv)
+    _set_verbosity(args)
+    if not (args.dry_run or args.output or args.in_place):
+        parser.error("give -o/--output or -i/--in-place (or -n/--dry-run)")
+    if args.force and not args.output:
+        parser.error("-f/--force needs -o/--output")
+    missing = [p for p in args.paths if not os.path.exists(p)]
+    if missing:
+        parser.error(f"not found: {', '.join(missing)}")
+
+    from .state import FORMAT_VERSION
+    sources = _upgrade_sources(args.paths, args.recursive)
+    single = len(args.paths) == 1 and os.path.isfile(args.paths[0])
+    targets = _upgrade_targets(sources, args.output, single)
+    if args.output:
+        abs_targets = [os.path.abspath(t) for t in targets]
+        if len(set(abs_targets)) < len(abs_targets):
+            parser.error("several input files would be written to the same output file")
+        if set(abs_targets) & {os.path.abspath(src) for src, _ in sources}:
+            parser.error("an output file is one of the input files (use -i to convert "
+                         "in place)")
+
+    def report(line):
+        if not args.quiet:
+            print(line)
+
+    counts = {"upgraded": 0, "current": 0, "skipped": 0, "failed": 0}
+    for (source, _), target in zip(sources, targets):
+        fmt = _detect_format(source)
+        if fmt not in ("pickle", "hdf5") or (fmt == "pickle" and not _is_pickle(source)):
+            report(f"{source}: skipped (not a pickle or HDF5 file)")
+            counts["skipped"] += 1
+            continue
+        try:
+            obj, versions = _load_versions(source)
+        except Exception as e:
+            print(f"pypil-upgrade: {source}: cannot read: {e}", file=sys.stderr)
+            counts["failed"] += 1
+            continue
+        if not versions:
+            report(f"{source}: skipped (no pypillometry objects)")
+            counts["skipped"] += 1
+            continue
+        old = min(versions)
+        if old >= FORMAT_VERSION:
+            report(f"{source}: up to date (format {FORMAT_VERSION})")
+            counts["current"] += 1
+            continue
+        out = target or os.path.realpath(source)
+        change = f"format {old} -> {FORMAT_VERSION} ({type(obj).__name__}, {fmt})"
+        if args.dry_run:
+            report(f"{source}: would convert, {change}" + (f", to {target}" if target else ""))
+            counts["upgraded"] += 1
+            continue
+        if target and os.path.exists(target) and not args.force:
+            print(f"pypil-upgrade: {source}: output file exists: {target} (use -f to "
+                  f"overwrite)", file=sys.stderr)
+            counts["failed"] += 1
+            continue
+        try:
+            _write_like(obj, fmt, source, out)
+        except Exception as e:
+            print(f"pypil-upgrade: {source}: cannot write {out}: {e}", file=sys.stderr)
+            counts["failed"] += 1
+            continue
+        report(f"{source}: converted, {change}" + (f", written to {target}" if target else ""))
+        counts["upgraded"] += 1
+
+    verb = "would be converted" if args.dry_run else "converted"
+    print(f"{len(sources)} file(s): {counts['upgraded']} {verb}, {counts['current']} up to "
+          f"date, {counts['skipped']} skipped, {counts['failed']} failed")
+    return 1 if counts["failed"] else 0

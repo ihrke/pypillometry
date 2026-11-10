@@ -13,7 +13,7 @@ class TestInplaceDefault(unittest.TestCase):
         pp.set_default_inplace(True)
 
     def make(self, **kwargs):
-        return pp.PupilData(left_pupil=self.x, sampling_rate=100, **kwargs)
+        return pp.EyeData(left_pupil=self.x, sampling_rate=100, **kwargs)
 
     def test_package_default_is_inplace(self):
         self.assertTrue(pp.get_default_inplace())
@@ -49,27 +49,27 @@ class TestInplaceDefault(unittest.TestCase):
         d = self.make(inplace=False)
         self.assertFalse(d.copy().inplace)
 
-    def test_to_pupildata_inherits_setting(self):
+    def test_drop_data_inherits_setting(self):
         d = pp.EyeData(left_x=self.x, left_y=self.x, left_pupil=self.x,
                        sampling_rate=100, inplace=True)
-        self.assertTrue(d.to_pupildata("left").inplace)
+        self.assertTrue(d.drop_data(variables=["x", "y"], inplace=False).inplace)
         d = pp.EyeData(left_x=self.x, left_y=self.x, left_pupil=self.x,
                        sampling_rate=100)
-        self.assertIsNone(d.to_pupildata("left").inplace)
+        self.assertIsNone(d.drop_data(variables=["x", "y"], inplace=False).inplace)
 
     def test_internal_mask_calls_with_copy_default(self):
         # methods that mask internally must still mask the returned copy
         from pypillometry.eyedata.experimental_setup import ExperimentalSetup
         pp.set_default_inplace(False)
         x = np.array([100., 200, 300, 1500, 500])
-        d = pp.GazeData(sampling_rate=10, left_x=x, left_y=x, right_x=x, right_y=x,
+        d = pp.EyeData(sampling_rate=10, left_x=x, left_y=x, right_x=x, right_y=x,
                         experimental_setup=ExperimentalSetup(screen_resolution=(1280, 1024)))
-        r = d.mask_offscreen_coords(eyes="left")
+        r = d.gaze.mask_offscreen(eyes="left")
         self.assertIsNot(r, d)
         self.assertEqual(r.data.mask["left_x"][3], 1)
         self.assertEqual(d.data.mask["left_x"][3], 0)
         d.data["right_x"] = x + np.array([0., 0, 0, 0, 900])
-        r = d.mask_eye_divergences(threshold=.5)
+        r = d.gaze.mask_divergences(threshold=.5)
         self.assertGreater(r.data.mask["left_x"].sum(), 0)
         self.assertEqual(d.data.mask["left_x"].sum(), 0)
 

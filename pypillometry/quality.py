@@ -4,7 +4,7 @@ quality.py
 
 Data-quality report for eye-tracking data.
 
-The report is created by :meth:`~pypillometry.GenericEyeData.quality_report`
+The report is created by :meth:`~pypillometry.EyeData.quality_report`
 and is a :class:`QualityReport`. It collects quality measures (each a
 :class:`QualityMetric`) in sections:
 
@@ -24,7 +24,6 @@ it makes sense, a measure is labeled as "good", "ok", "poor" or "bad" based
 on thresholds (see :data:`DEFAULT_QUALITY_THRESHOLDS`).
 """
 
-import functools
 import os
 import sys
 import textwrap
@@ -32,6 +31,8 @@ from dataclasses import dataclass
 from typing import Optional, Union
 
 import numpy as np
+
+from .templates import render
 
 __all__ = ["QualityReport", "QualityMetric"]
 
@@ -80,6 +81,9 @@ DEFAULT_QUALITY_THRESHOLDS = {
     "artifacts.pupil_masked_pct": (10, 20, 35),
     "artifacts.gaze_masked_pct": (10, 20, 35),
     "artifacts.interpolated_pct": (10, 20, 30),
+    "artifacts.offscreen_pct": None,
+    "artifacts.divergence_pct": None,
+    "artifacts.user_pct": None,
     "artifacts.other_pct": None,
     # calibration/validation (thresholds as used by Eyelink)
     "calibration.mean_error": (0.5, 1.0, 1.5),
@@ -154,21 +158,6 @@ def _ansi_label(label, width=0, color=True) -> str:
         return " " * width
     txt = label.ljust(width)
     return _ANSI_COLORS[label] + txt + _ANSI_RESET if color else txt
-
-
-@functools.lru_cache(maxsize=None)
-def _jinja_env():
-    """Jinja environment for the templates in pypillometry/templates (autoescaped)."""
-    import jinja2
-    env = jinja2.Environment(loader=jinja2.PackageLoader("pypillometry", "templates"),
-                             autoescape=True, trim_blocks=True, lstrip_blocks=True)
-    env.filters["bounds"] = _bounds_text
-    return env
-
-
-def _render(template: str, **context) -> str:
-    """Render one of the quality-report templates."""
-    return _jinja_env().get_template(template).render(**context)
 
 
 def _supports_color(stream=None) -> bool:
@@ -251,7 +240,7 @@ class QualityReport:
     """
     Data-quality report for an eyedata object.
 
-    Created by :meth:`~pypillometry.GenericEyeData.quality_report`. The
+    Created by :meth:`~pypillometry.EyeData.quality_report`. The
     report can be
 
     - shown as text (``print(report)``; labels are colored if the terminal
@@ -494,7 +483,7 @@ class QualityReport:
 
     def _repr_html_(self) -> str:
         """Rich HTML representation for Jupyter notebooks."""
-        return _render("quality_report.html", **self._html_context())
+        return render("quality_report.html", **self._html_context())
 
 
 # ----------------------------------------------------------------------
@@ -571,7 +560,7 @@ def _html_page(entries, names=None, tooltips=None) -> str:
                        tooltip=tooltips[i] if tooltips else None,
                        labels=[row["overall"]] + [row["sections"][s] for s in sections])
         context.update(rows=rows, sections=[SECTION_TITLES[s] for s in sections])
-    return _render("quality_page.html", **context)
+    return render("quality_page.html", **context)
 
 
 # ----------------------------------------------------------------------
@@ -585,7 +574,11 @@ def _merge_thresholds(thresholds: Optional[dict]) -> dict:
             raise ValueError(f"Unknown quality measure '{key}'. "
                              f"Available: {', '.join(res)}")
         if bounds is not None:
-            bounds = tuple(float(b) for b in bounds)
+            try:
+                bounds = tuple(float(b) for b in bounds)
+            except (TypeError, ValueError):
+                raise ValueError(f"Thresholds for '{key}' must be 3 numbers (good, ok, poor) "
+                                 f"or None, got {bounds!r}") from None
             if len(bounds) != 3:
                 raise ValueError(f"Thresholds for '{key}' must have 3 values "
                                  f"(good, ok, poor), got {bounds}")
@@ -669,11 +662,12 @@ def _degrees(setup, x, y):
         return None
 
 
-def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[]) -> QualityReport:
+def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[],
+                            policy="default") -> QualityReport:
     """
     Compute a :class:`QualityReport` for an eyedata object.
 
-    See :meth:`~pypillometry.GenericEyeData.quality_report`.
+    See :meth:`~pypillometry.EyeData.quality_report`.
     """
     thresholds = _merge_thresholds(thresholds)
     b = _Builder(thresholds)
@@ -692,10 +686,10 @@ def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[]) -> 
         return np.where(inc, v, np.nan)
 
     raw = {k: included(v) for k, v in obj.data.data.items()}
-    masks = {k: obj.data.mask[k].astype(bool) & inc for k in obj.data.mask}
+    masks = {k: obj.data.get_policy_mask(k, policy) & inc for k in obj.data.keys()}
 
-    if isinstance(eyes, str):
-        eyes = [eyes]
+    # the requested eyes (None or []: all); unknown eyes raise a KeyError
+    eyes = list(dict.fromkeys(eye for eye, _ in obj.data.select(eyes))) if eyes else []
     pupil_eyes = obj.data.get_available_eyes("pupil")
     gaze_eyes = [e for e in obj.data.get_available_eyes("x") if f"{e}_y" in raw]
     if eyes:
@@ -821,9 +815,9 @@ def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[]) -> 
     blinks_mask = {}
     for eye in list(dict.fromkeys(pupil_eyes + gaze_eyes)):
         var = "pupil" if eye in pupil_eyes else "x"
-        if obj._blinks.get(f"{eye}_{var}") is None:
+        if "blink" not in obj.data.layer_names:  # no blink detection
             continue
-        bl = obj.get_blinks(eye, var)
+        bl = obj.get_blinks(eye, var, units="samples")[f"{eye}_{var}"]
         blinks_mask[eye] = bl.to_mask(obj).astype(bool) & inc
         dur_ms = np.array([(e - s) for s, e in bl.intervals], dtype=float) / fs * 1000
         b.add("blinks", eye, "n", "number", int(len(bl)), "", "number of detected blinks")
@@ -843,40 +837,77 @@ def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[]) -> 
               "closures or tracking losses rather than blinks)")
 
     # --- artifacts (only if data was masked/interpolated) ---------------
+    # percentages of the layers per channel (of the included samples), as
+    # in d.layer_stats()
+    stats = obj.layer_stats(policy=policy)
+
+    def channel_pct(key, name):
+        """Percentage of `key` in layer `name` (0 if the layer is not set there)."""
+        if n == 0:
+            return np.nan
+        return stats.get(key, {}).get(name, {}).get("percent", 0.0)
+
+    def layer(keys, name):
+        """Included samples where layer `name` is set for one of `keys`."""
+        return np.logical_or.reduce([obj.data.get_layer(k, name) for k in keys]) & inc
+
+    def missing(keys):
+        """Included samples that are NaN in one of `keys`."""
+        return np.logical_or.reduce([~np.isfinite(raw[k]) for k in keys]) & inc
+
     for eye in list(dict.fromkeys(pupil_eyes + gaze_eyes)):
         metrics = []
         processed = eye in blinks_mask
+        eye_keys = [k for k in (f"{eye}_pupil", f"{eye}_x", f"{eye}_y") if k in raw]
         if eye in pupil_eyes:
-            key = f"{eye}_pupil"
-            m = masks[key]
-            nan = ~np.isfinite(raw[key]) & inc
+            keys = [f"{eye}_pupil"]
+            m = masks[keys[0]]
+            nan = missing(keys)
             processed |= bool(np.any(m != nan))
             metrics.append(("pupil_masked_pct", "pupil masked", _pct(m.sum(), n),
                             "percentage of masked pupil samples (missing data, blinks and "
-                            "other artifacts)"))
-            other = m & ~nan & ~blinks_mask.get(eye, np.zeros(n_total, bool))
-            if obj._interpolated_blinks.get(key) is not None:
+                            "other artifacts; interpolated samples only with the 'strict' "
+                            "mask policy)"))
+            if "interpolated" in obj.data.layer_names:
                 processed = True
-                interp = (obj.get_interpolated_blinks(eye, "pupil").to_mask(obj).astype(bool)
-                          & inc).sum()
-                metrics.append(("interpolated_pct", "interpolated", _pct(interp, n),
+                metrics.append(("interpolated_pct", "interpolated",
+                                channel_pct(f"{eye}_pupil", "interpolated"),
                                 "percentage of pupil samples that were interpolated (e.g., blinks)"))
         if eye in gaze_eyes:
-            m = masks[f"{eye}_x"] | masks[f"{eye}_y"]
-            nan = ~(np.isfinite(raw[f"{eye}_x"]) & np.isfinite(raw[f"{eye}_y"])) & inc
-            processed |= bool(np.any(m != nan))
-            metrics.append(("gaze_masked_pct", "gaze masked", _pct(m.sum(), n),
+            gkeys = [f"{eye}_x", f"{eye}_y"]
+            gm = masks[gkeys[0]] | masks[gkeys[1]]
+            gnan = missing(gkeys)
+            processed |= bool(np.any(gm != gnan))
+            metrics.append(("gaze_masked_pct", "gaze masked", _pct(gm.sum(), n),
                             "percentage of masked gaze samples (missing data, blinks and other "
-                            "artifacts)"))
+                            "artifacts; interpolated samples only with the 'strict' mask "
+                            "policy)"))
             if eye not in pupil_eyes:
-                other = m & ~nan & ~blinks_mask.get(eye, np.zeros(n_total, bool))
+                keys, m, nan = gkeys, gm, gnan
+        # masked time split by layer (any variable of the eye)
+        for name, title, desc in (
+                ("offscreen", "masked off-screen", "gaze off the screen "
+                 "(see d.gaze.mask_offscreen)"),
+                ("divergence", "masked divergence", "gaze positions of the eyes too far "
+                 "apart (see d.gaze.mask_divergences)"),
+                ("user", "masked by the user", "masked with mask_intervals or by "
+                 "assigning a masked array")):
+            if name in obj.data.layer_names:
+                processed = True
+                # off-screen and divergence are set on x and y together; the
+                # user layer can differ between the channels of an eye
+                value = channel_pct(f"{eye}_x", name) if name != "user" and eye in gaze_eyes \
+                    else _pct(layer(eye_keys, name).sum(), n)
+                metrics.append((f"{name}_pct", title, value,
+                                f"percentage of samples masked because of {desc}"))
         if not processed:
             continue
         for name, title, value, desc in metrics:
             b.add("artifacts", eye, name, title, value, "%", desc)
+        other = m & ~nan & ~layer(keys, "blink") & ~layer(keys, "interpolated")
         b.add("artifacts", eye, "other_pct", "other artifacts", _pct(other.sum(), n), "%",
-              "percentage of samples masked for other reasons than missing data or blinks "
-              "(e.g., off-screen gaze, eye divergence)")
+              "percentage of samples masked for other reasons than missing data, blinks "
+              "or interpolation (e.g., off-screen gaze, eye divergence, user masks)")
 
     # --- calibration ----------------------------------------------------
     calibration = getattr(obj, "calibration", None)

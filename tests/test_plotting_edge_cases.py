@@ -33,14 +33,14 @@ class TestPlottingEdgeCases(unittest.TestCase):
     
     def test_plot_intervals_many_intervals(self):
         """Test plot_intervals with Intervals object containing many intervals"""
-        intervals = self.data.get_intervals("F", window=(-200, 200), units="ms")
+        intervals = self.data.get_epochs("F", window=(-200, 200), units="ms")
         figs = self.data.plot.plot_intervals(intervals, nrow=5, ncol=3)
         self.assertIsNotNone(figs)
     
     def test_pupil_plot_very_short_range(self):
         """Test pupil_plot with very short time range"""
         fig = plt.figure()
-        self.data.plot.pupil_plot(plot_range=(0, 0.001), units="sec")
+        self.data.plot.pupil_plot(plot_range=(0, 1), units="sec")
         self.assertIsNotNone(plt.gcf())
     
     def test_pupil_plot_full_range(self):
@@ -95,7 +95,7 @@ class TestPlottingMinimalData(unittest.TestCase):
     
     def setUp(self):
         """Create minimal test data"""
-        self.data = pp.PupilData(
+        self.data = pp.EyeData(
             sampling_rate=10,
             left_pupil=[1, 2, 3, 4, 5],
             right_pupil=[2, 3, 4, 5, 6]
@@ -131,7 +131,7 @@ class TestPlottingSingleEye(unittest.TestCase):
     
     def setUp(self):
         """Create data with only left eye"""
-        self.data = pp.PupilData(
+        self.data = pp.EyeData(
             sampling_rate=100,
             left_pupil=np.sin(np.linspace(0, 10*np.pi, 1000))
         )
@@ -161,7 +161,7 @@ class TestPlottingLargeData(unittest.TestCase):
     
     def setUp(self):
         """Create large test data"""
-        self.data = pp.PupilData(
+        self.data = pp.EyeData(
             sampling_rate=1000,  # 1000 Hz
             left_pupil=np.random.randn(100000),  # 100 seconds
             right_pupil=np.random.randn(100000)
