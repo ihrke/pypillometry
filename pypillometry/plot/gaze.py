@@ -429,15 +429,16 @@ class GazePlots(GenericPlots):
             ax.set_title(title)
         return ax
     
-    def plot_calibration(self, eyes: Union[str, list, None] = None, show_surface: bool = True, 
-                        interpolation: str = 'rbf', figsize: tuple = (10, 8)):
+    def plot_calibration(self, eyes: Union[str, list, None] = None, show_surface: bool = True,
+                         interpolation: str = 'rbf', title: str = None, axes=None,
+                         figsize: tuple = None):
         """
         Plot spatial calibration data for one or more eyes in subplots.
         
-        Creates a figure with subplots for each eye and calls the plot() method 
-        on each SpatialCalibration object to show calibration accuracy with 
-        target points (black X), measured points (dark blue +), and optional 
-        interpolated error surface.
+        Plots each eye in a separate subplot with the plot() method of its
+        SpatialCalibration object: calibration accuracy with target points
+        (black X), measured points (dark blue +), and optional interpolated
+        error surface.
         
         Parameters
         ----------
@@ -450,37 +451,40 @@ class GazePlots(GenericPlots):
         interpolation : str, default 'rbf'
             Interpolation method for surface (only used if show_surface=True).
             Options: 'rbf', 'linear', 'cubic', 'nearest'
-        figsize : tuple, default (10, 8)
-            Figure size per subplot (width, height) in inches.
-        
+        title : str, optional
+            title of the figure
+        axes : list of matplotlib.axes.Axes, optional
+            axes to plot on, one per eye; default: a new figure (one
+            subplot per eye, side by side)
+        figsize : tuple, optional
+            size of the new figure; default: 10 x 8 inches per eye
+
         Returns
         -------
-        fig : matplotlib.figure.Figure
-            The figure object
-        axes : list or matplotlib.axes.Axes
-            List of axis objects (or single axis if only one eye)
-        
+        matplotlib.figure.Figure
+            the figure of the plot
+
         Raises
         ------
         ValueError
-            If no calibration data is available
+            If no calibration data is available, or if `axes` does not
+            contain one axes per eye
         
         Examples
         --------
         >>> import pypillometry as pp
         >>> data = pp.EyeData.from_eyelink('data.edf')  # doctest: +SKIP
         >>> # Plot all eyes with surface
-        >>> fig, axes = data.plot.plot_calibration()  # doctest: +SKIP
+        >>> fig = data.plot.plot_calibration()  # doctest: +SKIP
         >>> 
         >>> # Plot only left eye without surface
-        >>> fig, ax = data.plot.plot_calibration(eyes='left', show_surface=False)  # doctest: +SKIP
+        >>> fig = data.plot.plot_calibration(eyes='left', show_surface=False)  # doctest: +SKIP
         >>> 
         >>> # Plot specific eyes
-        >>> fig, axes = data.plot.plot_calibration(eyes=['left', 'right'])  # doctest: +SKIP
+        >>> fig = data.plot.plot_calibration(eyes=['left', 'right'])  # doctest: +SKIP
         """
-        import matplotlib.pyplot as plt
         obj = self._d
-        
+
         # Check if calibration data exists
         if not hasattr(obj, 'calibration') or obj.calibration is None:
             raise ValueError("No calibration data available. Load data with calibration or add it manually.")
@@ -499,23 +503,14 @@ class GazePlots(GenericPlots):
         if len(available_eyes) == 0:
             raise ValueError(f"No calibration data available for requested eyes: {eyes_to_plot}")
         
-        # Create figure and subplots
         n_eyes = len(available_eyes)
-        fig, axes_array = plt.subplots(1, n_eyes, figsize=(figsize[0] * n_eyes, figsize[1]))
-        
-        # Make axes iterable even if only one subplot
-        if n_eyes == 1:
-            axes_array = [axes_array]
-        
-        # Plot each eye by setting it as current axes and calling plot()
-        for ax, eye in zip(axes_array, available_eyes):
-            plt.sca(ax)  # Set current axes
-            obj.calibration[eye].plot(show_surface=show_surface, interpolation=interpolation)
-        
-        fig.tight_layout()
-        
-        # Return single axis if only one eye, otherwise return list
-        if n_eyes == 1:
-            return fig, axes_array[0]
-        else:
-            return fig, axes_array    
+        fig, axs = get_axes(axes, n_eyes, "eye", figsize or (10 * n_eyes, 8),
+                            nrows=1, ncols=n_eyes)
+        for ax, eye in zip(axs, available_eyes):
+            obj.calibration[eye].plot(show_surface=show_surface, interpolation=interpolation,
+                                      ax=ax)
+        if title is not None:
+            fig.suptitle(title)
+        if axes is None:
+            fig.tight_layout()
+        return fig

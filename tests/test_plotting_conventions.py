@@ -171,6 +171,20 @@ class TestMultiPanel(ConventionTest):
         self.assertMultiPanel(self.d.plot.plot_pupil_foreshortening_error_surface, 2,
                               eyes=["left", "right"])
 
+    def test_plot_calibration(self):
+        from pypillometry.eyedata.spatial_calibration import SpatialCalibration
+        points = np.array([[640, 512], [640, 87], [640, 936], [96, 512], [1183, 512]])
+        errors = np.array([[0.3, -13, -2], [0.3, 13, -0.2], [0.42, 16, 9],
+                           [0.79, -19, 30], [0.62, 13, 24]])
+        d = self.d.copy()
+        d.calibration = {eye: SpatialCalibration(eye, "HV5", points, points + errors[:, 1:],
+                                                 errors, (1280, 1024))
+                         for eye in ["left", "right"]}
+        self.assertMultiPanel(d.plot.plot_calibration, 2)
+        fig = d.plot.plot_calibration(eyes="left", title="T", figsize=(5, 4))
+        self.assertEqual(fig._suptitle.get_text(), "T")
+        np.testing.assert_allclose(fig.get_size_inches(), (5, 4))
+
 
 if __name__ == "__main__":
     unittest.main()
