@@ -23,7 +23,6 @@
       ~Intervals.merge
       ~Intervals.pad
       ~Intervals.plot
-      ~Intervals.plot_highlight
       ~Intervals.stats
       ~Intervals.to_mask
       ~Intervals.to_units

@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>group_segments &#8212; pypillometry v2.1.0</title>
+    <title>group_segments &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,12 +54,12 @@
     <link rel="icon" href="../../_static/pypillometry_logo_200x200.png"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Plotting" href="../plotting.html" />
-    <link rel="prev" title="GroupLevelSegmentedData" href="pypillometry.GroupLevelSegmentedData.html" />
+    <link rel="next" title="SegmentedPupilNamespace" href="pypillometry.segmented.SegmentedPupilNamespace.html" />
+    <link rel="prev" title="concat_segments" href="pypillometry.concat_segments.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -103,9 +103,6 @@
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -409,40 +406,71 @@
   <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../data.html">Data classes</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.EyeData.html">EyeData</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.PupilData.html">PupilData</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.GazeData.html">GazeData</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.GenericEyeData.html">GenericEyeData</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.EyeDataDict.html">EyeDataDict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.MaskPolicy.html">MaskPolicy</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.FakeEyeData.html">FakeEyeData</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.keephistory.html">keephistory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.QualityReport.html">QualityReport</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.QualityMetric.html">QualityMetric</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.Table.html">Table</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.RecordDict.html">RecordDict</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../pupil.html">Pupil methods (<code class="docutils literal notranslate"><span class="pre">d.pupil</span></code>)</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.eyedata.pupil.PupilNamespace.html">PupilNamespace</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../gaze.html">Gaze methods (<code class="docutils literal notranslate"><span class="pre">d.gaze</span></code>)</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.eyedata.gaze.GazeNamespace.html">GazeNamespace</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../pipelines.html">Pipelines</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.crop.html">crop</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.downsample.html">downsample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.scale.html">scale</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.unscale.html">unscale</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.merge_eyes.html">merge_eyes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.reset_time.html">reset_time</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.mask_intervals.html">mask_intervals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.interpolate_intervals.html">interpolate_intervals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.exclude_intervals.html">exclude_intervals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.keep_intervals.html">keep_intervals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.remove_intervals.html">remove_intervals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.merge_masks.html">merge_masks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.clear_layer.html">clear_layer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.set_blinks.html">set_blinks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.set_events.html">set_events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.add_events.html">add_events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.set_experimental_setup.html">set_experimental_setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.drop_data.html">drop_data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.drop_original.html">drop_original</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.fill_time_discontinuities.html">fill_time_discontinuities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.Step.html">Step</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.Pipeline.html">Pipeline</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../events_intervals.html">Events and intervals</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.Events.html">Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.Epochs.html">Epochs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.Intervals.html">Intervals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.ClockSync.html">ClockSync</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.merge_intervals.html">merge_intervals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.concat_intervals.html">concat_intervals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.sync_clocks.html">sync_clocks</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../segments.html">Segmented data</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.SegmentedEyeData.html">SegmentedEyeData</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.GroupLevelSegmentedData.html">GroupLevelSegmentedData</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.concat_segments.html">concat_segments</a></li>
 <li class="toctree-l2 current active"><a aria-current="page" class="current reference internal" href="#">group_segments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.segmented.SegmentedPupilNamespace.html">SegmentedPupilNamespace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.segmented.SegmentedGazeNamespace.html">SegmentedGazeNamespace</a></li>
 </ul>
 </details></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../plotting.html">Plotting</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.EyePlotter.html">EyePlotter</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.PupilPlotter.html">PupilPlotter</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.GazePlotter.html">GazePlotter</a></li>
-</ul>
-</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../plotting.html">Plotting (<code class="docutils literal notranslate"><span class="pre">d.plot</span></code>)</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../io.html">Reading and writing data</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.read_eyelink.html">read_eyelink</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.read_pickle.html">read_pickle</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.write_pickle.html">write_pickle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.read_file.html">read_file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.write_file.html">write_file</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.download.html">download</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.fetch_url.html">fetch_url</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.local_copy.html">local_copy</a></li>
@@ -458,34 +486,34 @@
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../signal.html">Signal processing</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.butter_lowpass.html">butter_lowpass</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.butter_lowpass_filter.html">butter_lowpass_filter</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.lowpass_filter_iterative.html">lowpass_filter_iterative</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.smooth_window.html">smooth_window</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.downsample.html">downsample</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.bspline.html">bspline</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.baseline_envelope.html">baseline_envelope</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.baseline_envelope_iter_bspline.html">baseline_envelope_iter_bspline</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.baseline_pupil_model.html">baseline_pupil_model</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.zscale.html">zscale</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.velocity_savgol.html">velocity_savgol</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.detect_blinks_velocity.html">detect_blinks_velocity</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.detect_blinks_zero.html">detect_blinks_zero</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.blink_onsets_mahot.html">blink_onsets_mahot</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_kernel.html">pupil_kernel</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_kernel_t.html">pupil_kernel_t</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_get_max_duration.html">pupil_get_max_duration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.plot_prf.html">plot_prf</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_build_design_matrix.html">pupil_build_design_matrix</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_response.html">pupil_response</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_response_coverage.html">pupil_response_coverage</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupilresponse_nnls.html">pupilresponse_nnls</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_signal_quality.html">pupil_signal_quality</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_eye_offset.html">pupil_eye_offset</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.fake_pupil_baseline.html">fake_pupil_baseline</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.fake_gaze_fixations.html">fake_gaze_fixations</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.add_measurement_noise.html">add_measurement_noise</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.generate_foreshortening_data.html">generate_foreshortening_data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.butter_lowpass.html">butter_lowpass</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.butter_lowpass_filter.html">butter_lowpass_filter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.lowpass_filter_iterative.html">lowpass_filter_iterative</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.smooth_window.html">smooth_window</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.downsample.html">downsample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.zscale.html">zscale</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.bspline.html">bspline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.baseline_envelope.html">baseline_envelope</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.baseline_envelope_iter_bspline.html">baseline_envelope_iter_bspline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.baseline_pupil_model.html">baseline_pupil_model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.velocity_savgol.html">velocity_savgol</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.detect_blinks_velocity.html">detect_blinks_velocity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.detect_blinks_zero.html">detect_blinks_zero</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.blink_onsets_mahot.html">blink_onsets_mahot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_kernel.html">pupil_kernel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_kernel_t.html">pupil_kernel_t</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_get_max_duration.html">pupil_get_max_duration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.plot_prf.html">plot_prf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_build_design_matrix.html">pupil_build_design_matrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_response.html">pupil_response</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_response_coverage.html">pupil_response_coverage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupilresponse_nnls.html">pupilresponse_nnls</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_signal_quality.html">pupil_signal_quality</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_eye_offset.html">pupil_eye_offset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.fake_pupil_baseline.html">fake_pupil_baseline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.fake_gaze_fixations.html">fake_gaze_fixations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.add_measurement_noise.html">add_measurement_noise</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.generate_foreshortening_data.html">generate_foreshortening_data</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../geometry.html">Geometry and gaze</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -586,42 +614,56 @@
 <h1>group_segments<a class="headerlink" href="#group-segments" title="Link to this heading">#</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="pypillometry.group_segments">
-<span class="sig-prename descclassname"><span class="pre">pypillometry.</span></span><span class="sig-name descname"><span class="pre">group_segments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">segments</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meanfct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;function</span> <span class="pre">mean&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/segmented.html#group_segments"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.group_segments" title="Link to this definition">#</a></dt>
-<dd><p>Combine multiple SegmentedEyeData objects into a GroupLevelSegmentedData.</p>
-<p>Convenience function that wraps GroupLevelSegmentedData.from_segments().</p>
+<span class="sig-prename descclassname"><span class="pre">pypillometry.</span></span><span class="sig-name descname"><span class="pre">group_segments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">segments</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meanfct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;function</span> <span class="pre">mean&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/segmented.html#group_segments"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.group_segments" title="Link to this definition">#</a></dt>
+<dd><p>Average the segments of several participants per participant.</p>
+<p>Shortcut for <code class="docutils literal notranslate"><span class="pre">concat_segments(segments).average(by=&quot;subject&quot;)</span></code>: the
+result has one column per participant (the average of their trials),
+with the metadata column <code class="docutils literal notranslate"><span class="pre">&quot;subject&quot;</span></code>. Mean and error over the columns
+(e.g., <code class="docutils literal notranslate"><span class="pre">group.pupil.plot()</span></code>) are those across participants.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>segments</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a><em> of </em><a class="reference internal" href="pypillometry.SegmentedEyeData.html#pypillometry.SegmentedEyeData" title="pypillometry.SegmentedEyeData"><em>SegmentedEyeData</em></a>) – SegmentedEyeData objects to combine. If dict, values are used.</p></li>
-<li><p><strong>meanfct</strong> (<em>callable</em><em> or </em><em>None</em>) – Function to aggregate within each subject, called as
+<li><p><strong>segments</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a><em> of </em><a class="reference internal" href="pypillometry.SegmentedEyeData.html#pypillometry.SegmentedEyeData" title="pypillometry.SegmentedEyeData"><em>SegmentedEyeData</em></a>) – one object per participant; for a dict, the keys are the names of
+the participants (otherwise the names of the segments, or numbers
+if these are not unique)</p></li>
+<li><p><strong>meanfct</strong> (<em>callable</em><em> or </em><em>None</em>) – function that averages the trials of each participant, called as
 <code class="docutils literal notranslate"><span class="pre">meanfct(data,</span> <span class="pre">axis=1)</span></code>; it must accept an <cite>axis</cite> argument and
 ignore masked values (e.g., np.mean or np.ma.median, but not
-np.median; a warning is logged otherwise).
-If None, all segments from all subjects are stacked (concatenated).</p></li>
-<li><p><strong>name</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Name for the group-level dataset. If None, uses <code class="docutils literal notranslate"><span class="pre">&quot;group_&quot;</span></code> + first
-segment’s name</p></li>
+np.median; a warning is logged otherwise). If None, the trials are
+not averaged (as <a class="reference internal" href="pypillometry.concat_segments.html#pypillometry.concat_segments" title="pypillometry.concat_segments"><code class="xref py py-func docutils literal notranslate"><span class="pre">concat_segments()</span></code></a>).</p></li>
+<li><p><strong>name</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – name of the result (default: <code class="docutils literal notranslate"><span class="pre">&quot;group_&quot;</span></code> and the name of the first
+segments)</p></li>
+<li><p><strong>channels</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – channels to combine (default: those of the first segments)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="pypillometry.GroupLevelSegmentedData.html#pypillometry.GroupLevelSegmentedData" title="pypillometry.segmented.GroupLevelSegmentedData"><code class="xref py py-class docutils literal notranslate"><span class="pre">GroupLevelSegmentedData</span></code></a></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="pypillometry.SegmentedEyeData.html#pypillometry.SegmentedEyeData" title="pypillometry.segmented.SegmentedEyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">SegmentedEyeData</span></code></a></span></p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Combined group-level data</p>
+<dd class="field-odd"><p>the averages of the participants (or all their trials)</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
+<p>One SegmentedEyeData per participant (here: the example recording twice):</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># From a list</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">group</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">group_segments</span><span class="p">([</span><span class="n">subj1_seg</span><span class="p">,</span> <span class="n">subj2_seg</span><span class="p">,</span> <span class="n">subj3_seg</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">u</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002_short"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">epochs</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_epochs</span><span class="p">(</span><span class="s2">"S_"</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">2500</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">segments</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"S01"</span><span class="p">:</span> <span class="n">d</span><span class="o">.</span><span class="n">get_segments</span><span class="p">(</span><span class="n">epochs</span><span class="p">),</span> <span class="s2">"S02"</span><span class="p">:</span> <span class="n">d</span><span class="o">.</span><span class="n">get_segments</span><span class="p">(</span><span class="n">epochs</span><span class="p">)}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">group</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">group_segments</span><span class="p">(</span><span class="n">segments</span><span class="p">,</span> <span class="n">channels</span><span class="o">=</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">,</span> <span class="s2">"right_pupil"</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">group</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span>  <span class="c1"># (time points, participants)</span>
+<span class="go">(1500, 2)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">group</span><span class="o">.</span><span class="n">epochs</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">"subject"</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+<span class="go">['S01', 'S02']</span>
 </pre></div>
 </div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># From a dict</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">segments</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"S01"</span><span class="p">:</span> <span class="n">subj1_seg</span><span class="p">,</span> <span class="s2">"S02"</span><span class="p">:</span> <span class="n">subj2_seg</span><span class="p">}</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">group</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">group_segments</span><span class="p">(</span><span class="n">segments</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Stack all trials instead of averaging</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">group</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">group_segments</span><span class="p">(</span><span class="n">segments</span><span class="p">,</span> <span class="n">meanfct</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<p>Means per participant and condition, then the mean of the participants
+per condition (here, the condition is the half of the session):</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ep</span> <span class="o">=</span> <span class="n">epochs</span><span class="o">.</span><span class="n">set_meta</span><span class="p">(</span><span class="s2">"half"</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">epochs</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">"first"</span><span class="p">,</span> <span class="s2">"second"</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">both</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">concat_segments</span><span class="p">({</span><span class="s2">"S01"</span><span class="p">:</span> <span class="n">d</span><span class="o">.</span><span class="n">get_segments</span><span class="p">(</span><span class="n">ep</span><span class="p">),</span> <span class="s2">"S02"</span><span class="p">:</span> <span class="n">d</span><span class="o">.</span><span class="n">get_segments</span><span class="p">(</span><span class="n">ep</span><span class="p">)})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">means</span> <span class="o">=</span> <span class="n">both</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="p">[</span><span class="s2">"subject"</span><span class="p">,</span> <span class="s2">"half"</span><span class="p">])</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s2">"half"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">means</span><span class="o">.</span><span class="n">epochs</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">"n_trials"</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+<span class="go">[10, 10]</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -639,20 +681,20 @@ segment’s name</p></li>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="pypillometry.GroupLevelSegmentedData.html"
+       href="pypillometry.concat_segments.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">GroupLevelSegmentedData</p>
+        <p class="prev-next-title">concat_segments</p>
       </div>
     </a>
     <a class="right-next"
-       href="../plotting.html"
+       href="pypillometry.segmented.SegmentedPupilNamespace.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Plotting</p>
+        <p class="prev-next-title">SegmentedPupilNamespace</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

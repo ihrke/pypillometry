@@ -1,0 +1,6 @@
+﻿set\_experimental\_setup
+========================
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: set_experimental_setup

@@ -1,0 +1,35 @@
+﻿Table
+=====
+
+.. currentmodule:: pypillometry
+
+.. autoclass:: Table
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~Table.clear
+      ~Table.copy
+      ~Table.fromkeys
+      ~Table.get
+      ~Table.items
+      ~Table.keys
+      ~Table.pop
+      ~Table.popitem
+      ~Table.setdefault
+      ~Table.to_pandas
+      ~Table.update
+      ~Table.values
+   
+   
+
+
+   .. rubric:: Details

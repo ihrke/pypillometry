@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pypillometry.logging &#8212; pypillometry v2.1.0</title>
+    <title>pypillometry.logging &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -414,7 +414,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -458,9 +458,6 @@ window.runMermaid = runMermaid;</script>
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -817,7 +814,6 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">"logging_disable"</span><span class="p">,</span> <span class="s2">"logging_enable"</span><span class="p">,</span> <span class="s2">"logging_set_level"</span><span class="p">,</span>
@@ -828,6 +824,9 @@ window.runMermaid = runMermaid;</script>
 <span class="n">cmdstanpy_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">"cmdstanpy"</span><span class="p">)</span>
 <span class="n">cmdstanpy_logger</span><span class="o">.</span><span class="n">disabled</span> <span class="o">=</span> <span class="kc">True</span>
 
+<span class="c1"># whether logging is enabled (see logging_enable/logging_disable)</span>
+<span class="n">_enabled</span> <span class="o">=</span> <span class="kc">True</span>
+
 
 <div class="viewcode-block" id="logging_disable">
 <a class="viewcode-back" href="../../api/generated/pypillometry.logging_disable.html#pypillometry.logging_disable">[docs]</a>
@@ -835,8 +834,10 @@ window.runMermaid = runMermaid;</script>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Disable logging for all pypillometry submodules.</span>
 <span class="sd">    """</span>
+    <span class="k">global</span> <span class="n">_enabled</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">disable</span><span class="p">(</span><span class="s2">"pypillometry"</span><span class="p">)</span>
-    <span class="n">cmdstanpy_logger</span><span class="o">.</span><span class="n">disabled</span> <span class="o">=</span> <span class="kc">True</span></div>
+    <span class="n">cmdstanpy_logger</span><span class="o">.</span><span class="n">disabled</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">_enabled</span> <span class="o">=</span> <span class="kc">False</span></div>
 
 
 
@@ -846,8 +847,16 @@ window.runMermaid = runMermaid;</script>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Enable logging for all pypillometry submodules.</span>
 <span class="sd">    """</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">enable</span><span class="p">(</span><span class="s2">"pypillometry"</span><span class="p">)</span></div>
+    <span class="k">global</span> <span class="n">_enabled</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">enable</span><span class="p">(</span><span class="s2">"pypillometry"</span><span class="p">)</span>
+    <span class="n">_enabled</span> <span class="o">=</span> <span class="kc">True</span></div>
 
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_show_progress</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Whether progress bars (e.g., of downloads) are shown: only if logging</span>
+<span class="sd">    is enabled and the level is "DEBUG" or "INFO"."""</span>
+    <span class="k">return</span> <span class="n">_enabled</span> <span class="ow">and</span> <span class="n">logging_get_level</span><span class="p">()</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"DEBUG"</span><span class="p">,</span> <span class="s2">"INFO"</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="logging_set_level">
@@ -953,7 +962,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    ...     pass</span>
 <span class="sd">    &gt;&gt;&gt; # Logging is re-enabled</span>
 <span class="sd">    """</span>
-    <span class="n">was_enabled</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">_core</span><span class="o">.</span><span class="n">enabled</span>
+    <span class="n">was_enabled</span> <span class="o">=</span> <span class="n">_enabled</span>
     <span class="n">logging_disable</span><span class="p">()</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">yield</span>

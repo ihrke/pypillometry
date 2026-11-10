@@ -1,0 +1,6 @@
+﻿write\_file
+===========
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: write_file

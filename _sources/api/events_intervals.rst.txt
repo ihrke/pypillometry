@@ -13,6 +13,7 @@ tutorials :doc:`/notebooks/events`, :doc:`/notebooks/event_metadata` and
    :nosignatures:
 
    Events
+   Epochs
    Intervals
    ClockSync
 
@@ -21,5 +22,5 @@ tutorials :doc:`/notebooks/events`, :doc:`/notebooks/event_metadata` and
    :template: function.rst
    :nosignatures:
 
-   merge_intervals
+   concat_intervals
    sync_clocks

@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pypillometry.viewer &#8212; pypillometry v2.1.0</title>
+    <title>pypillometry.viewer &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -414,7 +414,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -458,9 +458,6 @@ window.runMermaid = runMermaid;</script>
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -831,7 +828,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">- Support for viewing raw numpy arrays and masked arrays</span>
 <span class="sd">"""</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">TYPE_CHECKING</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">TYPE_CHECKING</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimpleNamespace</span>
 
@@ -1146,6 +1143,9 @@ window.runMermaid = runMermaid;</script>
     
     <span class="c1"># Create the viewer based on mode</span>
     <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">'eyedata'</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">eyes</span><span class="p">:</span>
+            <span class="c1"># unknown eyes raise a KeyError (with the available channels)</span>
+            <span class="n">eyes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">plot_spec</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">eyes</span><span class="p">)))</span>
         <span class="n">canvas</span> <span class="o">=</span> <span class="n">ViewerCanvas</span><span class="p">(</span>
             <span class="n">plot_spec</span><span class="p">,</span>  <span class="c1"># EyeData object</span>
             <span class="n">mode</span><span class="o">=</span><span class="s1">'eyedata'</span><span class="p">,</span>
@@ -1343,7 +1343,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    &gt;&gt;&gt; eyedata = pp.get_example_data("rlmw_002_short")  # doctest: +SKIP</span>
 <span class="sd">    &gt;&gt;&gt; </span>
 <span class="sd">    &gt;&gt;&gt; def smooth(d, lp=5):</span>
-<span class="sd">    ...     return d.pupil_lowpass_filter(cutoff=lp, inplace=False)</span>
+<span class="sd">    ...     return d.pupil.lowpass_filter(cutoff=lp, inplace=False)</span>
 <span class="sd">    &gt;&gt;&gt; </span>
 <span class="sd">    &gt;&gt;&gt; # Tweak lowpass filter cutoff, display left_pupil</span>
 <span class="sd">    &gt;&gt;&gt; params = pp.tweak(eyedata, smooth, {'lp': 5}, variable='left_pupil')  # doctest: +SKIP</span>
@@ -1540,7 +1540,7 @@ window.runMermaid = runMermaid;</script>
                 <span class="k">continue</span>
     
     <span class="kn">from</span><span class="w"> </span><span class="nn">vispy</span><span class="w"> </span><span class="kn">import</span> <span class="n">app</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">.tweak</span><span class="w"> </span><span class="kn">import</span> <span class="n">TweakCanvas</span><span class="p">,</span> <span class="n">TweakViewer</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.tweak_canvas</span><span class="w"> </span><span class="kn">import</span> <span class="n">TweakCanvas</span><span class="p">,</span> <span class="n">TweakViewer</span>
     
     <span class="c1"># Compute initial overlay - pass full data to function</span>
     <span class="n">current_params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>

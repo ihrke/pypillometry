@@ -1,0 +1,6 @@
+﻿crop
+====
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: crop

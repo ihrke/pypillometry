@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Preprocessing &#8212; pypillometry v2.1.0</title>
+    <title>Preprocessing &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,12 +54,12 @@
     <link rel="icon" href="../_static/pypillometry_logo_200x200.png"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Data quality" href="quality.html" />
+    <link rel="next" title="Missing data" href="missing_data.html" />
     <link rel="prev" title="Units" href="units.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -103,9 +103,6 @@
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -411,6 +408,9 @@
 <li class="toctree-l1"><a class="reference internal" href="loading_data.html">Loading and saving data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="units.html">Units</a></li>
 <li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">Preprocessing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="missing_data.html">Missing data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gaze.html">Gaze data and the experimental setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rois.html">Regions of interest</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quality.html">Data quality</a></li>
 <li class="toctree-l1"><a class="reference internal" href="events_intervals.html">Events, intervals and segments</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plotting.html">Plotting</a></li>
@@ -486,15 +486,15 @@
 <h1>Preprocessing<a class="headerlink" href="#preprocessing" title="Link to this heading">#</a></h1>
 <p>Raw pupil data usually contain blinks, other artifacts and high-frequency
 noise. This page lists the tools for dealing with them. All methods
-process all eyes by default (use <code class="docutils literal notranslate"><span class="pre">eyes=</span></code> to select) and can be chained
-into a pipeline (see <a class="reference internal" href="data_model.html"><span class="doc">Data objects</span></a>).</p>
+process all eyes by default (use <code class="docutils literal notranslate"><span class="pre">eyes=</span></code> to select) and can be combined
+into a pipeline with <code class="docutils literal notranslate"><span class="pre">|</span></code> (see <a class="reference internal" href="data_model.html"><span class="doc">Data objects</span></a>).</p>
 <p>Visual checks are an important part of preprocessing. Look at the data
 before and after each step (see <a class="reference internal" href="plotting.html"><span class="doc">Plotting</span></a>). To tune parameters, use
 <a class="reference internal" href="../api/generated/pypillometry.tweak.html#pypillometry.tweak" title="pypillometry.tweak"><code class="xref py py-func docutils literal notranslate"><span class="pre">tweak()</span></code></a> (see <a class="reference internal" href="interactive.html"><span class="doc">Interactive tools</span></a>): it shows the result while you
 change them.</p>
 <section id="data-quality">
 <h2>Data quality<a class="headerlink" href="#data-quality" title="Link to this heading">#</a></h2>
-<p>Before and after preprocessing, <a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.quality_report" title="pypillometry.GenericEyeData.quality_report"><code class="xref py py-meth docutils literal notranslate"><span class="pre">quality_report()</span></code></a>
+<p>Before and after preprocessing, <a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.quality_report" title="pypillometry.EyeData.quality_report"><code class="xref py py-meth docutils literal notranslate"><span class="pre">quality_report()</span></code></a>
 summarizes the quality of a dataset (missing data, noise, blinks, artifacts,
 calibration) and labels each measure “good”, “ok”, “poor” or “bad”. See
 <a class="reference internal" href="quality.html"><span class="doc">Data quality</span></a>.</p>
@@ -509,42 +509,53 @@ to zero or is missing, and the samples just before and after the blink are
 distorted as the eyelid covers the pupil.</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.PupilData.html#pypillometry.PupilData.pupil_blinks_detect" title="pypillometry.PupilData.pupil_blinks_detect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.pupil_blinks_detect</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.blinks_detect" title="pypillometry.eyedata.pupil.PupilNamespace.blinks_detect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.pupil.blinks_detect</span></code></a></p></td>
 <td><p>Detect blinks in the pupillary signal using several strategies.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.blinks_merge_close" title="pypillometry.GenericEyeData.blinks_merge_close"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GenericEyeData.blinks_merge_close</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.blinks_merge_close" title="pypillometry.eyedata.pupil.PupilNamespace.blinks_merge_close"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.pupil.blinks_merge_close</span></code></a></p></td>
 <td><p>Merge blinks that are close together.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.PupilData.html#pypillometry.PupilData.pupil_blinks_interpolate" title="pypillometry.PupilData.pupil_blinks_interpolate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.pupil_blinks_interpolate</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.blinks_interpolate" title="pypillometry.eyedata.pupil.PupilNamespace.blinks_interpolate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.pupil.blinks_interpolate</span></code></a></p></td>
 <td><p>Interpolating blinks in the pupillary signal.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.get_blinks" title="pypillometry.GenericEyeData.get_blinks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GenericEyeData.get_blinks</span></code></a></p></td>
-<td><p>Get blinks as Intervals object or dict of Intervals.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.get_blinks" title="pypillometry.EyeData.get_blinks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.get_blinks</span></code></a></p></td>
+<td><p>Get blinks as a dict of Intervals (one per eye/variable).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.get_interpolated_blinks" title="pypillometry.GenericEyeData.get_interpolated_blinks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GenericEyeData.get_interpolated_blinks</span></code></a></p></td>
-<td><p>Get interpolated blinks as Intervals object or dict of Intervals.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.get_interpolated" title="pypillometry.EyeData.get_interpolated"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.get_interpolated</span></code></a></p></td>
+<td><p>Get the interpolated stretches as a dict of Intervals (one per eye/variable).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.blink_stats" title="pypillometry.GenericEyeData.blink_stats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GenericEyeData.blink_stats</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.blink_stats" title="pypillometry.EyeData.blink_stats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.blink_stats</span></code></a></p></td>
 <td><p>Return statistics on blink durations.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.PupilPlotter.html#pypillometry.PupilPlotter.plot_blinks" title="pypillometry.PupilPlotter.plot_blinks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilPlotter.plot_blinks</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../api/plotting.html#pypillometry.plot.PlotNamespace.plot_blinks" title="pypillometry.plot.PlotNamespace.plot_blinks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.plot.plot_blinks</span></code></a></p></td>
 <td><p>Plot detected blinks in separate subplots.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
 <p>A typical sequence is</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">pupil_blinks_detect</span><span class="p">(</span><span class="n">apply_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>\
- <span class="o">.</span><span class="n">blinks_merge_close</span><span class="p">(</span><span class="n">distance</span><span class="o">=</span><span class="mi">100</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">,</span> <span class="n">apply_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>\
- <span class="o">.</span><span class="n">pupil_blinks_interpolate</span><span class="p">()</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">d</span> <span class="o">|</span> <span class="p">(</span><span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span>
+         <span class="o">|</span> <span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_merge_close</span><span class="p">(</span><span class="n">distance</span><span class="o">=</span><span class="mi">100</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>
+         <span class="o">|</span> <span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_interpolate</span><span class="p">())</span>
 </pre></div>
 </div>
-<p><a class="reference internal" href="../api/generated/pypillometry.PupilData.html#pypillometry.PupilData.pupil_blinks_detect" title="pypillometry.PupilData.pupil_blinks_detect"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pupil_blinks_detect()</span></code></a> finds missing samples and sharp
+<p><a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.blinks_detect" title="pypillometry.eyedata.pupil.PupilNamespace.blinks_detect"><code class="xref py py-meth docutils literal notranslate"><span class="pre">blinks_detect()</span></code></a> finds missing samples and sharp
 drops in the pupil’s velocity profile. The detected blinks are stored in the
-object. With <code class="docutils literal notranslate"><span class="pre">apply_mask=False</span></code> (the default), they are also returned as
-<a class="reference internal" href="../api/generated/pypillometry.Intervals.html#pypillometry.Intervals" title="pypillometry.Intervals"><code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code></a> so that you can check them first.
-<a class="reference internal" href="../api/generated/pypillometry.PupilData.html#pypillometry.PupilData.pupil_blinks_interpolate" title="pypillometry.PupilData.pupil_blinks_interpolate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pupil_blinks_interpolate()</span></code></a> replaces the pupil size during
-blinks by a smooth curve (Mathôt, 2013). Interpolated samples remain masked.</p>
+object (the <code class="docutils literal notranslate"><span class="pre">&quot;blink&quot;</span></code> layer, which masks them) and the object is
+returned (<code class="docutils literal notranslate"><span class="pre">d.pupil.blinks_detect()</span></code> works in place). Check them with
+<a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.get_blinks" title="pypillometry.EyeData.get_blinks"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_blinks()</span></code></a> (a dict with one <a class="reference internal" href="../api/generated/pypillometry.Intervals.html#pypillometry.Intervals" title="pypillometry.Intervals"><code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code></a>
+per channel, in ms); <code class="docutils literal notranslate"><span class="pre">d.clear_layer(&quot;blink&quot;)</span></code> removes them again.
+<a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.blinks_interpolate" title="pypillometry.eyedata.pupil.PupilNamespace.blinks_interpolate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">blinks_interpolate()</span></code></a> replaces the pupil size during
+blinks by a smooth curve (Mathôt, 2013). Interpolated samples are used by
+all later steps (filters, segments, statistics); they keep the
+<code class="docutils literal notranslate"><span class="pre">&quot;interpolated&quot;</span></code> layer, so they can be left out with
+<code class="docutils literal notranslate"><span class="pre">policy=&quot;strict&quot;</span></code> (see <a class="reference internal" href="missing_data.html"><span class="doc">Missing data</span></a>).</p>
+<p>One blink, before and after: the pupil size drops and is then missing
+while the eye is closed; the detected blink (red) is extended by a margin
+on each side and replaced by a smooth curve (green):</p>
+<figure class="align-default">
+<img alt="../_images/preprocessing-1.png" class="plot-directive" src="../_images/preprocessing-1.png" />
+</figure>
 <p>Blinks differ a lot between participants, and checking the result for
 each participant is worth the effort. The tutorial <a class="reference internal" href="../notebooks/blinks.html"><span class="doc">Blink preprocessing</span></a>
 shows how.</p>
@@ -555,31 +566,31 @@ shows how.</p>
 to very different places are usually artifacts:</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.GazeData.html#pypillometry.GazeData.mask_offscreen_coords" title="pypillometry.GazeData.mask_offscreen_coords"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GazeData.mask_offscreen_coords</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.eyedata.gaze.GazeNamespace.html#pypillometry.eyedata.gaze.GazeNamespace.mask_offscreen" title="pypillometry.eyedata.gaze.GazeNamespace.mask_offscreen"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.gaze.mask_offscreen</span></code></a></p></td>
 <td><p>Detect and mask gaze coordinates that fall outside the screen boundaries.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.GazeData.html#pypillometry.GazeData.mask_eye_divergences" title="pypillometry.GazeData.mask_eye_divergences"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GazeData.mask_eye_divergences</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.eyedata.gaze.GazeNamespace.html#pypillometry.eyedata.gaze.GazeNamespace.mask_divergences" title="pypillometry.eyedata.gaze.GazeNamespace.mask_divergences"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.gaze.mask_divergences</span></code></a></p></td>
 <td><p>Calculate Euclidean distance between left and right eye coordinates and detect divergences.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
-<p><a class="reference internal" href="../api/generated/pypillometry.GazeData.html#pypillometry.GazeData.mask_offscreen_coords" title="pypillometry.GazeData.mask_offscreen_coords"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mask_offscreen_coords()</span></code></a> needs the screen size (see
-<a class="reference internal" href="../api/generated/pypillometry.GazeData.html#pypillometry.GazeData.set_experimental_setup" title="pypillometry.GazeData.set_experimental_setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_experimental_setup()</span></code></a>).</p>
+<p><a class="reference internal" href="../api/generated/pypillometry.eyedata.gaze.GazeNamespace.html#pypillometry.eyedata.gaze.GazeNamespace.mask_offscreen" title="pypillometry.eyedata.gaze.GazeNamespace.mask_offscreen"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mask_offscreen()</span></code></a> needs the screen size (see
+<a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.set_experimental_setup" title="pypillometry.EyeData.set_experimental_setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_experimental_setup()</span></code></a> and <a class="reference internal" href="gaze.html"><span class="doc">Gaze data and the experimental setup</span></a>).</p>
 <p>Any stretch of data can be masked or interpolated from an
 <a class="reference internal" href="../api/generated/pypillometry.Intervals.html#pypillometry.Intervals" title="pypillometry.Intervals"><code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code></a> object, e.g., periods you marked as bad by hand:</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.mask_intervals" title="pypillometry.GenericEyeData.mask_intervals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GenericEyeData.mask_intervals</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.mask_intervals" title="pypillometry.EyeData.mask_intervals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.mask_intervals</span></code></a></p></td>
 <td><p>Apply Intervals as masks to selected data.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.interpolate_intervals" title="pypillometry.GenericEyeData.interpolate_intervals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GenericEyeData.interpolate_intervals</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.interpolate_intervals" title="pypillometry.EyeData.interpolate_intervals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.interpolate_intervals</span></code></a></p></td>
 <td><p>Interpolate data within specified intervals.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.mask_as_intervals" title="pypillometry.GenericEyeData.mask_as_intervals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GenericEyeData.mask_as_intervals</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.mask_as_intervals" title="pypillometry.EyeData.mask_as_intervals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.mask_as_intervals</span></code></a></p></td>
 <td><p>Convert masks to Intervals objects.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.merge_masks" title="pypillometry.GenericEyeData.merge_masks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GenericEyeData.merge_masks</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.merge_masks" title="pypillometry.EyeData.merge_masks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.merge_masks</span></code></a></p></td>
 <td><p>Merge masks of all variables into a single joint mask.</p></td>
 </tr>
 </tbody>
@@ -593,39 +604,108 @@ without distorting the signal (Jackson &amp; Sirois, 2009). Downsampling
 reduces the amount of data, e.g., for modeling.</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.PupilData.html#pypillometry.PupilData.pupil_lowpass_filter" title="pypillometry.PupilData.pupil_lowpass_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.pupil_lowpass_filter</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.lowpass_filter" title="pypillometry.eyedata.pupil.PupilNamespace.lowpass_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.pupil.lowpass_filter</span></code></a></p></td>
 <td><p>Lowpass-filter pupil signal using a Butterworth-filter.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.PupilData.html#pypillometry.PupilData.pupil_smooth_window" title="pypillometry.PupilData.pupil_smooth_window"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.pupil_smooth_window</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.smooth_window" title="pypillometry.eyedata.pupil.PupilNamespace.smooth_window"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.pupil.smooth_window</span></code></a></p></td>
 <td><p>Apply smoothing of the signal using a moving window.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.downsample" title="pypillometry.GenericEyeData.downsample"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GenericEyeData.downsample</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.downsample" title="pypillometry.EyeData.downsample"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.downsample</span></code></a></p></td>
 <td><p>Simple downsampling scheme using mean within the downsampling window.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
-<p><a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.downsample" title="pypillometry.GenericEyeData.downsample"><code class="xref py py-meth docutils literal notranslate"><span class="pre">downsample()</span></code></a> averages the samples within each new
+<p>The filters only use the usable samples: masked samples (e.g., blinks
+that were not interpolated, or zero-coded blinks) are bridged linearly
+for the filter and keep their values, so they do not leak into their
+neighbours. Interpolating blinks before filtering gives a better bridge
+than a straight line.</p>
+<p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.downsample" title="pypillometry.EyeData.downsample"><code class="xref py py-meth docutils literal notranslate"><span class="pre">downsample()</span></code></a> averages the samples within each new
 sampling interval (masked samples are left out), so filter before
 downsampling to a rate close to the frequencies of interest.</p>
+<p>A 4 Hz low-pass filter removes the fast noise:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002_short"</span><span class="p">)</span> <span class="o">|</span> <span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span> <span class="o">|</span> <span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_interpolate</span><span class="p">()</span>
+<span class="n">filtered</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">lowpass_filter</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="n">sel</span> <span class="o">=</span> <span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">tx</span> <span class="o">&gt;=</span> <span class="mi">12000</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">tx</span> <span class="o">&lt;</span> <span class="mi">17000</span><span class="p">)</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">sel</span><span class="p">]</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">d</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">][</span><span class="n">sel</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">"0.6"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"before"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">sel</span><span class="p">]</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">filtered</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">][</span><span class="n">sel</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">"C0"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span>
+        <span class="n">label</span><span class="o">=</span><span class="s2">"lowpass_filter(cutoff=4)"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s2">"time (s)"</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">"left pupil"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+<figure class="align-default">
+<img alt="../_images/preprocessing-2.png" class="plot-directive" src="../_images/preprocessing-2.png" />
+</figure>
+<p>Downsampling to 50 Hz keeps the slow changes of the pupil:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002_short"</span><span class="p">)</span> <span class="o">|</span> <span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span> <span class="o">|</span> <span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_interpolate</span><span class="p">()</span>
+<span class="n">low</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">downsample</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>          <span class="c1"># 500 Hz -&gt; 50 Hz</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">obj</span><span class="p">,</span> <span class="n">style</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="p">[(</span><span class="n">d</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"0.6"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="s2">"500 Hz"</span><span class="p">),</span>
+                          <span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"C1"</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">"o"</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="s2">"downsample(50): 50 Hz"</span><span class="p">)]:</span>
+    <span class="n">sel</span> <span class="o">=</span> <span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span> <span class="o">&gt;=</span> <span class="mi">12000</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span> <span class="o">&lt;</span> <span class="mi">14000</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">sel</span><span class="p">]</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">obj</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">][</span><span class="n">sel</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="o">**</span><span class="n">style</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s2">"time (s)"</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">"left pupil"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+<figure class="align-default">
+<img alt="../_images/preprocessing-3.png" class="plot-directive" src="../_images/preprocessing-3.png" />
+</figure>
 </section>
 <section id="scaling">
 <h2>Scaling<a class="headerlink" href="#scaling" title="Link to this heading">#</a></h2>
 <p>Pupil size is measured in arbitrary units that depend on the eye tracker
-and the setup. To compare participants, the data are often z-scored:</p>
+and the setup. To compare participants, the data are often scaled:</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.scale" title="pypillometry.GenericEyeData.scale"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GenericEyeData.scale</span></code></a></p></td>
-<td><p>Scale the signal by subtracting <cite>mean</cite> and dividing by <cite>sd</cite>.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.scale" title="pypillometry.EyeData.scale"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.scale</span></code></a></p></td>
+<td><p>Scale the signal: subtract <cite>center</cite> and divide by <cite>scale</cite>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.unscale" title="pypillometry.GenericEyeData.unscale"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GenericEyeData.unscale</span></code></a></p></td>
-<td><p>Scale back to original values using either values provided as arguments or the values stored in <cite>params[&quot;scale&quot;]</cite> by <a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.scale" title="pypillometry.GenericEyeData.scale"><code class="xref py py-meth docutils literal notranslate"><span class="pre">scale()</span></code></a>.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.unscale" title="pypillometry.EyeData.unscale"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.unscale</span></code></a></p></td>
+<td><p>Scale back to original values using either values provided as arguments or the values stored in <cite>params[&quot;scale&quot;]</cite> by <a class="reference internal" href="../api/generated/pypillometry.scale.html#pypillometry.scale" title="pypillometry.scale"><code class="xref py py-meth docutils literal notranslate"><span class="pre">scale()</span></code></a>.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
-<p>The mean and standard deviation that were used are stored with the
-object, and <a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.unscale" title="pypillometry.GenericEyeData.unscale"><code class="xref py py-meth docutils literal notranslate"><span class="pre">unscale()</span></code></a> undoes the scaling.</p>
+<p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.scale" title="pypillometry.EyeData.scale"><code class="xref py py-meth docutils literal notranslate"><span class="pre">scale()</span></code></a> subtracts a center and divides by a scale, both
+computed from the usable samples of each channel. <code class="docutils literal notranslate"><span class="pre">method</span></code> chooses them:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="s2">"pupil"</span><span class="p">)</span>                       <span class="c1"># z-scores (mean and SD)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="s2">"pupil"</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">"robust"</span><span class="p">)</span>      <span class="c1"># median and MAD: units of the MAD</span>
+<span class="n">d</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="s2">"pupil"</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">"minmax"</span><span class="p">)</span>      <span class="c1"># between 0 and 1</span>
+<span class="n">d</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="s2">"pupil"</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">"percent"</span><span class="p">)</span>     <span class="c1"># % change from the mean</span>
+</pre></div>
+</div>
+<p>The robust scaling uses the raw median absolute deviation (not multiplied
+by 1.4826), so artefacts that were not removed have little influence. The
+values that were used are stored with the object (<code class="docutils literal notranslate"><span class="pre">d.params[&quot;scale&quot;]</span></code>),
+and <a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.unscale" title="pypillometry.EyeData.unscale"><code class="xref py py-meth docutils literal notranslate"><span class="pre">unscale()</span></code></a> undoes the scaling. For a percent change
+relative to a baseline before each event, see
+<code class="docutils literal notranslate"><span class="pre">seg.pupil.baseline_correct(window,</span> <span class="pre">method=&quot;percent&quot;)</span></code>
+(<a class="reference internal" href="events_intervals.html"><span class="doc">Events, intervals and segments</span></a>).</p>
+<p>All methods keep the shape of the signal and change only its units (the
+y-axes):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002_short"</span><span class="p">)</span> <span class="o">|</span> <span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span> <span class="o">|</span> <span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_interpolate</span><span class="p">()</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span> <span class="mf">2.6</span><span class="p">),</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">method</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="p">[</span><span class="s2">"z"</span><span class="p">,</span> <span class="s2">"robust"</span><span class="p">,</span> <span class="s2">"minmax"</span><span class="p">,</span> <span class="s2">"percent"</span><span class="p">]):</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="s2">"pupil"</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">tx</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">s</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">],</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">'method="</span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s1">"'</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"time (s)"</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"scaled left pupil"</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+<figure class="align-default">
+<img alt="../_images/preprocessing-4.png" class="plot-directive" src="../_images/preprocessing-4.png" />
+</figure>
 </section>
 <section id="combining-the-eyes">
 <h2>Combining the eyes<a class="headerlink" href="#combining-the-eyes" title="Link to this heading">#</a></h2>
@@ -633,65 +713,84 @@ object, and <a class="reference internal" href="../api/generated/pypillometry.Ge
 less noisy and has fewer gaps:</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.PupilData.html#pypillometry.PupilData.pupil_merge_eyes" title="pypillometry.PupilData.pupil_merge_eyes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.pupil_merge_eyes</span></code></a></p></td>
-<td><p>Merge pupil data from both eyes into a single &quot;merged&quot; variable.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.merge_eyes" title="pypillometry.eyedata.pupil.PupilNamespace.merge_eyes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.pupil.merge_eyes</span></code></a></p></td>
+<td><p>Merge pupil data from both eyes into a new eye (default <code class="docutils literal notranslate"><span class="pre">&quot;mean&quot;</span></code>).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.merge_eyes" title="pypillometry.GenericEyeData.merge_eyes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GenericEyeData.merge_eyes</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.merge_eyes" title="pypillometry.EyeData.merge_eyes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.merge_eyes</span></code></a></p></td>
 <td><p>Merge data from both eyes into a single variable.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
-<p><a class="reference internal" href="../api/generated/pypillometry.PupilData.html#pypillometry.PupilData.pupil_merge_eyes" title="pypillometry.PupilData.pupil_merge_eyes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pupil_merge_eyes()</span></code></a> corrects for a (slowly changing)
+<p><a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.merge_eyes" title="pypillometry.eyedata.pupil.PupilNamespace.merge_eyes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">merge_eyes()</span></code></a> corrects for a (slowly changing)
 difference in pupil size between the eyes and fills samples missing in one
-eye from the other. The result is stored as <code class="docutils literal notranslate"><span class="pre">merged_pupil</span></code>.
-<a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.merge_eyes" title="pypillometry.GenericEyeData.merge_eyes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">merge_eyes()</span></code></a> simply averages any variable. See
+eye from the other (recorded samples come before interpolated ones). The
+result is stored as <code class="docutils literal notranslate"><span class="pre">mean_pupil</span></code> (eye <code class="docutils literal notranslate"><span class="pre">&quot;mean&quot;</span></code>; another name with
+<code class="docutils literal notranslate"><span class="pre">name=</span></code>); it keeps the layers that both eyes have in common, e.g.,
+<code class="docutils literal notranslate"><span class="pre">&quot;blink&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">&quot;interpolated&quot;</span></code> where both eyes blinked.
+<a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.merge_eyes" title="pypillometry.EyeData.merge_eyes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">merge_eyes()</span></code></a> simply averages any variable. See
 <a class="reference internal" href="../notebooks/eyes_and_variables.html"><span class="doc">Processing monocular and binocular data</span></a>.</p>
+<p>Where the left eye is masked during a blink, the merged pupil continues
+from the right eye, shifted by the difference between the eyes, so it
+has no jump and no gap:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002_short"</span><span class="p">)</span> <span class="o">|</span> <span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span>
+<span class="n">d</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">merge_eyes</span><span class="p">()</span>                     <span class="c1"># adds "mean_pupil"</span>
+
+<span class="n">sel</span> <span class="o">=</span> <span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">tx</span> <span class="o">&gt;=</span> <span class="mi">9800</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">tx</span> <span class="o">&lt;</span> <span class="mi">12200</span><span class="p">)</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">sel</span><span class="p">]</span> <span class="o">/</span> <span class="mi">1000</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">d</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">][</span><span class="n">sel</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">"C0"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"left (masked: blink)"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">d</span><span class="p">[</span><span class="s2">"right_pupil"</span><span class="p">][</span><span class="n">sel</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">"C1"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"right"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">d</span><span class="p">[</span><span class="s2">"mean_pupil"</span><span class="p">][</span><span class="n">sel</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">"k"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">"--"</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"mean_pupil"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s2">"time (s)"</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">"pupil"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s2">"lower left"</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+<figure class="align-default">
+<img alt="../_images/preprocessing-5.png" class="plot-directive" src="../_images/preprocessing-5.png" />
+</figure>
 </section>
 <section id="selecting-and-cleaning-up-data">
 <h2>Selecting and cleaning up data<a class="headerlink" href="#selecting-and-cleaning-up-data" title="Link to this heading">#</a></h2>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.crop" title="pypillometry.GenericEyeData.crop"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GenericEyeData.crop</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.crop" title="pypillometry.EyeData.crop"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.crop</span></code></a></p></td>
 <td><p>Crop the data to the time range from <cite>start</cite> to <cite>end</cite>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.remove_intervals" title="pypillometry.GenericEyeData.remove_intervals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GenericEyeData.remove_intervals</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.remove_intervals" title="pypillometry.EyeData.remove_intervals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.remove_intervals</span></code></a></p></td>
 <td><p>Remove the data in the given periods (e.g., breaks) and join the rest.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.reset_time" title="pypillometry.GenericEyeData.reset_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GenericEyeData.reset_time</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.reset_time" title="pypillometry.EyeData.reset_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.reset_time</span></code></a></p></td>
 <td><p>Resets time so that time <cite>t0</cite> becomes time zero.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.drop_data" title="pypillometry.GenericEyeData.drop_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GenericEyeData.drop_data</span></code></a></p></td>
-<td><p>Drop specified eyes and/or variables from the data and return a new object.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.drop_data" title="pypillometry.EyeData.drop_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.drop_data</span></code></a></p></td>
+<td><p>Drop specified eyes and/or variables from the data.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.to_pupildata" title="pypillometry.EyeData.to_pupildata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.to_pupildata</span></code></a></p></td>
-<td><p>Return a copy of the data as a PupilData object (without gaze data).</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.to_gazedata" title="pypillometry.EyeData.to_gazedata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.to_gazedata</span></code></a></p></td>
-<td><p>Return a copy of the data as a GazeData object (without pupil data).</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.drop_original" title="pypillometry.GenericEyeData.drop_original"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GenericEyeData.drop_original</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.drop_original" title="pypillometry.EyeData.drop_original"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.drop_original</span></code></a></p></td>
 <td><p>Drop original dataset from record (e.g., to save space).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.fill_time_discontinuities" title="pypillometry.GenericEyeData.fill_time_discontinuities"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GenericEyeData.fill_time_discontinuities</span></code></a></p></td>
-<td><p>Find gaps in the time-vector and fill them in (in-place).</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.fill_time_discontinuities" title="pypillometry.EyeData.fill_time_discontinuities"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.fill_time_discontinuities</span></code></a></p></td>
+<td><p>Find gaps in the time-vector and fill them in.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.copy" title="pypillometry.GenericEyeData.copy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GenericEyeData.copy</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.copy" title="pypillometry.EyeData.copy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.copy</span></code></a></p></td>
 <td><p>Make and return a deep-copy of the eyedata object.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
-<p><a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.crop" title="pypillometry.GenericEyeData.crop"><code class="xref py py-meth docutils literal notranslate"><span class="pre">crop()</span></code></a> cuts out a time range, e.g., one block
-of the experiment: <code class="docutils literal notranslate"><span class="pre">d.crop(3</span> <span class="pre">*</span> <span class="pre">u.min,</span> <span class="pre">5</span> <span class="pre">*</span> <span class="pre">u.min)</span></code> (<code class="docutils literal notranslate"><span class="pre">sub_slice</span></code> is a
-deprecated alias). <a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.remove_intervals" title="pypillometry.GenericEyeData.remove_intervals"><code class="xref py py-meth docutils literal notranslate"><span class="pre">remove_intervals()</span></code></a> removes periods
+<p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.crop" title="pypillometry.EyeData.crop"><code class="xref py py-meth docutils literal notranslate"><span class="pre">crop()</span></code></a> cuts out a time range, e.g., one block
+of the experiment: <code class="docutils literal notranslate"><span class="pre">d.crop(3</span> <span class="pre">*</span> <span class="pre">u.min,</span> <span class="pre">5</span> <span class="pre">*</span> <span class="pre">u.min)</span></code>.
+<a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.remove_intervals" title="pypillometry.EyeData.remove_intervals"><code class="xref py py-meth docutils literal notranslate"><span class="pre">remove_intervals()</span></code></a> removes periods
 in the middle, e.g., breaks, and joins the rest: the time vector and the
 events after a removed period are shifted back, so that there are no gaps.
-<a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.reset_time" title="pypillometry.GenericEyeData.reset_time"><code class="xref py py-meth docutils literal notranslate"><span class="pre">reset_time()</span></code></a> makes the time vector start at zero
+<a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.reset_time" title="pypillometry.EyeData.reset_time"><code class="xref py py-meth docutils literal notranslate"><span class="pre">reset_time()</span></code></a> makes the time vector start at zero
 (or at any other time).
-<a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.to_pupildata" title="pypillometry.EyeData.to_pupildata"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_pupildata()</span></code></a> and <a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.to_gazedata" title="pypillometry.EyeData.to_gazedata"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_gazedata()</span></code></a> turn
-<a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData" title="pypillometry.EyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">EyeData</span></code></a> into <a class="reference internal" href="../api/generated/pypillometry.PupilData.html#pypillometry.PupilData" title="pypillometry.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a> or <a class="reference internal" href="../api/generated/pypillometry.GazeData.html#pypillometry.GazeData" title="pypillometry.GazeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">GazeData</span></code></a> (optionally
-for some eyes only), keeping masks, blinks and all other data.</p>
+<a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.drop_data" title="pypillometry.EyeData.drop_data"><code class="xref py py-meth docutils literal notranslate"><span class="pre">drop_data()</span></code></a> removes eyes or variables, e.g.,
+<code class="docutils literal notranslate"><span class="pre">d.drop_data(variables=[&quot;x&quot;,</span> <span class="pre">&quot;y&quot;])</span></code> keeps only the pupil data; masks,
+blinks, events, the experimental setup and all other data are kept. Like
+all transforming methods, it works in place unless <code class="docutils literal notranslate"><span class="pre">inplace=False</span></code> is
+given (or set as the default, see <a class="reference internal" href="settings.html"><span class="doc">Settings and logging</span></a>).</p>
 </section>
 <section id="references">
 <h2>References<a class="headerlink" href="#references" title="Link to this heading">#</a></h2>
@@ -725,11 +824,11 @@ blinks. figshare. <a class="reference external" href="https://figshare.com/artic
       </div>
     </a>
     <a class="right-next"
-       href="quality.html"
+       href="missing_data.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Data quality</p>
+        <p class="prev-next-title">Missing data</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

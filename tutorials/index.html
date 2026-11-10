@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Tutorials &#8212; pypillometry v2.1.0</title>
+    <title>Tutorials &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -103,9 +103,6 @@
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -422,6 +419,7 @@
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Preprocessing and plotting</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../notebooks/blinks.html">Blink preprocessing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../notebooks/missing_data.html">Missing data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../notebooks/plotting.html">Plotting pupillometric data for exploration</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Events and event-related analyses</span></p>
@@ -430,6 +428,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../notebooks/event_metadata.html">Event metadata</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../notebooks/intervals.html">Intervals</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../notebooks/erpds.html">Event-related pupil dilations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../notebooks/rois.html">Gaze in regions of interest around events</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Modeling and complete analyses</span></p>
 <ul class="nav bd-sidenav">
@@ -573,7 +572,8 @@ variables.</p>
 <div class="sd-card-body docutils">
 <div class="sd-card-title sd-font-weight-bold docutils">
 Summarizing data</div>
-<p class="sd-card-text">Summaries of one or many datasets as tables.</p>
+<p class="sd-card-text">Summaries of one or many datasets: contents, data quality, masked
+data and one value per trial, as tables.</p>
 </div>
 <a class="sd-stretched-link sd-hide-link-text reference internal" href="../notebooks/summary.html"><span class="doc">Summarizing pupillometric data</span></a></div>
 </div>
@@ -592,6 +592,16 @@ Blinks</div>
 <p class="sd-card-text">Detect, check and interpolate blinks.</p>
 </div>
 <a class="sd-stretched-link sd-hide-link-text reference internal" href="../notebooks/blinks.html"><span class="doc">Blink preprocessing</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+Missing data</div>
+<p class="sd-card-text">Mask layers and policies on a real recording: blinks, off-screen
+gaze, excluded periods, interpolation and their effect on analyses.</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="../notebooks/missing_data.html"><span class="doc">Missing data</span></a></div>
 </div>
 <div class="sd-col sd-d-flex-row docutils">
 <div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover docutils">
@@ -646,6 +656,16 @@ Event-related pupil dilation</div>
 <p class="sd-card-text">Average pupil responses per condition and across participants.</p>
 </div>
 <a class="sd-stretched-link sd-hide-link-text reference internal" href="../notebooks/erpds.html"><span class="doc">Event-related pupil dilations</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+Gaze in regions of interest</div>
+<p class="sd-card-text">Where participants look after an event: fixation curves, dwell
+time and first entry per trial, combined with the pupil.</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="../notebooks/rois.html"><span class="doc">Gaze in regions of interest around events</span></a></div>
 </div>
 </div>
 </div>

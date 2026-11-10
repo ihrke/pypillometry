@@ -1,0 +1,31 @@
+﻿Epochs
+======
+
+.. currentmodule:: pypillometry
+
+.. autoclass:: Epochs
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~Epochs.as_pandas
+      ~Epochs.drop_meta
+      ~Epochs.filter
+      ~Epochs.from_events
+      ~Epochs.keep
+      ~Epochs.parse_labels
+      ~Epochs.set_meta
+      ~Epochs.to_intervals
+   
+   
+
+
+   .. rubric:: Details

@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>User guide &#8212; pypillometry v2.1.0</title>
+    <title>User guide &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -103,9 +103,6 @@
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -411,6 +408,9 @@
 <li class="toctree-l1"><a class="reference internal" href="loading_data.html">Loading and saving data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="units.html">Units</a></li>
 <li class="toctree-l1"><a class="reference internal" href="preprocessing.html">Preprocessing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="missing_data.html">Missing data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gaze.html">Gaze data and the experimental setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rois.html">Regions of interest</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quality.html">Data quality</a></li>
 <li class="toctree-l1"><a class="reference internal" href="events_intervals.html">Events, intervals and segments</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plotting.html">Plotting</a></li>
@@ -494,8 +494,8 @@ page gives an overview of a topic and links to the
 <div class="sd-card-body docutils">
 <div class="sd-card-title sd-font-weight-bold docutils">
 <span class="fas fa-cubes"></span> Data objects</div>
-<p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">EyeData</span></code>, <code class="docutils literal notranslate"><span class="pre">PupilData</span></code> and <code class="docutils literal notranslate"><span class="pre">GazeData</span></code>; eyes and variables;
-masks; pipelines, in-place operations and history.</p>
+<p class="sd-card-text"><code class="docutils literal notranslate"><span class="pre">EyeData</span></code>; channels; mask layers and policies; pipelines,
+in-place operations and history.</p>
 </div>
 <a class="sd-stretched-link sd-hide-link-text reference internal" href="data_model.html"><span class="doc">Data objects</span></a></div>
 </div>
@@ -533,6 +533,37 @@ combining the eyes.</p>
 <div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover docutils">
 <div class="sd-card-body docutils">
 <div class="sd-card-title sd-font-weight-bold docutils">
+<span class="fas fa-eye-slash"></span> Missing data</div>
+<p class="sd-card-text">Blinks, off-screen gaze, excluded periods and interpolation: where
+the reason for each bad sample is stored and what each method does
+with it.</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="missing_data.html"><span class="doc">Missing data</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+<span class="fas fa-crosshairs"></span> Gaze data and the setup</div>
+<p class="sd-card-text">Gaze coordinates, the screen and camera geometry, conversion to
+degrees, off-screen and divergent samples, gaze plots and regions.</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="gaze.html"><span class="doc">Gaze data and the experimental setup</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+<span class="fas fa-bullseye"></span> Regions of interest</div>
+<p class="sd-card-text">Regions of the screen; where the gaze is around events, fixation
+curves, dwell time and first entry per trial.</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="rois.html"><span class="doc">Regions of interest</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
 <span class="fas fa-clipboard-check"></span> Data quality</div>
 <p class="sd-card-text">A quality report with labeled measures (missing data, noise,
 blinks, calibration) and how the thresholds were chosen.</p>
@@ -544,8 +575,8 @@ blinks, calibration) and how the thresholds were chosen.</p>
 <div class="sd-card-body docutils">
 <div class="sd-card-title sd-font-weight-bold docutils">
 <span class="fas fa-stopwatch"></span> Events, intervals and segments</div>
-<p class="sd-card-text">Select events, build time windows around them and compute
-event-related pupil dilations.</p>
+<p class="sd-card-text">Select events, build time windows around them, cut the data into
+segments and compute event-related pupil dilations.</p>
 </div>
 <a class="sd-stretched-link sd-hide-link-text reference internal" href="events_intervals.html"><span class="doc">Events, intervals and segments</span></a></div>
 </div>

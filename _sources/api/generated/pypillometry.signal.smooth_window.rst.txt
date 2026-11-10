@@ -1,0 +1,6 @@
+﻿smooth\_window
+==============
+
+.. currentmodule:: pypillometry.signal
+
+.. autofunction:: smooth_window

@@ -1,0 +1,6 @@
+﻿generate\_foreshortening\_data
+==============================
+
+.. currentmodule:: pypillometry.signal
+
+.. autofunction:: generate_foreshortening_data

@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Events &#8212; pypillometry v2.1.0</title>
+    <title>Events &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,12 +54,12 @@
     <link rel="icon" href="../../_static/pypillometry_logo_200x200.png"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Intervals" href="pypillometry.Intervals.html" />
+    <link rel="next" title="Epochs" href="pypillometry.Epochs.html" />
     <link rel="prev" title="Events and intervals" href="../events_intervals.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -103,9 +103,6 @@
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -409,40 +406,71 @@
   <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../data.html">Data classes</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.EyeData.html">EyeData</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.PupilData.html">PupilData</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.GazeData.html">GazeData</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.GenericEyeData.html">GenericEyeData</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.EyeDataDict.html">EyeDataDict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.MaskPolicy.html">MaskPolicy</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.FakeEyeData.html">FakeEyeData</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.keephistory.html">keephistory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.QualityReport.html">QualityReport</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.QualityMetric.html">QualityMetric</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.Table.html">Table</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.RecordDict.html">RecordDict</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../pupil.html">Pupil methods (<code class="docutils literal notranslate"><span class="pre">d.pupil</span></code>)</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.eyedata.pupil.PupilNamespace.html">PupilNamespace</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../gaze.html">Gaze methods (<code class="docutils literal notranslate"><span class="pre">d.gaze</span></code>)</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.eyedata.gaze.GazeNamespace.html">GazeNamespace</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../pipelines.html">Pipelines</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.crop.html">crop</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.downsample.html">downsample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.scale.html">scale</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.unscale.html">unscale</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.merge_eyes.html">merge_eyes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.reset_time.html">reset_time</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.mask_intervals.html">mask_intervals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.interpolate_intervals.html">interpolate_intervals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.exclude_intervals.html">exclude_intervals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.keep_intervals.html">keep_intervals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.remove_intervals.html">remove_intervals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.merge_masks.html">merge_masks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.clear_layer.html">clear_layer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.set_blinks.html">set_blinks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.set_events.html">set_events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.add_events.html">add_events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.set_experimental_setup.html">set_experimental_setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.drop_data.html">drop_data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.drop_original.html">drop_original</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.fill_time_discontinuities.html">fill_time_discontinuities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.Step.html">Step</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.Pipeline.html">Pipeline</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../events_intervals.html">Events and intervals</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2 current active"><a aria-current="page" class="current reference internal" href="#">Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.Epochs.html">Epochs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.Intervals.html">Intervals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.ClockSync.html">ClockSync</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.merge_intervals.html">merge_intervals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.concat_intervals.html">concat_intervals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.sync_clocks.html">sync_clocks</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../segments.html">Segmented data</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.SegmentedEyeData.html">SegmentedEyeData</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.GroupLevelSegmentedData.html">GroupLevelSegmentedData</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.concat_segments.html">concat_segments</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.group_segments.html">group_segments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.segmented.SegmentedPupilNamespace.html">SegmentedPupilNamespace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.segmented.SegmentedGazeNamespace.html">SegmentedGazeNamespace</a></li>
 </ul>
 </details></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../plotting.html">Plotting</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.EyePlotter.html">EyePlotter</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.PupilPlotter.html">PupilPlotter</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.GazePlotter.html">GazePlotter</a></li>
-</ul>
-</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../plotting.html">Plotting (<code class="docutils literal notranslate"><span class="pre">d.plot</span></code>)</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../io.html">Reading and writing data</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.read_eyelink.html">read_eyelink</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.read_pickle.html">read_pickle</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.write_pickle.html">write_pickle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.read_file.html">read_file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.write_file.html">write_file</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.download.html">download</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.fetch_url.html">fetch_url</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.local_copy.html">local_copy</a></li>
@@ -458,34 +486,34 @@
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../signal.html">Signal processing</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.butter_lowpass.html">butter_lowpass</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.butter_lowpass_filter.html">butter_lowpass_filter</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.lowpass_filter_iterative.html">lowpass_filter_iterative</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.smooth_window.html">smooth_window</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.downsample.html">downsample</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.bspline.html">bspline</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.baseline_envelope.html">baseline_envelope</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.baseline_envelope_iter_bspline.html">baseline_envelope_iter_bspline</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.baseline_pupil_model.html">baseline_pupil_model</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.zscale.html">zscale</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.velocity_savgol.html">velocity_savgol</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.detect_blinks_velocity.html">detect_blinks_velocity</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.detect_blinks_zero.html">detect_blinks_zero</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.blink_onsets_mahot.html">blink_onsets_mahot</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_kernel.html">pupil_kernel</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_kernel_t.html">pupil_kernel_t</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_get_max_duration.html">pupil_get_max_duration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.plot_prf.html">plot_prf</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_build_design_matrix.html">pupil_build_design_matrix</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_response.html">pupil_response</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_response_coverage.html">pupil_response_coverage</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupilresponse_nnls.html">pupilresponse_nnls</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_signal_quality.html">pupil_signal_quality</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_eye_offset.html">pupil_eye_offset</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.fake_pupil_baseline.html">fake_pupil_baseline</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.fake_gaze_fixations.html">fake_gaze_fixations</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.add_measurement_noise.html">add_measurement_noise</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.generate_foreshortening_data.html">generate_foreshortening_data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.butter_lowpass.html">butter_lowpass</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.butter_lowpass_filter.html">butter_lowpass_filter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.lowpass_filter_iterative.html">lowpass_filter_iterative</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.smooth_window.html">smooth_window</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.downsample.html">downsample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.zscale.html">zscale</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.bspline.html">bspline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.baseline_envelope.html">baseline_envelope</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.baseline_envelope_iter_bspline.html">baseline_envelope_iter_bspline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.baseline_pupil_model.html">baseline_pupil_model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.velocity_savgol.html">velocity_savgol</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.detect_blinks_velocity.html">detect_blinks_velocity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.detect_blinks_zero.html">detect_blinks_zero</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.blink_onsets_mahot.html">blink_onsets_mahot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_kernel.html">pupil_kernel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_kernel_t.html">pupil_kernel_t</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_get_max_duration.html">pupil_get_max_duration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.plot_prf.html">plot_prf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_build_design_matrix.html">pupil_build_design_matrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_response.html">pupil_response</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_response_coverage.html">pupil_response_coverage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupilresponse_nnls.html">pupilresponse_nnls</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_signal_quality.html">pupil_signal_quality</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_eye_offset.html">pupil_eye_offset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.fake_pupil_baseline.html">fake_pupil_baseline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.fake_gaze_fixations.html">fake_gaze_fixations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.add_measurement_noise.html">add_measurement_noise</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.generate_foreshortening_data.html">generate_foreshortening_data</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../geometry.html">Geometry and gaze</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -586,24 +614,26 @@
 <h1>Events<a class="headerlink" href="#events" title="Link to this heading">#</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="pypillometry.Events">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pypillometry.</span></span><span class="sig-name descname"><span class="pre">Events</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">onsets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">UNSET</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_time_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/events.html#Events"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.Events" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pypillometry.</span></span><span class="sig-name descname"><span class="pre">Events</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">onsets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">UNSET</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_time_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">needs_sync</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/events.html#Events"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.Events" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Stateful</span></code></p>
 <p>Container for events with metadata.</p>
 <p>This class wraps arrays of event onsets and labels and provides additional
 functionality such as unit conversion, filtering, and display capabilities.</p>
 <p>Onsets are always times (not sample indices), so they stay valid when
 the data are sliced or resampled.</p>
+<p>Events are immutable: onsets, labels and metadata cannot be changed in
+place; all methods return new Events.</p>
 <p>The events of a dataset are obtained with
-<a class="reference internal" href="pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.get_events" title="pypillometry.GenericEyeData.get_events"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_events()</span></code></a>. An (e.g., filtered)
+<a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData.events" title="pypillometry.EyeData.events"><code class="xref py py-attr docutils literal notranslate"><span class="pre">events</span></code></a>. An (e.g., filtered)
 Events object can be passed as <cite>event_select</cite> to
-<a class="reference internal" href="pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.get_intervals" title="pypillometry.GenericEyeData.get_intervals"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_intervals()</span></code></a> or stored in a dataset
-with <a class="reference internal" href="pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.set_events" title="pypillometry.GenericEyeData.set_events"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_events()</span></code></a> or added with
-<a class="reference internal" href="pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.add_events" title="pypillometry.GenericEyeData.add_events"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_events()</span></code></a>. Events from a
+<a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData.get_epochs" title="pypillometry.EyeData.get_epochs"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_epochs()</span></code></a> or stored in a dataset
+with <a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData.set_events" title="pypillometry.EyeData.set_events"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_events()</span></code></a> or added with
+<a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData.add_events" title="pypillometry.EyeData.add_events"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_events()</span></code></a>. Events from a
 behaviour log can be created with <a class="reference internal" href="#pypillometry.Events.from_table" title="pypillometry.Events.from_table"><code class="xref py py-meth docutils literal notranslate"><span class="pre">from_table()</span></code></a> and mapped to the
 eye-tracker clock with <a class="reference internal" href="pypillometry.sync_clocks.html#pypillometry.sync_clocks" title="pypillometry.sync_clocks"><code class="xref py py-func docutils literal notranslate"><span class="pre">sync_clocks()</span></code></a>.</p>
 <p>Each event can have metadata (e.g., trial, condition, reaction time),
-stored in <cite>meta</cite>: a dict that maps column names to numpy arrays with one
-value per event. Missing values are NaN in numeric columns and “” in
+stored in <cite>meta</cite>: a read-only mapping of column names to numpy arrays
+with one value per event. Missing values are NaN in numeric columns and “” in
 string columns. Metadata come from a behaviour log (see
 <a class="reference internal" href="#pypillometry.Events.from_table" title="pypillometry.Events.from_table"><code class="xref py py-meth docutils literal notranslate"><span class="pre">from_table()</span></code></a>), from the labels of the events (see
 <a class="reference internal" href="#pypillometry.Events.parse_labels" title="pypillometry.Events.parse_labels"><code class="xref py py-meth docutils literal notranslate"><span class="pre">parse_labels()</span></code></a>) or are added with <a class="reference internal" href="#pypillometry.Events.set_meta" title="pypillometry.Events.set_meta"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_meta()</span></code></a> and
@@ -621,6 +651,14 @@ Default is “ms”, or the units of <cite>onsets</cite> if they carry units
 <li><p><strong>data_time_range</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]]</span>) – Time range (min, max) of the original dataset (in same units as onsets)</p></li>
 <li><p><strong>meta</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>]</span>) – metadata: column name -&gt; values (one per event); “onset” and
 “label” cannot be used as names</p></li>
+<li><p><strong>needs_sync</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – True if the onsets are on another clock than the eye tracker (e.g.,
+from a behaviour log) and still have to be mapped with
+<a class="reference internal" href="pypillometry.sync_clocks.html#pypillometry.sync_clocks" title="pypillometry.sync_clocks"><code class="xref py py-func docutils literal notranslate"><span class="pre">sync_clocks()</span></code></a>; default False. Events from
+<a class="reference internal" href="#pypillometry.Events.from_table" title="pypillometry.Events.from_table"><code class="xref py py-meth docutils literal notranslate"><span class="pre">from_table()</span></code></a> have it set; mapping them with a
+<a class="reference internal" href="pypillometry.ClockSync.html#pypillometry.ClockSync" title="pypillometry.ClockSync"><code class="xref py py-class docutils literal notranslate"><span class="pre">ClockSync</span></code></a> or <a class="reference internal" href="#pypillometry.Events.shift" title="pypillometry.Events.shift"><code class="xref py py-meth docutils literal notranslate"><span class="pre">shift()</span></code></a> clears it. Data
+objects warn about such events (<a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData.add_events" title="pypillometry.EyeData.add_events"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_events()</span></code></a>,
+<a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData.set_events" title="pypillometry.EyeData.set_events"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_events()</span></code></a>,
+<a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData.get_epochs" title="pypillometry.EyeData.get_epochs"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_epochs()</span></code></a>).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
@@ -635,6 +673,9 @@ None or samples).</p>
 <span class="go">3</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">onset</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">events</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> at </span><span class="si">{</span><span class="n">onset</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="go">A at 100.0</span>
+<span class="go">B at 500.0</span>
+<span class="go">C at 1000.0</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">events</span> <span class="o">=</span> <span class="n">Events</span><span class="p">([</span><span class="mi">100</span><span class="p">,</span> <span class="mi">500</span><span class="p">],</span> <span class="p">[</span><span class="s2">"stim"</span><span class="p">,</span> <span class="s2">"resp"</span><span class="p">],</span>
 <span class="gp">... </span>                <span class="n">meta</span><span class="o">=</span><span class="p">{</span><span class="s2">"trial"</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="s2">"cond"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"easy"</span><span class="p">,</span> <span class="s2">"easy"</span><span class="p">]})</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">events</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">"cond"</span><span class="p">]</span>
@@ -659,6 +700,12 @@ None or samples).</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.Events.from_table" title="pypillometry.Events.from_table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_table</span></code></a></p></td>
 <td><p>Create Events from a table with one row per trial.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.Events.keep" title="pypillometry.Events.keep"><code class="xref py py-obj docutils literal notranslate"><span class="pre">keep</span></code></a></p></td>
+<td><p>Events where <cite>mask</cite> is True.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.Events.onset" title="pypillometry.Events.onset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">onset</span></code></a></p></td>
+<td><p>Onset of the one event with the given label.</p></td>
+</tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.Events.parse_labels" title="pypillometry.Events.parse_labels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parse_labels</span></code></a></p></td>
 <td><p>Metadata from the labels of the events.</p></td>
 </tr>
@@ -671,13 +718,16 @@ None or samples).</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.Events.set_meta" title="pypillometry.Events.set_meta"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_meta</span></code></a></p></td>
 <td><p>Set a metadata column.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.Events.to_array" title="pypillometry.Events.to_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_array</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.Events.shift" title="pypillometry.Events.shift"><code class="xref py py-obj docutils literal notranslate"><span class="pre">shift</span></code></a></p></td>
+<td><p>Events with shifted onsets.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.Events.to_array" title="pypillometry.Events.to_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_array</span></code></a></p></td>
 <td><p>Convert events to numpy arrays.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.Events.to_table" title="pypillometry.Events.to_table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_table</span></code></a></p></td>
-<td><p>Events as a table: a dict of columns (copies).</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.Events.to_table" title="pypillometry.Events.to_table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_table</span></code></a></p></td>
+<td><p>Events as a table (copies of the columns).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.Events.to_units" title="pypillometry.Events.to_units"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_units</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.Events.to_units" title="pypillometry.Events.to_units"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_units</span></code></a></p></td>
 <td><p>Convert event onsets to different time units.</p></td>
 </tr>
 </tbody>
@@ -686,7 +736,7 @@ None or samples).</p>
 <p class="rubric">Details</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.Events.from_table">
-<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">UNSET</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'row'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/events.html#Events.from_table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.Events.from_table" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">UNSET</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'row'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">needs_sync</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/events.html#Events.from_table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.Events.from_table" title="Link to this definition">#</a></dt>
 <dd><p>Create Events from a table with one row per trial.</p>
 <p>Behaviour logs usually have one row per trial and one column per
 event time (e.g., stimulus onset, response). Each column becomes
@@ -696,6 +746,10 @@ sorted by onset.</p>
 <p>Other columns of the table (e.g., condition, reaction time) can be
 given as <cite>meta</cite>; every event of a row gets the values of that row
 as metadata.</p>
+<p>The times of a behaviour log are usually on another clock than the
+eye tracker, so the events are marked as <cite>needs_sync</cite>: map them with
+<a class="reference internal" href="pypillometry.sync_clocks.html#pypillometry.sync_clocks" title="pypillometry.sync_clocks"><code class="xref py py-func docutils literal notranslate"><span class="pre">sync_clocks()</span></code></a> before adding them to a data
+object (which warns otherwise).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -711,6 +765,9 @@ row)</p></li>
 <li><p><strong>row</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span>) – name of a metadata column with the position of the row in the
 table (0, 1, …), which links the events of the same row;
 default “row”; None for no such column</p></li>
+<li><p><strong>needs_sync</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – if True (default), the times are on another clock and must be
+mapped with <a class="reference internal" href="pypillometry.sync_clocks.html#pypillometry.sync_clocks" title="pypillometry.sync_clocks"><code class="xref py py-func docutils literal notranslate"><span class="pre">sync_clocks()</span></code></a>; False if they
+are on the eye-tracker clock already</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -752,7 +809,7 @@ the other events keep their value (or get NaN, for a new column).</p>
 <li><p><strong>name</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – name of the column, e.g. “rt”</p></li>
 <li><p><strong>by</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span>) – if None (default), each first event is paired with the next
 second event after it (as in
-<a class="reference internal" href="pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.get_intervals" title="pypillometry.GenericEyeData.get_intervals"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_intervals()</span></code></a>); if the
+<a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData.get_intervals" title="pypillometry.EyeData.get_intervals"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_intervals()</span></code></a>); if the
 name of a metadata column (e.g., “trial”), with the next second
 event with the same value in this column</p></li>
 <li><p><strong>exact</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – if True, string selectors match only labels equal to them</p></li>
@@ -830,12 +887,10 @@ the value that the other events of this group have.</p>
 <dt class="sig sig-object py" id="pypillometry.Events.filter">
 <span class="sig-name descname"><span class="pre">filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">selector</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">conditions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/events.html#Events.filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.Events.filter" title="Link to this definition">#</a></dt>
 <dd><p>Filter events and return a new Events object.</p>
-<p>This method supports multiple types of selectors for flexible filtering:
-- String: matches labels containing the substring (or equal to</p>
-<blockquote>
-<div><p>it, if <cite>exact</cite> is True)</p>
-</div></blockquote>
+<p>This method supports multiple types of selectors for flexible filtering:</p>
 <ul class="simple">
+<li><p>String: matches labels containing the substring (or equal to
+it, if <cite>exact</cite> is True)</p></li>
 <li><p>Callable: applies function to each label, keeps events where it returns True</p></li>
 <li><p>Tuple: filters by time range (min_time, max_time)</p></li>
 <li><p>Boolean array: keeps events where it is True</p></li>
@@ -913,6 +968,68 @@ array) and returns a boolean array, e.g.
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.Events.keep">
+<span class="sig-name descname"><span class="pre">keep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/events.html#Events.keep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.Events.keep" title="Link to this definition">#</a></dt>
+<dd><p>Events where <cite>mask</cite> is True.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mask</strong> (<em>array-like</em><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a>) – one value per event</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#pypillometry.Events" title="pypillometry.events.Events"><code class="xref py py-class docutils literal notranslate"><span class="pre">Events</span></code></a></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>new Events with the selected events (and their metadata)</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – if <cite>mask</cite> is not a boolean array with one value per event</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ev</span> <span class="o">=</span> <span class="n">Events</span><span class="p">([</span><span class="mi">100</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">900</span><span class="p">],</span> <span class="p">[</span><span class="s2">"A"</span><span class="p">,</span> <span class="s2">"B"</span><span class="p">,</span> <span class="s2">"C"</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ev</span><span class="o">.</span><span class="n">keep</span><span class="p">(</span><span class="n">ev</span><span class="o">.</span><span class="n">onsets</span> <span class="o">&lt;</span> <span class="mi">600</span><span class="p">)</span><span class="o">.</span><span class="n">labels</span>
+<span class="go">array(['A', 'B'], dtype='&lt;U1')</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.Events.onset">
+<span class="sig-name descname"><span class="pre">onset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ms'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/events.html#Events.onset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.Events.onset" title="Link to this definition">#</a></dt>
+<dd><p>Onset of the one event with the given label.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>label</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – label of the event; only a label equal to it matches</p></li>
+<li><p><strong>units</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – units of the returned onset: “ms” (default), “sec”, “min” or “h”</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>onset of the event</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – if no event or more than one event has this label</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#pypillometry.Events.filter" title="pypillometry.Events.filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filter</span></code></a></dt><dd><p>select events (e.g., labels that occur several times)</p>
+</dd>
+</dl>
+</div>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">events</span> <span class="o">=</span> <span class="n">Events</span><span class="p">([</span><span class="mi">100</span><span class="p">,</span> <span class="mi">2500</span><span class="p">],</span> <span class="p">[</span><span class="s2">"start"</span><span class="p">,</span> <span class="s2">"stim"</span><span class="p">],</span> <span class="n">units</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">events</span><span class="o">.</span><span class="n">onset</span><span class="p">(</span><span class="s2">"stim"</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">)</span>
+<span class="go">2.5</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.Events.parse_labels">
 <span class="sig-name descname"><span class="pre">parse_labels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parser</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/events.html#Events.parse_labels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.Events.parse_labels" title="Link to this definition">#</a></dt>
 <dd><p>Metadata from the labels of the events.</p>
@@ -957,7 +1074,7 @@ one column, e.g., “trial”, from different kinds of events)</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.Events.plot">
-<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">show_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">marker</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'min'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/events.html#Events.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.Events.plot" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">show_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">marker</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sec'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/events.html#Events.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.Events.plot" title="Link to this definition">#</a></dt>
 <dd><p>Plot events as points on a time axis.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -965,7 +1082,7 @@ one column, e.g., “trial”, from different kinds of events)</p>
 <li><p><strong>show_labels</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Labeling strategy. “auto” (default) shows a subset spaced apart,
 “all” annotates every event, “none” disables labels.</p></li>
 <li><p><strong>marker</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Matplotlib marker style for the events (default ‘.’).</p></li>
-<li><p><strong>units</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span>) – Units to display in the plot. Defaults to “min”. Use None to keep existing units.</p></li>
+<li><p><strong>units</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span>) – Units to display in the plot. Defaults to “sec”. Use None to keep existing units.</p></li>
 <li><p><strong>**kwargs</strong> – Additional keyword arguments passed to <code class="xref py py-func docutils literal notranslate"><span class="pre">matplotlib.axes.Axes.plot()</span></code>.</p></li>
 </ul>
 </dd>
@@ -979,11 +1096,10 @@ one column, e.g., “trial”, from different kinds of events)</p>
 <p class="rubric">Examples</p>
 <p>The stimulus events of the example dataset:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">u</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002_short"</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">get_events</span><span class="p">()</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s2">"S_"</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s2">"S_"</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">)</span>
 </pre></div>
 </div>
 <figure class="align-default">
@@ -1049,6 +1165,37 @@ new column)</p></li>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.Events.shift">
+<span class="sig-name descname"><span class="pre">shift</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">by</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/events.html#Events.shift"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.Events.shift" title="Link to this definition">#</a></dt>
+<dd><p>Events with shifted onsets.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>by</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em> or </em><em>callable</em>) – a time offset (in the units of the events) that is added to all
+onsets, or a time map: a function that takes an array of times
+and returns the new times (an array of the same length)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#pypillometry.Events" title="pypillometry.events.Events"><code class="xref py py-class docutils literal notranslate"><span class="pre">Events</span></code></a></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>new Events with the same labels and metadata; <cite>data_time_range</cite>
+(if set) is moved in the same way. The events count as mapped to
+the eye-tracker clock (<cite>needs_sync</cite> is False).</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – if the time map does not return one time per onset</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Events</span><span class="p">([</span><span class="mi">100</span><span class="p">,</span> <span class="mi">500</span><span class="p">],</span> <span class="p">[</span><span class="s2">"A"</span><span class="p">,</span> <span class="s2">"B"</span><span class="p">])</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="o">-</span><span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">onsets</span>
+<span class="go">array([  0., 400.])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Events</span><span class="p">([</span><span class="mi">100</span><span class="p">,</span> <span class="mi">500</span><span class="p">],</span> <span class="p">[</span><span class="s2">"A"</span><span class="p">,</span> <span class="s2">"B"</span><span class="p">])</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">t</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">onsets</span>
+<span class="go">array([ 200., 1000.])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.Events.to_array">
 <span class="sig-name descname"><span class="pre">to_array</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/events.html#Events.to_array"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.Events.to_array" title="Link to this definition">#</a></dt>
 <dd><p>Convert events to numpy arrays.</p>
@@ -1070,12 +1217,13 @@ new column)</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.Events.to_table">
 <span class="sig-name descname"><span class="pre">to_table</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/events.html#Events.to_table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.Events.to_table" title="Link to this definition">#</a></dt>
-<dd><p>Events as a table: a dict of columns (copies).</p>
+<dd><p>Events as a table (copies of the columns).</p>
 <p>The columns are “onset”, “label” and the metadata columns. The
-result can be passed to <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame()</span></code>.</p>
+result is a <a class="reference internal" href="pypillometry.Table.html#pypillometry.Table" title="pypillometry.Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> (a dict of columns that is
+displayed as a table; <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame(table)</span></code> converts it).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="pypillometry.Table.html#pypillometry.Table" title="pypillometry.table.Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a></span></p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>column name -&gt; numpy array</p>
@@ -1118,6 +1266,16 @@ result can be passed to <code class="docutils literal notranslate"><span class="
 </div>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="pypillometry.Events.meta">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">meta</span></span><a class="headerlink" href="#pypillometry.Events.meta" title="Link to this definition">#</a></dt>
+<dd><p>Metadata of the events (read-only).</p>
+<p>A mapping of column name -&gt; numpy array (one value per event). It
+cannot be changed in place; <a class="reference internal" href="#pypillometry.Events.set_meta" title="pypillometry.Events.set_meta"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_meta()</span></code></a>, <a class="reference internal" href="#pypillometry.Events.drop_meta" title="pypillometry.Events.drop_meta"><code class="xref py py-meth docutils literal notranslate"><span class="pre">drop_meta()</span></code></a>,
+<a class="reference internal" href="#pypillometry.Events.parse_labels" title="pypillometry.Events.parse_labels"><code class="xref py py-meth docutils literal notranslate"><span class="pre">parse_labels()</span></code></a>, <a class="reference internal" href="#pypillometry.Events.fill_meta" title="pypillometry.Events.fill_meta"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fill_meta()</span></code></a> and <a class="reference internal" href="#pypillometry.Events.add_latency" title="pypillometry.Events.add_latency"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_latency()</span></code></a>
+return new Events with changed metadata.</p>
+</dd></dl>
+
 </dd></dl>
 
 </section>
@@ -1142,11 +1300,11 @@ result can be passed to <code class="docutils literal notranslate"><span class="
       </div>
     </a>
     <a class="right-next"
-       href="pypillometry.Intervals.html"
+       href="pypillometry.Epochs.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Intervals</p>
+        <p class="prev-next-title">Epochs</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -1175,13 +1333,17 @@ result can be passed to <code class="docutils literal notranslate"><span class="
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.Events.drop_meta"><code class="docutils literal notranslate"><span class="pre">drop_meta()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.Events.fill_meta"><code class="docutils literal notranslate"><span class="pre">fill_meta()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.Events.filter"><code class="docutils literal notranslate"><span class="pre">filter()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.Events.keep"><code class="docutils literal notranslate"><span class="pre">keep()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.Events.onset"><code class="docutils literal notranslate"><span class="pre">onset()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.Events.parse_labels"><code class="docutils literal notranslate"><span class="pre">parse_labels()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.Events.plot"><code class="docutils literal notranslate"><span class="pre">plot()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.Events.row"><code class="docutils literal notranslate"><span class="pre">row()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.Events.set_meta"><code class="docutils literal notranslate"><span class="pre">set_meta()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.Events.shift"><code class="docutils literal notranslate"><span class="pre">shift()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.Events.to_array"><code class="docutils literal notranslate"><span class="pre">to_array()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.Events.to_table"><code class="docutils literal notranslate"><span class="pre">to_table()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.Events.to_units"><code class="docutils literal notranslate"><span class="pre">to_units()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.Events.meta"><code class="docutils literal notranslate"><span class="pre">meta</span></code></a></li>
 </ul>
 </li>
 </ul>

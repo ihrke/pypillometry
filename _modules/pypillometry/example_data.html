@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pypillometry.example_data &#8212; pypillometry v2.1.0</title>
+    <title>pypillometry.example_data &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -414,7 +414,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -458,9 +458,6 @@ window.runMermaid = runMermaid;</script>
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -814,15 +811,12 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.eyedata</span><span class="w"> </span><span class="kn">import</span> <span class="n">EyeData</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.table</span><span class="w"> </span><span class="kn">import</span> <span class="n">RecordDict</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">importlib.resources</span><span class="w"> </span><span class="kn">import</span> <span class="n">files</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">urllib.request</span><span class="w"> </span><span class="kn">import</span> <span class="n">urlretrieve</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os.path</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">fetch_url</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.convenience</span><span class="w"> </span><span class="kn">import</span> <span class="n">_user_cache_dir</span>
 
@@ -855,42 +849,29 @@ window.runMermaid = runMermaid;</script>
     <span class="p">},</span>
 <span class="p">}</span>
 
-<span class="k">class</span><span class="w"> </span><span class="nc">DatasetDict</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""A dictionary that displays as a pandas DataFrame in Jupyter.</span>
-<span class="sd">    </span>
-<span class="sd">    This class inherits from dict and behaves like a normal dictionary,</span>
-<span class="sd">    but when displayed in Jupyter notebooks, it automatically renders</span>
-<span class="sd">    as a nicely formatted pandas DataFrame showing dataset information.</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DatasetDict</span><span class="p">(</span><span class="n">RecordDict</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The example datasets: name -&gt; properties (description, files).</span>
+
+<span class="sd">    A dict that is displayed as a table with the name, type and description</span>
+<span class="sd">    of each dataset (see :class:`~pypillometry.RecordDict`).</span>
 <span class="sd">    """</span>
-    
-    <span class="k">def</span><span class="w"> </span><span class="nf">_repr_html_</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""Return HTML representation for Jupyter display."""</span>
-        <span class="c1"># Parse the dictionary to create DataFrame</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">index_names</span><span class="o">=</span><span class="p">(</span><span class="s2">"dataset"</span><span class="p">,))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_rows</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+        <span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">description</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"description"</span><span class="p">,</span> <span class="s2">"No description available"</span><span class="p">)</span>
-            
-            <span class="c1"># Infer type from keys and values</span>
             <span class="k">if</span> <span class="s2">"edf"</span> <span class="ow">in</span> <span class="n">info</span><span class="p">:</span>
                 <span class="n">source_type</span> <span class="o">=</span> <span class="s2">"EDF"</span>
             <span class="k">elif</span> <span class="s2">"samples_asc"</span> <span class="ow">in</span> <span class="n">info</span> <span class="ow">or</span> <span class="s2">"sample_asc"</span> <span class="ow">in</span> <span class="n">info</span><span class="p">:</span>
-                <span class="n">sample_key</span> <span class="o">=</span> <span class="s2">"samples_asc"</span> <span class="k">if</span> <span class="s2">"samples_asc"</span> <span class="ow">in</span> <span class="n">info</span> <span class="k">else</span> <span class="s2">"sample_asc"</span>
-                <span class="n">sample_value</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="n">sample_key</span><span class="p">])</span>
-                <span class="k">if</span> <span class="s2">"osf.io"</span> <span class="ow">in</span> <span class="n">sample_value</span><span class="p">:</span>
-                    <span class="n">source_type</span> <span class="o">=</span> <span class="s2">"ASC (OSF)"</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">source_type</span> <span class="o">=</span> <span class="s2">"ASC (local)"</span>
+                <span class="n">sample</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"samples_asc"</span><span class="p">,</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"sample_asc"</span><span class="p">)))</span>
+                <span class="n">source_type</span> <span class="o">=</span> <span class="s2">"ASC (OSF)"</span> <span class="k">if</span> <span class="s2">"osf.io"</span> <span class="ow">in</span> <span class="n">sample</span> <span class="k">else</span> <span class="s2">"ASC (local)"</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">source_type</span> <span class="o">=</span> <span class="s2">"Unknown"</span>
-            
-            <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
-                <span class="s2">"Dataset"</span><span class="p">:</span> <span class="n">key</span><span class="p">,</span>
-                <span class="s2">"Type"</span><span class="p">:</span> <span class="n">source_type</span><span class="p">,</span>
-                <span class="s2">"Description"</span><span class="p">:</span> <span class="n">description</span>
-            <span class="p">})</span>
-        
-        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">_repr_html_</span><span class="p">()</span>
+                <span class="n">source_type</span> <span class="o">=</span> <span class="s2">"unknown"</span>
+            <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(((</span><span class="n">key</span><span class="p">,),</span> <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="n">source_type</span><span class="p">,</span>
+                                  <span class="s2">"description"</span><span class="p">:</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"description"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)}))</span>
+        <span class="k">return</span> <span class="n">rows</span>
 
 
 <div class="viewcode-block" id="get_available_datasets">
@@ -898,23 +879,22 @@ window.runMermaid = runMermaid;</script>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_available_datasets</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">"""Return available example datasets.</span>
 <span class="sd">    </span>
-<span class="sd">    Returns a dictionary that displays as a nicely formatted pandas DataFrame</span>
-<span class="sd">    in Jupyter notebooks but can be used as a normal dict otherwise.</span>
+<span class="sd">    Returns a dict (name -&gt; properties) that is displayed as a table.</span>
 <span class="sd">    </span>
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    DatasetDict</span>
-<span class="sd">        A dictionary (subclass of dict) containing all dataset metadata.</span>
-<span class="sd">        When displayed in Jupyter, it will render as a pandas DataFrame</span>
-<span class="sd">        with columns for Dataset name, Type, and Description.</span>
+<span class="sd">        dataset name -&gt; its properties (description, files); displayed as</span>
+<span class="sd">        a table with the name, type and description of each dataset</span>
 <span class="sd">    </span>
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; datasets = get_available_datasets()</span>
-<span class="sd">    &gt;&gt;&gt; # In Jupyter, this displays as a nice DataFrame</span>
-<span class="sd">    &gt;&gt;&gt; datasets</span>
-<span class="sd">    &gt;&gt;&gt; # But you can still use it like a normal dict</span>
-<span class="sd">    &gt;&gt;&gt; datasets['rlmw_002']</span>
+<span class="sd">    &gt;&gt;&gt; datasets  # in Jupyter, this displays as a table  # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; "rlmw_002_short" in datasets  # but it is a normal dict</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; datasets["rlmw_002"]["description"][:30]</span>
+<span class="sd">    'Binocular data from a 20-minut'</span>
 <span class="sd">    """</span>
     <span class="k">return</span> <span class="n">DatasetDict</span><span class="p">(</span><span class="n">example_datasets</span><span class="p">)</span></div>
 
@@ -936,8 +916,8 @@ window.runMermaid = runMermaid;</script>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    EyeData, GazeData or PupilData</span>
-<span class="sd">        The example dataset as an EyeData, GazeData or PupilData object.</span>
+<span class="sd">    EyeData</span>
+<span class="sd">        The example dataset.</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">example_datasets</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Key '</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">' not found in example datasets. "</span>
@@ -985,6 +965,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    EyeData</span>
 <span class="sd">        the example dataset</span>
 <span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
     <span class="c1"># download files from osf (or use the cached copies)</span>
     <span class="n">cache_dir</span> <span class="o">=</span> <span class="n">cache_dir</span> <span class="ow">or</span> <span class="n">_user_cache_dir</span><span class="p">()</span>
     <span class="n">fname_samples</span> <span class="o">=</span> <span class="n">fetch_url</span><span class="p">(</span><span class="n">example_datasets</span><span class="p">[</span><span class="s2">"rlmw_002"</span><span class="p">][</span><span class="s2">"samples_asc"</span><span class="p">],</span>
@@ -1069,6 +1050,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    EyeData</span>
 <span class="sd">        the example dataset</span>
 <span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
     <span class="n">fname_samples</span> <span class="o">=</span> <span class="n">example_datasets</span><span class="p">[</span><span class="s2">"rlmw_002_short"</span><span class="p">][</span><span class="s2">"sample_asc"</span><span class="p">]</span>
     <span class="n">fname_events</span> <span class="o">=</span> <span class="n">example_datasets</span><span class="p">[</span><span class="s2">"rlmw_002_short"</span><span class="p">][</span><span class="s2">"events_asc"</span><span class="p">]</span>
     <span class="n">df</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span><span class="n">fname_samples</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -1150,7 +1132,6 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    EyeData</span>
 <span class="sd">        the example dataset</span>
 <span class="sd">    """</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">.eyedata.experimental_setup</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExperimentalSetup</span>
     <span class="n">cache_dir</span> <span class="o">=</span> <span class="n">cache_dir</span> <span class="ow">or</span> <span class="n">_user_cache_dir</span><span class="p">()</span>
     <span class="n">fname</span> <span class="o">=</span> <span class="n">fetch_url</span><span class="p">(</span><span class="n">example_datasets</span><span class="p">[</span><span class="s2">"rlmw_010_edf"</span><span class="p">][</span><span class="s2">"edf"</span><span class="p">],</span>
                       <span class="n">cache_file</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">,</span> <span class="s2">"010_rlmw.edf"</span><span class="p">))</span>

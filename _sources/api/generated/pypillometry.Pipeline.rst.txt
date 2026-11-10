@@ -1,0 +1,17 @@
+﻿Pipeline
+========
+
+.. currentmodule:: pypillometry
+
+.. autoclass:: Pipeline
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   
+
+
+   .. rubric:: Details

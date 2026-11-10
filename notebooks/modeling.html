@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Modeling the pupillometric signal &#8212; pypillometry v2.1.0</title>
+    <title>Modeling the pupillometric signal &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,11 +58,11 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Example: Preprocessing of a full dataset with multiple subjects" href="preproc_example_pavlov.html" />
-    <link rel="prev" title="Event-related pupil dilations" href="erpds.html" />
+    <link rel="prev" title="Gaze in regions of interest around events" href="rois.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -106,9 +106,6 @@
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -425,6 +422,7 @@
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Preprocessing and plotting</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="blinks.html">Blink preprocessing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="missing_data.html">Missing data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plotting.html">Plotting pupillometric data for exploration</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Events and event-related analyses</span></p>
@@ -433,6 +431,7 @@
 <li class="toctree-l1"><a class="reference internal" href="event_metadata.html">Event metadata</a></li>
 <li class="toctree-l1"><a class="reference internal" href="intervals.html">Intervals</a></li>
 <li class="toctree-l1"><a class="reference internal" href="erpds.html">Event-related pupil dilations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rois.html">Gaze in regions of interest around events</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Modeling and complete analyses</span></p>
 <ul class="current nav bd-sidenav">
@@ -511,7 +510,7 @@
 <blockquote>
 <div><p>Mittner, M., &amp; Groot, J. M. (2025). A novel method for modeling tonic and phasic pupil dynamics in humans. <em>Behavior Research Methods</em>, 57(9), 233. <a class="reference external" href="https://doi.org/10.3758/s13428-025-02755-7">https://doi.org/10.3758/s13428-025-02755-7</a></p>
 </div></blockquote>
-<p>Please cite this paper if you use <code class="docutils literal notranslate"><span class="pre">pupil_estimate_baseline()</span></code> or <code class="docutils literal notranslate"><span class="pre">pupil_estimate_response()</span></code>.</p>
+<p>Please cite this paper if you use <code class="docutils literal notranslate"><span class="pre">pupil.estimate_baseline()</span></code> or <code class="docutils literal notranslate"><span class="pre">pupil.estimate_response()</span></code>.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
@@ -525,13 +524,13 @@
 </div>
 </div>
 <p>It can be useful to think about the pupillometric signal as being composed of different components. One common assumption, based on the finding that the pupil reflects activity in the norepinephrinergic system, is that it consists of slow, tonic (baseline) and faster, phasic (response) fluctuations.</p>
-<p>To illustrate this, we simulate data according to such a model: event-induced responses are superimposed on a slow, baseline-like component. The response to each event is a scaled version of a “response kernel” (Hoeks &amp; Levelt, 1993), which can be plotted with <code class="docutils literal notranslate"><span class="pre">pp.plot_prf()</span></code>:</p>
+<p>To illustrate this, we simulate data according to such a model: event-induced responses are superimposed on a slow, baseline-like component. The response to each event is a scaled version of a “response kernel” (Hoeks &amp; Levelt, 1993), which can be plotted with <code class="docutils literal notranslate"><span class="pre">pp.signal.plot_prf()</span></code>:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
-<span class="n">pp</span><span class="o">.</span><span class="n">plot_prf</span><span class="p">(</span><span class="n">npar</span><span class="o">=</span><span class="mf">10.1</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="mi">930</span><span class="p">)</span>
+<span class="n">pp</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">plot_prf</span><span class="p">(</span><span class="n">npar</span><span class="o">=</span><span class="mf">10.1</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="mi">930</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -542,7 +541,7 @@
 <img alt="../_images/notebooks_modeling_3_0.png" src="../_images/notebooks_modeling_3_0.png" />
 </div>
 </div>
-<p>We create 100 events with random inter-stimulus intervals between 0.6 and 1.4 seconds (a “fast” paradigm in which the responses to successive events overlap), a slowly fluctuating baseline (<code class="docutils literal notranslate"><span class="pre">pp.fake_pupil_baseline()</span></code>), a response of random amplitude to each event (using the design matrix from <code class="docutils literal notranslate"><span class="pre">pp.pupil_build_design_matrix()</span></code>) and some measurement noise:</p>
+<p>We create 100 events with random inter-stimulus intervals between 0.6 and 1.4 seconds (a “fast” paradigm in which the responses to successive events overlap), a slowly fluctuating baseline (<code class="docutils literal notranslate"><span class="pre">pp.signal.fake_pupil_baseline()</span></code>), a response of random amplitude to each event (using the design matrix from <code class="docutils literal notranslate"><span class="pre">pp.signal.pupil_build_design_matrix()</span></code>) and some measurement noise:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
@@ -555,16 +554,16 @@
 <span class="n">duration</span> <span class="o">=</span> <span class="n">event_onsets</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">5000</span>                                   <span class="c1"># in ms</span>
 
 <span class="c1"># time (ms) and baseline</span>
-<span class="n">tx</span><span class="p">,</span> <span class="n">real_baseline</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">fake_pupil_baseline</span><span class="p">(</span><span class="n">duration</span><span class="o">/</span><span class="mi">1000</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">amplitude</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+<span class="n">tx</span><span class="p">,</span> <span class="n">real_baseline</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">fake_pupil_baseline</span><span class="p">(</span><span class="n">duration</span><span class="o">/</span><span class="mi">1000</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">amplitude</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
                                               <span class="n">freq</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
-<span class="n">X</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">pupil_build_design_matrix</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span> <span class="n">event_onsets</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">npar</span><span class="o">=</span><span class="mf">10.1</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="mi">930</span><span class="p">)</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">pupil_build_design_matrix</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span> <span class="n">event_onsets</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">npar</span><span class="o">=</span><span class="mf">10.1</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="mi">930</span><span class="p">)</span>
 <span class="n">real_response_coef</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="n">ntrials</span><span class="p">)</span>
 <span class="n">real_response</span> <span class="o">=</span> <span class="n">real_response_coef</span> <span class="o">@</span> <span class="n">X</span>
 <span class="n">noise</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">tx</span><span class="p">))</span>
 
-<span class="n">faked</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">PupilData</span><span class="p">(</span><span class="n">left_pupil</span><span class="o">=</span><span class="n">real_baseline</span> <span class="o">+</span> <span class="n">real_response</span> <span class="o">+</span> <span class="n">noise</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">tx</span><span class="p">,</span>
-                     <span class="n">event_onsets</span><span class="o">=</span><span class="n">event_onsets</span><span class="p">,</span> <span class="n">event_labels</span><span class="o">=</span><span class="p">[</span><span class="s2">"event"</span><span class="p">]</span><span class="o">*</span><span class="n">ntrials</span><span class="p">,</span>
-                     <span class="n">name</span><span class="o">=</span><span class="s2">"simulated"</span><span class="p">)</span>
+<span class="n">faked</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="p">(</span><span class="n">left_pupil</span><span class="o">=</span><span class="n">real_baseline</span> <span class="o">+</span> <span class="n">real_response</span> <span class="o">+</span> <span class="n">noise</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">tx</span><span class="p">,</span>
+                   <span class="n">event_onsets</span><span class="o">=</span><span class="n">event_onsets</span><span class="p">,</span> <span class="n">event_labels</span><span class="o">=</span><span class="p">[</span><span class="s2">"event"</span><span class="p">]</span><span class="o">*</span><span class="n">ntrials</span><span class="p">,</span>
+                   <span class="n">name</span><span class="o">=</span><span class="s2">"simulated"</span><span class="p">)</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
 <span class="n">faked</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">pupil_plot</span><span class="p">(</span><span class="n">show_events</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -607,31 +606,31 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-{&#39;left_pupil&#39;: array([ 753.24707085,  910.5008777 ,  926.75913869, 1032.40897831,
-        1064.03141911, 1056.86661384, 1091.24004593, 1052.80095661,
-        1072.74267959, 1142.61257249, 1113.25888123, 1196.89682553,
+{&#39;left_pupil&#39;: array([ 755.3445703 ,  910.5008777 ,  932.7298659 , 1032.40897831,
+        1064.03141911, 1056.86661384, 1091.24004593, 1054.12046947,
+        1070.96222088, 1139.40891598, 1113.25888123, 1195.99348093,
         1199.65930305, 1300.49149841, 1316.62737324, 1282.12409623,
-        1245.92237413, 1140.45326192, 1059.99835976, 1041.76429984,
-         959.40567363,  861.55922371,  903.51045264,  873.95828385,
-         876.18155969,  935.02438032,  967.33155388,  969.79272217,
-        1039.22704424,  996.92880107,  958.35198931,  923.32412997,
-         993.99151361,  951.96188817,  994.59993086, 1000.29652794,
-         936.31119407,  980.10612966, 1015.14867091, 1082.86824474,
-        1093.98033793, 1120.97212302, 1108.26405136, 1077.83957373,
-        1018.94383666,  949.14281559,  968.54194546,  871.16863109,
-         938.66220767, 1069.35636145, 1099.76956724, 1177.17278248,
-        1180.59678379, 1114.84777511, 1067.43894777, 1005.06834067,
-         984.78364951, 1018.75859379, 1028.69482005, 1048.560598  ,
-        1144.33186444, 1167.24040497, 1234.14851528, 1202.93942607,
-        1166.78906597, 1153.9282239 , 1115.88298056, 1142.17262978,
-        1219.56578743, 1148.34374671, 1237.80212123, 1177.00180163,
-        1044.6882333 ,  960.82282214,  935.12733253,  969.56222201,
-        1020.5417764 , 1010.45149153, 1091.89257587, 1111.72988004,
-        1152.08224285, 1189.72445557, 1150.25984019, 1144.32535071,
-        1075.07311075, 1110.182412  , 1058.94757395, 1008.17674542,
-        1026.40772019, 1005.60095871,  989.65797247,  995.79509036,
+        1246.72110993, 1136.01067965, 1059.99835976, 1044.56272194,
+         956.21648324,  859.03635638,  903.51045264,  873.00710252,
+         876.18155969,  932.69087178,  966.2978947 ,  967.53196025,
+        1042.23556955, 1000.24557847,  958.35198931,  921.75006445,
+         990.53000669,  951.96188817,  994.59993086,  997.73060282,
+         938.00568988,  977.57391566, 1021.453641  , 1081.30504165,
+        1094.97402141, 1124.03325259, 1108.26405136, 1074.26110607,
+        1018.94383666,  949.14281559,  968.54194546,  869.84203316,
+         938.66220767, 1070.52615893, 1098.13718577, 1177.17278248,
+        1180.59678379, 1114.84777511, 1060.63578694, 1005.37472371,
+         980.93643544, 1016.52835625, 1028.4051062 , 1051.84671225,
+        1142.5630315 , 1166.94380007, 1234.42000908, 1202.93942607,
+        1164.63545442, 1153.9282239 , 1118.07155382, 1140.35593043,
+        1219.56578743, 1148.34374671, 1237.91395018, 1177.00180163,
+        1044.6882333 ,  956.96898122,  935.12733253,  969.56222201,
+        1020.253291  , 1013.06523706, 1091.89257587, 1113.22617499,
+        1156.46164584, 1189.72445557, 1153.85375071, 1144.32535071,
+        1078.47147651, 1110.182412  , 1058.94757395, 1006.90644063,
+        1025.38538538, 1005.60095871,  992.93209897,  991.09570187,
          951.00503493, 1040.14332618,  977.77872015, 1004.7527711 ,
-        1038.7322798 , 1019.84286338, 1097.69076972, 1020.27321193])}
+        1038.7322798 , 1015.5552674 , 1097.69076972, 1020.27321193])}
 </pre></div></div>
 </div>
 <p>The result contains one array per eye and variable, with one value per event. We subtract the baseline from the response:</p>
@@ -659,31 +658,31 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-{&#39;left_pupil&#39;: array([ 754.89276983,  907.89529851,  928.05911264, 1031.65582806,
+{&#39;left_pupil&#39;: array([ 755.92091005,  907.89529851,  930.73411829, 1031.65582806,
         1063.32439519, 1056.42293438, 1090.89687451, 1050.88269661,
-        1071.33891676, 1144.14810423, 1111.96922201, 1197.29221125,
+        1069.58743809, 1139.02064069, 1111.96922201, 1195.85132123,
         1200.58884988, 1304.19762758, 1318.58902327, 1281.16290544,
-        1245.66657616, 1140.32669132, 1059.81610238, 1043.93769775,
-         960.44723968,  861.7926799 ,  903.91447365,  875.93067268,
-         875.11773972,  936.7419889 ,  966.75632829,  970.58040737,
-        1041.13879091,  996.38305171,  957.60786568,  924.78396773,
-         993.87298494,  951.78999637,  992.8116932 , 1000.43454084,
-         934.2154059 ,  980.00590317, 1015.85983763, 1082.34606604,
-        1097.19348532, 1121.00646091, 1109.40938278, 1077.89786971,
-        1020.16660628,  949.9561078 ,  970.5497937 ,  871.34764237,
-         938.98842965, 1070.03175398, 1099.55558725, 1179.25007842,
-        1180.88396895, 1116.67619587, 1064.36569655, 1006.53086871,
-         983.66947725, 1019.58879392, 1028.05812556, 1047.72639559,
-        1143.55853165, 1168.0061164 , 1235.29960898, 1203.72369645,
-        1169.35804263, 1154.16128504, 1116.1233608 , 1143.03210058,
+        1247.59004759, 1133.00943923, 1059.81610238, 1045.0975211 ,
+         957.29146249,  859.37766491,  903.91447365,  872.71620589,
+         875.11773972,  935.05155369,  966.75632829,  968.71623455,
+        1042.46240916, 1001.13380517,  957.60786568,  922.57282414,
+         990.97282501,  951.78999637,  992.8116932 ,  994.68552031,
+         936.65360014,  976.94021008, 1021.28482066, 1081.64026888,
+        1097.19348532, 1123.37870692, 1109.40938278, 1073.47117931,
+        1020.16660628,  949.9561078 ,  970.5497937 ,  870.9889643 ,
+         938.98842965, 1070.78287978, 1098.14762076, 1179.25007842,
+        1180.88396895, 1116.67619587, 1058.05325367, 1006.53086871,
+         981.29214479, 1016.15942405, 1026.96828037, 1053.22477922,
+        1142.1563809 , 1166.98151226, 1235.29960898, 1203.72369645,
+        1168.51365154, 1154.16128504, 1116.87413336, 1138.41680091,
         1216.94732524, 1146.40525942, 1237.81622373, 1179.40856231,
-        1047.62349375,  963.64277425,  934.87009215,  973.40229597,
-        1020.55093121, 1007.54240168, 1087.92048071, 1110.58953299,
-        1152.01497087, 1193.25887528, 1152.06600418, 1144.41650203,
-        1071.66171413, 1111.50299268, 1061.46855166, 1008.17282054,
-        1025.8831275 , 1007.96107893,  990.96435721,  994.60692221,
+        1047.62349375,  957.71144323,  934.87009215,  973.40229597,
+        1019.21802694, 1009.47026062, 1087.92048071, 1114.74169578,
+        1153.38104173, 1193.25887528, 1156.48598797, 1144.41650203,
+        1075.88090747, 1111.50299268, 1061.46855166, 1004.52165797,
+        1023.30285072, 1007.96107893,  992.75167008,  990.87522947,
          949.595824  , 1040.70773824,  977.13194747, 1006.10751207,
-        1042.4995676 , 1019.50811067, 1097.11168414, 1022.60628766])}
+        1042.4995676 , 1013.38451585, 1097.11168414, 1022.60628766])}
 </pre></div></div>
 </div>
 </section>
@@ -691,13 +690,12 @@
 <h2>Advanced methods for tonic/phasic component estimation<a class="headerlink" href="#Advanced-methods-for-tonic/phasic-component-estimation" title="Link to this heading">#</a></h2>
 <p>The simple method above is appealing for its simplicity but has severe limitations. Most importantly, multiple overlapping pupillary responses can “look like” baseline fluctuations when added together, thereby artificially inflating baseline estimates, particularly when events are spaced closely in time (“fast paradigms”). For that reason, we developed specialized algorithms to disentangle tonic and phasic components of the pupillometric signal.</p>
 <p>The algorithm uses an iterative procedure to remove an initial estimate of the responses from the signal to continue to estimate the underlying baseline. Details about how this algorithm works and which parameters it supports are available in <a class="reference external" href="https://doi.org/10.3758/s13428-025-02755-7">Mittner &amp; Groot (2025)</a>.</p>
-<p>The functionality is implemented in <code class="docutils literal notranslate"><span class="pre">pupil_estimate_baseline()</span></code> and <code class="docutils literal notranslate"><span class="pre">pupil_estimate_response()</span></code>. The response estimation depends on the estimated baseline, hence <code class="docutils literal notranslate"><span class="pre">pupil_estimate_baseline()</span></code> should be called first. Both functions are slow for high sampling rates, so it is a good idea to low-pass filter and downsample the data first (here, the simulated data already has a sampling rate of 50 Hz):</p>
+<p>The functionality is implemented in <code class="docutils literal notranslate"><span class="pre">pupil.estimate_baseline()</span></code> and <code class="docutils literal notranslate"><span class="pre">pupil.estimate_response()</span></code>. The response estimation depends on the estimated baseline, hence <code class="docutils literal notranslate"><span class="pre">pupil.estimate_baseline()</span></code> should be called first. Both functions are slow for high sampling rates, so it is a good idea to low-pass filter and downsample the data first (here, the simulated data already has a sampling rate of 50 Hz):</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">faked</span><span class="o">.</span><span class="n">pupil_estimate_baseline</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>\
-         <span class="o">.</span><span class="n">pupil_estimate_response</span><span class="p">()</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">faked</span> <span class="o">|</span> <span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">estimate_baseline</span><span class="p">()</span> <span class="o">|</span> <span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">estimate_response</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -706,19 +704,19 @@
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-<span class="ansi-green-fg">pp: 12:40:45</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">pupil_response</span>:<span class="ansi-cyan-fg">480</span> | <span class="ansi-bold">optimizing both npar and tmax, might take a while...</span>
-<span class="ansi-green-fg">pp: 12:40:46</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">501</span> | <span class="ansi-bold">npar=9.33, tmax=981.93</span>
-<span class="ansi-green-fg">pp: 12:40:47</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">501</span> | <span class="ansi-bold">npar=8.25, tmax=971.97</span>
-<span class="ansi-green-fg">pp: 12:40:47</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">501</span> | <span class="ansi-bold">npar=7.15, tmax=957.53</span>
-<span class="ansi-green-fg">pp: 12:40:48</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">501</span> | <span class="ansi-bold">npar=7.37, tmax=955.65</span>
-<span class="ansi-green-fg">pp: 12:40:48</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">501</span> | <span class="ansi-bold">npar=7.37, tmax=954.02</span>
-<span class="ansi-green-fg">pp: 12:40:48</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">501</span> | <span class="ansi-bold">npar=7.37, tmax=953.65</span>
-<span class="ansi-green-fg">pp: 12:40:49</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">501</span> | <span class="ansi-bold">npar=7.37, tmax=953.65</span>
-<span class="ansi-green-fg">pp: 12:40:49</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">501</span> | <span class="ansi-bold">npar=7.37, tmax=953.65</span>
+<span class="ansi-green-fg">pp: 13:20:02</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">pupil_response</span>:<span class="ansi-cyan-fg">578</span> | <span class="ansi-bold">optimizing both npar and tmax, might take a while...</span>
+<span class="ansi-green-fg">pp: 13:20:03</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">581</span> | <span class="ansi-bold">npar=9.38, tmax=975.42</span>
+<span class="ansi-green-fg">pp: 13:20:03</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">581</span> | <span class="ansi-bold">npar=8.34, tmax=966.08</span>
+<span class="ansi-green-fg">pp: 13:20:03</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">581</span> | <span class="ansi-bold">npar=7.22, tmax=952.14</span>
+<span class="ansi-green-fg">pp: 13:20:03</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">581</span> | <span class="ansi-bold">npar=7.44, tmax=950.43</span>
+<span class="ansi-green-fg">pp: 13:20:03</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">581</span> | <span class="ansi-bold">npar=7.44, tmax=949.00</span>
+<span class="ansi-green-fg">pp: 13:20:03</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">581</span> | <span class="ansi-bold">npar=7.44, tmax=948.66</span>
+<span class="ansi-green-fg">pp: 13:20:04</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">581</span> | <span class="ansi-bold">npar=7.44, tmax=948.69</span>
+<span class="ansi-green-fg">pp: 13:20:04</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">581</span> | <span class="ansi-bold">npar=7.44, tmax=948.68</span>
 </pre></div></div>
 </div>
 <p>Here, we allowed the two shape parameters of the response kernel, <code class="docutils literal notranslate"><span class="pre">npar</span></code> and <code class="docutils literal notranslate"><span class="pre">tmax</span></code>, to vary freely together with the amplitudes of the responses. This allows an individualized shape of the pupillary response for each subject (which appears reasonable given the results in Hoeks &amp; Levelt, 1993) but may take a long time to optimize and can result in pathological solutions. In that case, one or both of the parameters can be fixed, for example to reasonable group-level values (e.g.,
-<code class="docutils literal notranslate"><span class="pre">pupil_estimate_response(npar=10.1,</span> <span class="pre">tmax=930)</span></code>).</p>
+<code class="docutils literal notranslate"><span class="pre">pupil.estimate_response(npar=10.1,</span> <span class="pre">tmax=930)</span></code>).</p>
 <p>After running these methods, the baseline is stored as a new variable <code class="docutils literal notranslate"><span class="pre">baseline</span></code> and the predicted response as variable <code class="docutils literal notranslate"><span class="pre">response</span></code>:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
@@ -742,7 +740,7 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s2">"response"</span><span class="p">][</span><span class="s2">"left"</span><span class="p">]</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s2">"response"</span><span class="p">][</span><span class="s2">"left_pupil"</span><span class="p">]</span>
 </pre></div>
 </div>
 </div>
@@ -752,36 +750,49 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-{&#39;npar&#39;: np.float64(7.3685470620233104),
+{&#39;npar&#39;: np.float64(7.437253858661091),
  &#39;npar_free&#39;: True,
- &#39;tmax&#39;: np.float64(953.6454035404223),
+ &#39;tmax&#39;: np.float64(948.6800696447696),
  &#39;tmax_free&#39;: True,
- &#39;coef&#39;: array([163.70558098,  59.82668412,  59.44208734,  35.93939061,
-         70.61177914, 113.49721296,  97.7192078 , 103.42663827,
-        177.48505811, 176.83179863,  38.31277677,  96.94181356,
-         73.70363263,  71.53669473,  84.90323405, 104.64058644,
-        124.04716012,  80.2841598 , 121.49970223,  73.48218003,
-         92.98662969, 153.80079823,  97.35578564, 101.49746502,
-         82.99794876,  91.71345939, 108.85808044, 158.5480895 ,
-         91.1330389 ,  95.03157591,  87.96645934, 171.834779  ,
-         71.60768561,  74.44841751,  70.46347522,  90.27553751,
-         90.42293282, 116.53593727,  72.77153483,  97.403178  ,
-         85.1361289 ,  67.86789003,  98.28771639, 159.53520492,
-         84.71315748, 127.66409553,  50.20917194,  71.52995751,
-        120.70151847,  81.29308825, 123.20776444,  84.12244029,
-        101.38502605, 160.20905726,  91.86829975,  96.48525465,
-        107.53262961,  74.74357489,  77.81021977,  91.54880569,
-         83.89276232, 123.69030085, 115.35259556, 115.56017971,
-        104.58077261,  56.78429817, 104.30614893, 165.53184966,
-         46.93312072,  89.53325303, 104.84958164, 100.04632405,
-        138.26446296, 114.7175219 , 120.29029554, 110.73402215,
-         83.41558149,  79.31611069,  58.0620172 , 118.68330667,
-         84.09548615, 104.61082621, 122.86242146, 164.87455134,
-        188.67325209, 133.55152761, 104.09376869, 101.15143442,
-         87.78710714,  74.34441431, 102.74358426,  82.24411808,
-        129.10909799, 145.65423302,  38.91219147, 134.11747665,
-        154.11540088, 147.01973172,  80.80542977, 195.29230974]),
- &#39;bounds&#39;: {&#39;npar&#39;: (1, 20), &#39;tmax&#39;: (100, 2000)}}
+ &#39;coef&#39;: array([199.18918166,  96.55632077,  86.86773469,  65.34151355,
+         73.66660524, 100.88277476,  90.95695309,  66.16464612,
+        143.35082451, 149.11331544,  33.27831286,  97.5107787 ,
+         83.13343866,  73.55102023,  68.3048812 ,  78.06171313,
+        102.04553169,  72.98044987, 123.5646382 ,  74.89471421,
+         83.5536221 , 172.88219268,  93.2201661 ,  98.98099503,
+         85.50761577, 108.33827386, 118.35877231, 135.08936122,
+         81.40384649,  69.92192609,  89.37766488, 174.72580811,
+         66.11041839,  89.46027127,  84.5765768 , 106.53739911,
+        118.06439808, 113.61925596,  45.38523476,  93.06963233,
+         78.00924971,  50.96288039,  79.37177074, 150.47896152,
+         95.27100988, 143.41450802,  63.92723781,  84.4458926 ,
+        134.101498  ,  97.40838597, 138.98760219,  96.1338983 ,
+        112.53555387, 164.88521392,  90.21407579, 102.01233935,
+        124.22599478,  91.95337941,  96.90356693, 114.22418543,
+        100.48685516, 135.72014313, 124.44066123, 126.31935176,
+        109.27806309,  54.82754395, 107.09088516, 158.3788698 ,
+         50.12123263, 100.50830803, 117.71939191,  99.19541087,
+        104.25013929,  53.21001775,  88.88577754, 110.33041067,
+         85.83633425,  75.65233023,  50.69587927, 112.48200673,
+         75.72260242,  95.0712575 ,  93.79136656, 123.05653707,
+        146.79583503, 101.42201514,  88.75727924, 117.24128917,
+         82.5734936 ,  60.92760422, 137.17727781, 158.86302229,
+        151.34278519, 114.29166478,   0.        ,  97.47394005,
+        132.91596722, 150.16028664,  87.12501517, 195.77168958]),
+ &#39;bounds&#39;: {&#39;npar&#39;: (1, 20), &#39;tmax&#39;: (100, 2000)},
+ &#39;valid&#39;: array([1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
+        1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
+        1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
+        1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
+        1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
+        1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]),
+ &#39;observed&#39;: array([1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
+        1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
+        1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
+        1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
+        1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
+        1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]),
+ &#39;min_valid&#39;: 0.5}
 </pre></div></div>
 </div>
 <p>We can plot the estimated baseline and the full model (baseline+response) together with the data and the real baseline:</p>
@@ -818,7 +829,7 @@
 <span class="n">at_onset</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1000</span><span class="o">/</span><span class="n">fs</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span>   <span class="c1"># one sample at the event onset</span>
 <span class="n">real_baseline_ev</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">stat_per_event</span><span class="p">(</span><span class="n">event_select</span><span class="o">=</span><span class="s2">"event"</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="n">at_onset</span><span class="p">)[</span><span class="s2">"left_realbaseline"</span><span class="p">]</span>
 <span class="n">novel_baseline</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">stat_per_event</span><span class="p">(</span><span class="n">event_select</span><span class="o">=</span><span class="s2">"event"</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="n">at_onset</span><span class="p">)[</span><span class="s2">"left_baseline"</span><span class="p">]</span>
-<span class="n">novel_response</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s2">"response"</span><span class="p">][</span><span class="s2">"left"</span><span class="p">][</span><span class="s2">"coef"</span><span class="p">]</span>
+<span class="n">novel_response</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s2">"response"</span><span class="p">][</span><span class="s2">"left_pupil"</span><span class="p">][</span><span class="s2">"coef"</span><span class="p">]</span>
 
 <span class="n">traditional_baseline</span> <span class="o">=</span> <span class="n">baseline</span>
 <span class="n">traditional_response</span> <span class="o">=</span> <span class="n">response</span>
@@ -845,17 +856,17 @@
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Traditional method:
-Baseline: Corr(trad, real) = 0.9552617927538912
-Response: Corr(trad, real) = 0.43811540405889726
+Baseline: Corr(trad, real) = 0.9552897127692387
+Response: Corr(trad, real) = 0.4355020295417933
 
 Novel method:
-Baseline: Corr(nov, real) = 0.9754659627521309
-Response: Corr(nov, real) = 0.6281775206841139
+Baseline: Corr(nov, real) = 0.9779788173389102
+Response: Corr(nov, real) = 0.608274644822552
 </pre></div></div>
 </div>
 <p>The correlations are higher for the novel method than for the traditional method. More detailed simulation studies are reported in <a class="reference external" href="https://doi.org/10.3758/s13428-025-02755-7">Mittner &amp; Groot (2025)</a>.</p>
-<p>The parameters of the baseline estimation are described in the API documentation of <code class="docutils literal notranslate"><span class="pre">pp.baseline_envelope_iter_bspline()</span></code> and, in more detail, in <a class="reference external" href="https://doi.org/10.3758/s13428-025-02755-7">Mittner &amp; Groot (2025)</a>.</p>
-<p>The parameters of the response estimation are described in the API documentation of <code class="docutils literal notranslate"><span class="pre">pp.pupil_response()</span></code>.</p>
+<p>The parameters of the baseline estimation are described in the API documentation of <code class="docutils literal notranslate"><span class="pre">pp.signal.baseline_envelope_iter_bspline()</span></code> and, in more detail, in <a class="reference external" href="https://doi.org/10.3758/s13428-025-02755-7">Mittner &amp; Groot (2025)</a>.</p>
+<p>The parameters of the response estimation are described in the API documentation of <code class="docutils literal notranslate"><span class="pre">pp.signal.pupil_response()</span></code>.</p>
 </section>
 </section>
 
@@ -870,12 +881,12 @@ Response: Corr(nov, real) = 0.6281775206841139
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="erpds.html"
+       href="rois.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Event-related pupil dilations</p>
+        <p class="prev-next-title">Gaze in regions of interest around events</p>
       </div>
     </a>
     <a class="right-next"

@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>pypillometry &#8212; pypillometry v2.1.0</title>
+    <title>pypillometry &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="_static/documentation_options.js?v=49a90b2e"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -102,9 +102,6 @@
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -430,18 +427,22 @@ files), cleans them (blinks, artifacts, filtering), cuts them into
 event-related segments and plots the results. Pupil size and gaze position
 of one or both eyes are kept together in a single object, and every
 processing step is recorded in the object’s history.</p>
+<p>Version 2 is a major rewrite and not compatible with version 1; the
+<a class="reference external" href="https://ihrke.github.io/pypillometry/v1/html/index.html">documentation of version 1</a>
+is still available.
+What is new in each version is listed in the <a class="reference internal" href="development/changelog.html"><span class="doc">changelog</span></a>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">u</span>
 
 <span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">from_eyelink</span><span class="p">(</span><span class="s2">"recording.edf"</span><span class="p">)</span>   <span class="c1"># read an Eyelink file</span>
-<span class="n">d</span><span class="o">.</span><span class="n">pupil_blinks_detect</span><span class="p">(</span><span class="n">apply_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>           <span class="c1"># detect and mask blinks</span>
-<span class="n">d</span><span class="o">.</span><span class="n">pupil_blinks_interpolate</span><span class="p">()</span>                     <span class="c1"># interpolate them</span>
-<span class="n">d</span><span class="o">.</span><span class="n">pupil_lowpass_filter</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>                 <span class="c1"># 4 Hz low-pass filter</span>
+<span class="n">d</span> <span class="o">=</span> <span class="p">(</span><span class="n">d</span> <span class="o">|</span> <span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span>                <span class="c1"># detect and mask blinks</span>
+       <span class="o">|</span> <span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_interpolate</span><span class="p">()</span>           <span class="c1"># interpolate them</span>
+       <span class="o">|</span> <span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">lowpass_filter</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span>      <span class="c1"># 4 Hz low-pass filter</span>
 
 <span class="c1"># average pupil response from 200 ms before to 1 s after each stimulus</span>
-<span class="n">intervals</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="s2">"stim"</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>
-<span class="n">erpd</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_segments</span><span class="p">(</span><span class="n">intervals</span><span class="p">,</span> <span class="s2">"left_pupil"</span><span class="p">)</span><span class="o">.</span><span class="n">baseline_correct</span><span class="p">((</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
-<span class="n">erpd</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>                                          <span class="c1"># event-related pupil dilation</span>
+<span class="n">epochs</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_epochs</span><span class="p">(</span><span class="s2">"stim"</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>
+<span class="n">erpd</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_segments</span><span class="p">(</span><span class="n">epochs</span><span class="p">,</span> <span class="s2">"left_pupil"</span><span class="p">)</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">baseline_correct</span><span class="p">((</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="n">erpd</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>                                    <span class="c1"># event-related pupil dilation</span>
 </pre></div>
 </div>
 <div class="sd-container-fluid sd-sphinx-override sd-mt-4 sd-mb-4 sd-ml-0 sd-mr-0 docutils">

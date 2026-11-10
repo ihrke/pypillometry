@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Importing data from Eyelink EDF files &#8212; pypillometry v2.1.0</title>
+    <title>Importing data from Eyelink EDF files &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -62,7 +62,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -106,9 +106,6 @@
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -425,6 +422,7 @@
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Preprocessing and plotting</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="blinks.html">Blink preprocessing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="missing_data.html">Missing data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plotting.html">Plotting pupillometric data for exploration</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Events and event-related analyses</span></p>
@@ -433,6 +431,7 @@
 <li class="toctree-l1"><a class="reference internal" href="event_metadata.html">Event metadata</a></li>
 <li class="toctree-l1"><a class="reference internal" href="intervals.html">Intervals</a></li>
 <li class="toctree-l1"><a class="reference internal" href="erpds.html">Event-related pupil dilations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rois.html">Gaze in regions of interest around events</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Modeling and complete analyses</span></p>
 <ul class="nav bd-sidenav">
@@ -533,11 +532,11 @@
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-<span class="ansi-green-fg">pp: 12:29:23</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fetch_url</span>:<span class="ansi-cyan-fg">432</span> | <span class="ansi-bold">Downloading &#39;https://osf.io/trsuq/download&#39; to /tmp/pypillometry_bgfrketm/osf.io/trsuq/download</span>
-download: 100%|██████████| 14.2M/14.2M [00:03&lt;00:00, 4.17MiB/s]
-<span class="ansi-green-fg">pp: 12:29:30</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">_read_edf</span>:<span class="ansi-cyan-fg">628</span> | <span class="ansi-bold">Loading EDF file: /tmp/pypillometry_bgfrketm/osf.io/trsuq/download (current log level: INFO, set to DEBUG to see eyelinkio output)</span>
-<span class="ansi-green-fg">pp: 12:29:40</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">local_copy</span>:<span class="ansi-cyan-fg">493</span> | <span class="ansi-bold">Deleting downloaded copy: /tmp/pypillometry_bgfrketm</span>
-<span class="ansi-green-fg">pp: 12:29:40</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">from_eyelink</span>:<span class="ansi-cyan-fg">1292</span> | <span class="ansi-bold">Filtering out Eyelink triggers</span>
+<span class="ansi-green-fg">pp: 17:56:54</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fetch_url</span>:<span class="ansi-cyan-fg">465</span> | <span class="ansi-bold">Downloading &#39;https://osf.io/trsuq/download&#39; to /tmp/pypillometry_2_ymu7pf/download</span>
+download: 100%|██████████| 14.2M/14.2M [00:05&lt;00:00, 2.96MiB/s]
+<span class="ansi-green-fg">pp: 17:57:02</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">_read_edf</span>:<span class="ansi-cyan-fg">720</span> | <span class="ansi-bold">Loading EDF file: /tmp/pypillometry_2_ymu7pf/download (current log level: INFO, set to DEBUG to see eyelinkio output)</span>
+<span class="ansi-green-fg">pp: 17:57:12</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">local_copy</span>:<span class="ansi-cyan-fg">528</span> | <span class="ansi-bold">Deleting downloaded copy: /tmp/pypillometry_2_ymu7pf</span>
+<span class="ansi-green-fg">pp: 17:57:12</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">from_eyelink</span>:<span class="ansi-cyan-fg">1741</span> | <span class="ansi-bold">Filtering out Eyelink triggers</span>
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -581,13 +580,8 @@ download: 100%|██████████| 14.2M/14.2M [00:03&lt;00:00, 4.17
     </div>
 
     <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
-      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Blinks</div>
-      <div style="font-weight:600;"></div>
-    </div>
-
-    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
       <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Size</div>
-      <div style="font-weight:600;">60.7MiB</div>
+      <div style="font-weight:600;">41.3MiB</div>
     </div>
 
   </div>
@@ -637,11 +631,11 @@ download: 100%|██████████| 14.2M/14.2M [00:03&lt;00:00, 4.17
   <details style="margin-top:8px;">
     <summary style="cursor:pointer; font-weight:600;">Data glimpse</summary>
     <pre style="margin-top:8px; background:#f9f9f9; padding:8px; border-radius:4px;">EyeDataDict(vars=6,n=598885,shape=(598885,)):
-  left_x (float64): 668.2000122070312, 660.5999755859375, 650.0, 639.0999755859375, 628.4000244140625...
-  left_y (float64): 491.1000061035156, 490.1000061035156, 489.3999938964844, 488.5, 488.0...
+  left_x (float64): 668.2, 660.6, 650.0, 639.1, 628.4...
+  left_y (float64): 491.1, 490.1, 489.4, 488.5, 488.0...
   left_pupil (float64): 724.0, 724.0, 725.0, 727.0, 727.0...
-  right_x (float64): 682.7999877929688, 679.5, 674.5, 662.7000122070312, 644.2999877929688...
-  right_y (float64): 505.20001220703125, 502.8999938964844, 501.29998779296875, 499.0, 496.3999938964844...
+  right_x (float64): 682.8, 679.5, 674.5, 662.7, 644.3...
+  right_y (float64): 505.2, 502.9, 501.3, 499.0, 496.4...
   right_pupil (float64): 637.0, 642.0, 644.0, 639.0, 636.0...
 </pre>
   </details>
@@ -652,9 +646,7 @@ download: 100%|██████████| 14.2M/14.2M [00:03&lt;00:00, 4.17
     <summary style="cursor:pointer; font-weight:600;">Recent history</summary>
     <ol style="margin-top:8px;">
 
-      <li>fill_time_discontinuities()</li>
-
-      <li>set_events(Events(1322))</li>
+      <li>set_events(Events: 1322 events | units=ms)</li>
 
     </ol>
   </details>
@@ -675,9 +667,9 @@ download: 100%|██████████| 14.2M/14.2M [00:03&lt;00:00, 4.17
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-<span class="ansi-green-fg">pp: 12:29:41</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fetch_url</span>:<span class="ansi-cyan-fg">418</span> | <span class="ansi-bold">Using cached copy of &#39;https://osf.io/trsuq/download&#39;: example_data/test.edf</span>
-<span class="ansi-green-fg">pp: 12:29:41</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">_read_edf</span>:<span class="ansi-cyan-fg">628</span> | <span class="ansi-bold">Loading EDF file: example_data/test.edf (current log level: INFO, set to DEBUG to see eyelinkio output)</span>
-<span class="ansi-green-fg">pp: 12:29:54</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">from_eyelink</span>:<span class="ansi-cyan-fg">1292</span> | <span class="ansi-bold">Filtering out Eyelink triggers</span>
+<span class="ansi-green-fg">pp: 17:57:12</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fetch_url</span>:<span class="ansi-cyan-fg">451</span> | <span class="ansi-bold">Using cached copy of &#39;https://osf.io/trsuq/download&#39;: example_data/test.edf</span>
+<span class="ansi-green-fg">pp: 17:57:12</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">_read_edf</span>:<span class="ansi-cyan-fg">720</span> | <span class="ansi-bold">Loading EDF file: example_data/test.edf (current log level: INFO, set to DEBUG to see eyelinkio output)</span>
+<span class="ansi-green-fg">pp: 17:57:22</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">from_eyelink</span>:<span class="ansi-cyan-fg">1741</span> | <span class="ansi-bold">Filtering out Eyelink triggers</span>
 </pre></div></div>
 </div>
 <p>Reading EDF files is relatively slow. If you work with the same file repeatedly, save the <code class="docutils literal notranslate"><span class="pre">EyeData</span></code> object with <code class="docutils literal notranslate"><span class="pre">d.write_file(&quot;file.pd&quot;)</span></code> and load it with <code class="docutils literal notranslate"><span class="pre">pp.EyeData.from_file(&quot;file.pd&quot;)</span></code> (see the end of the <a class="reference internal" href="importdata_asc.html"><span class="doc">ASC notebook</span></a>), or convert it on the command line with <code class="docutils literal notranslate"><span class="pre">edf2pypil</span></code>.</p>

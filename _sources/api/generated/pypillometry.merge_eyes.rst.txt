@@ -1,0 +1,6 @@
+﻿merge\_eyes
+===========
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: merge_eyes

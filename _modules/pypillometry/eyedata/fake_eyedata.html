@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pypillometry.eyedata.fake_eyedata &#8212; pypillometry v2.1.0</title>
+    <title>pypillometry.eyedata.fake_eyedata &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../../../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -414,7 +414,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -458,9 +458,6 @@ window.runMermaid = runMermaid;</script>
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -804,7 +801,6 @@ window.runMermaid = runMermaid;</script>
   <h1>Source code for pypillometry.eyedata.fake_eyedata</h1><div class="highlight"><pre>
 <span></span><span class="sd">"""Synthetic eye-tracking data for testing and validation."""</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.eyedata</span><span class="w"> </span><span class="kn">import</span> <span class="n">EyeData</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.eyedatadict</span><span class="w"> </span><span class="kn">import</span> <span class="n">EyeDataDict</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.experimental_setup</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExperimentalSetup</span>
@@ -821,7 +817,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    - sim_fct: Reference to the function used to generate this data</span>
 <span class="sd">    - sim_fct_name: Name of the generation function (str)</span>
 <span class="sd">    - sim_params: Dictionary with generation parameters (excludes function reference)</span>
-<span class="sd">    - sim_data: EyeDataDict with ground truth time series</span>
+<span class="sd">    - sim_data: EyeDataDict with ground truth time series (one value per</span>
+<span class="sd">      sample; cut, decimated and filled in together with the data)</span>
 <span class="sd">    </span>
 <span class="sd">    This class enables:</span>
 
@@ -834,6 +831,8 @@ window.runMermaid = runMermaid;</script>
     <span class="c1"># stored as its name ("module:qualname") and imported when loading</span>
     <span class="n">_STATE_FIELDS</span> <span class="o">=</span> <span class="p">((</span><span class="s2">"sim_fct"</span><span class="p">,</span> <span class="s2">"function"</span><span class="p">),</span> <span class="s2">"sim_fct_name"</span><span class="p">,</span> <span class="s2">"sim_params"</span><span class="p">,</span>
                      <span class="p">(</span><span class="s2">"sim_data"</span><span class="p">,</span> <span class="s2">"EyeDataDict"</span><span class="p">))</span>
+    <span class="c1"># the ground truth follows crop, downsample etc. with the data</span>
+    <span class="n">_SAMPLE_ALIGNED</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"data"</span><span class="p">,</span> <span class="s2">"sim_data"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
                  <span class="n">time</span><span class="p">,</span> <span class="n">left_x</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">left_y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">left_pupil</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -859,6 +858,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        **kwargs : dict</span>
 <span class="sd">            additional parameters passed to :class:`~pypillometry.EyeData`</span>
 <span class="sd">        """</span>
+        <span class="c1"># set before the constructor, which may fill in time discontinuities</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sim_data</span> <span class="o">=</span> <span class="n">sim_data</span> <span class="k">if</span> <span class="n">sim_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">EyeDataDict</span><span class="p">()</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">time</span><span class="p">,</span> <span class="n">left_x</span><span class="o">=</span><span class="n">left_x</span><span class="p">,</span> <span class="n">left_y</span><span class="o">=</span><span class="n">left_y</span><span class="p">,</span> 
                         <span class="n">left_pupil</span><span class="o">=</span><span class="n">left_pupil</span><span class="p">,</span> <span class="n">right_x</span><span class="o">=</span><span class="n">right_x</span><span class="p">,</span> 
                         <span class="n">right_y</span><span class="o">=</span><span class="n">right_y</span><span class="p">,</span> <span class="n">right_pupil</span><span class="o">=</span><span class="n">right_pupil</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -866,7 +867,6 @@ window.runMermaid = runMermaid;</script>
         <span class="bp">self</span><span class="o">.</span><span class="n">sim_fct</span> <span class="o">=</span> <span class="n">sim_fct</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sim_fct_name</span> <span class="o">=</span> <span class="n">sim_fct_name</span> <span class="ow">or</span> <span class="p">(</span><span class="n">sim_fct</span><span class="o">.</span><span class="vm">__name__</span> <span class="k">if</span> <span class="n">sim_fct</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sim_params</span> <span class="o">=</span> <span class="n">sim_params</span> <span class="ow">or</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">sim_data</span> <span class="o">=</span> <span class="n">sim_data</span> <span class="k">if</span> <span class="n">sim_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">EyeDataDict</span><span class="p">()</span>
 
 <div class="viewcode-block" id="FakeEyeData.get_generation_call">
 <a class="viewcode-back" href="../../../api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.get_generation_call">[docs]</a>
@@ -881,9 +881,10 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        </span>
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
-<span class="sd">        &gt;&gt;&gt; data = generate_foreshortening_data(duration=60, seed=42)</span>
-<span class="sd">        &gt;&gt;&gt; print(data.get_generation_call())</span>
-<span class="sd">        generate_foreshortening_data(duration=60, fs=1000, eye='left', ...)</span>
+<span class="sd">        &gt;&gt;&gt; import pypillometry as pp</span>
+<span class="sd">        &gt;&gt;&gt; data = pp.signal.generate_foreshortening_data(duration=10, seed=42)</span>
+<span class="sd">        &gt;&gt;&gt; print(data.get_generation_call())  # doctest: +ELLIPSIS</span>
+<span class="sd">        generate_foreshortening_data(experimental_setup={...}, duration=10, fs=1000, eye='left', ...)</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim_fct_name</span><span class="p">:</span>
             <span class="k">return</span> <span class="s2">"Unknown generation function"</span>
@@ -916,10 +917,12 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        </span>
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
-<span class="sd">        &gt;&gt;&gt; setup = ExperimentalSetup(...)</span>
-<span class="sd">        &gt;&gt;&gt; data = generate_foreshortening_data(setup, duration=60, seed=42)</span>
-<span class="sd">        &gt;&gt;&gt; data2 = data.regenerate(seed=43)  # Same params, different seed</span>
-<span class="sd">        &gt;&gt;&gt; data3 = data.regenerate(duration=120, seed=44)  # Different duration</span>
+<span class="sd">        &gt;&gt;&gt; import pypillometry as pp</span>
+<span class="sd">        &gt;&gt;&gt; data = pp.signal.generate_foreshortening_data(duration=10, seed=42)</span>
+<span class="sd">        &gt;&gt;&gt; data2 = data.regenerate(seed=43)  # same parameters, different seed</span>
+<span class="sd">        &gt;&gt;&gt; data3 = data.regenerate(duration=20, seed=44)  # different duration</span>
+<span class="sd">        &gt;&gt;&gt; len(data3)</span>
+<span class="sd">        20000</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim_fct</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Cannot regenerate: sim_fct is None"</span><span class="p">)</span>

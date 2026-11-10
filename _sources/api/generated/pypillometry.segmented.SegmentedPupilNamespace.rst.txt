@@ -1,0 +1,25 @@
+﻿SegmentedPupilNamespace
+=======================
+
+.. currentmodule:: pypillometry.segmented
+
+.. autoclass:: SegmentedPupilNamespace
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~SegmentedPupilNamespace.baseline_correct
+      ~SegmentedPupilNamespace.plot
+   
+   
+
+
+   .. rubric:: Details

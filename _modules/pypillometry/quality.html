@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pypillometry.quality &#8212; pypillometry v2.1.0</title>
+    <title>pypillometry.quality &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -414,7 +414,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -458,9 +458,6 @@ window.runMermaid = runMermaid;</script>
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -808,7 +805,7 @@ window.runMermaid = runMermaid;</script>
 
 <span class="sd">Data-quality report for eye-tracking data.</span>
 
-<span class="sd">The report is created by :meth:`~pypillometry.GenericEyeData.quality_report`</span>
+<span class="sd">The report is created by :meth:`~pypillometry.EyeData.quality_report`</span>
 <span class="sd">and is a :class:`QualityReport`. It collects quality measures (each a</span>
 <span class="sd">:class:`QualityMetric`) in sections:</span>
 
@@ -828,7 +825,6 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">on thresholds (see :data:`DEFAULT_QUALITY_THRESHOLDS`).</span>
 <span class="sd">"""</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">textwrap</span>
@@ -836,6 +832,8 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.templates</span><span class="w"> </span><span class="kn">import</span> <span class="n">render</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"QualityReport"</span><span class="p">,</span> <span class="s2">"QualityMetric"</span><span class="p">]</span>
 
@@ -884,6 +882,9 @@ window.runMermaid = runMermaid;</script>
     <span class="s2">"artifacts.pupil_masked_pct"</span><span class="p">:</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">35</span><span class="p">),</span>
     <span class="s2">"artifacts.gaze_masked_pct"</span><span class="p">:</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">35</span><span class="p">),</span>
     <span class="s2">"artifacts.interpolated_pct"</span><span class="p">:</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">),</span>
+    <span class="s2">"artifacts.offscreen_pct"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="s2">"artifacts.divergence_pct"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="s2">"artifacts.user_pct"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
     <span class="s2">"artifacts.other_pct"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
     <span class="c1"># calibration/validation (thresholds as used by Eyelink)</span>
     <span class="s2">"calibration.mean_error"</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">),</span>
@@ -958,21 +959,6 @@ window.runMermaid = runMermaid;</script>
         <span class="k">return</span> <span class="s2">" "</span> <span class="o">*</span> <span class="n">width</span>
     <span class="n">txt</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="n">width</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">_ANSI_COLORS</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">+</span> <span class="n">txt</span> <span class="o">+</span> <span class="n">_ANSI_RESET</span> <span class="k">if</span> <span class="n">color</span> <span class="k">else</span> <span class="n">txt</span>
-
-
-<span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">_jinja_env</span><span class="p">():</span>
-<span class="w">    </span><span class="sd">"""Jinja environment for the templates in pypillometry/templates (autoescaped)."""</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">jinja2</span>
-    <span class="n">env</span> <span class="o">=</span> <span class="n">jinja2</span><span class="o">.</span><span class="n">Environment</span><span class="p">(</span><span class="n">loader</span><span class="o">=</span><span class="n">jinja2</span><span class="o">.</span><span class="n">PackageLoader</span><span class="p">(</span><span class="s2">"pypillometry"</span><span class="p">,</span> <span class="s2">"templates"</span><span class="p">),</span>
-                             <span class="n">autoescape</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">trim_blocks</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">lstrip_blocks</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">env</span><span class="o">.</span><span class="n">filters</span><span class="p">[</span><span class="s2">"bounds"</span><span class="p">]</span> <span class="o">=</span> <span class="n">_bounds_text</span>
-    <span class="k">return</span> <span class="n">env</span>
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_render</span><span class="p">(</span><span class="n">template</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">context</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Render one of the quality-report templates."""</span>
-    <span class="k">return</span> <span class="n">_jinja_env</span><span class="p">()</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="n">template</span><span class="p">)</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="o">**</span><span class="n">context</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_supports_color</span><span class="p">(</span><span class="n">stream</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
@@ -1066,7 +1052,7 @@ window.runMermaid = runMermaid;</script>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Data-quality report for an eyedata object.</span>
 
-<span class="sd">    Created by :meth:`~pypillometry.GenericEyeData.quality_report`. The</span>
+<span class="sd">    Created by :meth:`~pypillometry.EyeData.quality_report`. The</span>
 <span class="sd">    report can be</span>
 
 <span class="sd">    - shown as text (``print(report)``; labels are colored if the terminal</span>
@@ -1327,7 +1313,7 @@ window.runMermaid = runMermaid;</script>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_repr_html_</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Rich HTML representation for Jupyter notebooks."""</span>
-        <span class="k">return</span> <span class="n">_render</span><span class="p">(</span><span class="s2">"quality_report.html"</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_html_context</span><span class="p">())</span></div>
+        <span class="k">return</span> <span class="n">render</span><span class="p">(</span><span class="s2">"quality_report.html"</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_html_context</span><span class="p">())</span></div>
 
 
 
@@ -1405,7 +1391,7 @@ window.runMermaid = runMermaid;</script>
                        <span class="n">tooltip</span><span class="o">=</span><span class="n">tooltips</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">if</span> <span class="n">tooltips</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
                        <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="n">row</span><span class="p">[</span><span class="s2">"overall"</span><span class="p">]]</span> <span class="o">+</span> <span class="p">[</span><span class="n">row</span><span class="p">[</span><span class="s2">"sections"</span><span class="p">][</span><span class="n">s</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">sections</span><span class="p">])</span>
         <span class="n">context</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">rows</span><span class="o">=</span><span class="n">rows</span><span class="p">,</span> <span class="n">sections</span><span class="o">=</span><span class="p">[</span><span class="n">SECTION_TITLES</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">sections</span><span class="p">])</span>
-    <span class="k">return</span> <span class="n">_render</span><span class="p">(</span><span class="s2">"quality_page.html"</span><span class="p">,</span> <span class="o">**</span><span class="n">context</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">render</span><span class="p">(</span><span class="s2">"quality_page.html"</span><span class="p">,</span> <span class="o">**</span><span class="n">context</span><span class="p">)</span>
 
 
 <span class="c1"># ----------------------------------------------------------------------</span>
@@ -1419,7 +1405,11 @@ window.runMermaid = runMermaid;</script>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown quality measure '</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">'. "</span>
                              <span class="sa">f</span><span class="s2">"Available: </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">res</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">bounds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">bounds</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">bounds</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">bounds</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">bounds</span><span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Thresholds for '</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">' must be 3 numbers (good, ok, poor) "</span>
+                                 <span class="sa">f</span><span class="s2">"or None, got </span><span class="si">{</span><span class="n">bounds</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">bounds</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Thresholds for '</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">' must have 3 values "</span>
                                  <span class="sa">f</span><span class="s2">"(good, ok, poor), got </span><span class="si">{</span><span class="n">bounds</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
@@ -1503,11 +1493,12 @@ window.runMermaid = runMermaid;</script>
         <span class="k">return</span> <span class="kc">None</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_compute_quality_report</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">thresholds</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[])</span> <span class="o">-&gt;</span> <span class="n">QualityReport</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_compute_quality_report</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">thresholds</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[],</span>
+                            <span class="n">policy</span><span class="o">=</span><span class="s2">"default"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QualityReport</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute a :class:`QualityReport` for an eyedata object.</span>
 
-<span class="sd">    See :meth:`~pypillometry.GenericEyeData.quality_report`.</span>
+<span class="sd">    See :meth:`~pypillometry.EyeData.quality_report`.</span>
 <span class="sd">    """</span>
     <span class="n">thresholds</span> <span class="o">=</span> <span class="n">_merge_thresholds</span><span class="p">(</span><span class="n">thresholds</span><span class="p">)</span>
     <span class="n">b</span> <span class="o">=</span> <span class="n">_Builder</span><span class="p">(</span><span class="n">thresholds</span><span class="p">)</span>
@@ -1526,10 +1517,10 @@ window.runMermaid = runMermaid;</script>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">inc</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
 
     <span class="n">raw</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">included</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
-    <span class="n">masks</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">inc</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">}</span>
+    <span class="n">masks</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get_policy_mask</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">policy</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">inc</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">()}</span>
 
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="n">eyes</span> <span class="o">=</span> <span class="p">[</span><span class="n">eyes</span><span class="p">]</span>
+    <span class="c1"># the requested eyes (None or []: all); unknown eyes raise a KeyError</span>
+    <span class="n">eyes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">eye</span> <span class="k">for</span> <span class="n">eye</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">eyes</span><span class="p">)))</span> <span class="k">if</span> <span class="n">eyes</span> <span class="k">else</span> <span class="p">[]</span>
     <span class="n">pupil_eyes</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get_available_eyes</span><span class="p">(</span><span class="s2">"pupil"</span><span class="p">)</span>
     <span class="n">gaze_eyes</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get_available_eyes</span><span class="p">(</span><span class="s2">"x"</span><span class="p">)</span> <span class="k">if</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">_y"</span> <span class="ow">in</span> <span class="n">raw</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">eyes</span><span class="p">:</span>
@@ -1655,9 +1646,9 @@ window.runMermaid = runMermaid;</script>
     <span class="n">blinks_mask</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">pupil_eyes</span> <span class="o">+</span> <span class="n">gaze_eyes</span><span class="p">)):</span>
         <span class="n">var</span> <span class="o">=</span> <span class="s2">"pupil"</span> <span class="k">if</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">pupil_eyes</span> <span class="k">else</span> <span class="s2">"x"</span>
-        <span class="k">if</span> <span class="n">obj</span><span class="o">.</span><span class="n">_blinks</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">"blink"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">layer_names</span><span class="p">:</span>  <span class="c1"># no blink detection</span>
             <span class="k">continue</span>
-        <span class="n">bl</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">get_blinks</span><span class="p">(</span><span class="n">eye</span><span class="p">,</span> <span class="n">var</span><span class="p">)</span>
+        <span class="n">bl</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">get_blinks</span><span class="p">(</span><span class="n">eye</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"samples"</span><span class="p">)[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2">"</span><span class="p">]</span>
         <span class="n">blinks_mask</span><span class="p">[</span><span class="n">eye</span><span class="p">]</span> <span class="o">=</span> <span class="n">bl</span><span class="o">.</span><span class="n">to_mask</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">inc</span>
         <span class="n">dur_ms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([(</span><span class="n">e</span> <span class="o">-</span> <span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">bl</span><span class="o">.</span><span class="n">intervals</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span> <span class="o">/</span> <span class="n">fs</span> <span class="o">*</span> <span class="mi">1000</span>
         <span class="n">b</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"blinks"</span><span class="p">,</span> <span class="n">eye</span><span class="p">,</span> <span class="s2">"n"</span><span class="p">,</span> <span class="s2">"number"</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">bl</span><span class="p">)),</span> <span class="s2">""</span><span class="p">,</span> <span class="s2">"number of detected blinks"</span><span class="p">)</span>
@@ -1677,40 +1668,77 @@ window.runMermaid = runMermaid;</script>
               <span class="s2">"closures or tracking losses rather than blinks)"</span><span class="p">)</span>
 
     <span class="c1"># --- artifacts (only if data was masked/interpolated) ---------------</span>
+    <span class="c1"># percentages of the layers per channel (of the included samples), as</span>
+    <span class="c1"># in d.layer_stats()</span>
+    <span class="n">stats</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">layer_stats</span><span class="p">(</span><span class="n">policy</span><span class="o">=</span><span class="n">policy</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">channel_pct</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Percentage of `key` in layer `name` (0 if the layer is not set there)."""</span>
+        <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="k">return</span> <span class="n">stats</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"percent"</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">layer</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Included samples where layer `name` is set for one of `keys`."""</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="o">.</span><span class="n">reduce</span><span class="p">([</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">])</span> <span class="o">&amp;</span> <span class="n">inc</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">missing</span><span class="p">(</span><span class="n">keys</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Included samples that are NaN in one of `keys`."""</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="o">.</span><span class="n">reduce</span><span class="p">([</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">raw</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">])</span> <span class="o">&amp;</span> <span class="n">inc</span>
+
     <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">pupil_eyes</span> <span class="o">+</span> <span class="n">gaze_eyes</span><span class="p">)):</span>
         <span class="n">metrics</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">processed</span> <span class="o">=</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">blinks_mask</span>
+        <span class="n">eye_keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_pupil"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_x"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_y"</span><span class="p">)</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">raw</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">pupil_eyes</span><span class="p">:</span>
-            <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_pupil"</span>
-            <span class="n">m</span> <span class="o">=</span> <span class="n">masks</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-            <span class="n">nan</span> <span class="o">=</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">raw</span><span class="p">[</span><span class="n">key</span><span class="p">])</span> <span class="o">&amp;</span> <span class="n">inc</span>
+            <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_pupil"</span><span class="p">]</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">masks</span><span class="p">[</span><span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+            <span class="n">nan</span> <span class="o">=</span> <span class="n">missing</span><span class="p">(</span><span class="n">keys</span><span class="p">)</span>
             <span class="n">processed</span> <span class="o">|=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">m</span> <span class="o">!=</span> <span class="n">nan</span><span class="p">))</span>
             <span class="n">metrics</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">"pupil_masked_pct"</span><span class="p">,</span> <span class="s2">"pupil masked"</span><span class="p">,</span> <span class="n">_pct</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">n</span><span class="p">),</span>
                             <span class="s2">"percentage of masked pupil samples (missing data, blinks and "</span>
-                            <span class="s2">"other artifacts)"</span><span class="p">))</span>
-            <span class="n">other</span> <span class="o">=</span> <span class="n">m</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">nan</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">blinks_mask</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">eye</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_total</span><span class="p">,</span> <span class="nb">bool</span><span class="p">))</span>
-            <span class="k">if</span> <span class="n">obj</span><span class="o">.</span><span class="n">_interpolated_blinks</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="s2">"other artifacts; interpolated samples only with the 'strict' "</span>
+                            <span class="s2">"mask policy)"</span><span class="p">))</span>
+            <span class="k">if</span> <span class="s2">"interpolated"</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">layer_names</span><span class="p">:</span>
                 <span class="n">processed</span> <span class="o">=</span> <span class="kc">True</span>
-                <span class="n">interp</span> <span class="o">=</span> <span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">get_interpolated_blinks</span><span class="p">(</span><span class="n">eye</span><span class="p">,</span> <span class="s2">"pupil"</span><span class="p">)</span><span class="o">.</span><span class="n">to_mask</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
-                          <span class="o">&amp;</span> <span class="n">inc</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-                <span class="n">metrics</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">"interpolated_pct"</span><span class="p">,</span> <span class="s2">"interpolated"</span><span class="p">,</span> <span class="n">_pct</span><span class="p">(</span><span class="n">interp</span><span class="p">,</span> <span class="n">n</span><span class="p">),</span>
+                <span class="n">metrics</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">"interpolated_pct"</span><span class="p">,</span> <span class="s2">"interpolated"</span><span class="p">,</span>
+                                <span class="n">channel_pct</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_pupil"</span><span class="p">,</span> <span class="s2">"interpolated"</span><span class="p">),</span>
                                 <span class="s2">"percentage of pupil samples that were interpolated (e.g., blinks)"</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">gaze_eyes</span><span class="p">:</span>
-            <span class="n">m</span> <span class="o">=</span> <span class="n">masks</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_x"</span><span class="p">]</span> <span class="o">|</span> <span class="n">masks</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_y"</span><span class="p">]</span>
-            <span class="n">nan</span> <span class="o">=</span> <span class="o">~</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">raw</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_x"</span><span class="p">])</span> <span class="o">&amp;</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">raw</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_y"</span><span class="p">]))</span> <span class="o">&amp;</span> <span class="n">inc</span>
-            <span class="n">processed</span> <span class="o">|=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">m</span> <span class="o">!=</span> <span class="n">nan</span><span class="p">))</span>
-            <span class="n">metrics</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">"gaze_masked_pct"</span><span class="p">,</span> <span class="s2">"gaze masked"</span><span class="p">,</span> <span class="n">_pct</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">n</span><span class="p">),</span>
+            <span class="n">gkeys</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_x"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_y"</span><span class="p">]</span>
+            <span class="n">gm</span> <span class="o">=</span> <span class="n">masks</span><span class="p">[</span><span class="n">gkeys</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">|</span> <span class="n">masks</span><span class="p">[</span><span class="n">gkeys</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+            <span class="n">gnan</span> <span class="o">=</span> <span class="n">missing</span><span class="p">(</span><span class="n">gkeys</span><span class="p">)</span>
+            <span class="n">processed</span> <span class="o">|=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">gm</span> <span class="o">!=</span> <span class="n">gnan</span><span class="p">))</span>
+            <span class="n">metrics</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">"gaze_masked_pct"</span><span class="p">,</span> <span class="s2">"gaze masked"</span><span class="p">,</span> <span class="n">_pct</span><span class="p">(</span><span class="n">gm</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">n</span><span class="p">),</span>
                             <span class="s2">"percentage of masked gaze samples (missing data, blinks and other "</span>
-                            <span class="s2">"artifacts)"</span><span class="p">))</span>
+                            <span class="s2">"artifacts; interpolated samples only with the 'strict' mask "</span>
+                            <span class="s2">"policy)"</span><span class="p">))</span>
             <span class="k">if</span> <span class="n">eye</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">pupil_eyes</span><span class="p">:</span>
-                <span class="n">other</span> <span class="o">=</span> <span class="n">m</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">nan</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">blinks_mask</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">eye</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_total</span><span class="p">,</span> <span class="nb">bool</span><span class="p">))</span>
+                <span class="n">keys</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">nan</span> <span class="o">=</span> <span class="n">gkeys</span><span class="p">,</span> <span class="n">gm</span><span class="p">,</span> <span class="n">gnan</span>
+        <span class="c1"># masked time split by layer (any variable of the eye)</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">desc</span> <span class="ow">in</span> <span class="p">(</span>
+                <span class="p">(</span><span class="s2">"offscreen"</span><span class="p">,</span> <span class="s2">"masked off-screen"</span><span class="p">,</span> <span class="s2">"gaze off the screen "</span>
+                 <span class="s2">"(see d.gaze.mask_offscreen)"</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">"divergence"</span><span class="p">,</span> <span class="s2">"masked divergence"</span><span class="p">,</span> <span class="s2">"gaze positions of the eyes too far "</span>
+                 <span class="s2">"apart (see d.gaze.mask_divergences)"</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">"user"</span><span class="p">,</span> <span class="s2">"masked by the user"</span><span class="p">,</span> <span class="s2">"masked with mask_intervals or by "</span>
+                 <span class="s2">"assigning a masked array"</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">layer_names</span><span class="p">:</span>
+                <span class="n">processed</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="c1"># off-screen and divergence are set on x and y together; the</span>
+                <span class="c1"># user layer can differ between the channels of an eye</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">channel_pct</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_x"</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="k">if</span> <span class="n">name</span> <span class="o">!=</span> <span class="s2">"user"</span> <span class="ow">and</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">gaze_eyes</span> \
+                    <span class="k">else</span> <span class="n">_pct</span><span class="p">(</span><span class="n">layer</span><span class="p">(</span><span class="n">eye_keys</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">n</span><span class="p">)</span>
+                <span class="n">metrics</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_pct"</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span>
+                                <span class="sa">f</span><span class="s2">"percentage of samples masked because of </span><span class="si">{</span><span class="n">desc</span><span class="si">}</span><span class="s2">"</span><span class="p">))</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">processed</span><span class="p">:</span>
             <span class="k">continue</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">desc</span> <span class="ow">in</span> <span class="n">metrics</span><span class="p">:</span>
             <span class="n">b</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"artifacts"</span><span class="p">,</span> <span class="n">eye</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="s2">"%"</span><span class="p">,</span> <span class="n">desc</span><span class="p">)</span>
+        <span class="n">other</span> <span class="o">=</span> <span class="n">m</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">nan</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">layer</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="s2">"blink"</span><span class="p">)</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">layer</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="s2">"interpolated"</span><span class="p">)</span>
         <span class="n">b</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"artifacts"</span><span class="p">,</span> <span class="n">eye</span><span class="p">,</span> <span class="s2">"other_pct"</span><span class="p">,</span> <span class="s2">"other artifacts"</span><span class="p">,</span> <span class="n">_pct</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">n</span><span class="p">),</span> <span class="s2">"%"</span><span class="p">,</span>
-              <span class="s2">"percentage of samples masked for other reasons than missing data or blinks "</span>
-              <span class="s2">"(e.g., off-screen gaze, eye divergence)"</span><span class="p">)</span>
+              <span class="s2">"percentage of samples masked for other reasons than missing data, blinks "</span>
+              <span class="s2">"or interpolation (e.g., off-screen gaze, eye divergence, user masks)"</span><span class="p">)</span>
 
     <span class="c1"># --- calibration ----------------------------------------------------</span>
     <span class="n">calibration</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">"calibration"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>

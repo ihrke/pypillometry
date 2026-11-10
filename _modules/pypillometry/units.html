@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pypillometry.units &#8212; pypillometry v2.1.0</title>
+    <title>pypillometry.units &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -414,7 +414,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -458,9 +458,6 @@ window.runMermaid = runMermaid;</script>
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -1322,6 +1319,23 @@ window.runMermaid = runMermaid;</script>
         <span class="n">_warn_plain</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">"rad"</span><span class="p">,</span> <span class="s2">"radians"</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">_parse</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">"angle"</span><span class="p">,</span> <span class="s2">"rad"</span><span class="p">,</span> <span class="s2">"rad"</span><span class="p">)</span></div>
 
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_ms_to</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">units</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""`values` (times or durations in ms) in the time unit `units`.</span>
+
+<span class="sd">    Durations in "samples" need the sampling rate `fs`; time points are</span>
+<span class="sd">    not converted to sample indices (see :func:`_ms_to_samples`).</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">_convert</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span> <span class="n">_get_unit</span><span class="p">(</span><span class="s2">"ms"</span><span class="p">,</span> <span class="s2">"time"</span><span class="p">),</span>
+                    <span class="n">_get_unit</span><span class="p">(</span><span class="n">units</span><span class="p">,</span> <span class="s2">"time"</span><span class="p">),</span> <span class="n">fs</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_to_ms</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">units</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""`values` (times or durations in the time unit `units`) in ms;</span>
+<span class="sd">    durations in "samples" need the sampling rate `fs`."""</span>
+    <span class="k">return</span> <span class="n">_convert</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span> <span class="n">_get_unit</span><span class="p">(</span><span class="n">units</span><span class="p">,</span> <span class="s2">"time"</span><span class="p">),</span>
+                    <span class="n">_get_unit</span><span class="p">(</span><span class="s2">"ms"</span><span class="p">,</span> <span class="s2">"time"</span><span class="p">),</span> <span class="n">fs</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_samples_to_ms</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">ix</span><span class="p">):</span>

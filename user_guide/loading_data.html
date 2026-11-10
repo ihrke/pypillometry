@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Loading and saving data &#8212; pypillometry v2.1.0</title>
+    <title>Loading and saving data &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -103,9 +103,6 @@
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -411,6 +408,9 @@
 <li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">Loading and saving data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="units.html">Units</a></li>
 <li class="toctree-l1"><a class="reference internal" href="preprocessing.html">Preprocessing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="missing_data.html">Missing data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gaze.html">Gaze data and the experimental setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rois.html">Regions of interest</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quality.html">Data quality</a></li>
 <li class="toctree-l1"><a class="reference internal" href="events_intervals.html">Events, intervals and segments</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plotting.html">Plotting</a></li>
@@ -487,12 +487,11 @@
 <section id="eyelink-edf-files">
 <h2>Eyelink EDF files<a class="headerlink" href="#eyelink-edf-files" title="Link to this heading">#</a></h2>
 <p>EDF files from SR Research Eyelink eye trackers are read with
-<a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.from_eyelink" title="pypillometry.GenericEyeData.from_eyelink"><code class="xref py py-meth docutils literal notranslate"><span class="pre">from_eyelink()</span></code></a>, which uses the <a class="reference external" href="https://github.com/scott-huberty/eyelinkio">eyelinkio</a> package:</p>
+<a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.from_eyelink" title="pypillometry.EyeData.from_eyelink"><code class="xref py py-meth docutils literal notranslate"><span class="pre">from_eyelink()</span></code></a>, which uses the <a class="reference external" href="https://github.com/scott-huberty/eyelinkio">eyelinkio</a> package:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
 
 <span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">from_eyelink</span><span class="p">(</span><span class="s2">"recording.edf"</span><span class="p">)</span>
-<span class="n">p</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">PupilData</span><span class="o">.</span><span class="n">from_eyelink</span><span class="p">(</span><span class="s2">"recording.edf"</span><span class="p">)</span>   <span class="c1"># pupil only</span>
-<span class="n">g</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">GazeData</span><span class="o">.</span><span class="n">from_eyelink</span><span class="p">(</span><span class="s2">"recording.edf"</span><span class="p">)</span>    <span class="c1"># gaze only</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">drop_data</span><span class="p">(</span><span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s2">"x"</span><span class="p">,</span> <span class="s2">"y"</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>   <span class="c1"># pupil only</span>
 </pre></div>
 </div>
 <p>The result contains all samples, all messages (as events), the screen
@@ -504,7 +503,8 @@ the events unless you pass <code class="docutils literal notranslate"><span clas
 <p>Instead of a local file name, you can also pass an HTTP(S) URL or an SSH
 URL (<code class="docutils literal notranslate"><span class="pre">ssh://server/folder/file.edf</span></code>). The file is then downloaded and
 cached (see <a class="reference internal" href="../api/generated/pypillometry.fetch_url.html#pypillometry.fetch_url" title="pypillometry.fetch_url"><code class="xref py py-func docutils literal notranslate"><span class="pre">fetch_url()</span></code></a>).</p>
-<p>Reading large EDF files is slow. Save the result (see below) or convert
+<p>Reading large EDF files is slow (about a minute for a 90 MB file). Save
+the result (see below), which is read in well under a second, or convert
 the file once with the <a class="reference internal" href="../getting_started/cli.html"><span class="doc">command-line tool</span></a>
 <code class="docutils literal notranslate"><span class="pre">edf2pypil</span></code>.</p>
 <p>See <a class="reference internal" href="../notebooks/importdata_edf.html"><span class="doc">Importing data from Eyelink EDF files</span></a>.</p>
@@ -525,8 +525,8 @@ constructors as arrays:</p>
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>Any of the eyes or variables can be left out. <a class="reference internal" href="../api/generated/pypillometry.PupilData.html#pypillometry.PupilData" title="pypillometry.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a> and
-<a class="reference internal" href="../api/generated/pypillometry.GazeData.html#pypillometry.GazeData" title="pypillometry.GazeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">GazeData</span></code></a> take the corresponding subset of arguments. Gaps in the
+<p>Any of the eyes or variables can be left out (e.g., only <code class="docutils literal notranslate"><span class="pre">left_pupil</span></code>
+for pupil data without gaze); the x and y of an eye go together. Gaps in the
 time vector (e.g., when recording was paused) are filled with masked
 samples, so the samples are evenly spaced.</p>
 <p>See <a class="reference internal" href="../notebooks/importdata_asc.html"><span class="doc">Importing data from Eyelink ASC files</span></a> for a complete example.</p>
@@ -547,16 +547,16 @@ clock) can be added after loading; see
 <section id="saving-and-loading-objects">
 <h2>Saving and loading objects<a class="headerlink" href="#saving-and-loading-objects" title="Link to this heading">#</a></h2>
 <p>Processed objects, including their history, are saved with
-<a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.write_file" title="pypillometry.GenericEyeData.write_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">write_file()</span></code></a> and loaded with
-<a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.from_file" title="pypillometry.GenericEyeData.from_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">from_file()</span></code></a>:</p>
+<a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.write_file" title="pypillometry.EyeData.write_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">write_file()</span></code></a> and loaded with
+<a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.from_file" title="pypillometry.EyeData.from_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">from_file()</span></code></a>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">write_file</span><span class="p">(</span><span class="s2">"subject01.pypil"</span><span class="p">)</span>
 <span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">"subject01.pypil"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Files are pickle files compressed with zstd (pass <code class="docutils literal notranslate"><span class="pre">compress=False</span></code> to
-turn this off). <a class="reference internal" href="../api/generated/pypillometry.write_pickle.html#pypillometry.write_pickle" title="pypillometry.write_pickle"><code class="xref py py-func docutils literal notranslate"><span class="pre">write_pickle()</span></code></a> and <a class="reference internal" href="../api/generated/pypillometry.read_pickle.html#pypillometry.read_pickle" title="pypillometry.read_pickle"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_pickle()</span></code></a> do the same
+turn this off). <a class="reference internal" href="../api/generated/pypillometry.write_file.html#pypillometry.write_file" title="pypillometry.write_file"><code class="xref py py-func docutils literal notranslate"><span class="pre">write_file()</span></code></a> and <a class="reference internal" href="../api/generated/pypillometry.read_file.html#pypillometry.read_file" title="pypillometry.read_file"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_file()</span></code></a> do the same
 for any Python object, e.g., a list of objects or a
-<a class="reference internal" href="../api/generated/pypillometry.SegmentedEyeData.html#pypillometry.SegmentedEyeData" title="pypillometry.SegmentedEyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">SegmentedEyeData</span></code></a>. <a class="reference internal" href="../api/generated/pypillometry.read_pickle.html#pypillometry.read_pickle" title="pypillometry.read_pickle"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_pickle()</span></code></a> also reads files from a URL.</p>
+<a class="reference internal" href="../api/generated/pypillometry.SegmentedEyeData.html#pypillometry.SegmentedEyeData" title="pypillometry.SegmentedEyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">SegmentedEyeData</span></code></a>. <a class="reference internal" href="../api/generated/pypillometry.read_file.html#pypillometry.read_file" title="pypillometry.read_file"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_file()</span></code></a> also reads files from a URL.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>Pickle files can contain arbitrary code. Only load files from sources
@@ -570,14 +570,16 @@ HDF5 file instead:</p>
 </div>
 <p>HDF5 files do not run code when they are read, and other programs (e.g.,
 h5py, R or MATLAB) can read them: the data are datasets (<code class="docutils literal notranslate"><span class="pre">tx</span></code>,
-<code class="docutils literal notranslate"><span class="pre">data/values/left_pupil</span></code>, <code class="docutils literal notranslate"><span class="pre">data/mask/left_pupil</span></code>, …), the other information
-(name, sampling rate, blinks, history, …) is stored in groups and
-attributes. They work for eyedata objects and <a class="reference internal" href="../api/generated/pypillometry.SegmentedEyeData.html#pypillometry.SegmentedEyeData" title="pypillometry.SegmentedEyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">SegmentedEyeData</span></code></a>
+<code class="docutils literal notranslate"><span class="pre">data/values/left_pupil</span></code>, <code class="docutils literal notranslate"><span class="pre">data/layers/left_pupil</span></code>, …; the mask layers
+are bits, bit <em>i</em> is the layer <code class="docutils literal notranslate"><span class="pre">data/layer_names[i]</span></code>, e.g. <code class="docutils literal notranslate"><span class="pre">&quot;blink&quot;</span></code>), the
+other information (name, sampling rate, events, history, …) is stored in
+groups and attributes. They work for eyedata objects and <a class="reference internal" href="../api/generated/pypillometry.SegmentedEyeData.html#pypillometry.SegmentedEyeData" title="pypillometry.SegmentedEyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">SegmentedEyeData</span></code></a>
 (not for arbitrary Python objects). Values in <code class="docutils literal notranslate"><span class="pre">info</span></code> or <code class="docutils literal notranslate"><span class="pre">params</span></code> that
 HDF5 cannot store are saved as text (with a warning). The loading
 functions detect the format from the file content.</p>
 <p>Both formats store a versioned description of the object. Files written
-by older versions of pypillometry are upgraded when they are loaded.</p>
+by older versions of pypillometry are upgraded when they are loaded;
+<code class="docutils literal notranslate"><span class="pre">pypil-upgrade</span></code> converts them once (see <a class="reference internal" href="../getting_started/cli.html"><span class="doc">Command-line tools</span></a>).</p>
 <p>Saved files can be inspected with <code class="docutils literal notranslate"><span class="pre">pypilinfo</span></code> and opened in the viewer
 with <code class="docutils literal notranslate"><span class="pre">pypilview</span></code> (see <a class="reference internal" href="../getting_started/cli.html"><span class="doc">Command-line tools</span></a>).</p>
 </section>

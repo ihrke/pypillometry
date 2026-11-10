@@ -1,0 +1,6 @@
+﻿blink\_onsets\_mahot
+====================
+
+.. currentmodule:: pypillometry.signal
+
+.. autofunction:: blink_onsets_mahot

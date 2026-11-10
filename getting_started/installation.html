@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Installation &#8212; pypillometry v2.1.0</title>
+    <title>Installation &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -103,9 +103,6 @@
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -538,7 +535,7 @@ plots appear inline).</p>
 </section>
 <section id="cmdstan-optional">
 <h2>CmdStan (optional)<a class="headerlink" href="#cmdstan-optional" title="Link to this heading">#</a></h2>
-<p>The baseline estimation (<a class="reference internal" href="../api/generated/pypillometry.PupilData.html#pypillometry.PupilData.pupil_estimate_baseline" title="pypillometry.PupilData.pupil_estimate_baseline"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pupil_estimate_baseline()</span></code></a>, see
+<p>The baseline estimation (<a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.estimate_baseline" title="pypillometry.eyedata.pupil.PupilNamespace.estimate_baseline"><code class="xref py py-meth docutils literal notranslate"><span class="pre">estimate_baseline()</span></code></a>, see
 <a class="reference internal" href="../user_guide/modeling.html"><span class="doc">Modeling the pupil signal</span></a>) uses the probabilistic programming language
 <a class="reference external" href="https://mc-stan.org/">Stan</a> through <code class="xref py py-mod docutils literal notranslate"><span class="pre">cmdstanpy</span></code>. Apart from the Python
 package, it needs the CmdStan command-line tools, which are not installed
@@ -555,14 +552,14 @@ automatically. If you need them, install CmdStan as described in the
 <p>Version 2 is a major rewrite and scripts written for version 1 will not run
 without changes. The main differences:</p>
 <ul class="simple">
-<li><p>The classes are now <a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData" title="pypillometry.EyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">EyeData</span></code></a>, <a class="reference internal" href="../api/generated/pypillometry.PupilData.html#pypillometry.PupilData" title="pypillometry.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a> and
-<a class="reference internal" href="../api/generated/pypillometry.GazeData.html#pypillometry.GazeData" title="pypillometry.GazeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">GazeData</span></code></a> (see <a class="reference internal" href="../user_guide/data_model.html"><span class="doc">Data objects</span></a>). They hold both eyes
+<li><p>The data class is now <a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData" title="pypillometry.EyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">EyeData</span></code></a> (see
+<a class="reference internal" href="../user_guide/data_model.html"><span class="doc">Data objects</span></a>). It holds both eyes
 and several variables (pupil, x, y) at the same time.</p></li>
 <li><p>Most methods were renamed, e.g. <code class="docutils literal notranslate"><span class="pre">blinks_detect()</span></code> is now
-<a class="reference internal" href="../api/generated/pypillometry.PupilData.html#pypillometry.PupilData.pupil_blinks_detect" title="pypillometry.PupilData.pupil_blinks_detect"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pupil_blinks_detect()</span></code></a> and <code class="docutils literal notranslate"><span class="pre">lowpass_filter()</span></code> is
-<a class="reference internal" href="../api/generated/pypillometry.PupilData.html#pypillometry.PupilData.pupil_lowpass_filter" title="pypillometry.PupilData.pupil_lowpass_filter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pupil_lowpass_filter()</span></code></a>.</p></li>
-<li><p>ERPDs are created with <a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.get_intervals" title="pypillometry.GenericEyeData.get_intervals"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_intervals()</span></code></a> and
-<a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.get_segments" title="pypillometry.GenericEyeData.get_segments"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_segments()</span></code></a> (see <a class="reference internal" href="../notebooks/erpds.html"><span class="doc">Event-related pupil dilations</span></a>).</p></li>
+<a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.blinks_detect" title="pypillometry.eyedata.pupil.PupilNamespace.blinks_detect"><code class="xref py py-meth docutils literal notranslate"><span class="pre">blinks_detect()</span></code></a> and <code class="docutils literal notranslate"><span class="pre">lowpass_filter()</span></code> is
+<a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.lowpass_filter" title="pypillometry.eyedata.pupil.PupilNamespace.lowpass_filter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">lowpass_filter()</span></code></a>.</p></li>
+<li><p>ERPDs are created with <a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.get_epochs" title="pypillometry.EyeData.get_epochs"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_epochs()</span></code></a> and
+<a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.get_segments" title="pypillometry.EyeData.get_segments"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_segments()</span></code></a> (see <a class="reference internal" href="../notebooks/erpds.html"><span class="doc">Event-related pupil dilations</span></a>).</p></li>
 </ul>
 <p>Version 1 is still available on the <a class="reference external" href="https://github.com/ihrke/pypillometry/tree/v1">v1 branch</a> and its documentation is
 <a class="reference external" href="https://ihrke.github.io/pypillometry/v1/html/index.html">here</a>. You can

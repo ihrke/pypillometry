@@ -11,15 +11,35 @@ two:
 .. autosummary::
    :nosignatures:
 
-   PupilData.pupil_estimate_baseline
-   PupilData.pupil_estimate_response
+   EyeData.pupil.estimate_baseline
+   EyeData.pupil.estimate_response
 
-:meth:`~PupilData.pupil_estimate_baseline` estimates the baseline as the
+:meth:`~EyeData.pupil.estimate_baseline` estimates the baseline as the
 lower envelope of the signal, fitted with B-splines through the troughs
-between events. :meth:`~PupilData.pupil_estimate_response`
+between events. :meth:`~EyeData.pupil.estimate_response`
 then fits a pupil response function (Hoeks & Levelt, 1993) to every event
 in the signal that remains. Both store their results as new variables
 (``baseline`` and ``response``) next to the pupil data.
+
+The response to one event, for a few values of its parameters (``npar``
+sets its shape, ``tmax`` the time of its peak):
+
+.. plot::
+   :include-source: False
+
+   fig, ax = plt.subplots(figsize=(6, 3.2))
+   for npar, tmax in [(10.1, 930), (5, 930), (10.1, 600)]:
+       k = pp.signal.pupil_kernel(duration=4000, fs=1000, npar=npar, tmax=tmax)
+       ax.plot(np.arange(len(k)), k / k.max(), label=f"npar={npar}, tmax={tmax} ms")
+   ax.set_xlabel("time after the event (ms)")
+   ax.set_ylabel("response (scaled)")
+   ax.legend(fontsize=8, frameon=False)
+   fig.tight_layout()
+
+A recording split into its baseline and the responses to the events:
+
+.. image:: ../images/modeling_baseline_response.png
+   :alt: pupil, estimated baseline, and baseline plus responses
 
 The data must not contain missing samples, so blinks have to be
 interpolated first. The baseline is fitted with a model written in Stan

@@ -83,7 +83,7 @@ plots appear inline).
 CmdStan (optional)
 ------------------
 
-The baseline estimation (:meth:`~PupilData.pupil_estimate_baseline`, see
+The baseline estimation (:meth:`~EyeData.pupil.estimate_baseline`, see
 :doc:`/user_guide/modeling`) uses the probabilistic programming language
 `Stan <https://mc-stan.org/>`_ through :mod:`cmdstanpy`. Apart from the Python
 package, it needs the CmdStan command-line tools, which are not installed
@@ -105,14 +105,14 @@ Upgrading from version 1
 Version 2 is a major rewrite and scripts written for version 1 will not run
 without changes. The main differences:
 
-- The classes are now :class:`EyeData`, :class:`PupilData` and
-  :class:`GazeData` (see :doc:`/user_guide/data_model`). They hold both eyes
+- The data class is now :class:`EyeData` (see
+  :doc:`/user_guide/data_model`). It holds both eyes
   and several variables (pupil, x, y) at the same time.
 - Most methods were renamed, e.g. ``blinks_detect()`` is now
-  :meth:`~PupilData.pupil_blinks_detect` and ``lowpass_filter()`` is
-  :meth:`~PupilData.pupil_lowpass_filter`.
-- ERPDs are created with :meth:`~GenericEyeData.get_intervals` and
-  :meth:`~GenericEyeData.get_segments` (see :doc:`/notebooks/erpds`).
+  :meth:`~EyeData.pupil.blinks_detect` and ``lowpass_filter()`` is
+  :meth:`~EyeData.pupil.lowpass_filter`.
+- ERPDs are created with :meth:`~EyeData.get_epochs` and
+  :meth:`~EyeData.get_segments` (see :doc:`/notebooks/erpds`).
 
 Version 1 is still available on the `v1 branch
 <https://github.com/ihrke/pypillometry/tree/v1>`_ and its documentation is

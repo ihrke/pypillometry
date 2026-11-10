@@ -1,0 +1,6 @@
+﻿detect\_blinks\_zero
+====================
+
+.. currentmodule:: pypillometry.signal
+
+.. autofunction:: detect_blinks_zero

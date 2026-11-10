@@ -1,0 +1,6 @@
+﻿butter\_lowpass
+===============
+
+.. currentmodule:: pypillometry.signal
+
+.. autofunction:: butter_lowpass

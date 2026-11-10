@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pypillometry.signal.pupil &#8212; pypillometry v2.1.0</title>
+    <title>pypillometry.signal.pupil &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../../../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -414,7 +414,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -458,9 +458,6 @@ window.runMermaid = runMermaid;</script>
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -809,9 +806,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">functions related to pupillary responses.</span>
 <span class="sd">"""</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">scipy.optimize</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.ndimage</span><span class="w"> </span><span class="kn">import</span> <span class="n">uniform_filter1d</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">"lowpass_filter_iterative"</span><span class="p">,</span> <span class="s2">"pupil_signal_quality"</span><span class="p">,</span> <span class="s2">"pupil_kernel_t"</span><span class="p">,</span>
@@ -822,15 +817,31 @@ window.runMermaid = runMermaid;</script>
 <span class="p">]</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_bridge_gaps</span><span class="p">(</span><span class="n">signal</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Copy of `signal` with the NaN values replaced by a linear bridge</span>
+<span class="sd">    between the neighbouring valid samples (before the first and after</span>
+<span class="sd">    the last valid sample: its value). All-NaN signals are returned as</span>
+<span class="sd">    they are.</span>
+<span class="sd">    """</span>
+    <span class="n">signal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">valid</span> <span class="o">=</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">valid</span><span class="o">.</span><span class="n">any</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">valid</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">signal</span><span class="p">))</span>
+        <span class="n">out</span><span class="p">[</span><span class="o">~</span><span class="n">valid</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">idx</span><span class="p">[</span><span class="o">~</span><span class="n">valid</span><span class="p">],</span> <span class="n">idx</span><span class="p">[</span><span class="n">valid</span><span class="p">],</span> <span class="n">signal</span><span class="p">[</span><span class="n">valid</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">out</span>
+
+
 <div class="viewcode-block" id="lowpass_filter_iterative">
-<a class="viewcode-back" href="../../../api/generated/pypillometry.lowpass_filter_iterative.html#pypillometry.lowpass_filter_iterative">[docs]</a>
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.lowpass_filter_iterative.html#pypillometry.signal.lowpass_filter_iterative">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">lowpass_filter_iterative</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">cutoff</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Lowpass filter that handles NaN values via iterative interpolation.</span>
 <span class="sd">    </span>
-<span class="sd">    NaN values are initially filled with the signal mean, then iteratively</span>
-<span class="sd">    replaced with filtered values until convergence. This avoids sharp</span>
-<span class="sd">    artifacts at gap boundaries that would occur with simple interpolation.</span>
+<span class="sd">    NaN values are initially bridged linearly between the neighbouring</span>
+<span class="sd">    valid samples (see :func:`_bridge_gaps`), then iteratively replaced</span>
+<span class="sd">    with filtered values.</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -853,7 +864,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
 <span class="sd">    The iterative approach works by:</span>
-<span class="sd">    1. Fill NaN positions with the signal mean</span>
+<span class="sd">    1. Fill NaN positions by a linear bridge between the valid samples</span>
 <span class="sd">    2. Apply lowpass filter to the filled signal</span>
 <span class="sd">    3. Replace NaN positions with the filtered values</span>
 <span class="sd">    4. Repeat steps 2-3 until max_iter reached</span>
@@ -863,8 +874,11 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    </span>
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
-<span class="sd">    &gt;&gt;&gt; signal = np.array([1, 2, np.nan, np.nan, 5, 6])</span>
+<span class="sd">    &gt;&gt;&gt; signal = np.sin(np.arange(1000) / 100)</span>
+<span class="sd">    &gt;&gt;&gt; signal[300:320] = np.nan  # a gap</span>
 <span class="sd">    &gt;&gt;&gt; filtered = lowpass_filter_iterative(signal, cutoff=2.0, fs=100)</span>
+<span class="sd">    &gt;&gt;&gt; bool(np.isnan(filtered).any())</span>
+<span class="sd">    False</span>
 <span class="sd">    """</span>
     <span class="n">valid</span> <span class="o">=</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
     <span class="n">n_valid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">valid</span><span class="p">)</span>
@@ -880,9 +894,9 @@ window.runMermaid = runMermaid;</script>
         <span class="c1"># No NaN - just apply regular filter</span>
         <span class="k">return</span> <span class="n">butter_lowpass_filter</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">cutoff</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
     
-    <span class="c1"># Initialize: fill NaN with signal mean</span>
-    <span class="n">filled</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-    <span class="n">filled</span><span class="p">[</span><span class="o">~</span><span class="n">valid</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
+    <span class="c1"># Initialize: bridge the gaps linearly (starting from the global mean</span>
+    <span class="c1"># biases the valid samples next to the gaps, finding 3.3)</span>
+    <span class="n">filled</span> <span class="o">=</span> <span class="n">_bridge_gaps</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
     
     <span class="c1"># Iterative filtering</span>
     <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_iter</span><span class="p">):</span>
@@ -898,7 +912,7 @@ window.runMermaid = runMermaid;</script>
 
 
 <div class="viewcode-block" id="pupil_signal_quality">
-<a class="viewcode-back" href="../../../api/generated/pypillometry.pupil_signal_quality.html#pypillometry.pupil_signal_quality">[docs]</a>
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.pupil_signal_quality.html#pypillometry.signal.pupil_signal_quality">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">pupil_signal_quality</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lowpass_cutoff</span><span class="o">=</span><span class="mf">4.0</span><span class="p">,</span> 
                          <span class="n">window_size_ms</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s2">"snr"</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
@@ -961,18 +975,23 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    </span>
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; rng = np.random.default_rng(0)</span>
+<span class="sd">    &gt;&gt;&gt; pupil = 4000 + 100 * np.sin(np.arange(5000) / 500) + rng.normal(0, 10, 5000)</span>
+<span class="sd">    &gt;&gt;&gt; pupil[1000:1100] = 0  # a blink</span>
 <span class="sd">    &gt;&gt;&gt; # With explicit mask</span>
 <span class="sd">    &gt;&gt;&gt; mask = pupil == 0  # e.g., blinks marked as 0</span>
 <span class="sd">    &gt;&gt;&gt; snr = pupil_signal_quality(pupil, fs=500, mask=mask, metric="snr")</span>
-<span class="sd">    &gt;&gt;&gt; </span>
+
 <span class="sd">    &gt;&gt;&gt; # With masked array</span>
 <span class="sd">    &gt;&gt;&gt; pupil_ma = np.ma.array(pupil, mask=(pupil == 0))</span>
 <span class="sd">    &gt;&gt;&gt; snr = pupil_signal_quality(pupil_ma, fs=500, metric="snr")</span>
-<span class="sd">    &gt;&gt;&gt; </span>
-<span class="sd">    &gt;&gt;&gt; # Get noise as coefficient of variation (percentage)</span>
+
+<span class="sd">    &gt;&gt;&gt; # Get noise as coefficient of variation (fraction)</span>
 <span class="sd">    &gt;&gt;&gt; noise_cv = pupil_signal_quality(pupil, fs=500, mask=mask, metric="noise_cv")</span>
-<span class="sd">    &gt;&gt;&gt; print(f"Average noise level: {np.mean(noise_cv[~mask])*100:.1f}%")</span>
+<span class="sd">    &gt;&gt;&gt; bool(np.mean(noise_cv[~mask]) &lt; 0.01)  # below 1% noise</span>
+<span class="sd">    True</span>
 <span class="sd">    """</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.ndimage</span><span class="w"> </span><span class="kn">import</span> <span class="n">uniform_filter1d</span>
     <span class="n">valid_metrics</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"snr"</span><span class="p">,</span> <span class="s2">"snr_db"</span><span class="p">,</span> <span class="s2">"noise_power"</span><span class="p">,</span> <span class="s2">"noise_cv"</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">metric</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_metrics</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"metric must be one of </span><span class="si">{</span><span class="n">valid_metrics</span><span class="si">}</span><span class="s2">, got '</span><span class="si">{</span><span class="n">metric</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
@@ -1040,7 +1059,7 @@ window.runMermaid = runMermaid;</script>
 
 
 <div class="viewcode-block" id="pupil_kernel_t">
-<a class="viewcode-back" href="../../../api/generated/pypillometry.pupil_kernel_t.html#pypillometry.pupil_kernel_t">[docs]</a>
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.pupil_kernel_t.html#pypillometry.signal.pupil_kernel_t">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">pupil_kernel_t</span><span class="p">(</span><span class="n">t</span><span class="p">,</span><span class="n">npar</span><span class="p">,</span><span class="n">tmax</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
 <span class="sd">    According to Hoeks and Levelt (1993,</span>
@@ -1079,7 +1098,7 @@ window.runMermaid = runMermaid;</script>
 
 
 <div class="viewcode-block" id="pupil_get_max_duration">
-<a class="viewcode-back" href="../../../api/generated/pypillometry.pupil_get_max_duration.html#pypillometry.pupil_get_max_duration">[docs]</a>
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.pupil_get_max_duration.html#pypillometry.signal.pupil_get_max_duration">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">pupil_get_max_duration</span><span class="p">(</span><span class="n">npar</span><span class="p">,</span><span class="n">tmax</span><span class="p">,</span><span class="n">thr</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span><span class="n">stepsize</span><span class="o">=</span><span class="mf">1.</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get the time when the PRF with parameters $n$ and $t_{max}$ is decayed to</span>
@@ -1111,7 +1130,7 @@ window.runMermaid = runMermaid;</script>
 
 
 <div class="viewcode-block" id="pupil_kernel">
-<a class="viewcode-back" href="../../../api/generated/pypillometry.pupil_kernel.html#pypillometry.pupil_kernel">[docs]</a>
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.pupil_kernel.html#pypillometry.signal.pupil_kernel">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">pupil_kernel</span><span class="p">(</span><span class="n">duration</span><span class="o">=</span><span class="mi">4000</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">npar</span><span class="o">=</span><span class="mf">10.1</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="mf">930.0</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
 <span class="sd">    According to Hoeks and Levelt (1993,</span>
@@ -1122,7 +1141,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    $$h(t)=\frac{1}{h_{max}} h_{HL}(t)$$</span>
 <span class="sd">    where $$h_{max} = \max_t{\left(h_{HL}(t)\right)} = e^{-n}t_{max}^{n}$$</span>
 <span class="sd">    which yields a maximum value of 1 for this function.</span>
-<span class="sd">    The function $h(t)$ is implemented in `pp.pupil_kernel()`.</span>
+<span class="sd">    The function $h(t)$ is implemented in `pp.signal.pupil_kernel()`.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1150,7 +1169,7 @@ window.runMermaid = runMermaid;</script>
 
 
 <div class="viewcode-block" id="plot_prf">
-<a class="viewcode-back" href="../../../api/generated/pypillometry.plot_prf.html#pypillometry.plot_prf">[docs]</a>
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.plot_prf.html#pypillometry.signal.plot_prf">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">plot_prf</span><span class="p">(</span><span class="n">npar</span><span class="o">=</span><span class="mf">10.1</span><span class="p">,</span><span class="n">tmax</span><span class="o">=</span><span class="mi">930</span><span class="p">,</span><span class="n">max_duration</span><span class="o">=</span><span class="s2">"estimate"</span><span class="p">,</span><span class="n">fs</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Plot profile of the pupil-response function (PRF) with</span>
@@ -1180,8 +1199,8 @@ window.runMermaid = runMermaid;</script>
 
 <span class="sd">       &gt;&gt;&gt; import pypillometry as pp</span>
 <span class="sd">       &gt;&gt;&gt; import matplotlib.pyplot as plt</span>
-<span class="sd">       &gt;&gt;&gt; pp.plot_prf()</span>
-<span class="sd">       &gt;&gt;&gt; pp.plot_prf(npar=5, tmax=500)</span>
+<span class="sd">       &gt;&gt;&gt; pp.signal.plot_prf()</span>
+<span class="sd">       &gt;&gt;&gt; pp.signal.plot_prf(npar=5, tmax=500)</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="n">max_duration</span><span class="o">==</span><span class="s2">"estimate"</span><span class="p">:</span>
         <span class="n">max_duration</span><span class="o">=</span><span class="n">pupil_get_max_duration</span><span class="p">(</span><span class="n">npar</span><span class="p">,</span><span class="n">tmax</span><span class="p">)</span>
@@ -1196,7 +1215,7 @@ window.runMermaid = runMermaid;</script>
     
 
 <div class="viewcode-block" id="pupil_build_design_matrix">
-<a class="viewcode-back" href="../../../api/generated/pypillometry.pupil_build_design_matrix.html#pypillometry.pupil_build_design_matrix">[docs]</a>
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.pupil_build_design_matrix.html#pypillometry.signal.pupil_build_design_matrix">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">pupil_build_design_matrix</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span><span class="n">event_onsets</span><span class="p">,</span><span class="n">fs</span><span class="p">,</span><span class="n">npar</span><span class="p">,</span><span class="n">tmax</span><span class="p">,</span><span class="n">max_duration</span><span class="o">=</span><span class="s2">"estimate"</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Construct design matrix (nevents x n).</span>
@@ -1280,6 +1299,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    sse : float</span>
 <span class="sd">        sum of squared residuals</span>
 <span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">scipy.optimize</span>
     <span class="n">gram</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
     <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
     <span class="n">yy</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
@@ -1302,7 +1322,7 @@ window.runMermaid = runMermaid;</script>
 
 
 <div class="viewcode-block" id="pupil_response">
-<a class="viewcode-back" href="../../../api/generated/pypillometry.pupil_response.html#pypillometry.pupil_response">[docs]</a>
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.pupil_response.html#pypillometry.signal.pupil_response">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">pupil_response</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span> <span class="n">sy</span><span class="p">,</span> <span class="n">event_onsets</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">npar</span><span class="o">=</span><span class="s2">"free"</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="s2">"free"</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> 
                    <span class="n">bounds</span><span class="o">=</span><span class="p">{</span><span class="s2">"npar"</span><span class="p">:(</span><span class="mi">1</span><span class="p">,</span><span class="mi">20</span><span class="p">),</span> <span class="s2">"tmax"</span><span class="p">:(</span><span class="mi">100</span><span class="p">,</span><span class="mi">2000</span><span class="p">)},</span> <span class="n">display_progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                    <span class="n">valid</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">min_valid</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
@@ -1368,6 +1388,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        design matrix (nevents x len(tx)),</span>
 <span class="sd">        see :py:func:`pupil_build_design_matrix()`</span>
 <span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">scipy.optimize</span>
     <span class="n">sy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
     <span class="n">valid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">sy</span><span class="p">)</span> <span class="k">if</span> <span class="n">valid</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">valid</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">sy</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">valid</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
@@ -1413,7 +1434,7 @@ window.runMermaid = runMermaid;</script>
 
 
 <div class="viewcode-block" id="pupil_response_coverage">
-<a class="viewcode-back" href="../../../api/generated/pypillometry.pupil_response_coverage.html#pypillometry.pupil_response_coverage">[docs]</a>
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.pupil_response_coverage.html#pypillometry.signal.pupil_response_coverage">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">pupil_response_coverage</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">valid</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Share of each event's response that falls on valid samples.</span>
@@ -1445,7 +1466,7 @@ window.runMermaid = runMermaid;</script>
         
      
 <div class="viewcode-block" id="pupilresponse_nnls">
-<a class="viewcode-back" href="../../../api/generated/pypillometry.pupilresponse_nnls.html#pypillometry.pupilresponse_nnls">[docs]</a>
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.pupilresponse_nnls.html#pypillometry.signal.pupilresponse_nnls">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">pupilresponse_nnls</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span> <span class="n">sy</span><span class="p">,</span> <span class="n">event_onsets</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">npar</span><span class="o">=</span><span class="mf">10.1</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="mi">930</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Estimate single-event pupil responses based on canonical PRF (`pupil_kernel()`)</span>
@@ -1487,7 +1508,7 @@ window.runMermaid = runMermaid;</script>
 
 
 <div class="viewcode-block" id="pupil_eye_offset">
-<a class="viewcode-back" href="../../../api/generated/pypillometry.pupil_eye_offset.html#pypillometry.pupil_eye_offset">[docs]</a>
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.pupil_eye_offset.html#pypillometry.signal.pupil_eye_offset">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">pupil_eye_offset</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">left_mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">right_mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
                      <span class="n">lowpass_cutoff</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
@@ -1552,14 +1573,25 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    </span>
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; rng = np.random.default_rng(0)</span>
+<span class="sd">    &gt;&gt;&gt; left = 4000 + 100 * np.sin(np.arange(5000) / 500) + rng.normal(0, 10, 5000)</span>
+<span class="sd">    &gt;&gt;&gt; right = left - 200 + rng.normal(0, 10, 5000)</span>
+<span class="sd">    &gt;&gt;&gt; left_mask = np.zeros(5000, dtype=bool)</span>
+<span class="sd">    &gt;&gt;&gt; left_mask[1000:1100] = True</span>
+<span class="sd">    &gt;&gt;&gt; right_mask = np.zeros(5000, dtype=bool)</span>
+<span class="sd">    &gt;&gt;&gt; right_mask[3000:3100] = True</span>
+<span class="sd">    &gt;&gt;&gt; left_ma = np.ma.array(left, mask=left_mask)</span>
+<span class="sd">    &gt;&gt;&gt; right_ma = np.ma.array(right, mask=right_mask)</span>
 <span class="sd">    &gt;&gt;&gt; # With masked arrays</span>
 <span class="sd">    &gt;&gt;&gt; offset = pupil_eye_offset(left_ma, right_ma, fs=500)</span>
 <span class="sd">    &gt;&gt;&gt; right_corrected = right_ma + offset</span>
-<span class="sd">    &gt;&gt;&gt; </span>
+<span class="sd">    &gt;&gt;&gt; round(float(np.mean(offset)), -1)</span>
+<span class="sd">    200.0</span>
+
 <span class="sd">    &gt;&gt;&gt; # With explicit masks</span>
 <span class="sd">    &gt;&gt;&gt; offset = pupil_eye_offset(left, right, fs=500, </span>
 <span class="sd">    ...                           left_mask=left_mask, right_mask=right_mask)</span>
-<span class="sd">    &gt;&gt;&gt; </span>
+
 <span class="sd">    &gt;&gt;&gt; # Merge eyes using the offset</span>
 <span class="sd">    &gt;&gt;&gt; both_valid = ~left_mask &amp; ~right_mask</span>
 <span class="sd">    &gt;&gt;&gt; merged = np.where(both_valid, </span>

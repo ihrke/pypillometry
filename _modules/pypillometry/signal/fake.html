@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pypillometry.signal.fake &#8212; pypillometry v2.1.0</title>
+    <title>pypillometry.signal.fake &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../../../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -414,7 +414,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -458,9 +458,6 @@ window.runMermaid = runMermaid;</script>
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -812,7 +809,6 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">scipy</span><span class="w"> </span><span class="kn">import</span> <span class="n">signal</span> <span class="k">as</span> <span class="n">sp_signal</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..eyedata.experimental_setup</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExperimentalSetup</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
@@ -822,7 +818,7 @@ window.runMermaid = runMermaid;</script>
 
 
 <div class="viewcode-block" id="fake_pupil_baseline">
-<a class="viewcode-back" href="../../../api/generated/pypillometry.fake_pupil_baseline.html#pypillometry.fake_pupil_baseline">[docs]</a>
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.fake_pupil_baseline.html#pypillometry.signal.fake_pupil_baseline">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">fake_pupil_baseline</span><span class="p">(</span><span class="n">duration</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="mi">750</span><span class="p">,</span> <span class="n">amplitude</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> 
                        <span class="n">freq</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">filter_order</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
@@ -867,7 +863,9 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; t, pupil, params = fake_pupil_baseline(duration=10, fs=1000, seed=42)</span>
 <span class="sd">    &gt;&gt;&gt; print(f"Mean: {pupil.mean():.2f}, Std: {pupil.std():.2f}")</span>
+<span class="sd">    Mean: 743.57, Std: 100.00</span>
 <span class="sd">    """</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">scipy</span><span class="w"> </span><span class="kn">import</span> <span class="n">signal</span> <span class="k">as</span> <span class="n">sp_signal</span>
     <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
     <span class="n">n_samples</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">duration</span> <span class="o">*</span> <span class="n">fs</span><span class="p">)</span>
     
@@ -905,7 +903,7 @@ window.runMermaid = runMermaid;</script>
 
 
 <div class="viewcode-block" id="add_measurement_noise">
-<a class="viewcode-back" href="../../../api/generated/pypillometry.add_measurement_noise.html#pypillometry.add_measurement_noise">[docs]</a>
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.add_measurement_noise.html#pypillometry.signal.add_measurement_noise">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">add_measurement_noise</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">noise_level</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Add Gaussian measurement noise to a signal.</span>
@@ -944,7 +942,7 @@ window.runMermaid = runMermaid;</script>
 
 
 <div class="viewcode-block" id="generate_foreshortening_data">
-<a class="viewcode-back" href="../../../api/generated/pypillometry.generate_foreshortening_data.html#pypillometry.generate_foreshortening_data">[docs]</a>
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.generate_foreshortening_data.html#pypillometry.signal.generate_foreshortening_data">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">generate_foreshortening_data</span><span class="p">(</span>
     <span class="n">experimental_setup</span><span class="p">:</span> <span class="n">ExperimentalSetup</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">duration</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">120</span><span class="p">,</span>
@@ -1128,7 +1126,7 @@ window.runMermaid = runMermaid;</script>
 
 
 <div class="viewcode-block" id="fake_gaze_fixations">
-<a class="viewcode-back" href="../../../api/generated/pypillometry.fake_gaze_fixations.html#pypillometry.fake_gaze_fixations">[docs]</a>
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.fake_gaze_fixations.html#pypillometry.signal.fake_gaze_fixations">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">fake_gaze_fixations</span><span class="p">(</span><span class="n">duration</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">fixation_duration_mean</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> 
                        <span class="n">fixation_duration_std</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> 
                        <span class="n">screen_bounds</span><span class="o">=</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1920</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1080</span><span class="p">)),</span>
@@ -1176,6 +1174,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; t, x, y, info, params = fake_gaze_fixations(duration=10, fs=1000, seed=42)</span>
 <span class="sd">    &gt;&gt;&gt; print(f"Number of fixations: {len(info['fixation_times'])}")</span>
+<span class="sd">    Number of fixations: 34</span>
 <span class="sd">    """</span>
     <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
     <span class="n">n_samples</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">duration</span> <span class="o">*</span> <span class="n">fs</span><span class="p">)</span>

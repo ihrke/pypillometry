@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pypillometry.signal.baseline &#8212; pypillometry v2.1.0</title>
+    <title>pypillometry.signal.baseline &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../../../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -414,7 +414,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -458,9 +458,6 @@ window.runMermaid = runMermaid;</script>
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -809,15 +806,11 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">Functions for estimating tonic pupillary fluctuations (baseline).</span>
 <span class="sd">"""</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">scipy.signal</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">signal</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">scipy</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">importlib.resources</span><span class="w"> </span><span class="kn">import</span> <span class="n">files</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">scipy.interpolate</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.interpolate</span><span class="w"> </span><span class="kn">import</span> <span class="n">interp1d</span><span class="p">,</span> <span class="n">splrep</span><span class="p">,</span> <span class="n">splev</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.pupil</span><span class="w"> </span><span class="kn">import</span> <span class="n">pupil_kernel</span><span class="p">,</span> <span class="n">pupil_response</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..convenience</span><span class="w"> </span><span class="kn">import</span> <span class="n">_user_cache_dir</span>
@@ -858,7 +851,7 @@ window.runMermaid = runMermaid;</script>
     <span class="k">return</span> <span class="n">_stan_models</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
 
 <div class="viewcode-block" id="bspline">
-<a class="viewcode-back" href="../../../api/generated/pypillometry.bspline.html#pypillometry.bspline">[docs]</a>
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.bspline.html#pypillometry.signal.bspline">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">bspline</span><span class="p">(</span><span class="n">txd</span><span class="p">,</span> <span class="n">knots</span><span class="p">,</span> <span class="n">spline_degree</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Re-implementation from https://mc-stan.org/users/documentation/case-studies/splines_in_stan.html.</span>
@@ -909,7 +902,7 @@ window.runMermaid = runMermaid;</script>
 
 
 <div class="viewcode-block" id="butter_lowpass">
-<a class="viewcode-back" href="../../../api/generated/pypillometry.butter_lowpass.html#pypillometry.butter_lowpass">[docs]</a>
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.butter_lowpass.html#pypillometry.signal.butter_lowpass">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">butter_lowpass</span><span class="p">(</span><span class="n">cutoff</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get lowpass-filter coefficients for Butterworth-filter.</span>
@@ -928,15 +921,24 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    b, a : np.ndarray</span>
 <span class="sd">        numerator and denominator filter coefficients</span>
 <span class="sd">        (see :func:`scipy.signal.butter`)</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        if `cutoff` is not between 0 and the Nyquist frequency (`fs`/2)</span>
 <span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">scipy.signal</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">signal</span>
     <span class="n">nyq</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">fs</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="n">cutoff</span> <span class="o">&lt;</span> <span class="n">nyq</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"lowpass cutoff must be between 0 and fs/2 = </span><span class="si">{</span><span class="n">nyq</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> Hz "</span>
+                         <span class="sa">f</span><span class="s2">"(sampling rate </span><span class="si">{</span><span class="n">fs</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> Hz), got </span><span class="si">{</span><span class="n">cutoff</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
     <span class="n">normal_cutoff</span> <span class="o">=</span> <span class="n">cutoff</span> <span class="o">/</span> <span class="n">nyq</span>
     <span class="n">b</span><span class="p">,</span> <span class="n">a</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">butter</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">normal_cutoff</span><span class="p">,</span> <span class="n">btype</span><span class="o">=</span><span class="s1">'low'</span><span class="p">,</span> <span class="n">analog</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">b</span><span class="p">,</span> <span class="n">a</span></div>
 
 
 <div class="viewcode-block" id="butter_lowpass_filter">
-<a class="viewcode-back" href="../../../api/generated/pypillometry.butter_lowpass_filter.html#pypillometry.butter_lowpass_filter">[docs]</a>
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.butter_lowpass_filter.html#pypillometry.signal.butter_lowpass_filter">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">butter_lowpass_filter</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">cutoff</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Lowpass-filter signal using a Butterworth-filter.</span>
@@ -960,13 +962,14 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    y : np.ndarray</span>
 <span class="sd">        filtered data</span>
 <span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">scipy.signal</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">signal</span>
     <span class="n">b</span><span class="p">,</span> <span class="n">a</span> <span class="o">=</span> <span class="n">butter_lowpass</span><span class="p">(</span><span class="n">cutoff</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">)</span>
     <span class="n">y</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">filtfilt</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">y</span></div>
 
 
 <div class="viewcode-block" id="downsample">
-<a class="viewcode-back" href="../../../api/generated/pypillometry.downsample.html#pypillometry.downsample">[docs]</a>
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.downsample.html#pypillometry.signal.downsample">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">downsample</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">R</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Simple downsampling scheme using mean within the downsampling window.</span>
@@ -996,7 +999,7 @@ window.runMermaid = runMermaid;</script>
 
     
 <div class="viewcode-block" id="baseline_envelope_iter_bspline">
-<a class="viewcode-back" href="../../../api/generated/pypillometry.baseline_envelope_iter_bspline.html#pypillometry.baseline_envelope_iter_bspline">[docs]</a>
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.baseline_envelope_iter_bspline.html#pypillometry.signal.baseline_envelope_iter_bspline">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">baseline_envelope_iter_bspline</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span><span class="n">sy</span><span class="p">,</span><span class="n">event_onsets</span><span class="p">,</span><span class="n">fs</span><span class="p">,</span> <span class="n">fsd</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">lp</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> 
                                    <span class="n">lam_sig</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">lam_min</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">lam_max</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
                                    <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -1053,6 +1056,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    phasic pupil dynamics in humans. *Behavior Research Methods*, 57(9), 233.</span>
 <span class="sd">    https://doi.org/10.3758/s13428-025-02755-7</span>
 <span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">scipy.signal</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">signal</span>
     <span class="n">dsfac</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">fs</span><span class="o">/</span><span class="n">fsd</span><span class="p">)</span> <span class="c1"># calculate downsampling factor</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Downsampling factor is </span><span class="si">%i</span><span class="s2">"</span><span class="o">%</span><span class="n">dsfac</span><span class="p">)</span>
     
@@ -1149,7 +1153,7 @@ window.runMermaid = runMermaid;</script>
 
 
 <div class="viewcode-block" id="baseline_envelope">
-<a class="viewcode-back" href="../../../api/generated/pypillometry.baseline_envelope.html#pypillometry.baseline_envelope">[docs]</a>
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.baseline_envelope.html#pypillometry.signal.baseline_envelope">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">baseline_envelope</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span><span class="n">sy</span><span class="p">,</span><span class="n">event_onsets</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">lp</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">prominence_thr</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">interp_method</span><span class="o">=</span><span class="s2">"cubic"</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Extract baseline based on the lower envelope of the (filtered) signal.</span>
@@ -1192,6 +1196,9 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    ValueError</span>
 <span class="sd">        if `interp_method` is not one of the supported methods</span>
 <span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">scipy.signal</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">signal</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">scipy.interpolate</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.interpolate</span><span class="w"> </span><span class="kn">import</span> <span class="n">interp1d</span>
     <span class="n">syc</span><span class="o">=</span><span class="n">butter_lowpass_filter</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="n">lp</span><span class="p">)</span>
     <span class="n">peaks_ix</span><span class="o">=</span><span class="n">signal</span><span class="o">.</span><span class="n">find_peaks</span><span class="p">(</span><span class="o">-</span><span class="n">syc</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">prominences</span><span class="o">=</span><span class="n">signal</span><span class="o">.</span><span class="n">peak_prominences</span><span class="p">(</span><span class="o">-</span><span class="n">syc</span><span class="p">,</span> <span class="n">peaks_ix</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
@@ -1223,7 +1230,7 @@ window.runMermaid = runMermaid;</script>
 
 
 <div class="viewcode-block" id="baseline_pupil_model">
-<a class="viewcode-back" href="../../../api/generated/pypillometry.baseline_pupil_model.html#pypillometry.baseline_pupil_model">[docs]</a>
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.baseline_pupil_model.html#pypillometry.signal.baseline_pupil_model">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">baseline_pupil_model</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span><span class="n">sy</span><span class="p">,</span><span class="n">event_onsets</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">lp1</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">lp2</span><span class="o">=</span><span class="mf">0.2</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Extract baseline based on filtering after removing stim-locked activity.</span>
@@ -1256,6 +1263,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    base : np.ndarray</span>
 <span class="sd">        baseline estimate (same length as `sy`)</span>
 <span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">scipy.optimize</span>
     <span class="n">syc</span><span class="o">=</span><span class="n">butter_lowpass_filter</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="n">lp1</span><span class="p">)</span>
     
     <span class="c1"># calculate indices for event-onsets</span>

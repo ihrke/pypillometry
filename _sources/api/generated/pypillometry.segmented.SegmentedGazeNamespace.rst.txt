@@ -1,0 +1,27 @@
+﻿SegmentedGazeNamespace
+======================
+
+.. currentmodule:: pypillometry.segmented
+
+.. autoclass:: SegmentedGazeNamespace
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~SegmentedGazeNamespace.dwell_time
+      ~SegmentedGazeNamespace.first_entry
+      ~SegmentedGazeNamespace.plot_roi
+      ~SegmentedGazeNamespace.roi_hits
+   
+   
+
+
+   .. rubric:: Details

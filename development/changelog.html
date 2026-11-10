@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Changelog &#8212; pypillometry v2.1.0</title>
+    <title>Changelog &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -102,9 +102,6 @@
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -470,9 +467,91 @@
   <section class="tex2jax_ignore mathjax_ignore" id="changelog">
 <h1>Changelog<a class="headerlink" href="#changelog" title="Link to this heading">#</a></h1>
 <section id="id1">
-<h2>2.1.0 (2026-11-02)<a class="headerlink" href="#id1" title="Link to this heading">#</a></h2>
+<h2>2.2.0 (2026-11-10)<a class="headerlink" href="#id1" title="Link to this heading">#</a></h2>
+<p>This version is a major refactor of the package without changing functionality (many bugs fixed, though). Scripts will need update to the new syntax.</p>
 <section id="breaking-changes">
 <h3>Breaking changes<a class="headerlink" href="#breaking-changes" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>One data class, <code class="docutils literal notranslate"><span class="pre">EyeData</span></code> instead of per modality, pupil methods are in <code class="docutils literal notranslate"><span class="pre">d.pupil</span></code>, gaze methods in <code class="docutils literal notranslate"><span class="pre">d.gaze</span></code></p></li>
+<li><p>similarly,  plotter classes (<code class="docutils literal notranslate"><span class="pre">EyePlotter</span></code>, <code class="docutils literal notranslate"><span class="pre">PupilPlotter</span></code>, <code class="docutils literal notranslate"><span class="pre">GazePlotter</span></code>) were removed</p></li>
+<li><p>Mask layers: multiple layers for reasons data may be masked</p></li>
+<li><p>Plain numbers are ms everywhere</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_intervals()</span></code> and <code class="docutils literal notranslate"><span class="pre">get_epochs(event,</span> <span class="pre">window)</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">GenericEyeData</span></code> removed</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">SegmentedEyeData.intervals</span></code> is <code class="docutils literal notranslate"><span class="pre">SegmentedEyeData.epochs</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">SegmentedEyeData</span></code> holds several channels</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">GroupLevelSegmentedData</span></code> was removed</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">scale()</span></code>/<code class="docutils literal notranslate"><span class="pre">unscale()</span></code>: <code class="docutils literal notranslate"><span class="pre">center=</span></code>/<code class="docutils literal notranslate"><span class="pre">scale=</span></code></p></li>
+<li><p>The functions for numpy arrays are only in <code class="docutils literal notranslate"><span class="pre">pp.signal</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">merge_intervals()</span></code> is <code class="docutils literal notranslate"><span class="pre">concat_intervals()</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Intervals.plot_highlight()</span></code> was removed; the plots shade intervals with <code class="docutils literal notranslate"><span class="pre">highlight=</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">downsample()</span></code> stores the actual sampling rate (<code class="docutils literal notranslate"><span class="pre">fs/factor</span></code>)</p></li>
+<li><p>Gaze plots (heatmap, scanpath) draw y downward (screen pixels)</p></li>
+<li><p>The time axis of all plots is in seconds by default</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">nblinks()</span></code> was removed (use <code class="docutils literal notranslate"><span class="pre">blink_stats()</span></code> or <code class="docutils literal notranslate"><span class="pre">layer_stats()</span></code>)</p></li>
+</ul>
+</section>
+<section id="added">
+<h3>Added<a class="headerlink" href="#added" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">scale(method=...)</span></code> for common transformations</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">seg.pupil.baseline_correct(method=...)</span></code></p></li>
+<li><p>faster <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">pypillometry</span></code></p></li>
+<li><p>Namespaces <code class="docutils literal notranslate"><span class="pre">d.pupil</span></code>, <code class="docutils literal notranslate"><span class="pre">d.gaze</span></code> and <code class="docutils literal notranslate"><span class="pre">d.plot</span></code></p></li>
+<li><p>Segments of several channels share their epochs</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">seg.gaze</span></code> for regions of interest: <code class="docutils literal notranslate"><span class="pre">roi_hits()</span></code></p></li>
+<li><p>User guide page “Regions of interest”</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">seg.average(by=...)</span></code> averages all trials or groups of them - <code class="docutils literal notranslate"><span class="pre">concat_segments()</span></code></p></li>
+<li><p>Pipelines with pipe operator: <code class="docutils literal notranslate"><span class="pre">d</span> <span class="pre">|</span> <span class="pre">pp.pupil.blinks_detect()</span></code></p></li>
+<li><p>Mask layers per channel</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pp.MaskPolicy</span></code> to decide which samples to mask</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pp.Epochs</span></code> (event-locked windows)</p></li>
+<li><p>Warning for events on another clock</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Events.onset(label)</span></code> find onset of a special event</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">highlight=</span></code> and <code class="docutils literal notranslate"><span class="pre">highlight_color=</span></code> in <code class="docutils literal notranslate"><span class="pre">pupil_plot</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pypil-upgrade</span></code>: converts saved files to the current format</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">d.plot.plot_masked(policy=...)</span></code> to show the
+interpolated stretches</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;&lt;start&gt;&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">&quot;&lt;end&gt;&quot;</span></code> for interval selectors</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">d.layer_stats()</span></code>: stats for each mask layer per channel</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pp.Table</span></code> and <code class="docutils literal notranslate"><span class="pre">pp.RecordDict</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">seg.plot_carpet()</span></code>: all segments of a channel as an image</p></li>
+</ul>
+</section>
+<section id="fixed">
+<h3>Fixed<a class="headerlink" href="#fixed" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">from_eyelink()</span></code> with non-English day and month names</p></li>
+<li><p>Download progress bars hidden in <code class="docutils literal notranslate"><span class="pre">pp.nologging()</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fs</span></code> after <code class="docutils literal notranslate"><span class="pre">downsample</span></code> did not match the time vector</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reset_time</span></code> did not shift blinks stored in time units</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">FakeEyeData.sim_data</span></code> was not cut or downsampled</p></li>
+<li><p>Masks only grew: re-running a detector added to the old mask</p></li>
+<li><p>Experimental setup and calibration were sometimes lost</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">plot_heatmap(show_masked=True)</span></code> with NaN samples</p></li>
+<li><p>A <code class="docutils literal notranslate"><span class="pre">plot_range</span></code> with start after end raises an error</p></li>
+<li><p>The sample at the end of <code class="docutils literal notranslate"><span class="pre">plot_range</span></code> was not plotted</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">scale()</span></code> twice then <code class="docutils literal notranslate"><span class="pre">unscale()</span></code> left the data scaled</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pypilview</span> <span class="pre">--eyes</span> <span class="pre">right</span> <span class="pre">FILE</span></code> took the file for an eye</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">CircularROI.from_degrees</span></code>/<code class="docutils literal notranslate"><span class="pre">RectangularROI.from_degrees</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pypillometry.viewer.tweak</span></code> (the function) was replaced by its submodule</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pupil.estimate_response(eyes=...)</span></code> removed parameters</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pupil.estimate_response()</span></code> on data without events raises a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pp.nologging()</span></code> could leave logging disabled</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">summary()</span></code>, <code class="docutils literal notranslate"><span class="pre">Intervals.stats()</span></code> return Python
+numbers</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pupil.blinks_detect()</span></code> with an unknown strategy</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">crop()</span></code> with start after end or outside the data</p></li>
+<li><p>Re-running <code class="docutils literal notranslate"><span class="pre">pupil.blinks_detect()</span></code> after <code class="docutils literal notranslate"><span class="pre">pupil.blinks_interpolate()</span></code>
+found no blinks (it read the interpolated values) and cleared the blink
+layer</p></li>
+</ul>
+</section>
+</section>
+<section id="id2">
+<h2>2.1.0 (2026-11-02)<a class="headerlink" href="#id2" title="Link to this heading">#</a></h2>
+<section id="id3">
+<h3>Breaking changes<a class="headerlink" href="#id3" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">EyeData.get_pupildata()</span></code> was removed, use <code class="docutils literal notranslate"><span class="pre">to_pupildata()</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">Events</span></code> now need time units, sample indices are <code class="docutils literal notranslate"><span class="pre">units=&quot;samples&quot;</span></code></p></li>
@@ -481,8 +560,8 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">get_intervals()</span></code>, <code class="docutils literal notranslate"><span class="pre">stat_per_event()</span></code>: <code class="docutils literal notranslate"><span class="pre">interval</span></code> was renamed to <code class="docutils literal notranslate"><span class="pre">window</span></code></p></li>
 </ul>
 </section>
-<section id="added">
-<h3>Added<a class="headerlink" href="#added" title="Link to this heading">#</a></h3>
+<section id="id4">
+<h3>Added<a class="headerlink" href="#id4" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">EyeData.to_pupildata()</span></code> and <code class="docutils literal notranslate"><span class="pre">to_gazedata()</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">quality_report()</span></code>: data-quality measures</p></li>
@@ -510,8 +589,8 @@ second event (e.g., <code class="docutils literal notranslate"><span class="pre"
 Files from earlier versions are upgraded when they are read.</p></li>
 </ul>
 </section>
-<section id="fixed">
-<h3>Fixed<a class="headerlink" href="#fixed" title="Link to this heading">#</a></h3>
+<section id="id5">
+<h3>Fixed<a class="headerlink" href="#id5" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">pupil_estimate_response()</span></code> uses more efficient solver</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">downsample()</span></code> respects masked samples</p></li>
@@ -521,10 +600,10 @@ Files from earlier versions are upgraded when they are read.</p></li>
 </ul>
 </section>
 </section>
-<section id="id2">
-<h2>2.0.0 (2026-10-28)<a class="headerlink" href="#id2" title="Link to this heading">#</a></h2>
-<section id="id3">
-<h3>Breaking changes<a class="headerlink" href="#id3" title="Link to this heading">#</a></h3>
+<section id="id6">
+<h2>2.0.0 (2026-10-28)<a class="headerlink" href="#id6" title="Link to this heading">#</a></h2>
+<section id="id7">
+<h3>Breaking changes<a class="headerlink" href="#id7" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Python 3.11 or newer is required.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">inplace=None</span></code> now follows the object setting.</p></li>
@@ -544,8 +623,8 @@ are no longer exported at the top level (still in <code class="docutils literal 
 <li><p><code class="docutils literal notranslate"><span class="pre">pint</span></code> is no longer used, replaced by <code class="docutils literal notranslate"><span class="pre">units.py</span></code></p></li>
 </ul>
 </section>
-<section id="id4">
-<h3>Added<a class="headerlink" href="#id4" title="Link to this heading">#</a></h3>
+<section id="id8">
+<h3>Added<a class="headerlink" href="#id8" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>files are now saved with compression by default</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">pypilinfo</span></code> command prints a summary of EDF or pickle files</p></li>
@@ -558,8 +637,8 @@ default for <code class="docutils literal notranslate"><span class="pre">inplace
 <li><p><code class="docutils literal notranslate"><span class="pre">pypilview</span></code>: interactive viewer EDF file stored pypil object</p></li>
 </ul>
 </section>
-<section id="id5">
-<h3>Changed<a class="headerlink" href="#id5" title="Link to this heading">#</a></h3>
+<section id="id9">
+<h3>Changed<a class="headerlink" href="#id9" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">read_pickle()</span></code> saves HTTP(S) downloads to a file (temporary by default)</p></li>
 <li><p>Packaging moved from <code class="docutils literal notranslate"><span class="pre">setup.py</span></code>/<code class="docutils literal notranslate"><span class="pre">requirements.txt</span></code> to <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>.</p></li>
@@ -572,8 +651,8 @@ start/end of the interval); <code class="docutils literal notranslate"><span cla
 (or <code class="docutils literal notranslate"><span class="pre">cache_dir</span></code>) instead of downloading them on every call</p></li>
 </ul>
 </section>
-<section id="id6">
-<h3>Fixed<a class="headerlink" href="#id6" title="Link to this heading">#</a></h3>
+<section id="id10">
+<h3>Fixed<a class="headerlink" href="#id10" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">pp.signal</span></code> and <code class="docutils literal notranslate"><span class="pre">pp.logging</span></code> were <code class="docutils literal notranslate"><span class="pre">scipy.signal</span></code> and the standard-library
 <code class="docutils literal notranslate"><span class="pre">logging</span></code> instead of the package’s own submodules.</p></li>
@@ -721,18 +800,24 @@ intervals, io, viewer, experimental setup).</p></li>
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">2.1.0 (2026-11-02)</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">2.2.0 (2026-11-10)</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#breaking-changes">Breaking changes</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#added">Added</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#changed">Changed</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fixed">Fixed</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">2.0.0 (2026-10-28)</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">2.1.0 (2026-11-02)</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Breaking changes</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">Added</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">Changed</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">Fixed</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#changed">Changed</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">Fixed</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">2.0.0 (2026-10-28)</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">Breaking changes</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">Added</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">Changed</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id10">Fixed</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#documentation">Documentation</a></li>
 </ul>
 </li>

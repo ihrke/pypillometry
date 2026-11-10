@@ -1,0 +1,6 @@
+﻿zscale
+======
+
+.. currentmodule:: pypillometry.signal
+
+.. autofunction:: zscale

@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Development &#8212; pypillometry v2.1.0</title>
+    <title>Development &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -103,9 +103,6 @@
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -498,18 +495,97 @@ pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </s
 </section>
 <section id="package-architecture">
 <h2>Package architecture<a class="headerlink" href="#package-architecture" title="Link to this heading">#</a></h2>
-<p>Most functionality is available as methods of the data classes
-(<a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData" title="pypillometry.GenericEyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyeData</span></code></a>, <a class="reference internal" href="../api/generated/pypillometry.PupilData.html#pypillometry.PupilData" title="pypillometry.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a>, <a class="reference internal" href="../api/generated/pypillometry.GazeData.html#pypillometry.GazeData" title="pypillometry.GazeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">GazeData</span></code></a>,
-<a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData" title="pypillometry.EyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">EyeData</span></code></a>). This makes it easy to find functions and to chain them
-into pipelines (see <a class="reference internal" href="../user_guide/data_model.html"><span class="doc">Data objects</span></a>).</p>
+<p>Most functionality is available as methods of the data class
+<a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData" title="pypillometry.EyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">EyeData</span></code></a> (<code class="docutils literal notranslate"><span class="pre">eyedata/eyedata.py</span></code>). Its data are an <code class="docutils literal notranslate"><span class="pre">EyeDataDict</span></code>
+(<code class="docutils literal notranslate"><span class="pre">eyedata/eyedatadict.py</span></code>), which also does the operations on all
+channels at once (cutting, inserting and decimating samples, merging eyes);
+the decorator that records calls in the history is in
+<code class="docutils literal notranslate"><span class="pre">eyedata/history.py</span></code>. The generic
+methods (crop, downsample, intervals, masks, events, I/O, …) are methods of
+the object itself. The methods for pupil and gaze data are kept in separate
+modules, as <em>namespaces</em>: <code class="docutils literal notranslate"><span class="pre">eyedata/pupil.py</span></code> (<code class="docutils literal notranslate"><span class="pre">PupilNamespace</span></code>, used as
+<code class="docutils literal notranslate"><span class="pre">d.pupil.blinks_detect()</span></code>) and <code class="docutils literal notranslate"><span class="pre">eyedata/gaze.py</span></code> (<code class="docutils literal notranslate"><span class="pre">GazeNamespace</span></code>,
+<code class="docutils literal notranslate"><span class="pre">d.gaze.mask_offscreen()</span></code>). A namespace (<code class="docutils literal notranslate"><span class="pre">eyedata/namespace.py</span></code>) is a
+view on one data object: it holds only that object (<code class="docutils literal notranslate"><span class="pre">self._d</span></code>), keeps no
+state, and is created anew on each access (<code class="docutils literal notranslate"><span class="pre">accessor</span></code> descriptor), so it
+does not affect copying or saving. Its methods work on <code class="docutils literal notranslate"><span class="pre">self._d</span></code> and
+return the data object.</p>
+<p>The plots use the same mechanism: <code class="docutils literal notranslate"><span class="pre">d.plot</span></code> is a
+<a class="reference internal" href="../api/plotting.html#pypillometry.plot.PlotNamespace" title="pypillometry.plot.PlotNamespace"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlotNamespace</span></code></a>, combined from one class per
+domain in its own module (<code class="docutils literal notranslate"><span class="pre">plot/generic.py</span></code>: <code class="docutils literal notranslate"><span class="pre">GenericPlots</span></code>,
+<code class="docutils literal notranslate"><span class="pre">plot/pupil.py</span></code>: <code class="docutils literal notranslate"><span class="pre">PupilPlots</span></code>, <code class="docutils literal notranslate"><span class="pre">plot/gaze.py</span></code>: <code class="docutils literal notranslate"><span class="pre">GazePlots</span></code>). These
+classes hold no state; a new plot goes into the module of its domain and
+uses <code class="docutils literal notranslate"><span class="pre">self._d</span></code> (and <code class="docutils literal notranslate"><span class="pre">self._d._require(...)</span></code> for the channels it needs).
+There is no forwarding of unknown attributes: <code class="docutils literal notranslate"><span class="pre">d.pupil_plot()</span></code> does not
+exist, only <code class="docutils literal notranslate"><span class="pre">d.plot.pupil_plot()</span></code>.</p>
+<p>Every transforming method can also be used as a pipeline step
+(<code class="docutils literal notranslate"><span class="pre">eyedata/pipes.py</span></code>): decorated with <code class="docutils literal notranslate"><span class="pre">&#64;step</span></code>, the same method runs
+when it is called on data (<code class="docutils literal notranslate"><span class="pre">d.crop(...)</span></code>, <code class="docutils literal notranslate"><span class="pre">d.pupil.blinks_detect()</span></code>)
+and returns a <a class="reference internal" href="../api/generated/pypillometry.Step.html#pypillometry.Step" title="pypillometry.Step"><code class="xref py py-class docutils literal notranslate"><span class="pre">Step</span></code></a> when it is called without data
+(<code class="docutils literal notranslate"><span class="pre">pp.pupil.blinks_detect()</span></code>, or the generic steps <code class="docutils literal notranslate"><span class="pre">pp.crop(...)</span></code> made
+in <code class="docutils literal notranslate"><span class="pre">eyedata/steps.py</span></code>). <code class="docutils literal notranslate"><span class="pre">d</span> <span class="pre">|</span> <span class="pre">step</span></code> copies <code class="docutils literal notranslate"><span class="pre">d</span></code> once and runs the steps
+in place on the copy (see <a class="reference internal" href="../api/generated/pypillometry.Pipeline.html#pypillometry.Pipeline" title="pypillometry.Pipeline"><code class="xref py py-class docutils literal notranslate"><span class="pre">Pipeline</span></code></a>).</p>
 <p>The computations themselves are implemented as stateless functions on
 <a class="reference external" href="https://numpy.org/doc/stable/reference/index.html#module-numpy" title="(in NumPy v2.5)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">numpy</span></code></a> arrays in <code class="docutils literal notranslate"><span class="pre">pypillometry.signal</span></code> (see
 <a class="reference internal" href="../api/signal.html"><span class="doc">Signal processing</span></a>). To add a new processing step, first write a function
-that works on arrays, then add a thin method to the appropriate class that
-calls it with the right data and parameters. Decorate the method with
-<a class="reference internal" href="../api/generated/pypillometry.keephistory.html#pypillometry.keephistory" title="pypillometry.keephistory"><code class="xref py py-func docutils literal notranslate"><span class="pre">keephistory()</span></code></a> so that it is recorded in the object’s history, and
-support <code class="docutils literal notranslate"><span class="pre">eyes=</span></code>, <code class="docutils literal notranslate"><span class="pre">variables=</span></code> and <code class="docutils literal notranslate"><span class="pre">inplace=</span></code> like the existing
-methods.</p>
+that works on arrays, then add a thin method to the appropriate class or
+namespace that calls it with the right data and parameters. Decorate the
+method with <a class="reference internal" href="../api/generated/pypillometry.keephistory.html#pypillometry.keephistory" title="pypillometry.keephistory"><code class="xref py py-func docutils literal notranslate"><span class="pre">keephistory()</span></code></a> so that it is recorded in the object’s
+history, with <code class="docutils literal notranslate"><span class="pre">&#64;step</span></code> (outermost) if it transforms the data, add a
+generic step to <code class="docutils literal notranslate"><span class="pre">eyedata/steps.py</span></code> if it is a generic method, and
+follow the API conventions below.</p>
+</section>
+<section id="api-conventions">
+<h2>API conventions<a class="headerlink" href="#api-conventions" title="Link to this heading">#</a></h2>
+<p>All methods of the data classes follow five rules. New methods must
+follow them too; <code class="docutils literal notranslate"><span class="pre">tests/test_api_conventions.py</span></code> checks them.</p>
+<ol class="arabic simple">
+<li><p><strong>Every transforming method returns the object and takes</strong> <code class="docutils literal notranslate"><span class="pre">inplace</span></code>
+(<code class="docutils literal notranslate"><span class="pre">None</span></code> by default: the object-level setting from the constructor,
+else the package setting, see <a class="reference internal" href="../api/generated/pypillometry.set_default_inplace.html#pypillometry.set_default_inplace" title="pypillometry.set_default_inplace"><code class="xref py py-func docutils literal notranslate"><span class="pre">set_default_inplace()</span></code></a>). With
+<code class="docutils literal notranslate"><span class="pre">inplace=False</span></code> it changes and returns a copy. Only <code class="docutils literal notranslate"><span class="pre">set_*</span></code> methods
+(<a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.set_events" title="pypillometry.EyeData.set_events"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_events()</span></code></a>, <a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.set_blinks" title="pypillometry.EyeData.set_blinks"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_blinks()</span></code></a>,
+<a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.set_experimental_setup" title="pypillometry.EyeData.set_experimental_setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_experimental_setup()</span></code></a>) always work in place; they
+return the object as well. Methods that change the object are decorated
+with <a class="reference internal" href="../api/generated/pypillometry.keephistory.html#pypillometry.keephistory" title="pypillometry.keephistory"><code class="xref py py-func docutils literal notranslate"><span class="pre">keephistory()</span></code></a>, which records the call in the returned object.</p></li>
+<li><p><strong>Detectors set their layer and return the object.</strong> Blink detection,
+<a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.blinks_merge_close" title="pypillometry.eyedata.pupil.PupilNamespace.blinks_merge_close"><code class="xref py py-meth docutils literal notranslate"><span class="pre">blinks_merge_close()</span></code></a>,
+<a class="reference internal" href="../api/generated/pypillometry.eyedata.gaze.GazeNamespace.html#pypillometry.eyedata.gaze.GazeNamespace.mask_offscreen" title="pypillometry.eyedata.gaze.GazeNamespace.mask_offscreen"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mask_offscreen()</span></code></a> and
+<a class="reference internal" href="../api/generated/pypillometry.eyedata.gaze.GazeNamespace.html#pypillometry.eyedata.gaze.GazeNamespace.mask_divergences" title="pypillometry.eyedata.gaze.GazeNamespace.mask_divergences"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mask_divergences()</span></code></a> replace their mask layer
+(<code class="docutils literal notranslate"><span class="pre">&quot;blink&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;offscreen&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;divergence&quot;</span></code>) for the channels they
+process. Setting a layer <em>is</em> masking: there is no <code class="docutils literal notranslate"><span class="pre">apply_mask</span></code>
+argument. The results are read with getters
+(<a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.get_blinks" title="pypillometry.EyeData.get_blinks"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_blinks()</span></code></a>,
+<a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.get_layer_intervals" title="pypillometry.EyeData.get_layer_intervals"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_layer_intervals()</span></code></a>, …) and removed with
+<a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.clear_layer" title="pypillometry.EyeData.clear_layer"><code class="xref py py-meth docutils literal notranslate"><span class="pre">clear_layer()</span></code></a>. To compute without storing, use the
+functions in <code class="docutils literal notranslate"><span class="pre">pypillometry.signal</span></code>.</p></li>
+<li><p><strong>Getters with per-channel results always return a dict</strong> keyed by
+the channel name <code class="docutils literal notranslate"><span class="pre">&quot;&lt;eye&gt;_&lt;variable&gt;&quot;</span></code> (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;left_pupil&quot;</span></code>), also
+for a single channel, and with an entry for every selected channel (e.g.,
+<a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.get_blinks" title="pypillometry.EyeData.get_blinks"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_blinks()</span></code></a> gives empty Intervals for a channel without
+blinks). The keys are the same strings as in <code class="docutils literal notranslate"><span class="pre">d[&quot;left_pupil&quot;]</span></code> and
+<code class="docutils literal notranslate"><span class="pre">d.data</span></code>. Such results can be a <a class="reference internal" href="../api/generated/pypillometry.RecordDict.html#pypillometry.RecordDict" title="pypillometry.RecordDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">RecordDict</span></code></a> (e.g.,
+<a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.layer_stats" title="pypillometry.EyeData.layer_stats"><code class="xref py py-meth docutils literal notranslate"><span class="pre">layer_stats()</span></code></a>: channel -&gt; layer -&gt; statistics), a
+nested dict that is displayed as a table. Results with one row per
+event or trial (e.g., <a class="reference internal" href="../api/generated/pypillometry.Events.html#pypillometry.Events.to_table" title="pypillometry.Events.to_table"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Events.to_table()</span></code></a>) are a <a class="reference internal" href="../api/generated/pypillometry.Table.html#pypillometry.Table" title="pypillometry.Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a>, a
+dict of numpy columns that is displayed as a table.</p></li>
+<li><p><strong>Plain numbers are ms</strong>: windows, durations, margins, and the default
+units of returned times and intervals
+(<a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.get_blinks" title="pypillometry.EyeData.get_blinks"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_blinks()</span></code></a>, <a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.get_duration" title="pypillometry.EyeData.get_duration"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_duration()</span></code></a>,
+…). Other units are given with the values (<code class="docutils literal notranslate"><span class="pre">(-200,</span> <span class="pre">800)</span> <span class="pre">*</span> <span class="pre">u.ms</span></code>,
+<code class="docutils literal notranslate"><span class="pre">&quot;2</span> <span class="pre">min&quot;</span></code>). Sample indices only with an explicit <code class="docutils literal notranslate"><span class="pre">units=&quot;samples&quot;</span></code>.
+Exception: in plotting functions, plain numbers in <code class="docutils literal notranslate"><span class="pre">plot_range</span></code> and
+<code class="docutils literal notranslate"><span class="pre">interv</span></code> are in <code class="docutils literal notranslate"><span class="pre">units</span></code> (the unit of the time axis).</p></li>
+<li><p><strong>eyes and variables</strong>: <code class="docutils literal notranslate"><span class="pre">None</span></code> or <code class="docutils literal notranslate"><span class="pre">[]</span></code> select all existing
+channels; a string or a list is accepted; unknown names raise a
+<code class="docutils literal notranslate"><span class="pre">KeyError</span></code> that lists the available channels. Use
+<code class="docutils literal notranslate"><span class="pre">self.data.select(eyes,</span> <span class="pre">variables)</span></code> (existing <code class="docutils literal notranslate"><span class="pre">(eye,</span> <span class="pre">variable)</span></code>
+pairs) or <code class="docutils literal notranslate"><span class="pre">self._eyes_with(eyes,</span> <span class="pre">variables)</span></code> (eyes that have all
+<cite>variables</cite>) instead of looping over eyes and variables.</p></li>
+</ol>
+<p>New eyes created from others are named <code class="docutils literal notranslate"><span class="pre">&quot;mean&quot;</span></code> by default
+(<a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.merge_eyes" title="pypillometry.EyeData.merge_eyes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">merge_eyes()</span></code></a>, <a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.merge_eyes" title="pypillometry.eyedata.pupil.PupilNamespace.merge_eyes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">merge_eyes()</span></code></a>;
+both take <code class="docutils literal notranslate"><span class="pre">name=</span></code>).</p>
 </section>
 <section id="saved-files-and-their-state">
 <h2>Saved files and their state<a class="headerlink" href="#saved-files-and-their-state" title="Link to this heading">#</a></h2>
@@ -547,13 +623,20 @@ its parameters and its return value, ideally with a short example. The
 </section>
 <section id="tests">
 <h2>Tests<a class="headerlink" href="#tests" title="Link to this heading">#</a></h2>
-<p>Tests are in the <code class="docutils literal notranslate"><span class="pre">tests/</span></code> folder and run with <a class="reference external" href="https://docs.pytest.org/">pytest</a>:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pytest<span class="w"> </span>tests/
+<p>Tests are in the <code class="docutils literal notranslate"><span class="pre">tests/</span></code> folder and run with <a class="reference external" href="https://docs.pytest.org/">pytest</a>. The examples in the docstrings are run as
+well (doctests):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pytest<span class="w">                </span><span class="c1"># tests/ and docstring examples</span>
+pytest<span class="w"> </span>tests/<span class="w">         </span><span class="c1"># tests only</span>
+pytest<span class="w"> </span>pypillometry/<span class="w">  </span><span class="c1"># docstring examples only</span>
 </pre></div>
 </div>
-<p>Run pytest on <code class="docutils literal notranslate"><span class="pre">tests/</span></code> only; the repository root contains scripts that
-are not tests. The tests run automatically for every push and pull request
-on GitHub. New functions should come with tests: at a minimum, call them
+<p>Examples should run as written (use the bundled
+<code class="docutils literal notranslate"><span class="pre">pp.get_example_data(&quot;rlmw_002_short&quot;)</span></code> for data). Mark single lines
+with <code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">doctest:</span> <span class="pre">+SKIP</span></code> only if they need data that are not available
+(e.g., a user’s file) or give output that varies between runs. Run pytest
+from the repository root without other paths; the root contains scripts
+that are not tests. The tests run automatically for every push and pull
+request on GitHub. New functions should come with tests: at a minimum, call them
 with reasonable arguments; better, compare the result to the expected
 output.</p>
 </section>
@@ -624,7 +707,7 @@ for every push to <code class="docutils literal notranslate"><span class="pre">m
 development, it can help to see the debug messages of a single module only:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
 <span class="n">pp</span><span class="o">.</span><span class="n">logging_disable</span><span class="p">()</span>
-<span class="n">pp</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">enable</span><span class="p">(</span><span class="s2">"pypillometry.eyedata.generic"</span><span class="p">)</span>
+<span class="n">pp</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">enable</span><span class="p">(</span><span class="s2">"pypillometry.eyedata.eyedata"</span><span class="p">)</span>
 <span class="n">pp</span><span class="o">.</span><span class="n">logging_set_level</span><span class="p">(</span><span class="s2">"DEBUG"</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -634,9 +717,18 @@ development, it can help to see the debug messages of a single module only:</p>
 <p>Version numbers follow the scheme <code class="docutils literal notranslate"><span class="pre">x.y.z</span></code>: increment <code class="docutils literal notranslate"><span class="pre">z</span></code> for bug
 fixes, <code class="docutils literal notranslate"><span class="pre">y</span></code> for new features and <code class="docutils literal notranslate"><span class="pre">x</span></code> for changes that break backward
 compatibility.</p>
-<p>Releases are created on <a class="reference external" href="https://github.com/ihrke/pypillometry/releases">GitHub releases</a>. A GitHub action then
-writes the tag into the file <code class="docutils literal notranslate"><span class="pre">VERSION</span></code> (it must follow <a class="reference external" href="https://peps.python.org/pep-0440/#version-scheme">PEP 440</a>) and uploads the
-release to <a class="reference external" href="https://pypi.org/project/pypillometry/">PyPI</a>.</p>
+<p>To release a version:</p>
+<ol class="arabic simple">
+<li><p>On <code class="docutils literal notranslate"><span class="pre">master</span></code>, set the file <code class="docutils literal notranslate"><span class="pre">VERSION</span></code> to the new version (e.g.,
+<code class="docutils literal notranslate"><span class="pre">v2.2.0</span></code>; it must follow <a class="reference external" href="https://peps.python.org/pep-0440/#version-scheme">PEP 440</a>) and give the
+version and the date as heading of its section in <code class="docutils literal notranslate"><span class="pre">CHANGELOG.md</span></code>
+(<code class="docutils literal notranslate"><span class="pre">##</span> <span class="pre">2.2.0</span> <span class="pre">(2026-11-10)</span></code>); commit and push.</p></li>
+<li><p>Create a release with the same tag (<code class="docutils literal notranslate"><span class="pre">v2.2.0</span></code>) on <a class="reference external" href="https://github.com/ihrke/pypillometry/releases">GitHub releases</a>. A GitHub action
+checks that the tag matches <code class="docutils literal notranslate"><span class="pre">VERSION</span></code> and uploads the release to
+<a class="reference external" href="https://pypi.org/project/pypillometry/">PyPI</a>.</p></li>
+</ol>
+<p>The documentation is built and published by another action whenever
+<code class="docutils literal notranslate"><span class="pre">master</span></code> is pushed.</p>
 </section>
 <section id="major-versions">
 <h2>Major versions<a class="headerlink" href="#major-versions" title="Link to this heading">#</a></h2>
@@ -695,6 +787,7 @@ and its documentation at <a class="reference external" href="https://ihrke.githu
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-to-contribute">How to contribute</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#package-architecture">Package architecture</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#api-conventions">API conventions</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#saved-files-and-their-state">Saved files and their state</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#documenting-code">Documenting code</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tests">Tests</a></li>

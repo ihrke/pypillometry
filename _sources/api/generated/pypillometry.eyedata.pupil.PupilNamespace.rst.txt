@@ -1,0 +1,33 @@
+﻿PupilNamespace
+==============
+
+.. currentmodule:: pypillometry.eyedata.pupil
+
+.. autoclass:: PupilNamespace
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~PupilNamespace.blinks_detect
+      ~PupilNamespace.blinks_interpolate
+      ~PupilNamespace.blinks_merge_close
+      ~PupilNamespace.correct_foreshortening
+      ~PupilNamespace.estimate_baseline
+      ~PupilNamespace.estimate_response
+      ~PupilNamespace.fit_foreshortening
+      ~PupilNamespace.lowpass_filter
+      ~PupilNamespace.merge_eyes
+      ~PupilNamespace.smooth_window
+   
+   
+
+
+   .. rubric:: Details

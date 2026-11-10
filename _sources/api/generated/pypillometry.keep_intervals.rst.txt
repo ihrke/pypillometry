@@ -1,0 +1,6 @@
+﻿keep\_intervals
+===============
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: keep_intervals

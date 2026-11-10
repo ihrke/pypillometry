@@ -3,7 +3,7 @@
 Data quality
 ============
 
-:meth:`~GenericEyeData.quality_report` summarizes the quality of a
+:meth:`~EyeData.quality_report` summarizes the quality of a
 dataset: missing data, dropouts and noise of the pupil, missing and
 off-screen samples and precision of the gaze, and agreement between the
 eyes. These measures need no preprocessing. After preprocessing, blinks and
@@ -24,7 +24,7 @@ From the command line, ``pypilinfo -Q`` prints the report and
 :doc:`/getting_started/cli`).
 
 If parts of the recording are excluded from the analysis (e.g., breaks,
-see :meth:`~GenericEyeData.exclude_intervals`), the report only looks at
+see :meth:`~EyeData.exclude_intervals`), the report only looks at
 the included time: the recording section shows the total and the included
 duration, and all rates and percentages refer to the included part.
 Dropouts end at the boundaries of an excluded period, and no
@@ -34,7 +34,7 @@ against the data:
 
 .. code-block:: python
 
-    d = d.exclude_intervals(d.get_intervals(("break_start", "break_end"), units="ms"))
+    d = d.exclude_intervals(d.get_intervals(start="break_start", end="break_end", units="ms"))
     d.quality_report()
 
 
@@ -352,7 +352,7 @@ Gaze
     Off-screen samples come from looking away or from a calibration that is
     off, and they are usually unusable. In the reference data, the median is
     0.6% and 95% of the recordings from lab setups are below 5%. This needs
-    the screen size (see :meth:`~GazeData.set_experimental_setup`).
+    the screen size (see :meth:`~EyeData.set_experimental_setup`).
 
     .. image:: ../images/quality_ref_offscreen.png
        :alt: Off-screen gaze per recording and eye in six datasets, with the

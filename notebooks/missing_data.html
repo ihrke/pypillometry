@@ -1,0 +1,2232 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Missing data &#8212; pypillometry v2.2.0</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx_autodoc_typehints.css?v=057ac668" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=e89b0eda" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=75c7c72ae941e8b558d8"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
+
+    <script src="../_static/documentation_options.js?v=49a90b2e"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'notebooks/missing_data';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../_static/pypillometry_logo_200x200.png"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Plotting pupillometric data for exploration" href="plotting.html" />
+    <link rel="prev" title="Blink preprocessing" href="blinks.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="v2.2.0" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="light">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation" aria-expanded="false" aria-controls="pst-primary-sidebar-modal">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="../_static/pypillometry_logo_200x200.png" class="logo__image only-light" alt=""/>
+    <img src="../_static/pypillometry_logo_200x200.png" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">pypillometry</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../experimental/index.html">
+    Experimental features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../development/index.html">
+    Development
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ihrke/pypillometry" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pypillometry/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page" aria-expanded="false" aria-controls="pst-secondary-sidebar-modal">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal" tabindex="-1"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../experimental/index.html">
+    Experimental features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../development/index.html">
+    Development
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ihrke/pypillometry" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pypillometry/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button type="button" id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">Reading data</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="importdata_edf.html">Importing data from Eyelink EDF files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="importdata_asc.html">Importing data from Eyelink ASC files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="importdata_behaviour.html">Events from a behaviour log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example_datasets.html">Example datasets included in <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code></a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Working with data objects</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="pipes.html">Pipeline-based processing in pypillometry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eyes_and_variables.html">Processing monocular and binocular data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="summary.html">Summarizing pupillometric data</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Preprocessing and plotting</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="blinks.html">Blink preprocessing</a></li>
+<li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">Missing data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plotting.html">Plotting pupillometric data for exploration</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Events and event-related analyses</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="events.html">Events</a></li>
+<li class="toctree-l1"><a class="reference internal" href="event_metadata.html">Event metadata</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intervals.html">Intervals</a></li>
+<li class="toctree-l1"><a class="reference internal" href="erpds.html">Event-related pupil dilations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rois.html">Gaze in regions of interest around events</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Modeling and complete analyses</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="modeling.html">Modeling the pupillometric signal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="preproc_example_pavlov.html">Example: Preprocessing of a full dataset with multiple subjects</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-house"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../tutorials/index.html" class="nav-link">Tutorials</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Missing data</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <div class="pp-notebook-banner">
+  <span>This page was generated from a Jupyter notebook.</span>
+  <a href="https://github.com/ihrke/pypillometry/blob/master/docs/notebooks/missing_data.ipynb">View on GitHub</a>
+  <a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath=docs/notebooks/missing_data.ipynb">
+    <img alt="Binder badge" src="https://mybinder.org/badge_logo.svg"
+         style="vertical-align:text-bottom">
+  </a>
+</div><section id="Missing-data">
+<h1>Missing data<a class="headerlink" href="#Missing-data" title="Link to this heading">#</a></h1>
+<p>Pupil and gaze data have gaps and bad samples for many reasons: the eye tracker loses the pupil during a blink, the gaze leaves the screen, the two eyes point to different places, or a part of the recording is simply not part of the analysis. <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code> keeps track of <em>why</em> a sample is bad, and a <em>mask policy</em> decides which samples the analyses leave out.</p>
+<p>This tutorial goes through these steps with a real recording. The concepts are explained in the user guide (<a class="reference internal" href="../user_guide/missing_data.html"><span class="doc">Missing data</span></a>).</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">u</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+<span class="n">pp</span><span class="o">.</span><span class="n">logging_set_level</span><span class="p">(</span><span class="s2">"WARNING"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>We use the example dataset <code class="docutils literal notranslate"><span class="pre">rlmw_002</span></code>: a 20-minute recording of both eyes (pupil and gaze, 500 Hz) from a reinforcement-learning task. It is downloaded from OSF on first use (see <a class="reference internal" href="example_datasets.html"><span class="doc">Example datasets</span></a>).</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002"</span><span class="p">,</span> <span class="n">cache_dir</span><span class="o">=</span><span class="s2">"example_data"</span><span class="p">)</span>
+<span class="n">d</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div style="font-family:system-ui, sans-serif; border:1px solid #ddd; border-radius:6px; padding:12px; max-width: min(600px, 50vw); min-width: 300px;">
+  <h3 style="margin-top:0;">EyeData — <span style="color:#555;">rlmw_002</span></h3>
+
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px; margin-bottom:10px;">
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Samples</div>
+      <div style="font-weight:600;">597,301</div>
+    </div>
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Sampling rate</div>
+      <div style="font-weight:600;">500.0 Hz</div>
+    </div>
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Duration</div>
+      <div style="font-weight:600;">19.91 min (start 0.00, end 19.91)</div>
+    </div>
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Eyes</div>
+      <div style="font-weight:600;">left, right</div>
+    </div>
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Variables</div>
+      <div style="font-weight:600;">left_x, left_y, left_pupil, right_x, right_y, right_pupil</div>
+    </div>
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Events</div>
+      <div style="font-weight:600;">1320</div>
+    </div>
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Size</div>
+      <div style="font-weight:600;">39.9MiB</div>
+    </div>
+  </div>
+
+
+    <details open style="margin-bottom:8px;">
+    <summary style="cursor:pointer; font-weight:600;">Signal overview</summary>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px; margin-top:8px;">
+      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">left_pupil</div>
+        <img src="data:image/png;base64,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" alt="left_pupil sparkline" style="height:60px; width:100%; object-fit:cover;">
+      </div>
+      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">left_x</div>
+        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAA8CAYAAADPLpCHAAAAOnRFWHRTb2Z0d2FyZQBNYXRwbG90bGliIHZlcnNpb24zLjExLjIsIGh0dHBzOi8vbWF0cGxvdGxpYi5vcmcvgI3uAAAAAAlwSFlzAAAPYQAAD2EBqD+naQAAEyVJREFUeJztXQt0VdWZ/kMeN+8XIYEkQECgRCCAQVpEqYpYxBmKRXCo1WJdndGOVq0zHRxxtD6qVsuitr6GQa1Vsa0dFRkRQZQir/CUhPcz4ZEASQh5kgdk1rfP/s/dZ99zbm5CAsnN+dZi3Ztzzz13n72//e3v//d/LyHNzc3N5MJFkKDHpW6ACxftCZfQLoIKLqFdBBVcQrsIKriEdhFUcAntIqjgEtpFUMEldDfB+fPN9PW+Ugp2uITuJngvr4h+tHADbT9aQcEMl9DdBEdP14nHmvpzFMxwCd1N0HTuvHgM7RFyqZtCdQ3n6KklO+lsY/tPLpfQbcD1L35FTyzeQV0JjZLQHUGi1uKvm4/Qwq8P0bIdJe1+bZfQbcDB0hp6a+1h6kpoPG/UoNU2BEZoEP+rPSfb9Fk/e3ez+OdPoYGI0Pann0voDsA76wspa87/UWe0HHWNTQGd/8KyPTT7zY1UWl3f4rl3LNxA81fsFc+PlNfSp/kl4p8TzjYabfGEu4S+aFi+8wTtLqls03vf21AkHhuajIHrDKiXbalrCKxNJyrPBmxRVu8rpfkr9onn+cfOiMdecR7H8882GddsPNf+lcth7X7FIMFP394kHg8/d3PA79lTUiXSYiEy7qptaKKIsAjqDKg622S2KRBw8Nha0tVLsob7CT7ZcrhBYSfZoHDCtJfX0L9/sN0kdE2AfvVioLKu0UKmlhAqb6Kl89X+OHe+meqlnYBnf3dDoW1/MeldQl8CbDpcrg2G85JdJ5fnEDLIUFtvVUP4y9M1De3SLqwGFbWBX6vyrEHo2gCzHD2kwvI9MUDQ6a+upSXbjwtLViKtCXC8os7sn1NV9fTohwX0+U5fL11Z12Tx0tTdg8IajSjtAaSR7AKgW19bR/wtNeRO1cgfx2e+vo42F54Wf/MqC6US7dTU7YH3t5rB04Xie/P/LlYEO5ypa6Qpv1stCKaTCK89+clOqpIEb0mhoaIlZ87S5sJyk+C43/ve20qT56+mu97caL5n/8lqU339CUBFnTERXYWWSjPs8WW0KM8IvOyAwWqNemGQQda5HxbYBnOsJCD9ve9usQxW3qFyem7pLoMEktHsU/OPVtAPXlljDtzp2kYqrW4fhQYOl9XaHi8+U0c7iytpV7E3qGUCLysooTfWHKLXVh3w66dNhW44R7f/z3qa/uo6277Zc6LKfF5w7IxpOfyhotZoi6vQ6ASpel/sOuHYYY8v3kEP/+UbChSsKjVygHXfCDLYfZeY1YcVuYdUtWq5vfzi53tpS1EFHT1da64svPR3JBqbjPaUycmDtrPVOC0n+stfHqDRTy537EdOEUORy6RNmvXf6+mYovoqMhKjaDsIrRGe+8SO0Lqd6ZaWI5ANgt3FVcLbVQdoTc7KVNZ5SVomNgMktFMTVjhOBLBCsyWC8gNNSpsrZbbBCYu/OU4fbT1mOQZCIsDi++FdP0Bf4oGGc8ax0hrDQoFkPB/VGA3H7/7jJttJpgaF6QlR4vm6g2X0aX6x5bzwUOO8qweliAyP3h7mM+IHTAbcS5lsV1BbDtwoJ//9oVEqABP6/bwi+re/fmO5TmFZDe04XknDH19Gh0trWrxmrdxsOC8/Xp8sIKFOcuB0TaP5mWdqoeJkqzwgOM7BNVryrj9ftJUe/PM2n8IiBFiT5q2iZ5fuouIKbyBWZGM7GjSFZuIw+XSg7Yz9J6towd8PmpMQ95Ia780pR0eE2l4jp28Cnaisd8zsXPObL2n8cyuF0LA42E3GoCH0nL/l06BHl1qOrd53ymf7tUGSntVxzv/m0webj5qvn6q2dir+bglsMVih+doL7hxjprxqbarU2KfDckx9+WvHJTTv0Gka8MingvCcD7aD6mnZxqjPi8+cpddXHaRFG73xA7IJKuZ+lE+zFqwXz8vkvXO7kmPsc+K8kgA3v/Q1PfPpLhEI8nublFy0ei7nqUHynjEe2/bAc3M7gHHPrjSfL8o7Qks1xQ8aQn+y/bi5NPHsvWNhnth+VcFBiZPlKNQUyxPme4tQ8OzHPvMOmg+hjb97x0eKR5CQVVwFgjxWQP1zVaw9UOqTD7YDVhUG94PaHoZKGt3CvLPeS3b2vnx/yZJ0jFlj+1nahGCSPfDaA2Xicd7yvSKrcePlaRZC9+8ZbV4nLjKMEqLCxfOTShoPwAqZ+/QKW88NvL2ukIKS0Ln9k8TjChmkfLHLq8ywFb/6ZIdFofXAbczTy8Xye0izGPCb8KTXvvCleWzDoXKhPEsLii0KBiGc+do6+nib4WFT4iKEB4THtKsj5vQTlNMfVK8Iwjhtie9UCL1XyR7o2Qg1vejPwpRKy8H31zfJIBEjPSHSsoqxhVLfg7bieXpiFMV6wkxCvzH7SvrukF7ieYwnjBKjJaGr6i1FR8cd+iZDtmXbkQpLTBA0hNYL0ZmY8ZFhwla8ucaobmMy6J4Wg4dyRN0zg0CYDGqKC9fkvKmqgHjMO1wulkIeqDhPmKHQNh6ao/WWKth0mwESovwUmyMqoPIDe8VQTEQoHS7z3od+ffbGAAJFePSVu32zFbzU84Qa2ife8nqaJPQD72+ju9/aaPYpq6cK2IrI8FCT0CAtr35R4aFeha6qp/gob0WF0+Tl92Ky/PKD7dTlCA0LsWKnt9OxlLESqpkBVhwujtGXVG9dr29Hwfu98tUBQULGDxdsMK0BonC8n9Nq+yShWY2KFBIB0eGhFBcZLtpkR9pAKtHsFByTD+Wn975jLbEsKq+h/snR1Ccxio4rgZ9/hW4SmZGfvLXJZ7kvr2kQO3tckJTdO87yutpPX+w+KQqygDQlCGRgckdF9DAncURYD/GPyc6Eht9HnzE4TahD9eIfalmdLlGc9F8f7aA/bzpCa+dcL5avl74wqrO+PypDPPKSzmrmtIyrM95pY2B4RoJIMemY+gfrztq2ogrhG9m+qMEkBisstIfwh9hls/ssECYQ6IHUsYpak5jYCn/s4wJ65pYRQqHHD0oRGQa0qyWFTo3ziMnWoPleBq4Du8QT9lsaoaMVQgMLVh8Uj6lxhnJbzo0IFUpcaVFoI+MB5cbryKIgSESfMXgCsMU5UVUvSM/Hca6/QLnTKjTIzINrlx/mY3xzUOjLtSUSy6qauFdVTIXaoU5AzjgyvAct2lBkm53g9FR8VLjpodWvL2FA7RSaveTcm7Ppb/deRcMzrPeg2iqsPi+t3EdLtheLHcei8lrqlxwt8r7Ldpygl7/cT/e9t8U8H0iJ9ZhxBNJp6C/e4l6urIDqasD3lyaDXAasDWPW2L5m2lFN03nPDROENi1HWA+znhl9FRISYqq0hdAyzgCemjac8p+4kbY+NslU7oG9Yqk90eGERgd8VuAtUMEAHDplLO1hCkHYv3GSHxkInQxYVtVviqiBk4rZV2W12C6o29De8VRYXmtrJ2A3gMzEKPp423Ga+1GBUJb5t42iH1yRIQattMpXoedMHirafUN2mgh0eZBVqARds9/IgIDMmKyZSVHUW3pbFNmD7L+Tq5lojwymMBlxbfQn794tlUGuihvmraK18jOgpL+dMdJ7jxFe4g1IiTHHJCnaN70X7TE8NK9iwnLI4A9E58kvHhXLUaEEmggq8ZlJMRE0bmBPcQzt+ZcJA6nLEBqbHvcoXhFL1v5TBhF7xno7DnledAyWIkwCRN6wDjq2yEIgYGuR9znj4UlD6KpBKS22KyoilHrFe0QKzG7HikmVra0S00Zn0LyZo8Tg2Sk0SLbk/msoSxIkRiEN45hC6L0nDB+/R36ZAIXx+uaFmpPm7ACuG+cJp892lIisDQh23qGy9f2NR8TrWGGm52aaQZ/6OTzxEKyxwg5OjRUTnz8PfQYg8wPis0JHyXtMtFHoKmU1jlWOvzRrNOU9OpEGpcbSI1OyqcsQWs86QIFZoXmg4AGxjPZJjBRKNfJXn4vlr09ClFDb/5g81Hw/72AB8Mn699K401f/8jq/7cJgYrAQlav+eGTfRPF4mVwKdUIzMGic5wVGyfcx4ewGkT+XazuQ2506Ml0QjImNDQpOYarAOYvvG09J0tLgPtEG7sOxWcmW8/X6elZRgOtSoLrYPHrh1hxTVc81ez3wdUNTacaYTPE8LDTEnADoc1gMj6bQsENG3/iuSqIvFM8Otbfz6p2e0HqxCpZIXnKhxGJLWM7iPlIVGTGeUHpi6jAaO8A6WAg+MGAFxyppZN8EW0L3TY426wicgA5FZgBZAAzGP45Mp5lyAOFlgew+1kDKyafDhmyaewPlZBrEZgyUSg2FnHR5miAOLALU8vU7coVSpcR5TPuUHBtBY7KS6Y3Zxi6lSgZcm21CTIQ1mPpnbdluJmdCsybgGmjTjDF9TYXGriAyGgAyQhz4QXRAQr4XwCP/RvYDgNra9Y16Dx2Ni0BorS6irpGOSIVCRIyAhQNC36DF6AB9CY4MC6WeUg2GpGmRu3Kuv/9sAwMHhUZghi1sEPf3s0abxfkgFoDPAbluG9OXpozobb5f9YncdlYoFdd+K1W2M1aoofDe1Q0iFw6VA3rFRggfD6JwoKbv6vFqwMRE4HZUZku2PDaJJgzpRS/OGEnzZno9st1EdyI5+1+sgEw8kBiEBy5PjzfP5xwyr448yTiL4tTv+mrVEbioCg1VheWAQg9LjzdVmgNCO4W286GhoUw7380CdZAYb/9krM8xbHNzNI/AkN+HgdOX8OuHptHzt+bQK7fnmsd0FeJtch18n7iGJXBSgkWeCD1jsDMZYj5XVwr260xM9NWzt+TQAxMHmzUat+ZmUv+eMSapnvz+MPO+WF3VDRWueQbU4JXvDYSG5cL3KmH/+FpMZPbQfO3BqXE+2/YqWO27NqGVDRB0CnKoqLganm5YBeR4OQetR9c88+H19Io7eF9gak665TUOUFTwEuqr0JHmjiGrB7zwwV9PocGa8utQFRocRG7dDiDo/mduol9MGmIhi/p+JrRaPMQBs5665BUIfTkiM4Eekte1q125c1wWzR5vZHyilJ8MWHBnLi38sdXSqO1RLYcKnkxsOZjYyLgA2OUEcrOsMcC3ByS36svGXcZyIHOwu6RKqMewDK9Cc/0vq5HesbrlQAD52o9y6TfTcyghOlx0Ftcl2Cm03TEsrZzJ0BVWVS4ncOCDIp0P7rnK79f2sUGjv0/dHmYCqEVHmMwgChObU5xMIqfP82jFWDyB1AAMzydmp9meB8RIUeB8N0P30OwsuG14fc/Tk+mHsujJey8dr8wXhdCob1ZTSfCs+GoQwCm5Q6XV9Kf1hfTgDYPpxmG9RZ5X7wh4ZhXw3pOH96aZV/Y1jzX76TxWEBXIDsDH8vkquQMBExKTxS4r4fg+SRw1Xhh/WYrPrhoHWfi35P6raeXD11ry9LyBoyNCI/SY/slC+f+zhdSYOomZuHodBvv7cDmp9G/qsK3AqrTy4e/SLaMzfPLdHY0O/SR9azhRWgp0Oi+lX+05Zfo/YHQ/b5aAOy4QxeRARPWKDLtjyK6g4/EaArLWppDYYvgrB7UDT6Bh0nJxf7x6+xWmt2V8+LPx4psj6v3z72Q41TZ7tMmPDBGCxtYA/n3aqHS6f+Jgy/GMJGMF5d1CLre1+wFI7ADypLuYCt2hhNZLOTkFhuUdRIJygtBYPr3J/rY1qVlqtF3n6Zbje8PS6IGJQyzq0lqF5nScU3mkE9hWcLDIuGlEH59zeUKr+LHcBf32AGOnrSWFbg2enz5CxA6YQPP/abTP61myBprrbPg3N5x+0ZQFDSnUoLAcILSaC8bypy6biKyRthueHm9G9065SnTaDKni/hQ6KgCFnnNTtpnN4LFwylI4oa2DxHEBf35rgf751+sGOZIo4gIIfduV/eiKfkkt3jNbDf4ii90XYQGk/HIyE3xy5F2a0Fx7oOYpWZ04VaT6STu/Cxz49RR6fnqO42c1+8m3IlDCsvvITUN9inI4uEpRtuEDgZ2NCQTY5l300+/45LHbC54LIHRr7xm7nEhvIgduh3/ISafF913d5r7qdJYDPzs7MCWWjpQbO4NQlWUPTjDVkAmt1nSwUtvBn5dmhbYbULwPnhP1FdhlVBP82K1bu7/MkoloDfxlN5wUdtxl9nahPRB2EX7QnDNKuPe/3DOOOhM6lNDrD5QJz7dqrxH46TW5rFJ2O2ytBTZhSqv9T4iJQ1NF4ZDq0zOTomnmlW2zDyiF9Pd5lwIhHdwe3LOTxQh6QiPXe9f4LFHgYrcdyj6wPQj9x7vG0nqbon4VUGG9yP1C4FSEE8yI6+T33KGEhldGLQTXXejgnSjVcrQVsBNcsqkGSJ3pN5pddHFCc9G4Ezin2ksj/J/uHmtbZA58/tCEgPOayx+aYKk9dhH86FhCy719J/DWqm45rhlsHzXbVdf5Awp1uFinO+GpacNFKrQ7okMJzZsPTsBXb/KPnrH9mpKLtuOO7/Tvtt0X0mz3s5rtBPzuRHsGYS5cXFJCY2s0kDoMFy66BKFduLjY6HQ/BebCxYXAJbSLoIJLaBdBBZfQLoIKLqFdBBVcQrugYML/A2U1EyxbLe1HAAAAAElFTkSuQmCC" alt="left_x sparkline" style="height:60px; width:100%; object-fit:cover;">
+      </div>
+      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">left_y</div>
+        <img src="data:image/png;base64,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" alt="left_y sparkline" style="height:60px; width:100%; object-fit:cover;">
+      </div>
+      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">right_pupil</div>
+        <img src="data:image/png;base64,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" alt="right_pupil sparkline" style="height:60px; width:100%; object-fit:cover;">
+      </div>
+      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">right_x</div>
+        <img src="data:image/png;base64,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" alt="right_x sparkline" style="height:60px; width:100%; object-fit:cover;">
+      </div>
+      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">right_y</div>
+        <img src="data:image/png;base64,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" alt="right_y sparkline" style="height:60px; width:100%; object-fit:cover;">
+      </div>
+    </div>
+  </details>
+
+
+
+  <details style="margin-top:8px;">
+    <summary style="cursor:pointer; font-weight:600;">Data glimpse</summary>
+    <pre style="margin-top:8px; background:#f9f9f9; padding:8px; border-radius:4px;">EyeDataDict(vars=6,n=597301,shape=(597301,)):
+  left_x (float64): 655.6, 655.7, 655.0, 654.5, 655.0...
+  left_y (float64): 599.9, 598.9, 597.6, 597.8, 597.8...
+  left_pupil (float64): 1121.0, 1122.0, 1124.0, 1126.0, 1126.0...
+  right_x (float64): 773.1, 773.8, 774.8, 776.3, 776.7...
+  right_y (float64): 594.2, 593.9, 596.5, 597.4, 597.3...
+  right_pupil (float64): 949.0, 951.0, 956.0, 959.0, 960.0...
+</pre>
+  </details>
+
+  <details>
+    <summary style="cursor:pointer; font-weight:600;">Recent history</summary>
+    <ol style="margin-top:8px;">
+      <li>reset_time()</li>
+    </ol>
+  </details>
+</div></div>
+</div>
+<section id="Missing-samples-in-the-raw-data">
+<h2>Missing samples in the raw data<a class="headerlink" href="#Missing-samples-in-the-raw-data" title="Link to this heading">#</a></h2>
+<p>Samples that the eye tracker did not record are NaN (Eyelink codes them as 0; they are converted to NaN when the data are read). NaN is the only kind of missing data that is stored in the values themselves. <code class="docutils literal notranslate"><span class="pre">d.mask(eye,</span> <span class="pre">variable)</span></code> returns <code class="docutils literal notranslate"><span class="pre">True</span></code> for each unusable sample:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">key</span><span class="si">:</span><span class="s2">12s</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">])</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">6.2%</span><span class="si">}</span><span class="s2"> NaN, "</span>
+          <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">d</span><span class="o">.</span><span class="n">mask</span><span class="p">(</span><span class="n">key</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">6.2%</span><span class="si">}</span><span class="s2"> masked"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+left_x        3.13% NaN,  3.13% masked
+left_y        3.13% NaN,  3.13% masked
+left_pupil    3.13% NaN,  3.13% masked
+right_x       2.07% NaN,  2.07% masked
+right_y       2.07% NaN,  2.07% masked
+right_pupil   2.07% NaN,  2.07% masked
+</pre></div></div>
+</div>
+</section>
+<section id="Marking-bad-samples:-mask-layers">
+<h2>Marking bad samples: mask layers<a class="headerlink" href="#Marking-bad-samples:-mask-layers" title="Link to this heading">#</a></h2>
+<p>The detection methods do not change the values. They mark the samples they find in a <em>mask layer</em> of the channels they check:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">d.pupil.blinks_detect()</span></code> sets the <code class="docutils literal notranslate"><span class="pre">&quot;blink&quot;</span></code> layer of the pupil;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">d.gaze.mask_offscreen()</span></code> sets the <code class="docutils literal notranslate"><span class="pre">&quot;offscreen&quot;</span></code> layer of x and y (it needs the screen size, which is stored with this dataset);</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">d.gaze.mask_divergences()</span></code> sets the <code class="docutils literal notranslate"><span class="pre">&quot;divergence&quot;</span></code> layer of x and y of both eyes.</p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span>
+<span class="n">d</span><span class="o">.</span><span class="n">gaze</span><span class="o">.</span><span class="n">mask_offscreen</span><span class="p">()</span>
+<span class="n">d</span><span class="o">.</span><span class="n">gaze</span><span class="o">.</span><span class="n">mask_divergences</span><span class="p">()</span>
+<span class="n">d</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">layer_names</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[&#39;blink&#39;, &#39;offscreen&#39;, &#39;divergence&#39;]
+</pre></div></div>
+</div>
+<p>To see what is masked where, we write a small helper that shows, for each channel, the percentage of samples that are NaN, the percentage in each layer, and the percentage that is masked under the <code class="docutils literal notranslate"><span class="pre">&quot;default&quot;</span></code> and the <code class="docutils literal notranslate"><span class="pre">&quot;strict&quot;</span></code> policy (explained below). A sample can be in several layers at once (a blink is usually also NaN), so the columns do not add up.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">layer_table</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+    <span class="n">rows</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"NaN"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">])</span><span class="o">.</span><span class="n">mean</span><span class="p">()}</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">layer_names</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">"excluded"</span><span class="p">:</span>   <span class="c1"># one layer for the whole recording</span>
+                <span class="n">row</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get_rec_layer</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">row</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="n">row</span><span class="p">[</span><span class="s2">"masked (default)"</span><span class="p">]</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">mask</span><span class="p">(</span><span class="n">key</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="n">row</span><span class="p">[</span><span class="s2">"masked (strict)"</span><span class="p">]</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">mask</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">policy</span><span class="o">=</span><span class="s2">"strict"</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="n">rows</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">row</span>
+    <span class="k">return</span> <span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="n">layer_table</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>NaN</th>
+      <th>blink</th>
+      <th>offscreen</th>
+      <th>divergence</th>
+      <th>masked (default)</th>
+      <th>masked (strict)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>left_x</th>
+      <td>3.13</td>
+      <td>0.00</td>
+      <td>0.97</td>
+      <td>0.97</td>
+      <td>4.86</td>
+      <td>4.86</td>
+    </tr>
+    <tr>
+      <th>left_y</th>
+      <td>3.13</td>
+      <td>0.00</td>
+      <td>0.97</td>
+      <td>0.97</td>
+      <td>4.86</td>
+      <td>4.86</td>
+    </tr>
+    <tr>
+      <th>left_pupil</th>
+      <td>3.13</td>
+      <td>5.84</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>5.84</td>
+      <td>5.84</td>
+    </tr>
+    <tr>
+      <th>right_x</th>
+      <td>2.07</td>
+      <td>0.00</td>
+      <td>1.04</td>
+      <td>0.97</td>
+      <td>4.06</td>
+      <td>4.06</td>
+    </tr>
+    <tr>
+      <th>right_y</th>
+      <td>2.07</td>
+      <td>0.00</td>
+      <td>1.04</td>
+      <td>0.97</td>
+      <td>4.06</td>
+      <td>4.06</td>
+    </tr>
+    <tr>
+      <th>right_pupil</th>
+      <td>2.07</td>
+      <td>4.08</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>4.09</td>
+      <td>4.09</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Each layer belongs to the channels it was detected on: blinks are on the pupil only, off-screen samples and divergences on x and y only. The gaze channels are still masked during blinks, because the eye tracker records no gaze then (NaN).</p>
+<p>The layers can be read back as <code class="docutils literal notranslate"><span class="pre">Intervals</span></code> (in ms), one per channel:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">blinks</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_blinks</span><span class="p">()</span>
+<span class="n">blinks</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Intervals &#39;left_pupil_blinks&#39; | 321 intervals (total duration: 69762.00 ms), 217.33 ms +/- 136.83 ms, [22.00 ms, 984.00 ms]
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">get_layer_intervals</span><span class="p">(</span><span class="s2">"offscreen"</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="s2">"x"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;left_x&#39;: Intervals &#39;left_x_offscreen&#39; | 383 intervals (total duration: 11582.00 ms), 30.24 ms +/- 79.67 ms, [2.00 ms, 544.00 ms],
+ &#39;right_x&#39;: Intervals &#39;right_x_offscreen&#39; | 405 intervals (total duration: 12448.00 ms), 30.74 ms +/- 77.91 ms, [2.00 ms, 542.00 ms]}
+</pre></div></div>
+</div>
+<p>With these, we can draw where each layer is set in each channel, here for 30 seconds of the recording (the grey bars are NaN samples). <code class="docutils literal notranslate"><span class="pre">d.plot.plot_masked()</span></code> gives a similar overview of the masked stretches for the whole recording.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">plot_layers</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">layers</span><span class="o">=</span><span class="p">(</span><span class="s2">"blink"</span><span class="p">,</span> <span class="s2">"offscreen"</span><span class="p">,</span> <span class="s2">"divergence"</span><span class="p">)):</span>
+    <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+    <span class="n">keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">sel</span> <span class="o">=</span> <span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">tx</span> <span class="o">&gt;=</span> <span class="n">start</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">tx</span> <span class="o">&lt;</span> <span class="n">end</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">row</span><span class="p">,</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">keys</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">col</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">layers</span><span class="p">):</span>
+            <span class="n">runs</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_layer_intervals</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">)[</span><span class="n">key</span><span class="p">]</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">broken_barh</span><span class="p">([(</span><span class="n">on</span><span class="p">,</span> <span class="n">off</span> <span class="o">-</span> <span class="n">on</span><span class="p">)</span> <span class="k">for</span> <span class="n">on</span><span class="p">,</span> <span class="n">off</span> <span class="ow">in</span> <span class="n">runs</span> <span class="k">if</span> <span class="n">off</span> <span class="o">&gt;</span> <span class="n">start</span> <span class="o">/</span> <span class="mi">1000</span> <span class="ow">and</span> <span class="n">on</span> <span class="o">&lt;</span> <span class="n">end</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">],</span>
+                           <span class="p">(</span><span class="n">row</span> <span class="o">-</span> <span class="mf">0.4</span> <span class="o">+</span> <span class="mf">0.25</span> <span class="o">*</span> <span class="n">col</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="sa">f</span><span class="s2">"C</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                           <span class="n">label</span><span class="o">=</span><span class="n">name</span> <span class="k">if</span> <span class="n">row</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">nan</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="n">sel</span><span class="p">])</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">sel</span><span class="p">][</span><span class="n">nan</span><span class="p">]</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">nan</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">row</span> <span class="o">+</span> <span class="mf">0.35</span><span class="p">),</span> <span class="n">marker</span><span class="o">=</span><span class="s2">"|"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"0.5"</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">keys</span><span class="p">)),</span> <span class="n">keys</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">start</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">end</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"time (s)"</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s2">"upper left"</span><span class="p">,</span> <span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+<span class="n">plot_layers</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="mi">75_000</span><span class="p">,</span> <span class="mi">105_000</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_missing_data_14_0.png" src="../_images/notebooks_missing_data_14_0.png" />
+</div>
+</div>
+<p>Most blinks are NaN in all channels, and the gaze around them is often off the screen or divergent as the eyelid closes. Some blinks (here at 78.5 s and 82 s in the left eye) were found from the velocity of the pupil size although no sample is missing: the layer records the detection, not only the gaps.</p>
+</section>
+<section id="Re-running-a-detector-replaces-its-layer">
+<h2>Re-running a detector replaces its layer<a class="headerlink" href="#Re-running-a-detector-replaces-its-layer" title="Link to this heading">#</a></h2>
+<p>Each detector only writes its own layer and replaces it when it runs again. Trying other parameters therefore never adds up masks from earlier runs, and <code class="docutils literal notranslate"><span class="pre">clear_layer()</span></code> undoes a detection:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">nblinks</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">{</span><span class="n">ch</span><span class="p">:</span> <span class="n">stats</span><span class="p">[</span><span class="s2">"n"</span><span class="p">]</span> <span class="k">for</span> <span class="n">ch</span><span class="p">,</span> <span class="n">stats</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">blink_stats</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+<span class="n">n_default</span> <span class="o">=</span> <span class="n">nblinks</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">(</span><span class="n">vel_onset</span><span class="o">=-</span><span class="mi">20</span><span class="p">,</span> <span class="n">vel_offset</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>   <span class="c1"># less sensitive</span>
+<span class="n">n_other</span> <span class="o">=</span> <span class="n">nblinks</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span>                               <span class="c1"># back to the defaults</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">n_default</span><span class="p">,</span> <span class="n">n_other</span><span class="p">,</span> <span class="n">nblinks</span><span class="p">(</span><span class="n">d</span><span class="p">),</span> <span class="n">sep</span><span class="o">=</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;left_pupil&#39;: 321, &#39;right_pupil&#39;: 307}
+{&#39;left_pupil&#39;: 253, &#39;right_pupil&#39;: 231}
+{&#39;left_pupil&#39;: 321, &#39;right_pupil&#39;: 307}
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d2</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">clear_layer</span><span class="p">(</span><span class="s2">"divergence"</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">d2</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="s2">"left_x"</span><span class="p">,</span> <span class="s2">"divergence"</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+np.int64(0)
+</pre></div></div>
+</div>
+</section>
+<section id="Excluded-periods">
+<h2>Excluded periods<a class="headerlink" href="#Excluded-periods" title="Link to this heading">#</a></h2>
+<p>Some parts of a recording are not part of the analysis, e.g. the time before the task starts or breaks. They are not <em>missing</em> data: blink detection and the quality report ignore them instead of counting them as gaps. <code class="docutils literal notranslate"><span class="pre">exclude_intervals()</span></code> and <code class="docutils literal notranslate"><span class="pre">keep_intervals()</span></code> store them in the recording-wide <code class="docutils literal notranslate"><span class="pre">&quot;excluded&quot;</span></code> layer, which masks all channels, including channels added later. Here we keep the time from 1 s before the first event to 3 s after the last one:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">first</span><span class="p">,</span> <span class="n">last</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">onsets</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">d</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">onsets</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">d</span><span class="o">.</span><span class="n">keep_intervals</span><span class="p">([(</span><span class="n">first</span> <span class="o">-</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">last</span> <span class="o">+</span> <span class="mi">3000</span><span class="p">)])</span>
+<span class="n">d</span><span class="o">.</span><span class="n">get_excluded</span><span class="p">(</span><span class="s2">"sec"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Intervals &#39;excluded&#39; | 1 intervals (total duration: 4.18 sec), 4.18 sec +/- 0.00 sec, [4.18 sec, 4.18 sec]
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">layer_table</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>NaN</th>
+      <th>blink</th>
+      <th>offscreen</th>
+      <th>divergence</th>
+      <th>excluded</th>
+      <th>masked (default)</th>
+      <th>masked (strict)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>left_x</th>
+      <td>3.13</td>
+      <td>0.00</td>
+      <td>0.97</td>
+      <td>0.97</td>
+      <td>0.35</td>
+      <td>5.13</td>
+      <td>5.13</td>
+    </tr>
+    <tr>
+      <th>left_y</th>
+      <td>3.13</td>
+      <td>0.00</td>
+      <td>0.97</td>
+      <td>0.97</td>
+      <td>0.35</td>
+      <td>5.13</td>
+      <td>5.13</td>
+    </tr>
+    <tr>
+      <th>left_pupil</th>
+      <td>3.13</td>
+      <td>5.84</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.35</td>
+      <td>6.19</td>
+      <td>6.19</td>
+    </tr>
+    <tr>
+      <th>right_x</th>
+      <td>2.07</td>
+      <td>0.00</td>
+      <td>1.04</td>
+      <td>0.97</td>
+      <td>0.35</td>
+      <td>4.33</td>
+      <td>4.33</td>
+    </tr>
+    <tr>
+      <th>right_y</th>
+      <td>2.07</td>
+      <td>0.00</td>
+      <td>1.04</td>
+      <td>0.97</td>
+      <td>0.35</td>
+      <td>4.33</td>
+      <td>4.33</td>
+    </tr>
+    <tr>
+      <th>right_pupil</th>
+      <td>2.07</td>
+      <td>4.08</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.35</td>
+      <td>4.44</td>
+      <td>4.44</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+<section id="Mask-policies">
+<h2>Mask policies<a class="headerlink" href="#Mask-policies" title="Link to this heading">#</a></h2>
+<p>A <em>mask policy</em> decides which layers make a sample unusable. All analysis and processing methods take a <code class="docutils literal notranslate"><span class="pre">policy=</span></code> argument; there are three predefined policies:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>policy</p></th>
+<th class="head"><p>masked samples</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;default&quot;</span></code></p></td>
+<td><p>NaN, blinks, off-screen, divergences, user masks, excluded periods; <strong>interpolated samples are used</strong></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;strict&quot;</span></code></p></td>
+<td><p>the same, and interpolated samples</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;raw&quot;</span></code></p></td>
+<td><p>nothing, not even NaN</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">d.mask()</span></code> gives the mask, <code class="docutils literal notranslate"><span class="pre">d.values()</span></code> the values with NaN where the mask is set, and <code class="docutils literal notranslate"><span class="pre">d[&quot;left_pupil&quot;]</span></code> a numpy masked array under the default policy:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">policy</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"default"</span><span class="p">,</span> <span class="s2">"strict"</span><span class="p">,</span> <span class="s2">"raw"</span><span class="p">]:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">policy</span><span class="si">:</span><span class="s2">8s</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">d</span><span class="o">.</span><span class="n">mask</span><span class="p">(</span><span class="s1">'left_pupil'</span><span class="p">,</span><span class="w"> </span><span class="n">policy</span><span class="o">=</span><span class="n">policy</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">6.2%</span><span class="si">}</span><span class="s2"> masked"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+default   6.19% masked
+strict    6.19% masked
+raw       0.00% masked
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">]</span>
+<span class="nb">type</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">mask</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+(&#39;MaskedArray&#39;, np.float64(0.0619))
+</pre></div></div>
+</div>
+<p>A policy can also be a list of layers (NaN is always included), e.g. to look only at the blinks:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">mask</span><span class="p">(</span><span class="s2">"left_pupil"</span><span class="p">,</span> <span class="n">policy</span><span class="o">=</span><span class="p">[</span><span class="s2">"blink"</span><span class="p">])</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+np.float64(0.0584495924165538)
+</pre></div></div>
+</div>
+</section>
+<section id="Interpolating-blinks">
+<h2>Interpolating blinks<a class="headerlink" href="#Interpolating-blinks" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">d.pupil.blinks_interpolate()</span></code> replaces the pupil size during the blinks by a smooth curve. The interpolated samples get the <code class="docutils literal notranslate"><span class="pre">&quot;interpolated&quot;</span></code> layer; the <code class="docutils literal notranslate"><span class="pre">&quot;blink&quot;</span></code> layer stays, so it is always known which samples were reconstructed. Under the default policy, the interpolated samples are used, under the strict policy they are not:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_interpolate</span><span class="p">()</span>
+<span class="n">layer_table</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>NaN</th>
+      <th>blink</th>
+      <th>offscreen</th>
+      <th>divergence</th>
+      <th>excluded</th>
+      <th>interpolated</th>
+      <th>masked (default)</th>
+      <th>masked (strict)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>left_x</th>
+      <td>3.13</td>
+      <td>0.00</td>
+      <td>0.97</td>
+      <td>0.97</td>
+      <td>0.35</td>
+      <td>0.00</td>
+      <td>5.13</td>
+      <td>5.13</td>
+    </tr>
+    <tr>
+      <th>left_y</th>
+      <td>3.13</td>
+      <td>0.00</td>
+      <td>0.97</td>
+      <td>0.97</td>
+      <td>0.35</td>
+      <td>0.00</td>
+      <td>5.13</td>
+      <td>5.13</td>
+    </tr>
+    <tr>
+      <th>left_pupil</th>
+      <td>0.00</td>
+      <td>5.84</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.35</td>
+      <td>7.49</td>
+      <td>0.35</td>
+      <td>7.84</td>
+    </tr>
+    <tr>
+      <th>right_x</th>
+      <td>2.07</td>
+      <td>0.00</td>
+      <td>1.04</td>
+      <td>0.97</td>
+      <td>0.35</td>
+      <td>0.00</td>
+      <td>4.33</td>
+      <td>4.33</td>
+    </tr>
+    <tr>
+      <th>right_y</th>
+      <td>2.07</td>
+      <td>0.00</td>
+      <td>1.04</td>
+      <td>0.97</td>
+      <td>0.35</td>
+      <td>0.00</td>
+      <td>4.33</td>
+      <td>4.33</td>
+    </tr>
+    <tr>
+      <th>right_pupil</th>
+      <td>0.00</td>
+      <td>4.08</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.35</td>
+      <td>5.66</td>
+      <td>0.35</td>
+      <td>6.01</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>After interpolation, no pupil sample is NaN any more, and the pupil is only masked in the excluded periods (default policy). The strict policy still masks the interpolated samples. Note that the interpolated stretches are a bit longer than the blinks: the method extends each blink by a margin, because the samples next to a blink are distorted as well.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mf">3.5</span><span class="p">))</span>
+<span class="n">sel</span> <span class="o">=</span> <span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">tx</span> <span class="o">&gt;</span> <span class="mi">347_000</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">tx</span> <span class="o">&lt;</span> <span class="mi">357_000</span><span class="p">)</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">sel</span><span class="p">]</span> <span class="o">/</span> <span class="mi">1000</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">get_values</span><span class="p">(</span><span class="s2">"left_pupil"</span><span class="p">,</span> <span class="n">policy</span><span class="o">=</span><span class="s2">"raw"</span><span class="p">)[</span><span class="n">sel</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">"0.7"</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"interpolated"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">get_values</span><span class="p">(</span><span class="s2">"left_pupil"</span><span class="p">,</span> <span class="n">policy</span><span class="o">=</span><span class="s2">"strict"</span><span class="p">)[</span><span class="n">sel</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">"C0"</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"recorded"</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">on</span><span class="p">,</span> <span class="n">off</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">get_blinks</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="s2">"left"</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="s2">"pupil"</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">)[</span><span class="s2">"left_pupil"</span><span class="p">]:</span>
+    <span class="k">if</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">on</span> <span class="o">&lt;</span> <span class="n">t</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">axvspan</span><span class="p">(</span><span class="n">on</span><span class="p">,</span> <span class="n">off</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"C3"</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"time (s)"</span><span class="p">);</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"pupil size"</span><span class="p">);</span> <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_missing_data_30_0.png" src="../_images/notebooks_missing_data_30_0.png" />
+</div>
+</div>
+<p>The red stretches are the detected blinks, the grey line the values that the default policy uses there.</p>
+</section>
+<section id="Pupil-samples-during-off-screen-gaze">
+<h2>Pupil samples during off-screen gaze<a class="headerlink" href="#Pupil-samples-during-off-screen-gaze" title="Link to this heading">#</a></h2>
+<p>The off-screen and divergence layers mask only the gaze channels. Whether the pupil size is still valid when the gaze is off the screen depends on the setup; to mask the pupil there as well, copy the off-screen periods to the pupil with <code class="docutils literal notranslate"><span class="pre">mask_intervals()</span></code>. They go into the pupil’s <code class="docutils literal notranslate"><span class="pre">&quot;user&quot;</span></code> layer:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d3</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">off</span> <span class="o">=</span> <span class="n">d3</span><span class="o">.</span><span class="n">get_layer_intervals</span><span class="p">(</span><span class="s2">"offscreen"</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="s2">"x"</span><span class="p">)</span>
+<span class="n">d3</span><span class="o">.</span><span class="n">mask_intervals</span><span class="p">({</span><span class="s2">"left_pupil"</span><span class="p">:</span> <span class="n">off</span><span class="p">[</span><span class="s2">"left_x"</span><span class="p">],</span> <span class="s2">"right_pupil"</span><span class="p">:</span> <span class="n">off</span><span class="p">[</span><span class="s2">"right_x"</span><span class="p">]})</span>
+<span class="n">layer_table</span><span class="p">(</span><span class="n">d3</span><span class="p">)</span><span class="o">.</span><span class="n">loc</span><span class="p">[[</span><span class="s2">"left_pupil"</span><span class="p">,</span> <span class="s2">"right_pupil"</span><span class="p">]]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>NaN</th>
+      <th>blink</th>
+      <th>offscreen</th>
+      <th>divergence</th>
+      <th>excluded</th>
+      <th>interpolated</th>
+      <th>user</th>
+      <th>masked (default)</th>
+      <th>masked (strict)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>left_pupil</th>
+      <td>0.0</td>
+      <td>5.84</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.35</td>
+      <td>7.49</td>
+      <td>0.97</td>
+      <td>1.04</td>
+      <td>8.53</td>
+    </tr>
+    <tr>
+      <th>right_pupil</th>
+      <td>0.0</td>
+      <td>4.08</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.35</td>
+      <td>5.66</td>
+      <td>1.04</td>
+      <td>1.04</td>
+      <td>6.70</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>The pupil is now in the <code class="docutils literal notranslate"><span class="pre">&quot;user&quot;</span></code> layer for about 1% of the samples, but the default policy masks fewer of them. The reason: under the default policy, an <strong>interpolated sample is always usable</strong>, whatever other layer of the channel is set and in whichever order the layers were set (only excluded periods mask it). Off-screen periods that fall into an interpolated blink therefore stay usable:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">user</span> <span class="o">=</span> <span class="n">d3</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="s2">"left_pupil"</span><span class="p">,</span> <span class="s2">"user"</span><span class="p">)</span>
+<span class="n">interp</span> <span class="o">=</span> <span class="n">d3</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="s2">"left_pupil"</span><span class="p">,</span> <span class="s2">"interpolated"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"user layer: </span><span class="si">{</span><span class="n">user</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2">, of that interpolated: </span><span class="si">{</span><span class="p">(</span><span class="n">user</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">interp</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+user layer: 0.97%, of that interpolated: 0.28%
+</pre></div></div>
+</div>
+<p>To leave these samples out as well, use the strict policy (which leaves out all interpolated samples), or a policy that lists the layers to mask without the exception for interpolated samples, e.g. <code class="docutils literal notranslate"><span class="pre">policy=[&quot;user&quot;,</span> <span class="pre">&quot;excluded&quot;]</span></code>.</p>
+</section>
+<section id="Filtering">
+<h2>Filtering<a class="headerlink" href="#Filtering" title="Link to this heading">#</a></h2>
+<p>The filters read the usable samples only. Unusable samples are bridged linearly for the filter and keep their values, so neither blinks nor excluded periods leak into their neighbours:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">before</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">d</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">lowpass_filter</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">masked</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">mask</span><span class="p">(</span><span class="s2">"left_pupil"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"masked samples unchanged:"</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">before</span><span class="p">[</span><span class="n">masked</span><span class="p">],</span> <span class="n">d</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">][</span><span class="n">masked</span><span class="p">]))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"usable samples filtered: "</span><span class="p">,</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">before</span><span class="p">[</span><span class="o">~</span><span class="n">masked</span><span class="p">],</span> <span class="n">d</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">][</span><span class="o">~</span><span class="n">masked</span><span class="p">]))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+masked samples unchanged: True
+usable samples filtered:  True
+</pre></div></div>
+</div>
+</section>
+<section id="Event-related-analyses">
+<h2>Event-related analyses<a class="headerlink" href="#Event-related-analyses" title="Link to this heading">#</a></h2>
+<p>Segments around events (<code class="docutils literal notranslate"><span class="pre">get_segments()</span></code>) and statistics per event (<code class="docutils literal notranslate"><span class="pre">stat_per_event()</span></code>) use the policy as well. With the default policy, the interpolated samples are part of each trial; with the strict policy, they are masked. This lets us find the trials that consist mostly of reconstructed data:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stim</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_epochs</span><span class="p">(</span><span class="s2">"S_"</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">2500</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>
+<span class="n">seg</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_segments</span><span class="p">(</span><span class="n">stim</span><span class="p">,</span> <span class="s2">"left_pupil"</span><span class="p">)</span>
+<span class="n">seg_strict</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_segments</span><span class="p">(</span><span class="n">stim</span><span class="p">,</span> <span class="s2">"left_pupil"</span><span class="p">,</span> <span class="n">policy</span><span class="o">=</span><span class="s2">"strict"</span><span class="p">)</span>
+<span class="n">seg</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div style="font-family:system-ui, sans-serif; border:1px solid #ddd; border-radius:6px; padding:12px; max-width: min(600px, 50vw); min-width: 300px;">
+  <h3 style="margin-top:0;">SegmentedEyeData — <span style="color:#555;">S_</span></h3>
+
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:8px; margin-bottom:10px;">
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Epochs</div>
+      <div style="font-weight:600;">S_</div>
+    </div>
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Segments</div>
+      <div style="font-weight:600;">300</div>
+    </div>
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Time points</div>
+      <div style="font-weight:600;">1,500</div>
+    </div>
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Window</div>
+      <div style="font-weight:600;">-500 to 2498 ms</div>
+    </div>
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Missing</div>
+      <div style="font-weight:600;">0.0%</div>
+    </div>
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Sampling rate</div>
+      <div style="font-weight:600;">500 Hz</div>
+    </div>
+  </div>
+
+
+    <details open style="margin-bottom:8px;">
+    <summary style="cursor:pointer; font-weight:600;">Channels (mean over segments; red line = event onset)</summary>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:8px; margin-top:8px;">
+      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">left_pupil (0.0% missing)</div>
+        <img src="data:image/png;base64,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" alt="left_pupil (0.0% missing) sparkline" style="height:60px; width:100%; object-fit:cover;">
+      </div>
+    </div>
+  </details>
+
+
+  <details style="margin-top:8px;">
+    <summary style="cursor:pointer; font-weight:600;">Epochs</summary>
+    <pre style="margin-top:8px; background:#f9f9f9; padding:8px; border-radius:4px;">Epochs &#39;S_&#39; | 300 epochs, window (-500, 2500) ms</pre>
+  </details>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">recon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">getmaskarray</span><span class="p">(</span><span class="n">seg_strict</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">])</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>   <span class="c1"># one value per trial</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="n">recon</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"interpolated samples in the trial (%)"</span><span class="p">);</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"trials"</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_missing_data_39_0.png" src="../_images/notebooks_missing_data_39_0.png" />
+</div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Epochs.keep()</span></code> selects the trials to keep, e.g. those with less than 25% interpolated samples:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">good</span> <span class="o">=</span> <span class="n">stim</span><span class="o">.</span><span class="n">keep</span><span class="p">(</span><span class="n">recon</span> <span class="o">&lt;</span> <span class="mf">0.25</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">stim</span><span class="p">),</span> <span class="s2">"trials,"</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">good</span><span class="p">),</span> <span class="s2">"with less than 25</span><span class="si">% i</span><span class="s2">nterpolated samples"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+300 trials, 284 with less than 25% interpolated samples
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mean_default</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">stat_per_event</span><span class="p">(</span><span class="n">stim</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="s2">"pupil"</span><span class="p">)[</span><span class="s2">"left_pupil"</span><span class="p">]</span>
+<span class="n">mean_strict</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">stat_per_event</span><span class="p">(</span><span class="n">stim</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="s2">"pupil"</span><span class="p">,</span> <span class="n">policy</span><span class="o">=</span><span class="s2">"strict"</span><span class="p">)[</span><span class="s2">"left_pupil"</span><span class="p">]</span>
+<span class="n">diff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mean_default</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mean_strict</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"largest difference in a trial mean: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">diff</span><span class="p">)</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> "</span>
+      <span class="sa">f</span><span class="s2">"(median </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">nanmedian</span><span class="p">(</span><span class="n">diff</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+largest difference in a trial mean: 48.1 (median 3.13)
+</pre></div></div>
+</div>
+</section>
+<section id="Downsampling">
+<h2>Downsampling<a class="headerlink" href="#Downsampling" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">downsample()</span></code> averages the usable samples in each new sampling interval. The layers are carried over: a new sample is in a layer if the layer covers more than half of its interval. The proportion of samples in each layer therefore stays about the same:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dd</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">downsample</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">"500 Hz"</span><span class="p">:</span> <span class="n">layer_table</span><span class="p">(</span><span class="n">d</span><span class="p">)</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">],</span>
+              <span class="s2">"50 Hz"</span><span class="p">:</span> <span class="n">layer_table</span><span class="p">(</span><span class="n">dd</span><span class="p">)</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">]})</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>500 Hz</th>
+      <th>50 Hz</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>NaN</th>
+      <td>0.00</td>
+      <td>0.00</td>
+    </tr>
+    <tr>
+      <th>blink</th>
+      <td>5.84</td>
+      <td>5.78</td>
+    </tr>
+    <tr>
+      <th>offscreen</th>
+      <td>0.00</td>
+      <td>0.00</td>
+    </tr>
+    <tr>
+      <th>divergence</th>
+      <td>0.00</td>
+      <td>0.00</td>
+    </tr>
+    <tr>
+      <th>excluded</th>
+      <td>0.35</td>
+      <td>0.35</td>
+    </tr>
+    <tr>
+      <th>interpolated</th>
+      <td>7.49</td>
+      <td>7.45</td>
+    </tr>
+    <tr>
+      <th>masked (default)</th>
+      <td>0.35</td>
+      <td>0.35</td>
+    </tr>
+    <tr>
+      <th>masked (strict)</th>
+      <td>7.84</td>
+      <td>7.80</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+<section id="Combining-the-eyes">
+<h2>Combining the eyes<a class="headerlink" href="#Combining-the-eyes" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">d.pupil.merge_eyes()</span></code> computes <code class="docutils literal notranslate"><span class="pre">mean_pupil</span></code> from the usable samples of both eyes, recorded samples first: where one eye was interpolated and the other one recorded, the recorded value is used (after the offset correction). The merged channel gets the layers that the eyes used for a sample have in common: it is <code class="docutils literal notranslate"><span class="pre">&quot;interpolated&quot;</span></code> only where both eyes were interpolated, and it is masked where neither eye is usable:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dm</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">merge_eyes</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">layer_table</span><span class="p">(</span><span class="n">dm</span><span class="p">)</span><span class="o">.</span><span class="n">loc</span><span class="p">[[</span><span class="s2">"left_pupil"</span><span class="p">,</span> <span class="s2">"right_pupil"</span><span class="p">,</span> <span class="s2">"mean_pupil"</span><span class="p">]]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>NaN</th>
+      <th>blink</th>
+      <th>offscreen</th>
+      <th>divergence</th>
+      <th>excluded</th>
+      <th>interpolated</th>
+      <th>masked (default)</th>
+      <th>masked (strict)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>left_pupil</th>
+      <td>0.0</td>
+      <td>5.84</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.35</td>
+      <td>7.49</td>
+      <td>0.35</td>
+      <td>7.84</td>
+    </tr>
+    <tr>
+      <th>right_pupil</th>
+      <td>0.0</td>
+      <td>4.08</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.35</td>
+      <td>5.66</td>
+      <td>0.35</td>
+      <td>6.01</td>
+    </tr>
+    <tr>
+      <th>mean_pupil</th>
+      <td>0.0</td>
+      <td>3.33</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.35</td>
+      <td>4.84</td>
+      <td>0.35</td>
+      <td>5.19</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Because <code class="docutils literal notranslate"><span class="pre">mean_pupil</span></code> keeps the <code class="docutils literal notranslate"><span class="pre">&quot;interpolated&quot;</span></code> layer where both eyes were interpolated, the strict policy leaves these samples out in the following steps (column “masked (strict)”). Merging with <code class="docutils literal notranslate"><span class="pre">policy=&quot;strict&quot;</span></code> gives the same channel here:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dm</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">merge_eyes</span><span class="p">(</span><span class="n">policy</span><span class="o">=</span><span class="s2">"strict"</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">layer_table</span><span class="p">(</span><span class="n">dm</span><span class="p">)</span><span class="o">.</span><span class="n">loc</span><span class="p">[[</span><span class="s2">"mean_pupil"</span><span class="p">]]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>NaN</th>
+      <th>blink</th>
+      <th>offscreen</th>
+      <th>divergence</th>
+      <th>excluded</th>
+      <th>interpolated</th>
+      <th>masked (default)</th>
+      <th>masked (strict)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>mean_pupil</th>
+      <td>0.0</td>
+      <td>3.33</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.35</td>
+      <td>4.84</td>
+      <td>0.35</td>
+      <td>5.19</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+<section id="Missing-data-in-the-quality-report">
+<h2>Missing data in the quality report<a class="headerlink" href="#Missing-data-in-the-quality-report" title="Link to this heading">#</a></h2>
+<p>The quality report counts missing data in the <em>values</em> (NaN) and reports the mask layers in its “Artifacts” section; excluded periods are left out of all measures. Interpolation fills the NaN samples, so after preprocessing the pupil shows no missing data any more. Run the report on the raw data to judge the recording, and after preprocessing to see what was masked and interpolated:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">raw</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002"</span><span class="p">,</span> <span class="n">cache_dir</span><span class="o">=</span><span class="s2">"example_data"</span><span class="p">)</span>
+<span class="n">raw</span><span class="o">.</span><span class="n">keep_intervals</span><span class="p">([(</span><span class="n">first</span> <span class="o">-</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">last</span> <span class="o">+</span> <span class="mi">3000</span><span class="p">)])</span>
+<span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"pupil.left.missing_pct"</span><span class="p">,</span> <span class="s2">"pupil.left.dropout_rate"</span><span class="p">,</span> <span class="s2">"gaze.left.missing_pct"</span><span class="p">,</span>
+        <span class="s2">"artifacts.left.pupil_masked_pct"</span><span class="p">,</span> <span class="s2">"artifacts.left.gaze_masked_pct"</span><span class="p">]</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">"raw"</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">raw</span><span class="o">.</span><span class="n">quality_report</span><span class="p">()</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">keys</span><span class="p">),</span>
+              <span class="s2">"preprocessed"</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">quality_report</span><span class="p">()</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">keys</span><span class="p">)})</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>raw</th>
+      <th>preprocessed</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>pupil.left.missing_pct</th>
+      <td>3.138882</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>pupil.left.dropout_rate</th>
+      <td>15.423076</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>gaze.left.missing_pct</th>
+      <td>3.138882</td>
+      <td>3.138882</td>
+    </tr>
+    <tr>
+      <th>artifacts.left.pupil_masked_pct</th>
+      <td>NaN</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>artifacts.left.gaze_masked_pct</th>
+      <td>NaN</td>
+      <td>4.795098</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">quality_report</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div style="font-family:system-ui, sans-serif; border:1px solid rgba(128,128,128,0.4); border-radius:6px; padding:12px; max-width:720px;">
+  <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+    <h3 style="margin:0;">Quality report — rlmw_002
+      <span style="opacity:0.6; font-weight:normal;">(EyeData)</span></h3>
+    <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:3px 10px; font-size:1em; font-weight:600; text-transform:uppercase;">good</span>
+  </div>
+
+  <div style="font-weight:600; margin-top:10px;">Recording</div>
+  <table style="border-collapse:collapse; margin-top:4px; min-width:60%;">
+    <tbody>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="length of the recording" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">duration</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="length of the recording">19.9 min </td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="length of the recording without the excluded periods (e.g., breaks); all other measures refer to this part" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">included</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="length of the recording without the excluded periods (e.g., breaks); all other measures refer to this part">19.8 min </td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="number of samples per second" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">sampling rate</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="number of samples per second">500 Hz </td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="number of samples in the recording" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">samples</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="number of samples in the recording">597301 </td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="number of events (e.g., triggers) in the recording" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">events</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="number of events (e.g., triggers) in the recording">1320 </td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="number of gaps in the time vector, where the eye tracker stored no samples (filled with missing data when the data were read)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">time gaps</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="number of gaps in the time vector, where the eye tracker stored no samples (filled with missing data when the data were read)">0 </td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="font-weight:600; margin-top:10px;">Pupil</div>
+  <table style="border-collapse:collapse; margin-top:4px; min-width:60%;">
+    <thead><tr>
+      <th style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);"></th>
+      <th style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right;">left</th>
+      <th style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right;">right</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="percentage of samples without valid pupil data (e.g., blinks, lost tracking) (labels: good &lt;= 10%, ok &lt;= 20%, poor &lt;= 40%, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">missing data</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 40%, else bad">0.0% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 40%, else bad">0.0% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="number of periods with missing data per minute (including blinks; many short dropouts indicate unstable tracking) (labels: good &lt;= 30 /min, ok &lt;= 60 /min, poor &lt;= 150 /min, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">dropouts</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 30 /min, ok &lt;= 60 /min, poor &lt;= 150 /min, else bad">0 /min <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 30 /min, ok &lt;= 60 /min, poor &lt;= 150 /min, else bad">0 /min <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="duration of the longest period with missing data (long periods cannot be interpolated) (labels: good &lt;= 2 s, ok &lt;= 5 s, poor &lt;= 30 s, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">longest dropout</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 2 s, ok &lt;= 5 s, poor &lt;= 30 s, else bad">0 s <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 2 s, ok &lt;= 5 s, poor &lt;= 30 s, else bad">0 s <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="high-frequency noise in percent of the median pupil size, estimated robustly from sample-to-sample differences (insensitive to blinks and slow pupil changes) (labels: good &lt;= 0.5%, ok &lt;= 1%, poor &lt;= 2%, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">noise</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 0.5%, ok &lt;= 1%, poor &lt;= 2%, else bad">0.027% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 0.5%, ok &lt;= 1%, poor &lt;= 2%, else bad">0.032% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="high-frequency noise (SD) in the units of the pupil data" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">noise (SD)</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="high-frequency noise (SD) in the units of the pupil data">0.283 </td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="high-frequency noise (SD) in the units of the pupil data">0.286 </td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="number of changes larger than 5% of the median pupil size from one sample to the next, per minute (ignoring 50 ms around missing data); indicates artifacts, e.g., during saccades (labels: good &lt;= 1 /min, ok &lt;= 10 /min, poor &lt;= 100 /min, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">jumps</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 1 /min, ok &lt;= 10 /min, poor &lt;= 100 /min, else bad">0 /min <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 1 /min, ok &lt;= 10 /min, poor &lt;= 100 /min, else bad">0 /min <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="font-weight:600; margin-top:10px;">Gaze</div>
+  <table style="border-collapse:collapse; margin-top:4px; min-width:60%;">
+    <thead><tr>
+      <th style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);"></th>
+      <th style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right;">left</th>
+      <th style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right;">right</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="percentage of samples without valid gaze data (x or y missing) (labels: good &lt;= 10%, ok &lt;= 20%, poor &lt;= 40%, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">missing data</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 40%, else bad">3.1% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 40%, else bad">2.1% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="percentage of valid gaze samples outside the screen (looking away or poor calibration) (labels: good &lt;= 5%, ok &lt;= 15%, poor &lt;= 30%, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">off-screen</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 5%, ok &lt;= 15%, poor &lt;= 30%, else bad">1.0% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 5%, ok &lt;= 15%, poor &lt;= 30%, else bad">1.1% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="precision of the gaze: median distance between consecutive samples in degrees of visual angle (lower is better) (labels: good &lt;= 0.05 deg, ok &lt;= 0.1 deg, poor &lt;= 0.2 deg, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">precision</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 0.05 deg, ok &lt;= 0.1 deg, poor &lt;= 0.2 deg, else bad">0.0185 deg <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 0.05 deg, ok &lt;= 0.1 deg, poor &lt;= 0.2 deg, else bad">0.0186 deg <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="font-weight:600; margin-top:10px;">Binocular</div>
+  <table style="border-collapse:collapse; margin-top:4px; min-width:60%;">
+    <thead><tr>
+      <th style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);"></th>
+      <th style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right;">left/right</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="correlation of left and right pupil size (samples valid in both eyes); the pupils of both eyes should move together (labels: good &gt;= 0.9, ok &gt;= 0.8, poor &gt;= 0.6, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">pupil correlation</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &gt;= 0.9, ok &gt;= 0.8, poor &gt;= 0.6, else bad">0.943 <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="median distance between the gaze positions of the left and right eye; large values indicate calibration problems for one eye (labels: good &lt;= 1 deg, ok &lt;= 2 deg, poor &lt;= 3 deg, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">gaze disparity</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 1 deg, ok &lt;= 2 deg, poor &lt;= 3 deg, else bad">0.418 deg <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="font-weight:600; margin-top:10px;">Blinks</div>
+  <table style="border-collapse:collapse; margin-top:4px; min-width:60%;">
+    <thead><tr>
+      <th style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);"></th>
+      <th style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right;">left</th>
+      <th style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right;">right</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="number of detected blinks" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">number</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="number of detected blinks">321 </td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="number of detected blinks">307 </td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="number of detected blinks per minute (median across people about 10 during screen tasks and 13 at rest; varies a lot between people) (labels: good &lt;= 20 /min, ok &lt;= 35 /min, poor &lt;= 70 /min, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">blink rate</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 20 /min, ok &lt;= 35 /min, poor &lt;= 70 /min, else bad">16.2 /min <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 20 /min, ok &lt;= 35 /min, poor &lt;= 70 /min, else bad">15.5 /min <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="mean duration of the detected blinks" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">mean duration</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="mean duration of the detected blinks">217 ms </td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="mean duration of the detected blinks">159 ms </td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="percentage of the recording covered by blinks (and the samples around them that were removed) (labels: good &lt;= 10%, ok &lt;= 20%, poor &lt;= 35%, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">time in blinks</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 35%, else bad">5.9% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 35%, else bad">4.1% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="number of blinks longer than 500 ms (may be eye closures or tracking losses rather than blinks)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">long (&gt;500 ms)</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="number of blinks longer than 500 ms (may be eye closures or tracking losses rather than blinks)">14 </td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="number of blinks longer than 500 ms (may be eye closures or tracking losses rather than blinks)">10 </td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="font-weight:600; margin-top:10px;">Artifacts</div>
+  <table style="border-collapse:collapse; margin-top:4px; min-width:60%;">
+    <thead><tr>
+      <th style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);"></th>
+      <th style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right;">left</th>
+      <th style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right;">right</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="percentage of masked pupil samples (missing data, blinks and other artifacts; interpolated samples only with the &#39;strict&#39; mask policy) (labels: good &lt;= 10%, ok &lt;= 20%, poor &lt;= 35%, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">pupil masked</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 35%, else bad">0.0% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 35%, else bad">0.0% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="percentage of pupil samples that were interpolated (e.g., blinks) (labels: good &lt;= 10%, ok &lt;= 20%, poor &lt;= 30%, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">interpolated</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 30%, else bad">7.5% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 30%, else bad">5.7% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="percentage of masked gaze samples (missing data, blinks and other artifacts; interpolated samples only with the &#39;strict&#39; mask policy) (labels: good &lt;= 10%, ok &lt;= 20%, poor &lt;= 35%, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">gaze masked</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 35%, else bad">4.8% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 35%, else bad">4.0% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="percentage of samples masked because of gaze off the screen (see d.gaze.mask_offscreen)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">masked off-screen</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="percentage of samples masked because of gaze off the screen (see d.gaze.mask_offscreen)">0.97% </td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="percentage of samples masked because of gaze off the screen (see d.gaze.mask_offscreen)">1.0% </td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="percentage of samples masked because of gaze positions of the eyes too far apart (see d.gaze.mask_divergences)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">masked divergence</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="percentage of samples masked because of gaze positions of the eyes too far apart (see d.gaze.mask_divergences)">0.89% </td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="percentage of samples masked because of gaze positions of the eyes too far apart (see d.gaze.mask_divergences)">0.89% </td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="percentage of samples masked for other reasons than missing data, blinks or interpolation (e.g., off-screen gaze, eye divergence, user masks)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">other artifacts</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="percentage of samples masked for other reasons than missing data, blinks or interpolation (e.g., off-screen gaze, eye divergence, user masks)">0.0% </td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="percentage of samples masked for other reasons than missing data, blinks or interpolation (e.g., off-screen gaze, eye divergence, user masks)">0.0% </td>
+      </tr>
+    </tbody>
+  </table>
+
+
+  <details style="margin-top:8px;">
+    <summary style="cursor:pointer; opacity:0.7;">Thresholds</summary>
+    <table style="border-collapse:collapse; font-size:0.85em; margin-top:4px;">
+      <tr><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">pupil.missing_pct</td><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">good &lt;= 10, ok &lt;= 20, poor &lt;= 40, else bad</td></tr>
+      <tr><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">pupil.dropout_rate</td><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">good &lt;= 30, ok &lt;= 60, poor &lt;= 150, else bad</td></tr>
+      <tr><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">pupil.longest_dropout</td><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">good &lt;= 2, ok &lt;= 5, poor &lt;= 30, else bad</td></tr>
+      <tr><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">pupil.noise</td><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">good &lt;= 0.5, ok &lt;= 1, poor &lt;= 2, else bad</td></tr>
+      <tr><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">pupil.jump_rate</td><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">good &lt;= 1, ok &lt;= 10, poor &lt;= 100, else bad</td></tr>
+      <tr><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">gaze.missing_pct</td><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">good &lt;= 10, ok &lt;= 20, poor &lt;= 40, else bad</td></tr>
+      <tr><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">gaze.dropout_rate</td><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">good &lt;= 30, ok &lt;= 60, poor &lt;= 150, else bad</td></tr>
+      <tr><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">gaze.longest_dropout</td><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">good &lt;= 2, ok &lt;= 5, poor &lt;= 30, else bad</td></tr>
+      <tr><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">gaze.offscreen_pct</td><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">good &lt;= 5, ok &lt;= 15, poor &lt;= 30, else bad</td></tr>
+      <tr><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">gaze.precision_deg</td><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">good &lt;= 0.05, ok &lt;= 0.1, poor &lt;= 0.2, else bad</td></tr>
+      <tr><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">binocular.pupil_correlation</td><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">good &gt;= 0.9, ok &gt;= 0.8, poor &gt;= 0.6, else bad</td></tr>
+      <tr><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">binocular.gaze_disparity_deg</td><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">good &lt;= 1, ok &lt;= 2, poor &lt;= 3, else bad</td></tr>
+      <tr><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">blinks.rate</td><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">good &lt;= 20, ok &lt;= 35, poor &lt;= 70, else bad</td></tr>
+      <tr><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">blinks.time_pct</td><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">good &lt;= 10, ok &lt;= 20, poor &lt;= 35, else bad</td></tr>
+      <tr><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">artifacts.pupil_masked_pct</td><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">good &lt;= 10, ok &lt;= 20, poor &lt;= 35, else bad</td></tr>
+      <tr><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">artifacts.gaze_masked_pct</td><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">good &lt;= 10, ok &lt;= 20, poor &lt;= 35, else bad</td></tr>
+      <tr><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">artifacts.interpolated_pct</td><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">good &lt;= 10, ok &lt;= 20, poor &lt;= 30, else bad</td></tr>
+      <tr><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">calibration.mean_error</td><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">good &lt;= 0.5, ok &lt;= 1, poor &lt;= 1.5, else bad</td></tr>
+      <tr><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">calibration.max_error</td><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">good &lt;= 1, ok &lt;= 1.5, poor &lt;= 2, else bad</td></tr>
+    </table>
+    <div style="font-size:0.85em; opacity:0.7; margin-top:4px;">The overall label is the worst label of all measures. Hover over a measure for a description.</div>
+  </details>
+</div></div>
+</div>
+</section>
+<section id="Saving">
+<h2>Saving<a class="headerlink" href="#Saving" title="Link to this heading">#</a></h2>
+<p>The layers are saved with the object (<code class="docutils literal notranslate"><span class="pre">write_file()</span></code>, <code class="docutils literal notranslate"><span class="pre">write_file()</span></code>), so a saved dataset keeps the information on why each sample was masked:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span><span class="o">,</span><span class="w"> </span><span class="nn">os</span>
+<span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">(),</span> <span class="s2">"rlmw_002.pypil"</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">write_file</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+<span class="n">d_loaded</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+<span class="n">d_loaded</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">layer_names</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">d_loaded</span><span class="o">.</span><span class="n">mask</span><span class="p">(</span><span class="s2">"left_pupil"</span><span class="p">,</span> <span class="n">policy</span><span class="o">=</span><span class="s2">"strict"</span><span class="p">),</span>
+                                          <span class="n">d</span><span class="o">.</span><span class="n">mask</span><span class="p">(</span><span class="s2">"left_pupil"</span><span class="p">,</span> <span class="n">policy</span><span class="o">=</span><span class="s2">"strict"</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+([&#39;blink&#39;, &#39;offscreen&#39;, &#39;divergence&#39;, &#39;excluded&#39;, &#39;interpolated&#39;], True)
+</pre></div></div>
+</div>
+</section>
+<section id="Summary">
+<h2>Summary<a class="headerlink" href="#Summary" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Samples the eye tracker did not record are NaN in the values. All other reasons are mask layers, which record <em>why</em> a sample is bad. Each detector writes its own layer on the channels it checks and replaces it when it runs again.</p></li>
+<li><p>Excluded periods are one layer for the whole recording; they mask every channel but are not counted as missing data.</p></li>
+<li><p>The mask policy (<code class="docutils literal notranslate"><span class="pre">&quot;default&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;strict&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;raw&quot;</span></code>, or a list of layers) decides which samples the analyses use. By default, interpolated samples are used, even where another layer is set.</p></li>
+<li><p>To mask the pupil where the gaze is bad, copy the gaze layers with <code class="docutils literal notranslate"><span class="pre">mask_intervals()</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">merge_eyes()</span></code> prefers recorded samples and keeps the layers the eyes have in common, so <code class="docutils literal notranslate"><span class="pre">policy=&quot;strict&quot;</span></code> still leaves out samples that were interpolated in both eyes.</p></li>
+</ul>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="blinks.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Blink preprocessing</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="plotting.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Plotting pupillometric data for exploration</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal" tabindex="-1"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Missing-samples-in-the-raw-data">Missing samples in the raw data</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Marking-bad-samples:-mask-layers">Marking bad samples: mask layers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Re-running-a-detector-replaces-its-layer">Re-running a detector replaces its layer</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Excluded-periods">Excluded periods</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Mask-policies">Mask policies</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Interpolating-blinks">Interpolating blinks</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Pupil-samples-during-off-screen-gaze">Pupil samples during off-screen gaze</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Filtering">Filtering</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Event-related-analyses">Event-related analyses</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Downsampling">Downsampling</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Combining-the-eyes">Combining the eyes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Missing-data-in-the-quality-report">Missing data in the quality report</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Saving">Saving</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Summary">Summary</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  
+  <div class="tocsection editthispage">
+    <a href="https://github.com/ihrke/pypillometry/edit/master/docs/notebooks/missing_data.ipynb">
+      <i class="fa-solid fa-pencil"></i>
+      
+      
+        
+          Edit on GitHub
+        
+      
+    </a>
+  </div>
+</div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/notebooks/missing_data.ipynb.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2026, Matthias Mittner.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
+  </p>
+</div>
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.24.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Event metadata &#8212; pypillometry v2.1.0</title>
+    <title>Event metadata &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -62,7 +62,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -106,9 +106,6 @@
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -425,6 +422,7 @@
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Preprocessing and plotting</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="blinks.html">Blink preprocessing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="missing_data.html">Missing data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plotting.html">Plotting pupillometric data for exploration</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Events and event-related analyses</span></p>
@@ -433,6 +431,7 @@
 <li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">Event metadata</a></li>
 <li class="toctree-l1"><a class="reference internal" href="intervals.html">Intervals</a></li>
 <li class="toctree-l1"><a class="reference internal" href="erpds.html">Event-related pupil dilations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rois.html">Gaze in regions of interest around events</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Modeling and complete analyses</span></p>
 <ul class="nav bd-sidenav">
@@ -527,10 +526,10 @@
 <span class="n">pp</span><span class="o">.</span><span class="n">logging_set_level</span><span class="p">(</span><span class="s2">"WARNING"</span><span class="p">)</span>
 
 <span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002_short"</span><span class="p">)</span>
-<span class="n">d</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">pupil_blinks_detect</span><span class="p">(</span><span class="n">vel_onset</span><span class="o">=-</span><span class="mi">15</span><span class="p">,</span> <span class="n">apply_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>\
-     <span class="o">.</span><span class="n">blinks_merge_close</span><span class="p">(</span><span class="n">distance</span><span class="o">=</span><span class="mi">100</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">,</span> <span class="n">apply_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>\
-     <span class="o">.</span><span class="n">pupil_blinks_interpolate</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">150</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>\
-     <span class="o">.</span><span class="n">pupil_lowpass_filter</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">d</span> <span class="o">|</span> <span class="p">(</span><span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">(</span><span class="n">vel_onset</span><span class="o">=-</span><span class="mi">15</span><span class="p">)</span>
+         <span class="o">|</span> <span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_merge_close</span><span class="p">(</span><span class="n">distance</span><span class="o">=</span><span class="mi">100</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>
+         <span class="o">|</span> <span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_interpolate</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">150</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>
+         <span class="o">|</span> <span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">lowpass_filter</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="mi">5</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -541,7 +540,7 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">events</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_events</span><span class="p">()</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">events</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">events</span>
 <span class="n">events</span><span class="p">[:</span><span class="mi">8</span><span class="p">]</span>
 </pre></div>
 </div>
@@ -601,7 +600,7 @@
       <td>R_2_20</td>
     </tr>
   </tbody>
-</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 8 events | Data range: [0.0, 40928.0] ms</p></div>
+</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 8 events</p></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">parse_labels()</span></code> takes a regular expression with <em>named groups</em>, <code class="docutils literal notranslate"><span class="pre">(?P&lt;name&gt;...)</span></code>. Each group becomes a metadata column. For events whose label does not match, the value is missing (NaN for numbers, <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code> for text). Columns that contain only numbers are converted to numbers:</p>
 <div class="nbinput docutils container">
@@ -677,7 +676,7 @@
       <td>2</td>
     </tr>
   </tbody>
-</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 8 events | Data range: [0.0, 40928.0] ms</p></div>
+</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 8 events</p></div>
 </div>
 <p>Each call adds columns, so the different kinds of events can be parsed one after the other:</p>
 <div class="nbinput docutils container">
@@ -800,7 +799,7 @@
       <td>20.0</td>
     </tr>
   </tbody>
-</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 8 events | Data range: [0.0, 40928.0] ms</p></div>
+</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 8 events</p></div>
 </div>
 <p>Instead of a regular expression, <code class="docutils literal notranslate"><span class="pre">parse_labels()</span></code> also takes a function. It gets a label and returns a dict with the metadata of this event (or <code class="docutils literal notranslate"><span class="pre">None</span></code> for no metadata). This is often easier for more complex codes. The following function gives the same result as the four regular expressions above:</p>
 <div class="nbinput docutils container">
@@ -926,7 +925,7 @@
       <td>20.0</td>
     </tr>
   </tbody>
-</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 8 events | Data range: [0.0, 40928.0] ms</p></div>
+</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 8 events</p></div>
 </div>
 <p>The metadata are stored in <code class="docutils literal notranslate"><span class="pre">meta</span></code>, a dict with one numpy array per column. <code class="docutils literal notranslate"><span class="pre">row()</span></code> returns all information about one event:</p>
 <div class="nbinput docutils container">
@@ -1086,7 +1085,7 @@
       <td>20.0</td>
     </tr>
   </tbody>
-</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 8 events | Data range: [0.0, 40928.0] ms</p></div>
+</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 8 events</p></div>
 </div>
 <p>Times between events can be added with <code class="docutils literal notranslate"><span class="pre">add_latency()</span></code>. For example, the reaction time is the time from each stimulus to the choice of the same trial. It is stored at the stimulus events (in the units of the events, here ms):</p>
 <div class="nbinput docutils container">
@@ -1240,9 +1239,9 @@
       <td>997.0</td>
     </tr>
   </tbody>
-</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 10 events | Data range: [0.0, 40928.0] ms</p></div>
+</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 10 events</p></div>
 </div>
-<p>Without <code class="docutils literal notranslate"><span class="pre">by</span></code>, each first event is paired with the next second event after it, as in <code class="docutils literal notranslate"><span class="pre">get_intervals()</span></code> with two events. First events without a second event (e.g., no response) get NaN.</p>
+<p>Without <code class="docutils literal notranslate"><span class="pre">by</span></code>, each first event is paired with the next second event after it, as in <code class="docutils literal notranslate"><span class="pre">get_intervals()</span></code>. First events without a second event (e.g., no response) get NaN.</p>
 </section>
 <section id="Selecting-events-by-metadata">
 <h2>Selecting events by metadata<a class="headerlink" href="#Selecting-events-by-metadata" title="Link to this heading">#</a></h2>
@@ -1313,7 +1312,7 @@
       <td>907.0</td>
     </tr>
   </tbody>
-</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 3 events | Data range: [0.0, 40928.0] ms</p></div>
+</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 3 events</p></div>
 </div>
 <p>A list selects the events where the column has one of the values, and a function gets the whole column and returns <code class="docutils literal notranslate"><span class="pre">True</span></code> for the events to keep:</p>
 <div class="nbinput docutils container">
@@ -1382,7 +1381,7 @@
       <td>1159.0</td>
     </tr>
   </tbody>
-</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 3 events | Data range: [0.0, 40928.0] ms</p></div>
+</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 3 events</p></div>
 </div>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
@@ -1474,7 +1473,7 @@
       <td>997.0</td>
     </tr>
   </tbody>
-</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 5 events | Data range: [0.0, 40928.0] ms</p></div>
+</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 5 events</p></div>
 </div>
 <p>A boolean array with one value per event works as well, which is useful for criteria that combine several columns:</p>
 <div class="nbinput docutils container">
@@ -1544,7 +1543,7 @@
       <td>907.0</td>
     </tr>
   </tbody>
-</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 3 events | Data range: [0.0, 40928.0] ms</p></div>
+</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 3 events</p></div>
 </div>
 <p>New columns can also be set directly with <code class="docutils literal notranslate"><span class="pre">set_meta()</span></code>, for all events or only for selected ones. Here, we mark the trials with a high reward (above the median):</p>
 <div class="nbinput docutils container">
@@ -1710,22 +1709,190 @@
       <td>False</td>
     </tr>
   </tbody>
-</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 10 events | Data range: [0.0, 40928.0] ms</p></div>
+</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 10 events</p></div>
+</div>
+</section>
+<section id="Storing-the-metadata-in-the-data">
+<h2>Storing the metadata in the data<a class="headerlink" href="#Storing-the-metadata-in-the-data" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">set_events()</span></code> stores the events with their metadata in the dataset. They are kept when the data are cropped and are saved with <code class="docutils literal notranslate"><span class="pre">write_file()</span></code>:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">set_events</span><span class="p">(</span><span class="n">ev</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s2">"R_"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Onset (ms)</th>
+      <th>Label</th>
+      <th>trial</th>
+      <th>left</th>
+      <th>right</th>
+      <th>chosen</th>
+      <th>side</th>
+      <th>reward</th>
+      <th>rt</th>
+      <th>high_reward</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>7010.0</td>
+      <td>R_1_15</td>
+      <td>1</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>5.0</td>
+      <td>2.0</td>
+      <td>15.0</td>
+      <td>NaN</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>10808.0</td>
+      <td>R_2_20</td>
+      <td>2</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>6.0</td>
+      <td>1.0</td>
+      <td>20.0</td>
+      <td>NaN</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>13957.0</td>
+      <td>R_3_18</td>
+      <td>3</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>2.0</td>
+      <td>1.0</td>
+      <td>18.0</td>
+      <td>NaN</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>17822.0</td>
+      <td>R_4_11</td>
+      <td>4</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1.0</td>
+      <td>2.0</td>
+      <td>11.0</td>
+      <td>NaN</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>21388.0</td>
+      <td>R_5_17</td>
+      <td>5</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>5.0</td>
+      <td>2.0</td>
+      <td>17.0</td>
+      <td>NaN</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>25153.0</td>
+      <td>R_6_20</td>
+      <td>6</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>5.0</td>
+      <td>2.0</td>
+      <td>20.0</td>
+      <td>NaN</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>28352.0</td>
+      <td>R_7_6</td>
+      <td>7</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1.0</td>
+      <td>2.0</td>
+      <td>6.0</td>
+      <td>NaN</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>31734.0</td>
+      <td>R_8_18</td>
+      <td>8</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>6.0</td>
+      <td>1.0</td>
+      <td>18.0</td>
+      <td>NaN</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>35932.0</td>
+      <td>R_9_19</td>
+      <td>9</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>6.0</td>
+      <td>2.0</td>
+      <td>19.0</td>
+      <td>NaN</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>39648.0</td>
+      <td>R_10_18</td>
+      <td>10</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>5.0</td>
+      <td>2.0</td>
+      <td>18.0</td>
+      <td>NaN</td>
+      <td>False</td>
+    </tr>
+  </tbody>
+</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 10 events</p></div>
 </div>
 </section>
 <section id="Metadata-in-intervals-and-segments">
 <h2>Metadata in intervals and segments<a class="headerlink" href="#Metadata-in-intervals-and-segments" title="Link to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">get_intervals()</span></code> passes the metadata of the selected events on to the intervals (<code class="docutils literal notranslate"><span class="pre">event_meta</span></code>). Together with <code class="docutils literal notranslate"><span class="pre">stat_per_event()</span></code>, this gives a table with one row per event, ready for statistical analysis:</p>
+<p><code class="docutils literal notranslate"><span class="pre">get_epochs()</span></code> passes the metadata of the selected events on to the epochs (<code class="docutils literal notranslate"><span class="pre">meta</span></code>). Together with <code class="docutils literal notranslate"><span class="pre">stat_per_event()</span></code>, this gives a table with one row per event, ready for statistical analysis:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">iv</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="s2">"R_"</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1500</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>
-<span class="n">pupil</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">stat_per_event</span><span class="p">(</span><span class="n">intervals</span><span class="o">=</span><span class="n">iv</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="s2">"left"</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="s2">"pupil"</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">epochs</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_epochs</span><span class="p">(</span><span class="s2">"R_"</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1500</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>
+<span class="n">pupil</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">stat_per_event</span><span class="p">(</span><span class="n">intervals</span><span class="o">=</span><span class="n">epochs</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="s2">"left"</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="s2">"pupil"</span><span class="p">)</span>
 
-<span class="n">table</span> <span class="o">=</span> <span class="n">iv</span><span class="o">.</span><span class="n">as_pandas</span><span class="p">()</span>
+<span class="n">table</span> <span class="o">=</span> <span class="n">epochs</span><span class="o">.</span><span class="n">as_pandas</span><span class="p">()</span>
 <span class="n">table</span><span class="p">[</span><span class="s2">"pupil"</span><span class="p">]</span> <span class="o">=</span> <span class="n">pupil</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">]</span>
-<span class="n">table</span><span class="p">[[</span><span class="s2">"event_label"</span><span class="p">,</span> <span class="s2">"trial"</span><span class="p">,</span> <span class="s2">"reward"</span><span class="p">,</span> <span class="s2">"high_reward"</span><span class="p">,</span> <span class="s2">"pupil"</span><span class="p">]]</span>
+<span class="n">table</span><span class="p">[[</span><span class="s2">"label"</span><span class="p">,</span> <span class="s2">"trial"</span><span class="p">,</span> <span class="s2">"reward"</span><span class="p">,</span> <span class="s2">"high_reward"</span><span class="p">,</span> <span class="s2">"pupil"</span><span class="p">]]</span>
 </pre></div>
 </div>
 </div>
@@ -1752,7 +1919,7 @@
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>event_label</th>
+      <th>label</th>
       <th>trial</th>
       <th>reward</th>
       <th>high_reward</th>
@@ -1766,7 +1933,7 @@
       <td>1</td>
       <td>15.0</td>
       <td>False</td>
-      <td>1174.087240</td>
+      <td>1204.302750</td>
     </tr>
     <tr>
       <th>1</th>
@@ -1774,7 +1941,7 @@
       <td>2</td>
       <td>20.0</td>
       <td>True</td>
-      <td>1208.897667</td>
+      <td>1188.649806</td>
     </tr>
     <tr>
       <th>2</th>
@@ -1782,7 +1949,7 @@
       <td>3</td>
       <td>18.0</td>
       <td>False</td>
-      <td>1162.184876</td>
+      <td>1152.004140</td>
     </tr>
     <tr>
       <th>3</th>
@@ -1790,7 +1957,7 @@
       <td>4</td>
       <td>11.0</td>
       <td>False</td>
-      <td>1178.507409</td>
+      <td>1183.764497</td>
     </tr>
     <tr>
       <th>4</th>
@@ -1798,7 +1965,7 @@
       <td>5</td>
       <td>17.0</td>
       <td>False</td>
-      <td>1118.242396</td>
+      <td>1115.428883</td>
     </tr>
     <tr>
       <th>5</th>
@@ -1806,7 +1973,7 @@
       <td>6</td>
       <td>20.0</td>
       <td>True</td>
-      <td>1055.722909</td>
+      <td>1060.981760</td>
     </tr>
     <tr>
       <th>6</th>
@@ -1814,7 +1981,7 @@
       <td>7</td>
       <td>6.0</td>
       <td>False</td>
-      <td>1098.455658</td>
+      <td>1096.171788</td>
     </tr>
     <tr>
       <th>7</th>
@@ -1822,7 +1989,7 @@
       <td>8</td>
       <td>18.0</td>
       <td>False</td>
-      <td>1185.117722</td>
+      <td>1208.443171</td>
     </tr>
     <tr>
       <th>8</th>
@@ -1830,7 +1997,7 @@
       <td>9</td>
       <td>19.0</td>
       <td>True</td>
-      <td>1071.796288</td>
+      <td>1075.801028</td>
     </tr>
     <tr>
       <th>9</th>
@@ -1838,7 +2005,7 @@
       <td>10</td>
       <td>18.0</td>
       <td>False</td>
-      <td>1070.726008</td>
+      <td>1070.730637</td>
     </tr>
   </tbody>
 </table>
@@ -1849,7 +2016,7 @@
 <h2>Metadata from a behaviour log<a class="headerlink" href="#Metadata-from-a-behaviour-log" title="Link to this heading">#</a></h2>
 <p>When the information is in a behaviour log instead, <code class="docutils literal notranslate"><span class="pre">Events.from_table()</span></code> takes the columns with metadata as <code class="docutils literal notranslate"><span class="pre">meta</span></code>. Every event of a row gets the values of that row. Here is a small made-up log with one row per trial (times in seconds):</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">behav</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">"trial"</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
@@ -1865,7 +2032,7 @@
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -1928,7 +2095,7 @@
       <td>2</td>
     </tr>
   </tbody>
-</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 5 events</p></div>
+</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 5 events | on another clock: map with sync_clocks()</p></div>
 </div>
 <p>The column <code class="docutils literal notranslate"><span class="pre">row</span></code> gives the row of the table that each event came from (use <code class="docutils literal notranslate"><span class="pre">row=None</span></code> to leave it out). It links the events of the same row even if the table has no trial number.</p>
 <p>The events are still on the clock of the experiment computer. They are mapped to the eye-tracker clock with <code class="docutils literal notranslate"><span class="pre">sync_clocks()</span></code> and added to the data with <code class="docutils literal notranslate"><span class="pre">add_events()</span></code>, as shown in the tutorial <a class="reference internal" href="importdata_behaviour.html"><span class="doc">Events from a behaviour log</span></a>; both keep the metadata. Events that do not have a column (e.g., the triggers that were already in the recording) get missing values in it.</p>
@@ -1937,15 +2104,15 @@
 <h2>Exporting the metadata<a class="headerlink" href="#Exporting-the-metadata" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">to_table()</span></code> returns the events with their metadata as a dict of columns, which can be turned into a <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code> (pandas is not needed for the metadata themselves):</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">get_events</span><span class="p">()</span><span class="o">.</span><span class="n">to_table</span><span class="p">())</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">to_table</span><span class="p">())</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -2102,6 +2269,7 @@
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Metadata-from-trigger-labels">Metadata from trigger labels</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Information-from-other-events-of-the-trial">Information from other events of the trial</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Selecting-events-by-metadata">Selecting events by metadata</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Storing-the-metadata-in-the-data">Storing the metadata in the data</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Metadata-in-intervals-and-segments">Metadata in intervals and segments</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Metadata-from-a-behaviour-log">Metadata from a behaviour log</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Exporting-the-metadata">Exporting the metadata</a></li>

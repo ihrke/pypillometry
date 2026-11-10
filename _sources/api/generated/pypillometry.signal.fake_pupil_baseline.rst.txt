@@ -1,0 +1,6 @@
+﻿fake\_pupil\_baseline
+=====================
+
+.. currentmodule:: pypillometry.signal
+
+.. autofunction:: fake_pupil_baseline

@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Missing data &#8212; pypillometry v2.2.0</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx_autodoc_typehints.css?v=057ac668" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=e89b0eda" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=75c7c72ae941e8b558d8"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
+
+    <script src="../_static/documentation_options.js?v=49a90b2e"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user_guide/missing_data';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../_static/pypillometry_logo_200x200.png"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Gaze data and the experimental setup" href="gaze.html" />
+    <link rel="prev" title="Preprocessing" href="preprocessing.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="v2.2.0" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="light">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation" aria-expanded="false" aria-controls="pst-primary-sidebar-modal">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="../_static/pypillometry_logo_200x200.png" class="logo__image only-light" alt=""/>
+    <img src="../_static/pypillometry_logo_200x200.png" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">pypillometry</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../experimental/index.html">
+    Experimental features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../development/index.html">
+    Development
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ihrke/pypillometry" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pypillometry/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page" aria-expanded="false" aria-controls="pst-secondary-sidebar-modal">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal" tabindex="-1"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../experimental/index.html">
+    Experimental features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../development/index.html">
+    Development
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ihrke/pypillometry" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pypillometry/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button type="button" id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="data_model.html">Data objects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="loading_data.html">Loading and saving data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="units.html">Units</a></li>
+<li class="toctree-l1"><a class="reference internal" href="preprocessing.html">Preprocessing</a></li>
+<li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">Missing data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gaze.html">Gaze data and the experimental setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rois.html">Regions of interest</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quality.html">Data quality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="events_intervals.html">Events, intervals and segments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plotting.html">Plotting</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="interactive.html">Interactive tools</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="viewer.html">GPU-Accelerated Viewer (pp.view)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tweak.html">Interactive Parameter Tweaking (pp.tweak)</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="modeling.html">Modeling the pupil signal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="studies.html">Studies with many participants</a></li>
+<li class="toctree-l1"><a class="reference internal" href="settings.html">Settings and logging</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-house"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">User guide</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Missing data</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="missing-data">
+<h1>Missing data<a class="headerlink" href="#missing-data" title="Link to this heading">#</a></h1>
+<p>Eye-tracking data have gaps and bad samples: the eye tracker loses the
+pupil during a blink, the gaze leaves the screen, or a part of the
+recording (e.g., a break) is not part of the analysis. In short:</p>
+<ul class="simple">
+<li><p><strong>Bad samples are marked, not deleted.</strong> Each method that finds bad
+samples marks them with its own <em>layer</em> (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;blink&quot;</span></code>,
+<code class="docutils literal notranslate"><span class="pre">&quot;offscreen&quot;</span></code>). The values stay as they are, so you can always see
+why a sample is bad, and undo a step.</p></li>
+<li><p><strong>Analyses skip marked samples automatically.</strong> Segments, statistics,
+filters, downsampling etc. use only the usable samples.</p></li>
+<li><p><strong>Interpolated samples are used.</strong> After
+<a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.blinks_interpolate" title="pypillometry.eyedata.pupil.PupilNamespace.blinks_interpolate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">blinks_interpolate()</span></code></a>, the reconstructed blinks count
+as usable. Pass <code class="docutils literal notranslate"><span class="pre">policy=&quot;strict&quot;</span></code> to leave them out.</p></li>
+</ul>
+<p>The tutorial <a class="reference internal" href="../notebooks/missing_data.html"><span class="doc">Missing data</span></a> goes through these steps with
+a real recording.</p>
+<section id="a-typical-example">
+<h2>A typical example<a class="headerlink" href="#a-typical-example" title="Link to this heading">#</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">u</span>
+
+<span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002_short"</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span>        <span class="c1"># marks blinks ("blink" layer)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">gaze</span><span class="o">.</span><span class="n">mask_offscreen</span><span class="p">()</span>        <span class="c1"># marks gaze outside the screen ("offscreen")</span>
+<span class="n">d</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_interpolate</span><span class="p">()</span>   <span class="c1"># reconstructs the blinks ("interpolated")</span>
+
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_masked</span><span class="p">()</span>           <span class="c1"># where are samples unusable?</span>
+<span class="n">d</span><span class="o">.</span><span class="n">quality_report</span><span class="p">()</span>             <span class="c1"># how much is missing, and why?</span>
+
+<span class="c1"># the analyses use the usable samples only</span>
+<span class="n">epochs</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_epochs</span><span class="p">(</span><span class="s2">"S_"</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>
+<span class="n">seg</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_segments</span><span class="p">(</span><span class="n">epochs</span><span class="p">,</span> <span class="s2">"left_pupil"</span><span class="p">)</span>                     <span class="c1"># with interpolated blinks</span>
+<span class="n">seg_rec</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_segments</span><span class="p">(</span><span class="n">epochs</span><span class="p">,</span> <span class="s2">"left_pupil"</span><span class="p">,</span> <span class="n">policy</span><span class="o">=</span><span class="s2">"strict"</span><span class="p">)</span> <span class="c1"># recorded samples only</span>
+
+<span class="n">d</span><span class="o">.</span><span class="n">clear_layer</span><span class="p">(</span><span class="s2">"offscreen"</span><span class="p">)</span>     <span class="c1"># undo: the off-screen samples are usable again</span>
+</pre></div>
+</div>
+<p>Missing samples that the eye tracker did not record are NaN in the data
+(Eyelink codes them as 0; they are converted to NaN when an EDF file is
+read, see <a class="reference internal" href="loading_data.html"><span class="doc">Loading and saving data</span></a>). NaN samples are always unusable.</p>
+</section>
+<section id="why-a-sample-is-marked-layers">
+<h2>Why a sample is marked: layers<a class="headerlink" href="#why-a-sample-is-marked-layers" title="Link to this heading">#</a></h2>
+<p>Each channel (e.g., <code class="docutils literal notranslate"><span class="pre">left_pupil</span></code>) has its own layers; a layer only
+exists on the channels the method checks.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 16.0%" />
+<col style="width: 40.0%" />
+<col style="width: 44.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>layer</p></th>
+<th class="head"><p>meaning</p></th>
+<th class="head"><p>set by</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;blink&quot;</span></code></p></td>
+<td><p>the pupil was lost during a blink</p></td>
+<td><p><a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.blinks_detect" title="pypillometry.eyedata.pupil.PupilNamespace.blinks_detect"><code class="xref py py-meth docutils literal notranslate"><span class="pre">blinks_detect()</span></code></a>,
+<a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.blinks_merge_close" title="pypillometry.eyedata.pupil.PupilNamespace.blinks_merge_close"><code class="xref py py-meth docutils literal notranslate"><span class="pre">blinks_merge_close()</span></code></a>,
+<a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.set_blinks" title="pypillometry.EyeData.set_blinks"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_blinks()</span></code></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;offscreen&quot;</span></code></p></td>
+<td><p>the gaze (x, y) is outside the screen</p></td>
+<td><p><a class="reference internal" href="../api/generated/pypillometry.eyedata.gaze.GazeNamespace.html#pypillometry.eyedata.gaze.GazeNamespace.mask_offscreen" title="pypillometry.eyedata.gaze.GazeNamespace.mask_offscreen"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mask_offscreen()</span></code></a></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;divergence&quot;</span></code></p></td>
+<td><p>the two eyes point to different places (x, y)</p></td>
+<td><p><a class="reference internal" href="../api/generated/pypillometry.eyedata.gaze.GazeNamespace.html#pypillometry.eyedata.gaze.GazeNamespace.mask_divergences" title="pypillometry.eyedata.gaze.GazeNamespace.mask_divergences"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mask_divergences()</span></code></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;user&quot;</span></code></p></td>
+<td><p>marked by hand</p></td>
+<td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.mask_intervals" title="pypillometry.EyeData.mask_intervals"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mask_intervals()</span></code></a>, <a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.merge_masks" title="pypillometry.EyeData.merge_masks"><code class="xref py py-meth docutils literal notranslate"><span class="pre">merge_masks()</span></code></a>
+(and assigning masked arrays, see <a class="reference internal" href="#details">Details</a>)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;interpolated&quot;</span></code></p></td>
+<td><p>the value was reconstructed (makes a sample <em>usable</em>)</p></td>
+<td><p><a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.blinks_interpolate" title="pypillometry.eyedata.pupil.PupilNamespace.blinks_interpolate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">blinks_interpolate()</span></code></a>,
+<a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.interpolate_intervals" title="pypillometry.EyeData.interpolate_intervals"><code class="xref py py-meth docutils literal notranslate"><span class="pre">interpolate_intervals()</span></code></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;excluded&quot;</span></code></p></td>
+<td><p>not part of the analysis (e.g., breaks), for all channels at once</p></td>
+<td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.exclude_intervals" title="pypillometry.EyeData.exclude_intervals"><code class="xref py py-meth docutils literal notranslate"><span class="pre">exclude_intervals()</span></code></a>,
+<a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.keep_intervals" title="pypillometry.EyeData.keep_intervals"><code class="xref py py-meth docutils literal notranslate"><span class="pre">keep_intervals()</span></code></a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Running a detector again replaces its layer, so trying other parameters
+does not add up masks. <code class="docutils literal notranslate"><span class="pre">d.clear_layer(name)</span></code> removes a layer, e.g.,
+<code class="docutils literal notranslate"><span class="pre">d.clear_layer(&quot;blink&quot;)</span></code> undoes blink detection. Blinks are only
+detected on the pupil: the gaze is usually NaN during blinks anyway.
+Off-screen gaze does not mark the pupil, because whether the pupil size is
+still valid then depends on the setup (see <a class="reference internal" href="#common-tasks">Common tasks</a> to mark it).</p>
+<p>You can add layers of your own, e.g.,
+<code class="docutils literal notranslate"><span class="pre">d.data.set_layer(&quot;left_pupil&quot;,</span> <span class="pre">&quot;saccade&quot;,</span> <span class="pre">mask)</span></code>; they mask samples
+only where you name them in a policy (<code class="docutils literal notranslate"><span class="pre">policy=[&quot;saccade&quot;]</span></code>).</p>
+</section>
+<section id="which-samples-are-used-policies">
+<h2>Which samples are used: policies<a class="headerlink" href="#which-samples-are-used-policies" title="Link to this heading">#</a></h2>
+<p>All methods that read the data take a <code class="docutils literal notranslate"><span class="pre">policy=</span></code> argument that decides
+which samples are <em>unusable</em>:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 15.0%" />
+<col style="width: 85.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>policy</p></th>
+<th class="head"><p>unusable samples</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;default&quot;</span></code></p></td>
+<td><p>NaN and all layers (blinks, off-screen, divergence, user,
+excluded), <strong>but interpolated samples are used</strong></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;strict&quot;</span></code></p></td>
+<td><p>the same, and the interpolated samples</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;raw&quot;</span></code></p></td>
+<td><p>nothing (values can be NaN)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>A policy can also be a list of layers (only these and NaN make a sample
+unusable), e.g. <code class="docutils literal notranslate"><span class="pre">policy=[&quot;blink&quot;]</span></code>, or a <a class="reference internal" href="../api/generated/pypillometry.MaskPolicy.html#pypillometry.MaskPolicy" title="pypillometry.MaskPolicy"><code class="xref py py-class docutils literal notranslate"><span class="pre">MaskPolicy</span></code></a> of your
+own.</p>
+<p>The figure shows the layers of the left pupil during a few seconds of a
+recording after blink detection and interpolation, with a period excluded
+and a period masked by hand, and which samples each policy leaves out:</p>
+<figure class="align-default">
+<img alt="../_images/missing_data-1.png" class="plot-directive" src="../_images/missing_data-1.png" />
+</figure>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Under the default policy, an interpolated sample is usable even if
+another layer (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;blink&quot;</span></code>) is set for it: its value was
+reconstructed, so the reason for masking the recorded value no longer
+applies. Excluded periods stay unusable, also where data were
+interpolated.</p>
+</div>
+</section>
+<section id="common-tasks">
+<h2>Common tasks<a class="headerlink" href="#common-tasks" title="Link to this heading">#</a></h2>
+<p><strong>Leave out interpolated samples.</strong> Pass <code class="docutils literal notranslate"><span class="pre">policy=&quot;strict&quot;</span></code>, e.g. to
+<a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.get_segments" title="pypillometry.EyeData.get_segments"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_segments()</span></code></a> or <a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.stat_per_event" title="pypillometry.EyeData.stat_per_event"><code class="xref py py-meth docutils literal notranslate"><span class="pre">stat_per_event()</span></code></a>. To drop
+trials that are mostly reconstructed, compute the share of interpolated
+samples per trial and keep the others:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">stim</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_epochs</span><span class="p">(</span><span class="s2">"S_"</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">2500</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>
+<span class="n">seg</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_segments</span><span class="p">(</span><span class="n">stim</span><span class="p">,</span> <span class="s2">"left_pupil"</span><span class="p">,</span> <span class="n">policy</span><span class="o">=</span><span class="s2">"strict"</span><span class="p">)</span>
+<span class="n">recon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">getmaskarray</span><span class="p">(</span><span class="n">seg</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">])</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>   <span class="c1"># one value per trial</span>
+<span class="n">seg</span> <span class="o">=</span> <span class="n">seg</span><span class="o">.</span><span class="n">keep</span><span class="p">(</span><span class="n">recon</span> <span class="o">&lt;</span> <span class="mf">0.25</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Mask the pupil where the gaze is off the screen.</strong> Copy the off-screen
+periods of each eye to its pupil:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">off</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_layer_intervals</span><span class="p">(</span><span class="s2">"offscreen"</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="s2">"x"</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">mask_intervals</span><span class="p">({</span><span class="s2">"left_pupil"</span><span class="p">:</span> <span class="n">off</span><span class="p">[</span><span class="s2">"left_x"</span><span class="p">],</span> <span class="s2">"right_pupil"</span><span class="p">:</span> <span class="n">off</span><span class="p">[</span><span class="s2">"right_x"</span><span class="p">]})</span>
+</pre></div>
+</div>
+<p>(Where these periods overlap an interpolated blink, the samples stay
+usable under the default policy; use <code class="docutils literal notranslate"><span class="pre">policy=&quot;strict&quot;</span></code> to leave them
+out as well.)</p>
+<p><strong>Exclude the parts that are not part of the experiment</strong>, e.g. breaks or
+the calibration (see <a class="reference internal" href="data_model.html#data-model-masks"><span class="std std-ref">Masks, layers and policies</span></a>). Do this before detecting
+blinks, so that blinks are cut at these periods:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">exclude_intervals</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="s2">"break_start"</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">"break_end"</span><span class="p">))</span>
+<span class="n">d</span><span class="o">.</span><span class="n">keep_intervals</span><span class="p">([(</span><span class="n">first_onset</span> <span class="o">-</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">last_onset</span> <span class="o">+</span> <span class="mi">3000</span><span class="p">)])</span>   <span class="c1"># in ms</span>
+</pre></div>
+</div>
+<p><strong>Look at one reason only.</strong> <code class="docutils literal notranslate"><span class="pre">d.get_layer_intervals(&quot;offscreen&quot;)</span></code> gives
+the stretches of one layer; <code class="docutils literal notranslate"><span class="pre">d.mask(&quot;left_x&quot;,</span> <span class="pre">policy=[&quot;offscreen&quot;])</span></code>
+the mask of only this layer (and NaN).</p>
+<p><strong>Undo a step</strong>: <code class="docutils literal notranslate"><span class="pre">d.clear_layer(&quot;blink&quot;)</span></code>, <code class="docutils literal notranslate"><span class="pre">d.clear_layer(&quot;offscreen&quot;)</span></code>,
+<code class="docutils literal notranslate"><span class="pre">d.clear_layer(&quot;excluded&quot;)</span></code>. Interpolated values cannot be restored
+from the object; keep a copy (<code class="docutils literal notranslate"><span class="pre">d</span> <span class="pre">|</span> <span class="pre">step</span></code> returns a processed copy, see
+<a class="reference internal" href="data_model.html#data-model-pipelines"><span class="std std-ref">Pipelines and history</span></a>).</p>
+</section>
+<section id="looking-at-masks">
+<h2>Looking at masks<a class="headerlink" href="#looking-at-masks" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 45.0%" />
+<col style="width: 55.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>call</p></th>
+<th class="head"><p>result</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">d[&quot;left_pupil&quot;]</span></code></p></td>
+<td><p>masked array (masked: unusable under the default policy)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">d.mask(eye,</span> <span class="pre">var,</span> <span class="pre">policy=)</span></code></p></td>
+<td><p>boolean array, True where unusable</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">d.get_values(eye,</span> <span class="pre">var,</span> <span class="pre">policy=)</span></code></p></td>
+<td><p>copy of the values, NaN where unusable</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">d.data[&quot;left_pupil&quot;]</span></code></p></td>
+<td><p>the stored values (masked samples keep their values)</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.get_blinks" title="pypillometry.EyeData.get_blinks"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_blinks()</span></code></a>,
+<a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.get_interpolated" title="pypillometry.EyeData.get_interpolated"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_interpolated()</span></code></a>,
+<a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.get_layer_intervals" title="pypillometry.EyeData.get_layer_intervals"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_layer_intervals()</span></code></a></p></td>
+<td><p>the stretches of a layer as <a class="reference internal" href="../api/generated/pypillometry.Intervals.html#pypillometry.Intervals" title="pypillometry.Intervals"><code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code></a> (per channel, ms)</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.mask_as_intervals" title="pypillometry.EyeData.mask_as_intervals"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mask_as_intervals()</span></code></a></p></td>
+<td><p>the stretches of unusable samples under a policy</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.get_excluded" title="pypillometry.EyeData.get_excluded"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_excluded()</span></code></a>, <a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.get_included" title="pypillometry.EyeData.get_included"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_included()</span></code></a></p></td>
+<td><p>the excluded periods and the periods between them</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../api/plotting.html#pypillometry.plot.PlotNamespace.plot_masked" title="pypillometry.plot.PlotNamespace.plot_masked"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot_masked()</span></code></a></p></td>
+<td><p>plot of the unusable stretches (with <code class="docutils literal notranslate"><span class="pre">policy=</span></code>)</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.quality_report" title="pypillometry.EyeData.quality_report"><code class="xref py py-meth docutils literal notranslate"><span class="pre">quality_report()</span></code></a></p></td>
+<td><p>missing data and masked time per layer (see <a class="reference internal" href="quality.html"><span class="doc">Data quality</span></a>)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">d.data.layer_names</span></code> lists the layers that have been set, and
+<code class="docutils literal notranslate"><span class="pre">d.data.get_layer(&quot;left_pupil&quot;,</span> <span class="pre">&quot;blink&quot;)</span></code> gives one layer as a boolean
+array (<code class="docutils literal notranslate"><span class="pre">d.data.get_rec_layer(&quot;excluded&quot;)</span></code> for the excluded periods).</p>
+</section>
+<section id="details">
+<h2>Details<a class="headerlink" href="#details" title="Link to this heading">#</a></h2>
+<p>This section describes exactly how each operation treats unusable
+samples. You rarely need it for a standard analysis.</p>
+<section id="detecting-and-interpolating">
+<h3>Detecting and interpolating<a class="headerlink" href="#detecting-and-interpolating" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.blinks_detect" title="pypillometry.eyedata.pupil.PupilNamespace.blinks_detect"><code class="xref py py-meth docutils literal notranslate"><span class="pre">blinks_detect()</span></code></a> looks for runs of NaN (and
+<code class="docutils literal notranslate"><span class="pre">blink_val</span></code>) in the stored values and for blinks in the velocity
+profile of the recorded samples, so it can find blinks where no sample
+is NaN. Blinks are cut at excluded periods (a break without data is not
+a blink).</p></li>
+<li><p><a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.blinks_interpolate" title="pypillometry.eyedata.pupil.PupilNamespace.blinks_interpolate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">blinks_interpolate()</span></code></a> replaces the pupil values in
+each blink (extended by a margin) and sets the <code class="docutils literal notranslate"><span class="pre">&quot;interpolated&quot;</span></code> layer
+there; the <code class="docutils literal notranslate"><span class="pre">&quot;blink&quot;</span></code> layer stays, so recorded and reconstructed
+samples can always be told apart. <a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.interpolate_intervals" title="pypillometry.EyeData.interpolate_intervals"><code class="xref py py-meth docutils literal notranslate"><span class="pre">interpolate_intervals()</span></code></a>
+does the same for any intervals. Interpolations add up in the
+<code class="docutils literal notranslate"><span class="pre">&quot;interpolated&quot;</span></code> layer, so different artifacts can be interpolated one
+after the other. <code class="docutils literal notranslate"><span class="pre">d.clear_layer(&quot;interpolated&quot;)</span></code> keeps the
+interpolated values but makes these samples unusable again where
+another layer masks them.</p></li>
+</ul>
+</section>
+<section id="processing-and-analysing">
+<h3>Processing and analysing<a class="headerlink" href="#processing-and-analysing" title="Link to this heading">#</a></h3>
+<p>All processing and analysis methods read the samples that are usable
+under their <code class="docutils literal notranslate"><span class="pre">policy</span></code> argument (by default, the default policy):</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 70.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>method</p></th>
+<th class="head"><p>unusable samples</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.lowpass_filter" title="pypillometry.eyedata.pupil.PupilNamespace.lowpass_filter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">lowpass_filter()</span></code></a>,
+<a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.smooth_window" title="pypillometry.eyedata.pupil.PupilNamespace.smooth_window"><code class="xref py py-meth docutils literal notranslate"><span class="pre">smooth_window()</span></code></a></p></td>
+<td><p>bridged linearly for the filter; only the usable samples are
+changed, unusable samples keep their stored values</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.estimate_baseline" title="pypillometry.eyedata.pupil.PupilNamespace.estimate_baseline"><code class="xref py py-meth docutils literal notranslate"><span class="pre">estimate_baseline()</span></code></a>,
+<a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.estimate_response" title="pypillometry.eyedata.pupil.PupilNamespace.estimate_response"><code class="xref py py-meth docutils literal notranslate"><span class="pre">estimate_response()</span></code></a></p></td>
+<td><p>left out of the fit</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.downsample" title="pypillometry.EyeData.downsample"><code class="xref py py-meth docutils literal notranslate"><span class="pre">downsample()</span></code></a></p></td>
+<td><p>left out of the window means; a layer is set for a new sample if it
+covers more than half of its window (counted for each layer
+separately); a window without usable samples stays unusable</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.scale" title="pypillometry.EyeData.scale"><code class="xref py py-meth docutils literal notranslate"><span class="pre">scale()</span></code></a></p></td>
+<td><p>left out of the center and scale (e.g., mean and SD)</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.merge_eyes" title="pypillometry.eyedata.pupil.PupilNamespace.merge_eyes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">merge_eyes()</span></code></a>,
+<a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.merge_eyes" title="pypillometry.EyeData.merge_eyes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">merge_eyes()</span></code></a></p></td>
+<td><p>each eye contributes its usable samples, recorded ones first (an
+interpolated sample only where no eye has a recorded one); the
+merged channel is masked only where no eye is usable and gets the
+layers common to the eyes used (otherwise <code class="docutils literal notranslate"><span class="pre">&quot;user&quot;</span></code>)</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.crop" title="pypillometry.EyeData.crop"><code class="xref py py-meth docutils literal notranslate"><span class="pre">crop()</span></code></a>,
+<a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.remove_intervals" title="pypillometry.EyeData.remove_intervals"><code class="xref py py-meth docutils literal notranslate"><span class="pre">remove_intervals()</span></code></a></p></td>
+<td><p>values and layers are cut together</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.fill_time_discontinuities" title="pypillometry.EyeData.fill_time_discontinuities"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fill_time_discontinuities()</span></code></a></p></td>
+<td><p>inserted samples are NaN</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.get_segments" title="pypillometry.EyeData.get_segments"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_segments()</span></code></a></p></td>
+<td><p>masked in the segments (also parts of a window outside the
+recording)</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.stat_per_event" title="pypillometry.EyeData.stat_per_event"><code class="xref py py-meth docutils literal notranslate"><span class="pre">stat_per_event()</span></code></a></p></td>
+<td><p>left out of each statistic</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.quality_report" title="pypillometry.EyeData.quality_report"><code class="xref py py-meth docutils literal notranslate"><span class="pre">quality_report()</span></code></a></p></td>
+<td><p>missing data are counted from NaN, masked time per layer; excluded
+periods are left out of all measures</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The layers are saved with the object and restored when it is read.</p>
+</section>
+<section id="changing-masks-by-hand">
+<h3>Changing masks by hand<a class="headerlink" href="#changing-masks-by-hand" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.mask_intervals" title="pypillometry.EyeData.mask_intervals"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mask_intervals()</span></code></a> adds intervals to the <code class="docutils literal notranslate"><span class="pre">&quot;user&quot;</span></code> layer;
+<code class="docutils literal notranslate"><span class="pre">d.data.add_mask(key,</span> <span class="pre">where)</span></code> masks samples by index.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">d.data.set_mask(key,</span> <span class="pre">mask)</span></code> makes the default mask of a channel equal
+to <code class="docutils literal notranslate"><span class="pre">mask</span></code>: it removes the layers from samples that should be usable
+and puts the newly masked samples into <code class="docutils literal notranslate"><span class="pre">&quot;user&quot;</span></code> (NaN samples and
+excluded periods stay masked).</p></li>
+<li><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.merge_masks" title="pypillometry.EyeData.merge_masks"><code class="xref py py-meth docutils literal notranslate"><span class="pre">merge_masks()</span></code></a> masks every channel where any channel is
+masked (<code class="docutils literal notranslate"><span class="pre">&quot;user&quot;</span></code> layer).</p></li>
+</ul>
+</section>
+<section id="changing-values">
+<span id="missing-data-changing-values"></span><h3>Changing values<a class="headerlink" href="#changing-values" title="Link to this heading">#</a></h3>
+<p>Writing new values into an existing channel can change its layers:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">d[&quot;left_pupil&quot;]</span> <span class="pre">=</span> <span class="pre">array</span></code> (a plain numpy array) <strong>removes all layers
+of the channel</strong>; only NaN samples and excluded periods stay masked.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">d[&quot;left_pupil&quot;]</span> <span class="pre">=</span> <span class="pre">masked_array</span></code> makes the default mask of the
+channel equal to the mask of the array (like <code class="docutils literal notranslate"><span class="pre">d.data.set_mask</span></code>). This
+can drop layers: <code class="docutils literal notranslate"><span class="pre">d[&quot;left_pupil&quot;]</span> <span class="pre">=</span> <span class="pre">d[&quot;left_pupil&quot;]</span> <span class="pre">*</span> <span class="pre">2</span></code> after
+interpolation drops the <code class="docutils literal notranslate"><span class="pre">&quot;blink&quot;</span></code> layer, because interpolated blinks
+are usable and so not masked in <code class="docutils literal notranslate"><span class="pre">d[&quot;left_pupil&quot;]</span></code>.</p></li>
+<li><p>To process the values of a channel yourself and keep all its layers,
+use <code class="docutils literal notranslate"><span class="pre">set_with_mask</span></code>:</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">v</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">]</span>                    <span class="c1"># the stored values (numpy array)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">set_with_mask</span><span class="p">(</span><span class="s2">"left_pupil"</span><span class="p">,</span> <span class="n">my_filter</span><span class="p">(</span><span class="n">v</span><span class="p">),</span> <span class="n">preserve_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>A new channel (<code class="docutils literal notranslate"><span class="pre">d[&quot;left&quot;,</span> <span class="pre">&quot;baseline&quot;]</span> <span class="pre">=</span> <span class="pre">array</span></code>) starts without layers;
+excluded periods mask it as well.</p>
+</section>
+<section id="things-to-watch-for">
+<h3>Things to watch for<a class="headerlink" href="#things-to-watch-for" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong>Masked samples keep their values.</strong> <code class="docutils literal notranslate"><span class="pre">d.data[&quot;left_pupil&quot;]</span></code> holds the
+stored values, also in blinks (e.g., unfiltered after
+<a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.lowpass_filter" title="pypillometry.eyedata.pupil.PupilNamespace.lowpass_filter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">lowpass_filter()</span></code></a>). Use <code class="docutils literal notranslate"><span class="pre">d[&quot;left_pupil&quot;]</span></code> or
+<code class="docutils literal notranslate"><span class="pre">d.get_values(...)</span></code> for the usable samples only.</p></li>
+<li><p><strong>Detect and interpolate blinks once, on the raw data.</strong> Detecting
+blinks again after interpolating is skipped (with a warning) for eyes
+with interpolated samples, and interpolating twice makes the
+interpolated stretches longer by the margins.</p></li>
+<li><p><strong>Exclude periods before detecting blinks</strong>, so that blinks are cut at
+them. A blink that ends in an excluded period is not interpolated (there
+is no usable data after it).</p></li>
+<li><p><strong>Merged eyes keep only the layers common to both eyes</strong>: where one eye
+was interpolated and the other recorded, <code class="docutils literal notranslate"><span class="pre">mean_pupil</span></code> holds the
+recorded value and has no <code class="docutils literal notranslate"><span class="pre">&quot;interpolated&quot;</span></code> layer.</p></li>
+<li><p><strong>Downsampling counts each layer separately</strong>: a window that is 40%
+off-screen, 40% divergent and 20% usable is usable after downsampling
+(the mean of the usable 20%).</p></li>
+</ul>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="preprocessing.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Preprocessing</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="gaze.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Gaze data and the experimental setup</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal" tabindex="-1"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-typical-example">A typical example</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#why-a-sample-is-marked-layers">Why a sample is marked: layers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#which-samples-are-used-policies">Which samples are used: policies</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#common-tasks">Common tasks</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#looking-at-masks">Looking at masks</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#details">Details</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#detecting-and-interpolating">Detecting and interpolating</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#processing-and-analysing">Processing and analysing</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#changing-masks-by-hand">Changing masks by hand</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#changing-values">Changing values</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#things-to-watch-for">Things to watch for</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  
+  <div class="tocsection editthispage">
+    <a href="https://github.com/ihrke/pypillometry/edit/master/docs/user_guide/missing_data.rst">
+      <i class="fa-solid fa-pencil"></i>
+      
+      
+        
+          Edit on GitHub
+        
+      
+    </a>
+  </div>
+</div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/user_guide/missing_data.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2026, Matthias Mittner.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
+  </p>
+</div>
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.24.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

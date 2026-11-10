@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Blink preprocessing &#8212; pypillometry v2.1.0</title>
+    <title>Blink preprocessing &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -57,12 +57,12 @@
     <link rel="icon" href="../_static/pypillometry_logo_200x200.png"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Plotting pupillometric data for exploration" href="plotting.html" />
+    <link rel="next" title="Missing data" href="missing_data.html" />
     <link rel="prev" title="Summarizing pupillometric data" href="summary.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -106,9 +106,6 @@
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -425,6 +422,7 @@
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Preprocessing and plotting</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">Blink preprocessing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="missing_data.html">Missing data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plotting.html">Plotting pupillometric data for exploration</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Events and event-related analyses</span></p>
@@ -433,6 +431,7 @@
 <li class="toctree-l1"><a class="reference internal" href="event_metadata.html">Event metadata</a></li>
 <li class="toctree-l1"><a class="reference internal" href="intervals.html">Intervals</a></li>
 <li class="toctree-l1"><a class="reference internal" href="erpds.html">Event-related pupil dilations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rois.html">Gaze in regions of interest around events</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Modeling and complete analyses</span></p>
 <ul class="nav bd-sidenav">
@@ -509,9 +508,9 @@
 <h1>Blink preprocessing<a class="headerlink" href="#Blink-preprocessing" title="Link to this heading">#</a></h1>
 <p>One important step in the processing of pupillometric data is the handling of blinks. In <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code>, this is done in three steps:</p>
 <ol class="arabic simple">
-<li><p>detect blinks (<code class="docutils literal notranslate"><span class="pre">pupil_blinks_detect()</span></code>)</p></li>
-<li><p>merge blinks that are very close to each other (<code class="docutils literal notranslate"><span class="pre">blinks_merge_close()</span></code>)</p></li>
-<li><p>interpolate the pupil signal during blinks (<code class="docutils literal notranslate"><span class="pre">pupil_blinks_interpolate()</span></code>)</p></li>
+<li><p>detect blinks (<code class="docutils literal notranslate"><span class="pre">pupil.blinks_detect()</span></code>)</p></li>
+<li><p>merge blinks that are very close to each other (<code class="docutils literal notranslate"><span class="pre">pupil.blinks_merge_close()</span></code>)</p></li>
+<li><p>interpolate the pupil signal during blinks (<code class="docutils literal notranslate"><span class="pre">pupil.blinks_interpolate()</span></code>)</p></li>
 </ol>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
@@ -525,13 +524,13 @@
 </div>
 <section id="Blink-detection">
 <h2>Blink detection<a class="headerlink" href="#Blink-detection" title="Link to this heading">#</a></h2>
-<p>The first step is the identification of blinks. For this, we can use the <code class="docutils literal notranslate"><span class="pre">pupil_blinks_detect()</span></code> function. With <code class="docutils literal notranslate"><span class="pre">apply_mask=True</span></code>, the detected blinks are stored in the object and the pupil data during blinks is masked:</p>
+<p>The first step is the identification of blinks. For this, we can use the <code class="docutils literal notranslate"><span class="pre">pupil.blinks_detect()</span></code> function. The detected blinks are stored in the object and the pupil data during blinks is masked:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">PupilData</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">"../../data/example_shortblinks.pd"</span><span class="p">)</span>
-<span class="n">d</span><span class="o">.</span><span class="n">pupil_blinks_detect</span><span class="p">(</span><span class="n">apply_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">"../../data/example_shortblinks.pd"</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
 <span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">pupil_plot</span><span class="p">()</span>
@@ -545,7 +544,7 @@
 <img alt="../_images/notebooks_blinks_3_0.png" src="../_images/notebooks_blinks_3_0.png" />
 </div>
 </div>
-<p>Detected blinks are marked in red in the plot. In this case, the blink detection did a reasonable job with the default settings, but <code class="docutils literal notranslate"><span class="pre">pupil_blinks_detect()</span></code> has many parameters that can be tweaked.</p>
+<p>Detected blinks are marked in red in the plot. In this case, the blink detection did a reasonable job with the default settings, but <code class="docutils literal notranslate"><span class="pre">pupil.blinks_detect()</span></code> has many parameters that can be tweaked.</p>
 <p>The function looks for blinks using two strategies (argument <code class="docutils literal notranslate"><span class="pre">strategies</span></code>):</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">&quot;zero&quot;</span></code>: blinks are runs of missing data, i.e., <code class="docutils literal notranslate"><span class="pre">NaN</span></code> or another placeholder value for missing data (argument <code class="docutils literal notranslate"><span class="pre">blink_val</span></code>, default <code class="docutils literal notranslate"><span class="pre">0</span></code>)</p></li>
@@ -561,13 +560,13 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">vel_offset_min_duration</span></code>: same for the offset</p></li>
 </ul>
 <p>In practice, it often makes sense to start with a default set of parameters and adjust them for each subject by visually inspecting the results (see <a class="reference internal" href="preproc_example_pavlov.html"><span class="doc">this notebook for a fully worked example</span></a>).</p>
-<p>In the next example, the default parameters produce suboptimal results. Here, we use <code class="docutils literal notranslate"><span class="pre">apply_mask=False</span></code> (the default) to get the detected blinks as an <code class="docutils literal notranslate"><span class="pre">Intervals</span></code> object without changing the data:</p>
+<p>In the next example, the default parameters produce suboptimal results. Here, we detect the blinks on a copy (<code class="docutils literal notranslate"><span class="pre">d</span> <span class="pre">|</span> <span class="pre">pp.pupil.blinks_detect()</span></code> returns a processed copy) and get them with <code class="docutils literal notranslate"><span class="pre">get_blinks()</span></code>, without changing the data:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">PupilData</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">"../../data/test.pd"</span><span class="p">)</span>
-<span class="n">blinks</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">pupil_blinks_detect</span><span class="p">()</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">"../../data/test.pd"</span><span class="p">)</span>
+<span class="n">blinks</span> <span class="o">=</span> <span class="p">(</span><span class="n">d</span> <span class="o">|</span> <span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">())</span><span class="o">.</span><span class="n">get_blinks</span><span class="p">()</span>
 <span class="n">blinks</span>
 </pre></div>
 </div>
@@ -578,16 +577,16 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Intervals &#39;left_pupil_blinks&#39; | 68 intervals (total duration: 7320.00 indices), 107.65 indices +/- 122.71 indices, [12.00 indices, 495.00 indices] | fs=500.0Hz
+{&#39;left_pupil&#39;: Intervals &#39;left_pupil_blinks&#39; | 65 intervals (total duration: 14640.00 ms), 225.23 ms +/- 247.91 ms, [24.00 ms, 990.00 ms]}
 </pre></div></div>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">Intervals</span></code> object can be passed to <code class="docutils literal notranslate"><span class="pre">mask_intervals()</span></code> to mask the data. We do that on a copy (<code class="docutils literal notranslate"><span class="pre">inplace=False</span></code>) to be able to try different settings on the same data:</p>
+<p><code class="docutils literal notranslate"><span class="pre">get_blinks()</span></code> returns one <code class="docutils literal notranslate"><span class="pre">Intervals</span></code> object per channel (in ms). The detection stores the blinks in the object, where they mask the data. Above and below, we detect on a copy (<code class="docutils literal notranslate"><span class="pre">d</span> <span class="pre">|</span> <span class="pre">pp.pupil.blinks_detect()</span></code> leaves <code class="docutils literal notranslate"><span class="pre">d</span></code> unchanged) to be able to try different settings on the same data:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
-<span class="n">d</span><span class="o">.</span><span class="n">mask_intervals</span><span class="p">(</span><span class="n">blinks</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">pupil_plot</span><span class="p">(</span><span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mf">4.3</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"min"</span><span class="p">,</span> <span class="n">show_events</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="p">(</span><span class="n">d</span> <span class="o">|</span> <span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">())</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">pupil_plot</span><span class="p">(</span><span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mf">4.3</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"min"</span><span class="p">,</span> <span class="n">show_events</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -605,8 +604,8 @@ Intervals &#39;left_pupil_blinks&#39; | 68 intervals (total duration: 7320.00 in
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span> <span class="mi">9</span><span class="p">))</span>
-<span class="n">d1</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">pupil_blinks_detect</span><span class="p">(</span><span class="n">vel_onset_min_duration</span><span class="o">=</span><span class="mi">30</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">,</span> <span class="n">apply_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="n">d2</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">pupil_blinks_detect</span><span class="p">(</span><span class="n">vel_onset</span><span class="o">=-</span><span class="mi">15</span><span class="p">,</span> <span class="n">apply_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">d1</span> <span class="o">=</span> <span class="n">d</span> <span class="o">|</span> <span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">(</span><span class="n">vel_onset_min_duration</span><span class="o">=</span><span class="mi">30</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>
+<span class="n">d2</span> <span class="o">=</span> <span class="n">d</span> <span class="o">|</span> <span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">(</span><span class="n">vel_onset</span><span class="o">=-</span><span class="mi">15</span><span class="p">)</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="n">d1</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">pupil_plot</span><span class="p">(</span><span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mf">4.3</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"min"</span><span class="p">,</span> <span class="n">show_events</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -629,7 +628,7 @@ Intervals &#39;left_pupil_blinks&#39; | 68 intervals (total duration: 7320.00 in
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">pupil_blinks_detect</span><span class="p">(</span><span class="n">vel_onset</span><span class="o">=-</span><span class="mi">15</span><span class="p">,</span> <span class="n">min_duration</span><span class="o">=</span><span class="mi">5</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">,</span> <span class="n">apply_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">(</span><span class="n">vel_onset</span><span class="o">=-</span><span class="mi">15</span><span class="p">,</span> <span class="n">min_duration</span><span class="o">=</span><span class="mi">5</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
 <span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">pupil_plot</span><span class="p">(</span><span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mf">4.3</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"min"</span><span class="p">,</span> <span class="n">show_events</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -675,8 +674,8 @@ Intervals &#39;left_pupil_blinks&#39; | 68 intervals (total duration: 7320.00 in
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">PupilData</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">"../../data/example_shortblinks.pd"</span><span class="p">)</span>
-<span class="n">d</span><span class="o">.</span><span class="n">pupil_blinks_detect</span><span class="p">(</span><span class="n">apply_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">"../../data/example_shortblinks.pd"</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
 <span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">pupil_plot</span><span class="p">(</span><span class="n">show_events</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -690,12 +689,12 @@ Intervals &#39;left_pupil_blinks&#39; | 68 intervals (total duration: 7320.00 in
 <img alt="../_images/notebooks_blinks_15_0.png" src="../_images/notebooks_blinks_15_0.png" />
 </div>
 </div>
-<p>If we interpolated these blinks separately, the interpolation would fail because the signal “neighbouring” each blink is contaminated by other blinks. Therefore, such sequences should be merged before interpolation using <code class="docutils literal notranslate"><span class="pre">blinks_merge_close()</span></code>. The argument <code class="docutils literal notranslate"><span class="pre">distance=</span></code> sets how much clean signal there needs to be between two blinks for them to be treated as separate blinks:</p>
+<p>If we interpolated these blinks separately, the interpolation would fail because the signal “neighbouring” each blink is contaminated by other blinks. Therefore, such sequences should be merged before interpolation using <code class="docutils literal notranslate"><span class="pre">pupil.blinks_merge_close()</span></code>. The argument <code class="docutils literal notranslate"><span class="pre">distance=</span></code> sets how much clean signal there needs to be between two blinks for them to be treated as separate blinks:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">blinks_merge_close</span><span class="p">(</span><span class="n">distance</span><span class="o">=</span><span class="mi">130</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">,</span> <span class="n">apply_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_merge_close</span><span class="p">(</span><span class="n">distance</span><span class="o">=</span><span class="mi">130</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
 <span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">pupil_plot</span><span class="p">(</span><span class="n">show_events</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -714,13 +713,13 @@ Intervals &#39;left_pupil_blinks&#39; | 68 intervals (total duration: 7320.00 in
 <section id="Interpolating-blinks">
 <h2>Interpolating blinks<a class="headerlink" href="#Interpolating-blinks" title="Link to this heading">#</a></h2>
 <p>The final step in the treatment of blinks is to replace the contaminated parts of the signal, a procedure known as <em>interpolation</em>.</p>
-<p><code class="docutils literal notranslate"><span class="pre">pupil_blinks_interpolate()</span></code> implements a procedure suggested by <a class="reference external" href="https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001">Mahot (2013)</a> that uses four points around each blink for a cubic interpolation. The on- and offsets of each blink are first refined using the velocity profile, and the <code class="docutils literal notranslate"><span class="pre">margin</span></code> parameter extends the interpolated region before and after the blink.</p>
+<p><code class="docutils literal notranslate"><span class="pre">pupil.blinks_interpolate()</span></code> implements a procedure suggested by <a class="reference external" href="https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001">Mahot (2013)</a> that uses four points around each blink for a cubic interpolation. The on- and offsets of each blink are first refined using the velocity profile, and the <code class="docutils literal notranslate"><span class="pre">margin</span></code> parameter extends the interpolated region before and after the blink.</p>
 <p>We store the interpolated signal as a new variable (<code class="docutils literal notranslate"><span class="pre">store_as=&quot;interp&quot;</span></code>) so that we can plot it on top of the original one:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">pupil_blinks_interpolate</span><span class="p">(</span><span class="n">store_as</span><span class="o">=</span><span class="s2">"interp"</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_interpolate</span><span class="p">(</span><span class="n">store_as</span><span class="o">=</span><span class="s2">"interp"</span><span class="p">)</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
 <span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_timeseries</span><span class="p">(</span><span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s2">"pupil"</span><span class="p">,</span> <span class="s2">"interp"</span><span class="p">],</span> <span class="n">show_mask_highlight</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">)</span>
@@ -740,7 +739,7 @@ Intervals &#39;left_pupil_blinks&#39; | 68 intervals (total duration: 7320.00 in
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">pupil_blinks_interpolate</span><span class="p">(</span><span class="n">store_as</span><span class="o">=</span><span class="s2">"interp2"</span><span class="p">,</span> <span class="n">margin</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">150</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_interpolate</span><span class="p">(</span><span class="n">store_as</span><span class="o">=</span><span class="s2">"interp2"</span><span class="p">,</span> <span class="n">margin</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">150</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
 <span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_timeseries</span><span class="p">(</span><span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s2">"interp"</span><span class="p">,</span> <span class="s2">"interp2"</span><span class="p">],</span> <span class="n">show_mask_highlight</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">)</span>
@@ -756,22 +755,38 @@ Intervals &#39;left_pupil_blinks&#39; | 68 intervals (total duration: 7320.00 in
 </div>
 <p>Note that the interpolation cannot recover the signal during the long sequence of merged blinks between 134 and 137.5 s: the cubic curve only connects the signal before and after the gap. For long gaps like this one, it can be better to exclude the affected trials from the analysis.</p>
 <p>The procedure has more parameters that can be tweaked to make the interpolation even better. Please refer to <a class="reference external" href="https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001">Mahot (2013)</a> for a short and readable summary of what these parameters do.</p>
-<p>Usually, you will want to replace the pupil data with the interpolated signal (<code class="docutils literal notranslate"><span class="pre">store_as=&quot;pupil&quot;</span></code>, the default). The interpolated samples remain masked so that you can still see where data was interpolated; the interpolated blinks are also available through <code class="docutils literal notranslate"><span class="pre">get_interpolated_blinks()</span></code>. <code class="docutils literal notranslate"><span class="pre">plot_masked()</span></code> gives an overview of the masked data for all variables:</p>
+<p>Usually, you will want to replace the pupil data with the interpolated signal (<code class="docutils literal notranslate"><span class="pre">store_as=&quot;pupil&quot;</span></code>, the default). The interpolated samples are then used like any other sample in the following analyses (they are no longer masked). They keep their <code class="docutils literal notranslate"><span class="pre">&quot;blink&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">&quot;interpolated&quot;</span></code> mask layers, so you can still see where data were interpolated: <code class="docutils literal notranslate"><span class="pre">get_interpolated_blinks()</span></code> returns these periods, and the <code class="docutils literal notranslate"><span class="pre">&quot;strict&quot;</span></code> mask policy leaves them out (see
+<a class="reference internal" href="../user_guide/data_model.html#masks-layers-and-policies"><span class="std std-ref">Masks</span></a>):</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">pupil_blinks_interpolate</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">150</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>
-<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_masked</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">);</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_interpolate</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">150</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"masked samples:"</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">mask</span><span class="p">(</span><span class="s2">"left"</span><span class="p">,</span> <span class="s2">"pupil"</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"masked samples (strict policy):"</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">mask</span><span class="p">(</span><span class="s2">"left"</span><span class="p">,</span> <span class="s2">"pupil"</span><span class="p">,</span> <span class="n">policy</span><span class="o">=</span><span class="s2">"strict"</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+<span class="n">d</span><span class="o">.</span><span class="n">get_interpolated</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
+<div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_blinks_23_0.png" src="../_images/notebooks_blinks_23_0.png" />
+<div class="highlight"><pre>
+masked samples: 0
+masked samples (strict policy): 4950
+</pre></div></div>
 </div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;left_pupil&#39;: Intervals &#39;left_pupil_interpolated&#39; | 9 intervals (total duration: 9900.00 ms), 1100.00 ms +/- 921.94 ms, [394.00 ms, 3454.00 ms],
+ &#39;left_interp&#39;: Intervals &#39;left_interp_interpolated&#39; | 9 intervals (total duration: 8460.00 ms), 940.00 ms +/- 921.94 ms, [234.00 ms, 3294.00 ms],
+ &#39;left_interp2&#39;: Intervals &#39;left_interp2_interpolated&#39; | 9 intervals (total duration: 9900.00 ms), 1100.00 ms +/- 921.94 ms, [394.00 ms, 3454.00 ms]}
+</pre></div></div>
 </div>
 </section>
 </section>
@@ -796,11 +811,11 @@ Intervals &#39;left_pupil_blinks&#39; | 68 intervals (total duration: 7320.00 in
       </div>
     </a>
     <a class="right-next"
-       href="plotting.html"
+       href="missing_data.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Plotting pupillometric data for exploration</p>
+        <p class="prev-next-title">Missing data</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

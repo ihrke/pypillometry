@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Example: Preprocessing of a full dataset with multiple subjects &#8212; pypillometry v2.1.0</title>
+    <title>Example: Preprocessing of a full dataset with multiple subjects &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -62,7 +62,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -106,9 +106,6 @@
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -425,6 +422,7 @@
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Preprocessing and plotting</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="blinks.html">Blink preprocessing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="missing_data.html">Missing data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plotting.html">Plotting pupillometric data for exploration</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Events and event-related analyses</span></p>
@@ -433,6 +431,7 @@
 <li class="toctree-l1"><a class="reference internal" href="event_metadata.html">Event metadata</a></li>
 <li class="toctree-l1"><a class="reference internal" href="intervals.html">Intervals</a></li>
 <li class="toctree-l1"><a class="reference internal" href="erpds.html">Event-related pupil dilations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rois.html">Gaze in regions of interest around events</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Modeling and complete analyses</span></p>
 <ul class="current nav bd-sidenav">
@@ -532,7 +531,7 @@
 
 <span class="c1"># here, data is already stored in pypillometry's own format as .pd files</span>
 <span class="n">pdfiles</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">"data/eyedata/*.pd"</span><span class="p">)</span>
-<span class="n">datasets</span> <span class="o">=</span> <span class="p">[</span><span class="n">pp</span><span class="o">.</span><span class="n">PupilData</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span> <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">pdfiles</span><span class="p">]</span>
+<span class="n">datasets</span> <span class="o">=</span> <span class="p">[</span><span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span> <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">pdfiles</span><span class="p">]</span>
 
 <span class="c1"># datasets are stored in a dict with the subject number as key</span>
 <span class="n">datasets</span> <span class="o">=</span> <span class="p">{</span><span class="n">d</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">datasets</span> <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">exclude</span><span class="p">}</span>
@@ -611,21 +610,23 @@
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
-<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># run the preprocessing pipeline on all subjects and produce PDFs for inspection</span>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># the preprocessing pipeline, with the parameters of one subject</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">preproc</span><span class="p">(</span><span class="n">pars</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">(</span><span class="n">min_duration</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"min_duration"</span><span class="p">],</span>
+                                   <span class="n">strategies</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"strategies"</span><span class="p">],</span>
+                                   <span class="n">vel_onset</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"vel_onset"</span><span class="p">],</span> <span class="n">vel_offset</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"vel_offset"</span><span class="p">],</span>
+                                   <span class="n">vel_onset_min_duration</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"vel_onset_min_duration"</span><span class="p">],</span>
+                                   <span class="n">vel_offset_min_duration</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"vel_offset_min_duration"</span><span class="p">])</span>
+            <span class="o">|</span> <span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_merge_close</span><span class="p">(</span><span class="n">distance</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"distance"</span><span class="p">])</span>
+            <span class="o">|</span> <span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_interpolate</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"margin"</span><span class="p">],</span>
+                                          <span class="n">vel_onset</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"vel_onset"</span><span class="p">],</span> <span class="n">vel_offset</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"vel_offset"</span><span class="p">])</span>
+            <span class="o">|</span> <span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">lowpass_filter</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"cutoff"</span><span class="p">]))</span>
+
+<span class="c1"># run the preprocessing pipeline on all subjects and produce PDFs for inspection</span>
 <span class="n">preprocs</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="k">for</span> <span class="n">subj</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">datasets</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-    <span class="n">pars</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">subj</span><span class="p">]</span>
-    <span class="n">dp</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">pupil_blinks_detect</span><span class="p">(</span><span class="n">min_duration</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"min_duration"</span><span class="p">],</span>
-                               <span class="n">strategies</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"strategies"</span><span class="p">],</span>
-                               <span class="n">vel_onset</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"vel_onset"</span><span class="p">],</span> <span class="n">vel_offset</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"vel_offset"</span><span class="p">],</span>
-                               <span class="n">vel_onset_min_duration</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"vel_onset_min_duration"</span><span class="p">],</span>
-                               <span class="n">vel_offset_min_duration</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"vel_offset_min_duration"</span><span class="p">],</span>
-                               <span class="n">apply_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>\
-          <span class="o">.</span><span class="n">blinks_merge_close</span><span class="p">(</span><span class="n">distance</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"distance"</span><span class="p">],</span> <span class="n">apply_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>\
-          <span class="o">.</span><span class="n">pupil_blinks_interpolate</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"margin"</span><span class="p">],</span>
-                                    <span class="n">vel_onset</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"vel_onset"</span><span class="p">],</span> <span class="n">vel_offset</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"vel_offset"</span><span class="p">])</span>\
-          <span class="o">.</span><span class="n">pupil_lowpass_filter</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"cutoff"</span><span class="p">])</span>
+    <span class="n">dp</span> <span class="o">=</span> <span class="n">d</span> <span class="o">|</span> <span class="n">preproc</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="n">subj</span><span class="p">])</span>
     <span class="n">dp</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">pupil_plot_segments</span><span class="p">(</span><span class="n">pdf_file</span><span class="o">=</span><span class="s2">"pics/</span><span class="si">%s</span><span class="s2">.pdf"</span> <span class="o">%</span> <span class="n">d</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">interv</span><span class="o">=</span><span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">min</span><span class="p">)</span>
     <span class="n">preprocs</span><span class="p">[</span><span class="n">subj</span><span class="p">]</span> <span class="o">=</span> <span class="n">dp</span>
 </pre></div>
@@ -727,7 +728,7 @@
 </div>
 <div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># write final preprocessed files for further analysis</span>
 <span class="n">preprocs</span> <span class="o">=</span> <span class="p">{</span><span class="n">subj</span><span class="p">:</span> <span class="n">d</span> <span class="k">for</span> <span class="n">subj</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">preprocs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">subj</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">exclude_preproc</span><span class="p">}</span>
-<span class="n">pp</span><span class="o">.</span><span class="n">write_pickle</span><span class="p">(</span><span class="n">preprocs</span><span class="p">,</span> <span class="s2">"data/export/eye_preproc.pd"</span><span class="p">)</span>
+<span class="n">pp</span><span class="o">.</span><span class="n">write_file</span><span class="p">(</span><span class="n">preprocs</span><span class="p">,</span> <span class="s2">"data/export/eye_preproc.pd"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -737,7 +738,7 @@
 </div>
 <div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># save table with a final summary of the preprocessed data</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">count_events</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
-    <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">lab</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span> <span class="k">for</span> <span class="n">lab</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">event_labels</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">lab</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span> <span class="k">for</span> <span class="n">lab</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">labels</span><span class="p">)</span>
 
 <span class="n">tab</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([{</span><span class="s2">"subj"</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">subj</span><span class="p">),</span>
                      <span class="s2">"duration_minutes"</span><span class="p">:</span> <span class="n">d</span><span class="o">.</span><span class="n">get_duration</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="s2">"min"</span><span class="p">),</span>
@@ -745,8 +746,8 @@
                      <span class="s2">"ncues"</span><span class="p">:</span> <span class="n">count_events</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="s2">"C_"</span><span class="p">),</span>
                      <span class="s2">"nfb"</span><span class="p">:</span> <span class="n">count_events</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="s2">"F_"</span><span class="p">),</span>
                      <span class="s2">"nresp"</span><span class="p">:</span> <span class="n">count_events</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="s2">"R_"</span><span class="p">),</span>
-                     <span class="s2">"perc_interpolated"</span><span class="p">:</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">d</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span>
-                     <span class="s2">"blinks_per_min"</span><span class="p">:</span> <span class="n">d</span><span class="o">.</span><span class="n">nblinks</span><span class="p">()[</span><span class="s2">"left_pupil"</span><span class="p">]</span> <span class="o">/</span> <span class="n">d</span><span class="o">.</span><span class="n">get_duration</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="s2">"min"</span><span class="p">),</span>
+                     <span class="s2">"perc_interpolated"</span><span class="p">:</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">d</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="s2">"left_pupil"</span><span class="p">,</span> <span class="s2">"interpolated"</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span>
+                     <span class="s2">"blinks_per_min"</span><span class="p">:</span> <span class="n">d</span><span class="o">.</span><span class="n">blink_stats</span><span class="p">()[</span><span class="s2">"left_pupil"</span><span class="p">][</span><span class="s2">"n"</span><span class="p">]</span> <span class="o">/</span> <span class="n">d</span><span class="o">.</span><span class="n">get_duration</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="s2">"min"</span><span class="p">),</span>
                      <span class="s2">"note"</span><span class="p">:</span> <span class="n">notes</span><span class="p">[</span><span class="n">subj</span><span class="p">]}</span>
                     <span class="k">for</span> <span class="n">subj</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">preprocs</span><span class="o">.</span><span class="n">items</span><span class="p">()])</span>
 <span class="n">tab</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">"subj"</span><span class="p">)</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">"preproc_summary.csv"</span><span class="p">)</span>

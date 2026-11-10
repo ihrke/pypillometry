@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pypillometry.events &#8212; pypillometry v2.1.0</title>
+    <title>pypillometry.events &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -414,7 +414,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -458,9 +458,6 @@ window.runMermaid = runMermaid;</script>
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -806,12 +803,16 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">MappingProxyType</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">numbers</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry.convenience</span><span class="w"> </span><span class="kn">import</span> <span class="n">normalize_unit</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry.state</span><span class="w"> </span><span class="kn">import</span> <span class="n">Stateful</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry.table</span><span class="w"> </span><span class="kn">import</span> <span class="n">Table</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry.units</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span><span class="n">UNSET</span><span class="p">,</span> <span class="n">Quantity</span><span class="p">,</span> <span class="n">_has_units</span><span class="p">,</span> <span class="n">_time_values_and_units</span><span class="p">,</span>
                                 <span class="n">parse_time</span><span class="p">)</span>
 
@@ -957,7 +958,7 @@ window.runMermaid = runMermaid;</script>
 
 <div class="viewcode-block" id="Events">
 <a class="viewcode-back" href="../../api/generated/pypillometry.Events.html#pypillometry.Events">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">Events</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Events</span><span class="p">(</span><span class="n">Stateful</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Container for events with metadata.</span>
 <span class="sd">    </span>
@@ -967,18 +968,21 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    Onsets are always times (not sample indices), so they stay valid when</span>
 <span class="sd">    the data are sliced or resampled.</span>
 
+<span class="sd">    Events are immutable: onsets, labels and metadata cannot be changed in</span>
+<span class="sd">    place; all methods return new Events.</span>
+
 <span class="sd">    The events of a dataset are obtained with</span>
-<span class="sd">    :meth:`~pypillometry.GenericEyeData.get_events`. An (e.g., filtered)</span>
+<span class="sd">    :attr:`~pypillometry.EyeData.events`. An (e.g., filtered)</span>
 <span class="sd">    Events object can be passed as `event_select` to</span>
-<span class="sd">    :meth:`~pypillometry.GenericEyeData.get_intervals` or stored in a dataset</span>
-<span class="sd">    with :meth:`~pypillometry.GenericEyeData.set_events` or added with</span>
-<span class="sd">    :meth:`~pypillometry.GenericEyeData.add_events`. Events from a</span>
+<span class="sd">    :meth:`~pypillometry.EyeData.get_epochs` or stored in a dataset</span>
+<span class="sd">    with :meth:`~pypillometry.EyeData.set_events` or added with</span>
+<span class="sd">    :meth:`~pypillometry.EyeData.add_events`. Events from a</span>
 <span class="sd">    behaviour log can be created with :meth:`from_table` and mapped to the</span>
 <span class="sd">    eye-tracker clock with :func:`~pypillometry.sync_clocks`.</span>
 
 <span class="sd">    Each event can have metadata (e.g., trial, condition, reaction time),</span>
-<span class="sd">    stored in `meta`: a dict that maps column names to numpy arrays with one</span>
-<span class="sd">    value per event. Missing values are NaN in numeric columns and "" in</span>
+<span class="sd">    stored in `meta`: a read-only mapping of column names to numpy arrays</span>
+<span class="sd">    with one value per event. Missing values are NaN in numeric columns and "" in</span>
 <span class="sd">    string columns. Metadata come from a behaviour log (see</span>
 <span class="sd">    :meth:`from_table`), from the labels of the events (see</span>
 <span class="sd">    :meth:`parse_labels`) or are added with :meth:`set_meta` and</span>
@@ -1001,6 +1005,15 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    meta : dict or None, optional</span>
 <span class="sd">        metadata: column name -&gt; values (one per event); "onset" and</span>
 <span class="sd">        "label" cannot be used as names</span>
+<span class="sd">    needs_sync : bool, optional</span>
+<span class="sd">        True if the onsets are on another clock than the eye tracker (e.g.,</span>
+<span class="sd">        from a behaviour log) and still have to be mapped with</span>
+<span class="sd">        :func:`~pypillometry.sync_clocks`; default False. Events from</span>
+<span class="sd">        :meth:`from_table` have it set; mapping them with a</span>
+<span class="sd">        :class:`~pypillometry.ClockSync` or :meth:`shift` clears it. Data</span>
+<span class="sd">        objects warn about such events (:meth:`~pypillometry.EyeData.add_events`,</span>
+<span class="sd">        :meth:`~pypillometry.EyeData.set_events`,</span>
+<span class="sd">        :meth:`~pypillometry.EyeData.get_epochs`).</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
@@ -1016,18 +1029,25 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    3</span>
 <span class="sd">    &gt;&gt;&gt; for onset, label in events:</span>
 <span class="sd">    ...     print(f"{label} at {onset}")</span>
+<span class="sd">    A at 100.0</span>
+<span class="sd">    B at 500.0</span>
+<span class="sd">    C at 1000.0</span>
 <span class="sd">    &gt;&gt;&gt; events = Events([100, 500], ["stim", "resp"],</span>
 <span class="sd">    ...                 meta={"trial": [1, 1], "cond": ["easy", "easy"]})</span>
 <span class="sd">    &gt;&gt;&gt; events.meta["cond"]</span>
 <span class="sd">    array(['easy', 'easy'], dtype='&lt;U4')</span>
 <span class="sd">    """</span>
 
+    <span class="c1"># state (see pypillometry.state)</span>
+    <span class="n">_STATE_FIELDS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"onsets"</span><span class="p">,</span> <span class="s2">"labels"</span><span class="p">,</span> <span class="s2">"units"</span><span class="p">,</span> <span class="s2">"data_time_range"</span><span class="p">,</span> <span class="p">(</span><span class="s2">"meta"</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">"_meta"</span><span class="p">),</span>
+                     <span class="s2">"needs_sync"</span><span class="p">)</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">onsets</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">List</span><span class="p">,</span>
                  <span class="n">labels</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">List</span><span class="p">,</span>
                  <span class="n">units</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">UNSET</span><span class="p">,</span>
                  <span class="n">data_time_range</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">meta</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+                 <span class="n">meta</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">needs_sync</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initialize an Events object (see class docstring for parameters).</span>
 <span class="sd">        """</span>
@@ -1045,7 +1065,30 @@ window.runMermaid = runMermaid;</script>
         <span class="c1"># Validate that onsets and labels have same length</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">onsets</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"onsets and labels must have same length, got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">onsets</span><span class="p">)</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">meta</span> <span class="o">=</span> <span class="n">_meta_dict</span><span class="p">(</span><span class="n">meta</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">onsets</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_meta</span> <span class="o">=</span> <span class="n">_meta_dict</span><span class="p">(</span><span class="n">meta</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">onsets</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">needs_sync</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">needs_sync</span><span class="p">)</span>
+        <span class="c1"># Events are immutable: methods return new objects</span>
+        <span class="k">for</span> <span class="n">arr</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">onsets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_meta</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
+            <span class="n">arr</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">writeable</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">st</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Set the attributes from a state of the current version (checked like</span>
+<span class="sd">        the arguments of the constructor)."""</span>
+        <span class="bp">self</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">st</span><span class="p">[</span><span class="s2">"onsets"</span><span class="p">],</span> <span class="n">st</span><span class="p">[</span><span class="s2">"labels"</span><span class="p">],</span> <span class="n">units</span><span class="o">=</span><span class="n">st</span><span class="p">[</span><span class="s2">"units"</span><span class="p">],</span>
+                      <span class="n">data_time_range</span><span class="o">=</span><span class="n">st</span><span class="p">[</span><span class="s2">"data_time_range"</span><span class="p">],</span> <span class="n">meta</span><span class="o">=</span><span class="n">st</span><span class="p">[</span><span class="s2">"meta"</span><span class="p">],</span>
+                      <span class="n">needs_sync</span><span class="o">=</span><span class="n">st</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"needs_sync"</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">meta</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Metadata of the events (read-only).</span>
+
+<span class="sd">        A mapping of column name -&gt; numpy array (one value per event). It</span>
+<span class="sd">        cannot be changed in place; :meth:`set_meta`, :meth:`drop_meta`,</span>
+<span class="sd">        :meth:`parse_labels`, :meth:`fill_meta` and :meth:`add_latency`</span>
+<span class="sd">        return new Events with changed metadata.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">MappingProxyType</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_meta</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_take</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">'Events'</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""New Events with the events `idx` (index array, mask or slice)."""</span>
@@ -1054,8 +1097,92 @@ window.runMermaid = runMermaid;</script>
             <span class="n">labels</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span>
             <span class="n">units</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">,</span>
             <span class="n">data_time_range</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_time_range</span><span class="p">,</span>
-            <span class="n">meta</span><span class="o">=</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">col</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">col</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+            <span class="n">meta</span><span class="o">=</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">col</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">col</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
+            <span class="n">needs_sync</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">needs_sync</span>
         <span class="p">)</span>
+
+<div class="viewcode-block" id="Events.shift">
+<a class="viewcode-back" href="../../api/generated/pypillometry.Events.html#pypillometry.Events.shift">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">shift</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">by</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">'Events'</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Events with shifted onsets.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        by : float or callable</span>
+<span class="sd">            a time offset (in the units of the events) that is added to all</span>
+<span class="sd">            onsets, or a time map: a function that takes an array of times</span>
+<span class="sd">            and returns the new times (an array of the same length)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Events</span>
+<span class="sd">            new Events with the same labels and metadata; `data_time_range`</span>
+<span class="sd">            (if set) is moved in the same way. The events count as mapped to</span>
+<span class="sd">            the eye-tracker clock (`needs_sync` is False).</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            if the time map does not return one time per onset</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; Events([100, 500], ["A", "B"]).shift(-100).onsets</span>
+<span class="sd">        array([  0., 400.])</span>
+<span class="sd">        &gt;&gt;&gt; Events([100, 500], ["A", "B"]).shift(lambda t: t * 2).onsets</span>
+<span class="sd">        array([ 200., 1000.])</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">by</span><span class="p">):</span>
+            <span class="n">fct</span> <span class="o">=</span> <span class="n">by</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">offset</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">by</span><span class="p">)</span>
+            <span class="n">fct</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">t</span> <span class="o">+</span> <span class="n">offset</span>  <span class="c1"># noqa: E731</span>
+        <span class="n">onsets</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">fct</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">onsets</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">onsets</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">onsets</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"the time map returned </span><span class="si">{</span><span class="n">onsets</span><span class="o">.</span><span class="n">size</span><span class="si">}</span><span class="s2"> times for "</span>
+                             <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="si">}</span><span class="s2"> onsets"</span><span class="p">)</span>
+        <span class="n">time_range</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_time_range</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">time_range</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span>
+                               <span class="n">fct</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_time_range</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">Events</span><span class="p">(</span><span class="n">onsets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">,</span>
+                      <span class="n">data_time_range</span><span class="o">=</span><span class="n">time_range</span><span class="p">,</span> <span class="n">meta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_meta</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Events.keep">
+<a class="viewcode-back" href="../../api/generated/pypillometry.Events.html#pypillometry.Events.keep">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">keep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">'Events'</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Events where `mask` is True.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        mask : array-like of bool</span>
+<span class="sd">            one value per event</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Events</span>
+<span class="sd">            new Events with the selected events (and their metadata)</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            if `mask` is not a boolean array with one value per event</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; ev = Events([100, 500, 900], ["A", "B", "C"])</span>
+<span class="sd">        &gt;&gt;&gt; ev.keep(ev.onsets &lt; 600).labels</span>
+<span class="sd">        array(['A', 'B'], dtype='&lt;U1')</span>
+<span class="sd">        """</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">mask</span><span class="o">.</span><span class="n">dtype</span> <span class="o">!=</span> <span class="nb">bool</span> <span class="ow">or</span> <span class="n">mask</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">),):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"mask must be a boolean array with one value per "</span>
+                             <span class="sa">f</span><span class="s2">"event (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="si">}</span><span class="s2">), got </span><span class="si">{</span><span class="n">mask</span><span class="o">.</span><span class="n">dtype</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">mask</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_take</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span></div>
+
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Return number of events."""</span>
@@ -1134,16 +1261,17 @@ window.runMermaid = runMermaid;</script>
 
 <div class="viewcode-block" id="Events.to_table">
 <a class="viewcode-back" href="../../api/generated/pypillometry.Events.html#pypillometry.Events.to_table">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">to_table</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_table</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Table</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Events as a table: a dict of columns (copies).</span>
+<span class="sd">        Events as a table (copies of the columns).</span>
 
 <span class="sd">        The columns are "onset", "label" and the metadata columns. The</span>
-<span class="sd">        result can be passed to ``pandas.DataFrame()``.</span>
+<span class="sd">        result is a :class:`~pypillometry.Table` (a dict of columns that is</span>
+<span class="sd">        displayed as a table; ``pandas.DataFrame(table)`` converts it).</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        dict</span>
+<span class="sd">        Table</span>
 <span class="sd">            column name -&gt; numpy array</span>
 
 <span class="sd">        Examples</span>
@@ -1154,15 +1282,16 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        &gt;&gt;&gt; import pandas as pd</span>
 <span class="sd">        &gt;&gt;&gt; df = pd.DataFrame(ev.to_table())</span>
 <span class="sd">        """</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">"onset"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">onsets</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="s2">"label"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
-                <span class="o">**</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">col</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">col</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">items</span><span class="p">()}}</span></div>
+        <span class="k">return</span> <span class="n">Table</span><span class="p">({</span><span class="s2">"onset"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">onsets</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="s2">"label"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+                      <span class="o">**</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">col</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">col</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">items</span><span class="p">()}})</span></div>
 
 
 <div class="viewcode-block" id="Events.from_table">
 <a class="viewcode-back" href="../../api/generated/pypillometry.Events.html#pypillometry.Events.from_table">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">from_table</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">units</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">UNSET</span><span class="p">,</span>
-                   <span class="n">meta</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"row"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">'Events'</span><span class="p">:</span>
+                   <span class="n">meta</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"row"</span><span class="p">,</span>
+                   <span class="n">needs_sync</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">'Events'</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Create Events from a table with one row per trial.</span>
 
@@ -1175,6 +1304,11 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        Other columns of the table (e.g., condition, reaction time) can be</span>
 <span class="sd">        given as `meta`; every event of a row gets the values of that row</span>
 <span class="sd">        as metadata.</span>
+
+<span class="sd">        The times of a behaviour log are usually on another clock than the</span>
+<span class="sd">        eye tracker, so the events are marked as `needs_sync`: map them with</span>
+<span class="sd">        :func:`~pypillometry.sync_clocks` before adding them to a data</span>
+<span class="sd">        object (which warns otherwise).</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1195,6 +1329,10 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">            name of a metadata column with the position of the row in the</span>
 <span class="sd">            table (0, 1, ...), which links the events of the same row;</span>
 <span class="sd">            default "row"; None for no such column</span>
+<span class="sd">        needs_sync : bool, optional</span>
+<span class="sd">            if True (default), the times are on another clock and must be</span>
+<span class="sd">            mapped with :func:`~pypillometry.sync_clocks`; False if they</span>
+<span class="sd">            are on the eye-tracker clock already</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -1227,7 +1365,11 @@ window.runMermaid = runMermaid;</script>
         <span class="n">nrows</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">columns</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">times</span> <span class="o">=</span> <span class="n">table</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">col</span>
-            <span class="n">times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"column '</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2">'"</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">"the times for '</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">'"</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> must hold event times (numbers or NaN): </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
             <span class="k">if</span> <span class="n">nrows</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">times</span><span class="p">)</span> <span class="o">!=</span> <span class="n">nrows</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"column for '</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">' has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">times</span><span class="p">)</span><span class="si">}</span><span class="s2"> "</span>
                                  <span class="sa">f</span><span class="s2">"values, expected </span><span class="si">{</span><span class="n">nrows</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
@@ -1254,7 +1396,8 @@ window.runMermaid = runMermaid;</script>
         <span class="c1"># stable sort, so events at the same time keep the column order</span>
         <span class="n">order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">onsets</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">"stable"</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">onsets</span><span class="p">[</span><span class="n">order</span><span class="p">],</span> <span class="n">labels</span><span class="p">[</span><span class="n">order</span><span class="p">],</span> <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">,</span>
-                   <span class="n">meta</span><span class="o">=</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">col</span><span class="p">[</span><span class="n">order</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">columns_meta</span><span class="o">.</span><span class="n">items</span><span class="p">()})</span></div>
+                   <span class="n">meta</span><span class="o">=</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">col</span><span class="p">[</span><span class="n">order</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">columns_meta</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
+                   <span class="n">needs_sync</span><span class="o">=</span><span class="n">needs_sync</span><span class="p">)</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s1">'Events'</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">'Events'</span><span class="p">:</span>
@@ -1275,7 +1418,8 @@ window.runMermaid = runMermaid;</script>
         <span class="n">order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">onsets</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">"stable"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">Events</span><span class="p">(</span><span class="n">onsets</span><span class="p">[</span><span class="n">order</span><span class="p">],</span> <span class="n">labels</span><span class="p">[</span><span class="n">order</span><span class="p">],</span> <span class="n">units</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">,</span>
                       <span class="n">data_time_range</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_time_range</span><span class="p">,</span>
-                      <span class="n">meta</span><span class="o">=</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">col</span><span class="p">[</span><span class="n">order</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">meta</span><span class="o">.</span><span class="n">items</span><span class="p">()})</span>
+                      <span class="n">meta</span><span class="o">=</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">col</span><span class="p">[</span><span class="n">order</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">meta</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
+                      <span class="n">needs_sync</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">needs_sync</span> <span class="ow">or</span> <span class="n">other</span><span class="o">.</span><span class="n">needs_sync</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_with_columns</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">'Events'</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
@@ -1290,7 +1434,8 @@ window.runMermaid = runMermaid;</script>
                 <span class="n">vals</span> <span class="o">=</span> <span class="p">[</span><span class="n">o</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">v</span> <span class="k">for</span> <span class="n">v</span><span class="p">,</span> <span class="n">o</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">vals</span><span class="p">,</span> <span class="n">old</span><span class="p">)]</span>
             <span class="n">meta</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">_column_from_values</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">Events</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">onsets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">,</span>
-                      <span class="n">data_time_range</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_time_range</span><span class="p">,</span> <span class="n">meta</span><span class="o">=</span><span class="n">meta</span><span class="p">)</span>
+                      <span class="n">data_time_range</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_time_range</span><span class="p">,</span> <span class="n">meta</span><span class="o">=</span><span class="n">meta</span><span class="p">,</span>
+                      <span class="n">needs_sync</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">needs_sync</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Events.parse_labels">
 <a class="viewcode-back" href="../../api/generated/pypillometry.Events.html#pypillometry.Events.parse_labels">[docs]</a>
@@ -1444,7 +1589,8 @@ window.runMermaid = runMermaid;</script>
         <span class="n">meta</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="p">)</span>
         <span class="n">meta</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">_column_from_values</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">Events</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">onsets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">,</span>
-                      <span class="n">data_time_range</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_time_range</span><span class="p">,</span> <span class="n">meta</span><span class="o">=</span><span class="n">meta</span><span class="p">)</span>
+                      <span class="n">data_time_range</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_time_range</span><span class="p">,</span> <span class="n">meta</span><span class="o">=</span><span class="n">meta</span><span class="p">,</span>
+                      <span class="n">needs_sync</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">needs_sync</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Events.drop_meta">
 <a class="viewcode-back" href="../../api/generated/pypillometry.Events.html#pypillometry.Events.drop_meta">[docs]</a>
@@ -1463,7 +1609,8 @@ window.runMermaid = runMermaid;</script>
                 <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"no metadata column '</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
         <span class="n">meta</span> <span class="o">=</span> <span class="p">{}</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">names</span> <span class="k">else</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">names</span><span class="p">}</span>
         <span class="k">return</span> <span class="n">Events</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">onsets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">,</span>
-                      <span class="n">data_time_range</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_time_range</span><span class="p">,</span> <span class="n">meta</span><span class="o">=</span><span class="n">meta</span><span class="p">)</span></div>
+                      <span class="n">data_time_range</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_time_range</span><span class="p">,</span> <span class="n">meta</span><span class="o">=</span><span class="n">meta</span><span class="p">,</span>
+                      <span class="n">needs_sync</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">needs_sync</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Events.fill_meta">
@@ -1550,7 +1697,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        by : str or None, optional</span>
 <span class="sd">            if None (default), each first event is paired with the next</span>
 <span class="sd">            second event after it (as in</span>
-<span class="sd">            :meth:`~pypillometry.GenericEyeData.get_intervals`); if the</span>
+<span class="sd">            :meth:`~pypillometry.EyeData.get_intervals`); if the</span>
 <span class="sd">            name of a metadata column (e.g., "trial"), with the next second</span>
 <span class="sd">            event with the same value in this column</span>
 <span class="sd">        exact : bool, optional</span>
@@ -1656,7 +1803,8 @@ window.runMermaid = runMermaid;</script>
             <span class="n">labels</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
             <span class="n">units</span><span class="o">=</span><span class="n">target_units</span><span class="p">,</span>
             <span class="n">data_time_range</span><span class="o">=</span><span class="n">converted_range</span><span class="p">,</span>
-            <span class="n">meta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">meta</span>
+            <span class="n">meta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="p">,</span>
+            <span class="n">needs_sync</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">needs_sync</span>
         <span class="p">)</span></div>
 
     
@@ -1688,7 +1836,9 @@ window.runMermaid = runMermaid;</script>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="p">:</span>
             <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"meta=[</span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="p">)</span><span class="si">}</span><span class="s2">]"</span><span class="p">)</span>
-        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">needs_sync</span><span class="p">:</span>
+            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"needs sync_clocks()"</span><span class="p">)</span>
+
         <span class="k">return</span> <span class="s2">" | "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
     
     <span class="k">def</span><span class="w"> </span><span class="nf">_repr_html_</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -1746,6 +1896,8 @@ window.runMermaid = runMermaid;</script>
         <span class="n">summary</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">'Total: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="si">}</span><span class="s1"> events'</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_time_range</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">summary</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">' | Data range: [</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">data_time_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">data_time_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">] </span><span class="si">{</span><span class="n">unit_str</span><span class="si">}</span><span class="s1">'</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">needs_sync</span><span class="p">:</span>
+            <span class="n">summary</span> <span class="o">+=</span> <span class="s1">' | on another clock: map with sync_clocks()'</span>
         <span class="n">summary</span> <span class="o">+=</span> <span class="s1">'&lt;/p&gt;'</span>
         
         <span class="k">return</span> <span class="n">html</span> <span class="o">+</span> <span class="n">summary</span>
@@ -1756,7 +1908,7 @@ window.runMermaid = runMermaid;</script>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">show_labels</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"auto"</span><span class="p">,</span>
         <span class="n">marker</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"."</span><span class="p">,</span>
-        <span class="n">units</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"min"</span><span class="p">,</span>
+        <span class="n">units</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"sec"</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
@@ -1770,7 +1922,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        marker : str, optional</span>
 <span class="sd">            Matplotlib marker style for the events (default '.').</span>
 <span class="sd">        units : str or None, optional</span>
-<span class="sd">            Units to display in the plot. Defaults to "min". Use None to keep existing units.</span>
+<span class="sd">            Units to display in the plot. Defaults to "sec". Use None to keep existing units.</span>
 <span class="sd">        **kwargs :</span>
 <span class="sd">            Additional keyword arguments passed to :func:`matplotlib.axes.Axes.plot`.</span>
 
@@ -1786,11 +1938,10 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        .. plot::</span>
 
 <span class="sd">           &gt;&gt;&gt; import pypillometry as pp</span>
-<span class="sd">           &gt;&gt;&gt; from pypillometry import u</span>
 <span class="sd">           &gt;&gt;&gt; import matplotlib.pyplot as plt</span>
 <span class="sd">           &gt;&gt;&gt; d = pp.get_example_data("rlmw_002_short")</span>
-<span class="sd">           &gt;&gt;&gt; plt.figure(figsize=(10, 3))</span>
-<span class="sd">           &gt;&gt;&gt; d.get_events().filter("S_").plot(units="sec")</span>
+<span class="sd">           &gt;&gt;&gt; fig = plt.figure(figsize=(10, 3))</span>
+<span class="sd">           &gt;&gt;&gt; d.events.filter("S_").plot(units="sec")</span>
 <span class="sd">        """</span>
         <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 
@@ -1884,6 +2035,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        Filter events and return a new Events object.</span>
 <span class="sd">        </span>
 <span class="sd">        This method supports multiple types of selectors for flexible filtering:</span>
+
 <span class="sd">        - String: matches labels containing the substring (or equal to</span>
 <span class="sd">          it, if `exact` is True)</span>
 <span class="sd">        - Callable: applies function to each label, keeps events where it returns True</span>
@@ -1954,6 +2106,51 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        &gt;&gt;&gt; events.filter(cond="a", rt=lambda rt: rt &lt; 500).onsets</span>
 <span class="sd">        array([100.])</span>
 <span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_take</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_filter_mask</span><span class="p">(</span><span class="n">selector</span><span class="p">,</span> <span class="n">exact</span><span class="p">,</span> <span class="o">**</span><span class="n">conditions</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="Events.onset">
+<a class="viewcode-back" href="../../api/generated/pypillometry.Events.html#pypillometry.Events.onset">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">onset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"ms"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Onset of the one event with the given label.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        label : str</span>
+<span class="sd">            label of the event; only a label equal to it matches</span>
+<span class="sd">        units : str, optional</span>
+<span class="sd">            units of the returned onset: "ms" (default), "sec", "min" or "h"</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            onset of the event</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            if no event or more than one event has this label</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        filter : select events (e.g., labels that occur several times)</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; events = Events([100, 2500], ["start", "stim"], units="ms")</span>
+<span class="sd">        &gt;&gt;&gt; events.onset("stim", units="sec")</span>
+<span class="sd">        2.5</span>
+<span class="sd">        """</span>
+        <span class="n">onsets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="n">units</span><span class="p">)</span><span class="o">.</span><span class="n">onsets</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">==</span> <span class="n">label</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">onsets</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"expected one event with label '</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">', "</span>
+                             <span class="sa">f</span><span class="s2">"found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">onsets</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">onsets</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_filter_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selector</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">exact</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">conditions</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Boolean mask of the events that match the criteria of :meth:`filter`."""</span>
         <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span> <span class="k">if</span> <span class="n">selector</span> <span class="ow">is</span> <span class="kc">None</span> \
             <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mask</span><span class="p">(</span><span class="n">selector</span><span class="p">,</span> <span class="n">exact</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">crit</span> <span class="ow">in</span> <span class="n">conditions</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -1966,15 +2163,41 @@ window.runMermaid = runMermaid;</script>
                 <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">col</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"the function for '</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">' must return one "</span>
                                      <span class="sa">f</span><span class="s2">"bool per event, got shape </span><span class="si">{</span><span class="n">m</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">crit</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">set</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
-                <span class="n">m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">crit</span><span class="p">))</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">m</span> <span class="o">=</span> <span class="n">col</span> <span class="o">==</span> <span class="n">crit</span>
+                <span class="n">values</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">crit</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">crit</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">set</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">))</span> \
+                    <span class="k">else</span> <span class="p">[</span><span class="n">crit</span><span class="p">]</span>
+                <span class="n">_check_condition_types</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
+                <span class="n">m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
             <span class="n">mask</span> <span class="o">&amp;=</span> <span class="n">m</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_take</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span></div>
-</div>
+        <span class="k">return</span> <span class="n">mask</span></div>
 
 
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_warn_if_needs_sync</span><span class="p">(</span><span class="n">events</span><span class="p">,</span> <span class="n">what</span><span class="o">=</span><span class="s2">"events"</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Warn if `events` are on another clock (`needs_sync`)."""</span>
+    <span class="k">if</span> <span class="n">events</span><span class="o">.</span><span class="n">needs_sync</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"the </span><span class="si">{</span><span class="n">what</span><span class="si">}</span><span class="s2"> are on another clock than the eye tracker (e.g., from "</span>
+            <span class="s2">"Events.from_table()); map them with pp.sync_clocks() first, or use "</span>
+            <span class="s2">"Events.from_table(..., needs_sync=False) if they are on the eye-tracker "</span>
+            <span class="s2">"clock already"</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_condition_types</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Raise a TypeError if strings are compared with a numeric metadata column</span>
+<span class="sd">    or numbers with a column of strings (such a condition matches nothing)."""</span>
+    <span class="k">if</span> <span class="n">col</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="ow">in</span> <span class="s2">"biuf"</span><span class="p">:</span>
+        <span class="n">bad</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">str</span><span class="p">)]</span>
+        <span class="n">hint</span> <span class="o">=</span> <span class="s2">"numbers"</span>
+    <span class="k">elif</span> <span class="n">col</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s2">"U"</span><span class="p">:</span>
+        <span class="n">bad</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="p">(</span><span class="n">numbers</span><span class="o">.</span><span class="n">Number</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">))]</span>
+        <span class="n">hint</span> <span class="o">=</span> <span class="s2">"strings"</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="k">if</span> <span class="n">bad</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"metadata column '</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">' holds </span><span class="si">{</span><span class="n">hint</span><span class="si">}</span><span class="s2">; the condition "</span>
+                        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">bad</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">!r}</span><span class="s2"> never matches"</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="ClockSync">
@@ -1990,7 +2213,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    Calling the object maps times: plain numbers are taken to be in</span>
 <span class="sd">    `src_units` and are returned as an array in `dst_units`; numbers with</span>
 <span class="sd">    units and :class:`Events` are converted first and returned in</span>
-<span class="sd">    `dst_units` (as :class:`Events` for :class:`Events`).</span>
+<span class="sd">    `dst_units` (as :class:`Events` for :class:`Events`, which are then no</span>
+<span class="sd">    longer marked as `needs_sync`).</span>
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
@@ -2013,7 +2237,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; sync = sync_clocks([10, 70, 130], [5000, 65000.6, 125001.2],</span>
 <span class="sd">    ...                    src_units="sec", dst_units="ms")</span>
-<span class="sd">    &gt;&gt;&gt; sync(100.0)</span>
+<span class="sd">    &gt;&gt;&gt; round(sync(100.0), 1)</span>
 <span class="sd">    95000.9</span>
 <span class="sd">    """</span>
 
@@ -2089,7 +2313,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        times on the source clock (e.g., from the behaviour log)</span>
 <span class="sd">    dst : array-like, Quantity or Events</span>
 <span class="sd">        times of the same moments on the target clock, in the same order</span>
-<span class="sd">        (e.g., ``d.get_events().filter("Start Block")``)</span>
+<span class="sd">        (e.g., ``d.events.filter("Start Block")``)</span>
 <span class="sd">    src_units, dst_units : str or Unit, optional</span>
 <span class="sd">        units of plain numbers in `src` and `dst` (e.g., "sec", "ms");</span>
 <span class="sd">        needed unless the times carry units or are :class:`Events`</span>
@@ -2114,10 +2338,15 @@ window.runMermaid = runMermaid;</script>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
-<span class="sd">    &gt;&gt;&gt; starts = behav.groupby("block").trialstart.min()     # in sec</span>
-<span class="sd">    &gt;&gt;&gt; sync = pp.sync_clocks(starts, d.get_events().filter("Start Block"),</span>
-<span class="sd">    ...                       src_units="sec")</span>
-<span class="sd">    &gt;&gt;&gt; d.add_events(sync(pp.Events.from_table(behav, ["stim_on"], units="sec")))</span>
+<span class="sd">    Map the stimulus times of a behaviour log ``behav`` (a table with</span>
+<span class="sd">    times in sec) onto the eye-tracker clock of ``d``, using the start</span>
+<span class="sd">    of each block (a "Start Block" event in ``d``) as the common moments:</span>
+
+<span class="sd">    &gt;&gt;&gt; starts = behav.groupby("block").trialstart.min()  # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; sync = pp.sync_clocks(starts, d.events.filter("Start Block"),</span>
+<span class="sd">    ...                       src_units="sec")  # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; d.add_events(sync(pp.Events.from_table(behav, ["stim_on"],</span>
+<span class="sd">    ...                                        units="sec")))  # doctest: +SKIP</span>
 <span class="sd">    """</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">values</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">units</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">Events</span><span class="p">):</span>

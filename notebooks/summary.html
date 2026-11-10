@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Summarizing pupillometric data &#8212; pypillometry v2.1.0</title>
+    <title>Summarizing pupillometric data &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -62,7 +62,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -106,9 +106,6 @@
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -425,6 +422,7 @@
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Preprocessing and plotting</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="blinks.html">Blink preprocessing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="missing_data.html">Missing data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plotting.html">Plotting pupillometric data for exploration</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Events and event-related analyses</span></p>
@@ -433,6 +431,7 @@
 <li class="toctree-l1"><a class="reference internal" href="event_metadata.html">Event metadata</a></li>
 <li class="toctree-l1"><a class="reference internal" href="intervals.html">Intervals</a></li>
 <li class="toctree-l1"><a class="reference internal" href="erpds.html">Event-related pupil dilations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rois.html">Gaze in regions of interest around events</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Modeling and complete analyses</span></p>
 <ul class="nav bd-sidenav">
@@ -507,22 +506,34 @@
   </a>
 </div><section id="Summarizing-pupillometric-data">
 <h1>Summarizing pupillometric data<a class="headerlink" href="#Summarizing-pupillometric-data" title="Link to this heading">#</a></h1>
+<p><code class="docutils literal notranslate"><span class="pre">pypillometry</span></code> summarizes a dataset at several levels:</p>
+<ul class="simple">
+<li><p><strong>one dataset</strong>: its contents (<code class="docutils literal notranslate"><span class="pre">print(d)</span></code>, <code class="docutils literal notranslate"><span class="pre">summary()</span></code>), the quality of the data (<code class="docutils literal notranslate"><span class="pre">quality_report()</span></code>) and how much of it is masked, and why (<code class="docutils literal notranslate"><span class="pre">layer_stats()</span></code>)</p></li>
+<li><p><strong>several datasets</strong>: the same summaries as one table with a row per dataset, e.g., to find participants with poor data</p></li>
+<li><p><strong>trials</strong>: one value per event or trial (<code class="docutils literal notranslate"><span class="pre">stat_per_event()</span></code>), together with the events and their metadata</p></li>
+</ul>
+<p>Many of these results are dicts that are displayed as a table: per channel (e.g., <code class="docutils literal notranslate"><span class="pre">layer_stats()</span></code>: channel -&gt; layer -&gt; statistics) or with one row per trial (a dict of columns). <code class="docutils literal notranslate"><span class="pre">.to_pandas()</span></code> converts them to a <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code>.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">u</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="n">pp</span><span class="o">.</span><span class="n">logging_set_level</span><span class="p">(</span><span class="s2">"WARNING"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code> package provides several functions for summarizing datasets. Simply printing a <code class="docutils literal notranslate"><span class="pre">PupilData</span></code>, <code class="docutils literal notranslate"><span class="pre">GazeData</span></code> or <code class="docutils literal notranslate"><span class="pre">EyeData</span></code> object gives a readable summary of the main properties of the dataset and also prints the complete history of operations applied to it.</p>
+<section id="One-dataset">
+<h2>One dataset<a class="headerlink" href="#One-dataset" title="Link to this heading">#</a></h2>
+<p>We detect and interpolate blinks and mask the gaze outside the screen. Printing the object gives an overview of its contents and the history of operations:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002_short"</span><span class="p">)</span>
-<span class="n">d</span><span class="o">.</span><span class="n">pupil_blinks_detect</span><span class="p">(</span><span class="n">apply_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">d</span> <span class="o">|</span> <span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span> <span class="o">|</span> <span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_interpolate</span><span class="p">()</span> <span class="o">|</span> <span class="n">pp</span><span class="o">.</span><span class="n">gaze</span><span class="o">.</span><span class="n">mask_offscreen</span><span class="p">()</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -532,18 +543,20 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-EyeData(test short, 2.0MiB):
+EyeData(rlmw_002_short, 1.4MiB):
  n                 : 20465
  sampling_rate     : 500.0
  eyes              : [&#39;left&#39;, &#39;right&#39;]
  data              : [&#39;left_x&#39;, &#39;left_y&#39;, &#39;left_pupil&#39;, &#39;right_x&#39;, &#39;right_y&#39;, &#39;right_pupil&#39;]
  nevents           : 40
- experimental_setup: {&#39;screen_resolution&#39;: (1280, 1024), &#39;physical_screen_size_mm&#39;: (300.0, 200.0), &#39;eye_to_screen_distance_mm&#39;: np.float64(600.0), &#39;camera_position&#39;: &#39;not set&#39;}
+ experimental_setup: {&#39;screen_resolution&#39;: (1280, 1024), &#39;physical_screen_size_mm&#39;: (300.0, 200.0), &#39;eye_to_screen_distance_mm&#39;: 600.0, &#39;camera_position&#39;: &#39;not set&#39;}
  calibration       : not available
- duration_minutes  : 0.6821666666666667
+ duration_minutes  : 0.6822
  start_min         : 0.0
- end_min           : 0.6821333333333333
- parameters        : {}
+ end_min           : 0.6821
+ params            : {}
+ nblinks           : {&#39;left_pupil&#39;: 14, &#39;right_pupil&#39;: 13}
+ blinks            : {&#39;left_pupil&#39;: {&#39;n&#39;: 14, &#39;mean&#39;: 217.1429, &#39;sd&#39;: 236.4701, &#39;min&#39;: 48.0, &#39;max&#39;: 984.0, &#39;total_duration&#39;: 3040.0, &#39;units&#39;: &#39;ms&#39;}, &#39;right_pupil&#39;: {&#39;n&#39;: 13, &#39;mean&#39;: 138.0, &#39;sd&#39;: 84.8564, &#39;min&#39;: 44.0, &#39;max&#39;: 404.0, &#39;total_duration&#39;: 1794.0, &#39;units&#39;: &#39;ms&#39;}}
  glimpse           : EyeDataDict(vars=6,n=20465,shape=(20465,)):
   left_x (float64): 655.6, 655.7, 655.0, 654.5, 655.0...
   left_y (float64): 599.9, 598.9, 597.6, 597.8, 597.8...
@@ -552,18 +565,16 @@ EyeData(test short, 2.0MiB):
   right_y (float64): 594.2, 593.9, 596.5, 597.4, 597.3...
   right_pupil (float64): 949.0, 951.0, 956.0, 959.0, 960.0...
 
- nblinks           : {&#39;left_pupil&#39;: 15, &#39;right_pupil&#39;: 13}
- blinks            : {&#39;left&#39;: {&#39;n&#39;: 15, &#39;mean&#39;: np.float64(354.53333333333336), &#39;sd&#39;: np.float64(562.544441701177), &#39;min&#39;: np.float64(48.0), &#39;max&#39;: np.float64(2278.0), &#39;total_duration&#39;: np.float64(5318.0), &#39;units&#39;: &#39;ms&#39;}, &#39;right&#39;: {&#39;n&#39;: 13, &#39;mean&#39;: np.float64(138.0), &#39;sd&#39;: np.float64(84.85643985352782), &#39;min&#39;: np.float64(44.0), &#39;max&#39;: np.float64(404.0), &#39;total_duration&#39;: np.float64(1794.0), &#39;units&#39;: &#39;ms&#39;}}
- params            : {}
  History:
  *
- └ fill_time_discontinuities()
-  └ reset_time()
-   └ pupil_blinks_detect(apply_mask=True)
+ └ reset_time()
+  └ pupil.blinks_detect()
+   └ pupil.blinks_interpolate()
+    └ gaze.mask_offscreen()
 
 </pre></div></div>
 </div>
-<p>By calling the function <code class="docutils literal notranslate"><span class="pre">summary()</span></code>, the same information is returned as a <code class="docutils literal notranslate"><span class="pre">dict</span></code>:</p>
+<p><code class="docutils literal notranslate"><span class="pre">summary()</span></code> returns the same information as a <code class="docutils literal notranslate"><span class="pre">dict</span></code>:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
@@ -578,9 +589,9 @@ EyeData(test short, 2.0MiB):
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-{&#39;name&#39;: &#39;test short&#39;,
+{&#39;name&#39;: &#39;rlmw_002_short&#39;,
  &#39;n&#39;: 20465,
- &#39;sampling_rate&#39;: np.float64(500.0),
+ &#39;sampling_rate&#39;: 500.0,
  &#39;eyes&#39;: [&#39;left&#39;, &#39;right&#39;],
  &#39;data&#39;: [&#39;left_x&#39;,
   &#39;left_y&#39;,
@@ -591,49 +602,548 @@ EyeData(test short, 2.0MiB):
  &#39;nevents&#39;: 40,
  &#39;experimental_setup&#39;: {&#39;screen_resolution&#39;: (1280, 1024),
   &#39;physical_screen_size_mm&#39;: (300.0, 200.0),
-  &#39;eye_to_screen_distance_mm&#39;: np.float64(600.0),
+  &#39;eye_to_screen_distance_mm&#39;: 600.0,
   &#39;camera_position&#39;: &#39;not set&#39;},
  &#39;calibration&#39;: &#39;not available&#39;,
- &#39;duration_minutes&#39;: np.float64(0.6821666666666667),
- &#39;start_min&#39;: np.float64(0.0),
- &#39;end_min&#39;: np.float64(0.6821333333333333),
- &#39;parameters&#39;: &#39;{}&#39;,
- &#39;glimpse&#39;: &#39;EyeDataDict(vars=6,n=20465,shape=(20465,)): \n  left_x (float64): 655.6, 655.7, 655.0, 654.5, 655.0...\n  left_y (float64): 599.9, 598.9, 597.6, 597.8, 597.8...\n  left_pupil (float64): 1121.0, 1122.0, 1124.0, 1126.0, 1126.0...\n  right_x (float64): 773.1, 773.8, 774.8, 776.3, 776.7...\n  right_y (float64): 594.2, 593.9, 596.5, 597.4, 597.3...\n  right_pupil (float64): 949.0, 951.0, 956.0, 959.0, 960.0...\n&#39;,
- &#39;nblinks&#39;: {&#39;left_pupil&#39;: 15, &#39;right_pupil&#39;: 13},
- &#39;blinks&#39;: {&#39;left&#39;: {&#39;n&#39;: 15,
-   &#39;mean&#39;: np.float64(354.53333333333336),
-   &#39;sd&#39;: np.float64(562.544441701177),
-   &#39;min&#39;: np.float64(48.0),
-   &#39;max&#39;: np.float64(2278.0),
-   &#39;total_duration&#39;: np.float64(5318.0),
+ &#39;duration_minutes&#39;: 0.6821666666666667,
+ &#39;start_min&#39;: 0.0,
+ &#39;end_min&#39;: 0.6821333333333333,
+ &#39;params&#39;: {},
+ &#39;nblinks&#39;: {&#39;left_pupil&#39;: 14, &#39;right_pupil&#39;: 13},
+ &#39;blinks&#39;: {&#39;left_pupil&#39;: {&#39;n&#39;: 14,
+   &#39;mean&#39;: 217.14285714285714,
+   &#39;sd&#39;: 236.4701301411652,
+   &#39;min&#39;: 48.0,
+   &#39;max&#39;: 984.0,
+   &#39;total_duration&#39;: 3040.0,
    &#39;units&#39;: &#39;ms&#39;},
-  &#39;right&#39;: {&#39;n&#39;: 13,
-   &#39;mean&#39;: np.float64(138.0),
-   &#39;sd&#39;: np.float64(84.85643985352782),
-   &#39;min&#39;: np.float64(44.0),
-   &#39;max&#39;: np.float64(404.0),
-   &#39;total_duration&#39;: np.float64(1794.0),
-   &#39;units&#39;: &#39;ms&#39;}},
- &#39;params&#39;: &#39;{}&#39;}
+  &#39;right_pupil&#39;: {&#39;n&#39;: 13,
+   &#39;mean&#39;: 138.0,
+   &#39;sd&#39;: 84.85643985352782,
+   &#39;min&#39;: 44.0,
+   &#39;max&#39;: 404.0,
+   &#39;total_duration&#39;: 1794.0,
+   &#39;units&#39;: &#39;ms&#39;}}}
 </pre></div></div>
 </div>
-<p>Using <code class="docutils literal notranslate"><span class="pre">pandas</span></code>, this allows you to quickly summarize properties of many datasets in a table.</p>
-<p>To illustrate, we load a few datasets (in a real study, there would be one per subject) and detect blinks in each of them:</p>
-<div class="nbinput nblast docutils container">
+<section id="Data-quality">
+<h3>Data quality<a class="headerlink" href="#Data-quality" title="Link to this heading">#</a></h3>
+<p>The quality report rates missing data, noise, blinks, gaze precision, the agreement of the eyes and the calibration as “good”, “ok”, “poor” or “bad” (see <a class="reference internal" href="../user_guide/quality.html"><span class="doc">Data quality</span></a>):</p>
+<div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">datasets</span> <span class="o">=</span> <span class="p">[</span><span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002_short"</span><span class="p">),</span>
-            <span class="n">pp</span><span class="o">.</span><span class="n">PupilData</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">"../../data/test.pd"</span><span class="p">),</span>
-            <span class="n">pp</span><span class="o">.</span><span class="n">PupilData</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">"../../data/example_shortblinks.pd"</span><span class="p">)]</span>
-<span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">datasets</span><span class="p">:</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">pupil_blinks_detect</span><span class="p">(</span><span class="n">apply_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">report</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">quality_report</span><span class="p">()</span>
+<span class="n">report</span>
 </pre></div>
 </div>
 </div>
-<p>We can now call <code class="docutils literal notranslate"><span class="pre">summary()</span></code> for each of the objects and combine the resulting <code class="docutils literal notranslate"><span class="pre">dict</span></code>s into a table. Here we keep only some of the columns:</p>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div style="font-family:system-ui, sans-serif; border:1px solid rgba(128,128,128,0.4); border-radius:6px; padding:12px; max-width:720px;">
+  <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+    <h3 style="margin:0;">Quality report — rlmw_002_short
+      <span style="opacity:0.6; font-weight:normal;">(EyeData)</span></h3>
+    <span style="background:#9a7d0a; color:#fff; border-radius:3px; padding:3px 10px; font-size:1em; font-weight:600; text-transform:uppercase;">ok</span>
+  </div>
+
+  <div style="font-weight:600; margin-top:10px;">Recording</div>
+  <table style="border-collapse:collapse; margin-top:4px; min-width:60%;">
+    <tbody>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="length of the recording" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">duration</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="length of the recording">0.682 min </td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="number of samples per second" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">sampling rate</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="number of samples per second">500 Hz </td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="number of samples in the recording" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">samples</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="number of samples in the recording">20465 </td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="number of events (e.g., triggers) in the recording" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">events</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="number of events (e.g., triggers) in the recording">40 </td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="number of gaps in the time vector, where the eye tracker stored no samples (filled with missing data when the data were read)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">time gaps</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="number of gaps in the time vector, where the eye tracker stored no samples (filled with missing data when the data were read)">0 </td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="font-weight:600; margin-top:10px;">Pupil</div>
+  <table style="border-collapse:collapse; margin-top:4px; min-width:60%;">
+    <thead><tr>
+      <th style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);"></th>
+      <th style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right;">left</th>
+      <th style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right;">right</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="percentage of samples without valid pupil data (e.g., blinks, lost tracking) (labels: good &lt;= 10%, ok &lt;= 20%, poor &lt;= 40%, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">missing data</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 40%, else bad">0.0% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 40%, else bad">0.0% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="number of periods with missing data per minute (including blinks; many short dropouts indicate unstable tracking) (labels: good &lt;= 30 /min, ok &lt;= 60 /min, poor &lt;= 150 /min, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">dropouts</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 30 /min, ok &lt;= 60 /min, poor &lt;= 150 /min, else bad">0 /min <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 30 /min, ok &lt;= 60 /min, poor &lt;= 150 /min, else bad">0 /min <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="duration of the longest period with missing data (long periods cannot be interpolated) (labels: good &lt;= 2 s, ok &lt;= 5 s, poor &lt;= 30 s, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">longest dropout</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 2 s, ok &lt;= 5 s, poor &lt;= 30 s, else bad">0 s <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 2 s, ok &lt;= 5 s, poor &lt;= 30 s, else bad">0 s <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="high-frequency noise in percent of the median pupil size, estimated robustly from sample-to-sample differences (insensitive to blinks and slow pupil changes) (labels: good &lt;= 0.5%, ok &lt;= 1%, poor &lt;= 2%, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">noise</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 0.5%, ok &lt;= 1%, poor &lt;= 2%, else bad">0.094% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 0.5%, ok &lt;= 1%, poor &lt;= 2%, else bad">0.11% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="high-frequency noise (SD) in the units of the pupil data" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">noise (SD)</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="high-frequency noise (SD) in the units of the pupil data">1.05 </td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="high-frequency noise (SD) in the units of the pupil data">1.05 </td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="number of changes larger than 5% of the median pupil size from one sample to the next, per minute (ignoring 50 ms around missing data); indicates artifacts, e.g., during saccades (labels: good &lt;= 1 /min, ok &lt;= 10 /min, poor &lt;= 100 /min, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">jumps</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 1 /min, ok &lt;= 10 /min, poor &lt;= 100 /min, else bad">0 /min <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 1 /min, ok &lt;= 10 /min, poor &lt;= 100 /min, else bad">0 /min <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="font-weight:600; margin-top:10px;">Gaze</div>
+  <table style="border-collapse:collapse; margin-top:4px; min-width:60%;">
+    <thead><tr>
+      <th style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);"></th>
+      <th style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right;">left</th>
+      <th style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right;">right</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="percentage of samples without valid gaze data (x or y missing) (labels: good &lt;= 10%, ok &lt;= 20%, poor &lt;= 40%, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">missing data</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 40%, else bad">2.7% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 40%, else bad">1.9% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="percentage of valid gaze samples outside the screen (looking away or poor calibration) (labels: good &lt;= 5%, ok &lt;= 15%, poor &lt;= 30%, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">off-screen</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 5%, ok &lt;= 15%, poor &lt;= 30%, else bad">0.21% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 5%, ok &lt;= 15%, poor &lt;= 30%, else bad">0.24% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="precision of the gaze: median distance between consecutive samples in degrees of visual angle (lower is better) (labels: good &lt;= 0.05 deg, ok &lt;= 0.1 deg, poor &lt;= 0.2 deg, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">precision</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 0.05 deg, ok &lt;= 0.1 deg, poor &lt;= 0.2 deg, else bad">0.0202 deg <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 0.05 deg, ok &lt;= 0.1 deg, poor &lt;= 0.2 deg, else bad">0.02 deg <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="font-weight:600; margin-top:10px;">Binocular</div>
+  <table style="border-collapse:collapse; margin-top:4px; min-width:60%;">
+    <thead><tr>
+      <th style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);"></th>
+      <th style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right;">left/right</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="correlation of left and right pupil size (samples valid in both eyes); the pupils of both eyes should move together (labels: good &gt;= 0.9, ok &gt;= 0.8, poor &gt;= 0.6, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">pupil correlation</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &gt;= 0.9, ok &gt;= 0.8, poor &gt;= 0.6, else bad">0.914 <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="median distance between the gaze positions of the left and right eye; large values indicate calibration problems for one eye (labels: good &lt;= 1 deg, ok &lt;= 2 deg, poor &lt;= 3 deg, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">gaze disparity</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 1 deg, ok &lt;= 2 deg, poor &lt;= 3 deg, else bad">1.61 deg <span style="background:#9a7d0a; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">ok</span></td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="font-weight:600; margin-top:10px;">Blinks</div>
+  <table style="border-collapse:collapse; margin-top:4px; min-width:60%;">
+    <thead><tr>
+      <th style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);"></th>
+      <th style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right;">left</th>
+      <th style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right;">right</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="number of detected blinks" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">number</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="number of detected blinks">14 </td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="number of detected blinks">13 </td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="number of detected blinks per minute (median across people about 10 during screen tasks and 13 at rest; varies a lot between people) (labels: good &lt;= 20 /min, ok &lt;= 35 /min, poor &lt;= 70 /min, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">blink rate</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 20 /min, ok &lt;= 35 /min, poor &lt;= 70 /min, else bad">20.5 /min <span style="background:#9a7d0a; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">ok</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 20 /min, ok &lt;= 35 /min, poor &lt;= 70 /min, else bad">19.1 /min <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="mean duration of the detected blinks" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">mean duration</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="mean duration of the detected blinks">217 ms </td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="mean duration of the detected blinks">138 ms </td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="percentage of the recording covered by blinks (and the samples around them that were removed) (labels: good &lt;= 10%, ok &lt;= 20%, poor &lt;= 35%, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">time in blinks</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 35%, else bad">7.4% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 35%, else bad">4.4% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="number of blinks longer than 500 ms (may be eye closures or tracking losses rather than blinks)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">long (&gt;500 ms)</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="number of blinks longer than 500 ms (may be eye closures or tracking losses rather than blinks)">1 </td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="number of blinks longer than 500 ms (may be eye closures or tracking losses rather than blinks)">0 </td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="font-weight:600; margin-top:10px;">Artifacts</div>
+  <table style="border-collapse:collapse; margin-top:4px; min-width:60%;">
+    <thead><tr>
+      <th style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);"></th>
+      <th style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right;">left</th>
+      <th style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right;">right</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="percentage of masked pupil samples (missing data, blinks and other artifacts; interpolated samples only with the &#39;strict&#39; mask policy) (labels: good &lt;= 10%, ok &lt;= 20%, poor &lt;= 35%, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">pupil masked</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 35%, else bad">0.0% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 35%, else bad">0.0% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="percentage of pupil samples that were interpolated (e.g., blinks) (labels: good &lt;= 10%, ok &lt;= 20%, poor &lt;= 30%, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">interpolated</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 30%, else bad">9.9% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 30%, else bad">6.0% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="percentage of masked gaze samples (missing data, blinks and other artifacts; interpolated samples only with the &#39;strict&#39; mask policy) (labels: good &lt;= 10%, ok &lt;= 20%, poor &lt;= 35%, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">gaze masked</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 35%, else bad">2.9% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 35%, else bad">2.1% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="percentage of samples masked because of gaze off the screen (see d.gaze.mask_offscreen)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">masked off-screen</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="percentage of samples masked because of gaze off the screen (see d.gaze.mask_offscreen)">0.21% </td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="percentage of samples masked because of gaze off the screen (see d.gaze.mask_offscreen)">0.24% </td>
+      </tr>
+      <tr>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="percentage of samples masked for other reasons than missing data, blinks or interpolation (e.g., off-screen gaze, eye divergence, user masks)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">other artifacts</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="percentage of samples masked for other reasons than missing data, blinks or interpolation (e.g., off-screen gaze, eye divergence, user masks)">0.0% </td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="percentage of samples masked for other reasons than missing data, blinks or interpolation (e.g., off-screen gaze, eye divergence, user masks)">0.0% </td>
+      </tr>
+    </tbody>
+  </table>
+
+
+  <details style="margin-top:8px;">
+    <summary style="cursor:pointer; opacity:0.7;">Thresholds</summary>
+    <table style="border-collapse:collapse; font-size:0.85em; margin-top:4px;">
+      <tr><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">pupil.missing_pct</td><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">good &lt;= 10, ok &lt;= 20, poor &lt;= 40, else bad</td></tr>
+      <tr><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">pupil.dropout_rate</td><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">good &lt;= 30, ok &lt;= 60, poor &lt;= 150, else bad</td></tr>
+      <tr><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">pupil.longest_dropout</td><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">good &lt;= 2, ok &lt;= 5, poor &lt;= 30, else bad</td></tr>
+      <tr><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">pupil.noise</td><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">good &lt;= 0.5, ok &lt;= 1, poor &lt;= 2, else bad</td></tr>
+      <tr><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">pupil.jump_rate</td><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">good &lt;= 1, ok &lt;= 10, poor &lt;= 100, else bad</td></tr>
+      <tr><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">gaze.missing_pct</td><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">good &lt;= 10, ok &lt;= 20, poor &lt;= 40, else bad</td></tr>
+      <tr><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">gaze.dropout_rate</td><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">good &lt;= 30, ok &lt;= 60, poor &lt;= 150, else bad</td></tr>
+      <tr><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">gaze.longest_dropout</td><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">good &lt;= 2, ok &lt;= 5, poor &lt;= 30, else bad</td></tr>
+      <tr><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">gaze.offscreen_pct</td><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">good &lt;= 5, ok &lt;= 15, poor &lt;= 30, else bad</td></tr>
+      <tr><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">gaze.precision_deg</td><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">good &lt;= 0.05, ok &lt;= 0.1, poor &lt;= 0.2, else bad</td></tr>
+      <tr><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">binocular.pupil_correlation</td><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">good &gt;= 0.9, ok &gt;= 0.8, poor &gt;= 0.6, else bad</td></tr>
+      <tr><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">binocular.gaze_disparity_deg</td><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">good &lt;= 1, ok &lt;= 2, poor &lt;= 3, else bad</td></tr>
+      <tr><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">blinks.rate</td><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">good &lt;= 20, ok &lt;= 35, poor &lt;= 70, else bad</td></tr>
+      <tr><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">blinks.time_pct</td><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">good &lt;= 10, ok &lt;= 20, poor &lt;= 35, else bad</td></tr>
+      <tr><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">artifacts.pupil_masked_pct</td><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">good &lt;= 10, ok &lt;= 20, poor &lt;= 35, else bad</td></tr>
+      <tr><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">artifacts.gaze_masked_pct</td><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">good &lt;= 10, ok &lt;= 20, poor &lt;= 35, else bad</td></tr>
+      <tr><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">artifacts.interpolated_pct</td><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">good &lt;= 10, ok &lt;= 20, poor &lt;= 30, else bad</td></tr>
+      <tr><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">calibration.mean_error</td><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">good &lt;= 0.5, ok &lt;= 1, poor &lt;= 1.5, else bad</td></tr>
+      <tr><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">calibration.max_error</td><td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);">good &lt;= 1, ok &lt;= 1.5, poor &lt;= 2, else bad</td></tr>
+    </table>
+    <div style="font-size:0.85em; opacity:0.7; margin-top:4px;">The overall label is the worst label of all measures. Hover over a measure for a description.</div>
+  </details>
+</div></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">report.issues()</span></code> lists the measures that are “poor” or “bad” (none here), and <code class="docutils literal notranslate"><span class="pre">report.to_dict(flat=True)</span></code> gives all values as a flat <code class="docutils literal notranslate"><span class="pre">dict</span></code>, e.g., for a table of many datasets (see below).</p>
+</section>
+<section id="Masked-data">
+<h3>Masked data<a class="headerlink" href="#Masked-data" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">layer_stats()</span></code> describes each mask layer of each channel: the number of stretches, their durations and the percentage of the samples they cover. The entry <code class="docutils literal notranslate"><span class="pre">masked</span></code> counts all unusable samples of a channel (see <a class="reference internal" href="../user_guide/missing_data.html"><span class="doc">Missing data</span></a>). It is a dict (channel -&gt; layer -&gt; statistics) that is displayed as a table:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stats</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">layer_stats</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">)</span>
+<span class="n">stats</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th></th>
+      <th>n</th>
+      <th>mean</th>
+      <th>sd</th>
+      <th>min</th>
+      <th>max</th>
+      <th>total_duration</th>
+      <th>units</th>
+      <th>percent</th>
+    </tr>
+    <tr>
+      <th>channel</th>
+      <th>layer</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="2" valign="top">left_x</th>
+      <th>offscreen</th>
+      <td>14</td>
+      <td>0.006000</td>
+      <td>0.004140</td>
+      <td>0.002</td>
+      <td>0.016</td>
+      <td>0.084</td>
+      <td>sec</td>
+      <td>0.205228</td>
+    </tr>
+    <tr>
+      <th>masked</th>
+      <td>11</td>
+      <td>0.109636</td>
+      <td>0.030149</td>
+      <td>0.058</td>
+      <td>0.146</td>
+      <td>1.206</td>
+      <td>sec</td>
+      <td>2.946494</td>
+    </tr>
+    <tr>
+      <th rowspan="2" valign="top">left_y</th>
+      <th>offscreen</th>
+      <td>14</td>
+      <td>0.006000</td>
+      <td>0.004140</td>
+      <td>0.002</td>
+      <td>0.016</td>
+      <td>0.084</td>
+      <td>sec</td>
+      <td>0.205228</td>
+    </tr>
+    <tr>
+      <th>masked</th>
+      <td>11</td>
+      <td>0.109636</td>
+      <td>0.030149</td>
+      <td>0.058</td>
+      <td>0.146</td>
+      <td>1.206</td>
+      <td>sec</td>
+      <td>2.946494</td>
+    </tr>
+    <tr>
+      <th rowspan="3" valign="top">left_pupil</th>
+      <th>blink</th>
+      <td>14</td>
+      <td>0.217143</td>
+      <td>0.236470</td>
+      <td>0.048</td>
+      <td>0.984</td>
+      <td>3.040</td>
+      <td>sec</td>
+      <td>7.427315</td>
+    </tr>
+    <tr>
+      <th>interpolated</th>
+      <td>11</td>
+      <td>0.369455</td>
+      <td>0.298280</td>
+      <td>0.116</td>
+      <td>1.026</td>
+      <td>4.064</td>
+      <td>sec</td>
+      <td>9.929147</td>
+    </tr>
+    <tr>
+      <th>masked</th>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0.000</td>
+      <td>sec</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th rowspan="2" valign="top">right_x</th>
+      <th>offscreen</th>
+      <td>15</td>
+      <td>0.006533</td>
+      <td>0.003964</td>
+      <td>0.002</td>
+      <td>0.016</td>
+      <td>0.098</td>
+      <td>sec</td>
+      <td>0.239433</td>
+    </tr>
+    <tr>
+      <th>masked</th>
+      <td>10</td>
+      <td>0.087600</td>
+      <td>0.025734</td>
+      <td>0.042</td>
+      <td>0.120</td>
+      <td>0.876</td>
+      <td>sec</td>
+      <td>2.140239</td>
+    </tr>
+    <tr>
+      <th rowspan="2" valign="top">right_y</th>
+      <th>offscreen</th>
+      <td>15</td>
+      <td>0.006533</td>
+      <td>0.003964</td>
+      <td>0.002</td>
+      <td>0.016</td>
+      <td>0.098</td>
+      <td>sec</td>
+      <td>0.239433</td>
+    </tr>
+    <tr>
+      <th>masked</th>
+      <td>10</td>
+      <td>0.087600</td>
+      <td>0.025734</td>
+      <td>0.042</td>
+      <td>0.120</td>
+      <td>0.876</td>
+      <td>sec</td>
+      <td>2.140239</td>
+    </tr>
+    <tr>
+      <th rowspan="3" valign="top">right_pupil</th>
+      <th>blink</th>
+      <td>13</td>
+      <td>0.138000</td>
+      <td>0.084856</td>
+      <td>0.044</td>
+      <td>0.404</td>
+      <td>1.794</td>
+      <td>sec</td>
+      <td>4.383093</td>
+    </tr>
+    <tr>
+      <th>interpolated</th>
+      <td>13</td>
+      <td>0.189077</td>
+      <td>0.081553</td>
+      <td>0.096</td>
+      <td>0.444</td>
+      <td>2.458</td>
+      <td>sec</td>
+      <td>6.005375</td>
+    </tr>
+    <tr>
+      <th>masked</th>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0.000</td>
+      <td>sec</td>
+      <td>0.000000</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stats</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">][</span><span class="s2">"blink"</span><span class="p">][</span><span class="s2">"percent"</span><span class="p">]</span>   <span class="c1"># % of the samples in blinks</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+7.4273149279257265
+</pre></div></div>
+</div>
+<p>After the interpolation, the pupil channels have no unusable samples left (<code class="docutils literal notranslate"><span class="pre">masked</span></code>: 0 stretches), because interpolated samples are usable; the gaze is still masked during blinks and off the screen.</p>
+<p><code class="docutils literal notranslate"><span class="pre">blink_stats()</span></code> is a shortcut for the blink rows. Durations of the recording are given by <code class="docutils literal notranslate"><span class="pre">get_duration()</span></code> and, if periods are excluded (e.g., breaks), <code class="docutils literal notranslate"><span class="pre">excluded_duration()</span></code>:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">blink_stats</span><span class="p">()[</span><span class="s2">"left_pupil"</span><span class="p">],</span> <span class="n">d</span><span class="o">.</span><span class="n">get_duration</span><span class="p">(</span><span class="s2">"min"</span><span class="p">),</span> <span class="n">d</span><span class="o">.</span><span class="n">excluded_duration</span><span class="p">(</span><span class="s2">"min"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+({&#39;n&#39;: 14,
+  &#39;mean&#39;: 217.14285714285714,
+  &#39;sd&#39;: 236.4701301411652,
+  &#39;min&#39;: 48.0,
+  &#39;max&#39;: 984.0,
+  &#39;total_duration&#39;: 3040.0,
+  &#39;units&#39;: &#39;ms&#39;},
+ 0.6821666666666667,
+ 0.0)
+</pre></div></div>
+</div>
+</section>
+</section>
+<section id="Several-datasets">
+<h2>Several datasets<a class="headerlink" href="#Several-datasets" title="Link to this heading">#</a></h2>
+<p>In a study, there is one dataset per participant. Here, we use three example recordings and detect blinks in each of them:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">datasets</span> <span class="o">=</span> <span class="p">[</span><span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002_short"</span><span class="p">),</span>
+            <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">"../../data/test.pd"</span><span class="p">),</span>
+            <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">"../../data/example_shortblinks.pd"</span><span class="p">)]</span>
+<span class="n">datasets</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span> <span class="o">|</span> <span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">datasets</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<p>A table of their summaries (some of the columns):</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">tab</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">d</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">datasets</span><span class="p">])</span>
@@ -642,7 +1152,7 @@ EyeData(test short, 2.0MiB):
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -675,12 +1185,12 @@ EyeData(test short, 2.0MiB):
   <tbody>
     <tr>
       <th>0</th>
-      <td>test short</td>
+      <td>rlmw_002_short</td>
       <td>20465</td>
       <td>500.0</td>
       <td>0.682167</td>
       <td>40</td>
-      <td>{'left_pupil': 15, 'right_pupil': 13}</td>
+      <td>{'left_pupil': 14, 'right_pupil': 13}</td>
     </tr>
     <tr>
       <th>1</th>
@@ -689,7 +1199,7 @@ EyeData(test short, 2.0MiB):
       <td>500.0</td>
       <td>2.000033</td>
       <td>56</td>
-      <td>{'left_pupil': 71}</td>
+      <td>{'left_pupil': 65}</td>
     </tr>
     <tr>
       <th>2</th>
@@ -704,19 +1214,19 @@ EyeData(test short, 2.0MiB):
 </table>
 </div></div>
 </div>
-<p>Some entries are dictionaries with one entry per eye. For blinks, <code class="docutils literal notranslate"><span class="pre">blink_stats()</span></code> gives more details, e.g., the number and mean duration of blinks per eye:</p>
+<p>The quality reports as a table, one row per dataset, with the overall label and the missing pupil data of the left eye:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([{</span><span class="s2">"name"</span><span class="p">:</span> <span class="n">d</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">"eye"</span><span class="p">:</span> <span class="n">eye</span><span class="p">,</span> <span class="o">**</span><span class="n">stats</span><span class="p">}</span>
-              <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">datasets</span>
-              <span class="k">for</span> <span class="n">eye</span><span class="p">,</span> <span class="n">stats</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">blink_stats</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()])</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">quality</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">d</span><span class="o">.</span><span class="n">quality_report</span><span class="p">()</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">datasets</span><span class="p">])</span>
+<span class="n">quality</span><span class="p">[[</span><span class="s2">"name"</span><span class="p">,</span> <span class="s2">"overall"</span><span class="p">,</span> <span class="s2">"pupil.left.missing_pct"</span><span class="p">,</span> <span class="s2">"pupil.left.missing_pct.label"</span><span class="p">,</span>
+         <span class="s2">"blinks.left.rate"</span><span class="p">,</span> <span class="s2">"blinks.left.rate.label"</span><span class="p">]]</span>
 </pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -739,7 +1249,159 @@ EyeData(test short, 2.0MiB):
     <tr style="text-align: right;">
       <th></th>
       <th>name</th>
-      <th>eye</th>
+      <th>overall</th>
+      <th>pupil.left.missing_pct</th>
+      <th>pupil.left.missing_pct.label</th>
+      <th>blinks.left.rate</th>
+      <th>blinks.left.rate.label</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>rlmw_002_short</td>
+      <td>ok</td>
+      <td>2.741266</td>
+      <td>good</td>
+      <td>20.522844</td>
+      <td>ok</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>test_ro_ka_si_hu</td>
+      <td>poor</td>
+      <td>0.000000</td>
+      <td>good</td>
+      <td>32.499458</td>
+      <td>ok</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>55910_1_wu</td>
+      <td>bad</td>
+      <td>0.000000</td>
+      <td>good</td>
+      <td>52.795776</td>
+      <td>poor</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Datasets that need a closer look can be selected by their labels, and <code class="docutils literal notranslate"><span class="pre">issues()</span></code> tells what is wrong with them:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">quality</span><span class="p">[</span><span class="n">quality</span><span class="p">[</span><span class="s2">"overall"</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">([</span><span class="s2">"poor"</span><span class="p">,</span> <span class="s2">"bad"</span><span class="p">])][[</span><span class="s2">"name"</span><span class="p">,</span> <span class="s2">"overall"</span><span class="p">]]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>name</th>
+      <th>overall</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1</th>
+      <td>test_ro_ka_si_hu</td>
+      <td>poor</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>55910_1_wu</td>
+      <td>bad</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">datasets</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">quality_report</span><span class="p">()</span><span class="o">.</span><span class="n">issues</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[(&#39;pupil&#39;,
+  &#39;left&#39;,
+  QualityMetric(name=&#39;jump_rate&#39;, title=&#39;jumps&#39;, value=155.98752099832015, unit=&#39;/min&#39;, label=&#39;bad&#39;, description=&#39;number of changes larger than 5% of the median pupil size from one sample to the next, per minute (ignoring 50 ms around missing data); indicates artifacts, e.g., during saccades&#39;, thresholds=(1, 10, 100))),
+ (&#39;blinks&#39;,
+  &#39;left&#39;,
+  QualityMetric(name=&#39;rate&#39;, title=&#39;blink rate&#39;, value=52.795776337892974, unit=&#39;/min&#39;, label=&#39;poor&#39;, description=&#39;number of detected blinks per minute (median across people about 10 during screen tasks and 13 at rest; varies a lot between people)&#39;, thresholds=(20, 35, 70))),
+ (&#39;blinks&#39;,
+  &#39;left&#39;,
+  QualityMetric(name=&#39;time_pct&#39;, title=&#39;time in blinks&#39;, value=np.float64(21.926245900327974), unit=&#39;%&#39;, label=&#39;poor&#39;, description=&#39;percentage of the recording covered by blinks (and the samples around them that were removed)&#39;, thresholds=(10, 20, 35))),
+ (&#39;artifacts&#39;,
+  &#39;left&#39;,
+  QualityMetric(name=&#39;pupil_masked_pct&#39;, title=&#39;pupil masked&#39;, value=np.float64(21.926245900327974), unit=&#39;%&#39;, label=&#39;poor&#39;, description=&#34;percentage of masked pupil samples (missing data, blinks and other artifacts; interpolated samples only with the &#39;strict&#39; mask policy)&#34;, thresholds=(10, 20, 35)))]
+</pre></div></div>
+</div>
+<p>The layer statistics of all datasets in one table, with a column for the dataset:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">d</span><span class="o">.</span><span class="n">layer_stats</span><span class="p">(</span><span class="n">variables</span><span class="o">=</span><span class="s2">"pupil"</span><span class="p">)</span><span class="o">.</span><span class="n">to_pandas</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+           <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">datasets</span><span class="p">],</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>channel</th>
+      <th>layer</th>
       <th>n</th>
       <th>mean</th>
       <th>sd</th>
@@ -747,25 +1409,43 @@ EyeData(test short, 2.0MiB):
       <th>max</th>
       <th>total_duration</th>
       <th>units</th>
+      <th>percent</th>
+      <th>name</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>0</th>
-      <td>test short</td>
-      <td>left</td>
-      <td>15</td>
-      <td>354.533333</td>
-      <td>562.544442</td>
+      <td>left_pupil</td>
+      <td>blink</td>
+      <td>14</td>
+      <td>217.142857</td>
+      <td>236.470130</td>
       <td>48.0</td>
-      <td>2278.0</td>
-      <td>5318.0</td>
+      <td>984.0</td>
+      <td>3040.0</td>
       <td>ms</td>
+      <td>7.427315</td>
+      <td>rlmw_002_short</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>test short</td>
-      <td>right</td>
+      <td>left_pupil</td>
+      <td>masked</td>
+      <td>14</td>
+      <td>217.142857</td>
+      <td>236.470130</td>
+      <td>48.0</td>
+      <td>984.0</td>
+      <td>3040.0</td>
+      <td>ms</td>
+      <td>7.427315</td>
+      <td>rlmw_002_short</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>right_pupil</td>
+      <td>blink</td>
       <td>13</td>
       <td>138.000000</td>
       <td>84.856440</td>
@@ -773,23 +1453,55 @@ EyeData(test short, 2.0MiB):
       <td>404.0</td>
       <td>1794.0</td>
       <td>ms</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>test_ro_ka_si_hu</td>
-      <td>left</td>
-      <td>71</td>
-      <td>556.507042</td>
-      <td>1016.559662</td>
-      <td>24.0</td>
-      <td>5394.0</td>
-      <td>39512.0</td>
-      <td>ms</td>
+      <td>4.383093</td>
+      <td>rlmw_002_short</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>55910_1_wu</td>
-      <td>left</td>
+      <td>right_pupil</td>
+      <td>masked</td>
+      <td>13</td>
+      <td>138.000000</td>
+      <td>84.856440</td>
+      <td>44.0</td>
+      <td>404.0</td>
+      <td>1794.0</td>
+      <td>ms</td>
+      <td>4.383093</td>
+      <td>rlmw_002_short</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>left_pupil</td>
+      <td>blink</td>
+      <td>65</td>
+      <td>225.230769</td>
+      <td>247.912067</td>
+      <td>24.0</td>
+      <td>990.0</td>
+      <td>14640.0</td>
+      <td>ms</td>
+      <td>12.199797</td>
+      <td>test_ro_ka_si_hu</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>left_pupil</td>
+      <td>masked</td>
+      <td>65</td>
+      <td>225.230769</td>
+      <td>247.912067</td>
+      <td>24.0</td>
+      <td>990.0</td>
+      <td>14640.0</td>
+      <td>ms</td>
+      <td>12.199797</td>
+      <td>test_ro_ka_si_hu</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>left_pupil</td>
+      <td>blink</td>
       <td>22</td>
       <td>249.181818</td>
       <td>68.717231</td>
@@ -797,11 +1509,176 @@ EyeData(test short, 2.0MiB):
       <td>538.0</td>
       <td>5482.0</td>
       <td>ms</td>
+      <td>21.926246</td>
+      <td>55910_1_wu</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>left_pupil</td>
+      <td>masked</td>
+      <td>22</td>
+      <td>249.181818</td>
+      <td>68.717231</td>
+      <td>184.0</td>
+      <td>538.0</td>
+      <td>5482.0</td>
+      <td>ms</td>
+      <td>21.926246</td>
+      <td>55910_1_wu</td>
     </tr>
   </tbody>
 </table>
 </div></div>
 </div>
+</section>
+<section id="Trials">
+<h2>Trials<a class="headerlink" href="#Trials" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">stat_per_event()</span></code> computes one value per event, e.g., the mean pupil size in the second after each stimulus. Combined with the events and their metadata (see <a class="reference internal" href="event_metadata.html"><span class="doc">Event metadata</span></a>), this gives a table with one row per trial, e.g., for a statistical model:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">datasets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">epochs</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_epochs</span><span class="p">(</span><span class="s2">"S_"</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>
+<span class="n">means</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">stat_per_event</span><span class="p">(</span><span class="n">epochs</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="s2">"pupil"</span><span class="p">)</span>
+<span class="n">trials</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">Table</span><span class="p">({</span><span class="o">**</span><span class="n">epochs</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">to_table</span><span class="p">(),</span> <span class="o">**</span><span class="n">means</span><span class="p">})</span>
+<span class="n">trials</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>onset</th>
+      <th>label</th>
+      <th>left_pupil</th>
+      <th>right_pupil</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>5677.0</td>
+      <td>S_1_1_5</td>
+      <td>1002.974000</td>
+      <td>831.318000</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>9575.0</td>
+      <td>S_2_6_2</td>
+      <td>1179.907489</td>
+      <td>966.048000</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>12574.0</td>
+      <td>S_3_2_1</td>
+      <td>1269.650000</td>
+      <td>1077.462000</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>16473.0</td>
+      <td>S_4_4_1</td>
+      <td>1153.294000</td>
+      <td>956.178000</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>20388.0</td>
+      <td>S_5_3_5</td>
+      <td>1098.470000</td>
+      <td>912.224000</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>23987.0</td>
+      <td>S_6_4_5</td>
+      <td>1096.668000</td>
+      <td>914.322000</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>27002.0</td>
+      <td>S_7_3_1</td>
+      <td>987.372000</td>
+      <td>832.730000</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>30601.0</td>
+      <td>S_8_6_5</td>
+      <td>1077.352000</td>
+      <td>915.889262</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>34799.0</td>
+      <td>S_9_4_6</td>
+      <td>955.512000</td>
+      <td>797.592000</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>38415.0</td>
+      <td>S_10_2_5</td>
+      <td>1064.282000</td>
+      <td>888.112000</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>For segments around events (see the <a class="reference internal" href="erpds.html"><span class="doc">ERPD tutorial</span></a>), <code class="docutils literal notranslate"><span class="pre">summary()</span></code> gives their shape and the missing data per channel; the measures of gaze in regions of interest per trial (<code class="docutils literal notranslate"><span class="pre">seg.gaze.dwell_time()</span></code>, <code class="docutils literal notranslate"><span class="pre">seg.gaze.first_entry()</span></code>) are tables like the one above (see <a class="reference internal" href="rois.html"><span class="doc">Regions of interest</span></a>):</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">seg</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_segments</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">get_epochs</span><span class="p">(</span><span class="s2">"S_"</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">2500</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">),</span> <span class="n">variables</span><span class="o">=</span><span class="s2">"pupil"</span><span class="p">)</span>
+<span class="n">seg</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;name&#39;: &#39;S_&#39;,
+ &#39;channels&#39;: [&#39;left_pupil&#39;, &#39;right_pupil&#39;],
+ &#39;n_segments&#39;: 10,
+ &#39;n_timepoints&#39;: 1500,
+ &#39;window&#39;: (-500.0, 2498.0),
+ &#39;percent_masked&#39;: {&#39;left_pupil&#39;: 9.806666666666667,
+  &#39;right_pupil&#39;: 5.733333333333333},
+ &#39;sampling_rate&#39;: 500.0,
+ &#39;n_averages&#39;: 0,
+ &#39;n_trials&#39;: 10}
+</pre></div></div>
+</div>
+</section>
 </section>
 
 
@@ -842,6 +1719,24 @@ EyeData(test short, 2.0MiB):
                 <dialog id="pst-secondary-sidebar-modal" tabindex="-1"></dialog>
                 <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#One-dataset">One dataset</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Data-quality">Data quality</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Masked-data">Masked data</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Several-datasets">Several datasets</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Trials">Trials</a></li>
+</ul>
+  </nav></div>
 
   <div class="sidebar-secondary-item">
 

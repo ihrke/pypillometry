@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pypillometry.signal.preproc &#8212; pypillometry v2.1.0</title>
+    <title>pypillometry.signal.preproc &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../../../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -414,7 +414,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -458,9 +458,6 @@ window.runMermaid = runMermaid;</script>
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -809,19 +806,16 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">preprocessing functions (blinks, smoothing, missing data...)</span>
 <span class="sd">"""</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">scipy.optimize</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">savgol_coeffs</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.ndimage</span><span class="w"> </span><span class="kn">import</span> <span class="n">convolve1d</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">"smooth_window"</span><span class="p">,</span> <span class="s2">"velocity_savgol"</span><span class="p">,</span> <span class="s2">"detect_blinks_velocity"</span><span class="p">,</span>
-    <span class="s2">"detect_blinks_zero"</span><span class="p">,</span> <span class="s2">"blink_onsets_mahot"</span><span class="p">,</span>
+    <span class="s2">"detect_blinks_zero"</span><span class="p">,</span> <span class="s2">"blink_onsets_mahot"</span><span class="p">,</span> <span class="s2">"zscale"</span><span class="p">,</span>
 <span class="p">]</span>
 
 
 <div class="viewcode-block" id="smooth_window">
-<a class="viewcode-back" href="../../../api/generated/pypillometry.smooth_window.html#pypillometry.smooth_window">[docs]</a>
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.smooth_window.html#pypillometry.signal.smooth_window">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">smooth_window</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">window_len</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s1">'hanning'</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s1">'center'</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Smooth the data using a window with requested size.</span>
@@ -859,13 +853,15 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        </span>
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; rng = np.random.default_rng(0)</span>
+<span class="sd">    &gt;&gt;&gt; signal = np.sin(np.linspace(0, 10, 200)) + rng.normal(0, 0.1, 200)</span>
 <span class="sd">    &gt;&gt;&gt; # Standard centered smoothing</span>
 <span class="sd">    &gt;&gt;&gt; smoothed = smooth_window(signal, window_len=11, window='hanning')</span>
-<span class="sd">    &gt;&gt;&gt; </span>
+<span class="sd">    &gt;&gt;&gt; smoothed.shape</span>
+<span class="sd">    (200,)</span>
 <span class="sd">    &gt;&gt;&gt; # Backward-looking for onset detection</span>
 <span class="sd">    &gt;&gt;&gt; smoothed_back = smooth_window(signal, window_len=11, direction='backward')</span>
-<span class="sd">    &gt;&gt;&gt; </span>
-<span class="sd">    &gt;&gt;&gt; # Forward-looking for offset detection  </span>
+<span class="sd">    &gt;&gt;&gt; # Forward-looking for offset detection</span>
 <span class="sd">    &gt;&gt;&gt; smoothed_fwd = smooth_window(signal, window_len=11, direction='forward')</span>
 <span class="sd">    """</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
@@ -918,8 +914,30 @@ window.runMermaid = runMermaid;</script>
 
 
 
+<div class="viewcode-block" id="zscale">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.zscale.html#pypillometry.signal.zscale">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">zscale</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Z-transform an array, ignoring NaNs.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    y : np.ndarray</span>
+<span class="sd">        input array</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        `y` with mean subtracted and divided by its standard deviation</span>
+<span class="sd">        (both computed with :func:`numpy.nanmean`/:func:`numpy.nanstd`);</span>
+<span class="sd">        NaNs are kept</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">y</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">y</span><span class="p">))</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">nanstd</span><span class="p">(</span><span class="n">y</span><span class="p">)</span></div>
+
+
+
 <div class="viewcode-block" id="velocity_savgol">
-<a class="viewcode-back" href="../../../api/generated/pypillometry.velocity_savgol.html#pypillometry.velocity_savgol">[docs]</a>
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.velocity_savgol.html#pypillometry.signal.velocity_savgol">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">velocity_savgol</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">window_len</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> <span class="n">polyorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s1">'center'</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute velocity (first derivative) using Savitzky-Golay filter.</span>
@@ -950,15 +968,19 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        </span>
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; rng = np.random.default_rng(0)</span>
+<span class="sd">    &gt;&gt;&gt; signal = np.sin(np.linspace(0, 10, 200)) + rng.normal(0, 0.1, 200)</span>
 <span class="sd">    &gt;&gt;&gt; # Standard centered velocity</span>
 <span class="sd">    &gt;&gt;&gt; vel = velocity_savgol(signal, window_len=11)</span>
-<span class="sd">    &gt;&gt;&gt; </span>
+<span class="sd">    &gt;&gt;&gt; vel.shape</span>
+<span class="sd">    (200,)</span>
 <span class="sd">    &gt;&gt;&gt; # Backward-looking for onset detection</span>
 <span class="sd">    &gt;&gt;&gt; vel_back = velocity_savgol(signal, window_len=11, direction='backward')</span>
-<span class="sd">    &gt;&gt;&gt; </span>
-<span class="sd">    &gt;&gt;&gt; # Forward-looking for offset detection  </span>
+<span class="sd">    &gt;&gt;&gt; # Forward-looking for offset detection</span>
 <span class="sd">    &gt;&gt;&gt; vel_fwd = velocity_savgol(signal, window_len=11, direction='forward')</span>
 <span class="sd">    """</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">savgol_coeffs</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.ndimage</span><span class="w"> </span><span class="kn">import</span> <span class="n">convolve1d</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
     
     <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
@@ -1042,7 +1064,7 @@ window.runMermaid = runMermaid;</script>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">newb</span><span class="p">)</span>
 
 <div class="viewcode-block" id="detect_blinks_velocity">
-<a class="viewcode-back" href="../../../api/generated/pypillometry.detect_blinks_velocity.html#pypillometry.detect_blinks_velocity">[docs]</a>
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.detect_blinks_velocity.html#pypillometry.signal.detect_blinks_velocity">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">detect_blinks_velocity</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">smooth_winsize</span><span class="p">,</span> <span class="n">vel_onset</span><span class="p">,</span> <span class="n">vel_offset</span><span class="p">,</span> <span class="n">min_onset_len</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">min_offset_len</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">min_blink_samples</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                            <span class="n">max_blink_samples</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
@@ -1195,7 +1217,7 @@ window.runMermaid = runMermaid;</script>
 
 
 <div class="viewcode-block" id="detect_blinks_zero">
-<a class="viewcode-back" href="../../../api/generated/pypillometry.detect_blinks_zero.html#pypillometry.detect_blinks_zero">[docs]</a>
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.detect_blinks_zero.html#pypillometry.signal.detect_blinks_zero">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">detect_blinks_zero</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">min_duration</span><span class="p">,</span> <span class="n">blink_val</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Detect blinks as consecutive sequence of `blink_val` (e.g., 0 or NaN) of at least</span>
@@ -1237,7 +1259,7 @@ window.runMermaid = runMermaid;</script>
 
     
 <div class="viewcode-block" id="blink_onsets_mahot">
-<a class="viewcode-back" href="../../../api/generated/pypillometry.blink_onsets_mahot.html#pypillometry.blink_onsets_mahot">[docs]</a>
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.blink_onsets_mahot.html#pypillometry.signal.blink_onsets_mahot">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">blink_onsets_mahot</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">blinks</span><span class="p">,</span> <span class="n">smooth_winsize</span><span class="p">,</span> <span class="n">vel_onset</span><span class="p">,</span> <span class="n">vel_offset</span><span class="p">,</span> <span class="n">margin</span><span class="p">,</span> <span class="n">blinkwindow</span><span class="p">,</span> <span class="n">min_onset_len</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">min_offset_len</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Method for finding the on- and offset for each blink (excluding transient).</span>

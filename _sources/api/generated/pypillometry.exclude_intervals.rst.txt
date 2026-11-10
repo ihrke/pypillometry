@@ -1,0 +1,6 @@
+﻿exclude\_intervals
+==================
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: exclude_intervals

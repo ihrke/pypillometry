@@ -1,0 +1,6 @@
+﻿interpolate\_intervals
+======================
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: interpolate_intervals

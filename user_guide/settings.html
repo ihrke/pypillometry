@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Settings and logging &#8212; pypillometry v2.1.0</title>
+    <title>Settings and logging &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -103,9 +103,6 @@
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -411,6 +408,9 @@
 <li class="toctree-l1"><a class="reference internal" href="loading_data.html">Loading and saving data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="units.html">Units</a></li>
 <li class="toctree-l1"><a class="reference internal" href="preprocessing.html">Preprocessing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="missing_data.html">Missing data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gaze.html">Gaze data and the experimental setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rois.html">Regions of interest</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quality.html">Data quality</a></li>
 <li class="toctree-l1"><a class="reference internal" href="events_intervals.html">Events, intervals and segments</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plotting.html">Plotting</a></li>
@@ -493,7 +493,11 @@
 </pre></div>
 </div>
 <p>A value given to an object’s constructor (<code class="docutils literal notranslate"><span class="pre">inplace=...</span></code>) or to a single
-method call takes precedence.</p>
+method call takes precedence. This holds for every method that changes the
+data (also <a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.drop_data" title="pypillometry.EyeData.drop_data"><code class="xref py py-meth docutils literal notranslate"><span class="pre">drop_data()</span></code></a>, blink detection and
+<a class="reference internal" href="../api/generated/pypillometry.segmented.SegmentedPupilNamespace.html#pypillometry.segmented.SegmentedPupilNamespace.baseline_correct" title="pypillometry.segmented.SegmentedPupilNamespace.baseline_correct"><code class="xref py py-meth docutils literal notranslate"><span class="pre">seg.pupil.baseline_correct()</span></code></a>); all of them return the
+(changed) object. Only the <code class="docutils literal notranslate"><span class="pre">set_*</span></code> methods (e.g.,
+<a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.set_events" title="pypillometry.EyeData.set_events"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_events()</span></code></a>) always change the object itself.</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.set_default_inplace.html#pypillometry.set_default_inplace" title="pypillometry.set_default_inplace"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_default_inplace</span></code></a></p></td>
@@ -516,10 +520,10 @@ problems, or <code class="docutils literal notranslate"><span class="pre">DEBUG<
 <span class="n">pp</span><span class="o">.</span><span class="n">logging_enable</span><span class="p">()</span>
 
 <span class="k">with</span> <span class="n">pp</span><span class="o">.</span><span class="n">loglevel</span><span class="p">(</span><span class="s2">"DEBUG"</span><span class="p">):</span>      <span class="c1"># temporarily, for a block of code</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">pupil_blinks_detect</span><span class="p">()</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span>
 
 <span class="k">with</span> <span class="n">pp</span><span class="o">.</span><span class="n">nologging</span><span class="p">():</span>            <span class="c1"># temporarily silent</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">pupil_blinks_detect</span><span class="p">()</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>To see detailed messages from one part of the package only:</p>

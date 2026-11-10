@@ -1,0 +1,6 @@
+﻿reset\_time
+===========
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: reset_time

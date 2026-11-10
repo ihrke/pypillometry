@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pypillometry.roi &#8212; pypillometry v2.1.0</title>
+    <title>pypillometry.roi &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -414,7 +414,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -458,9 +458,6 @@ window.runMermaid = runMermaid;</script>
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -821,13 +818,9 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">  Requires eye-to-screen distance from ExperimentalSetup.</span>
 <span class="sd">"""</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">TYPE_CHECKING</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">TYPE_CHECKING</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.patches</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">patches</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_angle</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">"ROI"</span><span class="p">,</span> <span class="s2">"CircularROI"</span><span class="p">,</span> <span class="s2">"RectangularROI"</span><span class="p">,</span>
@@ -1045,12 +1038,12 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">            (x, y) center in visual angle from screen center.</span>
 <span class="sd">            Positive x = right, positive y = up.</span>
 <span class="sd">            Each coordinate can be:</span>
-<span class="sd">            - float: assumed to be radians</span>
+<span class="sd">            - float: degrees</span>
 <span class="sd">            - str: with units, e.g., "5 deg", "0.087 rad"</span>
 <span class="sd">            - with a unit, e.g., 5 * u.deg</span>
 <span class="sd">        radius : float or str</span>
 <span class="sd">            Radius in visual angle. Can be:</span>
-<span class="sd">            - float: assumed to be radians</span>
+<span class="sd">            - float: degrees</span>
 <span class="sd">            - str: with units, e.g., "2 deg", "0.035 rad"</span>
 <span class="sd">            - with a unit, e.g., 5 * u.deg</span>
 <span class="sd">        setup : ExperimentalSetup</span>
@@ -1074,7 +1067,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        ...     eye_to_screen_center="60 cm"</span>
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; roi = CircularROI.from_degrees(center=("5 deg", "2.5 deg"), radius="2 deg", setup=setup)</span>
-<span class="sd">        &gt;&gt;&gt; roi = CircularROI.from_degrees(center=(0.087, 0.044), radius=0.035, setup=setup)  # radians</span>
+<span class="sd">        &gt;&gt;&gt; roi = CircularROI.from_degrees(center=(5, 2.5), radius=2, setup=setup)  # degrees</span>
 <span class="sd">        """</span>
         <span class="c1"># Validate setup</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">setup</span><span class="o">.</span><span class="n">has_screen_info</span><span class="p">():</span>
@@ -1086,17 +1079,10 @@ window.runMermaid = runMermaid;</script>
                 <span class="s2">"ExperimentalSetup must have eye_to_screen_center set for degree conversion."</span>
             <span class="p">)</span>
         
-        <span class="c1"># Parse angles (converts to radians)</span>
-        <span class="n">cx_rad</span> <span class="o">=</span> <span class="n">parse_angle</span><span class="p">(</span><span class="n">center</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="n">cy_rad</span> <span class="o">=</span> <span class="n">parse_angle</span><span class="p">(</span><span class="n">center</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-        <span class="n">radius_rad</span> <span class="o">=</span> <span class="n">parse_angle</span><span class="p">(</span><span class="n">radius</span><span class="p">)</span>
-        
-        <span class="c1"># Convert center from radians to mm</span>
-        <span class="n">cx_mm</span> <span class="o">=</span> <span class="n">setup</span><span class="o">.</span><span class="n">d</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">cx_rad</span><span class="p">)</span>
-        <span class="n">cy_mm</span> <span class="o">=</span> <span class="n">setup</span><span class="o">.</span><span class="n">d</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">cy_rad</span><span class="p">)</span>
-        
-        <span class="c1"># Convert radius from radians to mm (at screen center approximation)</span>
-        <span class="n">radius_mm</span> <span class="o">=</span> <span class="n">setup</span><span class="o">.</span><span class="n">d</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">radius_rad</span><span class="p">)</span>
+        <span class="c1"># angles to mm (plain numbers are degrees, see degrees_to_mm)</span>
+        <span class="n">cx_mm</span><span class="p">,</span> <span class="n">cy_mm</span> <span class="o">=</span> <span class="n">setup</span><span class="o">.</span><span class="n">degrees_to_mm</span><span class="p">(</span><span class="n">center</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">center</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="c1"># radius at the screen center (approximation)</span>
+        <span class="n">radius_mm</span> <span class="o">=</span> <span class="n">setup</span><span class="o">.</span><span class="n">degrees_to_mm</span><span class="p">(</span><span class="n">radius</span><span class="p">,</span> <span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
         
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_mm</span><span class="p">((</span><span class="n">cx_mm</span><span class="p">,</span> <span class="n">cy_mm</span><span class="p">),</span> <span class="n">radius_mm</span><span class="p">,</span> <span class="n">setup</span><span class="o">=</span><span class="n">setup</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
 
@@ -1168,13 +1154,15 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">           &gt;&gt;&gt; right = pp.RectangularROI((850, 350), (1150, 650), name="right stimulus")</span>
 <span class="sd">           &gt;&gt;&gt; d.plot.plot_heatmap(eyes="left")</span>
 <span class="sd">           &gt;&gt;&gt; ax = plt.gcf().axes[0]  # the heatmap (axes[1] is the colorbar)</span>
-<span class="sd">           &gt;&gt;&gt; left.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)</span>
-<span class="sd">           &gt;&gt;&gt; right.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)</span>
+<span class="sd">           &gt;&gt;&gt; patch = left.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)</span>
+<span class="sd">           &gt;&gt;&gt; patch = right.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)</span>
 
-<span class="sd">        :meth:`~pypillometry.GazePlotter.plot_heatmap` and</span>
-<span class="sd">        :meth:`~pypillometry.GazePlotter.plot_scanpath` can also draw them</span>
+<span class="sd">        :meth:`d.plot.plot_heatmap() &lt;pypillometry.plot.PlotNamespace.plot_heatmap&gt;` and</span>
+<span class="sd">        :meth:`d.plot.plot_scanpath() &lt;pypillometry.plot.PlotNamespace.plot_scanpath&gt;` can also draw them</span>
 <span class="sd">        (``rois=[left, right]``).</span>
 <span class="sd">        """</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.patches</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">patches</span>
         <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
             
@@ -1308,14 +1296,14 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">            (x, y) first corner in visual angle from screen center.</span>
 <span class="sd">            Positive x = right, positive y = up.</span>
 <span class="sd">            Each coordinate can be:</span>
-<span class="sd">            - float: assumed to be radians</span>
+<span class="sd">            - float: degrees</span>
 <span class="sd">            - str: with units, e.g., "-5 deg", "-0.087 rad"</span>
 <span class="sd">            - with a unit, e.g., 5 * u.deg</span>
 <span class="sd">        corner2 : Tuple[float or str, float or str]</span>
 <span class="sd">            (x, y) second corner in visual angle from screen center.</span>
 <span class="sd">            Positive x = right, positive y = up.</span>
 <span class="sd">            Each coordinate can be:</span>
-<span class="sd">            - float: assumed to be radians</span>
+<span class="sd">            - float: degrees</span>
 <span class="sd">            - str: with units, e.g., "5 deg", "0.087 rad"</span>
 <span class="sd">            - with a unit, e.g., 5 * u.deg</span>
 <span class="sd">        setup : ExperimentalSetup</span>
@@ -1353,15 +1341,9 @@ window.runMermaid = runMermaid;</script>
                 <span class="s2">"ExperimentalSetup must have eye_to_screen_center set for degree conversion."</span>
             <span class="p">)</span>
         
-        <span class="c1"># Parse angles (converts to radians)</span>
-        <span class="n">c1x_rad</span> <span class="o">=</span> <span class="n">parse_angle</span><span class="p">(</span><span class="n">corner1</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="n">c1y_rad</span> <span class="o">=</span> <span class="n">parse_angle</span><span class="p">(</span><span class="n">corner1</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-        <span class="n">c2x_rad</span> <span class="o">=</span> <span class="n">parse_angle</span><span class="p">(</span><span class="n">corner2</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="n">c2y_rad</span> <span class="o">=</span> <span class="n">parse_angle</span><span class="p">(</span><span class="n">corner2</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-        
-        <span class="c1"># Convert corners from radians to mm</span>
-        <span class="n">c1_mm</span> <span class="o">=</span> <span class="p">(</span><span class="n">setup</span><span class="o">.</span><span class="n">d</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">c1x_rad</span><span class="p">),</span> <span class="n">setup</span><span class="o">.</span><span class="n">d</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">c1y_rad</span><span class="p">))</span>
-        <span class="n">c2_mm</span> <span class="o">=</span> <span class="p">(</span><span class="n">setup</span><span class="o">.</span><span class="n">d</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">c2x_rad</span><span class="p">),</span> <span class="n">setup</span><span class="o">.</span><span class="n">d</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">c2y_rad</span><span class="p">))</span>
+        <span class="c1"># angles to mm (plain numbers are degrees, see degrees_to_mm)</span>
+        <span class="n">c1_mm</span> <span class="o">=</span> <span class="n">setup</span><span class="o">.</span><span class="n">degrees_to_mm</span><span class="p">(</span><span class="n">corner1</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">corner1</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">c2_mm</span> <span class="o">=</span> <span class="n">setup</span><span class="o">.</span><span class="n">degrees_to_mm</span><span class="p">(</span><span class="n">corner2</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">corner2</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
         
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_mm</span><span class="p">(</span><span class="n">c1_mm</span><span class="p">,</span> <span class="n">c2_mm</span><span class="p">,</span> <span class="n">setup</span><span class="o">=</span><span class="n">setup</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
 
@@ -1433,13 +1415,15 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">           &gt;&gt;&gt; right = pp.RectangularROI((850, 350), (1150, 650), name="right stimulus")</span>
 <span class="sd">           &gt;&gt;&gt; d.plot.plot_heatmap(eyes="left")</span>
 <span class="sd">           &gt;&gt;&gt; ax = plt.gcf().axes[0]  # the heatmap (axes[1] is the colorbar)</span>
-<span class="sd">           &gt;&gt;&gt; left.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)</span>
-<span class="sd">           &gt;&gt;&gt; right.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)</span>
+<span class="sd">           &gt;&gt;&gt; patch = left.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)</span>
+<span class="sd">           &gt;&gt;&gt; patch = right.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)</span>
 
-<span class="sd">        :meth:`~pypillometry.GazePlotter.plot_heatmap` and</span>
-<span class="sd">        :meth:`~pypillometry.GazePlotter.plot_scanpath` can also draw them</span>
+<span class="sd">        :meth:`d.plot.plot_heatmap() &lt;pypillometry.plot.PlotNamespace.plot_heatmap&gt;` and</span>
+<span class="sd">        :meth:`d.plot.plot_scanpath() &lt;pypillometry.plot.PlotNamespace.plot_scanpath&gt;` can also draw them</span>
 <span class="sd">        (``rois=[left, right]``).</span>
 <span class="sd">        """</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.patches</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">patches</span>
         <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
             

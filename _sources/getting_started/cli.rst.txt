@@ -1,17 +1,17 @@
 Command-line tools
 ==================
 
-Three programs are installed together with the package. They give a quick
+Four programs are installed together with the package. They give a quick
 look at a recording without writing any Python code.
 
 All of them read Eyelink EDF files and eyedata objects saved with
-:func:`~pypillometry.write_pickle` or
-:meth:`~pypillometry.GenericEyeData.write_file` (pickle files, e.g.,
+:func:`~pypillometry.write_file` or
+:meth:`~pypillometry.EyeData.write_file` (pickle files, e.g.,
 ``.pkl`` or ``.pypil``, or HDF5 files, ``.h5``). The format is detected from the file content, not from the
 extension. Instead of a local file, you can also give an HTTP(S) URL or an
 SSH URL (``ssh://server/folder/file.edf``).
 
-All three accept ``-q`` (only warnings and errors, no progress bars) and
+All of them accept ``-q`` (only warnings and errors, no progress bars) and
 ``-v`` (debug messages, including the output of ``eyelinkio``). Use
 ``--help`` to see all options.
 
@@ -86,7 +86,7 @@ The calibration line shows the validation error (in degrees) for each
 eye, and the history lists all processing steps applied to the data so far.
 
 With ``-Q``/``--quality``, ``pypilinfo`` prints a data-quality report
-instead of the summary (see :meth:`~pypillometry.GenericEyeData.quality_report`):
+instead of the summary (see :meth:`~pypillometry.EyeData.quality_report`):
 missing data, dropouts, noise, gaze precision, calibration errors etc.,
 each labeled "good", "ok", "poor" or "bad". Add ``-d``/``--descriptions``
 to explain each measure and its thresholds. For several files, a summary
@@ -133,8 +133,44 @@ More options:
     edf2pypil recording.edf -o rec.h5    # HDF5 file
     edf2pypil recording.edf -f           # overwrite an existing file
 
-Load the result in Python with :func:`~pypillometry.read_pickle` or
-:meth:`EyeData.from_file() <pypillometry.GenericEyeData.from_file>`.
+Load the result in Python with :func:`~pypillometry.read_file` or
+:meth:`EyeData.from_file() <pypillometry.EyeData.from_file>`.
+
+
+``pypil-upgrade``: convert files saved with older versions
+----------------------------------------------------------
+
+Files saved with an older version of pypillometry are upgraded each time
+they are read. ``pypil-upgrade`` converts them once to the current file
+format. It reads pickle and HDF5 files (other files are left alone) and
+writes each file in the format it had, either in place (``-i``) or to an
+output file or folder (``-o``):
+
+.. code-block:: text
+
+    $ pypil-upgrade -i data/
+    data/notes.txt: skipped (not a pickle or HDF5 file)
+    data/sub01.pypil: converted, format 2 -> 3 (EyeData, pickle)
+    data/sub02.h5: converted, format 2 -> 3 (EyeData, hdf5)
+    data/sub03.pypil: up to date (format 3)
+    4 file(s): 2 converted, 1 up to date, 1 skipped, 0 failed
+
+More options:
+
+.. code-block:: bash
+
+    pypil-upgrade -n data/               # only report what would be converted
+    pypil-upgrade -r -o new/ data/       # with subfolders, write to new/
+    pypil-upgrade -o new.pypil old.pypil # a single file
+    pypil-upgrade -f -o new/ data/       # overwrite existing output files
+
+Files that are already up to date are not written (also not to ``-o``).
+Loading may print warnings about what was changed, e.g. a sampling rate
+that did not fit the time vector. Some information of old files cannot be
+kept: masks set by ``mask_offscreen_coords``, ``mask_eye_divergences`` (2.1) or
+by hand become the ``"user"`` mask layer (see the masks in
+:doc:`/user_guide/data_model`).
+As with all pickle files, only convert files you trust.
 
 
 Eyelink triggers

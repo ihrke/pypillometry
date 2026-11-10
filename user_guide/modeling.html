@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Modeling the pupil signal &#8212; pypillometry v2.1.0</title>
+    <title>Modeling the pupil signal &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -103,9 +103,6 @@
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -411,6 +408,9 @@
 <li class="toctree-l1"><a class="reference internal" href="loading_data.html">Loading and saving data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="units.html">Units</a></li>
 <li class="toctree-l1"><a class="reference internal" href="preprocessing.html">Preprocessing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="missing_data.html">Missing data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gaze.html">Gaze data and the experimental setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rois.html">Regions of interest</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quality.html">Data quality</a></li>
 <li class="toctree-l1"><a class="reference internal" href="events_intervals.html">Events, intervals and segments</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plotting.html">Plotting</a></li>
@@ -490,21 +490,28 @@ implements the method described in Mittner &amp; Groot (2025) to separate the
 two:</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.PupilData.html#pypillometry.PupilData.pupil_estimate_baseline" title="pypillometry.PupilData.pupil_estimate_baseline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.pupil_estimate_baseline</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.estimate_baseline" title="pypillometry.eyedata.pupil.PupilNamespace.estimate_baseline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.pupil.estimate_baseline</span></code></a></p></td>
 <td><p>Apply one of the baseline-estimation methods.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.PupilData.html#pypillometry.PupilData.pupil_estimate_response" title="pypillometry.PupilData.pupil_estimate_response"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.pupil_estimate_response</span></code></a></p></td>
-<td><p>Estimate pupil-response based on event-onsets, see <a class="reference internal" href="../api/generated/pypillometry.pupil_response.html#pypillometry.pupil_response" title="pypillometry.pupil_response"><code class="xref py py-func docutils literal notranslate"><span class="pre">pupil_response()</span></code></a>.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.estimate_response" title="pypillometry.eyedata.pupil.PupilNamespace.estimate_response"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.pupil.estimate_response</span></code></a></p></td>
+<td><p>Estimate pupil-response based on event-onsets, see <a class="reference internal" href="../api/generated/pypillometry.signal.pupil_response.html#pypillometry.signal.pupil_response" title="pypillometry.signal.pupil_response"><code class="xref py py-func docutils literal notranslate"><span class="pre">pupil_response()</span></code></a>.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
-<p><a class="reference internal" href="../api/generated/pypillometry.PupilData.html#pypillometry.PupilData.pupil_estimate_baseline" title="pypillometry.PupilData.pupil_estimate_baseline"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pupil_estimate_baseline()</span></code></a> estimates the baseline as the
+<p><a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.estimate_baseline" title="pypillometry.eyedata.pupil.PupilNamespace.estimate_baseline"><code class="xref py py-meth docutils literal notranslate"><span class="pre">estimate_baseline()</span></code></a> estimates the baseline as the
 lower envelope of the signal, fitted with B-splines through the troughs
-between events. <a class="reference internal" href="../api/generated/pypillometry.PupilData.html#pypillometry.PupilData.pupil_estimate_response" title="pypillometry.PupilData.pupil_estimate_response"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pupil_estimate_response()</span></code></a>
+between events. <a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.estimate_response" title="pypillometry.eyedata.pupil.PupilNamespace.estimate_response"><code class="xref py py-meth docutils literal notranslate"><span class="pre">estimate_response()</span></code></a>
 then fits a pupil response function (Hoeks &amp; Levelt, 1993) to every event
 in the signal that remains. Both store their results as new variables
 (<code class="docutils literal notranslate"><span class="pre">baseline</span></code> and <code class="docutils literal notranslate"><span class="pre">response</span></code>) next to the pupil data.</p>
+<p>The response to one event, for a few values of its parameters (<code class="docutils literal notranslate"><span class="pre">npar</span></code>
+sets its shape, <code class="docutils literal notranslate"><span class="pre">tmax</span></code> the time of its peak):</p>
+<figure class="align-default">
+<img alt="../_images/modeling-1.png" class="plot-directive" src="../_images/modeling-1.png" />
+</figure>
+<p>A recording split into its baseline and the responses to the events:</p>
+<img alt="pupil, estimated baseline, and baseline plus responses" src="../_images/modeling_baseline_response.png" />
 <p>The data must not contain missing samples, so blinks have to be
 interpolated first. The baseline is fitted with a model written in Stan
 and needs CmdStan (see <a class="reference internal" href="../getting_started/installation.html"><span class="doc">Installation</span></a>). The

@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pypillometry.study &#8212; pypillometry v2.1.0</title>
+    <title>pypillometry.study &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -414,7 +414,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -458,9 +458,6 @@ window.runMermaid = runMermaid;</script>
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -814,13 +811,15 @@ window.runMermaid = runMermaid;</script>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>     <span class="c1"># imported where used (slow)</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.convenience</span><span class="w"> </span><span class="kn">import</span> <span class="n">change_dir</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">fetch_url</span><span class="p">,</span> <span class="n">is_ssh_url</span><span class="p">,</span> <span class="n">_cache_path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.logging</span><span class="w"> </span><span class="kn">import</span> <span class="n">_show_progress</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">"get_osf_project_files"</span><span class="p">,</span> <span class="s2">"load_study_osf"</span><span class="p">,</span> <span class="s2">"load_study_local"</span><span class="p">,</span>
@@ -829,7 +828,7 @@ window.runMermaid = runMermaid;</script>
 
 <div class="viewcode-block" id="get_osf_project_files">
 <a class="viewcode-back" href="../../api/generated/pypillometry.get_osf_project_files.html#pypillometry.get_osf_project_files">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_osf_project_files</span><span class="p">(</span><span class="n">osf_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_osf_project_files</span><span class="p">(</span><span class="n">osf_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">"requests.Session"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get all file IDs from an OSF project.</span>
 <span class="sd">    </span>
@@ -845,6 +844,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    Dict[str, Dict[str, str]]</span>
 <span class="sd">        Dictionary mapping file paths to their IDs, download URLs, and file sizes</span>
 <span class="sd">    """</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
     <span class="n">files</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">estimated_files</span> <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># Start with estimate of 100 files</span>
     
@@ -861,6 +861,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        pbar : tqdm</span>
 <span class="sd">            Progress bar instance</span>
 <span class="sd">        """</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
         <span class="k">nonlocal</span> <span class="n">estimated_files</span>
         
         <span class="k">if</span> <span class="n">session</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -914,7 +915,8 @@ window.runMermaid = runMermaid;</script>
     
     <span class="c1"># Process files with progress bar starting at estimated count</span>
     <span class="n">root_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"https://api.osf.io/v2/nodes/</span><span class="si">{</span><span class="n">osf_id</span><span class="si">}</span><span class="s2">/files/osfstorage/"</span>
-    <span class="k">with</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="n">estimated_files</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">"Processing files"</span><span class="p">)</span> <span class="k">as</span> <span class="n">pbar</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="n">estimated_files</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">"Processing files"</span><span class="p">,</span>
+              <span class="n">disable</span><span class="o">=</span><span class="ow">not</span> <span class="n">_show_progress</span><span class="p">())</span> <span class="k">as</span> <span class="n">pbar</span><span class="p">:</span>
         <span class="n">process_files</span><span class="p">(</span><span class="n">root_url</span><span class="p">,</span> <span class="s2">""</span><span class="p">,</span> <span class="n">pbar</span><span class="p">)</span>
     
     <span class="k">return</span> <span class="n">files</span></div>
@@ -924,9 +926,26 @@ window.runMermaid = runMermaid;</script>
 
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_select_subjects</span><span class="p">(</span><span class="n">subjects</span><span class="p">,</span> <span class="n">raw_data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""The subject IDs to load: all in `raw_data` if `subjects` is None, else</span>
+<span class="sd">    `subjects` (one ID as a string, or a list); raises a ValueError for IDs</span>
+<span class="sd">    that are not in `raw_data`."""</span>
+    <span class="k">if</span> <span class="n">subjects</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading all </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">raw_data</span><span class="p">)</span><span class="si">}</span><span class="s2"> subjects"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">raw_data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">subjects</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">subjects</span> <span class="o">=</span> <span class="p">[</span><span class="n">subjects</span><span class="p">]</span>
+    <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="n">sid</span> <span class="k">for</span> <span class="n">sid</span> <span class="ow">in</span> <span class="n">subjects</span> <span class="k">if</span> <span class="n">sid</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">raw_data</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Subjects not found in the study: </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span><span class="w"> </span><span class="n">missing</span><span class="p">))</span><span class="si">}</span><span class="s2">; "</span>
+                         <span class="sa">f</span><span class="s2">"available: </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span><span class="w"> </span><span class="n">raw_data</span><span class="p">))</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">subjects</span><span class="p">)</span><span class="si">}</span><span class="s2"> specified subjects"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">subjects</span><span class="p">)</span>
+
+
 <div class="viewcode-block" id="load_study_osf">
 <a class="viewcode-back" href="../../api/generated/pypillometry.load_study_osf.html#pypillometry.load_study_osf">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">load_study_osf</span><span class="p">(</span><span class="n">osf_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">subjects</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">force_download</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">config_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"pypillometry_conf.py"</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_study_osf</span><span class="p">(</span><span class="n">osf_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">subjects</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">force_download</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">config_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"pypillometry_conf.py"</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">"requests.Session"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Read a study from OSF using the configuration file.</span>
 <span class="sd">    Example: https://osf.io/p2u74/</span>
@@ -944,9 +963,9 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        The OSF project ID</span>
 <span class="sd">    path : str</span>
 <span class="sd">        Local path where files should be downloaded/stored</span>
-<span class="sd">    subjects : list[str], optional</span>
-<span class="sd">        List of subject IDs to load. If None, all subjects will be loaded.</span>
-<span class="sd">        If a subject ID is provided that doesn't exist in the data, it will be skipped.</span>
+<span class="sd">    subjects : str or list[str], optional</span>
+<span class="sd">        Subject ID or list of subject IDs to load. If None, all subjects will</span>
+<span class="sd">        be loaded. IDs that are not in the study raise a ValueError.</span>
 <span class="sd">    force_download : bool, optional</span>
 <span class="sd">        If True, force re-download (including the file listing) even if</span>
 <span class="sd">        files exist locally. Default False.</span>
@@ -963,6 +982,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    config : module</span>
 <span class="sd">        Module containing the configuration (pypillometry_conf.py imported as a module)</span>
 <span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading study from OSF project '</span><span class="si">{</span><span class="n">osf_id</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
     <span class="c1"># Create cache directory if it doesn't exist</span>
     <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -1007,14 +1028,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">spec</span><span class="o">.</span><span class="n">loader</span><span class="o">.</span><span class="n">exec_module</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
     
     <span class="c1"># Filter subjects if specified</span>
-    <span class="n">subject_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">raw_data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-    <span class="k">if</span> <span class="n">subjects</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">subject_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">sid</span> <span class="k">for</span> <span class="n">sid</span> <span class="ow">in</span> <span class="n">subjects</span> <span class="k">if</span> <span class="n">sid</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">raw_data</span><span class="p">]</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">subject_ids</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"None of the specified subjects were found in the data"</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">subject_ids</span><span class="p">)</span><span class="si">}</span><span class="s2"> specified subjects"</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading all </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">subject_ids</span><span class="p">)</span><span class="si">}</span><span class="s2"> subjects"</span><span class="p">)</span>
+    <span class="n">subject_ids</span> <span class="o">=</span> <span class="n">_select_subjects</span><span class="p">(</span><span class="n">subjects</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">raw_data</span><span class="p">)</span>
     
     <span class="c1"># Find raw data files that need to be downloaded</span>
     <span class="n">to_download</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1061,6 +1075,7 @@ window.runMermaid = runMermaid;</script>
                 <span class="n">unit</span><span class="o">=</span><span class="s1">'iB'</span><span class="p">,</span>
                 <span class="n">unit_scale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                 <span class="n">unit_divisor</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
+                <span class="n">disable</span><span class="o">=</span><span class="ow">not</span> <span class="n">_show_progress</span><span class="p">(),</span>
             <span class="p">)</span> <span class="k">as</span> <span class="n">bar</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">iter_content</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="mi">1024</span><span class="p">):</span>
                     <span class="n">size</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
@@ -1109,9 +1124,9 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        Name of the configuration file. Default is "pypillometry_conf.py".</span>
 <span class="sd">        It is first looked up in the current working directory and, if</span>
 <span class="sd">        not found there, in `path`.</span>
-<span class="sd">    subjects : list[str], optional</span>
-<span class="sd">        List of subject IDs to load. If None, all subjects will be loaded.</span>
-<span class="sd">        If a subject ID is provided that doesn't exist in the data, it will be skipped.</span>
+<span class="sd">    subjects : str or list[str], optional</span>
+<span class="sd">        Subject ID or list of subject IDs to load. If None, all subjects will</span>
+<span class="sd">        be loaded. IDs that are not in the study raise a ValueError.</span>
 <span class="sd">    cache_dir : str, optional</span>
 <span class="sd">        only for SSH URLs: directory to download the files to; if None, a</span>
 <span class="sd">        temporary directory is used</span>
@@ -1132,6 +1147,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    config : module</span>
 <span class="sd">        Module containing the configuration (pypillometry_conf.py imported as a module)</span>
 <span class="sd">    """</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
 
@@ -1178,19 +1194,13 @@ window.runMermaid = runMermaid;</script>
         <span class="n">spec</span><span class="o">.</span><span class="n">loader</span><span class="o">.</span><span class="n">exec_module</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
 
         <span class="c1"># Filter subjects if specified</span>
-        <span class="n">subject_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">raw_data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-        <span class="k">if</span> <span class="n">subjects</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">subject_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">sid</span> <span class="k">for</span> <span class="n">sid</span> <span class="ow">in</span> <span class="n">subjects</span> <span class="k">if</span> <span class="n">sid</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">raw_data</span><span class="p">]</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">subject_ids</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"None of the specified subjects were found in the data"</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">subject_ids</span><span class="p">)</span><span class="si">}</span><span class="s2"> specified subjects"</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading all </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">subject_ids</span><span class="p">)</span><span class="si">}</span><span class="s2"> subjects"</span><span class="p">)</span>
+        <span class="n">subject_ids</span> <span class="o">=</span> <span class="n">_select_subjects</span><span class="p">(</span><span class="n">subjects</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">raw_data</span><span class="p">)</span>
 
         <span class="c1"># Load the data using the read_subject function from the config module</span>
         <span class="n">study_data</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Loading subject data"</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">subject_id</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">subject_ids</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">"Loading subjects"</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">"subject"</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">subject_id</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">subject_ids</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">"Loading subjects"</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">"subject"</span><span class="p">,</span>
+                               <span class="n">disable</span><span class="o">=</span><span class="ow">not</span> <span class="n">_show_progress</span><span class="p">()):</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading subject </span><span class="si">{</span><span class="n">subject_id</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
             <span class="n">info</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">raw_data</span><span class="p">[</span><span class="n">subject_id</span><span class="p">]</span>
             <span class="n">downloaded</span> <span class="o">=</span> <span class="p">[]</span>

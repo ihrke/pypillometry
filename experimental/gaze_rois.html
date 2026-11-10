@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Experimental setup and regions of interest &#8212; pypillometry v2.1.0</title>
+    <title>Experimental setup and regions of interest &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -62,7 +62,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -106,9 +106,6 @@
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -484,7 +481,7 @@
 </div><section id="Experimental-setup-and-regions-of-interest">
 <h1>Experimental setup and regions of interest<a class="headerlink" href="#Experimental-setup-and-regions-of-interest" title="Link to this heading">#</a></h1>
 <div class="admonition warning">
-<p><strong>Experimental:</strong> Regions of interest work, but the API may change and they are not yet integrated with the other methods (e.g., there is no method that returns the time spent in a region per trial).</p>
+<p><strong>Experimental:</strong> Regions of interest work, but the API may change. For event-related analyses (where the gaze is after each event, dwell time and first entry per trial), use the segments and <code class="docutils literal notranslate"><span class="pre">seg.gaze</span></code>: see <a class="reference internal" href="../user_guide/rois.html"><span class="doc">Regions of interest</span></a> and the tutorial <a class="reference internal" href="../notebooks/rois.html"><span class="doc">Gaze in regions of interest around events</span></a>.</p>
 </div>
 <p>Gaze positions are recorded in screen pixels. To relate them to what was on the screen, or to express them in mm or degrees of visual angle, <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code> needs the geometry of the setup. Regions of interest (ROIs) then mark parts of the screen, e.g., where stimuli were shown.</p>
 <div class="nbinput nblast docutils container">
@@ -551,7 +548,7 @@ ExperimentalSetup(
 (np.float64(280.2154631618779), np.float64(512.0))
 </pre></div></div>
 </div>
-<p>It also defines the screen boundaries, which are used, e.g., by <code class="docutils literal notranslate"><span class="pre">mask_offscreen_coords()</span></code> to mask samples outside the screen.</p>
+<p>It also defines the screen boundaries, which are used, e.g., by <code class="docutils literal notranslate"><span class="pre">gaze.mask_offscreen()</span></code> to mask samples outside the screen.</p>
 </section>
 <section id="Where-did-the-participant-look?">
 <h2>Where did the participant look?<a class="headerlink" href="#Where-did-the-participant-look?" title="Link to this heading">#</a></h2>
@@ -663,6 +660,7 @@ Intervals &#39;left stimulus&#39; | 18 intervals (total duration: 5768.00 ms), 3
 </pre></div></div>
 </div>
 <p>To get the proportion of time spent on the left stimulus after each stimulus onset, we store the boolean array as a new variable and use <code class="docutils literal notranslate"><span class="pre">stat_per_event()</span></code>:</p>
+<p>The segments around events do this per time point and trial: <code class="docutils literal notranslate"><span class="pre">seg.gaze.dwell_time(left_roi,</span> <span class="pre">window=(0,</span> <span class="pre">1000))</span></code> returns the time in the ROI per trial, and <code class="docutils literal notranslate"><span class="pre">seg.gaze.roi_hits()</span></code> the share of trials in the ROI over time (see <a class="reference internal" href="../notebooks/rois.html"><span class="doc">the tutorial</span></a>).</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>

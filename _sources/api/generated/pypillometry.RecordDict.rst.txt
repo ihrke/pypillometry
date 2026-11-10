@@ -1,0 +1,35 @@
+﻿RecordDict
+==========
+
+.. currentmodule:: pypillometry
+
+.. autoclass:: RecordDict
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~RecordDict.clear
+      ~RecordDict.copy
+      ~RecordDict.fromkeys
+      ~RecordDict.get
+      ~RecordDict.items
+      ~RecordDict.keys
+      ~RecordDict.pop
+      ~RecordDict.popitem
+      ~RecordDict.setdefault
+      ~RecordDict.to_pandas
+      ~RecordDict.update
+      ~RecordDict.values
+   
+   
+
+
+   .. rubric:: Details

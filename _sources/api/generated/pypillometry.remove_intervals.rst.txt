@@ -1,0 +1,6 @@
+﻿remove\_intervals
+=================
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: remove_intervals

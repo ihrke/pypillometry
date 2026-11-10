@@ -18,7 +18,7 @@ The simplest use case is viewing an :class:`EyeData` object directly:
     import pypillometry as pp
 
     eyedata = pp.get_example_data("rlmw_002_short")
-    eyedata.pupil_blinks_detect(apply_mask=True)
+    eyedata.pupil.blinks_detect()
     pp.view(eyedata)
 
 .. image:: ../images/viewer_eyedata.png
@@ -84,7 +84,7 @@ You can overlay additional data on top of the main plots for comparison. This is
     import pypillometry as pp
 
     eyedata = pp.get_example_data("rlmw_002_short")
-    smoothed = eyedata.pupil_lowpass_filter(cutoff=2, inplace=False)
+    smoothed = eyedata | pp.pupil.lowpass_filter(cutoff=2)
 
     pp.view(eyedata, variables=["pupil"],
             overlay_pupil={"smoothed": smoothed["left_pupil"]})
@@ -129,7 +129,7 @@ Use ``highlight`` to shade :class:`Intervals` (e.g., detected blinks) in the plo
     import pypillometry as pp
 
     eyedata = pp.get_example_data("rlmw_002_short")
-    blinks = eyedata.pupil_blinks_detect(eyes="left")  # Intervals
+    blinks = eyedata.pupil.blinks_detect(eyes="left").get_blinks("left", "pupil")["left_pupil"]
 
     pp.view(eyedata, variables=["pupil"], highlight=blinks)
 

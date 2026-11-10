@@ -19,63 +19,50 @@
       ~FakeEyeData.add_events
       ~FakeEyeData.add_to_history
       ~FakeEyeData.blink_stats
-      ~FakeEyeData.blinks_merge_close
+      ~FakeEyeData.clear_layer
       ~FakeEyeData.copy
-      ~FakeEyeData.correct_pupil_foreshortening
       ~FakeEyeData.crop
       ~FakeEyeData.downsample
       ~FakeEyeData.drop_data
       ~FakeEyeData.drop_original
-      ~FakeEyeData.event_onset
       ~FakeEyeData.exclude_intervals
       ~FakeEyeData.excluded_duration
       ~FakeEyeData.fill_time_discontinuities
-      ~FakeEyeData.fit_foreshortening
       ~FakeEyeData.from_eyelink
       ~FakeEyeData.from_file
       ~FakeEyeData.get_blinks
       ~FakeEyeData.get_duration
-      ~FakeEyeData.get_events
+      ~FakeEyeData.get_epochs
       ~FakeEyeData.get_excluded
       ~FakeEyeData.get_generation_call
       ~FakeEyeData.get_included
-      ~FakeEyeData.get_interpolated_blinks
+      ~FakeEyeData.get_interpolated
       ~FakeEyeData.get_intervals
+      ~FakeEyeData.get_layer_intervals
       ~FakeEyeData.get_segments
       ~FakeEyeData.get_size
+      ~FakeEyeData.get_values
       ~FakeEyeData.interpolate_intervals
       ~FakeEyeData.keep_intervals
+      ~FakeEyeData.layer_stats
+      ~FakeEyeData.mask
       ~FakeEyeData.mask_as_intervals
-      ~FakeEyeData.mask_eye_divergences
       ~FakeEyeData.mask_intervals
-      ~FakeEyeData.mask_offscreen_coords
       ~FakeEyeData.merge_eyes
       ~FakeEyeData.merge_masks
-      ~FakeEyeData.nblinks
       ~FakeEyeData.nevents
       ~FakeEyeData.print_history
-      ~FakeEyeData.pupil_blinks_detect
-      ~FakeEyeData.pupil_blinks_interpolate
-      ~FakeEyeData.pupil_estimate_baseline
-      ~FakeEyeData.pupil_estimate_response
-      ~FakeEyeData.pupil_lowpass_filter
-      ~FakeEyeData.pupil_merge_eyes
-      ~FakeEyeData.pupil_smooth_window
       ~FakeEyeData.quality_report
       ~FakeEyeData.regenerate
       ~FakeEyeData.remove_intervals
       ~FakeEyeData.reset_time
       ~FakeEyeData.scale
       ~FakeEyeData.set_blinks
-      ~FakeEyeData.set_event_onsets
       ~FakeEyeData.set_events
       ~FakeEyeData.set_experimental_setup
       ~FakeEyeData.split_excluded
       ~FakeEyeData.stat_per_event
-      ~FakeEyeData.sub_slice
       ~FakeEyeData.summary
-      ~FakeEyeData.to_gazedata
-      ~FakeEyeData.to_pupildata
       ~FakeEyeData.unscale
       ~FakeEyeData.write_file
    

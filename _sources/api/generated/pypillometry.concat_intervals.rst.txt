@@ -1,0 +1,6 @@
+﻿concat\_intervals
+=================
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: concat_intervals

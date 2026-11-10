@@ -1,0 +1,6 @@
+﻿mask\_intervals
+===============
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: mask_intervals

@@ -1,0 +1,6 @@
+﻿read\_file
+==========
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: read_file

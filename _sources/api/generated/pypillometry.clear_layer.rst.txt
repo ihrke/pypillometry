@@ -1,0 +1,6 @@
+﻿clear\_layer
+============
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: clear_layer

@@ -1,0 +1,6 @@
+﻿add\_events
+===========
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: add_events

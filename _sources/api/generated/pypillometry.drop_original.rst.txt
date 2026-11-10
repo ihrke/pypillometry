@@ -1,0 +1,6 @@
+﻿drop\_original
+==============
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: drop_original

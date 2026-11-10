@@ -5,45 +5,51 @@ Events, intervals and segments
 
 Most experiments send *events* (triggers) to the eye tracker, e.g., when a
 stimulus appears or a response is given. Analyses then look at the data in
-*intervals* around these events. :mod:`pypillometry` has a class for each
-step:
+*windows* around these events or in the *intervals* between them.
+:mod:`pypillometry` has a class for each step:
 
 .. mermaid::
 
    flowchart LR
-     E["<b>Events</b><br/>onsets + labels + metadata"] -- "get_intervals()" --> I["<b>Intervals</b><br/>(start, end) pairs"]
-     I -- "get_segments()" --> S["<b>SegmentedEyeData</b><br/>segments x time"]
-     S -- "group_segments()" --> G["<b>GroupLevelSegmentedData</b><br/>participants x time"]
-     I -- "stat_per_event()" --> N["one value<br/>per event"]
+     E["<b>Events</b><br/>onsets + labels + metadata"] -- "get_epochs(event, window)" --> P["<b>Epochs</b><br/>onsets + one window"]
+     E -- "get_intervals(start=event1, end=event2)" --> I["<b>Intervals</b><br/>(start, end) pairs"]
+     P -- "get_segments()" --> S["<b>SegmentedEyeData</b><br/>channels: segments x time"]
+     S -- "average(by=...), group_segments()" --> G["<b>SegmentedEyeData</b><br/>channels: averages x time"]
+     P -- "stat_per_event()" --> N["one value<br/>per event"]
+     P -- "to_intervals()" --> I
 
 
 Events
 ------
 
-:meth:`~GenericEyeData.get_events` returns the events of a dataset as an
+:attr:`~EyeData.events` holds the events of a dataset as an
 :class:`Events` object, a list of onsets and labels:
 
 .. code-block:: python
 
-    events = d.get_events()              # onsets in ms
-    events = d.get_events(units="sec")   # onsets in seconds
+    events = d.events                    # onsets in ms
+    events = d.events.to_units("sec")    # onsets in seconds
     events.filter("stim")                # labels containing "stim"
     events.filter("stim", exact=True)    # labels equal to "stim"
     events.filter(lambda lab: lab.endswith("_1"))
     events.filter((60, 120))             # onsets between 60 and 120 s
     events[:10]                          # the first ten events
 
-:meth:`~Events.filter` and indexing return new :class:`Events`. You can
-store changed events in the dataset with :meth:`~GenericEyeData.set_events`,
-e.g., to remove test trials or to rename labels.
-:meth:`~GenericEyeData.add_events` adds events to the existing ones, and
-:meth:`~GenericEyeData.event_onset` returns the onset of the one event with
-a given label (it raises an error unless exactly one event has it):
+:class:`Events` cannot be changed in place: :meth:`~Events.filter`,
+indexing and the other methods return new :class:`Events`. You can store
+changed events in the dataset with :meth:`~EyeData.set_events`,
+e.g., to remove test trials or to rename labels. Operations that change
+the time of the data (:meth:`~EyeData.crop`,
+:meth:`~EyeData.remove_intervals`,
+:meth:`~EyeData.reset_time`) move the events with it.
+:meth:`~EyeData.add_events` adds events to the existing ones, and
+:meth:`Events.onset` returns the onset of the one event with a given
+label (it raises an error unless exactly one event has it):
 
 .. code-block:: python
 
     d.add_events(pp.Events([1500, 2500], ["cue", "cue"], units="ms"))
-    t = d.event_onset("Start Block 2", units="sec")
+    t = d.events.onset("Start Block 2", units="sec")
 
 Tutorial: :doc:`/notebooks/events`.
 
@@ -54,8 +60,8 @@ Event metadata
 ~~~~~~~~~~~~~~
 
 Each event can have *metadata*, e.g., the trial, the condition, the choice
-or the reaction time. They are stored in ``events.meta``, a dict with one
-numpy array per column (one value per event). Missing values are NaN in
+or the reaction time. They are stored in ``events.meta``, a read-only
+mapping with one numpy array per column (one value per event). Missing values are NaN in
 numeric columns and ``""`` in text columns. There are two common sources:
 
 - **Trigger labels** that code information, e.g., ``S_12_3_5`` for the
@@ -65,7 +71,7 @@ numeric columns and ``""`` in text columns. There are two common sources:
 
   .. code-block:: python
 
-      ev = d.get_events()
+      ev = d.events
       ev = ev.parse_labels(r"^[FSCR]_(?P<trial>\d+)")
       ev = ev.parse_labels(r"^S_\d+_(?P<left>\d+)_(?P<right>\d+)")
       ev = ev.parse_labels(r"^R_\d+_(?P<reward>\d+)")
@@ -89,10 +95,11 @@ selects events by their metadata:
     ev.filter("S_", rt=lambda rt: rt < 1000)       # function of the column
     ev.filter(ev.meta["left"] < ev.meta["right"])  # boolean array
 
-:meth:`~GenericEyeData.set_events` stores the metadata in the dataset
-(they are saved with it), and :meth:`~GenericEyeData.get_intervals` passes
-the metadata of the selected events on to the intervals
-(``intervals.event_meta``, also in :meth:`~Intervals.as_pandas`).
+:meth:`~EyeData.set_events` stores the metadata in the dataset
+(e.g., ``d = d.set_events(ev)``; they are saved with it), and
+:meth:`~EyeData.get_epochs` and :meth:`~EyeData.get_intervals` pass the
+metadata of the selected events on (``epochs.meta``,
+``intervals.event_meta``, also in ``as_pandas()``).
 :meth:`~Events.to_table` returns the events with their metadata as a dict
 of columns, e.g., for ``pandas.DataFrame()``.
 
@@ -155,7 +162,7 @@ arrays of times; missing times (NaN, e.g., no response) give no event:
                               units="sec")
 
 This gives one event per stimulus and per response, sorted by onset (still
-on the clock of the behaviour log):
+on the clock of the behaviour log, so they are marked as ``needs_sync``):
 
 .. list-table:: ``ev``
    :header-rows: 1
@@ -188,14 +195,24 @@ maps times or events to the eye-tracker clock:
 .. code-block:: python
 
     starts = behav.groupby("block").trialstart.min()             # in sec
-    sync = pp.sync_clocks(starts, d.get_events().filter("Start Block"),
+    sync = pp.sync_clocks(starts, d.events.filter("Start Block"),
                           src_units="sec")
     d.add_events(sync(ev))
+
+Events from :meth:`Events.from_table` are marked as being on another clock
+(``ev.needs_sync``); :meth:`~EyeData.add_events`,
+:meth:`~EyeData.set_events` and :meth:`~EyeData.get_epochs` warn if they
+get such events, so a forgotten ``sync_clocks()`` does not go unnoticed.
+Mapping them with a :class:`ClockSync` (or :meth:`Events.shift`) removes
+the mark. If the log is on the eye-tracker clock already (e.g., the times
+were taken from eye-tracker messages), use
+``Events.from_table(..., needs_sync=False)``. Events outside the time range
+of the data raise an error.
 
 Other columns of the log become :ref:`metadata <event-metadata>` of the
 events with ``meta``, e.g.,
 ``pp.Events.from_table(behav, ..., units="sec", meta=["block", "trial", "rt"])``.
-They are kept by ``sync`` and :meth:`~GenericEyeData.add_events`.
+They are kept by ``sync`` and :meth:`~EyeData.add_events`.
 
 :func:`sync_clocks` logs a summary of the fit. Check the *residuals*
 (``sync.residuals``, or ``print(sync)`` for a table): with correct pairs,
@@ -210,11 +227,83 @@ the labels). With a single shared moment, only the offset is fitted.
 Tutorial: :doc:`/notebooks/importdata_behaviour`.
 
 
+Epochs
+------
+
+An :class:`Epochs` object holds some events (an :class:`Events` object in
+ms) and *one* time window around them, e.g., from 200 ms before to 1000 ms
+after each stimulus. :meth:`~EyeData.get_epochs` selects the events and
+the window:
+
+.. code-block:: python
+
+    epochs = d.get_epochs("stim", (-200, 1000) * u.ms)
+    epochs.onsets, epochs.window, epochs.labels, epochs.meta["trial"]
+    epochs.events                               # the events, as Events
+    epochs.filter(cond="a", rt=lambda rt: rt < 800)  # select like Events
+    epochs.keep(epochs.meta["cond"] == "a")     # a subset of the epochs
+    epochs.set_meta("block", 1)                 # change the metadata
+    epochs.to_intervals("sec")                  # the spans as Intervals
+
+Selecting and changing the metadata works as for :class:`Events`
+(:meth:`~Epochs.filter`, :meth:`~Epochs.set_meta`,
+:meth:`~Epochs.drop_meta`, :meth:`~Epochs.parse_labels`); the results are
+new Epochs with the same window.
+
+Epochs can be used wherever the methods take intervals (e.g.,
+:meth:`~EyeData.mask_intervals`,
+:meth:`~EyeData.exclude_intervals`,
+:meth:`~EyeData.stat_per_event`); they stand for their spans
+``(onset + window[0], onset + window[1])`` in ms. Windows that extend
+beyond the recording are not cut off: the methods that read the data use
+the part within it (in segments, the rest is masked).
+
+Epochs and intervals compared: :meth:`~EyeData.get_epochs` gives the same
+window around each selected event (here, the stimuli "S"),
+:meth:`~EyeData.get_intervals` the spans between two events (here, from
+the fixation cross "F" to the response "R" of each trial), which differ
+in length:
+
+.. plot::
+   :include-source: False
+
+   from pypillometry import u
+   import matplotlib.patches as patches
+
+   d = pp.get_example_data("rlmw_002_short")
+   epochs = d.get_epochs("S_", (-200, 1000) * u.ms)
+   intervals = d.get_intervals(start="F_", end="R_")
+   t0, t1 = 4500, 15000
+
+   fig, ax = plt.subplots(figsize=(9, 3))
+   for on, lab in zip(d.events.onsets, d.events.labels):
+       if t0 <= on <= t1:
+           ax.axvline(on / 1000, color="0.75", lw=0.8, zorder=0)
+           ax.text(on / 1000, 2.55, lab.split("_")[0], ha="center", fontsize=9)
+   for (a, b), on in zip(epochs, epochs.onsets):
+       if a < t1:
+           ax.add_patch(patches.Rectangle((a / 1000, 1.15), (b - a) / 1000, 0.7, color="C0", alpha=0.6))
+           ax.plot([on / 1000] * 2, [1.15, 1.85], color="C0", lw=2)
+   for a, b in intervals.intervals:
+       if a < t1:
+           ax.add_patch(patches.Rectangle((a / 1000, 0.15), (b - a) / 1000, 0.7, color="C1", alpha=0.6))
+   ax.set_yticks([0.5, 1.5])
+   ax.set_yticklabels(['get_intervals(start="F_", end="R_")', 'get_epochs("S_", (-200, 1000) ms)'])
+   ax.set_ylim(0, 2.9)
+   ax.set_xlim(t0 / 1000, t1 / 1000)
+   ax.set_xlabel("time (s); events: F, S, C, R of each trial")
+   for s in ("top", "right", "left"):
+       ax.spines[s].set_visible(False)
+   ax.tick_params(axis="y", length=0)
+   fig.tight_layout()
+
 Intervals
 ---------
 
 An :class:`Intervals` object is a list of (start, end) pairs, together with
-their units and, where applicable, the events they belong to. Intervals
+their units and, optionally, one label, onset and metadata row per
+interval (e.g., of the event it belongs to), which are kept when
+intervals are converted, filtered, padded, combined or merged. Intervals
 come from several places:
 
 .. list-table::
@@ -224,22 +313,22 @@ come from several places:
    * - Source
      - Example
    * - windows around events
-     - ``d.get_intervals("stim", (-200, 1000) * u.ms)``
+     - ``d.get_epochs("stim", (-200, 1000) * u.ms).to_intervals()``
    * - spans between two events
-     - ``d.get_intervals(("trial_start", "response"))``
+     - ``d.get_intervals(start="trial_start", end="response")``
    * - detected blinks
-     - ``d.get_blinks("left", "pupil")``
+     - ``d.get_blinks("left", "pupil")["left_pupil"]``
    * - other detection methods
-     - ``d.mask_offscreen_coords(apply_mask=False)``
+     - ``d.gaze.mask_offscreen().get_layer_intervals("offscreen")``
    * - masked samples
-     - ``d.mask_as_intervals("left", "pupil")``
+     - ``d.mask_as_intervals("left", "pupil")["left_pupil"]``
    * - your own
      - ``pp.Intervals([(0, 100), (200, 300)] * u.ms)``
 
 Intervals can be converted to other units (:meth:`~Intervals.to_units`),
 filtered (:meth:`~Intervals.filter`), padded (:meth:`~Intervals.pad`),
 merged when they overlap (:meth:`~Intervals.merge`), combined (``+``,
-:func:`merge_intervals`), subtracted (``-``), summarized
+:func:`concat_intervals`), subtracted (``-``), summarized
 (:meth:`~Intervals.stats`, :meth:`~Intervals.as_pandas`) and plotted
 (:meth:`~Intervals.plot`). :meth:`~Intervals.complement` returns the
 periods that are not covered (e.g., ``blocks.complement(d)`` gives the time
@@ -248,18 +337,18 @@ before, between and after the blocks).
 Between two events
 ~~~~~~~~~~~~~~~~~~
 
-With a tuple of two selectors, :meth:`~GenericEyeData.get_intervals`
-pairs each first event with the next second event after it. If several
-first events come before the same second event (e.g., a missing
-"End Block"), the last of them is used. Events without a partner are
-skipped, and a warning lists them. ``"<start>"`` and ``"<end>"`` stand for
-the start and the end of the recording:
+:meth:`~EyeData.get_intervals` pairs each `start` event with the next
+`end` event after it. If several `start` events come before the same
+`end` event (e.g., a missing "End Block"), the last of them is used.
+Events without a partner are skipped, and a warning lists them.
+``"<start>"`` and ``"<end>"`` stand for the start and the end of the
+recording:
 
 .. code-block:: python
 
-    blocks = d.get_intervals(("Start Block", "End Block"), units="ms")
-    breaks = d.get_intervals(("End Block", "Start Block"), units="ms")
-    before = d.get_intervals(("<start>", "Start Block"), units="ms")
+    blocks = d.get_intervals(start="Start Block", end="End Block", units="ms")
+    breaks = d.get_intervals(start="End Block", end="Start Block", units="ms")
+    before = d.get_intervals(start="<start>", end="Start Block", units="ms")
 
 String selectors match labels that contain them; with ``exact=True``,
 only labels that are equal to them.
@@ -268,21 +357,23 @@ Sample indices and time
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 Intervals are either in time units ("ms", "sec", "min", "h") or in sample
-indices (``units="samples"``, e.g., blinks; also the default of
-:meth:`~GenericEyeData.get_intervals` for plain numbers). Intervals are
+indices (``units="samples"``; plain numbers in the window of
+:meth:`~EyeData.get_epochs` and :meth:`~EyeData.get_intervals` are ms,
+sample indices need
+``units="samples"``). Intervals are
 end-exclusive: ``(start, end)`` covers the samples with
 ``start <= t < end``.
 
 Intervals in sample indices are only valid for the data object they came
-from: after :meth:`~GenericEyeData.crop`,
-:meth:`~GenericEyeData.downsample` or for another recording, the same
+from: after :meth:`~EyeData.crop`,
+:meth:`~EyeData.downsample` or for another recording, the same
 indices point to other samples (blinks stored in the object are adjusted
 automatically). Therefore, every conversion between sample indices and
 time takes the data object and uses its time vector:
 
 .. code-block:: python
 
-    blinks = d.get_blinks("left", "pupil")      # sample indices
+    blinks = d.get_blinks("left", "pupil", units="samples")["left_pupil"]
     blinks.to_units("ms", d)                    # times of these samples
     trials.to_units("samples", d)               # first sample at or after each time
     mask = trials.to_mask(d)                    # one entry per sample of d
@@ -298,11 +389,11 @@ Many methods of the data objects take intervals as input:
 .. autosummary::
    :nosignatures:
 
-   GenericEyeData.get_segments
-   GenericEyeData.stat_per_event
-   GenericEyeData.mask_intervals
-   GenericEyeData.interpolate_intervals
-   PupilPlotter.plot_intervals
+   EyeData.get_segments
+   EyeData.stat_per_event
+   EyeData.mask_intervals
+   EyeData.interpolate_intervals
+   EyeData.plot.plot_intervals
 
 Tutorial: :doc:`/notebooks/intervals`.
 
@@ -310,24 +401,138 @@ Tutorial: :doc:`/notebooks/intervals`.
 Segments and event-related pupil dilation
 -----------------------------------------
 
-:meth:`~GenericEyeData.get_segments` cuts the data of one variable in each
-interval and returns a :class:`SegmentedEyeData` object (a matrix of
-segments × time points). Averaged over segments, this is the
-*event-related pupil dilation* (ERPD):
+:meth:`~EyeData.get_segments` cuts the data in each epoch and returns a
+:class:`SegmentedEyeData` object: one matrix of segments × time points
+per channel (by default all channels; choose them by name, or with
+``eyes=`` and ``variables=``). Averaged over segments, the pupil channel
+is the *event-related pupil dilation* (ERPD). As for :class:`EyeData`,
+the methods for the pupil are in ``seg.pupil`` and those for the gaze in
+``seg.gaze``:
 
 .. code-block:: python
 
-    intervals = d.get_intervals("stim", (-200, 1000) * u.ms)
-    erpd = d.get_segments(intervals, "left_pupil", name="stimulus")
-    erpd = erpd.baseline_correct((-200, 0))   # subtract the pre-stimulus mean
-    erpd.plot()
+    epochs = d.get_epochs("stim", (-200, 1000) * u.ms)
+    erpd = d.get_segments(epochs, "left_pupil", name="stimulus")
+    erpd = erpd.pupil.baseline_correct((-200, 0))   # subtract the pre-stimulus mean
+    erpd.pupil.plot()
+    erpd["left_pupil"]                               # masked array, time points x segments
 
-:func:`group_segments` averages the ERPDs of several participants into a
-:class:`GroupLevelSegmentedData` object, which can be plotted the same way.
-Both can be saved with ``write_file()``.
+The segments of a channel form a matrix of time points × trials (top, one
+row per trial, here for the 10 stimuli of the short example dataset); its
+mean over the trials is the ERPD (bottom, with the standard error):
+
+.. plot::
+   :include-source: False
+
+   from pypillometry import u
+
+   d = (pp.get_example_data("rlmw_002_short") | pp.pupil.blinks_detect()
+        | pp.pupil.blinks_interpolate() | pp.pupil.lowpass_filter(5))
+   seg = d.get_segments(d.get_epochs("S_", (-500, 2500) * u.ms), "left_pupil")
+   seg = seg.pupil.baseline_correct((-200, 0))
+   x = seg["left_pupil"]
+
+   fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(7, 5.5), sharex=True,
+                                  gridspec_kw={"height_ratios": [2, 1]})
+   lim = np.nanpercentile(np.abs(np.ma.filled(x, np.nan)), 98)
+   im = ax1.imshow(np.ma.filled(x, np.nan).T, aspect="auto", cmap="RdBu_r", vmin=-lim, vmax=lim,
+                   extent=[seg.tx[0], seg.tx[-1], seg.n_segments, 0], interpolation="nearest")
+   ax1.axvline(0, color="k", lw=0.8, ls="--")
+   ax1.set_ylabel("trial")
+   ax1.set_title('seg["left_pupil"]: time points x trials', fontsize=10)
+   fig.colorbar(im, ax=ax1, label="change from baseline")
+   seg.pupil.plot(ax=ax2)
+   ax2.set_title("mean over trials: the ERPD", fontsize=10)
+   ax2.set_xlabel("time (ms)")
+   fig.colorbar(im, ax=ax2).ax.set_visible(False)   # same width as above
+   fig.tight_layout()
+
+All channels share the epochs, so trials are selected once for all of
+them: :meth:`~SegmentedEyeData.filter` selects by label or metadata of
+the epochs, :meth:`~SegmentedEyeData.keep` with a boolean array (e.g.,
+to reject trials with too much missing data):
+
+.. code-block:: python
+
+    seg = d.get_segments(epochs)                     # pupil and gaze of both eyes
+    easy = seg.filter(cond="easy")
+    good = seg.keep(seg["left_pupil"].mask.mean(axis=0) < 0.5)
+
+The length and the time axis of the segments come from the window: the
+time points are ``window[0] + k * 1000/fs`` ms (at 500 Hz: -200, -198, ...,
+998 ms). Parts of a window outside the recording are masked. The segments
+keep their epochs (``erpd.epochs``). :meth:`~EyeData.get_segments`
+also takes Intervals, but only if they all have the same length (the time
+axis then starts at 0 at their starts); for intervals between two events,
+it raises an error. The baseline window of
+``seg.pupil.baseline_correct()`` must be within the segments.
+
+By default, the baseline is subtracted (the change in the units of the
+data); ``method="divide"`` gives the ratio to the baseline and
+``method="percent"`` the change in % of the baseline, e.g.,
+``erpd.pupil.baseline_correct((-200, 0), method="percent")``.
+
+``seg.gaze`` analyses the gaze with regions of interest (ROIs, see
+:doc:`gaze`): :meth:`~segmented.SegmentedGazeNamespace.roi_hits` adds a
+channel per eye that is 1 where the gaze is in the ROI and 0 outside, so
+its mean over the segments is the share of trials in which the gaze is
+in the ROI at each time point (a fixation curve, see :doc:`rois`);
+:meth:`~segmented.SegmentedGazeNamespace.dwell_time` and
+:meth:`~segmented.SegmentedGazeNamespace.first_entry` give one value per
+trial, in a table with the metadata of the epochs:
+
+.. code-block:: python
+
+    target = pp.CircularROI((640, 512), radius=100, name="target")
+    seg = seg.gaze.roi_hits(target)          # adds left_target, right_target
+    seg.gaze.plot_roi("target")              # share of trials in the ROI
+    import pandas as pd
+    pd.DataFrame(seg.gaze.dwell_time(target, window=(0, 1000)))
+
+Averages
+~~~~~~~~
+
+:meth:`~SegmentedEyeData.average` averages the trials, all of them or
+by groups defined by metadata columns of the epochs. The result is a
+:class:`SegmentedEyeData` object with one column per group, so it has the
+same methods (plots, baseline correction, selection, ``write_file()``).
+Its epochs have no time (their onsets are NaN); their metadata are the
+grouping columns, the columns that were the same in all trials of a group,
+and the number of trials (``n_trials``):
+
+.. code-block:: python
+
+    by_cond = seg.average(by="cond")               # one column per condition
+    by_cond.epochs.meta                             # {"cond": [...], "n_trials": [...]}
+    by_cond.filter(cond="easy").pupil.plot()
+
+An average is masked where all its trials are masked. The share of its
+trials that were usable at each time point is kept (``valid_share``), and
+the missing data shown by :meth:`~SegmentedEyeData.plot` are the missing
+trials.
+
+Several participants are combined in two steps: :func:`concat_segments`
+stacks their segments, with the participant in the metadata column
+``"subject"``, and :meth:`~SegmentedEyeData.average` averages them.
+:func:`group_segments` does both for the usual case of one average per
+participant:
+
+.. code-block:: python
+
+    segs = {"P01": seg1, "P02": seg2}
+    group = pp.group_segments(segs)                  # one column per participant
+    group.pupil.plot()                               # mean and error across participants
+
+    allseg = pp.concat_segments(segs)                # all trials, with "subject"
+    means = allseg.average(by=["subject", "cond"])   # per participant and condition
+    means.filter(cond="easy").pupil.plot()           # across participants, easy trials
+
+Averaging averages gives each of them the same weight (e.g., each
+participant). Measures that only make sense for single trials (ROI hits,
+first entry, see :doc:`rois`) raise an error for averages.
 
 For statistical models of trial-by-trial data, it is often easier to work
-with one number per trial. :meth:`~GenericEyeData.stat_per_event` applies a
+with one number per trial. :meth:`~EyeData.stat_per_event` applies a
 function (by default the mean) to each interval:
 
 .. code-block:: python

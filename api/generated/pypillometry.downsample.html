@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>downsample &#8212; pypillometry v2.1.0</title>
+    <title>downsample &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,12 +54,12 @@
     <link rel="icon" href="../../_static/pypillometry_logo_200x200.png"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="bspline" href="pypillometry.bspline.html" />
-    <link rel="prev" title="smooth_window" href="pypillometry.smooth_window.html" />
+    <link rel="next" title="scale" href="pypillometry.scale.html" />
+    <link rel="prev" title="crop" href="pypillometry.crop.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -103,9 +103,6 @@
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -409,40 +406,71 @@
   <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../data.html">Data classes</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.EyeData.html">EyeData</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.PupilData.html">PupilData</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.GazeData.html">GazeData</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.GenericEyeData.html">GenericEyeData</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.EyeDataDict.html">EyeDataDict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.MaskPolicy.html">MaskPolicy</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.FakeEyeData.html">FakeEyeData</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.keephistory.html">keephistory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.QualityReport.html">QualityReport</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.QualityMetric.html">QualityMetric</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.Table.html">Table</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.RecordDict.html">RecordDict</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../pupil.html">Pupil methods (<code class="docutils literal notranslate"><span class="pre">d.pupil</span></code>)</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.eyedata.pupil.PupilNamespace.html">PupilNamespace</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../gaze.html">Gaze methods (<code class="docutils literal notranslate"><span class="pre">d.gaze</span></code>)</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.eyedata.gaze.GazeNamespace.html">GazeNamespace</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../pipelines.html">Pipelines</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.crop.html">crop</a></li>
+<li class="toctree-l2 current active"><a aria-current="page" class="current reference internal" href="#">downsample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.scale.html">scale</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.unscale.html">unscale</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.merge_eyes.html">merge_eyes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.reset_time.html">reset_time</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.mask_intervals.html">mask_intervals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.interpolate_intervals.html">interpolate_intervals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.exclude_intervals.html">exclude_intervals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.keep_intervals.html">keep_intervals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.remove_intervals.html">remove_intervals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.merge_masks.html">merge_masks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.clear_layer.html">clear_layer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.set_blinks.html">set_blinks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.set_events.html">set_events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.add_events.html">add_events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.set_experimental_setup.html">set_experimental_setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.drop_data.html">drop_data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.drop_original.html">drop_original</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.fill_time_discontinuities.html">fill_time_discontinuities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.Step.html">Step</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.Pipeline.html">Pipeline</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../events_intervals.html">Events and intervals</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.Events.html">Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.Epochs.html">Epochs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.Intervals.html">Intervals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.ClockSync.html">ClockSync</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.merge_intervals.html">merge_intervals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.concat_intervals.html">concat_intervals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.sync_clocks.html">sync_clocks</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../segments.html">Segmented data</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.SegmentedEyeData.html">SegmentedEyeData</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.GroupLevelSegmentedData.html">GroupLevelSegmentedData</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.concat_segments.html">concat_segments</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.group_segments.html">group_segments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.segmented.SegmentedPupilNamespace.html">SegmentedPupilNamespace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.segmented.SegmentedGazeNamespace.html">SegmentedGazeNamespace</a></li>
 </ul>
 </details></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../plotting.html">Plotting</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.EyePlotter.html">EyePlotter</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.PupilPlotter.html">PupilPlotter</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.GazePlotter.html">GazePlotter</a></li>
-</ul>
-</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../plotting.html">Plotting (<code class="docutils literal notranslate"><span class="pre">d.plot</span></code>)</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../io.html">Reading and writing data</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.read_eyelink.html">read_eyelink</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.read_pickle.html">read_pickle</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.write_pickle.html">write_pickle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.read_file.html">read_file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.write_file.html">write_file</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.download.html">download</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.fetch_url.html">fetch_url</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.local_copy.html">local_copy</a></li>
@@ -457,35 +485,35 @@
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.get_rlmw_010_edf.html">get_rlmw_010_edf</a></li>
 </ul>
 </details></li>
-<li class="toctree-l1 current active has-children"><a class="reference internal" href="../signal.html">Signal processing</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.butter_lowpass.html">butter_lowpass</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.butter_lowpass_filter.html">butter_lowpass_filter</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.lowpass_filter_iterative.html">lowpass_filter_iterative</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.smooth_window.html">smooth_window</a></li>
-<li class="toctree-l2 current active"><a aria-current="page" class="current reference internal" href="#">downsample</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.bspline.html">bspline</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.baseline_envelope.html">baseline_envelope</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.baseline_envelope_iter_bspline.html">baseline_envelope_iter_bspline</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.baseline_pupil_model.html">baseline_pupil_model</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.zscale.html">zscale</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.velocity_savgol.html">velocity_savgol</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.detect_blinks_velocity.html">detect_blinks_velocity</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.detect_blinks_zero.html">detect_blinks_zero</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.blink_onsets_mahot.html">blink_onsets_mahot</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_kernel.html">pupil_kernel</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_kernel_t.html">pupil_kernel_t</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_get_max_duration.html">pupil_get_max_duration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.plot_prf.html">plot_prf</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_build_design_matrix.html">pupil_build_design_matrix</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_response.html">pupil_response</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_response_coverage.html">pupil_response_coverage</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupilresponse_nnls.html">pupilresponse_nnls</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_signal_quality.html">pupil_signal_quality</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_eye_offset.html">pupil_eye_offset</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.fake_pupil_baseline.html">fake_pupil_baseline</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.fake_gaze_fixations.html">fake_gaze_fixations</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.add_measurement_noise.html">add_measurement_noise</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.generate_foreshortening_data.html">generate_foreshortening_data</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../signal.html">Signal processing</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.butter_lowpass.html">butter_lowpass</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.butter_lowpass_filter.html">butter_lowpass_filter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.lowpass_filter_iterative.html">lowpass_filter_iterative</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.smooth_window.html">smooth_window</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.downsample.html">downsample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.zscale.html">zscale</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.bspline.html">bspline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.baseline_envelope.html">baseline_envelope</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.baseline_envelope_iter_bspline.html">baseline_envelope_iter_bspline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.baseline_pupil_model.html">baseline_pupil_model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.velocity_savgol.html">velocity_savgol</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.detect_blinks_velocity.html">detect_blinks_velocity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.detect_blinks_zero.html">detect_blinks_zero</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.blink_onsets_mahot.html">blink_onsets_mahot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_kernel.html">pupil_kernel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_kernel_t.html">pupil_kernel_t</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_get_max_duration.html">pupil_get_max_duration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.plot_prf.html">plot_prf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_build_design_matrix.html">pupil_build_design_matrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_response.html">pupil_response</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_response_coverage.html">pupil_response_coverage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupilresponse_nnls.html">pupilresponse_nnls</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_signal_quality.html">pupil_signal_quality</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_eye_offset.html">pupil_eye_offset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.fake_pupil_baseline.html">fake_pupil_baseline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.fake_gaze_fixations.html">fake_gaze_fixations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.add_measurement_noise.html">add_measurement_noise</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.generate_foreshortening_data.html">generate_foreshortening_data</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../geometry.html">Geometry and gaze</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -563,7 +591,7 @@
     <li class="breadcrumb-item"><a href="../index.html" class="nav-link">API reference</a></li>
     
     
-    <li class="breadcrumb-item"><a href="../signal.html" class="nav-link">Signal processing</a></li>
+    <li class="breadcrumb-item"><a href="../pipelines.html" class="nav-link">Pipelines</a></li>
     
     <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">downsample</span></li>
   </ul>
@@ -586,20 +614,47 @@
 <h1>downsample<a class="headerlink" href="#downsample" title="Link to this heading">#</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="pypillometry.downsample">
-<span class="sig-prename descclassname"><span class="pre">pypillometry.</span></span><span class="sig-name descname"><span class="pre">downsample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/signal/baseline.html#downsample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.downsample" title="Link to this definition">#</a></dt>
-<dd><p>Simple downsampling scheme using mean within the downsampling window.</p>
-<p>The signal is split into consecutive windows of <cite>R</cite> samples and each
-window is replaced by its mean (ignoring NaN). If the length of <cite>y</cite> is
-not a multiple of <cite>R</cite>, the last window is shorter.</p>
+<span class="sig-prename descclassname"><span class="pre">pypillometry.</span></span><span class="sig-name descname"><span class="pre">downsample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fsd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dsfac</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.downsample" title="Link to this definition">#</a></dt>
+<dd><p>Pipeline step for <a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData.downsample" title="pypillometry.EyeData.downsample"><code class="xref py py-meth docutils literal notranslate"><span class="pre">downsample()</span></code></a> (<code class="docutils literal notranslate"><span class="pre">d</span> <span class="pre">|</span> <span class="pre">pp.downsample(...)</span></code>).</p>
+<p>Simple downsampling scheme using mean within the downsampling window.</p>
+<p>All data fields and the time-vector are downsampled simultaneously.
+See <a class="reference internal" href="pypillometry.signal.downsample.html#pypillometry.signal.downsample" title="pypillometry.signal.downsample"><code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.signal.baseline.downsample()</span></code></a>. The samples
+that are unusable under the mask <cite>policy</cite> are left out of the window
+means (by default, interpolated samples are used, see <a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData.mask" title="pypillometry.EyeData.mask"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mask()</span></code></a>).
+A layer is kept for a new sample if it covers more than half of its
+window. A new sample whose window has no usable sample holds the
+mean of the stored values (NaN only if they are NaN) and stays
+unusable.</p>
+<p>The new sampling rate is <code class="docutils literal notranslate"><span class="pre">fs/factor</span></code>, the rate of the decimated
+data. It differs from <cite>fsd</cite> if <cite>fs/fsd</cite> is not an integer
+(e.g., 1000 Hz with <code class="docutils literal notranslate"><span class="pre">fsd=300</span></code> gives factor 3 and 333.3 Hz).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>y</strong> (<em>np.ndarray</em>) – signal to downsample</p></li>
-<li><p><strong>R</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – decimate-factor (number of samples per window)</p></li>
+<li><p><strong>fsd</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – new sampling-rate (in Hz) or decimate-factor</p></li>
+<li><p><strong>dsfac</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – if False (default), <cite>fsd</cite> is the requested sampling rate (the
+decimate factor is <code class="docutils literal notranslate"><span class="pre">int(fs/fsd)</span></code>; a warning is logged if
+<cite>fs/fsd</cite> is not an integer);
+if True, <cite>fsd</cite> is the decimate factor (a positive integer)</p></li>
+<li><p><strong>policy</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><a class="reference internal" href="pypillometry.MaskPolicy.html#pypillometry.MaskPolicy" title="pypillometry.MaskPolicy"><em>MaskPolicy</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – mask policy that decides which samples are used for the window
+means (see <a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData.mask" title="pypillometry.EyeData.mask"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mask()</span></code></a>); default <code class="docutils literal notranslate"><span class="pre">&quot;default&quot;</span></code></p></li>
+<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – if <cite>True</cite>, make change in-place and return the object;
+if <cite>False</cite>, make and return copy before making changes;
+if <cite>None</cite>, use the object-level setting (specified in the constructor)</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>y2</strong> (np.ndarray) – downsampled data of length <cite>ceil(len(y)/R)</cite></p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData" title="pypillometry.EyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">EyeData</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the downsampled object (<cite>self</cite> or a copy, depending on <cite>inplace</cite>)</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#TypeError" title="(in Python v3.15)"><strong>TypeError</strong></a> – if <cite>fsd</cite> is not a number</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – if the sampling rate <cite>fsd</cite> is not above 0 and at most <cite>fs</cite>, or
+the decimate factor is not a positive integer</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -617,20 +672,20 @@ not a multiple of <cite>R</cite>, the last window is shorter.</p>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="pypillometry.smooth_window.html"
+       href="pypillometry.crop.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">smooth_window</p>
+        <p class="prev-next-title">crop</p>
       </div>
     </a>
     <a class="right-next"
-       href="pypillometry.bspline.html"
+       href="pypillometry.scale.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">bspline</p>
+        <p class="prev-next-title">scale</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

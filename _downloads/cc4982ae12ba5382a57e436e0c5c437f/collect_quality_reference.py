@@ -3,7 +3,7 @@
 
 Used to build reference distributions for the measures of the quality report
 (see docs/user_guide/quality.rst), e.g., to choose thresholds. The values
-come from :meth:`~pypillometry.GenericEyeData.quality_report`, so they are
+come from :meth:`~pypillometry.EyeData.quality_report`, so they are
 computed exactly as in the report.
 
 Each file (EDF or pypillometry pickle, as for ``pypilinfo``) gives one row
@@ -21,8 +21,8 @@ grouped directly, e.g., with pandas::
     df = pd.read_csv("quality.csv")
     df[df.metric == "noise"].groupby("note").value.describe()
 
-By default, blinks are detected first (``pupil_blinks_detect`` with its
-default settings and ``apply_mask=True``), so that the blink and artifact
+By default, blinks are detected first (``d.pupil.blinks_detect()`` with its
+default settings), so that the blink and artifact
 measures are included as well. This only masks the blinks and does not
 change the raw values, so the other measures are the same as for the raw
 data. Use --raw-only to skip it (e.g., for data that were already
@@ -83,7 +83,7 @@ def recording_info(d):
     info["serial"] = el.get("serial", "")
     info["pupil_units"] = el.get("ps_units", "")
     info["tracked_eyes"] = el.get("eye", "")
-    labels = [str(lab) for lab in getattr(d, "event_labels", [])]
+    labels = [str(lab) for lab in d.events.labels]
     for lab in labels:
         # e.g., "RECCFG CR 500 2 1 LR": mode, rate, file filter, link filter, eyes
         m = re.match(r"\s*RECCFG\s+(\S+)\s+\S+\s+(\d)\s+(\d)", lab)
@@ -97,9 +97,9 @@ def recording_info(d):
 
 def rows_for(source, note, raw_only=False):
     d, fmt, _ = _read_file(source, keep_triggers=True)  # keep RECCFG etc.
-    detect = not raw_only and hasattr(d, "pupil_blinks_detect")
+    detect = not raw_only and "pupil" in d.variables
     if detect:
-        d.pupil_blinks_detect(apply_mask=True)
+        d.pupil.blinks_detect()
     report = d.quality_report()
     base = {
         "file": os.path.basename(source), "path": source, "format": fmt,

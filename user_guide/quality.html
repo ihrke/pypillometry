@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Data quality &#8212; pypillometry v2.1.0</title>
+    <title>Data quality &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,11 +55,11 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Events, intervals and segments" href="events_intervals.html" />
-    <link rel="prev" title="Preprocessing" href="preprocessing.html" />
+    <link rel="prev" title="Regions of interest" href="rois.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -103,9 +103,6 @@
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -411,6 +408,9 @@
 <li class="toctree-l1"><a class="reference internal" href="loading_data.html">Loading and saving data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="units.html">Units</a></li>
 <li class="toctree-l1"><a class="reference internal" href="preprocessing.html">Preprocessing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="missing_data.html">Missing data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gaze.html">Gaze data and the experimental setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rois.html">Regions of interest</a></li>
 <li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">Data quality</a></li>
 <li class="toctree-l1"><a class="reference internal" href="events_intervals.html">Events, intervals and segments</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plotting.html">Plotting</a></li>
@@ -484,7 +484,7 @@
                   
   <section id="data-quality">
 <h1>Data quality<a class="headerlink" href="#data-quality" title="Link to this heading">#</a></h1>
-<p><a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.quality_report" title="pypillometry.GenericEyeData.quality_report"><code class="xref py py-meth docutils literal notranslate"><span class="pre">quality_report()</span></code></a> summarizes the quality of a
+<p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.quality_report" title="pypillometry.EyeData.quality_report"><code class="xref py py-meth docutils literal notranslate"><span class="pre">quality_report()</span></code></a> summarizes the quality of a
 dataset: missing data, dropouts and noise of the pupil, missing and
 off-screen samples and precision of the gaze, and agreement between the
 eyes. These measures need no preprocessing. After preprocessing, blinks and
@@ -502,14 +502,14 @@ they are available (e.g., from an Eyelink file).</p>
 <code class="docutils literal notranslate"><span class="pre">pypilinfo</span> <span class="pre">--html</span></code> opens it in a browser (see
 <a class="reference internal" href="../getting_started/cli.html"><span class="doc">Command-line tools</span></a>).</p>
 <p>If parts of the recording are excluded from the analysis (e.g., breaks,
-see <a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.exclude_intervals" title="pypillometry.GenericEyeData.exclude_intervals"><code class="xref py py-meth docutils literal notranslate"><span class="pre">exclude_intervals()</span></code></a>), the report only looks at
+see <a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.exclude_intervals" title="pypillometry.EyeData.exclude_intervals"><code class="xref py py-meth docutils literal notranslate"><span class="pre">exclude_intervals()</span></code></a>), the report only looks at
 the included time: the recording section shows the total and the included
 duration, and all rates and percentages refer to the included part.
 Dropouts end at the boundaries of an excluded period, and no
 sample-to-sample differences across a boundary are used (noise, jumps,
 gaze precision). Off-screen gaze during breaks, for example, does not count
 against the data:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">exclude_intervals</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">((</span><span class="s2">"break_start"</span><span class="p">,</span> <span class="s2">"break_end"</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">))</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">exclude_intervals</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="s2">"break_start"</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">"break_end"</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">))</span>
 <span class="n">d</span><span class="o">.</span><span class="n">quality_report</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -921,7 +921,7 @@ outliers, does not see.</p>
 Off-screen samples come from looking away or from a calibration that is
 off, and they are usually unusable. In the reference data, the median is
 0.6% and 95% of the recordings from lab setups are below 5%. This needs
-the screen size (see <a class="reference internal" href="../api/generated/pypillometry.GazeData.html#pypillometry.GazeData.set_experimental_setup" title="pypillometry.GazeData.set_experimental_setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_experimental_setup()</span></code></a>).</p>
+the screen size (see <a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.set_experimental_setup" title="pypillometry.EyeData.set_experimental_setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_experimental_setup()</span></code></a>).</p>
 <img alt="Off-screen gaze per recording and eye in six datasets, with the label borders at 5, 15 and 30%." src="../_images/quality_ref_offscreen.png" />
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">gaze.precision_deg</span></code> <code class="docutils literal notranslate"><span class="pre">(0.05,</span> <span class="pre">0.1,</span> <span class="pre">0.2)</span></code> degrees</dt><dd><p>The median distance between consecutive samples (sample-to-sample
@@ -1028,12 +1028,12 @@ blinking on pupillometry, and their remedy. <em>PLOS ONE</em>, 16(12), e0261463.
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="preprocessing.html"
+       href="rois.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Preprocessing</p>
+        <p class="prev-next-title">Regions of interest</p>
       </div>
     </a>
     <a class="right-next"

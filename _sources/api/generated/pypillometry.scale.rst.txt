@@ -1,0 +1,6 @@
+﻿scale
+=====
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: scale

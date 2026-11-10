@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>EyeDataDict &#8212; pypillometry v2.1.0</title>
+    <title>EyeDataDict &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,12 +54,12 @@
     <link rel="icon" href="../../_static/pypillometry_logo_200x200.png"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="FakeEyeData" href="pypillometry.FakeEyeData.html" />
-    <link rel="prev" title="GenericEyeData" href="pypillometry.GenericEyeData.html" />
+    <link rel="next" title="MaskPolicy" href="pypillometry.MaskPolicy.html" />
+    <link rel="prev" title="EyeData" href="pypillometry.EyeData.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -103,9 +103,6 @@
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -409,40 +406,71 @@
   <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../data.html">Data classes</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.EyeData.html">EyeData</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.PupilData.html">PupilData</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.GazeData.html">GazeData</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.GenericEyeData.html">GenericEyeData</a></li>
 <li class="toctree-l2 current active"><a aria-current="page" class="current reference internal" href="#">EyeDataDict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.MaskPolicy.html">MaskPolicy</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.FakeEyeData.html">FakeEyeData</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.keephistory.html">keephistory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.QualityReport.html">QualityReport</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.QualityMetric.html">QualityMetric</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.Table.html">Table</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.RecordDict.html">RecordDict</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../pupil.html">Pupil methods (<code class="docutils literal notranslate"><span class="pre">d.pupil</span></code>)</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.eyedata.pupil.PupilNamespace.html">PupilNamespace</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../gaze.html">Gaze methods (<code class="docutils literal notranslate"><span class="pre">d.gaze</span></code>)</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.eyedata.gaze.GazeNamespace.html">GazeNamespace</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../pipelines.html">Pipelines</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.crop.html">crop</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.downsample.html">downsample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.scale.html">scale</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.unscale.html">unscale</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.merge_eyes.html">merge_eyes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.reset_time.html">reset_time</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.mask_intervals.html">mask_intervals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.interpolate_intervals.html">interpolate_intervals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.exclude_intervals.html">exclude_intervals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.keep_intervals.html">keep_intervals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.remove_intervals.html">remove_intervals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.merge_masks.html">merge_masks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.clear_layer.html">clear_layer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.set_blinks.html">set_blinks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.set_events.html">set_events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.add_events.html">add_events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.set_experimental_setup.html">set_experimental_setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.drop_data.html">drop_data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.drop_original.html">drop_original</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.fill_time_discontinuities.html">fill_time_discontinuities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.Step.html">Step</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.Pipeline.html">Pipeline</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../events_intervals.html">Events and intervals</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.Events.html">Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.Epochs.html">Epochs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.Intervals.html">Intervals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.ClockSync.html">ClockSync</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.merge_intervals.html">merge_intervals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.concat_intervals.html">concat_intervals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.sync_clocks.html">sync_clocks</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../segments.html">Segmented data</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.SegmentedEyeData.html">SegmentedEyeData</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.GroupLevelSegmentedData.html">GroupLevelSegmentedData</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.concat_segments.html">concat_segments</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.group_segments.html">group_segments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.segmented.SegmentedPupilNamespace.html">SegmentedPupilNamespace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.segmented.SegmentedGazeNamespace.html">SegmentedGazeNamespace</a></li>
 </ul>
 </details></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../plotting.html">Plotting</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.EyePlotter.html">EyePlotter</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.PupilPlotter.html">PupilPlotter</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.GazePlotter.html">GazePlotter</a></li>
-</ul>
-</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../plotting.html">Plotting (<code class="docutils literal notranslate"><span class="pre">d.plot</span></code>)</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../io.html">Reading and writing data</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.read_eyelink.html">read_eyelink</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.read_pickle.html">read_pickle</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.write_pickle.html">write_pickle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.read_file.html">read_file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.write_file.html">write_file</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.download.html">download</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.fetch_url.html">fetch_url</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.local_copy.html">local_copy</a></li>
@@ -458,34 +486,34 @@
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../signal.html">Signal processing</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.butter_lowpass.html">butter_lowpass</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.butter_lowpass_filter.html">butter_lowpass_filter</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.lowpass_filter_iterative.html">lowpass_filter_iterative</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.smooth_window.html">smooth_window</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.downsample.html">downsample</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.bspline.html">bspline</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.baseline_envelope.html">baseline_envelope</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.baseline_envelope_iter_bspline.html">baseline_envelope_iter_bspline</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.baseline_pupil_model.html">baseline_pupil_model</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.zscale.html">zscale</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.velocity_savgol.html">velocity_savgol</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.detect_blinks_velocity.html">detect_blinks_velocity</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.detect_blinks_zero.html">detect_blinks_zero</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.blink_onsets_mahot.html">blink_onsets_mahot</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_kernel.html">pupil_kernel</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_kernel_t.html">pupil_kernel_t</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_get_max_duration.html">pupil_get_max_duration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.plot_prf.html">plot_prf</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_build_design_matrix.html">pupil_build_design_matrix</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_response.html">pupil_response</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_response_coverage.html">pupil_response_coverage</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupilresponse_nnls.html">pupilresponse_nnls</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_signal_quality.html">pupil_signal_quality</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_eye_offset.html">pupil_eye_offset</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.fake_pupil_baseline.html">fake_pupil_baseline</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.fake_gaze_fixations.html">fake_gaze_fixations</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.add_measurement_noise.html">add_measurement_noise</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.generate_foreshortening_data.html">generate_foreshortening_data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.butter_lowpass.html">butter_lowpass</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.butter_lowpass_filter.html">butter_lowpass_filter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.lowpass_filter_iterative.html">lowpass_filter_iterative</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.smooth_window.html">smooth_window</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.downsample.html">downsample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.zscale.html">zscale</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.bspline.html">bspline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.baseline_envelope.html">baseline_envelope</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.baseline_envelope_iter_bspline.html">baseline_envelope_iter_bspline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.baseline_pupil_model.html">baseline_pupil_model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.velocity_savgol.html">velocity_savgol</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.detect_blinks_velocity.html">detect_blinks_velocity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.detect_blinks_zero.html">detect_blinks_zero</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.blink_onsets_mahot.html">blink_onsets_mahot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_kernel.html">pupil_kernel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_kernel_t.html">pupil_kernel_t</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_get_max_duration.html">pupil_get_max_duration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.plot_prf.html">plot_prf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_build_design_matrix.html">pupil_build_design_matrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_response.html">pupil_response</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_response_coverage.html">pupil_response_coverage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupilresponse_nnls.html">pupilresponse_nnls</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_signal_quality.html">pupil_signal_quality</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_eye_offset.html">pupil_eye_offset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.fake_pupil_baseline.html">fake_pupil_baseline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.fake_gaze_fixations.html">fake_gaze_fixations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.add_measurement_noise.html">add_measurement_noise</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.generate_foreshortening_data.html">generate_foreshortening_data</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../geometry.html">Geometry and gaze</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -599,34 +627,60 @@ custom identifier).</p>
 <p>Values are stored as given (converted to float); NaN values are masked.
 No other values are treated as missing (e.g., a pupil size of 0 is kept);
 converting missing-value codes to NaN is up to the code that reads the data.</p>
+<p>Each key also has mask <em>layers</em>: a bit-field (<cite>layers</cite>, dtype
+<cite>LAYER_DTYPE</cite>) with one bit per named layer (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;blink&quot;</span></code>). The
+layer names are registered in <cite>layer_names</cite> (the same for all keys);
+a layer gets the next free bit when it is first set. Layers that
+apply to all keys (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;excluded&quot;</span></code>) are stored once, in
+<cite>rec_layers</cite> (recording-wide layers, same registry). <cite>mask</cite> is the
+mask under the default mask policy as one 0/1 array per key (see
+<a class="reference internal" href="pypillometry.MaskPolicy.html#pypillometry.MaskPolicy" title="pypillometry.MaskPolicy"><code class="xref py py-class docutils literal notranslate"><span class="pre">MaskPolicy</span></code></a>).</p>
 <p>The dictionary can be indexed by a string “eye_variable” or by a tuple
 (“eye”, “variable”) like data[“left”,”x”] or data[“left_x”].</p>
 <p class="rubric">Methods</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.clear" title="pypillometry.EyeDataDict.clear"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clear</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.add_mask" title="pypillometry.EyeDataDict.add_mask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_mask</span></code></a></p></td>
+<td><p>Mask the samples <cite>where</cite> of <cite>key</cite> (<code class="docutils literal notranslate"><span class="pre">&quot;user&quot;</span></code> layer; existing masks are kept).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.clear" title="pypillometry.EyeDataDict.clear"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clear</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.copy" title="pypillometry.EyeDataDict.copy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">copy</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.clear_layer" title="pypillometry.EyeDataDict.clear_layer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clear_layer</span></code></a></p></td>
+<td><p>Clear layer <cite>name</cite> of <cite>key</cite> everywhere or at the samples <cite>where</cite> (an index, e.g. a boolean array or <code class="docutils literal notranslate"><span class="pre">np.s_[10:20]</span></code>).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.clear_rec_layer" title="pypillometry.EyeDataDict.clear_rec_layer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clear_rec_layer</span></code></a></p></td>
+<td><p>Clear the recording-wide layer <cite>name</cite>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.copy" title="pypillometry.EyeDataDict.copy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">copy</span></code></a></p></td>
 <td><p>Create a deep copy of the dictionary (data and masks).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.count_masked" title="pypillometry.EyeDataDict.count_masked"><code class="xref py py-obj docutils literal notranslate"><span class="pre">count_masked</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.count_masked" title="pypillometry.EyeDataDict.count_masked"><code class="xref py py-obj docutils literal notranslate"><span class="pre">count_masked</span></code></a></p></td>
 <td><p>Count the number of missing values based on masks.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.get" title="pypillometry.EyeDataDict.get"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.get" title="pypillometry.EyeDataDict.get"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.get_available_eyes" title="pypillometry.EyeDataDict.get_available_eyes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_available_eyes</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.get_available_eyes" title="pypillometry.EyeDataDict.get_available_eyes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_available_eyes</span></code></a></p></td>
 <td><p>Return a list of available eyes.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.get_available_variables" title="pypillometry.EyeDataDict.get_available_variables"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_available_variables</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.get_available_variables" title="pypillometry.EyeDataDict.get_available_variables"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_available_variables</span></code></a></p></td>
 <td><p>Return a list of available variables.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.get_eye" title="pypillometry.EyeDataDict.get_eye"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_eye</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.get_eye" title="pypillometry.EyeDataDict.get_eye"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_eye</span></code></a></p></td>
 <td><p>Return a subset EyeDataDict with all variables for a given eye.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.get_layer" title="pypillometry.EyeDataDict.get_layer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_layer</span></code></a></p></td>
+<td><p>Boolean array that is True where layer <cite>name</cite> is set for <cite>key</cite>.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.get_mask" title="pypillometry.EyeDataDict.get_mask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_mask</span></code></a></p></td>
 <td><p>Get mask for a specific key or joint mask across all keys.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.get_policy_mask" title="pypillometry.EyeDataDict.get_policy_mask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_policy_mask</span></code></a></p></td>
+<td><p>Boolean mask of <cite>key</cite> under <cite>policy</cite> (True: unusable sample).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.get_rec_layer" title="pypillometry.EyeDataDict.get_rec_layer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_rec_layer</span></code></a></p></td>
+<td><p>Boolean array that is True where the recording-wide layer <cite>name</cite> is set.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.get_size" title="pypillometry.EyeDataDict.get_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_size</span></code></a></p></td>
 <td><p>Return the size of the dictionary in bytes.</p></td>
@@ -640,14 +694,26 @@ converting missing-value codes to NaN is up to the code that reads the data.</p>
 <tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.keys" title="pypillometry.EyeDataDict.keys"><code class="xref py py-obj docutils literal notranslate"><span class="pre">keys</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.pop" title="pypillometry.EyeDataDict.pop"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pop</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.layer_bits" title="pypillometry.EyeDataDict.layer_bits"><code class="xref py py-obj docutils literal notranslate"><span class="pre">layer_bits</span></code></a></p></td>
+<td><p>Bit mask of the layers <cite>names</cite> (0 for layers that are not registered).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.pop" title="pypillometry.EyeDataDict.pop"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pop</span></code></a></p></td>
 <td><p>value.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.popitem" title="pypillometry.EyeDataDict.popitem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">popitem</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.popitem" title="pypillometry.EyeDataDict.popitem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">popitem</span></code></a></p></td>
 <td><p>as a 2-tuple; but raise KeyError if D is empty.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.set_mask" title="pypillometry.EyeDataDict.set_mask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_mask</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.select" title="pypillometry.EyeDataDict.select"><code class="xref py py-obj docutils literal notranslate"><span class="pre">select</span></code></a></p></td>
+<td><p>Return the existing (eye, variable) pairs for the given eyes and variables.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.set_layer" title="pypillometry.EyeDataDict.set_layer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_layer</span></code></a></p></td>
+<td><p>Set layer <cite>name</cite> of <cite>key</cite> where <cite>mask</cite> is True.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.set_mask" title="pypillometry.EyeDataDict.set_mask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_mask</span></code></a></p></td>
 <td><p>Set mask for a specific key.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.set_rec_layer" title="pypillometry.EyeDataDict.set_rec_layer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_rec_layer</span></code></a></p></td>
+<td><p>Set the recording-wide layer <cite>name</cite> (all keys) where <cite>mask</cite> is True.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.set_with_mask" title="pypillometry.EyeDataDict.set_with_mask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_with_mask</span></code></a></p></td>
 <td><p>Set data array with explicit mask control.</p></td>
@@ -666,9 +732,53 @@ converting missing-value codes to NaN is up to the code that reads the data.</p>
 </div>
 <p class="rubric">Details</p>
 <dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.EyeDataDict.add_mask">
+<span class="sig-name descname"><span class="pre">add_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">where</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/eyedata/eyedatadict.html#EyeDataDict.add_mask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.EyeDataDict.add_mask" title="Link to this definition">#</a></dt>
+<dd><p>Mask the samples <cite>where</cite> of <cite>key</cite> (<code class="docutils literal notranslate"><span class="pre">&quot;user&quot;</span></code> layer; existing masks are kept).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Key of the data (e.g., “left_pupil”)</p></li>
+<li><p><strong>where</strong> (<em>array-like</em><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#slice" title="(in Python v3.15)"><em>slice</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em> or </em><em>array</em><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – the samples to mask: a boolean array (one value per sample,
+True: mask the sample) or any index, e.g. <code class="docutils literal notranslate"><span class="pre">np.s_[10:20]</span></code></p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#KeyError" title="(in Python v3.15)"><strong>KeyError</strong></a> – if there is no data for <cite>key</cite></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.EyeDataDict.clear">
 <span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None.</span>&#160; <span class="pre">Remove</span> <span class="pre">all</span> <span class="pre">items</span> <span class="pre">from</span> <span class="pre">D.</span></span></span><a class="headerlink" href="#pypillometry.EyeDataDict.clear" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.EyeDataDict.clear_layer">
+<span class="sig-name descname"><span class="pre">clear_layer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">where</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/eyedata/eyedatadict.html#EyeDataDict.clear_layer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.EyeDataDict.clear_layer" title="Link to this definition">#</a></dt>
+<dd><p>Clear layer <cite>name</cite> of <cite>key</cite> everywhere or at the samples <cite>where</cite>
+(an index, e.g. a boolean array or <code class="docutils literal notranslate"><span class="pre">np.s_[10:20]</span></code>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.EyeDataDict.clear_rec_layer">
+<span class="sig-name descname"><span class="pre">clear_rec_layer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/eyedata/eyedatadict.html#EyeDataDict.clear_rec_layer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.EyeDataDict.clear_rec_layer" title="Link to this definition">#</a></dt>
+<dd><p>Clear the recording-wide layer <cite>name</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span></span></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.EyeDataDict.copy">
@@ -761,7 +871,8 @@ in the order in which they were added</p>
 <dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#pypillometry.EyeDataDict" title="pypillometry.eyedata.eyedatadict.EyeDataDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">EyeDataDict</span></code></a></span></p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A new EyeDataDict containing only data for the specified eye</p>
+<dd class="field-odd"><p>A new EyeDataDict containing only data for the specified eye
+(copies, with their masks and layers)</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
@@ -771,6 +882,17 @@ in the order in which they were added</p>
 <span class="go">dict_keys(['left_x', 'left_y'])</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.EyeDataDict.get_layer">
+<span class="sig-name descname"><span class="pre">get_layer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/eyedata/eyedatadict.html#EyeDataDict.get_layer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.EyeDataDict.get_layer" title="Link to this definition">#</a></dt>
+<dd><p>Boolean array that is True where layer <cite>name</cite> is set for <cite>key</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/typing.html#numpy.typing.NDArray" title="(in NumPy v2.5)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDArray</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -786,6 +908,39 @@ in the order in which they were added</p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Mask array for specified key, or joint mask if no key given.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.EyeDataDict.get_policy_mask">
+<span class="sig-name descname"><span class="pre">get_policy_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/eyedata/eyedatadict.html#EyeDataDict.get_policy_mask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.EyeDataDict.get_policy_mask" title="Link to this definition">#</a></dt>
+<dd><p>Boolean mask of <cite>key</cite> under <cite>policy</cite> (True: unusable sample).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – key of the data (e.g., “left_pupil”)</p></li>
+<li><p><strong>policy</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><a class="reference internal" href="pypillometry.MaskPolicy.html#pypillometry.MaskPolicy" title="pypillometry.MaskPolicy"><em>MaskPolicy</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – a predefined policy (see <cite>POLICIES</cite>), a <a class="reference internal" href="pypillometry.MaskPolicy.html#pypillometry.MaskPolicy" title="pypillometry.MaskPolicy"><code class="xref py py-class docutils literal notranslate"><span class="pre">MaskPolicy</span></code></a>, or
+a list of layers (each of them masks a sample; NaN as well)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – if the policy names a layer that is neither a standard layer
+nor registered</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/typing.html#numpy.typing.NDArray" title="(in NumPy v2.5)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDArray</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.EyeDataDict.get_rec_layer">
+<span class="sig-name descname"><span class="pre">get_rec_layer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/eyedata/eyedatadict.html#EyeDataDict.get_rec_layer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.EyeDataDict.get_rec_layer" title="Link to this definition">#</a></dt>
+<dd><p>Boolean array that is True where the recording-wide layer <cite>name</cite> is set.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/typing.html#numpy.typing.NDArray" title="(in NumPy v2.5)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDArray</span></code></a></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -816,7 +971,8 @@ in the order in which they were added</p>
 <dd class="field-even"><p><a class="reference internal" href="#pypillometry.EyeDataDict" title="pypillometry.EyeDataDict">EyeDataDict</a></p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A new EyeDataDict containing only data for the specified variable</p>
+<dd class="field-odd"><p>A new EyeDataDict containing only data for the specified variable
+(copies, with their masks and layers)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -832,6 +988,29 @@ in the order in which they were added</p>
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.EyeDataDict.layer_bits">
+<span class="sig-name descname"><span class="pre">layer_bits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">create</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/eyedata/eyedatadict.html#EyeDataDict.layer_bits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.EyeDataDict.layer_bits" title="Link to this definition">#</a></dt>
+<dd><p>Bit mask of the layers <cite>names</cite> (0 for layers that are not registered).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>names</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – layer name(s)</p></li>
+<li><p><strong>create</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – register layers that are not registered yet (next free bit)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the bits of the layers OR-ed together</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – if a new layer is needed but all <cite>MAX_LAYERS</cite> bits are used</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.EyeDataDict.pop">
 <span class="sig-name descname"><span class="pre">pop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">d</span></span></em><span class="optional">]</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">v,</span> <span class="pre">remove</span> <span class="pre">specified</span> <span class="pre">key</span> <span class="pre">and</span> <span class="pre">return</span> <span class="pre">the</span> <span class="pre">corresponding</span></span></span><a class="headerlink" href="#pypillometry.EyeDataDict.pop" title="Link to this definition">#</a></dt>
 <dd><p>value.  If key is not found, d is returned if given, otherwise
@@ -845,15 +1024,84 @@ KeyError is raised.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.EyeDataDict.select">
+<span class="sig-name descname"><span class="pre">select</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/eyedata/eyedatadict.html#EyeDataDict.select"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.EyeDataDict.select" title="Link to this definition">#</a></dt>
+<dd><p>Return the existing (eye, variable) pairs for the given eyes and variables.</p>
+<p>Only pairs for which data is stored are returned, so data where not
+every eye has every variable (e.g., <code class="docutils literal notranslate"><span class="pre">left_pupil</span></code>, <code class="docutils literal notranslate"><span class="pre">left_x</span></code>,
+<code class="docutils literal notranslate"><span class="pre">right_pupil</span></code>) can be processed pair by pair.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>eyes</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – eye(s) to select; if None or empty, all available eyes</p></li>
+<li><p><strong>variables</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – variable(s) to select; if None or empty, all available variables</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">(eye,</span> <span class="pre">variable)</span></code> pairs, ordered by eye, then variable (in the
+order given or, for all eyes/variables, the order of the data)</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#KeyError" title="(in Python v3.15)"><strong>KeyError</strong></a> – if something that was explicitly requested does not exist: a
+pair (if both <cite>eyes</cite> and <cite>variables</cite> are given), or an eye or
+variable without any data among the selected pairs (if only
+one of them is given). The message lists the available channels.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – if a requested eye name contains <code class="docutils literal notranslate"><span class="pre">_</span></code> (eye names may not
+contain <code class="docutils literal notranslate"><span class="pre">_</span></code>, see <code class="xref py py-meth docutils literal notranslate"><span class="pre">_validate_key()</span></code>)</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">EyeDataDict</span><span class="p">(</span><span class="n">left_pupil</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="n">left_x</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span> <span class="n">right_pupil</span><span class="o">=</span><span class="p">[</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">select</span><span class="p">()</span>
+<span class="go">[('left', 'pupil'), ('left', 'x'), ('right', 'pupil')]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">variables</span><span class="o">=</span><span class="s2">"x"</span><span class="p">)</span>
+<span class="go">[('left', 'x')]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.EyeDataDict.set_layer">
+<span class="sig-name descname"><span class="pre">set_layer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/eyedata/eyedatadict.html#EyeDataDict.set_layer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.EyeDataDict.set_layer" title="Link to this definition">#</a></dt>
+<dd><p>Set layer <cite>name</cite> of <cite>key</cite> where <cite>mask</cite> is True.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – key of the data (e.g., “left_pupil”)</p></li>
+<li><p><strong>name</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – layer name (registered if new)</p></li>
+<li><p><strong>mask</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/typing.html#numpy.typing.NDArray" title="(in NumPy v2.5)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDArray</span></code></a></span>) – one value per sample</p></li>
+<li><p><strong>replace</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – clear the layer first (True) or add to it (False, default)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.EyeDataDict.set_mask">
-<span class="sig-name descname"><span class="pre">set_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/eyedata/eyedatadict.html#EyeDataDict.set_mask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.EyeDataDict.set_mask" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">set_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'user'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/eyedata/eyedatadict.html#EyeDataDict.set_mask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.EyeDataDict.set_mask" title="Link to this definition">#</a></dt>
 <dd><p>Set mask for a specific key.</p>
+<p>Afterwards, <code class="docutils literal notranslate"><span class="pre">self.mask[key]</span></code> (the mask under the default policy)
+equals <cite>mask</cite>: samples that are not masked in <cite>mask</cite> are removed
+from the layers of the key that mask them, samples that were not
+masked yet are added to <cite>layer</cite> (default <code class="docutils literal notranslate"><span class="pre">&quot;user&quot;</span></code>; where they are
+interpolated, the <code class="docutils literal notranslate"><span class="pre">&quot;interpolated&quot;</span></code> layer is cleared, as it would
+make them usable). NaN values and the recording-wide layers (e.g.,
+excluded periods) are not changed, so these samples stay masked.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>key</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Key of the data (e.g., “left_pupil”)</p></li>
 <li><p><strong>mask</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/typing.html#numpy.typing.NDArray" title="(in NumPy v2.5)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDArray</span></code></a></span>) – Mask array (1 for masked, 0 for valid values) with the same shape
 as the data; converted to int</p></li>
+<li><p><strong>layer</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – layer for the newly masked samples (default <code class="docutils literal notranslate"><span class="pre">&quot;user&quot;</span></code>)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
@@ -869,20 +1117,40 @@ as the data; converted to int</p></li>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.EyeDataDict.set_rec_layer">
+<span class="sig-name descname"><span class="pre">set_rec_layer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/eyedata/eyedatadict.html#EyeDataDict.set_rec_layer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.EyeDataDict.set_rec_layer" title="Link to this definition">#</a></dt>
+<dd><p>Set the recording-wide layer <cite>name</cite> (all keys) where <cite>mask</cite> is True.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – layer name (registered if new)</p></li>
+<li><p><strong>mask</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/typing.html#numpy.typing.NDArray" title="(in NumPy v2.5)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDArray</span></code></a></span>) – one value per sample</p></li>
+<li><p><strong>replace</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – clear the layer first (True) or add to it (False, default)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.EyeDataDict.set_with_mask">
 <span class="sig-name descname"><span class="pre">set_with_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preserve_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/eyedata/eyedatadict.html#EyeDataDict.set_with_mask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.EyeDataDict.set_with_mask" title="Link to this definition">#</a></dt>
 <dd><p>Set data array with explicit mask control.</p>
 <p>This method provides more control over mask handling than __setitem__,
-which always resets the mask to zeros (except for NaN values).</p>
+which always resets the mask to zeros (except for NaN values) and
+clears the layers.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>key</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]]</span>) – Dictionary key for the data (e.g., “left_pupil” or (“left”, “pupil”))</p></li>
 <li><p><strong>value</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/typing.html#numpy.typing.NDArray" title="(in NumPy v2.5)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDArray</span></code></a></span>) – Data array to store</p></li>
-<li><p><strong>mask</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://numpy.org/doc/stable/reference/typing.html#numpy.typing.NDArray" title="(in NumPy v2.5)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDArray</span></code></a>]</span>) – Mask array to use. If None and preserve_mask=True, keeps existing mask.
-If None and preserve_mask=False, creates new zero mask (with NaNs masked).</p></li>
-<li><p><strong>preserve_mask</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – If True and mask is None, preserve the existing mask for this key.
-Ignored if mask is explicitly provided.</p></li>
+<li><p><strong>mask</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://numpy.org/doc/stable/reference/typing.html#numpy.typing.NDArray" title="(in NumPy v2.5)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDArray</span></code></a>]</span>) – Mask array to use (see <cite>set_mask</cite>). If None and preserve_mask=True,
+keeps existing mask and layers. If None and preserve_mask=False,
+creates new zero mask (with NaNs masked) and clears the layers.</p></li>
+<li><p><strong>preserve_mask</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – If True and mask is None, preserve the existing mask and layers
+for this key. Ignored if mask is explicitly provided.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -890,16 +1158,17 @@ Ignored if mask is explicitly provided.</p></li>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Set data and preserve existing mask</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">data_dict</span><span class="o">.</span><span class="n">set_with_mask</span><span class="p">(</span><span class="s2">"left_pupil"</span><span class="p">,</span> <span class="n">new_values</span><span class="p">,</span> <span class="n">preserve_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Set data with explicit mask</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">data_dict</span><span class="o">.</span><span class="n">set_with_mask</span><span class="p">(</span><span class="s2">"left_pupil"</span><span class="p">,</span> <span class="n">new_values</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">new_mask</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Set data with fresh zero mask (same as __setitem__)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">data_dict</span><span class="o">.</span><span class="n">set_with_mask</span><span class="p">(</span><span class="s2">"left_pupil"</span><span class="p">,</span> <span class="n">new_values</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">EyeDataDict</span><span class="p">(</span><span class="n">left_pupil</span><span class="o">=</span><span class="p">[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">,</span> <span class="mf">3.</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">set_mask</span><span class="p">(</span><span class="s2">"left_pupil"</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">set_with_mask</span><span class="p">(</span><span class="s2">"left_pupil"</span><span class="p">,</span> <span class="p">[</span><span class="mf">4.</span><span class="p">,</span> <span class="mf">5.</span><span class="p">,</span> <span class="mf">6.</span><span class="p">],</span> <span class="n">preserve_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">]</span>
+<span class="go">array([0, 1, 0])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">set_with_mask</span><span class="p">(</span><span class="s2">"left_pupil"</span><span class="p">,</span> <span class="p">[</span><span class="mf">4.</span><span class="p">,</span> <span class="mf">5.</span><span class="p">,</span> <span class="mf">6.</span><span class="p">],</span> <span class="n">mask</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">]</span>
+<span class="go">array([1, 0, 0])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">set_with_mask</span><span class="p">(</span><span class="s2">"left_pupil"</span><span class="p">,</span> <span class="p">[</span><span class="mf">4.</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mf">6.</span><span class="p">])</span>  <span class="c1"># fresh mask</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">]</span>
+<span class="go">array([0, 1, 0])</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -934,6 +1203,14 @@ Ignored if mask is explicitly provided.</p></li>
 </dd></dl>
 
 <dl class="py property">
+<dt class="sig sig-object py" id="pypillometry.EyeDataDict.mask">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">mask</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.15)"><span class="pre">Mapping</span></a></span><a class="headerlink" href="#pypillometry.EyeDataDict.mask" title="Link to this definition">#</a></dt>
+<dd><p>Mask of each key under the default mask policy (read-only
+mapping key -&gt; int array, 1: masked; see <cite>get_policy_mask</cite>).</p>
+<p>The arrays are read-only.</p>
+</dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="pypillometry.EyeDataDict.variables">
 <span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">variables</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.15)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pypillometry.EyeDataDict.variables" title="Link to this definition">#</a></dt>
 <dd><p>List of all available variables.</p>
@@ -954,20 +1231,20 @@ Ignored if mask is explicitly provided.</p></li>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="pypillometry.GenericEyeData.html"
+       href="pypillometry.EyeData.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">GenericEyeData</p>
+        <p class="prev-next-title">EyeData</p>
       </div>
     </a>
     <a class="right-next"
-       href="pypillometry.FakeEyeData.html"
+       href="pypillometry.MaskPolicy.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">FakeEyeData</p>
+        <p class="prev-next-title">MaskPolicy</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -991,26 +1268,37 @@ Ignored if mask is explicitly provided.</p></li>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.EyeDataDict"><code class="docutils literal notranslate"><span class="pre">EyeDataDict</span></code></a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.EyeDataDict.add_mask"><code class="docutils literal notranslate"><span class="pre">add_mask()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.EyeDataDict.clear"><code class="docutils literal notranslate"><span class="pre">clear()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.EyeDataDict.clear_layer"><code class="docutils literal notranslate"><span class="pre">clear_layer()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.EyeDataDict.clear_rec_layer"><code class="docutils literal notranslate"><span class="pre">clear_rec_layer()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.EyeDataDict.copy"><code class="docutils literal notranslate"><span class="pre">copy()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.EyeDataDict.count_masked"><code class="docutils literal notranslate"><span class="pre">count_masked()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.EyeDataDict.get"><code class="docutils literal notranslate"><span class="pre">get()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.EyeDataDict.get_available_eyes"><code class="docutils literal notranslate"><span class="pre">get_available_eyes()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.EyeDataDict.get_available_variables"><code class="docutils literal notranslate"><span class="pre">get_available_variables()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.EyeDataDict.get_eye"><code class="docutils literal notranslate"><span class="pre">get_eye()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.EyeDataDict.get_layer"><code class="docutils literal notranslate"><span class="pre">get_layer()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.EyeDataDict.get_mask"><code class="docutils literal notranslate"><span class="pre">get_mask()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.EyeDataDict.get_policy_mask"><code class="docutils literal notranslate"><span class="pre">get_policy_mask()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.EyeDataDict.get_rec_layer"><code class="docutils literal notranslate"><span class="pre">get_rec_layer()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.EyeDataDict.get_size"><code class="docutils literal notranslate"><span class="pre">get_size()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.EyeDataDict.get_variable"><code class="docutils literal notranslate"><span class="pre">get_variable()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.EyeDataDict.items"><code class="docutils literal notranslate"><span class="pre">items()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.EyeDataDict.keys"><code class="docutils literal notranslate"><span class="pre">keys()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.EyeDataDict.layer_bits"><code class="docutils literal notranslate"><span class="pre">layer_bits()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.EyeDataDict.pop"><code class="docutils literal notranslate"><span class="pre">pop()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.EyeDataDict.popitem"><code class="docutils literal notranslate"><span class="pre">popitem()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.EyeDataDict.select"><code class="docutils literal notranslate"><span class="pre">select()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.EyeDataDict.set_layer"><code class="docutils literal notranslate"><span class="pre">set_layer()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.EyeDataDict.set_mask"><code class="docutils literal notranslate"><span class="pre">set_mask()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.EyeDataDict.set_rec_layer"><code class="docutils literal notranslate"><span class="pre">set_rec_layer()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.EyeDataDict.set_with_mask"><code class="docutils literal notranslate"><span class="pre">set_with_mask()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.EyeDataDict.setdefault"><code class="docutils literal notranslate"><span class="pre">setdefault()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.EyeDataDict.update"><code class="docutils literal notranslate"><span class="pre">update()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.EyeDataDict.values"><code class="docutils literal notranslate"><span class="pre">values()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.EyeDataDict.eyes"><code class="docutils literal notranslate"><span class="pre">eyes</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.EyeDataDict.mask"><code class="docutils literal notranslate"><span class="pre">mask</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.EyeDataDict.variables"><code class="docutils literal notranslate"><span class="pre">variables</span></code></a></li>
 </ul>
 </li>

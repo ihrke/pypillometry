@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pypillometry.eyedata.experimental_setup &#8212; pypillometry v2.1.0</title>
+    <title>pypillometry.eyedata.experimental_setup &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../../../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -414,7 +414,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -458,9 +458,6 @@ window.runMermaid = runMermaid;</script>
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -1039,6 +1036,9 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="n">eye_to_screen_center</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">dist_center</span> <span class="o">=</span> <span class="n">parse_distance</span><span class="p">(</span><span class="n">eye_to_screen_center</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">dist_center</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"eye_to_screen_center must be positive, got "</span>
+                                 <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye_to_screen_center</span><span class="si">!r}</span><span class="s2"> (</span><span class="si">{</span><span class="n">dist_center</span><span class="si">}</span><span class="s2"> mm)"</span><span class="p">)</span>
             <span class="n">delta_x</span><span class="p">,</span> <span class="n">delta_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_screen_offset</span>
             <span class="n">d_squared</span> <span class="o">=</span> <span class="n">dist_center</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">delta_x</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">delta_y</span><span class="o">**</span><span class="mi">2</span>
             <span class="k">if</span> <span class="n">d_squared</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -1556,8 +1556,12 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        </span>
 <span class="sd">        Only validates parameters that are set; incomplete setups are allowed.</span>
 <span class="sd">        """</span>
-        <span class="c1"># Screen resolution must be positive (if set)</span>
+        <span class="c1"># Screen resolution must be two positive whole numbers (if set)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_screen_resolution</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_screen_resolution</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span> <span class="ow">or</span> <span class="nb">any</span><span class="p">(</span>
+                    <span class="ow">not</span> <span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">is_integer</span><span class="p">()</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_screen_resolution</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Screen resolution must be two whole numbers (width, height) "</span>
+                                 <span class="sa">f</span><span class="s2">"in pixels, got </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_screen_resolution</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_screen_resolution</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_screen_resolution</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">"Screen resolution must be positive, got </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_screen_resolution</span><span class="si">}</span><span class="s2">"</span>
@@ -1857,9 +1861,6 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">           &gt;&gt;&gt; fig, ax = setup.plot()  # 2D views</span>
 <span class="sd">           &gt;&gt;&gt; fig, ax = setup.plot(projection='3d')  # 3D view</span>
 <span class="sd">        """</span>
-        <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-        <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.patches</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mpatches</span>
-        <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.patches</span><span class="w"> </span><span class="kn">import</span> <span class="n">Arc</span>
         
         <span class="c1"># Validate required parameters</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_screen_info</span><span class="p">():</span>

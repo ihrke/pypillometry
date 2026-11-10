@@ -21,10 +21,13 @@
       ~Events.fill_meta
       ~Events.filter
       ~Events.from_table
+      ~Events.keep
+      ~Events.onset
       ~Events.parse_labels
       ~Events.plot
       ~Events.row
       ~Events.set_meta
+      ~Events.shift
       ~Events.to_array
       ~Events.to_table
       ~Events.to_units

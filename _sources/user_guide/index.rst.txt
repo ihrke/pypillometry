@@ -16,8 +16,8 @@ If you have not used the package before, start with the
       :link: data_model
       :link-type: doc
 
-      ``EyeData``, ``PupilData`` and ``GazeData``; eyes and variables;
-      masks; pipelines, in-place operations and history.
+      ``EyeData``; channels; mask layers and policies; pipelines,
+      in-place operations and history.
 
    .. grid-item-card:: :fas:`file-import` Loading and saving data
       :link: loading_data
@@ -40,6 +40,28 @@ If you have not used the package before, start with the
       Blinks, gaze artifacts, filtering, downsampling, scaling and
       combining the eyes.
 
+   .. grid-item-card:: :fas:`eye-slash` Missing data
+      :link: missing_data
+      :link-type: doc
+
+      Blinks, off-screen gaze, excluded periods and interpolation: where
+      the reason for each bad sample is stored and what each method does
+      with it.
+
+   .. grid-item-card:: :fas:`crosshairs` Gaze data and the setup
+      :link: gaze
+      :link-type: doc
+
+      Gaze coordinates, the screen and camera geometry, conversion to
+      degrees, off-screen and divergent samples, gaze plots and regions.
+
+   .. grid-item-card:: :fas:`bullseye` Regions of interest
+      :link: rois
+      :link-type: doc
+
+      Regions of the screen; where the gaze is around events, fixation
+      curves, dwell time and first entry per trial.
+
    .. grid-item-card:: :fas:`clipboard-check` Data quality
       :link: quality
       :link-type: doc
@@ -51,8 +73,8 @@ If you have not used the package before, start with the
       :link: events_intervals
       :link-type: doc
 
-      Select events, build time windows around them and compute
-      event-related pupil dilations.
+      Select events, build time windows around them, cut the data into
+      segments and compute event-related pupil dilations.
 
    .. grid-item-card:: :fas:`chart-line` Plotting
       :link: plotting
@@ -96,6 +118,9 @@ If you have not used the package before, start with the
    loading_data
    units
    preprocessing
+   missing_data
+   gaze
+   rois
    quality
    events_intervals
    plotting

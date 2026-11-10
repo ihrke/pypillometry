@@ -1,0 +1,6 @@
+﻿fill\_time\_discontinuities
+===========================
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: fill_time_discontinuities

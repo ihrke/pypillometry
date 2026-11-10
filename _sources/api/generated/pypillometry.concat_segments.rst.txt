@@ -1,0 +1,6 @@
+﻿concat\_segments
+================
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: concat_segments

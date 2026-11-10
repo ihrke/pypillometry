@@ -1,0 +1,1462 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>PupilNamespace &#8212; pypillometry v2.2.0</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx_autodoc_typehints.css?v=057ac668" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=e89b0eda" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../_static/scripts/fontawesome.js?digest=75c7c72ae941e8b558d8"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
+
+    <script src="../../_static/documentation_options.js?v=49a90b2e"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'api/generated/pypillometry.eyedata.pupil.PupilNamespace';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../../_static/pypillometry_logo_200x200.png"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Gaze methods (d.gaze)" href="../gaze.html" />
+    <link rel="prev" title="Pupil methods (d.pupil)" href="../pupil.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="v2.2.0" />
+  
+    
+    <script src="../../_static/searchtools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script src="../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="light">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation" aria-expanded="false" aria-controls="pst-primary-sidebar-modal">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="../../_static/pypillometry_logo_200x200.png" class="logo__image only-light" alt=""/>
+    <img src="../../_static/pypillometry_logo_200x200.png" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">pypillometry</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user_guide/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../experimental/index.html">
+    Experimental features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../development/index.html">
+    Development
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ihrke/pypillometry" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pypillometry/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page" aria-expanded="false" aria-controls="pst-secondary-sidebar-modal">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal" tabindex="-1"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user_guide/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../experimental/index.html">
+    Experimental features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../development/index.html">
+    Development
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ihrke/pypillometry" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pypillometry/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button type="button" id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../data.html">Data classes</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.EyeData.html">EyeData</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.EyeDataDict.html">EyeDataDict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.MaskPolicy.html">MaskPolicy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.FakeEyeData.html">FakeEyeData</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.keephistory.html">keephistory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.QualityReport.html">QualityReport</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.QualityMetric.html">QualityMetric</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.Table.html">Table</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.RecordDict.html">RecordDict</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../pupil.html">Pupil methods (<code class="docutils literal notranslate"><span class="pre">d.pupil</span></code>)</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 current active"><a aria-current="page" class="current reference internal" href="#">PupilNamespace</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../gaze.html">Gaze methods (<code class="docutils literal notranslate"><span class="pre">d.gaze</span></code>)</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.eyedata.gaze.GazeNamespace.html">GazeNamespace</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../pipelines.html">Pipelines</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.crop.html">crop</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.downsample.html">downsample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.scale.html">scale</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.unscale.html">unscale</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.merge_eyes.html">merge_eyes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.reset_time.html">reset_time</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.mask_intervals.html">mask_intervals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.interpolate_intervals.html">interpolate_intervals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.exclude_intervals.html">exclude_intervals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.keep_intervals.html">keep_intervals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.remove_intervals.html">remove_intervals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.merge_masks.html">merge_masks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.clear_layer.html">clear_layer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.set_blinks.html">set_blinks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.set_events.html">set_events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.add_events.html">add_events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.set_experimental_setup.html">set_experimental_setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.drop_data.html">drop_data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.drop_original.html">drop_original</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.fill_time_discontinuities.html">fill_time_discontinuities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.Step.html">Step</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.Pipeline.html">Pipeline</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../events_intervals.html">Events and intervals</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.Events.html">Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.Epochs.html">Epochs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.Intervals.html">Intervals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.ClockSync.html">ClockSync</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.concat_intervals.html">concat_intervals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.sync_clocks.html">sync_clocks</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../segments.html">Segmented data</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.SegmentedEyeData.html">SegmentedEyeData</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.concat_segments.html">concat_segments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.group_segments.html">group_segments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.segmented.SegmentedPupilNamespace.html">SegmentedPupilNamespace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.segmented.SegmentedGazeNamespace.html">SegmentedGazeNamespace</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../plotting.html">Plotting (<code class="docutils literal notranslate"><span class="pre">d.plot</span></code>)</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../io.html">Reading and writing data</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.read_eyelink.html">read_eyelink</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.read_file.html">read_file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.write_file.html">write_file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.download.html">download</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.fetch_url.html">fetch_url</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.local_copy.html">local_copy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.load_study_local.html">load_study_local</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.load_study_osf.html">load_study_osf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.get_osf_project_files.html">get_osf_project_files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.osf_authenticate.html">osf_authenticate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.get_available_datasets.html">get_available_datasets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.get_example_data.html">get_example_data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.get_rlmw_002.html">get_rlmw_002</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.get_rlmw_002_short.html">get_rlmw_002_short</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.get_rlmw_010_edf.html">get_rlmw_010_edf</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../signal.html">Signal processing</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.butter_lowpass.html">butter_lowpass</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.butter_lowpass_filter.html">butter_lowpass_filter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.lowpass_filter_iterative.html">lowpass_filter_iterative</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.smooth_window.html">smooth_window</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.downsample.html">downsample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.zscale.html">zscale</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.bspline.html">bspline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.baseline_envelope.html">baseline_envelope</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.baseline_envelope_iter_bspline.html">baseline_envelope_iter_bspline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.baseline_pupil_model.html">baseline_pupil_model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.velocity_savgol.html">velocity_savgol</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.detect_blinks_velocity.html">detect_blinks_velocity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.detect_blinks_zero.html">detect_blinks_zero</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.blink_onsets_mahot.html">blink_onsets_mahot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_kernel.html">pupil_kernel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_kernel_t.html">pupil_kernel_t</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_get_max_duration.html">pupil_get_max_duration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.plot_prf.html">plot_prf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_build_design_matrix.html">pupil_build_design_matrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_response.html">pupil_response</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_response_coverage.html">pupil_response_coverage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupilresponse_nnls.html">pupilresponse_nnls</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_signal_quality.html">pupil_signal_quality</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_eye_offset.html">pupil_eye_offset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.fake_pupil_baseline.html">fake_pupil_baseline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.fake_gaze_fixations.html">fake_gaze_fixations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.add_measurement_noise.html">add_measurement_noise</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.generate_foreshortening_data.html">generate_foreshortening_data</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../geometry.html">Geometry and gaze</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.ExperimentalSetup.html">ExperimentalSetup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.SpatialCalibration.html">SpatialCalibration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.ForeshorteningCalibration.html">ForeshorteningCalibration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.ROI.html">ROI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.CircularROI.html">CircularROI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.RectangularROI.html">RectangularROI</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../units.html">Units</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.Quantity.html">Quantity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.Unit.html">Unit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.parse_time.html">parse_time</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.parse_distance.html">parse_distance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.parse_angle.html">parse_angle</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../misc.html">Viewer, settings and logging</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.view.html">view</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.tweak.html">tweak</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.set_default_inplace.html">set_default_inplace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.get_default_inplace.html">get_default_inplace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.logging_set_level.html">logging_set_level</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.logging_get_level.html">logging_get_level</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.logging_disable.html">logging_disable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.logging_enable.html">logging_enable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.loglevel.html">loglevel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.nologging.html">nologging</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.initialize_logging.html">initialize_logging</a></li>
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-house"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">API reference</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../pupil.html" class="nav-link">Pupil methods (<code class="docutils literal notranslate"><span class="pre">d.pupil</span></code>)</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">PupilNamespace</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="pupilnamespace">
+<h1>PupilNamespace<a class="headerlink" href="#pupilnamespace" title="Link to this heading">#</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="pypillometry.eyedata.pupil.PupilNamespace">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pypillometry.eyedata.pupil.</span></span><span class="sig-name descname"><span class="pre">PupilNamespace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/eyedata/pupil.html#PupilNamespace"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.eyedata.pupil.PupilNamespace" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Namespace</span></code></p>
+<p>Methods for pupil data, accessed as <code class="docutils literal notranslate"><span class="pre">d.pupil</span></code> (e.g.,
+<code class="docutils literal notranslate"><span class="pre">d.pupil.blinks_detect()</span></code>).</p>
+<p>The methods need pupil data and raise a ValueError if there is none.
+The transforming methods return the data object (see
+<code class="xref py py-class docutils literal notranslate"><span class="pre">Namespace</span></code>).</p>
+<p class="rubric">Methods</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.eyedata.pupil.PupilNamespace.blinks_detect" title="pypillometry.eyedata.pupil.PupilNamespace.blinks_detect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blinks_detect</span></code></a></p></td>
+<td><p>Detect blinks in the pupillary signal using several strategies.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.eyedata.pupil.PupilNamespace.blinks_interpolate" title="pypillometry.eyedata.pupil.PupilNamespace.blinks_interpolate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blinks_interpolate</span></code></a></p></td>
+<td><p>Interpolating blinks in the pupillary signal.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.eyedata.pupil.PupilNamespace.blinks_merge_close" title="pypillometry.eyedata.pupil.PupilNamespace.blinks_merge_close"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blinks_merge_close</span></code></a></p></td>
+<td><p>Merge blinks that are close together.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.eyedata.pupil.PupilNamespace.correct_foreshortening" title="pypillometry.eyedata.pupil.PupilNamespace.correct_foreshortening"><code class="xref py py-obj docutils literal notranslate"><span class="pre">correct_foreshortening</span></code></a></p></td>
+<td><p>Correct pupil data using a simple algorithm to correct for foreshortening effects.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.eyedata.pupil.PupilNamespace.estimate_baseline" title="pypillometry.eyedata.pupil.PupilNamespace.estimate_baseline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">estimate_baseline</span></code></a></p></td>
+<td><p>Apply one of the baseline-estimation methods.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.eyedata.pupil.PupilNamespace.estimate_response" title="pypillometry.eyedata.pupil.PupilNamespace.estimate_response"><code class="xref py py-obj docutils literal notranslate"><span class="pre">estimate_response</span></code></a></p></td>
+<td><p>Estimate pupil-response based on event-onsets, see <a class="reference internal" href="pypillometry.signal.pupil_response.html#pypillometry.signal.pupil_response" title="pypillometry.signal.pupil_response"><code class="xref py py-func docutils literal notranslate"><span class="pre">pupil_response()</span></code></a>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.eyedata.pupil.PupilNamespace.fit_foreshortening" title="pypillometry.eyedata.pupil.PupilNamespace.fit_foreshortening"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_foreshortening</span></code></a></p></td>
+<td><p>Fit foreshortening correction model to estimate camera geometry and true pupil size.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.eyedata.pupil.PupilNamespace.lowpass_filter" title="pypillometry.eyedata.pupil.PupilNamespace.lowpass_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lowpass_filter</span></code></a></p></td>
+<td><p>Lowpass-filter pupil signal using a Butterworth-filter.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.eyedata.pupil.PupilNamespace.merge_eyes" title="pypillometry.eyedata.pupil.PupilNamespace.merge_eyes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">merge_eyes</span></code></a></p></td>
+<td><p>Merge pupil data from both eyes into a new eye (default <code class="docutils literal notranslate"><span class="pre">&quot;mean&quot;</span></code>).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.eyedata.pupil.PupilNamespace.smooth_window" title="pypillometry.eyedata.pupil.PupilNamespace.smooth_window"><code class="xref py py-obj docutils literal notranslate"><span class="pre">smooth_window</span></code></a></p></td>
+<td><p>Apply smoothing of the signal using a moving window.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="rubric">Details</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.eyedata.pupil.PupilNamespace.blinks_detect">
+<span class="sig-name descname"><span class="pre">blinks_detect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_duration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blink_val</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">winsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">11</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vel_onset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vel_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vel_onset_min_duration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vel_offset_min_duration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_duration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['zero',</span> <span class="pre">'velocity']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_existing_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/eyedata/pupil.html#PupilNamespace.blinks_detect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.eyedata.pupil.PupilNamespace.blinks_detect" title="Link to this definition">#</a></dt>
+<dd><p>Detect blinks in the pupillary signal using several strategies.
+First, blinks are detected as consecutive sequence of <cite>blink_val</cite> 
+(f.eks., 0 or NaN). Second, blinks are defined as everything between
+two crossings of the velocity profile (from negative to positive).</p>
+<p>Detected blinks are stored in the object, as the <code class="docutils literal notranslate"><span class="pre">&quot;blink&quot;</span></code>
+layer of the pupil (retrieve them with
+<a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData.get_blinks" title="pypillometry.EyeData.get_blinks"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_blinks()</span></code></a>), and are masked
+under the mask policies (see
+<a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData.mask" title="pypillometry.EyeData.mask"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mask()</span></code></a>). They replace the
+blinks detected before (and their mask), and the blinks detected
+before are not treated as masked during detection, so re-running the
+detection with other parameters gives the same result as running it
+once (<code class="docutils literal notranslate"><span class="pre">clear_layer(&quot;blink&quot;)</span></code> removes them). Eyes whose pupil has
+interpolated samples (after <a class="reference internal" href="#pypillometry.eyedata.pupil.PupilNamespace.blinks_interpolate" title="pypillometry.eyedata.pupil.PupilNamespace.blinks_interpolate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">blinks_interpolate()</span></code></a>) are skipped
+with a warning and keep their blinks: the values there are
+reconstructed, so detect blinks before interpolating them.</p>
+<p>Finally, detected blinks have to be at least <cite>min_duration</cite> ms.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>eyes</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a>) – list of eyes to process; if empty, all available eyes are processed</p></li>
+<li><p><strong>min_duration</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – minimum duration (in ms, or with units) for a sequence of missing numbers to be treated as blink</p></li>
+<li><p><strong>blink_val</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – “missing value” code for the “zero” strategy. Missing samples
+(NaN) are always detected; samples equal to <cite>blink_val</cite> (default
+0) are detected in addition. Use <cite>np.nan</cite> to detect only NaN
+(e.g., for baseline-corrected data where 0 is a valid value).
+The “zero” strategy always uses the raw data, so regions masked
+for other reasons are not detected as blinks.</p></li>
+<li><p><strong>winsize</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – window-size for Savitzky-Golay velocity estimation (in ms, or with units)</p></li>
+<li><p><strong>vel_onset</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – <p>velocity threshold to detect blink onset (negative value).</p>
+<ul>
+<li><p>If float: threshold in pupil-units per millisecond (e.g., -5.0)</p></li>
+<li><p>If str: percentile of velocity distribution (e.g., “5%” for bottom 5%)</p></li>
+</ul>
+</p></li>
+<li><p><strong>vel_offset</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – <p>velocity threshold to detect blink offset (positive value).</p>
+<ul>
+<li><p>If float: threshold in pupil-units per millisecond (e.g., 5.0)</p></li>
+<li><p>If str: percentile of velocity distribution (e.g., “95%” for top 5%)</p></li>
+</ul>
+</p></li>
+<li><p><strong>vel_onset_min_duration</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – minimum duration (in ms, or with units) that velocity must exceed threshold to detect as onset
+(to avoid noise-induced false detections)</p></li>
+<li><p><strong>vel_offset_min_duration</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – minimum duration (in ms, or with units) that velocity must exceed threshold to detect as offset
+(to avoid noise-induced false detections)</p></li>
+<li><p><strong>max_duration</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – maximum duration (in ms, or with units) of a blink detected by the
+“velocity” strategy; an onset without an offset within this time
+is dropped. <cite>None</cite> means no limit. Does not apply to the “zero”
+strategy.</p></li>
+<li><p><strong>strategies</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a></span>) – list of strategies to use;
+so far, use a list containing any combination of “zero” and “velocity”
+(other names raise a ValueError)</p></li>
+<li><p><strong>ignore_existing_mask</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a>) – if <cite>True</cite>, use raw data ignoring existing masks
+if <cite>False</cite> (default), only detect blinks in the usable data under
+the <code class="docutils literal notranslate"><span class="pre">&quot;strict&quot;</span></code> mask policy (masked regions are skipped, see
+<a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData.mask" title="pypillometry.EyeData.mask"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mask()</span></code></a>)</p></li>
+<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em> or </em><em>None</em>) – if <cite>True</cite>, make change in-place and return the object
+if <cite>False</cite>, make and return copy before making changes
+if <cite>None</cite>, use the object-level setting</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData" title="pypillometry.EyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">EyeData</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the object with the blinks (<cite>self</cite> or a copy, depending on
+<cite>inplace</cite>)</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">get_blinks</span><span class="p">(</span><span class="n">variables</span><span class="o">=</span><span class="s2">"pupil"</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.eyedata.pupil.PupilNamespace.blinks_interpolate">
+<span class="sig-name descname"><span class="pre">blinks_interpolate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store_as</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pupil'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mahot'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">winsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vel_onset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vel_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">margin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(10,</span> <span class="pre">30)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blinkwindow</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interp_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cubic'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/eyedata/pupil.html#PupilNamespace.blinks_interpolate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.eyedata.pupil.PupilNamespace.blinks_interpolate" title="Link to this definition">#</a></dt>
+<dd><p>Interpolating blinks in the pupillary signal.</p>
+<p>Implements the blink-interpolation method by Mahot (2013).</p>
+<p>Mahot, 2013:
+<a class="reference external" href="https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001">https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001</a>.</p>
+<p>The blinks to interpolate are taken from the blinks stored in the object,
+so blinks have to be detected first (e.g., using <a class="reference internal" href="#pypillometry.eyedata.pupil.PupilNamespace.blinks_detect" title="pypillometry.eyedata.pupil.PupilNamespace.blinks_detect"><code class="xref py py-meth docutils literal notranslate"><span class="pre">blinks_detect()</span></code></a>).
+The on- and offsets of each blink are refined using the velocity profile
+before interpolating. Blinks that are so close that the anchor points
+of one fall into the other are merged and interpolated together.
+The interpolated samples get the <code class="docutils literal notranslate"><span class="pre">&quot;interpolated&quot;</span></code> layer (on the
+variable they are stored in, see <cite>store_as</cite>): they are used under the
+default mask policy and masked under the <code class="docutils literal notranslate"><span class="pre">&quot;strict&quot;</span></code> one (see
+<a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData.mask" title="pypillometry.EyeData.mask"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mask()</span></code></a>); the interpolated blinks
+can be retrieved with
+<a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData.get_interpolated" title="pypillometry.EyeData.get_interpolated"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_interpolated()</span></code></a>.</p>
+<p>This procedure relies heavily on eye-balling (reconstructing visually convincing signal),
+so it can help to inspect the result visually (e.g., using
+<a class="reference internal" href="../plotting.html#pypillometry.plot.PlotNamespace.plot_blinks" title="pypillometry.plot.PlotNamespace.plot_blinks"><code class="xref py py-meth docutils literal notranslate"><span class="pre">d.plot.plot_blinks()</span></code></a>) to set
+good parameter values for <cite>winsize</cite>, <cite>vel_onset</cite>, <cite>vel_offset</cite> and <cite>margin</cite>
+(see paper linked above).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>eyes</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a></span>) – str or list of eyes to process; if empty, all available eyes are processed</p></li>
+<li><p><strong>store_as</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – how to store the interpolated data; either “pupil” (default) which replaces
+the original pupil data or a string that will be used as the new variable
+name in the data (e.g., “pupilinterp”)</p></li>
+<li><p><strong>method</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – method to use; so far, only “mahot” is implemented</p></li>
+<li><p><strong>winsize</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – size of the Savitzky-Golay window (in ms, or with units)</p></li>
+<li><p><strong>vel_onset</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – <p>velocity threshold to detect blink onset (negative value).</p>
+<ul>
+<li><p>If float: threshold in pupil-units per millisecond (e.g., -5.0)</p></li>
+<li><p>If str: percentile of velocity distribution (e.g., “5%” for bottom 5%)</p></li>
+</ul>
+</p></li>
+<li><p><strong>vel_offset</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – <p>velocity threshold to detect blink offset (positive value).</p>
+<ul>
+<li><p>If float: threshold in pupil-units per millisecond (e.g., 5.0)</p></li>
+<li><p>If str: percentile of velocity distribution (e.g., “95%” for top 5%)</p></li>
+</ul>
+</p></li>
+<li><p><strong>margin</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]</span>) – margin that is subtracted/added to onset and offset (in ms, or
+with units, e.g. <code class="docutils literal notranslate"><span class="pre">(10,</span> <span class="pre">30)</span> <span class="pre">*</span> <span class="pre">u.ms</span></code>)</p></li>
+<li><p><strong>blinkwindow</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – how much time before and after each blink to include (in ms, or
+with units)</p></li>
+<li><p><strong>interp_type</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – type of interpolation accepted by <code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.interpolate.interp1d()</span></code></p></li>
+<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em> or </em><em>None</em>) – if <cite>True</cite>, make change in-place and return the object
+if <cite>False</cite>, make and return copy before making changes
+if <cite>None</cite>, use the object-level setting</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData" title="pypillometry.EyeData">EyeData</a></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the object with the interpolated pupil data</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.eyedata.pupil.PupilNamespace.blinks_merge_close">
+<span class="sig-name descname"><span class="pre">blinks_merge_close</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ms'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/eyedata/pupil.html#PupilNamespace.blinks_merge_close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.eyedata.pupil.PupilNamespace.blinks_merge_close" title="Link to this definition">#</a></dt>
+<dd><p>Merge blinks that are close together.</p>
+<p>The merged blinks replace the <code class="docutils literal notranslate"><span class="pre">&quot;blink&quot;</span></code> layer of the pupil
+(see <a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData.set_blinks" title="pypillometry.EyeData.set_blinks"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_blinks()</span></code></a>); read them with
+<a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData.get_blinks" title="pypillometry.EyeData.get_blinks"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_blinks()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>eyes</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a></span>) – eye(s) to process; if empty, all eyes with pupil data</p></li>
+<li><p><strong>distance</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Merge blinks closer than this distance, e.g. <code class="docutils literal notranslate"><span class="pre">100</span> <span class="pre">*</span> <span class="pre">u.ms</span></code> or
+<code class="docutils literal notranslate"><span class="pre">&quot;0.1</span> <span class="pre">sec&quot;</span></code>; plain numbers are in units given by <code class="docutils literal notranslate"><span class="pre">units</span></code>.
+Default 100.</p></li>
+<li><p><strong>units</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Units for <code class="docutils literal notranslate"><span class="pre">distance</span></code> if it is a plain number. Can be “ms”,
+“sec”, “min”, or “h”. Default “ms”.</p></li>
+<li><p><strong>inplace</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a> | <span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span></span>) – if <cite>True</cite>, make change in-place and return the object;
+if <cite>False</cite>, make and return copy before making changes;
+if <cite>None</cite>, use the object-level setting (specified in the constructor).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData" title="pypillometry.EyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">EyeData</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the object with the merged blinks (<cite>self</cite> or a copy, depending
+on <cite>inplace</cite>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.eyedata.pupil.PupilNamespace.correct_foreshortening">
+<span class="sig-name descname"><span class="pre">correct_foreshortening</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">midpoint</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store_as</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pupil'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/eyedata/pupil.html#PupilNamespace.correct_foreshortening"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.eyedata.pupil.PupilNamespace.correct_foreshortening" title="Link to this definition">#</a></dt>
+<dd><p>Correct pupil data using a simple algorithm to correct for foreshortening effects.</p>
+<p>Correct the pupil data for foreshortening effects caused
+by saccades/eye movements. This method is based on a simple algorithm
+that assumes the pupil appears perfectly circular when fixating <cite>midpoint</cite>:
+for each sample, the distance <span class="math notranslate nohighlight">\(\Delta\)</span> (in mm) of the gaze position
+from <cite>midpoint</cite> is computed and the pupil signal is multiplied by the
+correction factor <span class="math notranslate nohighlight">\(\sqrt{1+\Delta^2/d^2}\)</span>, where <span class="math notranslate nohighlight">\(d\)</span> is the
+eye-to-screen distance from the experimental setup.
+For a more complete model that also estimates the camera position,
+see <a class="reference internal" href="#pypillometry.eyedata.pupil.PupilNamespace.fit_foreshortening" title="pypillometry.eyedata.pupil.PupilNamespace.fit_foreshortening"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit_foreshortening()</span></code></a>.</p>
+<p>Relevant publication (not the description of the algorithm used here):    
+<a class="reference external" href="https://link.springer.com/article/10.3758/s13428-015-0588-x">https://link.springer.com/article/10.3758/s13428-015-0588-x</a></p>
+<ul class="simple">
+<li><p>[ ] TODO: when using interpolated pupil data, x/y data may still be missing. Make sure that the 
+pupil data is not touched where x/y is missing</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>eyes</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a>) – Which eyes to correct. If empty, correct all available eyes
+that have pupil and gaze (x, y) data.</p></li>
+<li><p><strong>midpoint</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a><em> or </em><em>None</em>) – The center of the screen (x,y) in pixels where it is assumed that the pupil is completely circular.
+If None, the midpoint is taken to be the center of the screen as registered
+in the experimental_setup.</p></li>
+<li><p><strong>store_as</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – name of the variable in which to store the corrected pupil data
+(as <code class="docutils literal notranslate"><span class="pre">data[eye,</span> <span class="pre">store_as]</span></code>); the default “pupil” replaces the
+original pupil data</p></li>
+<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em> or </em><em>None</em>) – Whether to modify the object in place or return a new object.
+<cite>true</cite>: modify in place
+<cite>false</cite>: return a new object
+<cite>None</cite>: use the object’s default setting (initialized in __init__)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData" title="pypillometry.EyeData">EyeData</a></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>An EyeData object with the corrected pupil</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – if no experimental setup is set (see <a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData.set_experimental_setup" title="pypillometry.EyeData.set_experimental_setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_experimental_setup()</span></code></a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.eyedata.pupil.PupilNamespace.estimate_baseline">
+<span class="sig-name descname"><span class="pre">estimate_baseline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variable</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pupil'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'envelope_iter_bspline_2'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/eyedata/pupil.html#PupilNamespace.estimate_baseline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.eyedata.pupil.PupilNamespace.estimate_baseline" title="Link to this definition">#</a></dt>
+<dd><p>Apply one of the baseline-estimation methods.</p>
+<p>The baseline is estimated from the usable samples under the mask
+<cite>policy</cite> (by default, interpolated samples are used, see
+<a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData.mask" title="pypillometry.EyeData.mask"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mask()</span></code></a>). The unusable samples
+(masked or NaN, e.g., blinks that were not interpolated or the
+excluded periods) are bridged linearly between their neighbours.
+Interpolate blinks first (see <a class="reference internal" href="#pypillometry.eyedata.pupil.PupilNamespace.blinks_interpolate" title="pypillometry.eyedata.pupil.PupilNamespace.blinks_interpolate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">blinks_interpolate()</span></code></a>) to
+use a better reconstruction than a straight line.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>eyes</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – str or list of eyes to process; if empty, all available eyes are processed</p></li>
+<li><p><strong>variable</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – default is to use the “pupil” but it could be used to process, e.g.,
+interpolated pupil data stored in a different variables, e.g., “pupilinterp”</p></li>
+<li><p><strong>method</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – <ul>
+<li><p>“envelope_iter_bspline_1”:
+<a class="reference internal" href="pypillometry.signal.baseline_envelope_iter_bspline.html#pypillometry.signal.baseline_envelope_iter_bspline" title="pypillometry.signal.baseline_envelope_iter_bspline"><code class="xref py py-func docutils literal notranslate"><span class="pre">baseline_envelope_iter_bspline()</span></code></a>
+with one iteration</p></li>
+<li><p>”envelope_iter_bspline_2” (default):
+<a class="reference internal" href="pypillometry.signal.baseline_envelope_iter_bspline.html#pypillometry.signal.baseline_envelope_iter_bspline" title="pypillometry.signal.baseline_envelope_iter_bspline"><code class="xref py py-func docutils literal notranslate"><span class="pre">baseline_envelope_iter_bspline()</span></code></a>
+with two iterations</p></li>
+</ul>
+</p></li>
+<li><p><strong>policy</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><a class="reference internal" href="pypillometry.MaskPolicy.html#pypillometry.MaskPolicy" title="pypillometry.MaskPolicy"><em>MaskPolicy</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – mask policy that decides which samples are usable (see
+<a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData.mask" title="pypillometry.EyeData.mask"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mask()</span></code></a>); default <code class="docutils literal notranslate"><span class="pre">&quot;default&quot;</span></code></p></li>
+<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em> or </em><em>None</em>) – if <cite>True</cite>, make change in-place and return the object
+if <cite>False</cite>, make and return copy before making changes
+if <cite>None</cite>, use the object-level setting</p></li>
+<li><p><strong>**kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a>) – named arguments passed to the low-level function in
+<code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry.signal.baseline</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData" title="pypillometry.EyeData">EyeData</a></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>object with baseline estimated (stored in <code class="docutils literal notranslate"><span class="pre">data[eye,</span> <span class="pre">&quot;baseline&quot;]</span></code>)</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – if <cite>method</cite> is unknown or no sample is usable</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>Mittner, M., &amp; Groot, J. M. (2025). A novel method for modeling tonic and
+phasic pupil dynamics in humans. <em>Behavior Research Methods</em>, 57(9), 233.
+<a class="reference external" href="https://doi.org/10.3758/s13428-025-02755-7">https://doi.org/10.3758/s13428-025-02755-7</a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.eyedata.pupil.PupilNamespace.estimate_response">
+<span class="sig-name descname"><span class="pre">estimate_response</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'free'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'free'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'npar':</span> <span class="pre">(1,</span> <span class="pre">20),</span> <span class="pre">'tmax':</span> <span class="pre">(100,</span> <span class="pre">2000)}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_valid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/eyedata/pupil.html#PupilNamespace.estimate_response"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.eyedata.pupil.PupilNamespace.estimate_response" title="Link to this definition">#</a></dt>
+<dd><p>Estimate pupil-response based on event-onsets, see
+<a class="reference internal" href="pypillometry.signal.pupil_response.html#pypillometry.signal.pupil_response" title="pypillometry.signal.pupil_response"><code class="xref py py-func docutils literal notranslate"><span class="pre">pupil_response()</span></code></a>.</p>
+<p>The model has one response per event in <code class="docutils literal notranslate"><span class="pre">d.events</span></code>: <em>all</em> events
+are used, whatever their label. To use only some of them, set the
+events first, e.g. <code class="docutils literal notranslate"><span class="pre">d.set_events(d.events.filter(&quot;stim&quot;))</span></code> on a
+copy of the data.</p>
+<p>If a baseline has been estimated (see <a class="reference internal" href="#pypillometry.eyedata.pupil.PupilNamespace.estimate_baseline" title="pypillometry.eyedata.pupil.PupilNamespace.estimate_baseline"><code class="xref py py-meth docutils literal notranslate"><span class="pre">estimate_baseline()</span></code></a>),
+it is subtracted from the pupil signal before estimating the response;
+otherwise, a baseline of zero is used.</p>
+<p>Only the usable samples under the mask <cite>policy</cite> are used for the
+fit: by default, NaN, masked samples (e.g., blinks applied as mask)
+and the excluded periods (see
+<a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData.exclude_intervals" title="pypillometry.EyeData.exclude_intervals"><code class="xref py py-meth docutils literal notranslate"><span class="pre">exclude_intervals()</span></code></a>, e.g., breaks)
+are not used, interpolated samples (e.g., blinks) are. For each
+event, the share of its response that falls on usable samples
+(<cite>valid</cite>) and the share that falls on real data (<cite>observed</cite>:
+usable under the <code class="docutils literal notranslate"><span class="pre">&quot;strict&quot;</span></code> policy, i.e., not interpolated either)
+are stored with the parameters (weighted by the response, see
+<a class="reference internal" href="pypillometry.signal.pupil_response_coverage.html#pypillometry.signal.pupil_response_coverage" title="pypillometry.signal.pupil_response_coverage"><code class="xref py py-func docutils literal notranslate"><span class="pre">pupil_response_coverage()</span></code></a>). Events
+with a <cite>valid</cite> share below <cite>min_valid</cite> are left out of the fit;
+their coefficient is NaN.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>eyes</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – str or list of eyes to process; if empty, all available eyes are processed</p></li>
+<li><p><strong>npar</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – npar-parameter for the canonical response-function or “free”;
+in case of “free”, the function optimizes for this parameter</p></li>
+<li><p><strong>tmax</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – tmax-parameter for the canonical response-function or “free”;
+in case of “free”, the function optimizes for this parameter</p></li>
+<li><p><strong>verbose</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – verbosity level, passed on to
+<a class="reference internal" href="pypillometry.signal.pupil_response.html#pypillometry.signal.pupil_response" title="pypillometry.signal.pupil_response"><code class="xref py py-func docutils literal notranslate"><span class="pre">pupil_response()</span></code></a></p></li>
+<li><p><strong>bounds</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></span>) – in case that one or both parameters are estimated, give the lower
+and upper bounds for the parameters</p></li>
+<li><p><strong>min_valid</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – events whose share <cite>valid</cite> is below this are left out of the
+fit (coefficient NaN), as their amplitude cannot be estimated
+reliably; default 0.5; 0 uses all events</p></li>
+<li><p><strong>policy</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><a class="reference internal" href="pypillometry.MaskPolicy.html#pypillometry.MaskPolicy" title="pypillometry.MaskPolicy"><em>MaskPolicy</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – mask policy that decides which samples are usable (see
+<a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData.mask" title="pypillometry.EyeData.mask"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mask()</span></code></a>); default <code class="docutils literal notranslate"><span class="pre">&quot;default&quot;</span></code></p></li>
+<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em> or </em><em>None</em>) – if <cite>True</cite>, make change in-place and return the object
+if <cite>False</cite>, make and return copy before making changes
+if <cite>None</cite>, use the object-level setting</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData" title="pypillometry.EyeData">EyeData</a></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the object with the estimated response</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – if the object has no events</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The predicted response is stored in <code class="docutils literal notranslate"><span class="pre">data[eye,</span> <span class="pre">&quot;response&quot;]</span></code>; the
+estimated parameters (<cite>npar</cite>, <cite>tmax</cite>, the coefficients <cite>coef</cite> and the
+<cite>bounds</cite>) are stored in <code class="docutils literal notranslate"><span class="pre">params[&quot;response&quot;][&quot;&lt;eye&gt;_pupil&quot;]</span></code> (e.g.,
+<code class="docutils literal notranslate"><span class="pre">params[&quot;response&quot;][&quot;left_pupil&quot;]</span></code>), together with
+the shares <cite>valid</cite> and <cite>observed</cite> (0-1, one per event; NaN for
+events without response in the data, e.g., at the very end).</p>
+<p class="rubric">References</p>
+<p>Mittner, M., &amp; Groot, J. M. (2025). A novel method for modeling tonic and
+phasic pupil dynamics in humans. <em>Behavior Research Methods</em>, 57(9), 233.
+<a class="reference external" href="https://doi.org/10.3758/s13428-025-02755-7">https://doi.org/10.3758/s13428-025-02755-7</a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.eyedata.pupil.PupilNamespace.fit_foreshortening">
+<span class="sig-name descname"><span class="pre">fit_foreshortening</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eye</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intervals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_fs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lowpass_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lambda_smooth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">knots_per_second</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_theta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_phi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/eyedata/pupil.html#PupilNamespace.fit_foreshortening"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.eyedata.pupil.PupilNamespace.fit_foreshortening" title="Link to this definition">#</a></dt>
+<dd><p>Fit foreshortening correction model to estimate camera geometry and true pupil size.</p>
+<p>This method implements Stage 1 of the foreshortening correction algorithm,
+which jointly estimates the camera position (theta, phi) and the temporal
+dynamics of true pupil size A0(t) using B-splines. The data is automatically
+preprocessed (filtered and downsampled) before fitting.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>eye</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Which eye to fit (‘left’ or ‘right’)</p></li>
+<li><p><strong>r</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span>]</span>) – <p>Eye-to-camera distance. If not provided, uses the
+<cite>r</cite> from experimental_setup.</p>
+<ul>
+<li><p>Plain number: assumed to be mm (with warning)</p></li>
+<li><p>String: e.g., “600 mm”, “60 cm”</p></li>
+<li><p>Quantity: e.g., 600 * u.mm</p></li>
+</ul>
+</p></li>
+<li><p><strong>d</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span>]</span>) – <p>Eye-to-screen distance. If not provided, uses the
+<cite>d</cite> from experimental_setup.</p>
+<ul>
+<li><p>Plain number: assumed to be mm (with warning)</p></li>
+<li><p>String: e.g., “700 mm”, “70 cm”</p></li>
+<li><p>Quantity: e.g., 700 * u.mm</p></li>
+</ul>
+</p></li>
+<li><p><strong>intervals</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="pypillometry.Intervals.html#pypillometry.Intervals" title="pypillometry.intervals.Intervals"><code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code></a>]</span>) – Time intervals to use for fitting. If None, uses all available data.
+Useful for fitting only on calibration periods. Intervals in any
+time units or in sample indices (<code class="docutils literal notranslate"><span class="pre">units=&quot;samples&quot;</span></code>) are accepted; a
+plain list of <cite>(start, end)</cite> tuples is taken as ms. Intervals are
+end-exclusive.</p></li>
+<li><p><strong>target_fs</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Target sampling rate in Hz after downsampling for efficiency.
+Pupil dynamics are typically well-preserved at 50 Hz.</p></li>
+<li><p><strong>lowpass_freq</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Lowpass filter cutoff frequency in Hz. Removes high-frequency noise
+before downsampling. Should be below target_fs/2 (Nyquist).</p></li>
+<li><p><strong>lambda_smooth</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Smoothness regularization weight. Higher values produce smoother
+A0(t) estimates. Tune via cross-validation if needed.</p></li>
+<li><p><strong>knots_per_second</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Number of B-spline knots per second. Controls temporal resolution
+of A0(t) model. Typical values: 0.5-2.0.</p></li>
+<li><p><strong>initial_theta</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span>]</span>) – <p>Initial guess for camera polar angle. If None, uses
+pi/2 (horizontal) as starting point.</p>
+<ul>
+<li><p>Plain number: assumed to be radians (with warning)</p></li>
+<li><p>String: e.g., “20 degrees”, “0.349 radians”</p></li>
+<li><p>Quantity: e.g., 20 * u.deg</p></li>
+</ul>
+</p></li>
+<li><p><strong>initial_phi</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span>]</span>) – <p>Initial guess for camera azimuthal angle. If None,
+uses 0 (camera on x-axis) as starting point.</p>
+<ul>
+<li><p>Plain number: assumed to be radians (with warning)</p></li>
+<li><p>String: e.g., “-90 degrees”, “-1.57 radians”</p></li>
+<li><p>Quantity: e.g., -90 * u.deg</p></li>
+</ul>
+</p></li>
+<li><p><strong>verbose</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – Print optimization progress and fit statistics.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="pypillometry.ForeshorteningCalibration.html#pypillometry.ForeshorteningCalibration" title="pypillometry.eyedata.foreshortening_calibration.ForeshorteningCalibration"><code class="xref py py-class docutils literal notranslate"><span class="pre">ForeshorteningCalibration</span></code></a></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>calibration</strong> (ForeshorteningCalibration) – Fitted calibration object containing camera geometry (theta, phi),
+spline coefficients for A0(t), and fit quality metrics.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If specified eye doesn’t exist or lacks gaze/pupil data, if the
+experimental setup is not set or lacks required information, if
+<cite>lowpass_freq</cite> is not below the Nyquist frequency or if fewer
+than 100 valid samples are available.</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="pypillometry.ForeshorteningCalibration.html#pypillometry.ForeshorteningCalibration" title="pypillometry.ForeshorteningCalibration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ForeshorteningCalibration</span></code></a></dt><dd><p>Container for fitted parameters</p>
+</dd>
+<dt><a class="reference internal" href="#pypillometry.eyedata.pupil.PupilNamespace.correct_foreshortening" title="pypillometry.eyedata.pupil.PupilNamespace.correct_foreshortening"><code class="xref py py-obj docutils literal notranslate"><span class="pre">correct_foreshortening</span></code></a></dt><dd><p>Simple foreshortening correction method</p>
+</dd>
+</dl>
+</div>
+<p class="rubric">Notes</p>
+<dl class="simple">
+<dt>The model is:</dt><dd><p>A_measured(x,y,t) = A0(t) * cos(alpha(x,y; theta, phi))</p>
+</dd>
+</dl>
+<p>where:</p>
+<ul class="simple">
+<li><p>A0(t) = sum_k a_k * B_k(t) is modeled with B-splines</p></li>
+<li><p>cos(alpha) is the foreshortening factor depending on viewing angle</p></li>
+<li><p>theta, phi parameterize camera position in spherical coordinates</p></li>
+</ul>
+<dl class="simple">
+<dt>The optimization minimizes:</dt><dd><p>sum_i (A_i - A_pred_i)^2 + lambda_smooth * sum_k (a_{k+1} - a_k)^2</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">from_eyelink</span><span class="p">(</span><span class="s1">'recording.edf'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Set experimental setup</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">set_experimental_setup</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">screen_resolution</span><span class="o">=</span><span class="p">(</span><span class="mi">1920</span><span class="p">,</span> <span class="mi">1080</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">physical_screen_size</span><span class="o">=</span><span class="p">(</span><span class="s2">"52 cm"</span><span class="p">,</span> <span class="s2">"29 cm"</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">eye_to_screen_center</span><span class="o">=</span><span class="s2">"65 cm"</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">camera_offset</span><span class="o">=</span><span class="p">(</span><span class="s2">"0 cm"</span><span class="p">,</span> <span class="s2">"-30 cm"</span><span class="p">,</span> <span class="s2">"0 cm"</span><span class="p">),</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Fit on calibration period (first 2 minutes)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cal_intervals</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">Intervals</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">120000</span><span class="p">)],</span> <span class="n">units</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">calib</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">fit_foreshortening</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">eye</span><span class="o">=</span><span class="s1">'left'</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">intervals</span><span class="o">=</span><span class="n">cal_intervals</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Or provide r and d explicitly</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">calib</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">fit_foreshortening</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">eye</span><span class="o">=</span><span class="s1">'left'</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">r</span><span class="o">=</span><span class="s2">"60 cm"</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">d</span><span class="o">=</span><span class="s2">"70 cm"</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">intervals</span><span class="o">=</span><span class="n">cal_intervals</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Inspect fit quality</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">calib</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"R² = </span><span class="si">{</span><span class="n">calib</span><span class="o">.</span><span class="n">fit_metrics</span><span class="p">[</span><span class="s1">'r2'</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Compute correction for all data</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">correction_factor</span> <span class="o">=</span> <span class="n">calib</span><span class="o">.</span><span class="n">get_correction_factor</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">data</span><span class="p">[</span><span class="s1">'left'</span><span class="p">,</span> <span class="s1">'x'</span><span class="p">],</span> 
+<span class="gp">... </span>    <span class="n">data</span><span class="p">[</span><span class="s1">'left'</span><span class="p">,</span> <span class="s1">'y'</span><span class="p">]</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">corrected_pupil</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">'left'</span><span class="p">,</span> <span class="s1">'pupil'</span><span class="p">]</span> <span class="o">*</span> <span class="n">correction_factor</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.eyedata.pupil.PupilNamespace.lowpass_filter">
+<span class="sig-name descname"><span class="pre">lowpass_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cutoff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/eyedata/pupil.html#PupilNamespace.lowpass_filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.eyedata.pupil.PupilNamespace.lowpass_filter" title="Link to this definition">#</a></dt>
+<dd><p>Lowpass-filter pupil signal using a Butterworth-filter.</p>
+<p>Only the usable samples under the mask <cite>policy</cite> are filtered
+(by default, interpolated samples are used; see
+<a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData.mask" title="pypillometry.EyeData.mask"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mask()</span></code></a>). The unusable samples
+(masked or NaN) are bridged linearly for the filter
+(see <a class="reference internal" href="pypillometry.signal.lowpass_filter_iterative.html#pypillometry.signal.lowpass_filter_iterative" title="pypillometry.signal.lowpass_filter_iterative"><code class="xref py py-func docutils literal notranslate"><span class="pre">lowpass_filter_iterative()</span></code></a>),
+so their stored values (e.g., zeros in blinks) do not enter the
+filter; they keep their values. The filtered samples replace the
+pupil data; the mask layers are kept.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cutoff</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – lowpass-filter cutoff frequency in Hz</p></li>
+<li><p><strong>order</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – filter order</p></li>
+<li><p><strong>eyes</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a>) – list of eyes to filter; if empty, all available eyes are filtered</p></li>
+<li><p><strong>policy</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><a class="reference internal" href="pypillometry.MaskPolicy.html#pypillometry.MaskPolicy" title="pypillometry.MaskPolicy"><em>MaskPolicy</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – mask policy that decides which samples are usable (see
+<a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData.mask" title="pypillometry.EyeData.mask"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mask()</span></code></a>); default <code class="docutils literal notranslate"><span class="pre">&quot;default&quot;</span></code></p></li>
+<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em> or </em><em>None</em>) – if <cite>True</cite>, make change in-place and return the object
+if <cite>False</cite>, make and return copy before making changes
+if <cite>None</cite>, use the object-level setting</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData" title="pypillometry.EyeData">EyeData</a></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the object with the filtered pupil data</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.eyedata.pupil.PupilNamespace.merge_eyes">
+<span class="sig-name descname"><span class="pre">merge_eyes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'local_offset'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lowpass_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/eyedata/pupil.html#PupilNamespace.merge_eyes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.eyedata.pupil.PupilNamespace.merge_eyes" title="Link to this definition">#</a></dt>
+<dd><p>Merge pupil data from both eyes into a new eye (default <code class="docutils literal notranslate"><span class="pre">&quot;mean&quot;</span></code>).</p>
+<p>This method combines left and right pupil signals, handling missing data
+(masked values) intelligently. Where both eyes are valid, the signals are
+averaged to reduce noise. Where only one eye is valid, that eye’s data is
+used (with offset correction if applicable). Valid samples are the
+usable samples under the mask <cite>policy</cite> (see
+<a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData.mask" title="pypillometry.EyeData.mask"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mask()</span></code></a>), where recorded samples
+come first: an interpolated sample of one eye is used only if the
+other eye has no recorded sample there. The merged pupil gets the
+layers that are set in all eyes that went into a sample (e.g.,
+<code class="docutils literal notranslate"><span class="pre">&quot;interpolated&quot;</span></code> where both were interpolated, <code class="docutils literal notranslate"><span class="pre">&quot;blink&quot;</span></code> where
+both eyes are masked by a blink); masked samples without such a
+common layer get the <code class="docutils literal notranslate"><span class="pre">&quot;user&quot;</span></code> layer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>method</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – <p>Method for merging the two eyes. Options:</p>
+<ul>
+<li><p>”local_offset” (default): Compute a slowly-varying offset between eyes
+using lowpass filtering. This handles drift over the session. The right
+eye is shifted to match the left eye’s level before merging.</p></li>
+<li><p>”offset”: Use a single global offset (mean difference) computed over
+the entire signal where both eyes are valid.</p></li>
+<li><p>”both_available”: Only use data where both eyes are valid (take mean).
+Timepoints where only one eye is valid remain masked.</p></li>
+</ul>
+<p># TODO: Implement “signal_quality” method that weights eyes by their
+# local signal quality (SNR), giving more weight to the cleaner eye.</p>
+</p></li>
+<li><p><strong>lowpass_cutoff</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Cutoff frequency (Hz) for the lowpass filter used in “local_offset” method.
+Lower values produce a more stable offset that only tracks very slow drift.
+Default is 0.2 Hz (~5 second time constant).</p></li>
+<li><p><strong>max_iter</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – Maximum iterations for iterative lowpass filtering in “local_offset” method.
+Default is 10.</p></li>
+<li><p><strong>keep_eyes</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – If True (default), keep the original left/right pupil data.
+If False, remove the original left/right pupil data after merging
+(gaze data are kept).</p></li>
+<li><p><strong>policy</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><a class="reference internal" href="pypillometry.MaskPolicy.html#pypillometry.MaskPolicy" title="pypillometry.MaskPolicy"><em>MaskPolicy</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – mask policy that decides which samples are valid (see
+<a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData.mask" title="pypillometry.EyeData.mask"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mask()</span></code></a>); default <code class="docutils literal notranslate"><span class="pre">&quot;default&quot;</span></code></p></li>
+<li><p><strong>name</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – name of the new eye (default <code class="docutils literal notranslate"><span class="pre">&quot;mean&quot;</span></code>, as in
+<a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData.merge_eyes" title="pypillometry.EyeData.merge_eyes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">merge_eyes()</span></code></a>); the merged
+pupil is stored as <code class="docutils literal notranslate"><span class="pre">&quot;&lt;name&gt;_pupil&quot;</span></code></p></li>
+<li><p><strong>inplace</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a> | <span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span></span>) – If True, modify in-place. If False, return a copy.
+If None, use the object’s default setting.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData" title="pypillometry.EyeData">EyeData</a></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The object with merged pupil data stored as “mean_pupil”.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If only one eye is available (nothing to merge).
+If an unknown method is specified.</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#pypillometry.eyedata.pupil.PupilNamespace.merge_eyes" title="pypillometry.eyedata.pupil.PupilNamespace.merge_eyes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">merge_eyes</span></code></a></dt><dd><p>Generic merge method in EyeData (masks if all eyes invalid)</p>
+</dd>
+<dt><a class="reference internal" href="pypillometry.signal.pupil_eye_offset.html#pypillometry.signal.pupil_eye_offset" title="pypillometry.signal.pupil_eye_offset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pypillometry.signal.pupil.pupil_eye_offset</span></code></a></dt><dd><p>Compute local offset between eyes</p>
+</dd>
+</dl>
+</div>
+<p class="rubric">Notes</p>
+<p>The merged signal is stored as “mean_pupil” (with the default <cite>name</cite>)
+and can be accessed via <cite>data[“mean”, “pupil”]</cite> or <cite>data[“mean_pupil”]</cite>.</p>
+<p>The mask for the merged signal reflects which timepoints have valid data:
+- For “local_offset” and “offset”: masked only where BOTH eyes are masked
+- For “both_available”: masked where EITHER eye is masked
+Masked samples still hold the merged stored values (e.g., interpolated
+blinks), computed as for valid samples (NaN only if both eyes are NaN).</p>
+<p>The “local_offset” method is recommended for most use cases as it:
+1. Uses all available data (doesn’t discard single-eye timepoints)
+2. Handles session-long drift in the inter-ocular difference
+3. Produces smooth transitions at boundaries between single/both-eye regions</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002_short"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Default: local offset correction</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d1</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">merge_eyes</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">merged</span> <span class="o">=</span> <span class="n">d1</span><span class="p">[</span><span class="s2">"mean"</span><span class="p">,</span> <span class="s2">"pupil"</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Use global offset (simpler, assumes no drift)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d2</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">merge_eyes</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">"offset"</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Only use timepoints where both eyes are valid</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d3</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">merge_eyes</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">"both_available"</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Remove the original pupil data after merging (gaze is kept)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d4</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">merge_eyes</span><span class="p">(</span><span class="n">keep_eyes</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">d4</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+<span class="go">['left_x', 'left_y', 'right_x', 'right_y', 'mean_pupil']</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.eyedata.pupil.PupilNamespace.smooth_window">
+<span class="sig-name descname"><span class="pre">smooth_window</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'hanning'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">winsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">11</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/eyedata/pupil.html#PupilNamespace.smooth_window"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.eyedata.pupil.PupilNamespace.smooth_window" title="Link to this definition">#</a></dt>
+<dd><p>Apply smoothing of the signal using a moving window.
+See <a class="reference internal" href="pypillometry.signal.smooth_window.html#pypillometry.signal.smooth_window" title="pypillometry.signal.smooth_window"><code class="xref py py-func docutils literal notranslate"><span class="pre">smooth_window()</span></code></a>.</p>
+<p>Only the usable samples under the mask <cite>policy</cite> are smoothed; the
+unusable samples (masked or NaN) are bridged linearly for the
+smoothing and keep their stored values (as in
+<a class="reference internal" href="#pypillometry.eyedata.pupil.PupilNamespace.lowpass_filter" title="pypillometry.eyedata.pupil.PupilNamespace.lowpass_filter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">lowpass_filter()</span></code></a>). The mask layers are kept.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>eyes</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a>) – list of eyes to smooth; if empty, all available eyes are smoothed</p></li>
+<li><p><strong>window</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – (the type of window from ‘flat’, ‘hanning’, ‘hamming’, ‘bartlett’, ‘blackman’);
+flat window will produce a moving average smoothing.</p></li>
+<li><p><strong>winsize</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – the length of the window in ms (or with units, e.g. <code class="docutils literal notranslate"><span class="pre">&quot;20</span> <span class="pre">ms&quot;</span></code>)</p></li>
+<li><p><strong>policy</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><a class="reference internal" href="pypillometry.MaskPolicy.html#pypillometry.MaskPolicy" title="pypillometry.MaskPolicy"><em>MaskPolicy</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – mask policy that decides which samples are usable (see
+<a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData.mask" title="pypillometry.EyeData.mask"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mask()</span></code></a>); default <code class="docutils literal notranslate"><span class="pre">&quot;default&quot;</span></code></p></li>
+<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em> or </em><em>None</em>) – if <cite>True</cite>, make change in-place and return the object
+if <cite>False</cite>, make and return copy before making changes
+if <cite>None</cite>, use the object-level setting</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData" title="pypillometry.EyeData">EyeData</a></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the object with the smoothed pupil data</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../pupil.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Pupil methods (<code class="docutils literal notranslate"><span class="pre">d.pupil</span></code>)</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../gaze.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Gaze methods (<code class="docutils literal notranslate"><span class="pre">d.gaze</span></code>)</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal" tabindex="-1"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.eyedata.pupil.PupilNamespace"><code class="docutils literal notranslate"><span class="pre">PupilNamespace</span></code></a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.eyedata.pupil.PupilNamespace.blinks_detect"><code class="docutils literal notranslate"><span class="pre">blinks_detect()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.eyedata.pupil.PupilNamespace.blinks_interpolate"><code class="docutils literal notranslate"><span class="pre">blinks_interpolate()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.eyedata.pupil.PupilNamespace.blinks_merge_close"><code class="docutils literal notranslate"><span class="pre">blinks_merge_close()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.eyedata.pupil.PupilNamespace.correct_foreshortening"><code class="docutils literal notranslate"><span class="pre">correct_foreshortening()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.eyedata.pupil.PupilNamespace.estimate_baseline"><code class="docutils literal notranslate"><span class="pre">estimate_baseline()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.eyedata.pupil.PupilNamespace.estimate_response"><code class="docutils literal notranslate"><span class="pre">estimate_response()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.eyedata.pupil.PupilNamespace.fit_foreshortening"><code class="docutils literal notranslate"><span class="pre">fit_foreshortening()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.eyedata.pupil.PupilNamespace.lowpass_filter"><code class="docutils literal notranslate"><span class="pre">lowpass_filter()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.eyedata.pupil.PupilNamespace.merge_eyes"><code class="docutils literal notranslate"><span class="pre">merge_eyes()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.eyedata.pupil.PupilNamespace.smooth_window"><code class="docutils literal notranslate"><span class="pre">smooth_window()</span></code></a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  
+  <div class="tocsection editthispage">
+    <a href="https://github.com/ihrke/pypillometry/edit/master/docs/api/generated/pypillometry.eyedata.pupil.PupilNamespace.rst">
+      <i class="fa-solid fa-pencil"></i>
+      
+      
+        
+          Edit on GitHub
+        
+      
+    </a>
+  </div>
+</div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../../_sources/api/generated/pypillometry.eyedata.pupil.PupilNamespace.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2026, Matthias Mittner.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
+  </p>
+</div>
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.24.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

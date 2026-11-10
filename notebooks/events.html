@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Events &#8212; pypillometry v2.1.0</title>
+    <title>Events &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -62,7 +62,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -106,9 +106,6 @@
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -425,6 +422,7 @@
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Preprocessing and plotting</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="blinks.html">Blink preprocessing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="missing_data.html">Missing data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plotting.html">Plotting pupillometric data for exploration</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Events and event-related analyses</span></p>
@@ -433,6 +431,7 @@
 <li class="toctree-l1"><a class="reference internal" href="event_metadata.html">Event metadata</a></li>
 <li class="toctree-l1"><a class="reference internal" href="intervals.html">Intervals</a></li>
 <li class="toctree-l1"><a class="reference internal" href="erpds.html">Event-related pupil dilations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rois.html">Gaze in regions of interest around events</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Modeling and complete analyses</span></p>
 <ul class="nav bd-sidenav">
@@ -525,12 +524,12 @@
 </div>
 <section id="Getting-the-events">
 <h2>Getting the events<a class="headerlink" href="#Getting-the-events" title="Link to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">get_events()</span></code> returns the events of a dataset as an <code class="docutils literal notranslate"><span class="pre">Events</span></code> object. In a notebook, it is shown as a table:</p>
+<p><code class="docutils literal notranslate"><span class="pre">d.events</span></code> holds the events of a dataset as an <code class="docutils literal notranslate"><span class="pre">Events</span></code> object. In a notebook, it is shown as a table:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">events</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_events</span><span class="p">()</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">events</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">events</span>
 <span class="n">events</span>
 </pre></div>
 </div>
@@ -750,14 +749,14 @@
       <td>R_10_18</td>
     </tr>
   </tbody>
-</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 40 events | Data range: [0.0, 40928.0] ms</p></div>
+</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 40 events</p></div>
 </div>
-<p>The onsets are in ms by default. Use <code class="docutils literal notranslate"><span class="pre">units=</span></code> to get them in other units, or convert an existing object with <code class="docutils literal notranslate"><span class="pre">to_units()</span></code>:</p>
+<p>The onsets are in ms. <code class="docutils literal notranslate"><span class="pre">to_units()</span></code> returns the events with the onsets in other units:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">get_events</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">)[:</span><span class="mi">4</span><span class="p">]</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="s2">"sec"</span><span class="p">)[:</span><span class="mi">4</span><span class="p">]</span>
 </pre></div>
 </div>
 </div>
@@ -796,7 +795,7 @@
       <td>R_1_15</td>
     </tr>
   </tbody>
-</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 4 events | Data range: [0.0, 40.9] sec</p></div>
+</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 4 events</p></div>
 </div>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
@@ -933,7 +932,7 @@ C_1_5_2    at 6773 ms
       <td>S_10_2_5</td>
     </tr>
   </tbody>
-</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 10 events | Data range: [0.0, 40928.0] ms</p></div>
+</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 10 events</p></div>
 </div>
 <p><strong>A function</strong> is called with each label and selects the events for which it returns <code class="docutils literal notranslate"><span class="pre">True</span></code>. In this dataset, the labels of the <code class="docutils literal notranslate"><span class="pre">R</span></code> events end with a number; here we select those where it is larger than 18:</p>
 <div class="nbinput docutils container">
@@ -978,7 +977,7 @@ C_1_5_2    at 6773 ms
       <td>R_9_19</td>
     </tr>
   </tbody>
-</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 3 events | Data range: [0.0, 40928.0] ms</p></div>
+</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 3 events</p></div>
 </div>
 <p><strong>A tuple</strong> <code class="docutils literal notranslate"><span class="pre">(start,</span> <span class="pre">end)</span></code> selects events by their onset, in the units of the <code class="docutils literal notranslate"><span class="pre">Events</span></code> object (here, ms):</p>
 <div class="nbinput docutils container">
@@ -1059,7 +1058,7 @@ C_1_5_2    at 6773 ms
       <td>F_5</td>
     </tr>
   </tbody>
-</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 11 events | Data range: [0.0, 40928.0] ms</p></div>
+</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 11 events</p></div>
 </div>
 <p>Since <code class="docutils literal notranslate"><span class="pre">filter()</span></code> returns a new <code class="docutils literal notranslate"><span class="pre">Events</span></code> object, filters can be chained, e.g., the <code class="docutils literal notranslate"><span class="pre">S</span></code> events in the first 20 seconds:</p>
 <div class="nbinput docutils container">
@@ -1105,7 +1104,7 @@ C_1_5_2    at 6773 ms
       <td>S_4_4_1</td>
     </tr>
   </tbody>
-</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 4 events | Data range: [0.0, 40928.0] ms</p></div>
+</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 4 events</p></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">test_selector()</span></code> shows which events of a dataset a selector picks out, which is useful while writing a selection function:</p>
 <div class="nbinput docutils container">
@@ -1123,7 +1122,7 @@ C_1_5_2    at 6773 ms
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-array([&#39;R_2_20&#39;, &#39;R_6_20&#39;, &#39;R_9_19&#39;], dtype=object)
+array([&#39;R_2_20&#39;, &#39;R_6_20&#39;, &#39;R_9_19&#39;], dtype=&#39;&lt;U8&#39;)
 </pre></div></div>
 </div>
 </section>
@@ -1150,13 +1149,13 @@ array([&#39;R_2_20&#39;, &#39;R_6_20&#39;, &#39;R_9_19&#39;], dtype=object)
 </section>
 <section id="Using-events-for-intervals">
 <h2>Using events for intervals<a class="headerlink" href="#Using-events-for-intervals" title="Link to this heading">#</a></h2>
-<p>Analyses usually look at the data around events. <code class="docutils literal notranslate"><span class="pre">get_intervals()</span></code> takes the same kinds of selectors as <code class="docutils literal notranslate"><span class="pre">filter()</span></code> (string or function), and also an <code class="docutils literal notranslate"><span class="pre">Events</span></code> object. This makes it easy to use any selection of events, e.g., only the first five stimuli:</p>
+<p>Analyses usually look at the data around events. <code class="docutils literal notranslate"><span class="pre">get_epochs()</span></code> takes the same kinds of selectors as <code class="docutils literal notranslate"><span class="pre">filter()</span></code> (string or function), and also an <code class="docutils literal notranslate"><span class="pre">Events</span></code> object. This makes it easy to use any selection of events, e.g., only the first five stimuli:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">first_stimuli</span> <span class="o">=</span> <span class="n">events</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s2">"S_"</span><span class="p">)[:</span><span class="mi">5</span><span class="p">]</span>
-<span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="n">first_stimuli</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span> <span class="mi">800</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">get_epochs</span><span class="p">(</span><span class="n">first_stimuli</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span> <span class="mi">800</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1166,7 +1165,7 @@ array([&#39;R_2_20&#39;, &#39;R_6_20&#39;, &#39;R_9_19&#39;], dtype=object)
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Intervals &#39;events_5&#39; | 5 intervals (total duration: 5000.00 ms), 1000.00 ms +/- 0.00 ms, [1000.00 ms, 1000.00 ms] | fs=500.0Hz
+Epochs &#39;events_5&#39; | 5 epochs, window (-200, 800) ms
 </pre></div></div>
 </div>
 <p>See the <a class="reference internal" href="intervals.html"><span class="doc">Intervals tutorial</span></a> for more on intervals.</p>
@@ -1215,14 +1214,14 @@ Intervals &#39;events_5&#39; | 5 intervals (total duration: 5000.00 ms), 1000.00
   </tbody>
 </table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 3 events</p></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">set_events()</span></code> replaces the events of a dataset. For example, we can shorten the labels to just the event type (the first letter). The onsets stay the same:</p>
+<p><code class="docutils literal notranslate"><span class="pre">Events</span></code> cannot be changed in place; <code class="docutils literal notranslate"><span class="pre">set_events()</span></code> replaces the events of a dataset with new ones. For example, we can shorten the labels to just the event type (the first letter). The onsets stay the same:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">short_labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">label</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">events</span><span class="o">.</span><span class="n">labels</span><span class="p">]</span>
 <span class="n">d</span><span class="o">.</span><span class="n">set_events</span><span class="p">(</span><span class="n">pp</span><span class="o">.</span><span class="n">Events</span><span class="p">(</span><span class="n">events</span><span class="o">.</span><span class="n">onsets</span><span class="p">,</span> <span class="n">short_labels</span><span class="p">))</span>
-<span class="n">d</span><span class="o">.</span><span class="n">get_events</span><span class="p">()[:</span><span class="mi">6</span><span class="p">]</span>
+<span class="n">d</span><span class="o">.</span><span class="n">events</span><span class="p">[:</span><span class="mi">6</span><span class="p">]</span>
 </pre></div>
 </div>
 </div>
@@ -1271,25 +1270,25 @@ Intervals &#39;events_5&#39; | 5 intervals (total duration: 5000.00 ms), 1000.00
       <td>S</td>
     </tr>
   </tbody>
-</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 6 events | Data range: [0.0, 40928.0] ms</p></div>
+</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 6 events</p></div>
 </div>
-<p>Like other methods, <code class="docutils literal notranslate"><span class="pre">set_events()</span></code> changes the object in place unless <code class="docutils literal notranslate"><span class="pre">inplace=False</span></code> is given.</p>
+<p>Like the other <code class="docutils literal notranslate"><span class="pre">set_*</span></code> methods, <code class="docutils literal notranslate"><span class="pre">set_events()</span></code> always changes the object in place; use <code class="docutils literal notranslate"><span class="pre">d.copy().set_events(...)</span></code> to keep the original.</p>
 <p>As another example, we add the onset of each blink as an event. Blinks are stored as <code class="docutils literal notranslate"><span class="pre">Intervals</span></code> (see the <a class="reference internal" href="blinks.html"><span class="doc">blinks tutorial</span></a>); we take their start times in ms, combine them with the existing events and sort everything by time:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">pupil_blinks_detect</span><span class="p">(</span><span class="n">apply_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">blinks</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_blinks</span><span class="p">(</span><span class="s2">"left"</span><span class="p">,</span> <span class="s2">"pupil"</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span>
+<span class="n">blinks</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_blinks</span><span class="p">(</span><span class="s2">"left"</span><span class="p">,</span> <span class="s2">"pupil"</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">)[</span><span class="s2">"left_pupil"</span><span class="p">]</span>
 <span class="n">blink_onsets</span> <span class="o">=</span> <span class="p">[</span><span class="n">start</span> <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="n">blinks</span><span class="p">]</span>
 
-<span class="n">events</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_events</span><span class="p">()</span>
+<span class="n">events</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">events</span>
 <span class="n">onsets</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">events</span><span class="o">.</span><span class="n">onsets</span><span class="p">,</span> <span class="n">blink_onsets</span><span class="p">])</span>
 <span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">events</span><span class="o">.</span><span class="n">labels</span><span class="p">,</span> <span class="p">[</span><span class="s2">"blink"</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">blink_onsets</span><span class="p">)])</span>
 <span class="n">order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">onsets</span><span class="p">)</span>
 <span class="n">d</span><span class="o">.</span><span class="n">set_events</span><span class="p">(</span><span class="n">pp</span><span class="o">.</span><span class="n">Events</span><span class="p">(</span><span class="n">onsets</span><span class="p">[</span><span class="n">order</span><span class="p">],</span> <span class="n">labels</span><span class="p">[</span><span class="n">order</span><span class="p">]))</span>
 
-<span class="n">d</span><span class="o">.</span><span class="n">get_events</span><span class="p">()[:</span><span class="mi">12</span><span class="p">]</span>
+<span class="n">d</span><span class="o">.</span><span class="n">events</span><span class="p">[:</span><span class="mi">12</span><span class="p">]</span>
 </pre></div>
 </div>
 </div>
@@ -1368,9 +1367,9 @@ Intervals &#39;events_5&#39; | 5 intervals (total duration: 5000.00 ms), 1000.00
       <td>C</td>
     </tr>
   </tbody>
-</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 12 events | Data range: [0.0, 40928.0] ms</p></div>
+</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 12 events</p></div>
 </div>
-<p>The blink onsets can now be used like any other event, e.g., to look at the pupil around blinks with <code class="docutils literal notranslate"><span class="pre">d.get_intervals(&quot;blink&quot;,</span> <span class="pre">...)</span></code>.</p>
+<p>The blink onsets can now be used like any other event, e.g., to look at the pupil around blinks with <code class="docutils literal notranslate"><span class="pre">d.get_epochs(&quot;blink&quot;,</span> <span class="pre">...)</span></code>.</p>
 </section>
 <section id="Metadata">
 <h2>Metadata<a class="headerlink" href="#Metadata" title="Link to this heading">#</a></h2>

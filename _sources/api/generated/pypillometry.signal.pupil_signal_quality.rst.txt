@@ -1,0 +1,6 @@
+﻿pupil\_signal\_quality
+======================
+
+.. currentmodule:: pypillometry.signal
+
+.. autofunction:: pupil_signal_quality

@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>SegmentedEyeData &#8212; pypillometry v2.1.0</title>
+    <title>SegmentedEyeData &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,12 +54,12 @@
     <link rel="icon" href="../../_static/pypillometry_logo_200x200.png"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="GroupLevelSegmentedData" href="pypillometry.GroupLevelSegmentedData.html" />
+    <link rel="next" title="concat_segments" href="pypillometry.concat_segments.html" />
     <link rel="prev" title="Segmented data" href="../segments.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -103,9 +103,6 @@
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -409,40 +406,71 @@
   <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../data.html">Data classes</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.EyeData.html">EyeData</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.PupilData.html">PupilData</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.GazeData.html">GazeData</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.GenericEyeData.html">GenericEyeData</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.EyeDataDict.html">EyeDataDict</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.MaskPolicy.html">MaskPolicy</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.FakeEyeData.html">FakeEyeData</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.keephistory.html">keephistory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.QualityReport.html">QualityReport</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.QualityMetric.html">QualityMetric</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.Table.html">Table</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.RecordDict.html">RecordDict</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../pupil.html">Pupil methods (<code class="docutils literal notranslate"><span class="pre">d.pupil</span></code>)</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.eyedata.pupil.PupilNamespace.html">PupilNamespace</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../gaze.html">Gaze methods (<code class="docutils literal notranslate"><span class="pre">d.gaze</span></code>)</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.eyedata.gaze.GazeNamespace.html">GazeNamespace</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../pipelines.html">Pipelines</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.crop.html">crop</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.downsample.html">downsample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.scale.html">scale</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.unscale.html">unscale</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.merge_eyes.html">merge_eyes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.reset_time.html">reset_time</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.mask_intervals.html">mask_intervals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.interpolate_intervals.html">interpolate_intervals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.exclude_intervals.html">exclude_intervals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.keep_intervals.html">keep_intervals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.remove_intervals.html">remove_intervals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.merge_masks.html">merge_masks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.clear_layer.html">clear_layer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.set_blinks.html">set_blinks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.set_events.html">set_events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.add_events.html">add_events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.set_experimental_setup.html">set_experimental_setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.drop_data.html">drop_data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.drop_original.html">drop_original</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.fill_time_discontinuities.html">fill_time_discontinuities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.Step.html">Step</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.Pipeline.html">Pipeline</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../events_intervals.html">Events and intervals</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.Events.html">Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.Epochs.html">Epochs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.Intervals.html">Intervals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.ClockSync.html">ClockSync</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.merge_intervals.html">merge_intervals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.concat_intervals.html">concat_intervals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.sync_clocks.html">sync_clocks</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../segments.html">Segmented data</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2 current active"><a aria-current="page" class="current reference internal" href="#">SegmentedEyeData</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.GroupLevelSegmentedData.html">GroupLevelSegmentedData</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.concat_segments.html">concat_segments</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.group_segments.html">group_segments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.segmented.SegmentedPupilNamespace.html">SegmentedPupilNamespace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.segmented.SegmentedGazeNamespace.html">SegmentedGazeNamespace</a></li>
 </ul>
 </details></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../plotting.html">Plotting</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.EyePlotter.html">EyePlotter</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.PupilPlotter.html">PupilPlotter</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.GazePlotter.html">GazePlotter</a></li>
-</ul>
-</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../plotting.html">Plotting (<code class="docutils literal notranslate"><span class="pre">d.plot</span></code>)</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../io.html">Reading and writing data</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.read_eyelink.html">read_eyelink</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.read_pickle.html">read_pickle</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.write_pickle.html">write_pickle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.read_file.html">read_file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.write_file.html">write_file</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.download.html">download</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.fetch_url.html">fetch_url</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.local_copy.html">local_copy</a></li>
@@ -458,34 +486,34 @@
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../signal.html">Signal processing</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.butter_lowpass.html">butter_lowpass</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.butter_lowpass_filter.html">butter_lowpass_filter</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.lowpass_filter_iterative.html">lowpass_filter_iterative</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.smooth_window.html">smooth_window</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.downsample.html">downsample</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.bspline.html">bspline</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.baseline_envelope.html">baseline_envelope</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.baseline_envelope_iter_bspline.html">baseline_envelope_iter_bspline</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.baseline_pupil_model.html">baseline_pupil_model</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.zscale.html">zscale</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.velocity_savgol.html">velocity_savgol</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.detect_blinks_velocity.html">detect_blinks_velocity</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.detect_blinks_zero.html">detect_blinks_zero</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.blink_onsets_mahot.html">blink_onsets_mahot</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_kernel.html">pupil_kernel</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_kernel_t.html">pupil_kernel_t</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_get_max_duration.html">pupil_get_max_duration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.plot_prf.html">plot_prf</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_build_design_matrix.html">pupil_build_design_matrix</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_response.html">pupil_response</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_response_coverage.html">pupil_response_coverage</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupilresponse_nnls.html">pupilresponse_nnls</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_signal_quality.html">pupil_signal_quality</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.pupil_eye_offset.html">pupil_eye_offset</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.fake_pupil_baseline.html">fake_pupil_baseline</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.fake_gaze_fixations.html">fake_gaze_fixations</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.add_measurement_noise.html">add_measurement_noise</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.generate_foreshortening_data.html">generate_foreshortening_data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.butter_lowpass.html">butter_lowpass</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.butter_lowpass_filter.html">butter_lowpass_filter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.lowpass_filter_iterative.html">lowpass_filter_iterative</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.smooth_window.html">smooth_window</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.downsample.html">downsample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.zscale.html">zscale</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.bspline.html">bspline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.baseline_envelope.html">baseline_envelope</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.baseline_envelope_iter_bspline.html">baseline_envelope_iter_bspline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.baseline_pupil_model.html">baseline_pupil_model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.velocity_savgol.html">velocity_savgol</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.detect_blinks_velocity.html">detect_blinks_velocity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.detect_blinks_zero.html">detect_blinks_zero</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.blink_onsets_mahot.html">blink_onsets_mahot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_kernel.html">pupil_kernel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_kernel_t.html">pupil_kernel_t</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_get_max_duration.html">pupil_get_max_duration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.plot_prf.html">plot_prf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_build_design_matrix.html">pupil_build_design_matrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_response.html">pupil_response</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_response_coverage.html">pupil_response_coverage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupilresponse_nnls.html">pupilresponse_nnls</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_signal_quality.html">pupil_signal_quality</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_eye_offset.html">pupil_eye_offset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.fake_pupil_baseline.html">fake_pupil_baseline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.fake_gaze_fixations.html">fake_gaze_fixations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.add_measurement_noise.html">add_measurement_noise</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.generate_foreshortening_data.html">generate_foreshortening_data</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../geometry.html">Geometry and gaze</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -586,75 +614,165 @@
 <h1>SegmentedEyeData<a class="headerlink" href="#segmentedeyedata" title="Link to this heading">#</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="pypillometry.SegmentedEyeData">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pypillometry.</span></span><span class="sig-name descname"><span class="pre">SegmentedEyeData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intervals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampling_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/segmented.html#SegmentedEyeData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.SegmentedEyeData" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pypillometry.</span></span><span class="sig-name descname"><span class="pre">SegmentedEyeData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampling_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_share</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/segmented.html#SegmentedEyeData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.SegmentedEyeData" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">VersionedState</span></code></p>
-<p>Class representing segmented eye data (e.g., event-related pupil dilation).</p>
-<p>Holds equal-length segments of a single eye data variable (e.g., “left_pupil”, 
-“right_x”) extracted around events. Tracks masked/missing data.</p>
-<p>Usually created with <a class="reference internal" href="pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.get_segments" title="pypillometry.GenericEyeData.get_segments"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_segments()</span></code></a>
-from the Intervals returned by
-<a class="reference internal" href="pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.get_intervals" title="pypillometry.GenericEyeData.get_intervals"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_intervals()</span></code></a>, e.g.
-<code class="docutils literal notranslate"><span class="pre">d.get_segments(d.get_intervals(&quot;F&quot;,</span> <span class="pre">window=(-200,</span> <span class="pre">800),</span> <span class="pre">units=&quot;ms&quot;),</span>
-<span class="pre">&quot;left_pupil&quot;)</span></code>. Segments of several subjects can be combined with
-<a class="reference internal" href="pypillometry.group_segments.html#pypillometry.group_segments" title="pypillometry.group_segments"><code class="xref py py-func docutils literal notranslate"><span class="pre">group_segments()</span></code></a>.</p>
+<p>Segments of eye data around events (e.g., event-related pupil dilation).</p>
+<p>Holds equal-length segments of one or several channels (e.g.,
+<code class="docutils literal notranslate"><span class="pre">&quot;left_pupil&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;left_x&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">&quot;left_y&quot;</span></code>), each a masked array
+of shape (time points, segments), together with the epochs they were
+cut from (event onsets, window, labels and metadata; once for all
+channels), the time axis and the sampling rate. The mask marks missing
+or unusable samples.</p>
+<p>Usually created with <a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData.get_segments" title="pypillometry.EyeData.get_segments"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_segments()</span></code></a> from the
+<a class="reference internal" href="pypillometry.Epochs.html#pypillometry.Epochs" title="pypillometry.Epochs"><code class="xref py py-class docutils literal notranslate"><span class="pre">Epochs</span></code></a> returned by
+<a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData.get_epochs" title="pypillometry.EyeData.get_epochs"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_epochs()</span></code></a>, e.g.,
+<code class="docutils literal notranslate"><span class="pre">d.get_segments(d.get_epochs(&quot;F&quot;,</span> <span class="pre">window=(-200,</span> <span class="pre">800)</span> <span class="pre">*</span> <span class="pre">u.ms))</span></code>.</p>
+<p>A channel is read with <code class="docutils literal notranslate"><span class="pre">seg[&quot;left_pupil&quot;]</span></code> and set with
+<code class="docutils literal notranslate"><span class="pre">seg[&quot;left_pupil&quot;]</span> <span class="pre">=</span> <span class="pre">values</span></code>. The methods of the object work on all
+channels: selecting trials (<a class="reference internal" href="#pypillometry.SegmentedEyeData.keep" title="pypillometry.SegmentedEyeData.keep"><code class="xref py py-meth docutils literal notranslate"><span class="pre">keep()</span></code></a>, <a class="reference internal" href="#pypillometry.SegmentedEyeData.filter" title="pypillometry.SegmentedEyeData.filter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">filter()</span></code></a>) and channels
+(<a class="reference internal" href="#pypillometry.SegmentedEyeData.select_channels" title="pypillometry.SegmentedEyeData.select_channels"><code class="xref py py-meth docutils literal notranslate"><span class="pre">select_channels()</span></code></a>, <a class="reference internal" href="#pypillometry.SegmentedEyeData.drop_channels" title="pypillometry.SegmentedEyeData.drop_channels"><code class="xref py py-meth docutils literal notranslate"><span class="pre">drop_channels()</span></code></a>), the plot of mean and
+error over time (<a class="reference internal" href="#pypillometry.SegmentedEyeData.plot" title="pypillometry.SegmentedEyeData.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot()</span></code></a>) and saving (<a class="reference internal" href="pypillometry.write_file.html#pypillometry.write_file" title="pypillometry.write_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">write_file()</span></code></a>). The
+methods for one kind of data are in namespaces, as for
+<a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData" title="pypillometry.EyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">EyeData</span></code></a>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">seg.pupil</span></code> (<a class="reference internal" href="pypillometry.segmented.SegmentedPupilNamespace.html#pypillometry.segmented.SegmentedPupilNamespace" title="pypillometry.segmented.SegmentedPupilNamespace"><code class="xref py py-class docutils literal notranslate"><span class="pre">SegmentedPupilNamespace</span></code></a>):
+baseline correction and the plot of the event-related pupil dilation</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">seg.gaze</span></code> (<a class="reference internal" href="pypillometry.segmented.SegmentedGazeNamespace.html#pypillometry.segmented.SegmentedGazeNamespace" title="pypillometry.segmented.SegmentedGazeNamespace"><code class="xref py py-class docutils literal notranslate"><span class="pre">SegmentedGazeNamespace</span></code></a>):
+regions of interest (where the gaze is in an ROI, fixation curves,
+dwell time and first entry per trial)</p></li>
+</ul>
+<p><strong>Averages.</strong> A column of the segments is a single trial or an average
+of trials: <a class="reference internal" href="#pypillometry.SegmentedEyeData.average" title="pypillometry.SegmentedEyeData.average"><code class="xref py py-meth docutils literal notranslate"><span class="pre">average()</span></code></a> averages all trials or groups of them (e.g.,
+by condition), <a class="reference internal" href="pypillometry.concat_segments.html#pypillometry.concat_segments" title="pypillometry.concat_segments"><code class="xref py py-func docutils literal notranslate"><span class="pre">concat_segments()</span></code></a> stacks the segments
+of several participants (with the metadata column <code class="docutils literal notranslate"><span class="pre">&quot;subject&quot;</span></code>) and
+<a class="reference internal" href="pypillometry.group_segments.html#pypillometry.group_segments" title="pypillometry.group_segments"><code class="xref py py-func docutils literal notranslate"><span class="pre">group_segments()</span></code></a> averages them per participant.
+Averages are segments like the others; their epochs have no time (NaN
+onsets) and their metadata are the grouping columns, the columns that
+were the same in all their trials, and the number of trials
+(<code class="docutils literal notranslate"><span class="pre">&quot;n_trials&quot;</span></code>). An average is masked where all its trials are masked;
+<cite>valid_share</cite> holds the share of its trials that were usable at each
+time point (used for the missing data in <a class="reference internal" href="#pypillometry.SegmentedEyeData.plot" title="pypillometry.SegmentedEyeData.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot()</span></code></a>).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Name of the dataset (e.g., “cue-locked”, “conflict-trials”)</p></li>
-<li><p><strong>variable</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Variable name in “eye_variable” format (e.g., “left_pupil”, “right_x”)</p></li>
-<li><p><strong>tx</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – Time axis relative to segment onset (in ms)</p></li>
-<li><p><strong>data</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/maskedarray.baseclass.html#numpy.ma.MaskedArray" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">MaskedArray</span></code></a></span>) – Masked array with shape (n_timepoints, n_segments)</p></li>
-<li><p><strong>intervals</strong> (<a class="reference internal" href="pypillometry.Intervals.html#pypillometry.Intervals" title="pypillometry.Intervals"><em>Intervals</em></a><em>, </em><em>optional</em>) – Source Intervals object with event metadata</p></li>
-<li><p><strong>sampling_rate</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Original sampling rate in Hz</p></li>
+<li><p><strong>name</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – name of the segments (e.g., “cue-locked”)</p></li>
+<li><p><strong>tx</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – time axis relative to the event onsets in ms (one value per time point)</p></li>
+<li><p><strong>data</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></span>) – channel name (<code class="docutils literal notranslate"><span class="pre">&quot;&lt;eye&gt;_&lt;variable&gt;&quot;</span></code>, e.g., <code class="docutils literal notranslate"><span class="pre">&quot;left_pupil&quot;</span></code>) -&gt;
+array of shape (time points, segments); arrays that are not masked
+arrays are masked where they are NaN</p></li>
+<li><p><strong>epochs</strong> (<a class="reference internal" href="pypillometry.Epochs.html#pypillometry.Epochs" title="pypillometry.Epochs"><em>Epochs</em></a><em>, </em><em>optional</em>) – the epochs the segments were cut from (one per segment); segments
+from old files made from intervals that were not event-locked keep
+these Intervals</p></li>
+<li><p><strong>sampling_rate</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – sampling rate in Hz</p></li>
+<li><p><strong>valid_share</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></span>) – channel name -&gt; share (0 to 1) of the trials of each value that are
+usable, an array of the shape of the channel (for averages; created
+by <a class="reference internal" href="#pypillometry.SegmentedEyeData.average" title="pypillometry.SegmentedEyeData.average"><code class="xref py py-meth docutils literal notranslate"><span class="pre">average()</span></code></a>); channels that are not in it have 1 where they
+are not masked and 0 where they are</p></li>
 </ul>
 </dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – if there are no channels, a channel name does not have the form
+<code class="docutils literal notranslate"><span class="pre">&quot;&lt;eye&gt;_&lt;variable&gt;&quot;</span></code>, or the shapes of the channels, the time axis,
+the epochs and <cite>valid_share</cite> do not match</p>
+</dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">u</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002_short"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">seg</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_segments</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">get_epochs</span><span class="p">(</span><span class="s2">"S_"</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">2500</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">seg</span><span class="o">.</span><span class="n">channels</span>
+<span class="go">['left_x', 'left_y', 'left_pupil', 'right_x', 'right_y', 'right_pupil']</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">seg</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span>  <span class="c1"># (time points, segments)</span>
+<span class="go">(1500, 10)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">seg</span> <span class="o">=</span> <span class="n">seg</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">baseline_correct</span><span class="p">((</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">seg</span><span class="o">.</span><span class="n">average</span><span class="p">()[</span><span class="s2">"left_pupil"</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span>  <span class="c1"># (time points, averages)</span>
+<span class="go">(1500, 1)</span>
+</pre></div>
+</div>
 <p class="rubric">Methods</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.SegmentedEyeData.baseline_correct" title="pypillometry.SegmentedEyeData.baseline_correct"><code class="xref py py-obj docutils literal notranslate"><span class="pre">baseline_correct</span></code></a></p></td>
-<td><p>Apply baseline correction to the segments.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.SegmentedEyeData.average" title="pypillometry.SegmentedEyeData.average"><code class="xref py py-obj docutils literal notranslate"><span class="pre">average</span></code></a></p></td>
+<td><p>Average the segments: all trials, or the trials of each group.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.SegmentedEyeData.drop_channels" title="pypillometry.SegmentedEyeData.drop_channels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">drop_channels</span></code></a></p></td>
+<td><p>New segments without the given channels.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.SegmentedEyeData.filter" title="pypillometry.SegmentedEyeData.filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filter</span></code></a></p></td>
+<td><p>New segments with the trials whose epochs match the criteria.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.SegmentedEyeData.from_eyedata" title="pypillometry.SegmentedEyeData.from_eyedata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_eyedata</span></code></a></p></td>
-<td><p>Extract segments from a GenericEyeData object using intervals.</p></td>
+<td><p>Cut segments of one or several channels from an EyeData object.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.SegmentedEyeData.from_file" title="pypillometry.SegmentedEyeData.from_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_file</span></code></a></p></td>
 <td><p>Read a SegmentedEyeData object from a pickle or HDF5 file.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.SegmentedEyeData.from_masked_array" title="pypillometry.SegmentedEyeData.from_masked_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_masked_array</span></code></a></p></td>
-<td><p>Create SegmentedEyeData from a masked array.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.SegmentedEyeData.keep" title="pypillometry.SegmentedEyeData.keep"><code class="xref py py-obj docutils literal notranslate"><span class="pre">keep</span></code></a></p></td>
+<td><p>New segments with the trials where <cite>mask</cite> is True (in all channels).</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.SegmentedEyeData.plot" title="pypillometry.SegmentedEyeData.plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot</span></code></a></p></td>
-<td><p>Plot mean and error ribbons.</p></td>
+<td><p>Plot mean and error ribbon over time, one line per channel.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.SegmentedEyeData.plot_carpet" title="pypillometry.SegmentedEyeData.plot_carpet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_carpet</span></code></a></p></td>
+<td><p>Plot all segments of one channel as an image (&quot;carpet plot&quot;).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.SegmentedEyeData.select_channels" title="pypillometry.SegmentedEyeData.select_channels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">select_channels</span></code></a></p></td>
+<td><p>New segments with some of the channels.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.SegmentedEyeData.summary" title="pypillometry.SegmentedEyeData.summary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">summary</span></code></a></p></td>
-<td><p>Return a summary of the SegmentedEyeData object.</p></td>
+<td><p>Return a summary of the segments.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.SegmentedEyeData.write_file" title="pypillometry.SegmentedEyeData.write_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_file</span></code></a></p></td>
-<td><p>Save to file (see <a class="reference internal" href="pypillometry.write_pickle.html#pypillometry.write_pickle" title="pypillometry.write_pickle"><code class="xref py py-func docutils literal notranslate"><span class="pre">write_pickle()</span></code></a>).</p></td>
+<td><p>Save to file (see <a class="reference internal" href="pypillometry.write_file.html#pypillometry.write_file" title="pypillometry.write_file"><code class="xref py py-func docutils literal notranslate"><span class="pre">write_file()</span></code></a>).</p></td>
 </tr>
 </tbody>
 </table>
 </div>
 <p class="rubric">Details</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pypillometry.SegmentedEyeData.gaze">
+<span class="sig-name descname"><span class="pre">gaze</span></span><a class="headerlink" href="#pypillometry.SegmentedEyeData.gaze" title="Link to this definition">#</a></dt>
+<dd><p>alias of <a class="reference internal" href="pypillometry.segmented.SegmentedGazeNamespace.html#pypillometry.segmented.SegmentedGazeNamespace" title="pypillometry.segmented.SegmentedGazeNamespace"><code class="xref py py-class docutils literal notranslate"><span class="pre">SegmentedGazeNamespace</span></code></a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pypillometry.SegmentedEyeData.pupil">
+<span class="sig-name descname"><span class="pre">pupil</span></span><a class="headerlink" href="#pypillometry.SegmentedEyeData.pupil" title="Link to this definition">#</a></dt>
+<dd><p>alias of <a class="reference internal" href="pypillometry.segmented.SegmentedPupilNamespace.html#pypillometry.segmented.SegmentedPupilNamespace" title="pypillometry.segmented.SegmentedPupilNamespace"><code class="xref py py-class docutils literal notranslate"><span class="pre">SegmentedPupilNamespace</span></code></a></p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.SegmentedEyeData.from_eyedata">
-<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_eyedata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eyedata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intervals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/segmented.html#SegmentedEyeData.from_eyedata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.SegmentedEyeData.from_eyedata" title="Link to this definition">#</a></dt>
-<dd><p>Extract segments from a GenericEyeData object using intervals.</p>
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_eyedata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eyedata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epochs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/segmented.html#SegmentedEyeData.from_eyedata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.SegmentedEyeData.from_eyedata" title="Link to this definition">#</a></dt>
+<dd><p>Cut segments of one or several channels from an EyeData object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>eyedata</strong> (<a class="reference internal" href="pypillometry.GenericEyeData.html#pypillometry.GenericEyeData" title="pypillometry.GenericEyeData"><em>GenericEyeData</em></a>) – Source eye data object (PupilData, GazeData, etc.)</p></li>
-<li><p><strong>intervals</strong> (<a class="reference internal" href="pypillometry.Intervals.html#pypillometry.Intervals" title="pypillometry.Intervals"><em>Intervals</em></a>) – Intervals object defining the segments to extract</p></li>
-<li><p><strong>variable</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Variable to extract in “eye_variable” format (e.g., “left_pupil”)</p></li>
-<li><p><strong>name</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Name for the dataset. If None, uses intervals.label or “segments”</p></li>
+<li><p><strong>eyedata</strong> (<a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData" title="pypillometry.EyeData"><em>EyeData</em></a>) – source eye data object</p></li>
+<li><p><strong>epochs</strong> (<a class="reference internal" href="pypillometry.Epochs.html#pypillometry.Epochs" title="pypillometry.Epochs"><em>Epochs</em></a><em> or </em><a class="reference internal" href="pypillometry.Intervals.html#pypillometry.Intervals" title="pypillometry.Intervals"><em>Intervals</em></a>) – the segments to extract; for Epochs (e.g., from
+<a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData.get_epochs" title="pypillometry.EyeData.get_epochs"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_epochs()</span></code></a>),
+the length and the time axis (<code class="docutils literal notranslate"><span class="pre">window[0]</span> <span class="pre">+</span> <span class="pre">arange(n)</span> <span class="pre">*</span> <span class="pre">1000/fs</span></code>
+ms) come from the window, and the parts outside the data are
+masked. Intervals must all have the same length; they are used
+as Epochs with the onsets at their starts and the window
+<code class="docutils literal notranslate"><span class="pre">(0,</span> <span class="pre">length)</span></code> (kept as <cite>epochs</cite> of the result)</p></li>
+<li><p><strong>channels</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – channels to extract (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;left_pupil&quot;</span></code>); if None, those of
+<cite>eyes</cite> and <cite>variables</cite></p></li>
+<li><p><strong>name</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – name of the segments; if None, the label of <cite>epochs</cite> or “segments”</p></li>
+<li><p><strong>policy</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><a class="reference internal" href="pypillometry.MaskPolicy.html#pypillometry.MaskPolicy" title="pypillometry.MaskPolicy"><em>MaskPolicy</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – mask policy of the segments: the samples that are unusable under
+it are masked (see <a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData.mask" title="pypillometry.EyeData.mask"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mask()</span></code></a>);
+default <code class="docutils literal notranslate"><span class="pre">&quot;default&quot;</span></code> (interpolated samples are used)</p></li>
+<li><p><strong>eyes</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – eyes to extract if <cite>channels</cite> is None (default: all)</p></li>
+<li><p><strong>variables</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – variables to extract if <cite>channels</cite> is None (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;pupil&quot;</span></code>;
+default: all)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#pypillometry.SegmentedEyeData" title="pypillometry.segmented.SegmentedEyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">SegmentedEyeData</span></code></a></span></p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>New instance with extracted segments</p>
+<dd class="field-odd"><p>new instance with extracted segments</p>
 </dd>
 </dl>
 </dd></dl>
@@ -667,7 +785,7 @@ from the Intervals returned by
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>fname</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Filename (or HTTP(S)/SSH URL) to read from</p></li>
-<li><p><strong>**kwargs</strong> – passed to <a class="reference internal" href="pypillometry.read_pickle.html#pypillometry.read_pickle" title="pypillometry.read_pickle"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_pickle()</span></code></a> (e.g.,
+<li><p><strong>**kwargs</strong> – passed to <a class="reference internal" href="pypillometry.read_file.html#pypillometry.read_file" title="pypillometry.read_file"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_file()</span></code></a> (e.g.,
 <cite>cache_file</cite>, <cite>cache_dir</cite>, <cite>cache_layout</cite>, <cite>autodelete</cite>,
 <cite>session</cite>)</p></li>
 </ul>
@@ -682,78 +800,166 @@ from the Intervals returned by
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pypillometry.SegmentedEyeData.from_masked_array">
-<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_masked_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intervals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'segments'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampling_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/segmented.html#SegmentedEyeData.from_masked_array"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.SegmentedEyeData.from_masked_array" title="Link to this definition">#</a></dt>
-<dd><p>Create SegmentedEyeData from a masked array.</p>
+<dt class="sig sig-object py" id="pypillometry.SegmentedEyeData.average">
+<span class="sig-name descname"><span class="pre">average</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">by</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meanfct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;function</span> <span class="pre">mean&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/segmented.html#SegmentedEyeData.average"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.SegmentedEyeData.average" title="Link to this definition">#</a></dt>
+<dd><p>Average the segments: all trials, or the trials of each group.</p>
+<p>The groups are the combinations of the values of the metadata
+columns <cite>by</cite> (e.g., <code class="docutils literal notranslate"><span class="pre">by=&quot;cond&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">by=[&quot;subject&quot;,</span> <span class="pre">&quot;cond&quot;]</span></code>), in
+the order in which they first occur. The result has one column per
+group, with <a class="reference internal" href="pypillometry.Epochs.html#pypillometry.Epochs" title="pypillometry.Epochs"><code class="xref py py-class docutils literal notranslate"><span class="pre">Epochs</span></code></a> without a time (NaN
+onsets) whose metadata are the <cite>by</cite> columns, the other columns that
+have the same value in all trials of each group, and the number of
+trials (<code class="docutils literal notranslate"><span class="pre">&quot;n_trials&quot;</span></code>). Its label is the label of the trials if
+they all have the same, otherwise the values of <cite>by</cite> (joined with
+“/”).</p>
+<p>Averaging segments that are averages themselves (e.g., participant
+means, see <a class="reference internal" href="pypillometry.group_segments.html#pypillometry.group_segments" title="pypillometry.group_segments"><code class="xref py py-func docutils literal notranslate"><span class="pre">group_segments()</span></code></a>) gives each of them
+the same weight. An average is masked where all its trials are
+masked; its share of usable trials (<cite>valid_share</cite>) is kept for the
+missing data in <a class="reference internal" href="#pypillometry.SegmentedEyeData.plot" title="pypillometry.SegmentedEyeData.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot()</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <a class="reference external" href="https://numpy.org/doc/stable/reference/maskedarray.baseclass.html#numpy.ma.MaskedArray" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">MaskedArray</span></code></a>]</span>) – Data array with shape (n_timepoints, n_segments)</p></li>
-<li><p><strong>tx</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – Time axis relative to segment onset (in ms)</p></li>
-<li><p><strong>variable</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Variable name in “eye_variable” format</p></li>
-<li><p><strong>intervals</strong> (<a class="reference internal" href="pypillometry.Intervals.html#pypillometry.Intervals" title="pypillometry.Intervals"><em>Intervals</em></a><em>, </em><em>optional</em>) – Source Intervals object with event metadata</p></li>
-<li><p><strong>name</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Name for the dataset (default “segments”)</p></li>
-<li><p><strong>sampling_rate</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Original sampling rate in Hz</p></li>
-<li><p><strong>mask</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – Mask array (1=masked/missing, 0=valid). Only used if data is not already a MaskedArray.</p></li>
+<li><p><strong>by</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – metadata columns of the epochs that define the groups; <code class="docutils literal notranslate"><span class="pre">&quot;label&quot;</span></code>
+uses the event labels (if there is no metadata column of this
+name); default: one average of all trials</p></li>
+<li><p><strong>meanfct</strong> (<em>callable</em>) – function that averages the trials, called as <code class="docutils literal notranslate"><span class="pre">meanfct(data,</span>
+<span class="pre">axis=1)</span></code>; it must accept an <cite>axis</cite> argument and ignore masked
+values (e.g., np.mean or np.ma.median, but not np.median; a
+warning is logged otherwise)</p></li>
+<li><p><strong>name</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – name of the result (default: the name of the segments)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#pypillometry.SegmentedEyeData" title="pypillometry.segmented.SegmentedEyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">SegmentedEyeData</span></code></a></span></p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>New instance with the provided data</p>
+<dd class="field-odd"><p>the averages (one column per group), with all channels</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#KeyError" title="(in Python v3.15)"><strong>KeyError</strong></a> – if a column of <cite>by</cite> is not in the metadata of the epochs</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">u</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002_short"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ep</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_epochs</span><span class="p">(</span><span class="s2">"S_"</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">2500</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ep</span> <span class="o">=</span> <span class="n">ep</span><span class="o">.</span><span class="n">set_meta</span><span class="p">(</span><span class="s2">"half"</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ep</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">"first"</span><span class="p">,</span> <span class="s2">"second"</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">avg</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_segments</span><span class="p">(</span><span class="n">ep</span><span class="p">)</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s2">"half"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">avg</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span>  <span class="c1"># (time points, groups)</span>
+<span class="go">(1500, 2)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">avg</span><span class="o">.</span><span class="n">epochs</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+<span class="go">{'half': ['first', 'second'], 'n_trials': [5, 5]}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.SegmentedEyeData.drop_channels">
+<span class="sig-name descname"><span class="pre">drop_channels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">channels</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/segmented.html#SegmentedEyeData.drop_channels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.SegmentedEyeData.drop_channels" title="Link to this definition">#</a></dt>
+<dd><p>New segments without the given channels.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>*channels</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – channel names (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;left_x&quot;</span></code>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#pypillometry.SegmentedEyeData" title="pypillometry.segmented.SegmentedEyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">SegmentedEyeData</span></code></a></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>new object with the other channels</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#KeyError" title="(in Python v3.15)"><strong>KeyError</strong></a> – if a channel does not exist</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – if no channel would be left</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pypillometry.SegmentedEyeData.baseline_correct">
-<span class="sig-name descname"><span class="pre">baseline_correct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/segmented.html#SegmentedEyeData.baseline_correct"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.SegmentedEyeData.baseline_correct" title="Link to this definition">#</a></dt>
-<dd><p>Apply baseline correction to the segments.</p>
-<p>The window is specified in milliseconds relative to the zero-point of the 
-intervals (typically the event onset). For example, <cite>window=(-200, 0)</cite> uses 
-the 200ms before the event as baseline.</p>
+<dt class="sig sig-object py" id="pypillometry.SegmentedEyeData.filter">
+<span class="sig-name descname"><span class="pre">filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">selector</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">conditions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/segmented.html#SegmentedEyeData.filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.SegmentedEyeData.filter" title="Link to this definition">#</a></dt>
+<dd><p>New segments with the trials whose epochs match the criteria.</p>
+<p>The epochs are selected as with <a class="reference internal" href="pypillometry.Epochs.html#pypillometry.Epochs.filter" title="pypillometry.Epochs.filter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Epochs.filter</span></code></a>: by event label, onset time (in ms),
+a boolean array or metadata. All channels keep the same trials.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>window</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span>]</span>) – <p>Baseline window relative to event onset (time 0), in ms or with
-units (e.g., <code class="docutils literal notranslate"><span class="pre">(-200,</span> <span class="pre">0)</span> <span class="pre">*</span> <span class="pre">u.ms</span></code>):</p>
-<ul class="simple">
-<li><p>If None, no baseline correction is applied</p></li>
-<li><p>If tuple (start, end), the mean value in this time window is subtracted</p></li>
-<li><p>If float, the value at the time point closest to this value is used</p></li>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>selector</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>callable</em><em>, </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a><em> or </em><em>boolean array</em><em>, </em><em>optional</em>) – criterion for the events (see <a class="reference internal" href="pypillometry.Events.html#pypillometry.Events.filter" title="pypillometry.Events.filter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Events.filter</span></code></a>)</p></li>
+<li><p><strong>exact</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – if True, a string selector matches only labels equal to it</p></li>
+<li><p><strong>**conditions</strong> – criteria for metadata columns, e.g. <code class="docutils literal notranslate"><span class="pre">cond=&quot;easy&quot;</span></code>,
+<code class="docutils literal notranslate"><span class="pre">trial=[1,</span> <span class="pre">2]</span></code> or <code class="docutils literal notranslate"><span class="pre">rt=lambda</span> <span class="pre">rt:</span> <span class="pre">rt</span> <span class="pre">&lt;</span> <span class="pre">800</span></code></p></li>
 </ul>
-<p>Default is 0 (baseline at event onset).</p>
-</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#pypillometry.SegmentedEyeData" title="pypillometry.segmented.SegmentedEyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">SegmentedEyeData</span></code></a></span></p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>New instance with baseline-corrected data (the object itself if
-<cite>window</cite> is None)</p>
+<dd class="field-odd"><p>new object with the selected segments (and their epochs)</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – if the segments have no Epochs (e.g., from old files)</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Use pre-event period as baseline</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">segments_bc</span> <span class="o">=</span> <span class="n">segments</span><span class="o">.</span><span class="n">baseline_correct</span><span class="p">(</span><span class="n">window</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">segments_bc</span> <span class="o">=</span> <span class="n">segments</span><span class="o">.</span><span class="n">baseline_correct</span><span class="p">(</span><span class="n">window</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">u</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002_short"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ep</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_epochs</span><span class="p">(</span><span class="s2">"S_"</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">2500</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ep</span> <span class="o">=</span> <span class="n">ep</span><span class="o">.</span><span class="n">set_meta</span><span class="p">(</span><span class="s2">"half"</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ep</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">"first"</span><span class="p">,</span> <span class="s2">"second"</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">seg</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_segments</span><span class="p">(</span><span class="n">ep</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">seg</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">half</span><span class="o">=</span><span class="s2">"first"</span><span class="p">)</span><span class="o">.</span><span class="n">n_segments</span>
+<span class="go">5</span>
 </pre></div>
 </div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Use single time point as baseline</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">segments_bc</span> <span class="o">=</span> <span class="n">segments</span><span class="o">.</span><span class="n">baseline_correct</span><span class="p">(</span><span class="n">window</span><span class="o">=-</span><span class="mi">100</span><span class="p">)</span>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.SegmentedEyeData.keep">
+<span class="sig-name descname"><span class="pre">keep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/segmented.html#SegmentedEyeData.keep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.SegmentedEyeData.keep" title="Link to this definition">#</a></dt>
+<dd><p>New segments with the trials where <cite>mask</cite> is True (in all channels).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mask</strong> (<em>array-like</em><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a>) – one value per segment, e.g., <code class="docutils literal notranslate"><span class="pre">seg.epochs.meta[&quot;rt&quot;]</span> <span class="pre">&lt;</span> <span class="pre">800</span></code></p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#pypillometry.SegmentedEyeData" title="pypillometry.segmented.SegmentedEyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">SegmentedEyeData</span></code></a></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>new object with the selected segments (and their epochs)</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – if <cite>mask</cite> is not a boolean array with one value per segment</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">u</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002_short"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">seg</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_segments</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">get_epochs</span><span class="p">(</span><span class="s2">"S_"</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">2500</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># reject trials with more than half of the left pupil missing</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ok</span> <span class="o">=</span> <span class="n">seg</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">]</span><span class="o">.</span><span class="n">mask</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">0.5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">bool</span><span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">keep</span><span class="p">(</span><span class="n">ok</span><span class="p">)</span><span class="o">.</span><span class="n">n_segments</span> <span class="o">==</span> <span class="n">ok</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+<span class="go">True</span>
 </pre></div>
 </div>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.SegmentedEyeData.plot">
-<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">meanfct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;function</span> <span class="pre">mean&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">varfct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;function</span> <span class="pre">sem&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_missing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_zero_line</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_legend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ribbon_alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/segmented.html#SegmentedEyeData.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.SegmentedEyeData.plot" title="Link to this definition">#</a></dt>
-<dd><p>Plot mean and error ribbons.</p>
-<p>Can be used standalone for a quick look, or with <cite>ax</cite> parameter to 
-overlay multiple segments on the same plot or across subplots.</p>
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">channels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meanfct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;function</span> <span class="pre">mean&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">varfct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;function</span> <span class="pre">sem&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_missing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_zero_line</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_legend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ribbon_alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/segmented.html#SegmentedEyeData.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.SegmentedEyeData.plot" title="Link to this definition">#</a></dt>
+<dd><p>Plot mean and error ribbon over time, one line per channel.</p>
+<p>Can be used standalone for a quick look, or with <cite>ax</cite> parameter to
+overlay multiple segments on the same plot or across subplots.
+<code class="docutils literal notranslate"><span class="pre">seg.pupil.plot()</span></code> plots the pupil channels,
+<code class="docutils literal notranslate"><span class="pre">seg.gaze.plot_roi()</span></code> the share of trials in a region of interest.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
+<li><p><strong>channels</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – channels to plot; default: all (only if they are all of the same
+variable, e.g., pupil of both eyes)</p></li>
 <li><p><strong>meanfct</strong> (<em>callable</em>) – Function to compute mean across segments (default: np.mean)</p></li>
 <li><p><strong>varfct</strong> (<em>callable</em><em> or </em><em>None</em>) – Function to compute error bands (e.g., np.std, scipy.stats.sem)
 If None, no error bands are plotted.
@@ -766,7 +972,11 @@ If None, defaults to True in standalone mode, False in overlay mode.</p></li>
 <li><p><strong>show_legend</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – Show legend. If None, only shows legend in standalone mode (ax=None)</p></li>
 <li><p><strong>title</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Plot title. If None and ax is None, uses the dataset name.
 Ignored when ax is provided (for overlay use).</p></li>
-<li><p><strong>label</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Label for legend. If None, uses self.name</p></li>
+<li><p><strong>label</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Label for legend. If None, the name of the segments (one channel)
+or the channel names (several channels; with <cite>label</cite>, they are
+added to it)</p></li>
+<li><p><strong>ylabel</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – label of the y-axis in standalone mode (default: “mean” and the
+variable)</p></li>
 <li><p><strong>ribbon_alpha</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – Alpha (transparency) for error ribbon (default: 0.3)</p></li>
 <li><p><strong>ax</strong> (<a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html#matplotlib.axes.Axes" title="(in Matplotlib v3.11.2)"><em>matplotlib.axes.Axes</em></a><em>, </em><em>optional</em>) – Axes to plot on. If None, uses current axes (standalone mode)</p></li>
 <li><p><strong>**kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a>) – Additional arguments passed to ax.plot() (e.g., color, linestyle, linewidth)</p></li>
@@ -775,45 +985,152 @@ Ignored when ax is provided (for overlay use).</p></li>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>ax</strong> (matplotlib.axes.Axes) – The axes object for further customization</p>
 </dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – if <cite>channels</cite> is None and the channels are of several variables</p>
+</dd>
 </dl>
 <p class="rubric">Examples</p>
-<p>Event-related pupil dilation after each stimulus. Pass <code class="docutils literal notranslate"><span class="pre">ax=</span></code> to overlay
-several segments (e.g., two conditions or eyes) in one plot:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">u</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002_short"</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">pupil_blinks_detect</span><span class="p">(</span><span class="n">apply_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">pupil_blinks_interpolate</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">intervals</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="s2">"S_"</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">2500</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">erpd</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_segments</span><span class="p">(</span><span class="n">intervals</span><span class="p">,</span> <span class="s2">"left_pupil"</span><span class="p">)</span><span class="o">.</span><span class="n">baseline_correct</span><span class="p">((</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">erpd</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># overlay two eyes</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">right</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_segments</span><span class="p">(</span><span class="n">intervals</span><span class="p">,</span> <span class="s2">"right_pupil"</span><span class="p">)</span><span class="o">.</span><span class="n">baseline_correct</span><span class="p">((</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">erpd</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"left eye"</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">right</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"right eye"</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">seg</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_segments</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">get_epochs</span><span class="p">(</span><span class="s2">"S_"</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">2500</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ax</span> <span class="o">=</span> <span class="n">seg</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="s2">"left_x"</span><span class="p">,</span> <span class="s2">"right_x"</span><span class="p">],</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">"mean x (px)"</span><span class="p">)</span>
 </pre></div>
 </div>
 <figure class="align-default">
-<img alt="../../_images/pypillometry-SegmentedEyeData-1_00.png" class="plot-directive" src="../../_images/pypillometry-SegmentedEyeData-1_00.png" />
+<img alt="../../_images/pypillometry-SegmentedEyeData-1.png" class="plot-directive" src="../../_images/pypillometry-SegmentedEyeData-1.png" />
 </figure>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.SegmentedEyeData.plot_carpet">
+<span class="sig-name descname"><span class="pre">plot_carpet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort_by</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">center</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_zero_line</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colorbar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_mean</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/segmented.html#SegmentedEyeData.plot_carpet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.SegmentedEyeData.plot_carpet" title="Link to this definition">#</a></dt>
+<dd><p>Plot all segments of one channel as an image (“carpet plot”).</p>
+<p>Each row is one segment (e.g., a trial), the x-axis is the time
+relative to the event, and the color is the value. Masked samples
+are left empty (white). Unlike the mean in <a class="reference internal" href="#pypillometry.SegmentedEyeData.plot" title="pypillometry.SegmentedEyeData.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot()</span></code></a>, this shows
+how the response varies between trials, e.g., trials with artifacts
+or a change over the session; sorting the rows by a property of the
+trials (<cite>sort_by</cite>, e.g., the reaction time) shows how the response
+depends on it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>channel</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – channel to plot (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;left_pupil&quot;</span></code>); default: the only
+channel of the segments</p></li>
+<li><p><strong>sort_by</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><em>array-like</em><em>, </em><em>optional</em>) – order of the rows: a metadata column of the epochs (e.g.,
+<code class="docutils literal notranslate"><span class="pre">&quot;rt&quot;</span></code>) or one value per segment; the rows are sorted by it in
+ascending order (from the top), ties keep their order; default:
+the order of the segments</p></li>
+<li><p><strong>cmap</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – colormap; default <code class="docutils literal notranslate"><span class="pre">&quot;RdBu_r&quot;</span></code> if the color scale is centered at
+0, <code class="docutils literal notranslate"><span class="pre">&quot;viridis&quot;</span></code> otherwise</p></li>
+<li><p><strong>vmin</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – limits of the color scale; default: the 2nd and 98th percentile
+of the usable values (so that a few extreme values do not set
+the scale), symmetric around 0 if <cite>center</cite></p></li>
+<li><p><strong>vmax</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – limits of the color scale; default: the 2nd and 98th percentile
+of the usable values (so that a few extreme values do not set
+the scale), symmetric around 0 if <cite>center</cite></p></li>
+<li><p><strong>center</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – center the color scale at 0 (e.g., for baseline-corrected data,
+so that increases and decreases have different colors); default
+(None): if the values have both signs</p></li>
+<li><p><strong>show_zero_line</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – draw a vertical line at the event onset (time 0); default True</p></li>
+<li><p><strong>colorbar</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – add a colorbar (labelled with the channel); default True</p></li>
+<li><p><strong>show_mean</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – show the mean over the segments with its standard error below
+the image, on the same time axis (as <a class="reference internal" href="#pypillometry.SegmentedEyeData.plot" title="pypillometry.SegmentedEyeData.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot()</span></code></a>); default False</p></li>
+<li><p><strong>title</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – title; default: the name of the segments if <cite>ax</cite> is None, none
+otherwise</p></li>
+<li><p><strong>ax</strong> (<a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html#matplotlib.axes.Axes" title="(in Matplotlib v3.11.2)"><em>matplotlib.axes.Axes</em></a><em>, </em><em>optional</em>) – axes to plot into; default: the current axes</p></li>
+<li><p><strong>**kwargs</strong> – passed to <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.imshow.html#matplotlib.axes.Axes.imshow" title="(in Matplotlib v3.11.2)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">matplotlib.axes.Axes.imshow()</span></code></a></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ax</strong> (matplotlib.axes.Axes) – the axes of the image; with <cite>show_mean</cite>, a tuple <code class="docutils literal notranslate"><span class="pre">(ax,</span>
+<span class="pre">ax_mean)</span></code> with the axes of the mean as well</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – if <cite>channel</cite> is None and the segments have several channels, or
+<cite>sort_by</cite> does not have one value per segment</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#KeyError" title="(in Python v3.15)"><strong>KeyError</strong></a> – if the channel or the metadata column does not exist</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">u</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002_short"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">d</span> <span class="o">|</span> <span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span> <span class="o">|</span> <span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">lowpass_filter</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">seg</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_segments</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">get_epochs</span><span class="p">(</span><span class="s2">"S_"</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">2500</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">),</span> <span class="s2">"left_pupil"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">seg</span> <span class="o">=</span> <span class="n">seg</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">baseline_correct</span><span class="p">((</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ax</span> <span class="o">=</span> <span class="n">seg</span><span class="o">.</span><span class="n">plot_carpet</span><span class="p">()</span>
+</pre></div>
+</div>
 <figure class="align-default">
-<img alt="../../_images/pypillometry-SegmentedEyeData-1_01.png" class="plot-directive" src="../../_images/pypillometry-SegmentedEyeData-1_01.png" />
+<img alt="../../_images/pypillometry-SegmentedEyeData-2.png" class="plot-directive" src="../../_images/pypillometry-SegmentedEyeData-2.png" />
 </figure>
+<p>With the mean below the image:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">u</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002_short"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">d</span> <span class="o">|</span> <span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span> <span class="o">|</span> <span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">lowpass_filter</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">seg</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_segments</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">get_epochs</span><span class="p">(</span><span class="s2">"S_"</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">2500</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">),</span> <span class="s2">"left_pupil"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">seg</span> <span class="o">=</span> <span class="n">seg</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">baseline_correct</span><span class="p">((</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ax</span><span class="p">,</span> <span class="n">ax_mean</span> <span class="o">=</span> <span class="n">seg</span><span class="o">.</span><span class="n">plot_carpet</span><span class="p">(</span><span class="n">show_mean</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<figure class="align-default">
+<img alt="../../_images/pypillometry-SegmentedEyeData-3.png" class="plot-directive" src="../../_images/pypillometry-SegmentedEyeData-3.png" />
+</figure>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.SegmentedEyeData.select_channels">
+<span class="sig-name descname"><span class="pre">select_channels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">channels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/segmented.html#SegmentedEyeData.select_channels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.SegmentedEyeData.select_channels" title="Link to this definition">#</a></dt>
+<dd><p>New segments with some of the channels.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>channels</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – channel names (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;left_pupil&quot;</span></code>); if given, <cite>eyes</cite> and
+<cite>variables</cite> must be empty</p></li>
+<li><p><strong>eyes</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – eyes to keep (default: all)</p></li>
+<li><p><strong>variables</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>optional</em>) – variables to keep (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;pupil&quot;</span></code>; default: all)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#pypillometry.SegmentedEyeData" title="pypillometry.segmented.SegmentedEyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">SegmentedEyeData</span></code></a></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>new object with the selected channels (and the same epochs)</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#KeyError" title="(in Python v3.15)"><strong>KeyError</strong></a> – if a channel, eye or variable does not exist</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">u</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002_short"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">seg</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_segments</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">get_epochs</span><span class="p">(</span><span class="s2">"S_"</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">2500</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">seg</span><span class="o">.</span><span class="n">select_channels</span><span class="p">(</span><span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s2">"x"</span><span class="p">,</span> <span class="s2">"y"</span><span class="p">],</span> <span class="n">eyes</span><span class="o">=</span><span class="s2">"left"</span><span class="p">)</span><span class="o">.</span><span class="n">channels</span>
+<span class="go">['left_x', 'left_y']</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.SegmentedEyeData.summary">
 <span class="sig-name descname"><span class="pre">summary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/segmented.html#SegmentedEyeData.summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.SegmentedEyeData.summary" title="Link to this definition">#</a></dt>
-<dd><p>Return a summary of the SegmentedEyeData object.</p>
+<dd><p>Return a summary of the segments.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></span></p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Dictionary with name, variable, n_segments, n_timepoints, window,
-percent_masked, and sampling_rate</p>
+<dd class="field-even"><p>name, channels, n_segments, n_timepoints, window,
+percent_masked (dict: channel -&gt; percentage of missing values;
+for averages, of missing trials), sampling_rate, n_averages
+(the number of columns that are averages) and n_trials (the
+number of trials in all columns; None if not known)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -821,7 +1138,7 @@ percent_masked, and sampling_rate</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.SegmentedEyeData.write_file">
 <span class="sig-name descname"><span class="pre">write_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/segmented.html#SegmentedEyeData.write_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.SegmentedEyeData.write_file" title="Link to this definition">#</a></dt>
-<dd><p>Save to file (see <a class="reference internal" href="pypillometry.write_pickle.html#pypillometry.write_pickle" title="pypillometry.write_pickle"><code class="xref py py-func docutils literal notranslate"><span class="pre">write_pickle()</span></code></a>).</p>
+<dd><p>Save to file (see <a class="reference internal" href="pypillometry.write_file.html#pypillometry.write_file" title="pypillometry.write_file"><code class="xref py py-func docutils literal notranslate"><span class="pre">write_file()</span></code></a>).</p>
 <p>The format follows from the extension: HDF5 for <code class="docutils literal notranslate"><span class="pre">.h5</span></code> and
 <code class="docutils literal notranslate"><span class="pre">.hdf5</span></code>, pickle otherwise.</p>
 <dl class="field-list simple">
@@ -835,9 +1152,15 @@ percent_masked, and sampling_rate</p>
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="pypillometry.SegmentedEyeData.eye">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">eye</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><a class="headerlink" href="#pypillometry.SegmentedEyeData.eye" title="Link to this definition">#</a></dt>
-<dd><p>Return the eye part of the variable (e.g., ‘left’ from ‘left_pupil’).</p>
+<dt class="sig sig-object py" id="pypillometry.SegmentedEyeData.channels">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">channels</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><span class="pre">list</span></a></span><a class="headerlink" href="#pypillometry.SegmentedEyeData.channels" title="Link to this definition">#</a></dt>
+<dd><p>Names of the channels (e.g., <code class="docutils literal notranslate"><span class="pre">[&quot;left_pupil&quot;,</span> <span class="pre">&quot;left_x&quot;]</span></code>).</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pypillometry.SegmentedEyeData.eyes">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">eyes</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><span class="pre">list</span></a></span><a class="headerlink" href="#pypillometry.SegmentedEyeData.eyes" title="Link to this definition">#</a></dt>
+<dd><p>Eyes of the channels (e.g., <code class="docutils literal notranslate"><span class="pre">[&quot;left&quot;,</span> <span class="pre">&quot;right&quot;]</span></code>).</p>
 </dd></dl>
 
 <dl class="py property">
@@ -853,15 +1176,15 @@ percent_masked, and sampling_rate</p>
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="pypillometry.SegmentedEyeData.var">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">var</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><a class="headerlink" href="#pypillometry.SegmentedEyeData.var" title="Link to this definition">#</a></dt>
-<dd><p>Return the variable part (e.g., ‘pupil’ from ‘left_pupil’).</p>
+<dt class="sig sig-object py" id="pypillometry.SegmentedEyeData.variables">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">variables</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><span class="pre">list</span></a></span><a class="headerlink" href="#pypillometry.SegmentedEyeData.variables" title="Link to this definition">#</a></dt>
+<dd><p>Variables of the channels (e.g., <code class="docutils literal notranslate"><span class="pre">[&quot;pupil&quot;,</span> <span class="pre">&quot;x&quot;,</span> <span class="pre">&quot;y&quot;]</span></code>).</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="pypillometry.SegmentedEyeData.window">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">window</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.15)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pypillometry.SegmentedEyeData.window" title="Link to this definition">#</a></dt>
-<dd><p>Time window in ms as (start, end).</p>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">window</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><span class="pre">tuple</span></a></span><a class="headerlink" href="#pypillometry.SegmentedEyeData.window" title="Link to this definition">#</a></dt>
+<dd><p>Time window in ms as (first, last time point).</p>
 </dd></dl>
 
 </dd></dl>
@@ -888,11 +1211,11 @@ percent_masked, and sampling_rate</p>
       </div>
     </a>
     <a class="right-next"
-       href="pypillometry.GroupLevelSegmentedData.html"
+       href="pypillometry.concat_segments.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">GroupLevelSegmentedData</p>
+        <p class="prev-next-title">concat_segments</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -916,17 +1239,24 @@ percent_masked, and sampling_rate</p>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.SegmentedEyeData"><code class="docutils literal notranslate"><span class="pre">SegmentedEyeData</span></code></a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.SegmentedEyeData.gaze"><code class="docutils literal notranslate"><span class="pre">gaze</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.SegmentedEyeData.pupil"><code class="docutils literal notranslate"><span class="pre">pupil</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.SegmentedEyeData.from_eyedata"><code class="docutils literal notranslate"><span class="pre">from_eyedata()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.SegmentedEyeData.from_file"><code class="docutils literal notranslate"><span class="pre">from_file()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.SegmentedEyeData.from_masked_array"><code class="docutils literal notranslate"><span class="pre">from_masked_array()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.SegmentedEyeData.baseline_correct"><code class="docutils literal notranslate"><span class="pre">baseline_correct()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.SegmentedEyeData.average"><code class="docutils literal notranslate"><span class="pre">average()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.SegmentedEyeData.drop_channels"><code class="docutils literal notranslate"><span class="pre">drop_channels()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.SegmentedEyeData.filter"><code class="docutils literal notranslate"><span class="pre">filter()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.SegmentedEyeData.keep"><code class="docutils literal notranslate"><span class="pre">keep()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.SegmentedEyeData.plot"><code class="docutils literal notranslate"><span class="pre">plot()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.SegmentedEyeData.plot_carpet"><code class="docutils literal notranslate"><span class="pre">plot_carpet()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.SegmentedEyeData.select_channels"><code class="docutils literal notranslate"><span class="pre">select_channels()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.SegmentedEyeData.summary"><code class="docutils literal notranslate"><span class="pre">summary()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.SegmentedEyeData.write_file"><code class="docutils literal notranslate"><span class="pre">write_file()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.SegmentedEyeData.eye"><code class="docutils literal notranslate"><span class="pre">eye</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.SegmentedEyeData.channels"><code class="docutils literal notranslate"><span class="pre">channels</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.SegmentedEyeData.eyes"><code class="docutils literal notranslate"><span class="pre">eyes</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.SegmentedEyeData.n_segments"><code class="docutils literal notranslate"><span class="pre">n_segments</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.SegmentedEyeData.n_timepoints"><code class="docutils literal notranslate"><span class="pre">n_timepoints</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.SegmentedEyeData.var"><code class="docutils literal notranslate"><span class="pre">var</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.SegmentedEyeData.variables"><code class="docutils literal notranslate"><span class="pre">variables</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.SegmentedEyeData.window"><code class="docutils literal notranslate"><span class="pre">window</span></code></a></li>
 </ul>
 </li>

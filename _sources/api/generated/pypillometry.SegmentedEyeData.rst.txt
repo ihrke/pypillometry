@@ -16,11 +16,15 @@
    .. autosummary::
       :nosignatures:
    
-      ~SegmentedEyeData.baseline_correct
+      ~SegmentedEyeData.average
+      ~SegmentedEyeData.drop_channels
+      ~SegmentedEyeData.filter
       ~SegmentedEyeData.from_eyedata
       ~SegmentedEyeData.from_file
-      ~SegmentedEyeData.from_masked_array
+      ~SegmentedEyeData.keep
       ~SegmentedEyeData.plot
+      ~SegmentedEyeData.plot_carpet
+      ~SegmentedEyeData.select_channels
       ~SegmentedEyeData.summary
       ~SegmentedEyeData.write_file
    

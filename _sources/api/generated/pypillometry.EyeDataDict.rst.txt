@@ -16,21 +16,31 @@
    .. autosummary::
       :nosignatures:
    
+      ~EyeDataDict.add_mask
       ~EyeDataDict.clear
+      ~EyeDataDict.clear_layer
+      ~EyeDataDict.clear_rec_layer
       ~EyeDataDict.copy
       ~EyeDataDict.count_masked
       ~EyeDataDict.get
       ~EyeDataDict.get_available_eyes
       ~EyeDataDict.get_available_variables
       ~EyeDataDict.get_eye
+      ~EyeDataDict.get_layer
       ~EyeDataDict.get_mask
+      ~EyeDataDict.get_policy_mask
+      ~EyeDataDict.get_rec_layer
       ~EyeDataDict.get_size
       ~EyeDataDict.get_variable
       ~EyeDataDict.items
       ~EyeDataDict.keys
+      ~EyeDataDict.layer_bits
       ~EyeDataDict.pop
       ~EyeDataDict.popitem
+      ~EyeDataDict.select
+      ~EyeDataDict.set_layer
       ~EyeDataDict.set_mask
+      ~EyeDataDict.set_rec_layer
       ~EyeDataDict.set_with_mask
       ~EyeDataDict.setdefault
       ~EyeDataDict.update

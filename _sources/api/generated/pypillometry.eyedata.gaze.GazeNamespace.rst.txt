@@ -1,0 +1,25 @@
+﻿GazeNamespace
+=============
+
+.. currentmodule:: pypillometry.eyedata.gaze
+
+.. autoclass:: GazeNamespace
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~GazeNamespace.mask_divergences
+      ~GazeNamespace.mask_offscreen
+   
+   
+
+
+   .. rubric:: Details

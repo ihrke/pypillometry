@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Importing data from Eyelink ASC files &#8212; pypillometry v2.1.0</title>
+    <title>Importing data from Eyelink ASC files &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -62,7 +62,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -106,9 +106,6 @@
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -425,6 +422,7 @@
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Preprocessing and plotting</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="blinks.html">Blink preprocessing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="missing_data.html">Missing data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plotting.html">Plotting pupillometric data for exploration</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Events and event-related analyses</span></p>
@@ -433,6 +431,7 @@
 <li class="toctree-l1"><a class="reference internal" href="event_metadata.html">Event metadata</a></li>
 <li class="toctree-l1"><a class="reference internal" href="intervals.html">Intervals</a></li>
 <li class="toctree-l1"><a class="reference internal" href="erpds.html">Event-related pupil dilations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rois.html">Gaze in regions of interest around events</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Modeling and complete analyses</span></p>
 <ul class="nav bd-sidenav">
@@ -792,12 +791,12 @@ Converted successfully: 37139 events, 0 samples, 6 blocks.
 <p>1245363 rows × 8 columns</p>
 </div></div>
 </div>
-<p>We can already use this information to create a <code class="docutils literal notranslate"><span class="pre">PupilData</span></code> object. We pass in the pupil area of both eyes (columns <code class="docutils literal notranslate"><span class="pre">left_p</span></code> and <code class="docutils literal notranslate"><span class="pre">right_p</span></code>) and the timestamps from the samples file. Gaps in the recording (where the eyetracker was paused) are filled with missing values:</p>
+<p>We can already use this information to create an <code class="docutils literal notranslate"><span class="pre">EyeData</span></code> object with pupil data only. We pass in the pupil area of both eyes (columns <code class="docutils literal notranslate"><span class="pre">left_p</span></code> and <code class="docutils literal notranslate"><span class="pre">right_p</span></code>) and the timestamps from the samples file. Gaps in the recording (where the eyetracker was paused) are filled with missing values:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pp</span><span class="o">.</span><span class="n">PupilData</span><span class="p">(</span><span class="n">left_pupil</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_p</span><span class="p">,</span> <span class="n">right_pupil</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_p</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"test"</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="p">(</span><span class="n">left_pupil</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_p</span><span class="p">,</span> <span class="n">right_pupil</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_p</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"test"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -806,8 +805,8 @@ Converted successfully: 37139 events, 0 samples, 6 blocks.
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-<span class="ansi-green-fg">pp: 12:34:06</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fill_time_discontinuities</span>:<span class="ansi-cyan-fg">1774</span> | <span class="ansi-bold">Filling in 5 gaps</span>
-<span class="ansi-green-fg">pp: 12:34:06</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fill_time_discontinuities</span>:<span class="ansi-cyan-fg">1776</span> | <span class="ansi-bold">[32.35   4.012  6.21   2.02   1.862] seconds</span>
+<span class="ansi-green-fg">pp: 17:51:51</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fill_time_discontinuities</span>:<span class="ansi-cyan-fg">2252</span> | <span class="ansi-bold">Filling in 5 gaps</span>
+<span class="ansi-green-fg">pp: 17:51:51</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fill_time_discontinuities</span>:<span class="ansi-cyan-fg">2254</span> | <span class="ansi-bold">[32.35   4.012  6.21   2.02   1.862] seconds</span>
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -816,7 +815,7 @@ Converted successfully: 37139 events, 0 samples, 6 blocks.
 </div>
 <div class="output_area rendered_html docutils container">
 <div style="font-family:system-ui, sans-serif; border:1px solid #ddd; border-radius:6px; padding:12px; max-width: min(600px, 50vw); min-width: 300px;">
-  <h3 style="margin-top:0;">PupilData — <span style="color:#555;">test</span></h3>
+  <h3 style="margin-top:0;">EyeData — <span style="color:#555;">test</span></h3>
 
   <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px; margin-bottom:10px;">
 
@@ -851,13 +850,8 @@ Converted successfully: 37139 events, 0 samples, 6 blocks.
     </div>
 
     <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
-      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Blinks</div>
-      <div style="font-weight:600;"></div>
-    </div>
-
-    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
       <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Size</div>
-      <div style="font-weight:600;">48.4MiB</div>
+      <div style="font-weight:600;">36.3MiB</div>
     </div>
 
   </div>
@@ -894,15 +888,6 @@ Converted successfully: 37139 events, 0 samples, 6 blocks.
 
 
 
-  <details>
-    <summary style="cursor:pointer; font-weight:600;">Recent history</summary>
-    <ol style="margin-top:8px;">
-
-      <li>fill_time_discontinuities()</li>
-
-    </ol>
-  </details>
-
 </div></div>
 </div>
 <p>We can also import the eye-tracking (gaze) data from the same file. In that case, we use the <code class="docutils literal notranslate"><span class="pre">EyeData</span></code> class:</p>
@@ -922,8 +907,8 @@ Converted successfully: 37139 events, 0 samples, 6 blocks.
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-<span class="ansi-green-fg">pp: 12:34:06</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fill_time_discontinuities</span>:<span class="ansi-cyan-fg">1774</span> | <span class="ansi-bold">Filling in 5 gaps</span>
-<span class="ansi-green-fg">pp: 12:34:06</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fill_time_discontinuities</span>:<span class="ansi-cyan-fg">1776</span> | <span class="ansi-bold">[32.35   4.012  6.21   2.02   1.862] seconds</span>
+<span class="ansi-green-fg">pp: 17:51:51</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fill_time_discontinuities</span>:<span class="ansi-cyan-fg">2252</span> | <span class="ansi-bold">Filling in 5 gaps</span>
+<span class="ansi-green-fg">pp: 17:51:51</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fill_time_discontinuities</span>:<span class="ansi-cyan-fg">2254</span> | <span class="ansi-bold">[32.35   4.012  6.21   2.02   1.862] seconds</span>
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -967,13 +952,8 @@ Converted successfully: 37139 events, 0 samples, 6 blocks.
     </div>
 
     <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
-      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Blinks</div>
-      <div style="font-weight:600;"></div>
-    </div>
-
-    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
       <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Size</div>
-      <div style="font-weight:600;">125.8MiB</div>
+      <div style="font-weight:600;">84.7MiB</div>
     </div>
 
   </div>
@@ -1034,15 +1014,6 @@ Converted successfully: 37139 events, 0 samples, 6 blocks.
 
 
 
-  <details>
-    <summary style="cursor:pointer; font-weight:600;">Recent history</summary>
-    <ol style="margin-top:8px;">
-
-      <li>fill_time_discontinuities()</li>
-
-    </ol>
-  </details>
-
 </div></div>
 </div>
 <p>This dataset is still missing the information contained in the events file which we need for analysing trial-related pupil data. The events file has a more complicated structure than the samples file:</p>
@@ -1059,7 +1030,7 @@ Converted successfully: 37139 events, 0 samples, 6 blocks.
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-** CONVERTED FROM ../../data/test.edf using edfapi 3.0 Linux Dec  1 2008 on Wed Oct 28 12:34:05 2026
+** CONVERTED FROM ../../data/test.edf using edfapi 3.0 Linux Dec  1 2008 on Wed Nov  4 17:51:50 2026
 ** DATE: Fri Feb 14 08:48:33 2020
 ** TYPE: EDF_FILE BINARY EVENT SAMPLE TAGGED
 ** VERSION: EYELINK II 1
@@ -1148,7 +1119,7 @@ MSG     2784000 !CAL -32.9, -10.4        -0,   1559
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df_ev</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">ev</span><span class="o">.</span><span class="n">split</span><span class="p">()</span> <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span><span class="p">])</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df_ev</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">events</span><span class="p">)</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">df_ev</span>
 </pre></div>
 </div>
@@ -1532,14 +1503,14 @@ MSG     2784000 !CAL -32.9, -10.4        -0,   1559
 <p>1035 rows × 2 columns</p>
 </div></div>
 </div>
-<p>Finally, we can pass the event markers to our <code class="docutils literal notranslate"><span class="pre">PupilData</span></code>, <code class="docutils literal notranslate"><span class="pre">EyeData</span></code> or <code class="docutils literal notranslate"><span class="pre">GazeData</span></code> object.</p>
+<p>Finally, we can pass the event markers to our <code class="docutils literal notranslate"><span class="pre">EyeData</span></code> object.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">PupilData</span><span class="p">(</span><span class="n">left_pupil</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_p</span><span class="p">,</span> <span class="n">right_pupil</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_p</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">time</span><span class="p">,</span>
-                 <span class="n">event_onsets</span><span class="o">=</span><span class="n">df_ev</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span> <span class="n">event_labels</span><span class="o">=</span><span class="n">df_ev</span><span class="o">.</span><span class="n">event</span><span class="p">,</span>
-                 <span class="n">name</span><span class="o">=</span><span class="s2">"test"</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="p">(</span><span class="n">left_pupil</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_p</span><span class="p">,</span> <span class="n">right_pupil</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_p</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">time</span><span class="p">,</span>
+               <span class="n">event_onsets</span><span class="o">=</span><span class="n">df_ev</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span> <span class="n">event_labels</span><span class="o">=</span><span class="n">df_ev</span><span class="o">.</span><span class="n">event</span><span class="p">,</span>
+               <span class="n">name</span><span class="o">=</span><span class="s2">"test"</span><span class="p">)</span>
 <span class="n">d</span>
 </pre></div>
 </div>
@@ -1549,8 +1520,8 @@ MSG     2784000 !CAL -32.9, -10.4        -0,   1559
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-<span class="ansi-green-fg">pp: 12:34:08</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fill_time_discontinuities</span>:<span class="ansi-cyan-fg">1774</span> | <span class="ansi-bold">Filling in 5 gaps</span>
-<span class="ansi-green-fg">pp: 12:34:08</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fill_time_discontinuities</span>:<span class="ansi-cyan-fg">1776</span> | <span class="ansi-bold">[32.35   4.012  6.21   2.02   1.862] seconds</span>
+<span class="ansi-green-fg">pp: 17:51:53</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fill_time_discontinuities</span>:<span class="ansi-cyan-fg">2252</span> | <span class="ansi-bold">Filling in 5 gaps</span>
+<span class="ansi-green-fg">pp: 17:51:53</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fill_time_discontinuities</span>:<span class="ansi-cyan-fg">2254</span> | <span class="ansi-bold">[32.35   4.012  6.21   2.02   1.862] seconds</span>
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -1559,7 +1530,7 @@ MSG     2784000 !CAL -32.9, -10.4        -0,   1559
 </div>
 <div class="output_area rendered_html docutils container">
 <div style="font-family:system-ui, sans-serif; border:1px solid #ddd; border-radius:6px; padding:12px; max-width: min(600px, 50vw); min-width: 300px;">
-  <h3 style="margin-top:0;">PupilData — <span style="color:#555;">test</span></h3>
+  <h3 style="margin-top:0;">EyeData — <span style="color:#555;">test</span></h3>
 
   <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px; margin-bottom:10px;">
 
@@ -1594,13 +1565,8 @@ MSG     2784000 !CAL -32.9, -10.4        -0,   1559
     </div>
 
     <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
-      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Blinks</div>
-      <div style="font-weight:600;"></div>
-    </div>
-
-    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
       <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Size</div>
-      <div style="font-weight:600;">48.4MiB</div>
+      <div style="font-weight:600;">36.4MiB</div>
     </div>
 
   </div>
@@ -1636,15 +1602,6 @@ MSG     2784000 !CAL -32.9, -10.4        -0,   1559
   </details>
 
 
-
-  <details>
-    <summary style="cursor:pointer; font-weight:600;">Recent history</summary>
-    <ol style="margin-top:8px;">
-
-      <li>fill_time_discontinuities()</li>
-
-    </ol>
-  </details>
 
 </div></div>
 </div>
@@ -1704,7 +1661,7 @@ MSG     2784000 !CAL -32.9, -10.4        -0,   1559
         <span class="n">events</span> <span class="o">=</span> <span class="p">[</span><span class="n">ev</span> <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span> <span class="k">if</span> <span class="n">ev</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"MSG"</span><span class="p">)]</span>
     <span class="n">experiment_start_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">([</span><span class="s2">"experiment_start"</span> <span class="ow">in</span> <span class="n">ev</span> <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span><span class="p">])[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">events</span> <span class="o">=</span> <span class="n">events</span><span class="p">[</span><span class="n">experiment_start_index</span><span class="o">+</span><span class="mi">1</span><span class="p">:]</span>
-    <span class="n">df_ev</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">ev</span><span class="o">.</span><span class="n">split</span><span class="p">()</span> <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span><span class="p">])</span>
+    <span class="n">df_ev</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">events</span><span class="p">)</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">df_ev</span> <span class="o">=</span> <span class="n">df_ev</span><span class="p">[</span><span class="n">df_ev</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()][[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]</span>
     <span class="n">df_ev</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"time"</span><span class="p">,</span> <span class="s2">"event"</span><span class="p">]</span>
 
@@ -1741,11 +1698,11 @@ MSG     2784000 !CAL -32.9, -10.4        -0,   1559
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-<span class="ansi-green-fg">pp: 12:34:11</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fill_time_discontinuities</span>:<span class="ansi-cyan-fg">1774</span> | <span class="ansi-bold">Filling in 5 gaps</span>
-<span class="ansi-green-fg">pp: 12:34:11</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fill_time_discontinuities</span>:<span class="ansi-cyan-fg">1776</span> | <span class="ansi-bold">[32.35   4.012  6.21   2.02   1.862] seconds</span>
+<span class="ansi-green-fg">pp: 17:51:54</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fill_time_discontinuities</span>:<span class="ansi-cyan-fg">2252</span> | <span class="ansi-bold">Filling in 5 gaps</span>
+<span class="ansi-green-fg">pp: 17:51:54</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fill_time_discontinuities</span>:<span class="ansi-cyan-fg">2254</span> | <span class="ansi-bold">[32.35   4.012  6.21   2.02   1.862] seconds</span>
 </pre></div></div>
 </div>
-<p>After that, we might want to save the final <code class="docutils literal notranslate"><span class="pre">EyeData</span></code> object to a file that can be loaded back quickly. This can be done using <code class="docutils literal notranslate"><span class="pre">EyeData.write_file()</span></code> or <code class="docutils literal notranslate"><span class="pre">pp.write_pickle()</span></code>:</p>
+<p>After that, we might want to save the final <code class="docutils literal notranslate"><span class="pre">EyeData</span></code> object to a file that can be loaded back quickly. This can be done using <code class="docutils literal notranslate"><span class="pre">EyeData.write_file()</span></code> or <code class="docutils literal notranslate"><span class="pre">pp.write_file()</span></code>:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
 </pre></div>
@@ -1816,13 +1773,8 @@ example_data/test.pd
     </div>
 
     <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
-      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Blinks</div>
-      <div style="font-weight:600;"></div>
-    </div>
-
-    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
       <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Size</div>
-      <div style="font-weight:600;">125.8MiB</div>
+      <div style="font-weight:600;">84.8MiB</div>
     </div>
 
   </div>
@@ -1886,8 +1838,6 @@ example_data/test.pd
   <details>
     <summary style="cursor:pointer; font-weight:600;">Recent history</summary>
     <ol style="margin-top:8px;">
-
-      <li>fill_time_discontinuities()</li>
 
       <li>reset_time()</li>
 

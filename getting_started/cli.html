@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Command-line tools &#8212; pypillometry v2.1.0</title>
+    <title>Command-line tools &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -103,9 +103,6 @@
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -472,15 +469,15 @@
                   
   <section id="command-line-tools">
 <h1>Command-line tools<a class="headerlink" href="#command-line-tools" title="Link to this heading">#</a></h1>
-<p>Three programs are installed together with the package. They give a quick
+<p>Four programs are installed together with the package. They give a quick
 look at a recording without writing any Python code.</p>
 <p>All of them read Eyelink EDF files and eyedata objects saved with
-<a class="reference internal" href="../api/generated/pypillometry.write_pickle.html#pypillometry.write_pickle" title="pypillometry.write_pickle"><code class="xref py py-func docutils literal notranslate"><span class="pre">write_pickle()</span></code></a> or
-<a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.write_file" title="pypillometry.GenericEyeData.write_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">write_file()</span></code></a> (pickle files, e.g.,
+<a class="reference internal" href="../api/generated/pypillometry.write_file.html#pypillometry.write_file" title="pypillometry.write_file"><code class="xref py py-func docutils literal notranslate"><span class="pre">write_file()</span></code></a> or
+<a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.write_file" title="pypillometry.EyeData.write_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">write_file()</span></code></a> (pickle files, e.g.,
 <code class="docutils literal notranslate"><span class="pre">.pkl</span></code> or <code class="docutils literal notranslate"><span class="pre">.pypil</span></code>, or HDF5 files, <code class="docutils literal notranslate"><span class="pre">.h5</span></code>). The format is detected from the file content, not from the
 extension. Instead of a local file, you can also give an HTTP(S) URL or an
 SSH URL (<code class="docutils literal notranslate"><span class="pre">ssh://server/folder/file.edf</span></code>).</p>
-<p>All three accept <code class="docutils literal notranslate"><span class="pre">-q</span></code> (only warnings and errors, no progress bars) and
+<p>All of them accept <code class="docutils literal notranslate"><span class="pre">-q</span></code> (only warnings and errors, no progress bars) and
 <code class="docutils literal notranslate"><span class="pre">-v</span></code> (debug messages, including the output of <code class="docutils literal notranslate"><span class="pre">eyelinkio</span></code>). Use
 <code class="docutils literal notranslate"><span class="pre">--help</span></code> to see all options.</p>
 <section id="pypilview-look-at-a-recording">
@@ -540,7 +537,7 @@ EyeData(recording.edf, 124.5MiB):
 <p>The calibration line shows the validation error (in degrees) for each
 eye, and the history lists all processing steps applied to the data so far.</p>
 <p>With <code class="docutils literal notranslate"><span class="pre">-Q</span></code>/<code class="docutils literal notranslate"><span class="pre">--quality</span></code>, <code class="docutils literal notranslate"><span class="pre">pypilinfo</span></code> prints a data-quality report
-instead of the summary (see <a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.quality_report" title="pypillometry.GenericEyeData.quality_report"><code class="xref py py-meth docutils literal notranslate"><span class="pre">quality_report()</span></code></a>):
+instead of the summary (see <a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.quality_report" title="pypillometry.EyeData.quality_report"><code class="xref py py-meth docutils literal notranslate"><span class="pre">quality_report()</span></code></a>):
 missing data, dropouts, noise, gaze precision, calibration errors etc.,
 each labeled “good”, “ok”, “poor” or “bad”. Add <code class="docutils literal notranslate"><span class="pre">-d</span></code>/<code class="docutils literal notranslate"><span class="pre">--descriptions</span></code>
 to explain each measure and its thresholds. For several files, a summary
@@ -578,8 +575,38 @@ edf2pypil<span class="w"> </span>recording.edf<span class="w"> </span>-o<span cl
 edf2pypil<span class="w"> </span>recording.edf<span class="w"> </span>-f<span class="w">           </span><span class="c1"># overwrite an existing file</span>
 </pre></div>
 </div>
-<p>Load the result in Python with <a class="reference internal" href="../api/generated/pypillometry.read_pickle.html#pypillometry.read_pickle" title="pypillometry.read_pickle"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_pickle()</span></code></a> or
-<a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.from_file" title="pypillometry.GenericEyeData.from_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">EyeData.from_file()</span></code></a>.</p>
+<p>Load the result in Python with <a class="reference internal" href="../api/generated/pypillometry.read_file.html#pypillometry.read_file" title="pypillometry.read_file"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_file()</span></code></a> or
+<a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.from_file" title="pypillometry.EyeData.from_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">EyeData.from_file()</span></code></a>.</p>
+</section>
+<section id="pypil-upgrade-convert-files-saved-with-older-versions">
+<h2><code class="docutils literal notranslate"><span class="pre">pypil-upgrade</span></code>: convert files saved with older versions<a class="headerlink" href="#pypil-upgrade-convert-files-saved-with-older-versions" title="Link to this heading">#</a></h2>
+<p>Files saved with an older version of pypillometry are upgraded each time
+they are read. <code class="docutils literal notranslate"><span class="pre">pypil-upgrade</span></code> converts them once to the current file
+format. It reads pickle and HDF5 files (other files are left alone) and
+writes each file in the format it had, either in place (<code class="docutils literal notranslate"><span class="pre">-i</span></code>) or to an
+output file or folder (<code class="docutils literal notranslate"><span class="pre">-o</span></code>):</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ pypil-upgrade -i data/
+data/notes.txt: skipped (not a pickle or HDF5 file)
+data/sub01.pypil: converted, format 2 -&gt; 3 (EyeData, pickle)
+data/sub02.h5: converted, format 2 -&gt; 3 (EyeData, hdf5)
+data/sub03.pypil: up to date (format 3)
+4 file(s): 2 converted, 1 up to date, 1 skipped, 0 failed
+</pre></div>
+</div>
+<p>More options:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pypil-upgrade<span class="w"> </span>-n<span class="w"> </span>data/<span class="w">               </span><span class="c1"># only report what would be converted</span>
+pypil-upgrade<span class="w"> </span>-r<span class="w"> </span>-o<span class="w"> </span>new/<span class="w"> </span>data/<span class="w">       </span><span class="c1"># with subfolders, write to new/</span>
+pypil-upgrade<span class="w"> </span>-o<span class="w"> </span>new.pypil<span class="w"> </span>old.pypil<span class="w"> </span><span class="c1"># a single file</span>
+pypil-upgrade<span class="w"> </span>-f<span class="w"> </span>-o<span class="w"> </span>new/<span class="w"> </span>data/<span class="w">       </span><span class="c1"># overwrite existing output files</span>
+</pre></div>
+</div>
+<p>Files that are already up to date are not written (also not to <code class="docutils literal notranslate"><span class="pre">-o</span></code>).
+Loading may print warnings about what was changed, e.g. a sampling rate
+that did not fit the time vector. Some information of old files cannot be
+kept: masks set by <code class="docutils literal notranslate"><span class="pre">mask_offscreen_coords</span></code>, <code class="docutils literal notranslate"><span class="pre">mask_eye_divergences</span></code> (2.1) or
+by hand become the <code class="docutils literal notranslate"><span class="pre">&quot;user&quot;</span></code> mask layer (see the masks in
+<a class="reference internal" href="../user_guide/data_model.html"><span class="doc">Data objects</span></a>).
+As with all pickle files, only convert files you trust.</p>
 </section>
 <section id="eyelink-triggers">
 <h2>Eyelink triggers<a class="headerlink" href="#eyelink-triggers" title="Link to this heading">#</a></h2>
@@ -639,6 +666,7 @@ to keep them.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pypilview-look-at-a-recording"><code class="docutils literal notranslate"><span class="pre">pypilview</span></code>: look at a recording</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pypilinfo-summarize-files"><code class="docutils literal notranslate"><span class="pre">pypilinfo</span></code>: summarize files</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#edf2pypil-convert-edf-files"><code class="docutils literal notranslate"><span class="pre">edf2pypil</span></code>: convert EDF files</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pypil-upgrade-convert-files-saved-with-older-versions"><code class="docutils literal notranslate"><span class="pre">pypil-upgrade</span></code>: convert files saved with older versions</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#eyelink-triggers">Eyelink triggers</a></li>
 </ul>
   </nav></div>

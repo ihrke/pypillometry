@@ -1,0 +1,6 @@
+﻿pupil\_build\_design\_matrix
+============================
+
+.. currentmodule:: pypillometry.signal
+
+.. autofunction:: pupil_build_design_matrix

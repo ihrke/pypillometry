@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pypillometry.eyedata.eyedatadict &#8212; pypillometry v2.1.0</title>
+    <title>pypillometry.eyedata.eyedatadict &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../../../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -414,7 +414,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -458,9 +458,6 @@ window.runMermaid = runMermaid;</script>
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -802,17 +799,172 @@ window.runMermaid = runMermaid;</script>
                 <article class="bd-article">
                   
   <h1>Source code for pypillometry.eyedata.eyedatadict</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">MutableMapping</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">MutableMapping</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">h5py</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..convenience</span><span class="w"> </span><span class="kn">import</span> <span class="n">ByteSize</span><span class="p">,</span> <span class="n">_round_values</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..state</span><span class="w"> </span><span class="kn">import</span> <span class="n">Stateful</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_eye_name</span><span class="p">(</span><span class="n">eye</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Raise a ValueError if `eye` cannot be used as an eye name.</span>
+
+<span class="sd">    Keys are ``"&lt;eye&gt;_&lt;variable&gt;"`` and the variable is everything after the</span>
+<span class="sd">    first ``_``, so eye names may not contain ``_``.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eye</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="n">eye</span> <span class="o">==</span> <span class="s2">""</span> <span class="ow">or</span> <span class="s2">"_"</span> <span class="ow">in</span> <span class="n">eye</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"Invalid eye name </span><span class="si">{</span><span class="n">eye</span><span class="si">!r}</span><span class="s2">: eye names must be non-empty and may not "</span>
+            <span class="s2">"contain '_' (keys are '&lt;eye&gt;_&lt;variable&gt;' and the variable is "</span>
+            <span class="s2">"everything after the first '_')"</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_join_key</span><span class="p">(</span><span class="n">key</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Join an ``(eye, variable)`` tuple to a key, checking the eye name."""</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Tuple key must have exactly 2 elements (eye, variable)"</span><span class="p">)</span>
+    <span class="n">_check_eye_name</span><span class="p">(</span><span class="n">key</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">return</span> <span class="s2">"_"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+
+<span class="c1">#: dtype of the layer bit-fields (one bit per layer)</span>
+<span class="n">LAYER_DTYPE</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint16</span>
+<span class="c1">#: maximum number of layers (bits of `LAYER_DTYPE`)</span>
+<span class="n">MAX_LAYERS</span> <span class="o">=</span> <span class="mi">16</span>
+
+
+<span class="c1">#: the standard layers: missing data (blink, offscreen, divergence, user),</span>
+<span class="c1">#: reconstructed data (interpolated) and periods outside the analysis (excluded)</span>
+<span class="n">STANDARD_LAYERS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"blink"</span><span class="p">,</span> <span class="s2">"interpolated"</span><span class="p">,</span> <span class="s2">"offscreen"</span><span class="p">,</span> <span class="s2">"divergence"</span><span class="p">,</span> <span class="s2">"user"</span><span class="p">,</span> <span class="s2">"excluded"</span><span class="p">)</span>
+<span class="c1">#: layers stored in `EyeDataDict.rec_layers` (recording-wide)</span>
+<span class="n">REC_LAYERS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"excluded"</span><span class="p">,)</span>
+
+
+<div class="viewcode-block" id="MaskPolicy">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.MaskPolicy.html#pypillometry.MaskPolicy">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MaskPolicy</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Which samples count as unusable (masked).</span>
+
+<span class="sd">    A sample is masked if its value is NaN (with `nan`), or if one of the</span>
+<span class="sd">    `layers` is set and none of the layers in `unless` is set. Recording-wide</span>
+<span class="sd">    layers (e.g., ``"excluded"``) mask a sample regardless of `unless`.</span>
+
+<span class="sd">    The predefined policies are in `POLICIES`: ``"default"`` (NaN, blinks,</span>
+<span class="sd">    off-screen gaze, eye divergences, user masks and</span>
+<span class="sd">    excluded periods are masked; interpolated samples are used),</span>
+<span class="sd">    ``"strict"`` (interpolated samples are masked too) and ``"raw"``</span>
+<span class="sd">    (nothing is masked, not even NaN). All processing and analysis methods</span>
+<span class="sd">    take the policy as their `policy` argument.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    layers : str or list of str</span>
+<span class="sd">        layers that make a sample unusable</span>
+<span class="sd">    unless : str or list of str</span>
+<span class="sd">        layers that make a sample usable again (e.g., ``"interpolated"``:</span>
+<span class="sd">        the value was reconstructed)</span>
+<span class="sd">    nan : bool</span>
+<span class="sd">        NaN values are unusable</span>
+<span class="sd">    name : str, optional</span>
+<span class="sd">        name of the policy</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; d.mask("left", "pupil", policy=MaskPolicy(["blink"]))  # doctest: +SKIP</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layers</span><span class="o">=</span><span class="p">(),</span> <span class="n">unless</span><span class="o">=</span><span class="p">(),</span> <span class="n">nan</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layers</span> <span class="o">=</span> <span class="p">(</span><span class="n">layers</span><span class="p">,)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">layers</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">layers</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unless</span> <span class="o">=</span> <span class="p">(</span><span class="n">unless</span><span class="p">,)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">unless</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">unless</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nan</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">nan</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="sa">f</span><span class="s2">"MaskPolicy(layers=</span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">)</span><span class="si">}</span><span class="s2">, unless=</span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unless</span><span class="p">)</span><span class="si">}</span><span class="s2">, "</span>
+                <span class="sa">f</span><span class="s2">"nan=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">nan</span><span class="si">}</span><span class="s2">"</span> <span class="o">+</span> <span class="p">(</span><span class="sa">f</span><span class="s2">", name=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2">)"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="k">else</span> <span class="s2">")"</span><span class="p">))</span></div>
+
+
+
+<span class="c1"># the layers of missing data</span>
+<span class="n">_MISSING</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"blink"</span><span class="p">,</span> <span class="s2">"offscreen"</span><span class="p">,</span> <span class="s2">"divergence"</span><span class="p">,</span> <span class="s2">"user"</span><span class="p">,</span> <span class="s2">"excluded"</span><span class="p">)</span>
+<span class="c1">#: predefined policies (see :class:`MaskPolicy`)</span>
+<span class="n">POLICIES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"default"</span><span class="p">:</span> <span class="n">MaskPolicy</span><span class="p">(</span><span class="n">_MISSING</span><span class="p">,</span> <span class="n">unless</span><span class="o">=</span><span class="s2">"interpolated"</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"default"</span><span class="p">),</span>
+    <span class="s2">"strict"</span><span class="p">:</span> <span class="n">MaskPolicy</span><span class="p">(</span><span class="n">_MISSING</span> <span class="o">+</span> <span class="p">(</span><span class="s2">"interpolated"</span><span class="p">,),</span> <span class="n">name</span><span class="o">=</span><span class="s2">"strict"</span><span class="p">),</span>
+    <span class="s2">"raw"</span><span class="p">:</span> <span class="n">MaskPolicy</span><span class="p">(</span><span class="n">nan</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"raw"</span><span class="p">),</span>
+<span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_as_policy</span><span class="p">(</span><span class="n">policy</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MaskPolicy</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""MaskPolicy from a policy, the name of a predefined one or a list of layers."""</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">policy</span><span class="p">,</span> <span class="n">MaskPolicy</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">policy</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">policy</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">policy</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">POLICIES</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"unknown policy </span><span class="si">{</span><span class="n">policy</span><span class="si">!r}</span><span class="s2">; predefined policies: "</span>
+                             <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">POLICIES</span><span class="p">)</span><span class="si">}</span><span class="s2"> (or a MaskPolicy or a list of layers)"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">POLICIES</span><span class="p">[</span><span class="n">policy</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">MaskPolicy</span><span class="p">(</span><span class="n">policy</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_without_layer</span><span class="p">(</span><span class="n">policy</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MaskPolicy</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""`policy` without the layer `name` (e.g., the layer that a detector is</span>
+<span class="sd">    about to replace)."""</span>
+    <span class="n">policy</span> <span class="o">=</span> <span class="n">_as_policy</span><span class="p">(</span><span class="n">policy</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">MaskPolicy</span><span class="p">([</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">policy</span><span class="o">.</span><span class="n">layers</span> <span class="k">if</span> <span class="n">n</span> <span class="o">!=</span> <span class="n">name</span><span class="p">],</span> <span class="n">policy</span><span class="o">.</span><span class="n">unless</span><span class="p">,</span> <span class="n">policy</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_PolicyMask</span><span class="p">(</span><span class="n">Mapping</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Read-only mapping key -&gt; int mask (1: masked) of an :class:`EyeDataDict`</span>
+<span class="sd">    under the default mask policy (see `POLICIES`).</span>
+
+<span class="sd">    The arrays are computed on access and are read-only; change masks with</span>
+<span class="sd">    the methods of :class:`EyeDataDict` (e.g., `set_mask`, `add_mask`).</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_d</span> <span class="o">=</span> <span class="n">d</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_d</span><span class="o">.</span><span class="n">get_policy_mask</span><span class="p">(</span><span class="n">key</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">writeable</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="n">out</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_d</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_d</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_d</span><span class="o">.</span><span class="n">data</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_decimate_layers</span><span class="p">(</span><span class="n">layers</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Decimated layer bit-field: a bit is set where it is set for more than</span>
+<span class="sd">    half of the samples in the window (the last window may be shorter)."""</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">layers</span><span class="p">)</span>
+    <span class="n">nw</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="o">-</span><span class="n">n</span> <span class="o">//</span> <span class="n">factor</span><span class="p">)</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nw</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">LAYER_DTYPE</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">out</span>
+    <span class="n">windows</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">layers</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nw</span> <span class="o">*</span> <span class="n">factor</span> <span class="o">-</span> <span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">LAYER_DTYPE</span><span class="p">)])</span>
+    <span class="n">windows</span> <span class="o">=</span> <span class="n">windows</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">nw</span><span class="p">,</span> <span class="n">factor</span><span class="p">)</span>
+    <span class="n">size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">nw</span><span class="p">,</span> <span class="n">factor</span><span class="p">)</span>
+    <span class="n">size</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">n</span> <span class="o">-</span> <span class="p">(</span><span class="n">nw</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span>
+    <span class="n">present</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">bitwise_or</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="n">layers</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">present</span><span class="o">.</span><span class="n">bit_length</span><span class="p">()):</span>
+        <span class="n">bit</span> <span class="o">=</span> <span class="n">LAYER_DTYPE</span><span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">i</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">present</span> <span class="o">&amp;</span> <span class="n">bit</span><span class="p">:</span>
+            <span class="n">out</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="p">((</span><span class="n">windows</span> <span class="o">&amp;</span> <span class="n">bit</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">size</span><span class="p">]</span> <span class="o">|=</span> <span class="n">bit</span>
+    <span class="k">return</span> <span class="n">out</span>
+
 
 <div class="viewcode-block" id="EyeDataDict">
 <a class="viewcode-back" href="../../../api/generated/pypillometry.EyeDataDict.html#pypillometry.EyeDataDict">[docs]</a>
@@ -832,17 +984,29 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    No other values are treated as missing (e.g., a pupil size of 0 is kept);</span>
 <span class="sd">    converting missing-value codes to NaN is up to the code that reads the data.</span>
 
+<span class="sd">    Each key also has mask *layers*: a bit-field (`layers`, dtype</span>
+<span class="sd">    `LAYER_DTYPE`) with one bit per named layer (e.g., ``"blink"``). The</span>
+<span class="sd">    layer names are registered in `layer_names` (the same for all keys);</span>
+<span class="sd">    a layer gets the next free bit when it is first set. Layers that</span>
+<span class="sd">    apply to all keys (e.g., ``"excluded"``) are stored once, in</span>
+<span class="sd">    `rec_layers` (recording-wide layers, same registry). `mask` is the</span>
+<span class="sd">    mask under the default mask policy as one 0/1 array per key (see</span>
+<span class="sd">    :class:`MaskPolicy`).</span>
+
 <span class="sd">    The dictionary can be indexed by a string "eye_variable" or by a tuple</span>
 <span class="sd">    ("eye", "variable") like data["left","x"] or data["left_x"].</span>
 <span class="sd">    """</span>
 
-    <span class="c1"># state (see pypillometry.state): data and masks</span>
-    <span class="n">_STATE_FIELDS</span> <span class="o">=</span> <span class="p">((</span><span class="s2">"values"</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">"data"</span><span class="p">),</span> <span class="s2">"mask"</span><span class="p">)</span>
+    <span class="c1"># state (see pypillometry.state): data, masks and layers</span>
+    <span class="n">_STATE_FIELDS</span> <span class="o">=</span> <span class="p">((</span><span class="s2">"values"</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">"data"</span><span class="p">),</span> <span class="s2">"layers"</span><span class="p">,</span> <span class="s2">"layer_names"</span><span class="p">,</span> <span class="s2">"rec_layers"</span><span class="p">)</span>
     <span class="n">_STATE_EXCLUDE</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"length"</span><span class="p">,</span> <span class="s2">"shape"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span> <span class="c1"># mask for missing/artifactual values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>  <span class="c1"># layer bit-fields</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layer_names</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># layer i is bit 1 &lt;&lt; i</span>
+        <span class="c1"># recording-wide layers (one bit-field for all keys; None without data)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rec_layers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NDArray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>  <span class="c1"># use the free update to set keys</span>
@@ -865,7 +1029,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">            order in which they were added</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="n">variable</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">eyes</span><span class="o">=</span><span class="p">[</span><span class="n">k</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"_"</span><span class="o">+</span><span class="n">variable</span><span class="p">)]</span>
+            <span class="n">eyes</span><span class="o">=</span><span class="p">[</span><span class="n">k</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">variable</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">eyes</span><span class="o">=</span><span class="p">[</span><span class="n">k</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">eyes</span><span class="p">))</span></div>
@@ -906,6 +1070,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        -------</span>
 <span class="sd">        EyeDataDict</span>
 <span class="sd">            A new EyeDataDict containing only data for the specified eye</span>
+<span class="sd">            (copies, with their masks and layers)</span>
 <span class="sd">        </span>
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
@@ -914,7 +1079,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        &gt;&gt;&gt; print(left_data.data.keys())</span>
 <span class="sd">        dict_keys(['left_x', 'left_y'])</span>
 <span class="sd">        """</span>
-        <span class="k">return</span> <span class="n">EyeDataDict</span><span class="p">({</span><span class="n">k</span><span class="p">:</span><span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">eye</span><span class="o">+</span><span class="s2">"_"</span><span class="p">)})</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_subset</span><span class="p">([</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">eye</span><span class="o">+</span><span class="s2">"_"</span><span class="p">)])</span></div>
 
     
 <div class="viewcode-block" id="EyeDataDict.get_variable">
@@ -932,16 +1097,101 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        -------</span>
 <span class="sd">        EyeDataDict</span>
 <span class="sd">            A new EyeDataDict containing only data for the specified variable</span>
+<span class="sd">            (copies, with their masks and layers)</span>
 <span class="sd">        """</span>
-        <span class="k">return</span> <span class="n">EyeDataDict</span><span class="p">({</span><span class="n">k</span><span class="p">:</span><span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"_"</span><span class="o">+</span><span class="n">variable</span><span class="p">)})</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_subset</span><span class="p">([</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">variable</span><span class="p">])</span></div>
 
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_subset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">'EyeDataDict'</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Copy of the channels `keys` with their layers (and the</span>
+<span class="sd">        recording-wide layers)."""</span>
+        <span class="n">new_dict</span> <span class="o">=</span> <span class="n">EyeDataDict</span><span class="p">()</span>
+        <span class="n">new_dict</span><span class="o">.</span><span class="n">layer_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layer_names</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+            <span class="n">new_dict</span><span class="o">.</span><span class="n">_set_channel</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">keys</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">rec_layers</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">new_dict</span><span class="o">.</span><span class="n">rec_layers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rec_layers</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">new_dict</span>
+
+<div class="viewcode-block" id="EyeDataDict.select">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.EyeDataDict.html#pypillometry.EyeDataDict.select">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">select</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return the existing (eye, variable) pairs for the given eyes and variables.</span>
+
+<span class="sd">        Only pairs for which data is stored are returned, so data where not</span>
+<span class="sd">        every eye has every variable (e.g., ``left_pupil``, ``left_x``,</span>
+<span class="sd">        ``right_pupil``) can be processed pair by pair.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        eyes : str or list of str, optional</span>
+<span class="sd">            eye(s) to select; if None or empty, all available eyes</span>
+<span class="sd">        variables : str or list of str, optional</span>
+<span class="sd">            variable(s) to select; if None or empty, all available variables</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list of tuple</span>
+<span class="sd">            ``(eye, variable)`` pairs, ordered by eye, then variable (in the</span>
+<span class="sd">            order given or, for all eyes/variables, the order of the data)</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        KeyError</span>
+<span class="sd">            if something that was explicitly requested does not exist: a</span>
+<span class="sd">            pair (if both `eyes` and `variables` are given), or an eye or</span>
+<span class="sd">            variable without any data among the selected pairs (if only</span>
+<span class="sd">            one of them is given). The message lists the available channels.</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            if a requested eye name contains ``_`` (eye names may not</span>
+<span class="sd">            contain ``_``, see :meth:`_validate_key`)</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; d = EyeDataDict(left_pupil=[1,2], left_x=[3,4], right_pupil=[5,6])</span>
+<span class="sd">        &gt;&gt;&gt; d.select()</span>
+<span class="sd">        [('left', 'pupil'), ('left', 'x'), ('right', 'pupil')]</span>
+<span class="sd">        &gt;&gt;&gt; d.select(variables="x")</span>
+<span class="sd">        [('left', 'x')]</span>
+<span class="sd">        """</span>
+        <span class="n">pairs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_select</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span> <span class="n">variables</span><span class="p">)</span>
+        <span class="c1"># name the channels in the log of the calling method</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">opt</span><span class="p">(</span><span class="n">depth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"channels: </span><span class="si">%s</span><span class="s2">"</span> <span class="o">%</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">e</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">pairs</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_select</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">""":meth:`select` without the debug log."""</span>
+        <span class="n">eyes_given</span> <span class="o">=</span> <span class="n">eyes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">eyes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="n">vars_given</span> <span class="o">=</span> <span class="n">variables</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="n">eyes</span> <span class="o">=</span> <span class="p">([</span><span class="n">eyes</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="n">eyes</span><span class="p">))</span> <span class="k">if</span> <span class="n">eyes_given</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">eyes</span>
+        <span class="n">variables</span> <span class="o">=</span> <span class="p">(([</span><span class="n">variables</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="n">variables</span><span class="p">))</span>
+                     <span class="k">if</span> <span class="n">vars_given</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">)</span>
+
+        <span class="n">pairs</span> <span class="o">=</span> <span class="p">[(</span><span class="n">e</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">eyes</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">variables</span> <span class="k">if</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">"</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">eyes_given</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes</span><span class="p">:</span>
+                <span class="n">_check_eye_name</span><span class="p">(</span><span class="n">eye</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">eyes_given</span> <span class="ow">and</span> <span class="n">vars_given</span><span class="p">:</span>
+            <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">eyes</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">variables</span> <span class="k">if</span> <span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">eyes_given</span><span class="p">:</span>
+            <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">eyes</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">pe</span> <span class="o">==</span> <span class="n">e</span> <span class="k">for</span> <span class="n">pe</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">)]</span>
+        <span class="k">elif</span> <span class="n">vars_given</span><span class="p">:</span>
+            <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">variables</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">pv</span> <span class="o">==</span> <span class="n">v</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">pv</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">)]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">missing</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">"No data for </span><span class="si">%s</span><span class="s2">; available channels: </span><span class="si">%s</span><span class="s2">"</span>
+                           <span class="o">%</span> <span class="p">(</span><span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">missing</span><span class="p">),</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">())))</span>
+        <span class="k">return</span> <span class="n">pairs</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
-            <span class="n">key</span> <span class="o">=</span> <span class="s2">"_"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="n">_join_key</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -961,8 +1211,8 @@ window.runMermaid = runMermaid;</script>
         <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate_key</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>  <span class="c1"># Only validate key when setting values</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">value</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># set mask to 1 for missing values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">LAYER_DTYPE</span><span class="p">)</span>  <span class="c1"># NaN: from the values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_rec_layers</span><span class="p">()</span>
 
 <div class="viewcode-block" id="EyeDataDict.set_with_mask">
 <a class="viewcode-back" href="../../../api/generated/pypillometry.EyeDataDict.html#pypillometry.EyeDataDict.set_with_mask">[docs]</a>
@@ -972,7 +1222,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        Set data array with explicit mask control.</span>
 <span class="sd">        </span>
 <span class="sd">        This method provides more control over mask handling than __setitem__,</span>
-<span class="sd">        which always resets the mask to zeros (except for NaN values).</span>
+<span class="sd">        which always resets the mask to zeros (except for NaN values) and</span>
+<span class="sd">        clears the layers.</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -981,22 +1232,26 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        value : NDArray</span>
 <span class="sd">            Data array to store</span>
 <span class="sd">        mask : NDArray, optional</span>
-<span class="sd">            Mask array to use. If None and preserve_mask=True, keeps existing mask.</span>
-<span class="sd">            If None and preserve_mask=False, creates new zero mask (with NaNs masked).</span>
+<span class="sd">            Mask array to use (see `set_mask`). If None and preserve_mask=True,</span>
+<span class="sd">            keeps existing mask and layers. If None and preserve_mask=False,</span>
+<span class="sd">            creates new zero mask (with NaNs masked) and clears the layers.</span>
 <span class="sd">        preserve_mask : bool, default False</span>
-<span class="sd">            If True and mask is None, preserve the existing mask for this key.</span>
-<span class="sd">            Ignored if mask is explicitly provided.</span>
+<span class="sd">            If True and mask is None, preserve the existing mask and layers</span>
+<span class="sd">            for this key. Ignored if mask is explicitly provided.</span>
 <span class="sd">        </span>
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
-<span class="sd">        &gt;&gt;&gt; # Set data and preserve existing mask</span>
-<span class="sd">        &gt;&gt;&gt; data_dict.set_with_mask("left_pupil", new_values, preserve_mask=True)</span>
-<span class="sd">        </span>
-<span class="sd">        &gt;&gt;&gt; # Set data with explicit mask</span>
-<span class="sd">        &gt;&gt;&gt; data_dict.set_with_mask("left_pupil", new_values, mask=new_mask)</span>
-<span class="sd">        </span>
-<span class="sd">        &gt;&gt;&gt; # Set data with fresh zero mask (same as __setitem__)</span>
-<span class="sd">        &gt;&gt;&gt; data_dict.set_with_mask("left_pupil", new_values)</span>
+<span class="sd">        &gt;&gt;&gt; d = EyeDataDict(left_pupil=[1., 2., 3.])</span>
+<span class="sd">        &gt;&gt;&gt; d.set_mask("left_pupil", [0, 1, 0])</span>
+<span class="sd">        &gt;&gt;&gt; d.set_with_mask("left_pupil", [4., 5., 6.], preserve_mask=True)</span>
+<span class="sd">        &gt;&gt;&gt; d.mask["left_pupil"]</span>
+<span class="sd">        array([0, 1, 0])</span>
+<span class="sd">        &gt;&gt;&gt; d.set_with_mask("left_pupil", [4., 5., 6.], mask=[1, 0, 0])</span>
+<span class="sd">        &gt;&gt;&gt; d.mask["left_pupil"]</span>
+<span class="sd">        array([1, 0, 0])</span>
+<span class="sd">        &gt;&gt;&gt; d.set_with_mask("left_pupil", [4., np.nan, 6.])  # fresh mask</span>
+<span class="sd">        &gt;&gt;&gt; d.mask["left_pupil"]</span>
+<span class="sd">        array([0, 1, 0])</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span>
@@ -1019,27 +1274,42 @@ window.runMermaid = runMermaid;</script>
         
         <span class="n">value_float</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
 
+        <span class="n">existed</span> <span class="o">=</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span>
         <span class="c1"># Store data</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value_float</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_rec_layers</span><span class="p">()</span>
         
         <span class="c1"># Handle mask</span>
-        <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">existed</span><span class="p">:</span>
             <span class="c1"># Explicit mask provided</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">preserve_mask</span> <span class="ow">and</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_mask</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">LAYER_DTYPE</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">mask</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">set_layer</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="s2">"user"</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">preserve_mask</span> <span class="ow">and</span> <span class="n">existed</span><span class="p">:</span>
             <span class="c1"># Preserve existing mask - do nothing</span>
             <span class="k">pass</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Create new mask (default behavior, same as __setitem__)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">value_float</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">1</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">LAYER_DTYPE</span><span class="p">)</span></div>
 
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_init_rec_layers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Create empty recording-wide layers once the length is known."""</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rec_layers</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rec_layers</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">LAYER_DTYPE</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_channel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">layers</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Set values and layers of `key` as given (no other rules)."""</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_with_mask</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">values</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">layers</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">LAYER_DTYPE</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
-            <span class="n">key</span> <span class="o">=</span> <span class="s2">"_"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="n">_join_key</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
         <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
@@ -1058,39 +1328,232 @@ window.runMermaid = runMermaid;</script>
         <span class="k">return</span> <span class="n">r</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_validate_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Validate and normalize key format."""</span>
+<span class="w">        </span><span class="sd">"""Validate and normalize key format.</span>
+
+<span class="sd">        Tuple keys ``(eye, variable)`` are joined with ``_``; the eye name may</span>
+<span class="sd">        not contain ``_``, since the variable is everything after the first</span>
+<span class="sd">        ``_`` (e.g., ``("my_eye", "pupil")`` would be read back as eye</span>
+<span class="sd">        ``"my"``, variable ``"eye_pupil"``).</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"Key must be string or tuple"</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Tuple key must have exactly 2 elements (eye, variable)"</span><span class="p">)</span>
-            <span class="n">key</span> <span class="o">=</span> <span class="s2">"_"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="n">_join_key</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
         <span class="k">if</span> <span class="s2">"_"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">key</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Key must be in format 'eye_variable'"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">key</span>
 
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mask</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mapping</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Mask of each key under the default mask policy (read-only</span>
+<span class="sd">        mapping key -&gt; int array, 1: masked; see `get_policy_mask`).</span>
+
+<span class="sd">        The arrays are read-only.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">_PolicyMask</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="c1"># --- layers -----------------------------------------------------------</span>
+
+<div class="viewcode-block" id="EyeDataDict.layer_bits">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.EyeDataDict.html#pypillometry.EyeDataDict.layer_bits">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">layer_bits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">names</span><span class="p">,</span> <span class="n">create</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Bit mask of the layers `names` (0 for layers that are not registered).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        names : str or list of str</span>
+<span class="sd">            layer name(s)</span>
+<span class="sd">        create : bool, optional</span>
+<span class="sd">            register layers that are not registered yet (next free bit)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int</span>
+<span class="sd">            the bits of the layers OR-ed together</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            if a new layer is needed but all `MAX_LAYERS` bits are used</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="n">names</span><span class="p">]</span>
+        <span class="n">bits</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">layer_names</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">create</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layer_names</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">MAX_LAYERS</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"cannot add layer </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">: all </span><span class="si">{</span><span class="n">MAX_LAYERS</span><span class="si">}</span><span class="s2"> layers "</span>
+                                     <span class="sa">f</span><span class="s2">"are used (</span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layer_names</span><span class="p">)</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">layer_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">bits</span> <span class="o">|=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">layer_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">bits</span></div>
+
+
+<div class="viewcode-block" id="EyeDataDict.get_layer">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.EyeDataDict.html#pypillometry.EyeDataDict.get_layer">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Boolean array that is True where layer `name` is set for `key`."""</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">&amp;</span> <span class="bp">self</span><span class="o">.</span><span class="n">layer_bits</span><span class="p">(</span><span class="n">name</span><span class="p">))</span> <span class="o">!=</span> <span class="mi">0</span></div>
+
+
+<div class="viewcode-block" id="EyeDataDict.set_layer">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.EyeDataDict.html#pypillometry.EyeDataDict.set_layer">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">replace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Set layer `name` of `key` where `mask` is True.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        key : str</span>
+<span class="sd">            key of the data (e.g., "left_pupil")</span>
+<span class="sd">        name : str</span>
+<span class="sd">            layer name (registered if new)</span>
+<span class="sd">        mask : array-like of bool</span>
+<span class="sd">            one value per sample</span>
+<span class="sd">        replace : bool, optional</span>
+<span class="sd">            clear the layer first (True) or add to it (False, default)</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"No data for key </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">mask</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Mask must have shape </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">bit</span> <span class="o">=</span> <span class="n">LAYER_DTYPE</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layer_bits</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">create</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">replace</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">&amp;=</span> <span class="o">~</span><span class="n">bit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="n">mask</span><span class="p">]</span> <span class="o">|=</span> <span class="n">bit</span></div>
+
+
+<div class="viewcode-block" id="EyeDataDict.clear_layer">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.EyeDataDict.html#pypillometry.EyeDataDict.clear_layer">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">clear_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">where</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NDArray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Clear layer `name` of `key` everywhere or at the samples `where`</span>
+<span class="sd">        (an index, e.g. a boolean array or ``np.s_[10:20]``)."""</span>
+        <span class="n">bit</span> <span class="o">=</span> <span class="n">LAYER_DTYPE</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layer_bits</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">bit</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">where</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">&amp;=</span> <span class="o">~</span><span class="n">bit</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="n">where</span><span class="p">]</span> <span class="o">&amp;=</span> <span class="o">~</span><span class="n">bit</span></div>
+
+
+<div class="viewcode-block" id="EyeDataDict.get_rec_layer">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.EyeDataDict.html#pypillometry.EyeDataDict.get_rec_layer">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_rec_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Boolean array that is True where the recording-wide layer `name` is set."""</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rec_layers</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rec_layers</span> <span class="o">&amp;</span> <span class="bp">self</span><span class="o">.</span><span class="n">layer_bits</span><span class="p">(</span><span class="n">name</span><span class="p">))</span> <span class="o">!=</span> <span class="mi">0</span></div>
+
+
+<div class="viewcode-block" id="EyeDataDict.set_rec_layer">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.EyeDataDict.html#pypillometry.EyeDataDict.set_rec_layer">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_rec_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">replace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Set the recording-wide layer `name` (all keys) where `mask` is True.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        name : str</span>
+<span class="sd">            layer name (registered if new)</span>
+<span class="sd">        mask : array-like of bool</span>
+<span class="sd">            one value per sample</span>
+<span class="sd">        replace : bool, optional</span>
+<span class="sd">            clear the layer first (True) or add to it (False, default)</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rec_layers</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">"No data"</span><span class="p">)</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">mask</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Mask must have shape </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">bit</span> <span class="o">=</span> <span class="n">LAYER_DTYPE</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layer_bits</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">create</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">replace</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rec_layers</span> <span class="o">&amp;=</span> <span class="o">~</span><span class="n">bit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rec_layers</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">|=</span> <span class="n">bit</span></div>
+
+
+<div class="viewcode-block" id="EyeDataDict.clear_rec_layer">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.EyeDataDict.html#pypillometry.EyeDataDict.clear_rec_layer">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">clear_rec_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Clear the recording-wide layer `name`."""</span>
+        <span class="n">bit</span> <span class="o">=</span> <span class="n">LAYER_DTYPE</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layer_bits</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">bit</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">rec_layers</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rec_layers</span> <span class="o">&amp;=</span> <span class="o">~</span><span class="n">bit</span></div>
+
+
+<div class="viewcode-block" id="EyeDataDict.get_policy_mask">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.EyeDataDict.html#pypillometry.EyeDataDict.get_policy_mask">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_policy_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">policy</span><span class="o">=</span><span class="s2">"default"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Boolean mask of `key` under `policy` (True: unusable sample).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        key : str</span>
+<span class="sd">            key of the data (e.g., "left_pupil")</span>
+<span class="sd">        policy : str, MaskPolicy or list of str</span>
+<span class="sd">            a predefined policy (see `POLICIES`), a :class:`MaskPolicy`, or</span>
+<span class="sd">            a list of layers (each of them masks a sample; NaN as well)</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            if the policy names a layer that is neither a standard layer</span>
+<span class="sd">            nor registered</span>
+<span class="sd">        """</span>
+        <span class="n">policy</span> <span class="o">=</span> <span class="n">_as_policy</span><span class="p">(</span><span class="n">policy</span><span class="p">)</span>
+        <span class="n">unknown</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">policy</span><span class="o">.</span><span class="n">layers</span> <span class="o">+</span> <span class="n">policy</span><span class="o">.</span><span class="n">unless</span>
+                   <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">STANDARD_LAYERS</span> <span class="ow">and</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">layer_names</span>
+                   <span class="ow">and</span> <span class="ow">not</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)]</span>  <span class="c1"># internal layers</span>
+        <span class="k">if</span> <span class="n">unknown</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"unknown layer(s) </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">unknown</span><span class="p">)</span><span class="si">}</span><span class="s2">; registered layers: "</span>
+                             <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layer_names</span><span class="p">)</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">'none'</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">layers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="n">masked</span> <span class="o">=</span> <span class="p">(</span><span class="n">layers</span> <span class="o">&amp;</span> <span class="bp">self</span><span class="o">.</span><span class="n">layer_bits</span><span class="p">(</span><span class="n">policy</span><span class="o">.</span><span class="n">layers</span><span class="p">))</span> <span class="o">!=</span> <span class="mi">0</span>
+        <span class="n">unless</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">layer_bits</span><span class="p">(</span><span class="n">policy</span><span class="o">.</span><span class="n">unless</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">unless</span><span class="p">:</span>
+            <span class="n">masked</span> <span class="o">&amp;=</span> <span class="p">(</span><span class="n">layers</span> <span class="o">&amp;</span> <span class="n">unless</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+        <span class="c1"># recording-wide layers (e.g., excluded): `unless` does not apply</span>
+        <span class="n">masked</span> <span class="o">|=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rec_layers</span> <span class="o">&amp;</span> <span class="bp">self</span><span class="o">.</span><span class="n">layer_bits</span><span class="p">(</span><span class="n">policy</span><span class="o">.</span><span class="n">layers</span><span class="p">))</span> <span class="o">!=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">policy</span><span class="o">.</span><span class="n">nan</span><span class="p">:</span>
+            <span class="n">masked</span> <span class="o">|=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">masked</span></div>
+
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_set_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">st</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Set data and masks from a state; length and shape follow from them."""</span>
+<span class="w">        </span><span class="sd">"""Set data and layers from a state; length and shape follow from them."""</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_set_state</span><span class="p">(</span><span class="n">st</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layer_names</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">layer_names</span><span class="p">]</span>
         <span class="n">first</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span> <span class="kc">None</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">first</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">first</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">first</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">first</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rec_layers</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rec_layers</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rec_layers</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">LAYER_DTYPE</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">first</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_init_rec_layers</span><span class="p">()</span>
 
 <div class="viewcode-block" id="EyeDataDict.copy">
 <a class="viewcode-back" href="../../../api/generated/pypillometry.EyeDataDict.html#pypillometry.EyeDataDict.copy">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">'EyeDataDict'</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Create a deep copy of the dictionary (data and masks)."""</span>
-        <span class="n">new_dict</span> <span class="o">=</span> <span class="n">EyeDataDict</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">new_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-            <span class="n">new_dict</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">new_dict</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_subset</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="EyeDataDict.set_mask">
 <a class="viewcode-back" href="../../../api/generated/pypillometry.EyeDataDict.html#pypillometry.EyeDataDict.set_mask">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">set_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">layer</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"user"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Set mask for a specific key.</span>
+
+<span class="sd">        Afterwards, ``self.mask[key]`` (the mask under the default policy)</span>
+<span class="sd">        equals `mask`: samples that are not masked in `mask` are removed</span>
+<span class="sd">        from the layers of the key that mask them, samples that were not</span>
+<span class="sd">        masked yet are added to `layer` (default ``"user"``; where they are</span>
+<span class="sd">        interpolated, the ``"interpolated"`` layer is cleared, as it would</span>
+<span class="sd">        make them usable). NaN values and the recording-wide layers (e.g.,</span>
+<span class="sd">        excluded periods) are not changed, so these samples stay masked.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1099,6 +1562,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        mask : array-like</span>
 <span class="sd">            Mask array (1 for masked, 0 for valid values) with the same shape</span>
 <span class="sd">            as the data; converted to int</span>
+<span class="sd">        layer : str, optional</span>
+<span class="sd">            layer for the newly masked samples (default ``"user"``)</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
@@ -1112,7 +1577,41 @@ window.runMermaid = runMermaid;</script>
         <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">mask</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Mask must have shape </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span></div>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="n">default</span> <span class="o">=</span> <span class="n">POLICIES</span><span class="p">[</span><span class="s2">"default"</span><span class="p">]</span>
+        <span class="n">bits</span> <span class="o">=</span> <span class="n">LAYER_DTYPE</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layer_bits</span><span class="p">(</span><span class="n">default</span><span class="o">.</span><span class="n">layers</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="o">~</span><span class="n">mask</span><span class="p">]</span> <span class="o">&amp;=</span> <span class="o">~</span><span class="n">bits</span>
+        <span class="n">new</span> <span class="o">=</span> <span class="n">mask</span> <span class="o">&amp;</span> <span class="o">~</span><span class="bp">self</span><span class="o">.</span><span class="n">get_policy_mask</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">new</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">default</span><span class="o">.</span><span class="n">unless</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">clear_layer</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">new</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_layer</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">new</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="EyeDataDict.add_mask">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.EyeDataDict.html#pypillometry.EyeDataDict.add_mask">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">where</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Mask the samples `where` of `key` (``"user"`` layer; existing masks are kept).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        key : str</span>
+<span class="sd">            Key of the data (e.g., "left_pupil")</span>
+<span class="sd">        where : array-like of bool, slice, int or array of int</span>
+<span class="sd">            the samples to mask: a boolean array (one value per sample,</span>
+<span class="sd">            True: mask the sample) or any index, e.g. ``np.s_[10:20]``</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        KeyError</span>
+<span class="sd">            if there is no data for `key`</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"No data for key </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="n">mask</span><span class="p">[</span><span class="n">where</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="n">mask</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_layer</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="s2">"user"</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="EyeDataDict.get_mask">
@@ -1163,8 +1662,10 @@ window.runMermaid = runMermaid;</script>
         <span class="n">total_size</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">arr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
             <span class="n">total_size</span> <span class="o">+=</span> <span class="n">arr</span><span class="o">.</span><span class="n">nbytes</span>
-        <span class="k">for</span> <span class="n">arr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">arr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
             <span class="n">total_size</span> <span class="o">+=</span> <span class="n">arr</span><span class="o">.</span><span class="n">nbytes</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rec_layers</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">total_size</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rec_layers</span><span class="o">.</span><span class="n">nbytes</span>
         <span class="k">return</span> <span class="n">ByteSize</span><span class="p">(</span><span class="n">total_size</span><span class="p">)</span></div>
 
 
@@ -1200,8 +1701,110 @@ window.runMermaid = runMermaid;</script>
             <span class="k">return</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">mask</span><span class="p">))</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">mask</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">mask</span><span class="p">))</span> <span class="k">for</span> <span class="n">mask</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="o">.</span><span class="n">values</span><span class="p">())</span></div>
-</div>
 
+
+
+    <span class="c1"># ------------------------------------------------------------------</span>
+    <span class="c1"># Operations on all channels (used by EyeData)</span>
+    <span class="c1"># ------------------------------------------------------------------</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_take</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keep</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""New EyeDataDict with the samples where `keep` is True (values,</span>
+<span class="sd">        masks and layers)."""</span>
+        <span class="n">nd</span> <span class="o">=</span> <span class="n">EyeDataDict</span><span class="p">()</span>
+        <span class="n">nd</span><span class="o">.</span><span class="n">layer_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layer_names</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">nd</span><span class="o">.</span><span class="n">_set_channel</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">[</span><span class="n">keep</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">keep</span><span class="p">])</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rec_layers</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">nd</span><span class="o">.</span><span class="n">rec_layers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rec_layers</span><span class="p">[</span><span class="n">keep</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">nd</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""New EyeDataDict of length `n` with the samples of this one at `pos`;</span>
+<span class="sd">        new samples hold `value` and are masked as missing (NaN, or the</span>
+<span class="sd">        ``"user"`` layer if `value` is not NaN; no other layers)."""</span>
+        <span class="n">nd</span> <span class="o">=</span> <span class="n">EyeDataDict</span><span class="p">()</span>
+        <span class="n">nd</span><span class="o">.</span><span class="n">layer_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layer_names</span><span class="p">)</span>
+        <span class="n">missing</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">else</span> <span class="n">nd</span><span class="o">.</span><span class="n">layer_bits</span><span class="p">(</span><span class="s2">"user"</span><span class="p">,</span> <span class="n">create</span><span class="o">=</span><span class="n">n</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">pos</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">nv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+            <span class="n">nl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">missing</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">LAYER_DTYPE</span><span class="p">)</span>  <span class="c1"># inserted = missing</span>
+            <span class="n">nv</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+            <span class="n">nl</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+            <span class="n">nd</span><span class="o">.</span><span class="n">_set_channel</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">nv</span><span class="p">,</span> <span class="n">nl</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rec_layers</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">nd</span><span class="o">.</span><span class="n">rec_layers</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">LAYER_DTYPE</span><span class="p">)</span>
+            <span class="n">nd</span><span class="o">.</span><span class="n">rec_layers</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rec_layers</span>
+        <span class="k">return</span> <span class="n">nd</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_decimate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">,</span> <span class="n">policy</span><span class="o">=</span><span class="s2">"default"</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        New EyeDataDict with the samples decimated by the integer `factor`.</span>
+
+<span class="sd">        Each window of `factor` samples becomes one sample (the last window</span>
+<span class="sd">        may be shorter): values are the mean of the samples that are usable</span>
+<span class="sd">        under the mask `policy`. A layer (e.g., ``"blink"``) is set for a new</span>
+<span class="sd">        sample if it covers more than half of the samples in the window (also</span>
+<span class="sd">        the recording-wide layers, e.g. excluded periods). A new sample whose</span>
+<span class="sd">        window has no usable sample holds the mean of the stored values and</span>
+<span class="sd">        stays unusable: if the layers that cover more than half of the window</span>
+<span class="sd">        do not make it unusable, it gets the layers of its samples that make</span>
+<span class="sd">        them unusable under `policy`.</span>
+<span class="sd">        """</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">..signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">baseline</span>
+        <span class="n">nd</span> <span class="o">=</span> <span class="n">EyeDataDict</span><span class="p">()</span>
+        <span class="n">nd</span><span class="o">.</span><span class="n">layer_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layer_names</span><span class="p">)</span>
+        <span class="n">pol</span> <span class="o">=</span> <span class="n">_as_policy</span><span class="p">(</span><span class="n">policy</span><span class="p">)</span>
+        <span class="c1"># layers that make a sample unusable under the policy</span>
+        <span class="n">masking</span> <span class="o">=</span> <span class="n">LAYER_DTYPE</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layer_bits</span><span class="p">(</span><span class="n">pol</span><span class="o">.</span><span class="n">layers</span><span class="p">)</span> <span class="o">&amp;</span> <span class="o">~</span><span class="bp">self</span><span class="o">.</span><span class="n">layer_bits</span><span class="p">(</span><span class="n">pol</span><span class="o">.</span><span class="n">unless</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rec_layers</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">nd</span><span class="o">.</span><span class="n">rec_layers</span> <span class="o">=</span> <span class="n">_decimate_layers</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rec_layers</span><span class="p">,</span> <span class="n">factor</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">"ignore"</span><span class="p">,</span> <span class="ne">RuntimeWarning</span><span class="p">)</span>  <span class="c1"># all-NaN windows</span>
+                <span class="n">y</span> <span class="o">=</span> <span class="n">baseline</span><span class="o">.</span><span class="n">downsample</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_policy_mask</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">policy</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">v</span><span class="p">),</span> <span class="n">factor</span><span class="p">)</span>
+                <span class="n">stored</span> <span class="o">=</span> <span class="n">baseline</span><span class="o">.</span><span class="n">downsample</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">factor</span><span class="p">)</span>
+            <span class="n">allmasked</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+            <span class="n">y</span><span class="p">[</span><span class="n">allmasked</span><span class="p">]</span> <span class="o">=</span> <span class="n">stored</span><span class="p">[</span><span class="n">allmasked</span><span class="p">]</span>
+            <span class="n">nd</span><span class="o">.</span><span class="n">_set_channel</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">_decimate_layers</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">factor</span><span class="p">))</span>
+            <span class="c1"># a window whose samples are all unusable stays unusable: if the</span>
+            <span class="c1"># layers that cover more than half of it do not make it unusable,</span>
+            <span class="c1"># it gets the masking layers of its samples (if there are none,</span>
+            <span class="c1"># all its values are NaN, and so is the new value)</span>
+            <span class="n">todo</span> <span class="o">=</span> <span class="n">allmasked</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">nd</span><span class="o">.</span><span class="n">get_policy_mask</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">MaskPolicy</span><span class="p">(</span><span class="n">pol</span><span class="o">.</span><span class="n">layers</span><span class="p">,</span> <span class="n">pol</span><span class="o">.</span><span class="n">unless</span><span class="p">,</span> <span class="n">nan</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">todo</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+                <span class="n">present</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">bitwise_or</span><span class="o">.</span><span class="n">reduceat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">masking</span><span class="p">,</span>
+                                                 <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">),</span> <span class="n">factor</span><span class="p">))</span>
+                <span class="n">nd</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">todo</span><span class="p">]</span> <span class="o">|=</span> <span class="n">present</span><span class="p">[</span><span class="n">todo</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">nd</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_merge_usage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">policy</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Which eyes (rows, one per key in `keys`) go into each</span>
+<span class="sd">        sample of a merged channel: the samples that are usable under `policy`,</span>
+<span class="sd">        but recorded samples first (an interpolated sample is used only where no</span>
+<span class="sd">        eye has a usable sample that is not interpolated). A column is all False</span>
+<span class="sd">        where no eye is usable.</span>
+<span class="sd">        """</span>
+        <span class="n">usable</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="o">~</span><span class="bp">self</span><span class="o">.</span><span class="n">get_policy_mask</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">policy</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">])</span>
+        <span class="n">recorded</span> <span class="o">=</span> <span class="n">usable</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="s2">"interpolated"</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">recorded</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">recorded</span><span class="p">,</span> <span class="n">usable</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_store_merged</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">used</span><span class="p">,</span> <span class="n">masked</span><span class="p">,</span> <span class="n">policy</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Store merged `values` as `key` with the layers that are set in all</span>
+<span class="sd">        eyes that went into a sample (`used`, see `_merge_usage`; in all eyes</span>
+<span class="sd">        where none did). Samples in `masked` that are still usable under</span>
+<span class="sd">        `policy` with these layers get the ``"user"`` layer.</span>
+<span class="sd">        """</span>
+        <span class="n">layers</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">])</span>
+        <span class="n">sel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">used</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">used</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="n">allbits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">iinfo</span><span class="p">(</span><span class="n">LAYER_DTYPE</span><span class="p">)</span><span class="o">.</span><span class="n">max</span>
+        <span class="n">merged</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">bitwise_and</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">sel</span><span class="p">,</span> <span class="n">layers</span><span class="p">,</span> <span class="n">allbits</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_channel</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">merged</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">LAYER_DTYPE</span><span class="p">))</span>
+        <span class="n">rest</span> <span class="o">=</span> <span class="n">masked</span> <span class="o">&amp;</span> <span class="o">~</span><span class="bp">self</span><span class="o">.</span><span class="n">get_policy_mask</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">policy</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">rest</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_layer</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="s2">"user"</span><span class="p">,</span> <span class="n">rest</span><span class="p">)</span></div>
 
 </pre></div>
 

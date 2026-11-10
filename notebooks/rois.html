@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Gaze in regions of interest around events &#8212; pypillometry v2.2.0</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx_autodoc_typehints.css?v=057ac668" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=e89b0eda" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=75c7c72ae941e8b558d8"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
+
+    <script src="../_static/documentation_options.js?v=49a90b2e"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'notebooks/rois';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../_static/pypillometry_logo_200x200.png"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Modeling the pupillometric signal" href="modeling.html" />
+    <link rel="prev" title="Event-related pupil dilations" href="erpds.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="v2.2.0" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="light">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation" aria-expanded="false" aria-controls="pst-primary-sidebar-modal">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="../_static/pypillometry_logo_200x200.png" class="logo__image only-light" alt=""/>
+    <img src="../_static/pypillometry_logo_200x200.png" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">pypillometry</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../experimental/index.html">
+    Experimental features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../development/index.html">
+    Development
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ihrke/pypillometry" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pypillometry/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page" aria-expanded="false" aria-controls="pst-secondary-sidebar-modal">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal" tabindex="-1"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../experimental/index.html">
+    Experimental features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../development/index.html">
+    Development
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ihrke/pypillometry" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pypillometry/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button type="button" id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">Reading data</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="importdata_edf.html">Importing data from Eyelink EDF files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="importdata_asc.html">Importing data from Eyelink ASC files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="importdata_behaviour.html">Events from a behaviour log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example_datasets.html">Example datasets included in <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code></a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Working with data objects</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="pipes.html">Pipeline-based processing in pypillometry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eyes_and_variables.html">Processing monocular and binocular data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="summary.html">Summarizing pupillometric data</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Preprocessing and plotting</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="blinks.html">Blink preprocessing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="missing_data.html">Missing data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plotting.html">Plotting pupillometric data for exploration</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Events and event-related analyses</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="events.html">Events</a></li>
+<li class="toctree-l1"><a class="reference internal" href="event_metadata.html">Event metadata</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intervals.html">Intervals</a></li>
+<li class="toctree-l1"><a class="reference internal" href="erpds.html">Event-related pupil dilations</a></li>
+<li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">Gaze in regions of interest around events</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Modeling and complete analyses</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="modeling.html">Modeling the pupillometric signal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="preproc_example_pavlov.html">Example: Preprocessing of a full dataset with multiple subjects</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-house"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../tutorials/index.html" class="nav-link">Tutorials</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Gaze in regions of interest around events</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <div class="pp-notebook-banner">
+  <span>This page was generated from a Jupyter notebook.</span>
+  <a href="https://github.com/ihrke/pypillometry/blob/master/docs/notebooks/rois.ipynb">View on GitHub</a>
+  <a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath=docs/notebooks/rois.ipynb">
+    <img alt="Binder badge" src="https://mybinder.org/badge_logo.svg"
+         style="vertical-align:text-bottom">
+  </a>
+</div><section id="Gaze-in-regions-of-interest-around-events">
+<h1>Gaze in regions of interest around events<a class="headerlink" href="#Gaze-in-regions-of-interest-around-events" title="Link to this heading">#</a></h1>
+<p>Where do participants look after a stimulus appears, and does it relate to what they choose? This tutorial cuts the gaze data into segments around events and analyses them with regions of interest (ROIs):</p>
+<ol class="arabic simple">
+<li><p>define ROIs on the screen</p></li>
+<li><p>cut the data around the events into segments (<code class="docutils literal notranslate"><span class="pre">get_segments()</span></code>)</p></li>
+<li><p>mark where the gaze is in an ROI (<code class="docutils literal notranslate"><span class="pre">seg.gaze.roi_hits()</span></code>) and plot the share of trials in each ROI over time (<code class="docutils literal notranslate"><span class="pre">seg.gaze.plot_roi()</span></code>)</p></li>
+<li><p>measures per trial: dwell time and first entry (<code class="docutils literal notranslate"><span class="pre">seg.gaze.dwell_time()</span></code>, <code class="docutils literal notranslate"><span class="pre">seg.gaze.first_entry()</span></code>)</p></li>
+<li><p>combine gaze and pupil in the same trials, and average across participants</p></li>
+</ol>
+<p>See <a class="reference internal" href="../user_guide/events_intervals.html"><span class="doc">Events, intervals and segments</span></a> and <a class="reference internal" href="../user_guide/rois.html"><span class="doc">Regions of interest</span></a> in the user guide for an overview.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">u</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+<span class="n">pp</span><span class="o">.</span><span class="n">logging_set_level</span><span class="p">(</span><span class="s2">"WARNING"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<section id="The-data">
+<h2>The data<a class="headerlink" href="#The-data" title="Link to this heading">#</a></h2>
+<p>The example dataset <code class="docutils literal notranslate"><span class="pre">rlmw_002</span></code> is a 20-minute reinforcement learning task (downloaded on first use). In each of its 300 trials, two options were shown to the left and right of the screen center; the participant chose one and received a reward. The events code this in their labels:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">S_&lt;trial&gt;_&lt;left</span> <span class="pre">option&gt;_&lt;right</span> <span class="pre">option&gt;</span></code>: stimulus onset</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">C_&lt;trial&gt;_&lt;chosen</span> <span class="pre">option&gt;_&lt;side&gt;</span></code>: choice (side 1 = left, 2 = right)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">R_&lt;trial&gt;_&lt;reward&gt;</span></code>: reward</p></li>
+</ul>
+<p>We detect and interpolate the blinks, mask the gaze during blinks (blinks are detected on the pupil only) and outside the screen:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002"</span><span class="p">)</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">d</span> <span class="o">|</span> <span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span> <span class="o">|</span> <span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_interpolate</span><span class="p">()</span>
+
+<span class="n">bl</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_blinks</span><span class="p">(</span><span class="n">variables</span><span class="o">=</span><span class="s2">"pupil"</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">mask_intervals</span><span class="p">({</span><span class="s2">"left_x"</span><span class="p">:</span> <span class="n">bl</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">],</span> <span class="s2">"left_y"</span><span class="p">:</span> <span class="n">bl</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">],</span>
+                  <span class="s2">"right_x"</span><span class="p">:</span> <span class="n">bl</span><span class="p">[</span><span class="s2">"right_pupil"</span><span class="p">],</span> <span class="s2">"right_y"</span><span class="p">:</span> <span class="n">bl</span><span class="p">[</span><span class="s2">"right_pupil"</span><span class="p">]})</span>
+<span class="n">d</span><span class="o">.</span><span class="n">gaze</span><span class="o">.</span><span class="n">mask_offscreen</span><span class="p">()</span>
+<span class="nb">list</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">labels</span><span class="p">[:</span><span class="mi">8</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[np.str_(&#39;F_1&#39;),
+ np.str_(&#39;S_1_1_5&#39;),
+ np.str_(&#39;C_1_5_2&#39;),
+ np.str_(&#39;R_1_15&#39;),
+ np.str_(&#39;F_2&#39;),
+ np.str_(&#39;S_2_6_2&#39;),
+ np.str_(&#39;C_2_6_1&#39;),
+ np.str_(&#39;R_2_20&#39;)]
+</pre></div></div>
+</div>
+<p>The parts of the labels become metadata of the events (see the <a class="reference internal" href="event_metadata.html"><span class="doc">event metadata tutorial</span></a>); <code class="docutils literal notranslate"><span class="pre">fill_meta()</span></code> copies the choice to all events of a trial, so that the stimuli know which side was chosen:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ev</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">parse_labels</span><span class="p">(</span><span class="sa">r</span><span class="s2">"^[FSCR]_(?P&lt;trial&gt;\d+)"</span><span class="p">)</span>
+<span class="n">ev</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">parse_labels</span><span class="p">(</span><span class="sa">r</span><span class="s2">"^C_\d+_(?P&lt;chosen&gt;\d+)_(?P&lt;side&gt;\d+)"</span><span class="p">)</span>
+<span class="n">ev</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">parse_labels</span><span class="p">(</span><span class="sa">r</span><span class="s2">"^R_\d+_(?P&lt;reward&gt;\d+)"</span><span class="p">)</span>
+<span class="n">ev</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">fill_meta</span><span class="p">([</span><span class="s2">"chosen"</span><span class="p">,</span> <span class="s2">"side"</span><span class="p">,</span> <span class="s2">"reward"</span><span class="p">])</span>
+<span class="n">d</span><span class="o">.</span><span class="n">set_events</span><span class="p">(</span><span class="n">ev</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s2">"S_"</span><span class="p">)[:</span><span class="mi">3</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Onset (ms)</th>
+      <th>Label</th>
+      <th>trial</th>
+      <th>chosen</th>
+      <th>side</th>
+      <th>reward</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>5677.0</td>
+      <td>S_1_1_5</td>
+      <td>1.0</td>
+      <td>5.0</td>
+      <td>2.0</td>
+      <td>15.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>9575.0</td>
+      <td>S_2_6_2</td>
+      <td>2.0</td>
+      <td>6.0</td>
+      <td>1.0</td>
+      <td>20.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>12574.0</td>
+      <td>S_3_2_1</td>
+      <td>3.0</td>
+      <td>2.0</td>
+      <td>1.0</td>
+      <td>18.0</td>
+    </tr>
+  </tbody>
+</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 3 events</p></div>
+</div>
+</section>
+<section id="Regions-of-interest">
+<h2>Regions of interest<a class="headerlink" href="#Regions-of-interest" title="Link to this heading">#</a></h2>
+<p>The options were shown 8° to the left and right of the screen center. A heatmap of the gaze shows them as two clusters next to the central fixation point. We mark each with a circle of 3° radius (<code class="docutils literal notranslate"><span class="pre">CircularROI.from_degrees()</span></code> converts degrees to pixels with the experimental setup of the data):</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">setup</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">experimental_setup</span>
+<span class="n">left_roi</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">CircularROI</span><span class="o">.</span><span class="n">from_degrees</span><span class="p">((</span><span class="s2">"-8 deg"</span><span class="p">,</span> <span class="s2">"0 deg"</span><span class="p">),</span> <span class="s2">"3 deg"</span><span class="p">,</span> <span class="n">setup</span><span class="o">=</span><span class="n">setup</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"leftopt"</span><span class="p">)</span>
+<span class="n">right_roi</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">CircularROI</span><span class="o">.</span><span class="n">from_degrees</span><span class="p">((</span><span class="s2">"8 deg"</span><span class="p">,</span> <span class="s2">"0 deg"</span><span class="p">),</span> <span class="s2">"3 deg"</span><span class="p">,</span> <span class="n">setup</span><span class="o">=</span><span class="n">setup</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"rightopt"</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_heatmap</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="s2">"left"</span><span class="p">,</span> <span class="n">rois</span><span class="o">=</span><span class="p">[</span><span class="n">left_roi</span><span class="p">,</span> <span class="n">right_roi</span><span class="p">]);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_rois_7_0.png" src="../_images/notebooks_rois_7_0.png" />
+</div>
+</div>
+</section>
+<section id="Segments-around-the-stimuli">
+<h2>Segments around the stimuli<a class="headerlink" href="#Segments-around-the-stimuli" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">get_epochs()</span></code> defines a window around each stimulus, and <code class="docutils literal notranslate"><span class="pre">get_segments()</span></code> cuts all channels (pupil and gaze of both eyes) in these windows. The segments of all channels share the epochs, with the metadata of the events:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">epochs</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_epochs</span><span class="p">(</span><span class="s2">"S_"</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">3000</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>
+<span class="n">seg</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_segments</span><span class="p">(</span><span class="n">epochs</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"stimulus"</span><span class="p">)</span>
+<span class="n">seg</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div style="font-family:system-ui, sans-serif; border:1px solid #ddd; border-radius:6px; padding:12px; max-width: min(600px, 50vw); min-width: 300px;">
+  <h3 style="margin-top:0;">SegmentedEyeData — <span style="color:#555;">stimulus</span></h3>
+
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:8px; margin-bottom:10px;">
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Epochs</div>
+      <div style="font-weight:600;">S_</div>
+    </div>
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Segments</div>
+      <div style="font-weight:600;">300</div>
+    </div>
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Time points</div>
+      <div style="font-weight:600;">1,750</div>
+    </div>
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Window</div>
+      <div style="font-weight:600;">-500 to 2998 ms</div>
+    </div>
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Missing</div>
+      <div style="font-weight:600;">4.1%</div>
+    </div>
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Sampling rate</div>
+      <div style="font-weight:600;">500 Hz</div>
+    </div>
+  </div>
+
+
+    <details open style="margin-bottom:8px;">
+    <summary style="cursor:pointer; font-weight:600;">Channels (mean over segments; red line = event onset)</summary>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:8px; margin-top:8px;">
+      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">left_x (7.0% missing)</div>
+        <img src="data:image/png;base64,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" alt="left_x (7.0% missing) sparkline" style="height:60px; width:100%; object-fit:cover;">
+      </div>
+      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">left_y (7.0% missing)</div>
+        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAA8CAYAAADPLpCHAAAAOnRFWHRTb2Z0d2FyZQBNYXRwbG90bGliIHZlcnNpb24zLjExLjIsIGh0dHBzOi8vbWF0cGxvdGxpYi5vcmcvgI3uAAAAAAlwSFlzAAAPYQAAD2EBqD+naQAACj5JREFUeJztnQlQ1Ncdx78Ly+5yLSDXghxyKXKpiIBEvKLRGiMzmvGIRzUeNVpbbatWa5PGTOLViYlpjLUk6pg6mirB4B2tUQlyeHAoIAoihF05Fvbg2F1g6bxnNSq1gi6w/z/vM7PzZg/+8+ftd3//3/sd7y9oa2trA4PBEyx6+gQYDFPCBM3gFUzQDF7BBM3gFUzQDF7BBM3gFZwQdKtKBXXKMToyGNwXtEYDzfHjdGR0Dl1zK66V1fWaaeOEoIXOznBevIiOjM6x9dQtTN2Zhq9S7+K9ozdQ22B44v3blVocufoTFT4fELBMIX9pNLRg6AdnoWtpBckHiywtYGg1YmNCKOYN7weSJJ60IxUFCg3mx/XDX6aEgusIwQGIq9GYmQmb6GhYSqU9fTqcIV+uQVNzK3bOjoS7VAJ3qRjrkvKo1W41tmHTyUIYWowY4uOIg1llWDoqADIHCbgMJ1wOshhUHT7CFoWd5EaFmlrl8SHuGOrrBC8nG+yYOQSejhK8n5KPQFc7rBrXH3vnR8NOLETspnNI+PxHpJcowVU4YaEZL8YNuQYDZPawsvzZbjnZinDiN/FQNhjgZi+GQCCgrxOhf5cjp+7HnMQMHFwSi6h+fTg39Zyw0IzOo25sxvf5lYjxay9KoaUFdUEeipkQF+iCzdMicPidOER4OWD9t3kwGtvQ3GqkvjZXYILmKQcyy6BvacWSUf6d+jtizTdMDkFRZT3it55H2HunMe7jC1Com8AFOCFogUQCSUQ4HRkdI+OuEjF+znCz7/ycRfo4YfWEATQisjjeH+qmFrx79CYnpp6F7XiI0diGQRvPYEm8P1a8GvTSxzuQUYYNyXlIX//qC/1AuhNOWOi2lha0arV0ZDyfoiottLoWDO3nZJLpmhQug4VAgJN5981++jkh6Ga5HPLVa+jIeD5XSutgaSHAYG9Hk0yXo40I8UEuOJZr/vPPCUEzOsfVe3UI85TCRmS6qOwbgzyRVVqH5QeuYXZiOoqr683ya2GC5hnqpmZcLKo2eQz5tVAZ7MVCHM9V4Mc7Smw9VfjovX9cLMGhrDKzqAdhiRWe8X7KTZrOXjjCz6THJZnEE7+Nx/VyFRXumsO52HWhmKbTPzxRQD9DIiEx/s5YOS6IRkp6AiZoHpFWXIOkaxXY9mYEPB2tTX587z429EGiKOnFSmw++cBKE/96w+sh9MqQnF2B6bsu07qQaUO94O1kTRM53QUnwnZtRiPa9HoIxGIILJiX9CzmfplBy0OPrRjxRBawq6jW6pGv0OCVAOdHoiWZxY+/L8K+tFI0GlrhYifGr8cEQKHRQd9spLUjDjZW3Ba0qtGA9JJaXC+rg61YSC+HZGS8PETANiJL3Kmqx+TPUrFj1hBMGeTZ41PboG+hRU4pOXIkZ8thIQCNvLwS6ILPZg2BvcSKe4IevukcjV8qG/TQNRvh4SChX0AfWxGWjQnEnBifDlmS5soqqA4dhOOMmbByd+uq0+UcdQ0GjN9+EaGeUprmrlA14fzvR3frJb4jVGl0kIgscblYiWX/vIa+jta0JntkkCssiNJNSJeayamRfamg7SVCTI7wpH5deW0j/nrmFv6cfAOapmYsHxP43OO06XXQ5RfQkfEzG4/lo7ZBjwtF1fT5gcUxZidmgpv0QXZxQqgMp1eOxMzd6Zi/J4v+EElqfWKYDBIrS/MX9OoJwe1eI4uKT2cOgZeTNfW1QjykiPV3hlhoYfJfK5/ZfbEY316vwJZp4aioa8KEMBlCPR1g7gS62SF17RjklKuw7fQtrDyUDa8z1khdO9Ykx+8xR3bluP4oVGixYG8WfS6VCGmsc/2kgdQlYTybkup6bDl1C78a5Y/pUd7dsgA0JcQak/AeKVW9W9OABXsyTXbsHhM0KVPcPS8KZwsqoaw3oEqrQ+Klu0i+XkH96+VjAiAWmuYyxDe2n71Ni/NJxIBrYn4aPxdbfL0oBrwM25HFw/70e/jih2LqfowMcoGHgzVCHCwQXF2Cga/FQ+Jo/pfVrqJM2YgtpwpxPE+BTVPDMSvap6dPyewwK0E/5E6VllZ2XbpdA1WTAcXVDbSpM8DVFuNC3DG6vxti/ftw3jp1lEqNDqsOZSOtWEkjBCRhsWJs4BOtVQwzFvTTNKk1KPghA/uU1sis1EOh1tHFJPli34r2gbWIv64JiedO//tl3CT9ge722L8w+lHUgNEeTmQ3LNUquJ5Mwrb162Dl7U2LY75MLcEHx/JRU6/H2ontoyl8QFmvpzUTpTUNtLE1xJNt4fA8OHfNIm7GiCAX7FkQjZnDvHEiT8GpJs6OknipBNEfnaNu1+ezI5mY+SroxyH7TdxTNqK8lhsNnB2FWOStp29hepQXLq8bi9EDWHa0Vwg62OPBJdhci81fhIwSJebvyYSng4RWsDnbiXv6lDgFJwRNquxEfn50fBwPqeRRYQ7XISWZBzPL8PbeLDhYW1GXihVw8XRRaOXuDve1a9q9TmLV/q62nLfQ99U6bD5ZgKM5cozq74q/vRVJC+oZnYfzsxbgaofbHLbQpKb4zV1pdKejjQlhmBvr29OnxGk44XIYyspQvvQdOj5NlK8TLXQhIS4uuhm/+yabltaeXjWSibm3CPr/MSncAyRodzTb/Fvsn06Y/DEpF6l3avDJjMFd0jLVG+G8oEkUIGGwJz45W0S3j+UCJG6++nAOUnIU1M0gcXWGaeC8D014d3IIChRa2oI0yMuB7iER6etE0+OmKhw3JSm5CpzIu48vZkfiF+EePX06vIIXgiY7+yQvj8OZm5W0h43sUE82GnS0scKMKG/MifWljQXPIrtchaPZFfS2DaQ+t8nQCqGlAKT2SSa1xvpJwSaLB5MQ45+S8vB6hAcTc28tTmozGNCiUkHo6AiB6PnF/1pdM0qqG6i4v7lSDq2+BWMHuGHp6AAM++8GLGR3IZJeJht/XymthYzEtMVC2knjZCOi3csE0gdHupR3zRmK/u72L13+Oe+rDFoll7QsrssaRXsznBD0y0CsLbG+e9NKUXhfi2CZPe1llKt1tHqNxLHJpuBzh/ejXcn/Kw09OzEDcnUTEgZ5YnyIjJaudtZia3TNmLj9Iu35IxVzvs62JvwvGZwSdEtNDdTfpcBhyhsQuri8cIgs6XoF/l1YCZ8+tghys6OLyY40lZKdiP51tRyfnr2NKq2eujIHFsV2uGAo7yc11hzJpQ3Cp1bG03udMHqxoEn8ufKjTXBfvw4in57r0iBTRQS9cF8W5Cod/UEIIKA34SG3eBjoIaVNoA8hu97vPF+MrzPuIVgmpTsahfXtvR033QEvFoXdWbpKhLv/7RgadiOlqySKQrJ9ZJcgwthgNyrwtDtKlNQ0QCS0oFEYsjBlHSZdDxP0C0DuJJX4y2Htdoci+2MQt4RESuICnPGHCQMw3N+Zfp7RPTBBmzB0mDC4L30weg5O+NAMRq9JfTMYj8MEzeAVTNAMXsEEzeAVTNAMXsEEzQCf+A/C//XpR5EbZgAAAABJRU5ErkJggg==" alt="left_y (7.0% missing) sparkline" style="height:60px; width:100%; object-fit:cover;">
+      </div>
+      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">left_pupil (0.0% missing)</div>
+        <img src="data:image/png;base64,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" alt="left_pupil (0.0% missing) sparkline" style="height:60px; width:100%; object-fit:cover;">
+      </div>
+      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">right_x (5.2% missing)</div>
+        <img src="data:image/png;base64,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" alt="right_x (5.2% missing) sparkline" style="height:60px; width:100%; object-fit:cover;">
+      </div>
+      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">right_y (5.2% missing)</div>
+        <img src="data:image/png;base64,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" alt="right_y (5.2% missing) sparkline" style="height:60px; width:100%; object-fit:cover;">
+      </div>
+      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">right_pupil (0.0% missing)</div>
+        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAA8CAYAAADPLpCHAAAAOnRFWHRTb2Z0d2FyZQBNYXRwbG90bGliIHZlcnNpb24zLjExLjIsIGh0dHBzOi8vbWF0cGxvdGxpYi5vcmcvgI3uAAAAAAlwSFlzAAAPYQAAD2EBqD+naQAACetJREFUeJztnXlQ02cax79JCCEEIeEKKISAghEoiihq8Kq3VutUUbHebVdXu91VO2q3O2tXx7Zbd6e22q5216t124pLta26q9ZjEBXFomgRUCFcgtz3kUCOnfft2mmtdcEkJL/k/cxk3j8Skjfhm+f3Pmd4JpPJBAbDQeDbegMMhiVhgmY4FEzQDIeCCZrhUDBBMxwKJmiGQ8EJQRsaGtB49BhdGYzH4QIOYGhqQtPx4xAPjIFAKrX1dhiPoVnbifSCWjS0d4IHQObuiliFFD4eIvQEPC4kVoytrdDm5cFNpQJfIrH1dhgPUdfagUPfluLUrQpklzWhw2B8+CHw7yWCuq8PZg0OwqhwX/B4RO5OKmiGfaI3GPHhuQLsTM0HUdGYCD8q2vED5AjwcqOPqW7W4bKmFncqW3A2r5KuCm93vJCgxKy4IHi6CZ1P0OTI0ZaRAff4eAg8PW29HQaAoppWrE7OwndljVg+Ogy/GhUGb4nrYz8bIrUrhXVIvlqKL7PK4MLnIaGfL6ZEBSApXuE8gu4oKUHlW29D/vrv4aqwzBvnKrUtOoiEAniIbOf+nLxVgbXJWfRcvG3eIMSFyLr9HGUN7fSIciK7AleL6qB5+xnncQqdmU6DEcdv3senV4pRVt+O8kYttWzkHNpbKkawtzvmDgn+v9bRUkeM3RcK8c6JPEyNDsDWxIFP/MXqIxVjWUIovdW06GApmKDtFHLh/Pt5DfZcKERVsw6jI/yoQxXmJ6FO2Pm7Nbhe0oAvrt3D7jQN/jpnIMb297faXohV/svJ29DUtNIjxobJKvD5lnHsfC0YAWGCtkOIgN48nkut4fPDFFg8IgSqgJ/6Di+NCvvB6VqXcgNL911FYlwQXhwZigGBlvMzSAiOWOSs0gZ6VXg/KRbRfbxgr3DiDN1ZVYWGlBRIExMh9LeOFbIXyL/jzyfy8FGqBptnRmHxCGWX/ubA5WL87VwBKpq0iFd6Y2mCkh4LnjQ8dqeymX6pUu9UIybICxumqKgDZ+9wQtDOxPYzd/HuN3fwx+mR1Np297z9TU4lPr5URKMJI/v5YvWEcOq0dUXYRqMJWfcakJJ5j0YigmVirJ+iMuuL0dNwQtAmvR7G9nbwxWLwXBz3lES8/uUHMrF2YgR+Oz7crOc6d7sKW47loKC6lTpgY/r7YdXYvgiSuUPbaaCOpYuATx29vIpm/PNyMU7nVqKmpQN+vUT0y7QsQQmRiwBcwqqCXrTnCl6fNsDsM50zhO001S2Y+cFFqPv5YNfCOItYRKPRhLT8GqTersZXWWWobe2AWChAe6eB3i/4n1NnMJqo6KfHBGJipByxCtkP93ENq5q7e/XtmLY9DbMHB+HVSREI9BJb8+U4S4tOjxUHMuHnKaLRCktd3vl8Hs3ekRv5/EnMt76tg9ZXGE0m6PTfp6hDfSUYopRxzhr3uKBPrRmNzzNK8N7puzh2sxwvjQzDijFh6GXhdCeXIVZ0TXIW7jdq8eXLaqt9NhKRC2bHBcHRsaqghQI+9dKfi+2DXakF+Eeahgp8wfAQjA73xcBgKX2MM7Pt9B16dt2zZAj6+fey9XY4T494WMTqrJuswoJhIdhx9i72XSik3rzcU4Sp0YEYp/KnRS3ESXEmSAZwx9l8rJ/SH+NUcltvxyGwSZSDeNbZ5U34IvMetU7kctvbyw2LRigxPz4YUvefpnFNRiNMOh14IhF4fMcQ/a3yRiTuTKdO2PtJgzgTFrN3bB62Iy9Pamg/SS/CVzfKQZzr5aPCaNjKUS02KTB69oOLkEmE+NcKNcSu3HfG7AWbC/rHkCKVvRcK8dF5DaJ6e2Lj9EgMUXqjs7IKDckHIZ2XBKGc25nCDr0RC/dcoWG6r38zkhYYMSyHXZlAUqRCMlOHVoygYaXEXel45fPruF9VD21OLkw6LbhMZZMWS/Zm4HpJPY01MzE7uIV+OJxFKsm2nrwN9+r72FR6CoPe2Qxpv+6lg3uCxvZOXMyvQWZxPbXA84YGIzLQk8aByfsgtb8ksbH3YhHN0L2XNAjqvvZfF8FF7FbQD2jV6fFxygVIdu/AoWGJGKqOoWncEWE+cBMK7CJd/eqhG2jW6REkE0NvMNECIZELn9Yqk1JPcpO4Cmhr0hszInusYdQZsXtBP0h9F23agiPqufi6mk8tHhEMCfeRAvEhITKL1eZ2B2J11x66gYkD5Ng4I5IeIUgE51JBLe5WtaC0rg2eYiH1B4aH+sDLnSWUrA0nBG1obkZbZibc4+LA9/BAflULLb45eLUUmupWWkyzZkIErR3uKUgaeeWnmTRptHV2jMNGZLgGJwT9S5DzKelHS/62FIevlWHhcAVWT4iwaAfEoyBF9ZO2pSI+1Bs7F8TZ5OrA4LCgDS2t0GZnwy06GgKPn8/lIG/hk/Ri2iJEoiPrJvfHUrXSasmKlz+7Rjs5SK2Ktb88jO7Bieukoa4Wdfv30/VREOEuUSuRtv5p2oa06WgO5uxKR055k8X3kl3WSFPWr01VMTHbIZwQdFeRSVyxeWY0DrwYj2atHnN2XcLtimaLPT+5Emw5noMwXwlmxfax2PMyLIdDCfoBo8L9cHiVGn1kYvzu4HXaoWEJjlwvw2VNHf70bBRzAu0UhxT0g/pf0qFM2u5J6aq5NLZ10qZR0tVBRgow7BNOCJpU2bmGhtK1O5DWr/lDg2m/nE5vnpXeejKPdniQ5lWG/cIJQQvlcsg3rKdrd1msVtJeOtLF/KSQ2ovPMkpoG5Pc8/shhAz7hBOCNoe+fh6YFRuE7Wfyn8hKk8zfH45k09qMRcNDrLJHhpMJmqS+S3+9kq5PwsqxYbQ0lcys6C4kvp1b0YQ3n3uKOYIcgBOCNhfSq0emCZF+xu6We5KhLwuGKTAomP1yABdwCkETkuKDcTG/ls417iqbjt6Cm5CPdZNUVt0bw3I4jaCnPRUITzcXWtDUFU7nVOLf31Vg44woViXHIZxG0KR2moyjTckspUX4j6OgugWvHb5JB7TMiAnssT0ynETQwoAABGzeRFdzmB+voLPbzuT+snPY0NaBF/ZfpZ3n78613BQjRs/ACUHzXF3pGF2ymkP/gF4YrJBi36UiWpfxqBAd6WEkLVV7lwxlnSUchBOC1tfUoHbvPrqayyvjwpFRWIf/ZFf87D4y2Jt0m3z4/GAofNzNfi1Gz8MJQRvb2uivYJHVXJ5W+WO8yp+Omm3Sdv7o5x/IqLJCOi2VC4O9GY/GcYctP4Y3ZkThmR1pWLj7Ch1Flllch9O5VXR+Mvn9PAZ34YSFtjTkOLF/2VA6UoDM2CO1HmSMLZkJwpxAbuOUFpoQF+KNw6sSbL0NhjP2FDIYXcUpjxwMx4UJmuFQMEEzHAomaIZDwQTNcCiYoBlwJP4LZYb/es9RLeAAAAAASUVORK5CYII=" alt="right_pupil (0.0% missing) sparkline" style="height:60px; width:100%; object-fit:cover;">
+      </div>
+    </div>
+  </details>
+
+
+  <details style="margin-top:8px;">
+    <summary style="cursor:pointer; font-weight:600;">Epochs</summary>
+    <pre style="margin-top:8px; background:#f9f9f9; padding:8px; border-radius:4px;">Epochs &#39;S_&#39; | 300 epochs, window (-500, 3000) ms</pre>
+  </details>
+</div></div>
+</div>
+</section>
+<section id="Where-is-the-gaze-over-time?">
+<h2>Where is the gaze over time?<a class="headerlink" href="#Where-is-the-gaze-over-time?" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">seg.gaze.roi_hits()</span></code> adds a channel per eye, named after the ROI (<code class="docutils literal notranslate"><span class="pre">left_leftopt</span></code>), that is 1 where the gaze is in the ROI and 0 outside (masked where the gaze is masked). Its mean over the trials at each time point is the share of trials in which the participant looked at the ROI, a <em>fixation curve</em>:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">seg</span><span class="o">.</span><span class="n">gaze</span><span class="o">.</span><span class="n">roi_hits</span><span class="p">(</span><span class="n">left_roi</span><span class="p">)</span>
+<span class="n">seg</span><span class="o">.</span><span class="n">gaze</span><span class="o">.</span><span class="n">roi_hits</span><span class="p">(</span><span class="n">right_roi</span><span class="p">)</span>
+<span class="n">seg</span><span class="o">.</span><span class="n">channels</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[&#39;left_x&#39;,
+ &#39;left_y&#39;,
+ &#39;left_pupil&#39;,
+ &#39;right_x&#39;,
+ &#39;right_y&#39;,
+ &#39;right_pupil&#39;,
+ &#39;left_leftopt&#39;,
+ &#39;right_leftopt&#39;,
+ &#39;left_rightopt&#39;,
+ &#39;right_rightopt&#39;]
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">seg</span><span class="o">.</span><span class="n">gaze</span><span class="o">.</span><span class="n">plot_roi</span><span class="p">(</span><span class="s2">"leftopt"</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="s2">"left"</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"left option"</span><span class="p">)</span>
+<span class="n">seg</span><span class="o">.</span><span class="n">gaze</span><span class="o">.</span><span class="n">plot_roi</span><span class="p">(</span><span class="s2">"rightopt"</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="s2">"left"</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"right option"</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"share of trials"</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_rois_12_0.png" src="../_images/notebooks_rois_12_0.png" />
+</div>
+</div>
+<p>The participant first looks at the left option (about 200 ms after the onset), then at the right one (about 600 ms), before choosing after about one second.</p>
+<p>The ROI channels are masked arrays like all channels, so other curves can be computed from them. Here, we combine them into the share of trials in which the participant looked at the option that was <em>chosen</em> in this trial, and at the other one. <code class="docutils literal notranslate"><span class="pre">np.ma.where</span></code> keeps the masks (<code class="docutils literal notranslate"><span class="pre">np.where</span></code> would drop them):</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">seg</span> <span class="o">=</span> <span class="n">seg</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">side</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>   <span class="c1"># trials with a choice</span>
+<span class="n">chose_left</span> <span class="o">=</span> <span class="n">seg</span><span class="o">.</span><span class="n">epochs</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">"side"</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
+<span class="n">seg</span><span class="p">[</span><span class="s2">"left_chosen"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">chose_left</span><span class="p">,</span> <span class="n">seg</span><span class="p">[</span><span class="s2">"left_leftopt"</span><span class="p">],</span> <span class="n">seg</span><span class="p">[</span><span class="s2">"left_rightopt"</span><span class="p">])</span>
+<span class="n">seg</span><span class="p">[</span><span class="s2">"left_other"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">chose_left</span><span class="p">,</span> <span class="n">seg</span><span class="p">[</span><span class="s2">"left_rightopt"</span><span class="p">],</span> <span class="n">seg</span><span class="p">[</span><span class="s2">"left_leftopt"</span><span class="p">])</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">seg</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="s2">"left_chosen"</span><span class="p">,</span> <span class="s2">"left_other"</span><span class="p">],</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"share of trials"</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_rois_14_0.png" src="../_images/notebooks_rois_14_0.png" />
+</div>
+</div>
+<p>Locked to the choice instead of the stimulus, the gaze moves to the option that is then chosen (the <em>gaze cascade</em>):</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">choice</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_segments</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">get_epochs</span><span class="p">(</span><span class="s2">"C_"</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">1500</span><span class="p">,</span> <span class="mi">300</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">),</span> <span class="n">eyes</span><span class="o">=</span><span class="s2">"left"</span><span class="p">,</span>
+                        <span class="n">name</span><span class="o">=</span><span class="s2">"choice"</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">side</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="n">choice</span><span class="o">.</span><span class="n">gaze</span><span class="o">.</span><span class="n">roi_hits</span><span class="p">(</span><span class="n">left_roi</span><span class="p">)</span>
+<span class="n">choice</span><span class="o">.</span><span class="n">gaze</span><span class="o">.</span><span class="n">roi_hits</span><span class="p">(</span><span class="n">right_roi</span><span class="p">)</span>
+<span class="n">chose_left</span> <span class="o">=</span> <span class="n">choice</span><span class="o">.</span><span class="n">epochs</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">"side"</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
+<span class="n">choice</span><span class="p">[</span><span class="s2">"left_chosen"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">chose_left</span><span class="p">,</span> <span class="n">choice</span><span class="p">[</span><span class="s2">"left_leftopt"</span><span class="p">],</span> <span class="n">choice</span><span class="p">[</span><span class="s2">"left_rightopt"</span><span class="p">])</span>
+<span class="n">choice</span><span class="p">[</span><span class="s2">"left_other"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">chose_left</span><span class="p">,</span> <span class="n">choice</span><span class="p">[</span><span class="s2">"left_rightopt"</span><span class="p">],</span> <span class="n">choice</span><span class="p">[</span><span class="s2">"left_leftopt"</span><span class="p">])</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">choice</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="s2">"left_chosen"</span><span class="p">,</span> <span class="s2">"left_other"</span><span class="p">],</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"share of trials"</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_rois_16_0.png" src="../_images/notebooks_rois_16_0.png" />
+</div>
+</div>
+</section>
+<section id="Measures-per-trial">
+<h2>Measures per trial<a class="headerlink" href="#Measures-per-trial" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">seg.gaze.dwell_time()</span></code> gives the time the gaze spends in an ROI in each trial, <code class="docutils literal notranslate"><span class="pre">seg.gaze.first_entry()</span></code> the time of the first sample in the ROI (from the onset on, by default). Both take an ROI or the name of ROI channels, and return a table with the onsets, labels and metadata of the epochs, which converts to a pandas DataFrame:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dwell</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">gaze</span><span class="o">.</span><span class="n">dwell_time</span><span class="p">(</span><span class="s2">"chosen"</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)))</span>
+<span class="n">first</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">gaze</span><span class="o">.</span><span class="n">first_entry</span><span class="p">(</span><span class="s2">"chosen"</span><span class="p">))</span>
+<span class="n">dwell</span><span class="p">[[</span><span class="s2">"trial"</span><span class="p">,</span> <span class="s2">"side"</span><span class="p">,</span> <span class="s2">"reward"</span><span class="p">,</span> <span class="s2">"left_chosen"</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>trial</th>
+      <th>side</th>
+      <th>reward</th>
+      <th>left_chosen</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1.0</td>
+      <td>2.0</td>
+      <td>15.0</td>
+      <td>378.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2.0</td>
+      <td>1.0</td>
+      <td>20.0</td>
+      <td>322.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3.0</td>
+      <td>1.0</td>
+      <td>18.0</td>
+      <td>476.0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4.0</td>
+      <td>2.0</td>
+      <td>11.0</td>
+      <td>340.0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5.0</td>
+      <td>2.0</td>
+      <td>17.0</td>
+      <td>542.0</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dwell_other</span> <span class="o">=</span> <span class="n">seg</span><span class="o">.</span><span class="n">gaze</span><span class="o">.</span><span class="n">dwell_time</span><span class="p">(</span><span class="s2">"other"</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1000</span><span class="p">))[</span><span class="s2">"left_other"</span><span class="p">]</span>
+<span class="n">first_other</span> <span class="o">=</span> <span class="n">seg</span><span class="o">.</span><span class="n">gaze</span><span class="o">.</span><span class="n">first_entry</span><span class="p">(</span><span class="s2">"other"</span><span class="p">)[</span><span class="s2">"left_other"</span><span class="p">]</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+    <span class="s2">"dwell time (ms, first second)"</span><span class="p">:</span> <span class="p">[</span><span class="n">dwell</span><span class="p">[</span><span class="s2">"left_chosen"</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dwell_other</span><span class="p">)],</span>
+    <span class="s2">"first entry (ms)"</span><span class="p">:</span> <span class="p">[</span><span class="n">first</span><span class="p">[</span><span class="s2">"left_chosen"</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">first_other</span><span class="p">)],</span>
+<span class="p">},</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s2">"chosen"</span><span class="p">,</span> <span class="s2">"other"</span><span class="p">])</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>dwell time (ms, first second)</th>
+      <th>first entry (ms)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>chosen</th>
+      <td>437.0</td>
+      <td>304.0</td>
+    </tr>
+    <tr>
+      <th>other</th>
+      <td>333.0</td>
+      <td>375.0</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Masked samples (e.g., blinks) do not count; trials without usable samples get NaN.</p>
+</section>
+<section id="Gaze-and-pupil-in-the-same-trials">
+<h2>Gaze and pupil in the same trials<a class="headerlink" href="#Gaze-and-pupil-in-the-same-trials" title="Link to this heading">#</a></h2>
+<p>Because pupil and gaze are channels of the same segments, a selection of trials applies to both. Here, we compare the pupil response in the trials in which the participant looked at the later chosen option first with the others. <code class="docutils literal notranslate"><span class="pre">keep()</span></code> selects trials with a boolean array:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">chosen_first</span> <span class="o">=</span> <span class="n">first</span><span class="p">[</span><span class="s2">"left_chosen"</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="o">&lt;</span> <span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">first_other</span><span class="p">,</span> <span class="n">nan</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+
+<span class="n">erpd</span> <span class="o">=</span> <span class="n">seg</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">baseline_correct</span><span class="p">((</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">eyes</span><span class="o">=</span><span class="s2">"left"</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">erpd</span><span class="o">.</span><span class="n">keep</span><span class="p">(</span><span class="n">chosen_first</span><span class="p">)</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">"left"</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"chosen option first"</span><span class="p">)</span>
+<span class="n">erpd</span><span class="o">.</span><span class="n">keep</span><span class="p">(</span><span class="o">~</span><span class="n">chosen_first</span><span class="p">)</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">"left"</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"other option first"</span><span class="p">,</span>
+                                    <span class="n">show_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_rois_21_0.png" src="../_images/notebooks_rois_21_0.png" />
+</div>
+</div>
+</section>
+<section id="Several-participants">
+<h2>Several participants<a class="headerlink" href="#Several-participants" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">pp.group_segments()</span></code> averages the trials of each participant (a list of segments, or a dict with their names). The result is again a <code class="docutils literal notranslate"><span class="pre">SegmentedEyeData</span></code> object, with one column per participant, so the fixation curves and ERPDs of the group are means across participants. Here, the first and second half of the session stand in for two participants:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">first_half</span> <span class="o">=</span> <span class="n">seg</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">trial</span><span class="o">=</span><span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">t</span> <span class="o">&lt;=</span> <span class="mi">150</span><span class="p">)</span>
+<span class="n">second_half</span> <span class="o">=</span> <span class="n">seg</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">trial</span><span class="o">=</span><span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">t</span> <span class="o">&gt;</span> <span class="mi">150</span><span class="p">)</span>
+<span class="n">group</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">group_segments</span><span class="p">({</span><span class="s2">"first half"</span><span class="p">:</span> <span class="n">first_half</span><span class="p">,</span> <span class="s2">"second half"</span><span class="p">:</span> <span class="n">second_half</span><span class="p">},</span>
+                          <span class="n">channels</span><span class="o">=</span><span class="p">[</span><span class="s2">"left_chosen"</span><span class="p">,</span> <span class="s2">"left_other"</span><span class="p">])</span>
+<span class="n">group</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div style="font-family:system-ui, sans-serif; border:1px solid #ddd; border-radius:6px; padding:12px; max-width: min(600px, 50vw); min-width: 300px;">
+  <h3 style="margin-top:0;">SegmentedEyeData — <span style="color:#555;">group_stimulus</span></h3>
+
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:8px; margin-bottom:10px;">
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Epochs</div>
+      <div style="font-weight:600;">S_</div>
+    </div>
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Averages</div>
+      <div style="font-weight:600;">2</div>
+    </div>
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Trials</div>
+      <div style="font-weight:600;">299</div>
+    </div>
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Time points</div>
+      <div style="font-weight:600;">1,750</div>
+    </div>
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Window</div>
+      <div style="font-weight:600;">-500 to 2998 ms</div>
+    </div>
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Missing</div>
+      <div style="font-weight:600;">7.0%</div>
+    </div>
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Sampling rate</div>
+      <div style="font-weight:600;">500 Hz</div>
+    </div>
+  </div>
+
+
+    <details open style="margin-bottom:8px;">
+    <summary style="cursor:pointer; font-weight:600;">Channels (mean over averages; red line = event onset)</summary>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:8px; margin-top:8px;">
+      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">left_chosen (7.0% missing)</div>
+        <img src="data:image/png;base64,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" alt="left_chosen (7.0% missing) sparkline" style="height:60px; width:100%; object-fit:cover;">
+      </div>
+      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">left_other (7.0% missing)</div>
+        <img src="data:image/png;base64,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" alt="left_other (7.0% missing) sparkline" style="height:60px; width:100%; object-fit:cover;">
+      </div>
+    </div>
+  </details>
+
+
+  <details style="margin-top:8px;">
+    <summary style="cursor:pointer; font-weight:600;">Epochs</summary>
+    <pre style="margin-top:8px; background:#f9f9f9; padding:8px; border-radius:4px;">Epochs &#39;S_&#39; | 2 epochs without time, window (-500, 3000) ms</pre>
+  </details>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">group</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="s2">"left_chosen"</span><span class="p">,</span> <span class="s2">"left_other"</span><span class="p">],</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"share of trials (mean of participants)"</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_rois_24_0.png" src="../_images/notebooks_rois_24_0.png" />
+</div>
+</div>
+<p>The participants are columns like the trials before, with their name and number of trials in the metadata of the epochs. Averages by other metadata work the same way: <code class="docutils literal notranslate"><span class="pre">pp.concat_segments()</span></code> stacks the trials of all participants (with the metadata column <code class="docutils literal notranslate"><span class="pre">&quot;subject&quot;</span></code>), and <code class="docutils literal notranslate"><span class="pre">average(by=...)</span></code> averages them, e.g., per participant and side of the chosen option:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">both</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">concat_segments</span><span class="p">({</span><span class="s2">"first half"</span><span class="p">:</span> <span class="n">first_half</span><span class="p">,</span> <span class="s2">"second half"</span><span class="p">:</span> <span class="n">second_half</span><span class="p">},</span>
+                          <span class="n">channels</span><span class="o">=</span><span class="p">[</span><span class="s2">"left_chosen"</span><span class="p">,</span> <span class="s2">"left_other"</span><span class="p">])</span>
+<span class="n">means</span> <span class="o">=</span> <span class="n">both</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="p">[</span><span class="s2">"subject"</span><span class="p">,</span> <span class="s2">"side"</span><span class="p">])</span>
+<span class="n">means</span><span class="o">.</span><span class="n">epochs</span><span class="o">.</span><span class="n">as_pandas</span><span class="p">()[[</span><span class="s2">"label"</span><span class="p">,</span> <span class="s2">"subject"</span><span class="p">,</span> <span class="s2">"side"</span><span class="p">,</span> <span class="s2">"n_trials"</span><span class="p">]]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>label</th>
+      <th>subject</th>
+      <th>side</th>
+      <th>n_trials</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>first half/2.0</td>
+      <td>first half</td>
+      <td>2.0</td>
+      <td>88</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>first half/1.0</td>
+      <td>first half</td>
+      <td>1.0</td>
+      <td>61</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>second half/1.0</td>
+      <td>second half</td>
+      <td>1.0</td>
+      <td>88</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>second half/2.0</td>
+      <td>second half</td>
+      <td>2.0</td>
+      <td>62</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>The segments, with their ROI channels, can be saved with <code class="docutils literal notranslate"><span class="pre">seg.write_file(&quot;stimulus.h5&quot;)</span></code> and loaded with <code class="docutils literal notranslate"><span class="pre">pp.SegmentedEyeData.from_file()</span></code>.</p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="erpds.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Event-related pupil dilations</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="modeling.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Modeling the pupillometric signal</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal" tabindex="-1"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#The-data">The data</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Regions-of-interest">Regions of interest</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Segments-around-the-stimuli">Segments around the stimuli</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Where-is-the-gaze-over-time?">Where is the gaze over time?</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Measures-per-trial">Measures per trial</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Gaze-and-pupil-in-the-same-trials">Gaze and pupil in the same trials</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Several-participants">Several participants</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  
+  <div class="tocsection editthispage">
+    <a href="https://github.com/ihrke/pypillometry/edit/master/docs/notebooks/rois.ipynb">
+      <i class="fa-solid fa-pencil"></i>
+      
+      
+        
+          Edit on GitHub
+        
+      
+    </a>
+  </div>
+</div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/notebooks/rois.ipynb.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2026, Matthias Mittner.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
+  </p>
+</div>
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.24.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

@@ -68,7 +68,8 @@ Working with data objects
       :link: /notebooks/summary
       :link-type: doc
 
-      Summaries of one or many datasets as tables.
+      Summaries of one or many datasets: contents, data quality, masked
+      data and one value per trial, as tables.
 
 
 Preprocessing and plotting
@@ -82,6 +83,13 @@ Preprocessing and plotting
       :link-type: doc
 
       Detect, check and interpolate blinks.
+
+   .. grid-item-card:: Missing data
+      :link: /notebooks/missing_data
+      :link-type: doc
+
+      Mask layers and policies on a real recording: blinks, off-screen
+      gaze, excluded periods, interpolation and their effect on analyses.
 
    .. grid-item-card:: Plotting
       :link: /notebooks/plotting
@@ -121,6 +129,13 @@ Events and event-related analyses
       :link-type: doc
 
       Average pupil responses per condition and across participants.
+
+   .. grid-item-card:: Gaze in regions of interest
+      :link: /notebooks/rois
+      :link-type: doc
+
+      Where participants look after an event: fixation curves, dwell
+      time and first entry per trial, combined with the pupil.
 
 
 Modeling and complete analyses
@@ -166,6 +181,7 @@ More examples for the experimental features are in
    :caption: Preprocessing and plotting
 
    /notebooks/blinks
+   /notebooks/missing_data
    /notebooks/plotting
 
 .. toctree::
@@ -176,6 +192,7 @@ More examples for the experimental features are in
    /notebooks/event_metadata
    /notebooks/intervals
    /notebooks/erpds
+   /notebooks/rois
 
 .. toctree::
    :hidden:

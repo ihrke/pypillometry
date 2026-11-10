@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pypillometry.io &#8212; pypillometry v2.1.0</title>
+    <title>pypillometry.io &#8212; pypillometry v2.2.0</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=dbd6d5c5"></script>
+    <script src="../../_static/documentation_options.js?v=49a90b2e"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -414,7 +414,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.1.0" />
+  <meta name="docsearch:version" content="v2.2.0" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -458,9 +458,6 @@ window.runMermaid = runMermaid;</script>
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-<aside class="bd-header-announcement" aria-label="Announcement">
-  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
-</aside>
 
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
@@ -803,41 +800,31 @@ window.runMermaid = runMermaid;</script>
                   
   <h1>Source code for pypillometry.io</h1><div class="highlight"><pre>
 <span></span><span class="sd">"""</span>
-<span class="sd">io.py</span>
-<span class="sd">=====</span>
+<span class="sd">Reading and writing data.</span>
 
-<span class="sd">Read/Write data from/to disk.</span>
+<span class="sd">- Eyelink EDF files: :func:`read_eyelink` (usually used through</span>
+<span class="sd">  :meth:`~pypillometry.EyeData.from_eyelink`)</span>
+<span class="sd">- saved objects: :func:`write_file` and :func:`read_file` (pickle or</span>
+<span class="sd">  HDF5 files; usually used through :meth:`~pypillometry.EyeData.write_file`</span>
+<span class="sd">  and :meth:`~pypillometry.EyeData.from_file`)</span>
+<span class="sd">- files from URLs (HTTP(S), SSH, OSF) and the download cache:</span>
+<span class="sd">  :func:`fetch_url`, :func:`local_copy`, :func:`download`,</span>
+<span class="sd">  :func:`osf_authenticate`</span>
 
-<span class="sd">Reading EDF files is slow: :func:`read_eyelink` (and</span>
-<span class="sd">:meth:`~pypillometry.GenericEyeData.from_eyelink`) takes about a minute</span>
-<span class="sd">for a 90 MB EDF file (64 min of binocular data at 1000 Hz), mostly in the</span>
-<span class="sd">`eyelinkio` package. It is therefore recommended to convert EDF files once</span>
-<span class="sd">and to work with the converted files, e.g., with the command-line program</span>
-<span class="sd">``edf2pypil`` (``edf2pypil recording.edf`` writes ``recording.pkl``) or</span>
-<span class="sd">with :func:`write_pickle`. Reading the pickle file with :func:`read_pickle`</span>
-<span class="sd">is more than 100 times faster. :func:`write_pickle` compresses the file</span>
-<span class="sd">with zstd by default: a 400 MB pickle (90 MB EDF file) shrinks to about</span>
-<span class="sd">31 MB, takes 0.5 s to write and 0.35 s to read (uncompressed: 0.2 s from</span>
-<span class="sd">a warm cache, more from a slow disk or network). Pickle files should only</span>
-<span class="sd">be read from trusted sources.</span>
-
-<span class="sd">Eyedata and segmented objects can also be saved in HDF5 files (filename</span>
-<span class="sd">ending in ``.h5`` or ``.hdf5``), which other programs can read as well and</span>
-<span class="sd">which do not run code when read. Both formats store the same versioned</span>
-<span class="sd">state of the object (see :mod:`pypillometry.state`), so files written by</span>
-<span class="sd">older versions of pypillometry keep loading.</span>
+<span class="sd">See the user guide (Loading and saving data) for an overview.</span>
 <span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">gzip</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>     <span class="c1"># imported where used (slow)</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.convenience</span><span class="w"> </span><span class="kn">import</span> <span class="n">is_url</span><span class="p">,</span> <span class="n">suppress_all_output</span><span class="p">,</span> <span class="n">requires_package</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.logging</span><span class="w"> </span><span class="kn">import</span> <span class="n">logging_get_level</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.logging</span><span class="w"> </span><span class="kn">import</span> <span class="n">logging_get_level</span><span class="p">,</span> <span class="n">_show_progress</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">state</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">hdf5</span>
 
@@ -846,15 +833,15 @@ window.runMermaid = runMermaid;</script>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">backports</span><span class="w"> </span><span class="kn">import</span> <span class="n">zstd</span>
 
-<span class="c1">#: zstd compression level used by :func:`write_pickle`</span>
+<span class="c1">#: zstd compression level used by :func:`write_file`</span>
 <span class="n">ZSTD_LEVEL</span> <span class="o">=</span> <span class="mi">3</span>
 <span class="n">_ZSTD_MAGIC</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">"</span><span class="se">\x28\xb5\x2f\xfd</span><span class="s2">"</span>
 <span class="n">_GZIP_MAGIC</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">"</span><span class="se">\x1f\x8b</span><span class="s2">"</span>
 <span class="n">_HDF5_EXTENSIONS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">".h5"</span><span class="p">,</span> <span class="s2">".hdf5"</span><span class="p">)</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s2">"osf_authenticate"</span><span class="p">,</span> <span class="s2">"download"</span><span class="p">,</span> <span class="s2">"fetch_url"</span><span class="p">,</span> <span class="s2">"local_copy"</span><span class="p">,</span> <span class="s2">"write_pickle"</span><span class="p">,</span>
-    <span class="s2">"read_pickle"</span><span class="p">,</span> <span class="s2">"read_eyelink"</span><span class="p">,</span>
+    <span class="s2">"osf_authenticate"</span><span class="p">,</span> <span class="s2">"download"</span><span class="p">,</span> <span class="s2">"fetch_url"</span><span class="p">,</span> <span class="s2">"local_copy"</span><span class="p">,</span> <span class="s2">"write_file"</span><span class="p">,</span>
+    <span class="s2">"read_file"</span><span class="p">,</span> <span class="s2">"read_eyelink"</span><span class="p">,</span>
 <span class="p">]</span>
 
 
@@ -863,9 +850,9 @@ window.runMermaid = runMermaid;</script>
 <span class="k">def</span><span class="w"> </span><span class="nf">osf_authenticate</span><span class="p">(</span>
     <span class="n">access_token</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">validate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="n">session</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">session</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">"requests.Session"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">10.0</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"requests.Session"</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Authenticate against the OSF API using a personal access token.</span>
 
@@ -890,6 +877,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    ValueError</span>
 <span class="sd">        If no access token is provided or validation fails.</span>
 <span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">access_token</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">access_token</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"A non-empty OSF access token string is required."</span><span class="p">)</span>
 
@@ -922,7 +910,7 @@ window.runMermaid = runMermaid;</script>
 
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_osf_client_url_to_download_url</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_osf_client_url_to_download_url</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">"requests.Session"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Convert an OSF client URL to a download URL.</span>
 <span class="sd">    Parameters</span>
@@ -936,6 +924,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    str</span>
 <span class="sd">        Download URL</span>
 <span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
     <span class="c1"># is it an OSF client URL?</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">url</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"https://osf.io/"</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"URL is not an OSF client URL: </span><span class="si">{</span><span class="n">url</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
@@ -968,7 +957,7 @@ window.runMermaid = runMermaid;</script>
 
 <div class="viewcode-block" id="download">
 <a class="viewcode-back" href="../../api/generated/pypillometry.download.html#pypillometry.download">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">download</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">fname</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1024</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">download</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">fname</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1024</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">"requests.Session"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Download a file from a URL to a local file.</span>
 
 <span class="sd">    See https://gist.github.com/yanqd0/c13ed29e29432e3cf3e7c38467f42f51.</span>
@@ -989,6 +978,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    str</span>
 <span class="sd">        Local filename of the downloaded file.</span>
 <span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
 
     <span class="c1"># Create temporary file if fname is None</span>
@@ -1027,6 +1018,7 @@ window.runMermaid = runMermaid;</script>
                 <span class="n">unit</span><span class="o">=</span><span class="s2">"iB"</span><span class="p">,</span>
                 <span class="n">unit_scale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                 <span class="n">unit_divisor</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
+                <span class="n">disable</span><span class="o">=</span><span class="ow">not</span> <span class="n">_show_progress</span><span class="p">(),</span>
             <span class="p">)</span> <span class="k">as</span> <span class="n">bar</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">resp</span><span class="o">.</span><span class="n">iter_content</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="n">chunk_size</span><span class="p">):</span>
                     <span class="n">size</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
@@ -1155,6 +1147,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    Shows a progress bar that follows the size of `target` while ``scp``</span>
 <span class="sd">    is running.</span>
 <span class="sd">    """</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
@@ -1181,7 +1174,8 @@ window.runMermaid = runMermaid;</script>
     <span class="n">worker</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">run</span><span class="p">,</span> <span class="n">daemon</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">worker</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
     <span class="k">with</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)),</span> <span class="n">total</span><span class="o">=</span><span class="n">total</span><span class="p">,</span>
-              <span class="n">unit</span><span class="o">=</span><span class="s2">"iB"</span><span class="p">,</span> <span class="n">unit_scale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">unit_divisor</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span> <span class="k">as</span> <span class="n">bar</span><span class="p">:</span>
+              <span class="n">unit</span><span class="o">=</span><span class="s2">"iB"</span><span class="p">,</span> <span class="n">unit_scale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">unit_divisor</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
+              <span class="n">disable</span><span class="o">=</span><span class="ow">not</span> <span class="n">_show_progress</span><span class="p">())</span> <span class="k">as</span> <span class="n">bar</span><span class="p">:</span>
         <span class="k">while</span> <span class="n">worker</span><span class="o">.</span><span class="n">is_alive</span><span class="p">():</span>
             <span class="n">worker</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)</span>
             <span class="n">bar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_local_size</span><span class="p">(</span><span class="n">target</span><span class="p">)</span> <span class="o">-</span> <span class="n">bar</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
@@ -1206,7 +1200,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">cache_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">cache_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">force_download</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="n">session</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">session</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">"requests.Session"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">cache_layout</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"flat"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Download an HTTP(S) or SSH URL to a local file, with caching.</span>
 
@@ -1295,7 +1289,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">cache_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">autodelete</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">force_download</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="n">session</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">session</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">"requests.Session"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">cache_layout</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"flat"</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Context manager that gives a local filename for `source`.</span>
 
@@ -1353,14 +1347,14 @@ window.runMermaid = runMermaid;</script>
     <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">_HDF5_EXTENSIONS</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="write_pickle">
-<a class="viewcode-back" href="../../api/generated/pypillometry.write_pickle.html#pypillometry.write_pickle">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">write_pickle</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">compress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="write_file">
+<a class="viewcode-back" href="../../api/generated/pypillometry.write_file.html#pypillometry.write_file">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">write_file</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">compress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Store any Python object in a file using :mod:`pickle` (or HDF5).</span>
 
 <span class="sd">    By default, the file is compressed with zstd (about 13 times smaller</span>
-<span class="sd">    for eyedata objects). :func:`read_pickle` detects the compression</span>
+<span class="sd">    for eyedata objects). :func:`read_file` detects the compression</span>
 <span class="sd">    automatically.</span>
 
 <span class="sd">    If `fname` ends with ``.h5`` or ``.hdf5``, the object is stored in an</span>
@@ -1407,13 +1401,13 @@ window.runMermaid = runMermaid;</script>
 
 
 
-<div class="viewcode-block" id="read_pickle">
-<a class="viewcode-back" href="../../api/generated/pypillometry.read_pickle.html#pypillometry.read_pickle">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">read_pickle</span><span class="p">(</span>
+<div class="viewcode-block" id="read_file">
+<a class="viewcode-back" href="../../api/generated/pypillometry.read_file.html#pypillometry.read_file">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">read_file</span><span class="p">(</span>
     <span class="n">fname</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">cache_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">force_download</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="n">session</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">session</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">"requests.Session"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">cache_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">autodelete</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">cache_layout</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"flat"</span><span class="p">):</span>
@@ -1421,7 +1415,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    Read a Python object from a file using :mod:`pickle` (or HDF5).</span>
 
 <span class="sd">    Plain, zstd- and gzip-compressed pickle files and HDF5 files written</span>
-<span class="sd">    by :func:`write_pickle` are supported (the format is detected from the</span>
+<span class="sd">    by :func:`write_file` are supported (the format is detected from the</span>
 <span class="sd">    file content). Objects saved with an older version of pypillometry are</span>
 <span class="sd">    upgraded to the current version.</span>
 
@@ -1457,6 +1451,11 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    -------</span>
 <span class="sd">    object</span>
 <span class="sd">        loaded object</span>
+
+<span class="sd">    Warnings</span>
+<span class="sd">    --------</span>
+<span class="sd">    Pickle files can run arbitrary code when they are read. Only read pickle</span>
+<span class="sd">    files from sources you trust; HDF5 files do not run code.</span>
 <span class="sd">    """</span>
     <span class="k">with</span> <span class="n">local_copy</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">cache_file</span><span class="o">=</span><span class="n">cache_file</span><span class="p">,</span> <span class="n">cache_dir</span><span class="o">=</span><span class="n">cache_dir</span><span class="p">,</span>
                     <span class="n">autodelete</span><span class="o">=</span><span class="n">autodelete</span><span class="p">,</span> <span class="n">force_download</span><span class="o">=</span><span class="n">force_download</span><span class="p">,</span>
@@ -1475,7 +1474,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> 
     <span class="n">cache_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
     <span class="n">force_download</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> 
-    <span class="n">session</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">session</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">"requests.Session"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">cache_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">autodelete</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">cache_layout</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"flat"</span><span class="p">):</span>
@@ -1518,9 +1517,16 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    eyelinkio.EDF</span>
 <span class="sd">        object returned by :func:`eyelinkio.read_edf`</span>
 
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Reading EDF files is slow (about a minute for a 90 MB file, mostly in</span>
+<span class="sd">    `eyelinkio`). Convert them once and work with the saved files, which</span>
+<span class="sd">    are read in well under a second: with the command-line program</span>
+<span class="sd">    ``edf2pypil`` or with :meth:`~pypillometry.EyeData.write_file`.</span>
+
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
-<span class="sd">    pypillometry.GenericEyeData.from_eyelink : create an eyedata object from an EDF file</span>
+<span class="sd">    pypillometry.EyeData.from_eyelink : create an eyedata object from an EDF file</span>
 <span class="sd">    """</span>
     <span class="k">with</span> <span class="n">local_copy</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">cache_file</span><span class="o">=</span><span class="n">cache_file</span><span class="p">,</span> <span class="n">cache_dir</span><span class="o">=</span><span class="n">cache_dir</span><span class="p">,</span>
                     <span class="n">autodelete</span><span class="o">=</span><span class="n">autodelete</span><span class="p">,</span> <span class="n">force_download</span><span class="o">=</span><span class="n">force_download</span><span class="p">,</span>
@@ -1540,13 +1546,31 @@ window.runMermaid = runMermaid;</script>
     <span class="k">if</span> <span class="n">show_eyelinkio_output</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading EDF file: </span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"eyelinkio output will be displayed below:"</span><span class="p">)</span>
-        <span class="n">edf</span> <span class="o">=</span> <span class="n">eyelinkio</span><span class="o">.</span><span class="n">read_edf</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">_c_time_locale</span><span class="p">():</span>
+            <span class="n">edf</span> <span class="o">=</span> <span class="n">eyelinkio</span><span class="o">.</span><span class="n">read_edf</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading EDF file: </span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2"> (current log level: </span><span class="si">{</span><span class="n">current_level</span><span class="si">}</span><span class="s2">, set to DEBUG to see eyelinkio output)"</span><span class="p">)</span>
-        <span class="k">with</span> <span class="n">suppress_all_output</span><span class="p">():</span>
+        <span class="k">with</span> <span class="n">suppress_all_output</span><span class="p">(),</span> <span class="n">_c_time_locale</span><span class="p">():</span>
             <span class="n">edf</span> <span class="o">=</span> <span class="n">eyelinkio</span><span class="o">.</span><span class="n">read_edf</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">edf</span>
+
+
+<span class="nd">@contextmanager</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_c_time_locale</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""Use the "C" locale for times while reading an EDF file.</span>
+
+<span class="sd">    eyelinkio parses the English date in the file header ("Fri Feb 14</span>
+<span class="sd">    ...") with ``strptime``, which fails if a program activated a locale</span>
+<span class="sd">    with other names of days and months (e.g., Norwegian).</span>
+<span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">locale</span>
+    <span class="n">old</span> <span class="o">=</span> <span class="n">locale</span><span class="o">.</span><span class="n">setlocale</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">LC_TIME</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">locale</span><span class="o">.</span><span class="n">setlocale</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">LC_TIME</span><span class="p">,</span> <span class="s2">"C"</span><span class="p">)</span>
+        <span class="k">yield</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">locale</span><span class="o">.</span><span class="n">setlocale</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">LC_TIME</span><span class="p">,</span> <span class="n">old</span><span class="p">)</span>
 </pre></div>
 
                 </article>
