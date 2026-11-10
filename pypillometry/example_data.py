@@ -282,50 +282,6 @@ def get_rlmw_010_edf(cache_dir=None):
     return d
 
 
-#: event label of the "nback" task, e.g. "run-1_scr-grey_block-1_task-0b_trial-1_stim_target-1"
-_NBACK_LABEL = (r"^run-(?P<run>\d+)_scr-(?P<screen>[a-z]+)"
-                r"(?:_block-(?P<block>\d+)_task-(?P<task>[^_]+)_trial-(?P<trial>\d+))?")
-_NBACK_KEYS = ["run", "block", "task", "trial"]
-_NBACK_COLUMNS = ["stimulus", "target", "response", "accuracy", "rt"]
-
-
-def _read_nback_log(fname):
-    """Behavioural log of the "nback" task: (header dict, trial DataFrame).
-
-    The header are the ``# key: value`` lines at the top of the file.
-    """
-    import pandas as pd
-    header = {}
-    with open(fname) as f:
-        for line in f:
-            if not line.startswith("#"):
-                break
-            key, sep, value = line[1:].partition(":")
-            if sep:
-                header[key.strip()] = value.strip()
-    return header, pd.read_csv(fname, comment="#", dtype={"subj": str})
-
-
-def _merge_nback_log(d, header, df):
-    """Add the behavioural log to the events of `d` (in-place).
-
-    Run, screen, block, task and trial are parsed from the labels; the
-    trial's stimulus, target, response, accuracy and rt (s) from the log are
-    added to all events of a trial (matched by run, block, task and
-    trial). The header is stored in ``d.info["behaviour_log"]``.
-    """
-    import pandas as pd
-    ev = d.events.parse_labels(_NBACK_LABEL)
-    meta = pd.DataFrame({k: ev.meta[k] for k in _NBACK_KEYS})
-    trials = df[_NBACK_KEYS + _NBACK_COLUMNS].astype({"task": object})
-    merged = meta.merge(trials, on=_NBACK_KEYS, how="left", validate="many_to_one")
-    for col in _NBACK_COLUMNS:
-        ev = ev.set_meta(col, merged[col].to_numpy())
-    d.set_events(ev)
-    d.info["behaviour_log"] = header
-    return d
-
-
 def get_nback_001(cache_dir=None):
     """Load the "nback_001" example dataset (downloaded from figshare).
 
@@ -356,15 +312,40 @@ def get_nback_001(cache_dir=None):
     EyeData
         the example dataset
     """
+    import pandas as pd
     info = example_datasets["nback_001"]
 
     def fetch(name):
+        """Download a file of the figshare item (or use the cached copy)."""
         return fetch_figshare_file(info["figshare"]["id"], info["files"][name],
                                    version=info["figshare"]["version"],
                                    cache_dir=cache_dir or _user_cache_dir(),
                                    cache_layout="mirror")
 
+    # eye-tracking data, saved with pypillometry
     d = EyeData.from_file(fetch("data"))
     d.name = "nback_001"
-    header, df = _read_nback_log(fetch("behaviour"))
-    return _merge_nback_log(d, header, df)
+
+    # behavioural log: a header of "# key: value" lines, then one row per trial
+    fname_log = fetch("behaviour")
+    with open(fname_log) as f:
+        comments = [line.lstrip("# ").strip() for line in f if line.startswith("#")]
+    d.info["behaviour_log"] = dict(c.split(": ", 1) for c in comments if ": " in c)
+    log = pd.read_csv(fname_log, comment="#")
+
+    # run, screen, block, task and trial from the event labels, e.g.
+    # "run-1_scr-grey_block-1_task-0b_trial-1_stim_target-1"
+    events = d.events.parse_labels(
+        r"^run-(?P<run>\d+)_scr-(?P<screen>[a-z]+)"
+        r"(?:_block-(?P<block>\d+)_task-(?P<task>[^_]+)_trial-(?P<trial>\d+))?")
+
+    # add each trial's row of the log to all its events (fixation, stimulus,
+    # response), matched by run, block, task and trial
+    keys = ["run", "block", "task", "trial"]
+    columns = ["stimulus", "target", "response", "accuracy", "rt"]
+    trials = pd.DataFrame({k: events.meta[k] for k in keys}).merge(
+        log[keys + columns], on=keys, how="left", validate="many_to_one")
+    for col in columns:
+        events = events.set_meta(col, trials[col].to_numpy())
+    d.set_events(events)
+    return d
