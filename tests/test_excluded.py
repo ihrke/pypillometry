@@ -75,7 +75,7 @@ class TestExcluded(unittest.TestCase):
 
     def test_blinks(self):
         d = _make_data()
-        n_all = d.pupil.blinks_detect().nblinks()["left_pupil"]
+        n_all = {k: len(iv) for k, iv in d.pupil.blinks_detect().get_blinks().items()}["left_pupil"]
         self.assertEqual(n_all, 4)
         # blink at samples 3000-3100 (11000-11200 ms) is excluded
         e = d.exclude_intervals([(10900, 11500)])
@@ -92,7 +92,7 @@ class TestExcluded(unittest.TestCase):
         on, off = f.get_blinks("left", "pupil", units="samples")["left_pupil"].intervals[1]
         f = f.exclude_intervals(pp.Intervals([(off, off + 50)], "samples"))
         self.assertEqual(len(f.get_blinks("left", "pupil", units="samples")["left_pupil"]), 4)
-        self.assertEqual(f.nblinks()["left_pupil"], 4)
+        self.assertEqual({k: len(iv) for k, iv in f.get_blinks().items()}["left_pupil"], 4)
 
     def test_blink_next_to_excluded_keeps_its_layers(self):
         d = _make_data().pupil.blinks_detect().pupil.blinks_interpolate()

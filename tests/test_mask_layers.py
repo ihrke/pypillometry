@@ -385,7 +385,7 @@ class TestBlinkLayer:
         d.pupil.blinks_detect(strategies=["velocity"], min_duration=10)
         n1 = int(d.data.mask["left_pupil"].sum())
         d.pupil.blinks_detect(strategies=["velocity"], min_duration=2000)
-        assert d.nblinks() == {"left_pupil": 0}
+        assert {k: len(iv) for k, iv in d.get_blinks().items()} == {"left_pupil": 0}
         nan = np.isnan(d.data["left_pupil"])
         np.testing.assert_array_equal(d.data.mask["left_pupil"].astype(bool), nan)
         assert n1 > nan.sum()
@@ -420,7 +420,7 @@ class TestBlinkLayer:
         for strategies in (["zeros"], ["zero", "vel"], []):
             with pytest.raises(ValueError, match="strategies"):
                 d.pupil.blinks_detect(strategies=strategies)
-        assert d.pupil.blinks_detect(strategies="zero").nblinks() == {"left_pupil": 3}
+        assert {k: len(iv) for k, iv in d.pupil.blinks_detect(strategies="zero").get_blinks().items()} == {"left_pupil": 3}
 
     def test_set_blinks_none_and_clear_layer_unmask(self):
         d = blink_data()
@@ -439,8 +439,8 @@ class TestBlinkLayer:
         orig = blink_data()
         d = orig.pupil.blinks_detect(inplace=False)
         assert d is not orig
-        assert orig.nblinks() == {"left_pupil": 0}
-        assert d.nblinks() == {"left_pupil": 3}
+        assert {k: len(iv) for k, iv in orig.get_blinks().items()} == {"left_pupil": 0}
+        assert {k: len(iv) for k, iv in d.get_blinks().items()} == {"left_pupil": 3}
         assert d.history[-1]["funcname"] == "pupil.blinks_detect"
         assert not orig.history or orig.history[-1]["funcname"] != "pupil.blinks_detect"
         np.testing.assert_array_equal(d.data.mask["left_pupil"].astype(bool),

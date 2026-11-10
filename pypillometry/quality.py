@@ -837,6 +837,16 @@ def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[],
               "closures or tracking losses rather than blinks)")
 
     # --- artifacts (only if data was masked/interpolated) ---------------
+    # percentages of the layers per channel (of the included samples), as
+    # in d.layer_stats()
+    stats = obj.layer_stats(policy=policy)
+
+    def channel_pct(key, name):
+        """Percentage of `key` in layer `name` (0 if the layer is not set there)."""
+        if n == 0:
+            return np.nan
+        return stats.get(key, {}).get(name, {}).get("percent", 0.0)
+
     def layer(keys, name):
         """Included samples where layer `name` is set for one of `keys`."""
         return np.logical_or.reduce([obj.data.get_layer(k, name) for k in keys]) & inc
@@ -860,8 +870,8 @@ def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[],
                             "mask policy)"))
             if "interpolated" in obj.data.layer_names:
                 processed = True
-                interp = layer(keys, "interpolated").sum()
-                metrics.append(("interpolated_pct", "interpolated", _pct(interp, n),
+                metrics.append(("interpolated_pct", "interpolated",
+                                channel_pct(f"{eye}_pupil", "interpolated"),
                                 "percentage of pupil samples that were interpolated (e.g., blinks)"))
         if eye in gaze_eyes:
             gkeys = [f"{eye}_x", f"{eye}_y"]
@@ -884,7 +894,11 @@ def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[],
                  "assigning a masked array")):
             if name in obj.data.layer_names:
                 processed = True
-                metrics.append((f"{name}_pct", title, _pct(layer(eye_keys, name).sum(), n),
+                # off-screen and divergence are set on x and y together; the
+                # user layer can differ between the channels of an eye
+                value = channel_pct(f"{eye}_x", name) if name != "user" and eye in gaze_eyes \
+                    else _pct(layer(eye_keys, name).sum(), n)
+                metrics.append((f"{name}_pct", title, value,
                                 f"percentage of samples masked because of {desc}"))
         if not processed:
             continue

@@ -89,7 +89,7 @@ class TestPickleRoundTrip(unittest.TestCase):
     def test_eyedata(self):
         d = make_eyedata()
         d2 = self.roundtrip(d)
-        self.assertEqual(d2.nblinks(), d.nblinks())
+        self.assertEqual({k: len(iv) for k, iv in d2.get_blinks().items()}, {k: len(iv) for k, iv in d.get_blinks().items()})
         self.assertIsInstance(d2.original, pp.EyeData)
         self.assertIsInstance(d2.calibration["left"], SpatialCalibration)
         self.assertAlmostEqual(d2.experimental_setup.d, d.experimental_setup.d)
@@ -209,7 +209,7 @@ class TestFormatVersion0(unittest.TestCase):
         d = self.load("eyedata_v0.pkl")
         self.assertIsInstance(d, pp.EyeData)
         self.assertEqual(d.name, "fixture_eyedata")
-        self.assertEqual(d.nblinks(variables="pupil"), {"left_pupil": 4, "right_pupil": 3})
+        self.assertEqual({k: len(iv) for k, iv in d.get_blinks(variables="pupil").items()}, {"left_pupil": 4, "right_pupil": 3})
         self.assertEqual(len(d.events), 4)
         self.assertEqual(d.tx[0], 4500.0)
         self.assertIsInstance(d.original, pp.EyeData)
