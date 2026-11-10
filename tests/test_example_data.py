@@ -43,9 +43,10 @@ class TestExampleData(unittest.TestCase):
 
     def test_get_rlmw_002(self):
         """Full dataset is named after the dataset (download mocked)"""
-        short = {"samples_asc": "002_rlmw_samples_short.asc",
-                 "events_asc": "002_rlmw_events_short.asc"}
-        urls = {example_data.example_datasets["rlmw_002"][k]: v for k, v in short.items()}
+        short = {"samples": "002_rlmw_samples_short.asc",
+                 "events": "002_rlmw_events_short.asc"}
+        urls = {example_data.example_datasets["rlmw_002"]["files"][k]: v
+                for k, v in short.items()}
 
         downloaded = []
 
@@ -70,7 +71,7 @@ class TestExampleData(unittest.TestCase):
             pp.get_example_data("rlmw_002_short").write_file(src)
             with open(src, "rb") as f:
                 content = f.read()
-            listing = {info["pypil"]: {"id": 1, "download_url": "https://x/files/1",
+            listing = {info["files"]["data"]: {"id": 1, "download_url": "https://x/files/1",
                                        "size": len(content), "md5": ""}}
             downloaded = []
 
@@ -85,8 +86,8 @@ class TestExampleData(unittest.TestCase):
                 d = pp.get_example_data("nback_001", cache_dir=cache)
                 pp.get_example_data("nback_001", cache_dir=cache)
             self.assertEqual(len(downloaded), 1)
-            mock_list.assert_called_once_with(str(info["figshare"]),
-                                              info["figshare_version"])
+            mock_list.assert_called_once_with(str(info["figshare"]["id"]),
+                                              info["figshare"]["version"])
         self.assertIsInstance(d, pp.EyeData)
         self.assertEqual(d.name, "nback_001")
 
