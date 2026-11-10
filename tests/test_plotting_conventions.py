@@ -84,5 +84,17 @@ class ConventionTest(unittest.TestCase):
             plot(axes=[fig2.axes[0]] * (n + 1), **kwargs)
 
 
+class TestSinglePanel(ConventionTest):
+    def test_pupil_plot(self):
+        self.assertSinglePanel(self.d.plot.pupil_plot, plot_range=(0, 5) * u.sec)
+
+    def test_pupil_plot_title_kwargs(self):
+        fig, ax = plt.subplots()
+        self.d.plot.pupil_plot(plot_range=(0, 5) * u.sec, eyes="left", ax=ax,
+                               title="T", color="red", show_events=False)
+        self.assertEqual(ax.get_title(), "T")
+        self.assertEqual(ax.lines[0].get_color(), "red")
+
+
 if __name__ == "__main__":
     unittest.main()

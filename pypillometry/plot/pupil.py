@@ -1,4 +1,5 @@
 from .generic import GenericPlots
+from ._axes import get_ax, get_axes, write_pdf
 from ..units import parse_time, _ms_to
 import numpy as np
 from collections.abc import Iterable
@@ -24,12 +25,15 @@ class PupilPlots(GenericPlots):
                    label_prefix: str="",
                    style: dict=None,
                    highlight=None,
-                   highlight_color="lightblue"
-            ) -> None:
+                   highlight_color="lightblue",
+                   title: str = None,
+                   ax=None,
+                   **kwargs):
         """Make a plot of the pupil data using `matplotlib`.
 
         Has pupil-specific options which makes it different from
-        :meth:`plot_timeseries`. All eyes are plotted into the current axes.
+        :meth:`plot_timeseries`. All eyes are plotted into one axes (`ax`,
+        or the current axes).
 
         Parameters
         ----------
@@ -63,6 +67,18 @@ class PupilPlots(GenericPlots):
         highlight_color : color or list of colors, optional
             color of the shading: one for all or one per element of
             `highlight`; default "lightblue"
+        title : str, optional
+            title of the plot
+        ax : matplotlib.axes.Axes, optional
+            axes to plot on; default: the current axes
+        **kwargs
+            passed to :meth:`matplotlib.axes.Axes.plot` for all eyes (after
+            `style`)
+
+        Returns
+        -------
+        matplotlib.axes.Axes
+            the axes of the plot
 
         Raises
         ------
@@ -80,8 +96,8 @@ class PupilPlots(GenericPlots):
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
            >>> d = d.pupil.blinks_detect()
-           >>> fig = plt.figure(figsize=(10, 3))
-           >>> d.plot.pupil_plot(plot_range=(0, 20) * u.sec)
+           >>> fig, ax = plt.subplots(figsize=(10, 3))
+           >>> ax = d.plot.pupil_plot(plot_range=(0, 20) * u.sec, ax=ax)
 
         Shade the trials (feedback to response) and the first second after
         each stimulus in different colors:
@@ -94,12 +110,11 @@ class PupilPlots(GenericPlots):
            >>> d = pp.get_example_data("rlmw_002_short")
            >>> trials = d.get_intervals(start="F_", end="R_")
            >>> stim = d.get_epochs("S_", (0, 1000) * u.ms)
-           >>> fig = plt.figure(figsize=(10, 3))
-           >>> d.plot.pupil_plot(plot_range=(0, 20) * u.sec, show_blinks=False,
-           ...                   highlight=[trials, stim],
-           ...                   highlight_color=["lightgrey", "green"])
+           >>> fig, ax = plt.subplots(figsize=(10, 3))
+           >>> ax = d.plot.pupil_plot(plot_range=(0, 20) * u.sec, show_blinks=False,
+           ...                        highlight=[trials, stim],
+           ...                        highlight_color=["lightgrey", "green"], ax=ax)
         """
-        import matplotlib.pyplot as plt
         self._d._require("pupil")
         eyes = self._d._eyes_with(eyes, "pupil")
         logger.debug("Plotting eyes %s"%eyes)
@@ -138,6 +153,7 @@ class PupilPlots(GenericPlots):
         logger.debug("Plotting from %.2f to %.2f %s, (%i to %i)"%(start,end,units,startix,endix))
 
         tx=tx[startix:endix]
+        ax = get_ax(ax)
 
         # Determine if style is per-eye or global
         per_eye_style = (style is not None and 
@@ -176,20 +192,20 @@ class PupilPlots(GenericPlots):
             elif len(eyes) > 1:
                 # No style provided but multiple eyes: use default colors with varied linestyles
                 plot_kwargs['linestyle'] = linestyles[idx % len(linestyles)]
-            
-            plt.plot(tx, self._d.data[eye,"pupil"][startix:endix], **plot_kwargs)
+            plot_kwargs.update(kwargs)
+
+            ax.plot(tx, self._d.data[eye,"pupil"][startix:endix], **plot_kwargs)
 
         # plot grey lines for events
         if show_events:
             logger.debug("Plotting events, %i in range"%len(evon))
-            plt.vlines(evon, *plt.ylim(), color="grey", alpha=0.5)
-            ll,ul=plt.ylim()
+            ax.vlines(evon, *ax.get_ylim(), color="grey", alpha=0.5)
+            ll,ul=ax.get_ylim()
             for ev,lab in zip(evon,evlab):
-                plt.text(ev, ll+(ul-ll)/2., "%s"%lab, fontsize=8, rotation=90)
+                ax.text(ev, ll+(ul-ll)/2., "%s"%lab, fontsize=8, rotation=90)
         
         # highlight if a blink in any of the eyes
         if show_blinks:
-            ax = plt.gca()
             for eye in eyes:
                 if f"{eye}_pupil" not in self._d.data:
                     continue
@@ -213,11 +229,14 @@ class PupilPlots(GenericPlots):
 
 
         if len(tx):
-            self._draw_highlight([plt.gca()], highlight, highlight_color, units,
+            self._draw_highlight([ax], highlight, highlight_color, units,
                                  (tx[0], tx[-1]))
 
-        plt.legend()
-        plt.xlabel(xlab)
+        ax.legend()
+        ax.set_xlabel(xlab)
+        if title is not None:
+            ax.set_title(title)
+        return ax
 
 
     def pupil_plot_segments(
