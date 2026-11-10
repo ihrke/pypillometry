@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.2.1 (2026-11-10)
 
 - `Events.merge_table()` and `Epochs.merge_table()`: add the columns of a behaviour log (one row per trial) to the events of each trial
 - `get_figshare_files()` and `fetch_figshare_file()`: list and download files from public figshare items
