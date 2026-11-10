@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.2.0 (unreleased)
+## 2.2.0 (2026-11-10)
 
 This version is a major refactor of the package without changing functionality (many bugs fixed, though). Scripts will need update to the new syntax.
 
