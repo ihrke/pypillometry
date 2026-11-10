@@ -37,6 +37,19 @@ See :doc:`/user_guide/studies`.
    get_osf_project_files
    osf_authenticate
 
+figshare
+--------
+
+Files from public `figshare <https://figshare.com>`_ items.
+
+.. autosummary::
+   :toctree: generated
+   :template: function.rst
+   :nosignatures:
+
+   get_figshare_files
+   fetch_figshare_file
+
 Example datasets
 ----------------
 
@@ -50,3 +63,4 @@ Example datasets
    get_rlmw_002
    get_rlmw_002_short
    get_rlmw_010_edf
+   get_nback_001

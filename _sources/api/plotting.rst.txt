@@ -4,7 +4,7 @@ Plotting (``d.plot``)
 =====================
 
 Each data object has a ``plot`` namespace with the plotting functions, e.g.
-``d.plot.pupil_plot()`` (see :doc:`/user_guide/plotting`). You do not create
+``d.plot.plot_pupil()`` (see :doc:`/user_guide/plotting`). You do not create
 it yourself. The plots draw into the current matplotlib figure (or create
 one).
 
@@ -14,9 +14,9 @@ Time series
 .. autosummary::
    :nosignatures:
 
-   plot.PlotNamespace.pupil_plot
+   plot.PlotNamespace.plot_pupil
    plot.PlotNamespace.plot_timeseries
-   plot.PlotNamespace.pupil_plot_segments
+   plot.PlotNamespace.plot_pupil_segments
    plot.PlotNamespace.plot_timeseries_segments
 
 Blinks, masks and intervals

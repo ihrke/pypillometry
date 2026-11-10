@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Loading and saving data &#8212; pypillometry v2.2.0</title>
+    <title>Loading and saving data &#8212; pypillometry v2.2.1</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=49a90b2e"></script>
+    <script src="../_static/documentation_options.js?v=edd18f37"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.0" />
+  <meta name="docsearch:version" content="v2.2.1" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -503,6 +503,14 @@ the events unless you pass <code class="docutils literal notranslate"><span clas
 <p>Instead of a local file name, you can also pass an HTTP(S) URL or an SSH
 URL (<code class="docutils literal notranslate"><span class="pre">ssh://server/folder/file.edf</span></code>). The file is then downloaded and
 cached (see <a class="reference internal" href="../api/generated/pypillometry.fetch_url.html#pypillometry.fetch_url" title="pypillometry.fetch_url"><code class="xref py py-func docutils literal notranslate"><span class="pre">fetch_url()</span></code></a>).</p>
+<p>Files from public <a class="reference external" href="https://figshare.com">figshare</a> items are listed with
+<a class="reference internal" href="../api/generated/pypillometry.get_figshare_files.html#pypillometry.get_figshare_files" title="pypillometry.get_figshare_files"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_figshare_files()</span></code></a> and downloaded (cached, checksum-verified) with
+<a class="reference internal" href="../api/generated/pypillometry.fetch_figshare_file.html#pypillometry.fetch_figshare_file" title="pypillometry.fetch_figshare_file"><code class="xref py py-func docutils literal notranslate"><span class="pre">fetch_figshare_file()</span></code></a>, using the item’s ID, URL or DOI:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pp</span><span class="o">.</span><span class="n">get_figshare_files</span><span class="p">(</span><span class="mi">28776617</span><span class="p">)</span>    <span class="c1"># file name -&gt; id, url, size, md5</span>
+<span class="n">fname</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">fetch_figshare_file</span><span class="p">(</span><span class="mi">28776617</span><span class="p">,</span> <span class="s2">"001_rlmw_samples.asc"</span><span class="p">,</span>
+                               <span class="n">cache_dir</span><span class="o">=</span><span class="s2">"data"</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>Reading large EDF files is slow (about a minute for a 90 MB file). Save
 the result (see below), which is read in well under a second, or convert
 the file once with the <a class="reference internal" href="../getting_started/cli.html"><span class="doc">command-line tool</span></a>

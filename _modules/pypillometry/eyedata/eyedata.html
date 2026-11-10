@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pypillometry.eyedata.eyedata &#8212; pypillometry v2.2.0</title>
+    <title>pypillometry.eyedata.eyedata &#8212; pypillometry v2.2.1</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../../_static/documentation_options.js?v=49a90b2e"></script>
+    <script src="../../../_static/documentation_options.js?v=edd18f37"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -414,7 +414,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.0" />
+  <meta name="docsearch:version" content="v2.2.1" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -931,7 +931,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    ``d.pupil.blinks_detect()``), those for gaze data in ``d.gaze``</span>
 <span class="sd">    (:class:`~pypillometry.eyedata.gaze.GazeNamespace`) and the plots in</span>
 <span class="sd">    ``d.plot`` (:class:`~pypillometry.plot.PlotNamespace`, e.g.</span>
-<span class="sd">    ``d.plot.pupil_plot()``); they raise a ValueError if the object has no</span>
+<span class="sd">    ``d.plot.plot_pupil()``); they raise a ValueError if the object has no</span>
 <span class="sd">    such data. The methods for any channel (e.g., :meth:`crop`) are methods</span>
 <span class="sd">    of the object. All transforming methods can also be used as pipeline steps, e.g.</span>
 <span class="sd">    ``d | pp.pupil.blinks_detect() | pp.crop(0, "10 min")`` (see</span>

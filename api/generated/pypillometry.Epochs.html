@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Epochs &#8212; pypillometry v2.2.0</title>
+    <title>Epochs &#8212; pypillometry v2.2.1</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=49a90b2e"></script>
+    <script src="../../_static/documentation_options.js?v=edd18f37"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.0" />
+  <meta name="docsearch:version" content="v2.2.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -478,11 +478,14 @@
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.load_study_osf.html">load_study_osf</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.get_osf_project_files.html">get_osf_project_files</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.osf_authenticate.html">osf_authenticate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.get_figshare_files.html">get_figshare_files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.fetch_figshare_file.html">fetch_figshare_file</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.get_available_datasets.html">get_available_datasets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.get_example_data.html">get_example_data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.get_rlmw_002.html">get_rlmw_002</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.get_rlmw_002_short.html">get_rlmw_002_short</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.get_rlmw_010_edf.html">get_rlmw_010_edf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.get_nback_001.html">get_nback_001</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../signal.html">Signal processing</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -700,13 +703,16 @@ event, see <a class="reference internal" href="pypillometry.Events.html#pypillom
 <tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.Epochs.keep" title="pypillometry.Epochs.keep"><code class="xref py py-obj docutils literal notranslate"><span class="pre">keep</span></code></a></p></td>
 <td><p>Epochs where <cite>mask</cite> is True.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.Epochs.parse_labels" title="pypillometry.Epochs.parse_labels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parse_labels</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.Epochs.merge_table" title="pypillometry.Epochs.merge_table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">merge_table</span></code></a></p></td>
+<td><p>Epochs with metadata from a table with one row per trial (see <a class="reference internal" href="pypillometry.Events.html#pypillometry.Events.merge_table" title="pypillometry.Events.merge_table"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Events.merge_table</span></code></a>).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.Epochs.parse_labels" title="pypillometry.Epochs.parse_labels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parse_labels</span></code></a></p></td>
 <td><p>Epochs with metadata from the labels of the events (see <a class="reference internal" href="pypillometry.Events.html#pypillometry.Events.parse_labels" title="pypillometry.Events.parse_labels"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Events.parse_labels</span></code></a>).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.Epochs.set_meta" title="pypillometry.Epochs.set_meta"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_meta</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.Epochs.set_meta" title="pypillometry.Epochs.set_meta"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_meta</span></code></a></p></td>
 <td><p>Epochs with a metadata column set (see <a class="reference internal" href="pypillometry.Events.html#pypillometry.Events.set_meta" title="pypillometry.Events.set_meta"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Events.set_meta</span></code></a>).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.Epochs.to_intervals" title="pypillometry.Epochs.to_intervals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_intervals</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.Epochs.to_intervals" title="pypillometry.Epochs.to_intervals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_intervals</span></code></a></p></td>
 <td><p>The spans of the epochs as <a class="reference internal" href="pypillometry.Intervals.html#pypillometry.Intervals" title="pypillometry.Intervals"><code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code></a>.</p></td>
 </tr>
 </tbody>
@@ -810,6 +816,18 @@ boolean array or metadata.</p>
 <span class="go">array(['A', 'B'], dtype='&lt;U1')</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.Epochs.merge_table">
+<span class="sig-name descname"><span class="pre">merge_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/epochs.html#Epochs.merge_table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.Epochs.merge_table" title="Link to this definition">#</a></dt>
+<dd><p>Epochs with metadata from a table with one row per trial (see
+<a class="reference internal" href="pypillometry.Events.html#pypillometry.Events.merge_table" title="pypillometry.Events.merge_table"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Events.merge_table</span></code></a>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#pypillometry.Epochs" title="pypillometry.epochs.Epochs"><code class="xref py py-class docutils literal notranslate"><span class="pre">Epochs</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -938,6 +956,7 @@ boolean array or metadata.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.Epochs.drop_meta"><code class="docutils literal notranslate"><span class="pre">drop_meta()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.Epochs.filter"><code class="docutils literal notranslate"><span class="pre">filter()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.Epochs.keep"><code class="docutils literal notranslate"><span class="pre">keep()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.Epochs.merge_table"><code class="docutils literal notranslate"><span class="pre">merge_table()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.Epochs.parse_labels"><code class="docutils literal notranslate"><span class="pre">parse_labels()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.Epochs.set_meta"><code class="docutils literal notranslate"><span class="pre">set_meta()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.Epochs.to_intervals"><code class="docutils literal notranslate"><span class="pre">to_intervals()</span></code></a></li>

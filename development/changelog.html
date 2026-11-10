@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Changelog &#8212; pypillometry v2.2.0</title>
+    <title>Changelog &#8212; pypillometry v2.2.1</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=49a90b2e"></script>
+    <script src="../_static/documentation_options.js?v=edd18f37"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.0" />
+  <meta name="docsearch:version" content="v2.2.1" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -467,10 +467,26 @@
   <section class="tex2jax_ignore mathjax_ignore" id="changelog">
 <h1>Changelog<a class="headerlink" href="#changelog" title="Link to this heading">#</a></h1>
 <section id="id1">
-<h2>2.2.0 (2026-11-10)<a class="headerlink" href="#id1" title="Link to this heading">#</a></h2>
-<p>This version is a major refactor of the package without changing functionality (many bugs fixed, though). Scripts will need update to the new syntax.</p>
+<h2>2.2.1 (2026-11-10)<a class="headerlink" href="#id1" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Events.merge_table()</span></code> and <code class="docutils literal notranslate"><span class="pre">Epochs.merge_table()</span></code>: add the columns of a behaviour log</p></li>
+<li><p>figshare support</p></li>
+<li><p>Example dataset <code class="docutils literal notranslate"><span class="pre">nback_001</span></code> + case study</p></li>
+<li><p>All plotting functions follow the same conventions</p></li>
+</ul>
 <section id="breaking-changes">
 <h3>Breaking changes<a class="headerlink" href="#breaking-changes" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">pupil_plot()</span></code> is <code class="docutils literal notranslate"><span class="pre">plot_pupil()</span></code>, <code class="docutils literal notranslate"><span class="pre">pupil_plot_segments()</span></code> is <code class="docutils literal notranslate"><span class="pre">plot_pupil_segments()</span></code></p></li>
+<li><p>Plotting homogenized</p></li>
+</ul>
+</section>
+</section>
+<section id="id2">
+<h2>2.2.0 (2026-11-10)<a class="headerlink" href="#id2" title="Link to this heading">#</a></h2>
+<p>This version is a major refactor of the package without changing functionality (many bugs fixed, though). Scripts will need update to the new syntax.</p>
+<section id="id3">
+<h3>Breaking changes<a class="headerlink" href="#id3" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>One data class, <code class="docutils literal notranslate"><span class="pre">EyeData</span></code> instead of per modality, pupil methods are in <code class="docutils literal notranslate"><span class="pre">d.pupil</span></code>, gaze methods in <code class="docutils literal notranslate"><span class="pre">d.gaze</span></code></p></li>
 <li><p>similarly,  plotter classes (<code class="docutils literal notranslate"><span class="pre">EyePlotter</span></code>, <code class="docutils literal notranslate"><span class="pre">PupilPlotter</span></code>, <code class="docutils literal notranslate"><span class="pre">GazePlotter</span></code>) were removed</p></li>
@@ -548,10 +564,10 @@ layer</p></li>
 </ul>
 </section>
 </section>
-<section id="id2">
-<h2>2.1.0 (2026-11-02)<a class="headerlink" href="#id2" title="Link to this heading">#</a></h2>
-<section id="id3">
-<h3>Breaking changes<a class="headerlink" href="#id3" title="Link to this heading">#</a></h3>
+<section id="id4">
+<h2>2.1.0 (2026-11-02)<a class="headerlink" href="#id4" title="Link to this heading">#</a></h2>
+<section id="id5">
+<h3>Breaking changes<a class="headerlink" href="#id5" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">EyeData.get_pupildata()</span></code> was removed, use <code class="docutils literal notranslate"><span class="pre">to_pupildata()</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">Events</span></code> now need time units, sample indices are <code class="docutils literal notranslate"><span class="pre">units=&quot;samples&quot;</span></code></p></li>
@@ -560,8 +576,8 @@ layer</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">get_intervals()</span></code>, <code class="docutils literal notranslate"><span class="pre">stat_per_event()</span></code>: <code class="docutils literal notranslate"><span class="pre">interval</span></code> was renamed to <code class="docutils literal notranslate"><span class="pre">window</span></code></p></li>
 </ul>
 </section>
-<section id="id4">
-<h3>Added<a class="headerlink" href="#id4" title="Link to this heading">#</a></h3>
+<section id="id6">
+<h3>Added<a class="headerlink" href="#id6" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">EyeData.to_pupildata()</span></code> and <code class="docutils literal notranslate"><span class="pre">to_gazedata()</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">quality_report()</span></code>: data-quality measures</p></li>
@@ -589,8 +605,8 @@ second event (e.g., <code class="docutils literal notranslate"><span class="pre"
 Files from earlier versions are upgraded when they are read.</p></li>
 </ul>
 </section>
-<section id="id5">
-<h3>Fixed<a class="headerlink" href="#id5" title="Link to this heading">#</a></h3>
+<section id="id7">
+<h3>Fixed<a class="headerlink" href="#id7" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">pupil_estimate_response()</span></code> uses more efficient solver</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">downsample()</span></code> respects masked samples</p></li>
@@ -600,10 +616,10 @@ Files from earlier versions are upgraded when they are read.</p></li>
 </ul>
 </section>
 </section>
-<section id="id6">
-<h2>2.0.0 (2026-10-28)<a class="headerlink" href="#id6" title="Link to this heading">#</a></h2>
-<section id="id7">
-<h3>Breaking changes<a class="headerlink" href="#id7" title="Link to this heading">#</a></h3>
+<section id="id8">
+<h2>2.0.0 (2026-10-28)<a class="headerlink" href="#id8" title="Link to this heading">#</a></h2>
+<section id="id9">
+<h3>Breaking changes<a class="headerlink" href="#id9" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Python 3.11 or newer is required.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">inplace=None</span></code> now follows the object setting.</p></li>
@@ -623,8 +639,8 @@ are no longer exported at the top level (still in <code class="docutils literal 
 <li><p><code class="docutils literal notranslate"><span class="pre">pint</span></code> is no longer used, replaced by <code class="docutils literal notranslate"><span class="pre">units.py</span></code></p></li>
 </ul>
 </section>
-<section id="id8">
-<h3>Added<a class="headerlink" href="#id8" title="Link to this heading">#</a></h3>
+<section id="id10">
+<h3>Added<a class="headerlink" href="#id10" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>files are now saved with compression by default</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">pypilinfo</span></code> command prints a summary of EDF or pickle files</p></li>
@@ -637,8 +653,8 @@ default for <code class="docutils literal notranslate"><span class="pre">inplace
 <li><p><code class="docutils literal notranslate"><span class="pre">pypilview</span></code>: interactive viewer EDF file stored pypil object</p></li>
 </ul>
 </section>
-<section id="id9">
-<h3>Changed<a class="headerlink" href="#id9" title="Link to this heading">#</a></h3>
+<section id="id11">
+<h3>Changed<a class="headerlink" href="#id11" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">read_pickle()</span></code> saves HTTP(S) downloads to a file (temporary by default)</p></li>
 <li><p>Packaging moved from <code class="docutils literal notranslate"><span class="pre">setup.py</span></code>/<code class="docutils literal notranslate"><span class="pre">requirements.txt</span></code> to <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>.</p></li>
@@ -651,8 +667,8 @@ start/end of the interval); <code class="docutils literal notranslate"><span cla
 (or <code class="docutils literal notranslate"><span class="pre">cache_dir</span></code>) instead of downloading them on every call</p></li>
 </ul>
 </section>
-<section id="id10">
-<h3>Fixed<a class="headerlink" href="#id10" title="Link to this heading">#</a></h3>
+<section id="id12">
+<h3>Fixed<a class="headerlink" href="#id12" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">pp.signal</span></code> and <code class="docutils literal notranslate"><span class="pre">pp.logging</span></code> were <code class="docutils literal notranslate"><span class="pre">scipy.signal</span></code> and the standard-library
 <code class="docutils literal notranslate"><span class="pre">logging</span></code> instead of the package’s own submodules.</p></li>
@@ -800,24 +816,28 @@ intervals, io, viewer, experimental setup).</p></li>
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">2.2.0 (2026-11-10)</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">2.2.1 (2026-11-10)</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#breaking-changes">Breaking changes</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">2.2.0 (2026-11-10)</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Breaking changes</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#added">Added</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fixed">Fixed</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">2.1.0 (2026-11-02)</a><ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Breaking changes</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">Added</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">2.1.0 (2026-11-02)</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">Breaking changes</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">Added</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#changed">Changed</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">Fixed</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">Fixed</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">2.0.0 (2026-10-28)</a><ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">Breaking changes</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">Added</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">Changed</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id10">Fixed</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">2.0.0 (2026-10-28)</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">Breaking changes</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id10">Added</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id11">Changed</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id12">Fixed</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#documentation">Documentation</a></li>
 </ul>
 </li>

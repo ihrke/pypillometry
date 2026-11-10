@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Example: Preprocessing of a full dataset with multiple subjects &#8212; pypillometry v2.2.0</title>
+    <title>Example: Preprocessing of a full dataset with multiple subjects &#8212; pypillometry v2.2.1</title>
   
   
   
@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=49a90b2e"></script>
+    <script src="../_static/documentation_options.js?v=edd18f37"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -57,12 +57,12 @@
     <link rel="icon" href="../_static/pypillometry_logo_200x200.png"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="API reference" href="../api/index.html" />
+    <link rel="next" title="Case study: an N-back task" href="case_study_nback.html" />
     <link rel="prev" title="Modeling the pupillometric signal" href="modeling.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.0" />
+  <meta name="docsearch:version" content="v2.2.1" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -437,6 +437,7 @@
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="modeling.html">Modeling the pupillometric signal</a></li>
 <li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">Example: Preprocessing of a full dataset with multiple subjects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="case_study_nback.html">Case study: an N-back task</a></li>
 </ul>
 </div>
 </nav></div>
@@ -627,7 +628,7 @@
 <span class="k">for</span> <span class="n">subj</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">datasets</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
     <span class="n">dp</span> <span class="o">=</span> <span class="n">d</span> <span class="o">|</span> <span class="n">preproc</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="n">subj</span><span class="p">])</span>
-    <span class="n">dp</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">pupil_plot_segments</span><span class="p">(</span><span class="n">pdf_file</span><span class="o">=</span><span class="s2">"pics/</span><span class="si">%s</span><span class="s2">.pdf"</span> <span class="o">%</span> <span class="n">d</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">interv</span><span class="o">=</span><span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">min</span><span class="p">)</span>
+    <span class="n">dp</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_pupil_segments</span><span class="p">(</span><span class="n">pdf_file</span><span class="o">=</span><span class="s2">"pics/</span><span class="si">%s</span><span class="s2">.pdf"</span> <span class="o">%</span> <span class="n">d</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">interv</span><span class="o">=</span><span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">min</span><span class="p">)</span>
     <span class="n">preprocs</span><span class="p">[</span><span class="n">subj</span><span class="p">]</span> <span class="o">=</span> <span class="n">dp</span>
 </pre></div>
 </div>
@@ -776,11 +777,11 @@
       </div>
     </a>
     <a class="right-next"
-       href="../api/index.html"
+       href="case_study_nback.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">API reference</p>
+        <p class="prev-next-title">Case study: an N-back task</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

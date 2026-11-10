@@ -21,6 +21,7 @@
       ~Epochs.filter
       ~Epochs.from_events
       ~Epochs.keep
+      ~Epochs.merge_table
       ~Epochs.parse_labels
       ~Epochs.set_meta
       ~Epochs.to_intervals

@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pypillometry.example_data &#8212; pypillometry v2.2.0</title>
+    <title>pypillometry.example_data &#8212; pypillometry v2.2.1</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=49a90b2e"></script>
+    <script src="../../_static/documentation_options.js?v=edd18f37"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -414,7 +414,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.0" />
+  <meta name="docsearch:version" content="v2.2.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -807,7 +807,8 @@ window.runMermaid = runMermaid;</script>
 
 <span class="sd">This module provides example datasets for pypillometry. The datasets are</span>
 <span class="sd">used in the documentation and for testing purposes. Most of them are stored on</span>
-<span class="sd">OSF: https://osf.io/p2u74/</span>
+<span class="sd">OSF (https://osf.io/p2u74/) or figshare</span>
+<span class="sd">(https://figshare.com/articles/dataset/Example_pypillometry_dataset/28776617).</span>
 <span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -817,42 +818,66 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os.path</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">fetch_url</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">fetch_url</span><span class="p">,</span> <span class="n">fetch_figshare_file</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.convenience</span><span class="w"> </span><span class="kn">import</span> <span class="n">_user_cache_dir</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">"get_available_datasets"</span><span class="p">,</span> <span class="s2">"get_example_data"</span><span class="p">,</span> <span class="s2">"get_rlmw_002"</span><span class="p">,</span>
-    <span class="s2">"get_rlmw_002_short"</span><span class="p">,</span> <span class="s2">"get_rlmw_010_edf"</span><span class="p">,</span>
+    <span class="s2">"get_rlmw_002_short"</span><span class="p">,</span> <span class="s2">"get_rlmw_010_edf"</span><span class="p">,</span> <span class="s2">"get_nback_001"</span><span class="p">,</span>
 <span class="p">]</span>
 
 <span class="n">example_datasets</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">"rlmw_002"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"samples_asc"</span><span class="p">:</span><span class="s2">"https://osf.io/download/67cec1a4fb24855200fd6db7/"</span><span class="p">,</span>
-        <span class="s2">"events_asc"</span><span class="p">:</span><span class="s2">"https://osf.io/download/67cec1a183c337a5effd6fb6/"</span><span class="p">,</span>
+        <span class="s2">"source"</span><span class="p">:</span> <span class="s2">"OSF"</span><span class="p">,</span>
+        <span class="s2">"filetype"</span><span class="p">:</span> <span class="s2">"asc"</span><span class="p">,</span>
+        <span class="s2">"files"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"samples"</span><span class="p">:</span> <span class="s2">"https://osf.io/download/67cec1a4fb24855200fd6db7/"</span><span class="p">,</span>
+            <span class="s2">"events"</span><span class="p">:</span> <span class="s2">"https://osf.io/download/67cec1a183c337a5effd6fb6/"</span><span class="p">,</span>
+        <span class="p">},</span>
         <span class="s2">"description"</span><span class="p">:</span><span class="s2">"Binocular data from a 20-minute reinforcement learning task. "</span>
         <span class="s2">"Data from a single participant, features strong horizontal eye-movements "</span>
         <span class="s2">"between the two stimuli presented on the left and right."</span><span class="p">,</span>
     <span class="p">},</span>
     <span class="s2">"rlmw_002_short"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"sample_asc"</span><span class="p">:</span><span class="n">files</span><span class="p">(</span><span class="s1">'pypillometry.data'</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">'002_rlmw_samples_short.asc'</span><span class="p">),</span>
-        <span class="s2">"events_asc"</span><span class="p">:</span><span class="n">files</span><span class="p">(</span><span class="s1">'pypillometry.data'</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">'002_rlmw_events_short.asc'</span><span class="p">),</span>
+        <span class="s2">"source"</span><span class="p">:</span> <span class="s2">"local"</span><span class="p">,</span>
+        <span class="s2">"filetype"</span><span class="p">:</span> <span class="s2">"asc"</span><span class="p">,</span>
+        <span class="s2">"files"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"samples"</span><span class="p">:</span> <span class="n">files</span><span class="p">(</span><span class="s1">'pypillometry.data'</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">'002_rlmw_samples_short.asc'</span><span class="p">),</span>
+            <span class="s2">"events"</span><span class="p">:</span> <span class="n">files</span><span class="p">(</span><span class="s1">'pypillometry.data'</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">'002_rlmw_events_short.asc'</span><span class="p">),</span>
+        <span class="p">},</span>
         <span class="s2">"description"</span><span class="p">:</span><span class="s2">"Short version (first 40 sec) of a 20-minute reinforcement learning task. "</span>
         <span class="s2">"Data from a single participant, features strong horizontal eye-movements "</span>
         <span class="s2">"between the two stimuli presented on the left and right."</span><span class="p">,</span>
     <span class="p">},</span>
     <span class="s2">"rlmw_010_edf"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"edf"</span><span class="p">:</span><span class="s2">"https://osf.io/trsuq/download"</span><span class="p">,</span>
+        <span class="s2">"source"</span><span class="p">:</span> <span class="s2">"OSF"</span><span class="p">,</span>
+        <span class="s2">"filetype"</span><span class="p">:</span> <span class="s2">"edf"</span><span class="p">,</span>
+        <span class="s2">"files"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"data"</span><span class="p">:</span> <span class="s2">"https://osf.io/trsuq/download"</span><span class="p">},</span>
         <span class="s2">"description"</span><span class="p">:</span><span class="s2">"Binocular data from a 20-minute reinforcement learning task "</span>
         <span class="s2">"in EDF (Eyelink) format. "</span>
         <span class="s2">"Data from a single participant, features strong horizontal eye-movements "</span>
         <span class="s2">"between the two stimuli presented on the left and right."</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s2">"nback_001"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"source"</span><span class="p">:</span> <span class="s2">"figshare"</span><span class="p">,</span>
+        <span class="s2">"filetype"</span><span class="p">:</span> <span class="s2">"pkl"</span><span class="p">,</span>
+        <span class="s2">"figshare"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"id"</span><span class="p">:</span> <span class="mi">28776617</span><span class="p">,</span> <span class="s2">"version"</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span>
+        <span class="c1"># names in the figshare item</span>
+        <span class="s2">"files"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"data"</span><span class="p">:</span> <span class="s2">"sub-001_ses-1.pypil"</span><span class="p">,</span> <span class="s2">"behaviour"</span><span class="p">:</span> <span class="s2">"sub-001_ses-1.csv"</span><span class="p">},</span>
+        <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Binocular data from a 56-minute N-back task "</span>
+        <span class="s2">"(0-, 1- and 2-back blocks in three runs with grey, black and white "</span>
+        <span class="s2">"screen background), saved as a pypillometry file. "</span>
+        <span class="s2">"Data from a single participant, with events for fixation, stimulus "</span>
+        <span class="s2">"and response in each trial; the behavioural data (stimulus, "</span>
+        <span class="s2">"response, accuracy, reaction time) are in the events' metadata."</span><span class="p">,</span>
     <span class="p">},</span>
 <span class="p">}</span>
 
 <span class="k">class</span><span class="w"> </span><span class="nc">DatasetDict</span><span class="p">(</span><span class="n">RecordDict</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""The example datasets: name -&gt; properties (description, files).</span>
 
-<span class="sd">    A dict that is displayed as a table with the name, type and description</span>
+<span class="sd">    A dict that is displayed as a table with the name, source (OSF,</span>
+<span class="sd">    figshare, local, ssh), file type (asc, edf, pkl, hdf5) and description</span>
 <span class="sd">    of each dataset (see :class:`~pypillometry.RecordDict`).</span>
 <span class="sd">    """</span>
 
@@ -862,14 +887,8 @@ window.runMermaid = runMermaid;</script>
     <span class="k">def</span><span class="w"> </span><span class="nf">_rows</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
         <span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="s2">"edf"</span> <span class="ow">in</span> <span class="n">info</span><span class="p">:</span>
-                <span class="n">source_type</span> <span class="o">=</span> <span class="s2">"EDF"</span>
-            <span class="k">elif</span> <span class="s2">"samples_asc"</span> <span class="ow">in</span> <span class="n">info</span> <span class="ow">or</span> <span class="s2">"sample_asc"</span> <span class="ow">in</span> <span class="n">info</span><span class="p">:</span>
-                <span class="n">sample</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"samples_asc"</span><span class="p">,</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"sample_asc"</span><span class="p">)))</span>
-                <span class="n">source_type</span> <span class="o">=</span> <span class="s2">"ASC (OSF)"</span> <span class="k">if</span> <span class="s2">"osf.io"</span> <span class="ow">in</span> <span class="n">sample</span> <span class="k">else</span> <span class="s2">"ASC (local)"</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">source_type</span> <span class="o">=</span> <span class="s2">"unknown"</span>
-            <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(((</span><span class="n">key</span><span class="p">,),</span> <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="n">source_type</span><span class="p">,</span>
+            <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(((</span><span class="n">key</span><span class="p">,),</span> <span class="p">{</span><span class="s2">"source"</span><span class="p">:</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"source"</span><span class="p">,</span> <span class="s2">"unknown"</span><span class="p">),</span>
+                                  <span class="s2">"filetype"</span><span class="p">:</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"filetype"</span><span class="p">,</span> <span class="s2">"unknown"</span><span class="p">),</span>
                                   <span class="s2">"description"</span><span class="p">:</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"description"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)}))</span>
         <span class="k">return</span> <span class="n">rows</span>
 
@@ -884,8 +903,9 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    DatasetDict</span>
-<span class="sd">        dataset name -&gt; its properties (description, files); displayed as</span>
-<span class="sd">        a table with the name, type and description of each dataset</span>
+<span class="sd">        dataset name -&gt; its properties (source, file type, description,</span>
+<span class="sd">        files); displayed as a table with the name, source, file type and</span>
+<span class="sd">        description of each dataset</span>
 <span class="sd">    </span>
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -941,6 +961,52 @@ window.runMermaid = runMermaid;</script>
 
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_read_rlmw_asc</span><span class="p">(</span><span class="n">fname_samples</span><span class="p">,</span> <span class="n">fname_events</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""EyeData from the samples and events ASC files of the "rlmw" task.</span>
+
+<span class="sd">    Events are the "MSG" lines after "experiment_start"; missing values</span>
+<span class="sd">    ("   ." for gaze, 0 for pupil) are set to NaN; time is reset to start</span>
+<span class="sd">    at 0 and the original data are kept (`keep_orig=True`).</span>
+<span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.eyedata.experimental_setup</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExperimentalSetup</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span><span class="n">fname_samples</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                       <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">"time"</span><span class="p">,</span> <span class="s2">"left_x"</span><span class="p">,</span> <span class="s2">"left_y"</span><span class="p">,</span> <span class="s2">"left_p"</span><span class="p">,</span>
+                              <span class="s2">"right_x"</span><span class="p">,</span> <span class="s2">"right_y"</span><span class="p">,</span> <span class="s2">"right_p"</span><span class="p">])</span>
+
+    <span class="c1"># Eyelink puts "   ." when no gaze position is available</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">gaze</span><span class="p">(</span><span class="n">col</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">x</span><span class="p">[</span><span class="n">x</span> <span class="o">==</span> <span class="s2">"   ."</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+    <span class="c1"># Eyelink codes missing pupil data (e.g., blinks) as 0</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pupil</span><span class="p">(</span><span class="n">col</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">])</span>
+
+    <span class="c1"># events: the "MSG" lines after "experiment_start"</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname_events</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">events</span> <span class="o">=</span> <span class="p">[</span><span class="n">ev</span> <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">f</span> <span class="k">if</span> <span class="n">ev</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"MSG"</span><span class="p">)]</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">([</span><span class="s2">"experiment_start"</span> <span class="ow">in</span> <span class="n">ev</span> <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span><span class="p">])[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">df_ev</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">ev</span><span class="o">.</span><span class="n">split</span><span class="p">()</span> <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span><span class="p">[</span><span class="n">start</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:]])[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]</span>
+    <span class="n">df_ev</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"time"</span><span class="p">,</span> <span class="s2">"event"</span><span class="p">]</span>
+
+    <span class="n">setup</span> <span class="o">=</span> <span class="n">ExperimentalSetup</span><span class="p">(</span>
+        <span class="n">screen_resolution</span><span class="o">=</span><span class="p">(</span><span class="mi">1280</span><span class="p">,</span> <span class="mi">1024</span><span class="p">),</span>
+        <span class="n">physical_screen_size</span><span class="o">=</span><span class="p">(</span><span class="s2">"30 cm"</span><span class="p">,</span> <span class="s2">"20 cm"</span><span class="p">),</span>
+        <span class="n">eye_to_screen_center</span><span class="o">=</span><span class="s2">"60 cm"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">EyeData</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                   <span class="n">experimental_setup</span><span class="o">=</span><span class="n">setup</span><span class="p">,</span>
+                   <span class="n">left_x</span><span class="o">=</span><span class="n">gaze</span><span class="p">(</span><span class="s2">"left_x"</span><span class="p">),</span> <span class="n">left_y</span><span class="o">=</span><span class="n">gaze</span><span class="p">(</span><span class="s2">"left_y"</span><span class="p">),</span>
+                   <span class="n">left_pupil</span><span class="o">=</span><span class="n">pupil</span><span class="p">(</span><span class="s2">"left_p"</span><span class="p">),</span>
+                   <span class="n">right_x</span><span class="o">=</span><span class="n">gaze</span><span class="p">(</span><span class="s2">"right_x"</span><span class="p">),</span> <span class="n">right_y</span><span class="o">=</span><span class="n">gaze</span><span class="p">(</span><span class="s2">"right_y"</span><span class="p">),</span>
+                   <span class="n">right_pupil</span><span class="o">=</span><span class="n">pupil</span><span class="p">(</span><span class="s2">"right_p"</span><span class="p">),</span>
+                   <span class="n">event_onsets</span><span class="o">=</span><span class="n">df_ev</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">event_labels</span><span class="o">=</span><span class="n">df_ev</span><span class="o">.</span><span class="n">event</span><span class="p">,</span>
+                   <span class="n">keep_orig</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">reset_time</span><span class="p">()</span>
+
+
 <div class="viewcode-block" id="get_rlmw_002">
 <a class="viewcode-back" href="../../api/generated/pypillometry.get_rlmw_002.html#pypillometry.get_rlmw_002">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_rlmw_002</span><span class="p">(</span><span class="n">cache_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -965,71 +1031,13 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    EyeData</span>
 <span class="sd">        the example dataset</span>
 <span class="sd">    """</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-    <span class="c1"># download files from osf (or use the cached copies)</span>
     <span class="n">cache_dir</span> <span class="o">=</span> <span class="n">cache_dir</span> <span class="ow">or</span> <span class="n">_user_cache_dir</span><span class="p">()</span>
-    <span class="n">fname_samples</span> <span class="o">=</span> <span class="n">fetch_url</span><span class="p">(</span><span class="n">example_datasets</span><span class="p">[</span><span class="s2">"rlmw_002"</span><span class="p">][</span><span class="s2">"samples_asc"</span><span class="p">],</span>
+    <span class="n">urls</span> <span class="o">=</span> <span class="n">example_datasets</span><span class="p">[</span><span class="s2">"rlmw_002"</span><span class="p">][</span><span class="s2">"files"</span><span class="p">]</span>
+    <span class="n">fname_samples</span> <span class="o">=</span> <span class="n">fetch_url</span><span class="p">(</span><span class="n">urls</span><span class="p">[</span><span class="s2">"samples"</span><span class="p">],</span>
                               <span class="n">cache_file</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">,</span> <span class="s2">"002_rlmw_samples.asc"</span><span class="p">))</span>
-    <span class="n">fname_events</span> <span class="o">=</span> <span class="n">fetch_url</span><span class="p">(</span><span class="n">example_datasets</span><span class="p">[</span><span class="s2">"rlmw_002"</span><span class="p">][</span><span class="s2">"events_asc"</span><span class="p">],</span>
+    <span class="n">fname_events</span> <span class="o">=</span> <span class="n">fetch_url</span><span class="p">(</span><span class="n">urls</span><span class="p">[</span><span class="s2">"events"</span><span class="p">],</span>
                              <span class="n">cache_file</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">,</span> <span class="s2">"002_rlmw_events.asc"</span><span class="p">))</span>
-
-    <span class="n">df</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span><span class="n">fname_samples</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                    <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">"time"</span><span class="p">,</span> <span class="s2">"left_x"</span><span class="p">,</span> <span class="s2">"left_y"</span><span class="p">,</span> <span class="s2">"left_p"</span><span class="p">,</span>
-                            <span class="s2">"right_x"</span><span class="p">,</span> <span class="s2">"right_y"</span><span class="p">,</span> <span class="s2">"right_p"</span><span class="p">])</span>
-
-    <span class="c1">## Loading the events from the events file</span>
-    <span class="c1"># read the whole file into variable `events` (list with one entry per line)</span>
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname_events</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-        <span class="n">events</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
-
-    <span class="c1">## Eyelink tracker puts "   ." when no data is available for x/y coordinates</span>
-    <span class="n">left_x</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_x</span><span class="o">.</span><span class="n">values</span>
-    <span class="n">left_x</span><span class="p">[</span><span class="n">left_x</span><span class="o">==</span><span class="s2">"   ."</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-    <span class="n">left_x</span> <span class="o">=</span> <span class="n">left_x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
-
-    <span class="n">left_y</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_y</span><span class="o">.</span><span class="n">values</span>
-    <span class="n">left_y</span><span class="p">[</span><span class="n">left_y</span><span class="o">==</span><span class="s2">"   ."</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-    <span class="n">left_y</span> <span class="o">=</span> <span class="n">left_y</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
-
-    <span class="n">right_x</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_x</span><span class="o">.</span><span class="n">values</span>
-    <span class="n">right_x</span><span class="p">[</span><span class="n">right_x</span><span class="o">==</span><span class="s2">"   ."</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-    <span class="n">right_x</span> <span class="o">=</span> <span class="n">right_x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
-
-    <span class="n">right_y</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_y</span><span class="o">.</span><span class="n">values</span>
-    <span class="n">right_y</span><span class="p">[</span><span class="n">right_y</span><span class="o">==</span><span class="s2">"   ."</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-    <span class="n">right_y</span> <span class="o">=</span> <span class="n">right_y</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
-
-    <span class="c1">## Eyelink tracker codes missing pupil data (e.g., blinks) as 0</span>
-    <span class="n">left_p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">left_p</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">left_p</span><span class="p">)</span>
-    <span class="n">right_p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">right_p</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">right_p</span><span class="p">)</span>
-
-
-    <span class="c1"># keep only lines starting with "MSG"</span>
-    <span class="n">events</span><span class="o">=</span><span class="p">[</span><span class="n">ev</span> <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span> <span class="k">if</span> <span class="n">ev</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"MSG"</span><span class="p">)]</span>
-    <span class="n">experiment_start_index</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">([</span><span class="s2">"experiment_start"</span> <span class="ow">in</span> <span class="n">ev</span> <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span><span class="p">])[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">events</span><span class="o">=</span><span class="n">events</span><span class="p">[</span><span class="n">experiment_start_index</span><span class="o">+</span><span class="mi">1</span><span class="p">:]</span>
-    <span class="n">df_ev</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">ev</span><span class="o">.</span><span class="n">split</span><span class="p">()</span> <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span><span class="p">])</span>
-    <span class="n">df_ev</span><span class="o">=</span><span class="n">df_ev</span><span class="p">[[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]]</span>
-    <span class="n">df_ev</span><span class="o">.</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"time"</span><span class="p">,</span> <span class="s2">"event"</span><span class="p">]</span>
-
-    <span class="c1"># Creating EyeData object that contains both X-Y coordinates</span>
-    <span class="c1"># and pupil data</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">.eyedata.experimental_setup</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExperimentalSetup</span>
-    <span class="n">setup</span> <span class="o">=</span> <span class="n">ExperimentalSetup</span><span class="p">(</span>
-        <span class="n">screen_resolution</span><span class="o">=</span><span class="p">(</span><span class="mi">1280</span><span class="p">,</span> <span class="mi">1024</span><span class="p">),</span>
-        <span class="n">physical_screen_size</span><span class="o">=</span><span class="p">(</span><span class="s2">"30 cm"</span><span class="p">,</span> <span class="s2">"20 cm"</span><span class="p">),</span>
-        <span class="n">eye_to_screen_center</span><span class="o">=</span><span class="s2">"60 cm"</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="n">d</span> <span class="o">=</span> <span class="n">EyeData</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"rlmw_002"</span><span class="p">,</span>
-                <span class="n">experimental_setup</span><span class="o">=</span><span class="n">setup</span><span class="p">,</span>
-                <span class="n">left_x</span><span class="o">=</span><span class="n">left_x</span><span class="p">,</span> <span class="n">left_y</span><span class="o">=</span><span class="n">left_y</span><span class="p">,</span> <span class="n">left_pupil</span><span class="o">=</span><span class="n">left_p</span><span class="p">,</span>
-                <span class="n">right_x</span><span class="o">=</span><span class="n">right_x</span><span class="p">,</span> <span class="n">right_y</span><span class="o">=</span><span class="n">right_y</span><span class="p">,</span> <span class="n">right_pupil</span><span class="o">=</span><span class="n">right_p</span><span class="p">,</span>
-                <span class="n">event_onsets</span><span class="o">=</span><span class="n">df_ev</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">event_labels</span><span class="o">=</span><span class="n">df_ev</span><span class="o">.</span><span class="n">event</span><span class="p">,</span>
-                <span class="n">keep_orig</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>\
-                <span class="o">.</span><span class="n">reset_time</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">d</span>        </div>
-
-
+    <span class="k">return</span> <span class="n">_read_rlmw_asc</span><span class="p">(</span><span class="n">fname_samples</span><span class="p">,</span> <span class="n">fname_events</span><span class="p">,</span> <span class="s2">"rlmw_002"</span><span class="p">)</span></div>
 
 
 
@@ -1050,65 +1058,10 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    EyeData</span>
 <span class="sd">        the example dataset</span>
 <span class="sd">    """</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-    <span class="n">fname_samples</span> <span class="o">=</span> <span class="n">example_datasets</span><span class="p">[</span><span class="s2">"rlmw_002_short"</span><span class="p">][</span><span class="s2">"sample_asc"</span><span class="p">]</span>
-    <span class="n">fname_events</span> <span class="o">=</span> <span class="n">example_datasets</span><span class="p">[</span><span class="s2">"rlmw_002_short"</span><span class="p">][</span><span class="s2">"events_asc"</span><span class="p">]</span>
-    <span class="n">df</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span><span class="n">fname_samples</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                    <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">"time"</span><span class="p">,</span> <span class="s2">"left_x"</span><span class="p">,</span> <span class="s2">"left_y"</span><span class="p">,</span> <span class="s2">"left_p"</span><span class="p">,</span>
-                            <span class="s2">"right_x"</span><span class="p">,</span> <span class="s2">"right_y"</span><span class="p">,</span> <span class="s2">"right_p"</span><span class="p">])</span>
+    <span class="n">paths</span> <span class="o">=</span> <span class="n">example_datasets</span><span class="p">[</span><span class="s2">"rlmw_002_short"</span><span class="p">][</span><span class="s2">"files"</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">_read_rlmw_asc</span><span class="p">(</span><span class="n">paths</span><span class="p">[</span><span class="s2">"samples"</span><span class="p">],</span> <span class="n">paths</span><span class="p">[</span><span class="s2">"events"</span><span class="p">],</span> <span class="s2">"rlmw_002_short"</span><span class="p">)</span></div>
 
-    <span class="c1">## Eyelink tracker puts "   ." when no data is available for x/y coordinates</span>
-    <span class="n">left_x</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_x</span><span class="o">.</span><span class="n">values</span>
-    <span class="n">left_x</span><span class="p">[</span><span class="n">left_x</span><span class="o">==</span><span class="s2">"   ."</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-    <span class="n">left_x</span> <span class="o">=</span> <span class="n">left_x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
 
-    <span class="n">left_y</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_y</span><span class="o">.</span><span class="n">values</span>
-    <span class="n">left_y</span><span class="p">[</span><span class="n">left_y</span><span class="o">==</span><span class="s2">"   ."</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-    <span class="n">left_y</span> <span class="o">=</span> <span class="n">left_y</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
-
-    <span class="n">right_x</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_x</span><span class="o">.</span><span class="n">values</span>
-    <span class="n">right_x</span><span class="p">[</span><span class="n">right_x</span><span class="o">==</span><span class="s2">"   ."</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-    <span class="n">right_x</span> <span class="o">=</span> <span class="n">right_x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
-
-    <span class="n">right_y</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_y</span><span class="o">.</span><span class="n">values</span>
-    <span class="n">right_y</span><span class="p">[</span><span class="n">right_y</span><span class="o">==</span><span class="s2">"   ."</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-    <span class="n">right_y</span> <span class="o">=</span> <span class="n">right_y</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
-
-    <span class="c1">## Eyelink tracker codes missing pupil data (e.g., blinks) as 0</span>
-    <span class="n">left_p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">left_p</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">left_p</span><span class="p">)</span>
-    <span class="n">right_p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">right_p</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">right_p</span><span class="p">)</span>
-
-    <span class="c1">## Loading the events from the events file</span>
-    <span class="c1"># read the whole file into variable `events` (list with one entry per line)</span>
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname_events</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-        <span class="n">events</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
-
-    <span class="c1"># keep only lines starting with "MSG"</span>
-    <span class="n">events</span><span class="o">=</span><span class="p">[</span><span class="n">ev</span> <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span> <span class="k">if</span> <span class="n">ev</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"MSG"</span><span class="p">)]</span>
-    <span class="n">experiment_start_index</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">([</span><span class="s2">"experiment_start"</span> <span class="ow">in</span> <span class="n">ev</span> <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span><span class="p">])[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">events</span><span class="o">=</span><span class="n">events</span><span class="p">[</span><span class="n">experiment_start_index</span><span class="o">+</span><span class="mi">1</span><span class="p">:]</span>
-    <span class="n">df_ev</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">ev</span><span class="o">.</span><span class="n">split</span><span class="p">()</span> <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span><span class="p">])</span>
-    <span class="n">df_ev</span><span class="o">=</span><span class="n">df_ev</span><span class="p">[[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]]</span>
-    <span class="n">df_ev</span><span class="o">.</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"time"</span><span class="p">,</span> <span class="s2">"event"</span><span class="p">]</span>
-
-    <span class="c1"># Creating EyeData object that contains both X-Y coordinates</span>
-    <span class="c1"># and pupil data</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">.eyedata.experimental_setup</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExperimentalSetup</span>
-    <span class="n">setup</span> <span class="o">=</span> <span class="n">ExperimentalSetup</span><span class="p">(</span>
-        <span class="n">screen_resolution</span><span class="o">=</span><span class="p">(</span><span class="mi">1280</span><span class="p">,</span> <span class="mi">1024</span><span class="p">),</span>
-        <span class="n">physical_screen_size</span><span class="o">=</span><span class="p">(</span><span class="s2">"30 cm"</span><span class="p">,</span> <span class="s2">"20 cm"</span><span class="p">),</span>
-        <span class="n">eye_to_screen_center</span><span class="o">=</span><span class="s2">"60 cm"</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="n">d</span> <span class="o">=</span> <span class="n">EyeData</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"rlmw_002_short"</span><span class="p">,</span>
-                <span class="n">experimental_setup</span><span class="o">=</span><span class="n">setup</span><span class="p">,</span>
-                <span class="n">left_x</span><span class="o">=</span><span class="n">left_x</span><span class="p">,</span> <span class="n">left_y</span><span class="o">=</span><span class="n">left_y</span><span class="p">,</span> <span class="n">left_pupil</span><span class="o">=</span><span class="n">left_p</span><span class="p">,</span>
-                <span class="n">right_x</span><span class="o">=</span><span class="n">right_x</span><span class="p">,</span> <span class="n">right_y</span><span class="o">=</span><span class="n">right_y</span><span class="p">,</span> <span class="n">right_pupil</span><span class="o">=</span><span class="n">right_p</span><span class="p">,</span>
-                <span class="n">event_onsets</span><span class="o">=</span><span class="n">df_ev</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">event_labels</span><span class="o">=</span><span class="n">df_ev</span><span class="o">.</span><span class="n">event</span><span class="p">,</span>
-                <span class="n">keep_orig</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>\
-                <span class="o">.</span><span class="n">reset_time</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">d</span></div>
-
-        
 
 <div class="viewcode-block" id="get_rlmw_010_edf">
 <a class="viewcode-back" href="../../api/generated/pypillometry.get_rlmw_010_edf.html#pypillometry.get_rlmw_010_edf">[docs]</a>
@@ -1133,7 +1086,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        the example dataset</span>
 <span class="sd">    """</span>
     <span class="n">cache_dir</span> <span class="o">=</span> <span class="n">cache_dir</span> <span class="ow">or</span> <span class="n">_user_cache_dir</span><span class="p">()</span>
-    <span class="n">fname</span> <span class="o">=</span> <span class="n">fetch_url</span><span class="p">(</span><span class="n">example_datasets</span><span class="p">[</span><span class="s2">"rlmw_010_edf"</span><span class="p">][</span><span class="s2">"edf"</span><span class="p">],</span>
+    <span class="n">fname</span> <span class="o">=</span> <span class="n">fetch_url</span><span class="p">(</span><span class="n">example_datasets</span><span class="p">[</span><span class="s2">"rlmw_010_edf"</span><span class="p">][</span><span class="s2">"files"</span><span class="p">][</span><span class="s2">"data"</span><span class="p">],</span>
                       <span class="n">cache_file</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">,</span> <span class="s2">"010_rlmw.edf"</span><span class="p">))</span>
     <span class="n">d</span> <span class="o">=</span> <span class="n">EyeData</span><span class="o">.</span><span class="n">from_eyelink</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
     <span class="n">d</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">"rlmw_010"</span>
@@ -1141,6 +1094,80 @@ window.runMermaid = runMermaid;</script>
         <span class="n">physical_screen_size</span><span class="o">=</span><span class="p">(</span><span class="s2">"30 cm"</span><span class="p">,</span> <span class="s2">"20 cm"</span><span class="p">),</span>
         <span class="n">eye_to_screen_center</span><span class="o">=</span><span class="s2">"60 cm"</span><span class="p">,</span>
     <span class="p">)</span>
+    <span class="k">return</span> <span class="n">d</span></div>
+
+
+
+<div class="viewcode-block" id="get_nback_001">
+<a class="viewcode-back" href="../../api/generated/pypillometry.get_nback_001.html#pypillometry.get_nback_001">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_nback_001</span><span class="p">(</span><span class="n">cache_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Load the "nback_001" example dataset (downloaded from figshare).</span>
+
+<span class="sd">    Binocular gaze and pupil data from a 56-minute N-back task (single</span>
+<span class="sd">    participant), saved as a pypillometry file. Events mark fixation,</span>
+<span class="sd">    stimulus and response in each trial (e.g.,</span>
+<span class="sd">    ``run-1_scr-grey_block-1_task-0b_trial-1_stim_target-1``).</span>
+
+<span class="sd">    The behavioural log of the task is merged into the events' metadata</span>
+<span class="sd">    (see :attr:`Events.meta &lt;pypillometry.Events.meta&gt;`): ``run``,</span>
+<span class="sd">    ``screen``, ``block``, ``task`` (``0b``, ``1b``, ``2b`` or ``p``) and</span>
+<span class="sd">    ``trial`` are parsed from the labels, and ``stimulus``, ``target``,</span>
+<span class="sd">    ``response``, ``accuracy`` and ``rt`` (reaction time in s) are added to</span>
+<span class="sd">    all events of each trial. The log's header (date, ambient light, ...)</span>
+<span class="sd">    is in ``d.info["behaviour_log"]``.</span>
+
+<span class="sd">    The files are downloaded into `cache_dir` on the first call and reused</span>
+<span class="sd">    later. Usually called via :func:`~pypillometry.get_example_data`. The</span>
+<span class="sd">    tutorial :doc:`/notebooks/case_study_nback` analyses this dataset.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cache_dir : str, optional</span>
+<span class="sd">        directory for the downloaded files; default</span>
+<span class="sd">        ``$XDG_CACHE_HOME/pypillometry`` (``~/.cache/pypillometry``)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    EyeData</span>
+<span class="sd">        the example dataset</span>
+<span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+    <span class="n">info</span> <span class="o">=</span> <span class="n">example_datasets</span><span class="p">[</span><span class="s2">"nback_001"</span><span class="p">]</span>
+    <span class="n">figshare_id</span><span class="p">,</span> <span class="n">version</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">"figshare"</span><span class="p">][</span><span class="s2">"id"</span><span class="p">],</span> <span class="n">info</span><span class="p">[</span><span class="s2">"figshare"</span><span class="p">][</span><span class="s2">"version"</span><span class="p">]</span>
+    <span class="n">cache_dir</span> <span class="o">=</span> <span class="n">cache_dir</span> <span class="ow">or</span> <span class="n">_user_cache_dir</span><span class="p">()</span>
+
+    <span class="c1"># download the files from figshare (or use the cached copies)</span>
+    <span class="n">fname_data</span> <span class="o">=</span> <span class="n">fetch_figshare_file</span><span class="p">(</span><span class="n">figshare_id</span><span class="p">,</span> <span class="n">info</span><span class="p">[</span><span class="s2">"files"</span><span class="p">][</span><span class="s2">"data"</span><span class="p">],</span>
+                                     <span class="n">version</span><span class="o">=</span><span class="n">version</span><span class="p">,</span> <span class="n">cache_dir</span><span class="o">=</span><span class="n">cache_dir</span><span class="p">,</span>
+                                     <span class="n">cache_layout</span><span class="o">=</span><span class="s2">"mirror"</span><span class="p">)</span>
+    <span class="n">fname_log</span> <span class="o">=</span> <span class="n">fetch_figshare_file</span><span class="p">(</span><span class="n">figshare_id</span><span class="p">,</span> <span class="n">info</span><span class="p">[</span><span class="s2">"files"</span><span class="p">][</span><span class="s2">"behaviour"</span><span class="p">],</span>
+                                    <span class="n">version</span><span class="o">=</span><span class="n">version</span><span class="p">,</span> <span class="n">cache_dir</span><span class="o">=</span><span class="n">cache_dir</span><span class="p">,</span>
+                                    <span class="n">cache_layout</span><span class="o">=</span><span class="s2">"mirror"</span><span class="p">)</span>
+
+    <span class="c1"># eye-tracking data, saved with pypillometry</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">EyeData</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">fname_data</span><span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">"nback_001"</span>
+
+    <span class="c1"># behavioural log: a header of "# key: value" lines, then one row per trial</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname_log</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">comments</span> <span class="o">=</span> <span class="p">[</span><span class="n">line</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">"# "</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span> <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"#"</span><span class="p">)]</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">"behaviour_log"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">": "</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">comments</span> <span class="k">if</span> <span class="s2">": "</span> <span class="ow">in</span> <span class="n">c</span><span class="p">)</span>
+    <span class="n">log</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">fname_log</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s2">"#"</span><span class="p">)</span>
+
+    <span class="c1"># run, screen, block, task and trial from the event labels, e.g.</span>
+    <span class="c1"># "run-1_scr-grey_block-1_task-0b_trial-1_stim_target-1"</span>
+    <span class="n">events</span> <span class="o">=</span> <span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">parse_labels</span><span class="p">(</span><span class="sa">r</span><span class="s2">"run-(?P&lt;run&gt;\d+)"</span><span class="p">)</span>
+                      <span class="o">.</span><span class="n">parse_labels</span><span class="p">(</span><span class="sa">r</span><span class="s2">"scr-(?P&lt;screen&gt;[a-z]+)"</span><span class="p">)</span>
+                      <span class="o">.</span><span class="n">parse_labels</span><span class="p">(</span><span class="sa">r</span><span class="s2">"block-(?P&lt;block&gt;\d+)"</span><span class="p">)</span>
+                      <span class="o">.</span><span class="n">parse_labels</span><span class="p">(</span><span class="sa">r</span><span class="s2">"task-(?P&lt;task&gt;[^_]+)"</span><span class="p">)</span>
+                      <span class="o">.</span><span class="n">parse_labels</span><span class="p">(</span><span class="sa">r</span><span class="s2">"trial-(?P&lt;trial&gt;\d+)"</span><span class="p">))</span>
+
+    <span class="c1"># add each trial's row of the log to all its events (fixation, stimulus,</span>
+    <span class="c1"># response), matched by run, block, task and trial</span>
+    <span class="n">events</span> <span class="o">=</span> <span class="n">events</span><span class="o">.</span><span class="n">merge_table</span><span class="p">(</span>
+        <span class="n">log</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s2">"run"</span><span class="p">,</span> <span class="s2">"block"</span><span class="p">,</span> <span class="s2">"task"</span><span class="p">,</span> <span class="s2">"trial"</span><span class="p">],</span>
+        <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"stimulus"</span><span class="p">,</span> <span class="s2">"target"</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">,</span> <span class="s2">"accuracy"</span><span class="p">,</span> <span class="s2">"rt"</span><span class="p">])</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_events</span><span class="p">(</span><span class="n">events</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">d</span></div>
 
 </pre></div>

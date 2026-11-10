@@ -1,0 +1,6 @@
+﻿fetch\_figshare\_file
+=====================
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: fetch_figshare_file

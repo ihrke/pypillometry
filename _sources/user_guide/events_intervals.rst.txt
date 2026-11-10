@@ -76,9 +76,20 @@ numeric columns and ``""`` in text columns. There are two common sources:
       ev = ev.parse_labels(r"^S_\d+_(?P<left>\d+)_(?P<right>\d+)")
       ev = ev.parse_labels(r"^R_\d+_(?P<reward>\d+)")
 
-- **A behaviour log**: :meth:`Events.from_table` takes the columns with
-  metadata as ``meta`` (see :ref:`below <behaviour-log-events>`); each
-  event of a row gets the values of that row.
+- **A behaviour log** with one row per trial. If the eye tracker's events
+  already identify the trials (e.g., by a trial number from the labels),
+  :meth:`~Events.merge_table` adds the columns of the log to all events of
+  each trial, matched by the values in the columns ``on``:
+
+  .. code-block:: python
+
+      log = pd.read_csv("behaviour.csv")  # columns trial, cond, rt, ...
+      ev = ev.merge_table(log, on="trial", columns=["cond", "rt"])
+
+  If the events are only in the log, :meth:`Events.from_table` creates
+  them and takes the columns with metadata as ``meta`` (see
+  :ref:`below <behaviour-log-events>`); each event of a row gets the
+  values of that row.
 
 Information that is coded at one event (e.g., the reward at the feedback)
 is copied to the other events of the same trial with

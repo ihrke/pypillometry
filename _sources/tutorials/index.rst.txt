@@ -156,6 +156,13 @@ Modeling and complete analyses
 
       Preprocess a full study with many participants.
 
+   .. grid-item-card:: Case study: an N-back task
+      :link: /notebooks/case_study_nback
+      :link-type: doc
+
+      One recording from start to end: behavioural log as event
+      metadata, preprocessing, tonic pupil and ERPDs.
+
 More examples for the experimental features are in
 :doc:`/experimental/index`.
 
@@ -200,3 +207,4 @@ More examples for the experimental features are in
 
    /notebooks/modeling
    /notebooks/preproc_example_pavlov
+   /notebooks/case_study_nback

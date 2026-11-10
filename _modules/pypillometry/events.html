@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pypillometry.events &#8212; pypillometry v2.2.0</title>
+    <title>pypillometry.events &#8212; pypillometry v2.2.1</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=49a90b2e"></script>
+    <script src="../../_static/documentation_options.js?v=edd18f37"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -414,7 +414,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.0" />
+  <meta name="docsearch:version" content="v2.2.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -826,8 +826,21 @@ window.runMermaid = runMermaid;</script>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_is_missing</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""True for None and NaN (missing metadata values)."""</span>
-    <span class="k">return</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">))</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+<span class="w">    </span><span class="sd">"""True for missing metadata values: None, NaN, "" and pandas' NA."""</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">))</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+            <span class="ow">or</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">v</span> <span class="o">==</span> <span class="s2">""</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">type</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"NAType"</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_match_key</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Value of `v` for matching rows (numbers as float, so 1 matches</span>
+<span class="sd">    1.0); None for missing values."""</span>
+    <span class="k">if</span> <span class="n">_is_missing</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_is_int</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
@@ -838,8 +851,8 @@ window.runMermaid = runMermaid;</script>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Metadata column from a list of values; None and NaN are missing.</span>
 
-<span class="sd">    Without missing values, bools give a bool column and integers an int</span>
-<span class="sd">    column. Otherwise, numbers give a float column (missing: NaN) and</span>
+<span class="sd">    Without missing values (None, NaN, "" or pandas' NA), bools give a</span>
+<span class="sd">    bool column and integers an int column. Otherwise, numbers give a float column (missing: NaN) and</span>
 <span class="sd">    anything else a string column (missing: "").</span>
 <span class="sd">    """</span>
     <span class="n">present</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">_is_missing</span><span class="p">(</span><span class="n">v</span><span class="p">)]</span>
@@ -985,7 +998,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    with one value per event. Missing values are NaN in numeric columns and "" in</span>
 <span class="sd">    string columns. Metadata come from a behaviour log (see</span>
 <span class="sd">    :meth:`from_table`), from the labels of the events (see</span>
-<span class="sd">    :meth:`parse_labels`) or are added with :meth:`set_meta` and</span>
+<span class="sd">    :meth:`parse_labels`), from a table with one row per trial (see</span>
+<span class="sd">    :meth:`merge_table`) or are added with :meth:`set_meta` and</span>
 <span class="sd">    :meth:`add_latency`; events are selected by their metadata with</span>
 <span class="sd">    :meth:`filter`.</span>
 
@@ -1085,7 +1099,8 @@ window.runMermaid = runMermaid;</script>
 
 <span class="sd">        A mapping of column name -&gt; numpy array (one value per event). It</span>
 <span class="sd">        cannot be changed in place; :meth:`set_meta`, :meth:`drop_meta`,</span>
-<span class="sd">        :meth:`parse_labels`, :meth:`fill_meta` and :meth:`add_latency`</span>
+<span class="sd">        :meth:`parse_labels`, :meth:`merge_table`, :meth:`fill_meta` and</span>
+<span class="sd">        :meth:`add_latency`</span>
 <span class="sd">        return new Events with changed metadata.</span>
 <span class="sd">        """</span>
         <span class="k">return</span> <span class="n">MappingProxyType</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_meta</span><span class="p">)</span>
@@ -1584,8 +1599,7 @@ window.runMermaid = runMermaid;</script>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_replace_column</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">'Events'</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""New Events with column `name` set to `values` (list; None, NaN or "" = missing)."""</span>
-        <span class="n">values</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span> <span class="k">if</span> <span class="n">_is_missing</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">v</span> <span class="o">==</span> <span class="s2">""</span><span class="p">)</span> <span class="k">else</span> <span class="n">v</span>
-                  <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">]</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span> <span class="k">if</span> <span class="n">_is_missing</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">else</span> <span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">]</span>
         <span class="n">meta</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="p">)</span>
         <span class="n">meta</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">_column_from_values</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">Events</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">onsets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">,</span>
@@ -1611,6 +1625,97 @@ window.runMermaid = runMermaid;</script>
         <span class="k">return</span> <span class="n">Events</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">onsets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">,</span>
                       <span class="n">data_time_range</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_time_range</span><span class="p">,</span> <span class="n">meta</span><span class="o">=</span><span class="n">meta</span><span class="p">,</span>
                       <span class="n">needs_sync</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">needs_sync</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Events.merge_table">
+<a class="viewcode-back" href="../../api/generated/pypillometry.Events.html#pypillometry.Events.merge_table">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">merge_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">on</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">'Events'</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">        Add metadata from a table with one row per trial.</span>
+
+<span class="sd">        Behaviour logs usually have one row per trial (e.g., stimulus,</span>
+<span class="sd">        response, reaction time). If the events already have metadata that</span>
+<span class="sd">        identify the trial (e.g., a "trial" column from</span>
+<span class="sd">        :meth:`parse_labels`), each event gets the values of the row with</span>
+<span class="sd">        the same values in the columns `on`, so all events of a trial</span>
+<span class="sd">        (e.g., fixation, stimulus and response) get the trial's data.</span>
+
+<span class="sd">        Unlike :meth:`from_table`, this does not create events and needs no</span>
+<span class="sd">        clock synchronization: the rows are matched by their values, not by</span>
+<span class="sd">        their times.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        table : pandas.DataFrame or dict</span>
+<span class="sd">            table with one row per trial</span>
+<span class="sd">        on : str or list of str</span>
+<span class="sd">            columns that identify a row; they must be metadata columns of</span>
+<span class="sd">            the events and columns of the table with the same names</span>
+<span class="sd">        columns : list or dict, optional</span>
+<span class="sd">            columns to add: list of column names, or dict mapping metadata</span>
+<span class="sd">            names to column names or to arrays of values (one per row);</span>
+<span class="sd">            default all columns of the table except `on`</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Events</span>
+<span class="sd">            new Events object with the columns added; events without a</span>
+<span class="sd">            matching row (e.g., events outside of the trials) get missing</span>
+<span class="sd">            values, or keep their values if the column exists already. Rows</span>
+<span class="sd">            without events are ignored.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        KeyError</span>
+<span class="sd">            if a column in `on` is not in the metadata or the table</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            if several rows of the table have the same values in `on`</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; ev = Events([0, 100, 400, 1000], ["start", "S_1", "R_1", "S_2"])</span>
+<span class="sd">        &gt;&gt;&gt; ev = ev.parse_labels(r"_(?P&lt;trial&gt;\d+)")</span>
+<span class="sd">        &gt;&gt;&gt; log = {"trial": [1, 2], "cond": ["easy", "hard"], "rt": [0.3, np.nan]}</span>
+<span class="sd">        &gt;&gt;&gt; ev = ev.merge_table(log, on="trial")</span>
+<span class="sd">        &gt;&gt;&gt; ev.meta["cond"]</span>
+<span class="sd">        array(['', 'easy', 'easy', 'hard'], dtype='&lt;U4')</span>
+<span class="sd">        &gt;&gt;&gt; ev.meta["rt"]</span>
+<span class="sd">        array([nan, 0.3, 0.3, nan])</span>
+<span class="sd">        """</span>
+        <span class="n">on</span> <span class="o">=</span> <span class="p">[</span><span class="n">on</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">on</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="n">on</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">on</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"no metadata column '</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">table</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"no column '</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">' in the table"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">columns</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">table</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">on</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">columns</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">columns</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">}</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">:</span>
+            <span class="n">_as_column</span><span class="p">([],</span> <span class="mi">0</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>  <span class="c1"># check the name</span>
+
+        <span class="c1"># row of the table for each combination of values in `on`</span>
+        <span class="n">rows</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">_match_key</span><span class="p">,</span> <span class="n">table</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">on</span><span class="p">))):</span>
+            <span class="k">if</span> <span class="kc">None</span> <span class="ow">in</span> <span class="n">key</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"rows </span><span class="si">{</span><span class="n">rows</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> of the table have "</span>
+                                 <span class="sa">f</span><span class="s2">"the same values: </span><span class="si">{</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">on</span><span class="p">,</span><span class="w"> </span><span class="n">key</span><span class="p">))</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="n">rows</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="p">[</span><span class="n">rows</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span>
+                 <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">_match_key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">on</span><span class="p">))]</span>
+
+        <span class="n">values</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">columns</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">vals</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">col</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="n">on</span><span class="p">[</span><span class="mi">0</span><span class="p">]]):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">' has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span><span class="si">}</span><span class="s2"> values, expected "</span>
+                                 <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="n">on</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span><span class="si">}</span><span class="s2"> (one per row)"</span><span class="p">)</span>
+            <span class="n">values</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span> <span class="k">if</span> <span class="n">r</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">_is_missing</span><span class="p">(</span><span class="n">vals</span><span class="p">[</span><span class="n">r</span><span class="p">])</span> <span class="k">else</span> <span class="n">vals</span><span class="p">[</span><span class="n">r</span><span class="p">]</span>
+                            <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">match</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_with_columns</span><span class="p">(</span><span class="n">values</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Events.fill_meta">
@@ -1658,10 +1763,9 @@ window.runMermaid = runMermaid;</script>
         <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"no metadata column '</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
-            <span class="n">vals</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span> <span class="k">if</span> <span class="n">_is_missing</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="ow">or</span> <span class="n">v</span> <span class="o">==</span> <span class="s2">""</span> <span class="k">else</span> <span class="n">v</span>
-                    <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()]</span>
+            <span class="n">vals</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span> <span class="k">if</span> <span class="n">_is_missing</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">else</span> <span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()]</span>
             <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">group</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">_is_missing</span><span class="p">(</span><span class="n">g</span><span class="p">)</span> <span class="ow">or</span> <span class="n">g</span> <span class="o">==</span> <span class="s2">""</span><span class="p">:</span>  <span class="c1"># events without a group</span>
+                <span class="k">if</span> <span class="n">_is_missing</span><span class="p">(</span><span class="n">g</span><span class="p">):</span>  <span class="c1"># events without a group</span>
                     <span class="k">continue</span>
                 <span class="n">ix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">group</span> <span class="o">==</span> <span class="n">g</span><span class="p">)</span>
                 <span class="n">present</span> <span class="o">=</span> <span class="p">{</span><span class="n">vals</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ix</span> <span class="k">if</span> <span class="n">vals</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">}</span>
@@ -1725,7 +1829,7 @@ window.runMermaid = runMermaid;</script>
                 <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"no metadata column '</span><span class="si">{</span><span class="n">by</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
             <span class="n">col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="n">by</span><span class="p">]</span>
             <span class="n">groups</span> <span class="o">=</span> <span class="p">[(</span><span class="n">i1</span><span class="p">[</span><span class="n">col</span><span class="p">[</span><span class="n">i1</span><span class="p">]</span> <span class="o">==</span> <span class="n">v</span><span class="p">],</span> <span class="n">i2</span><span class="p">[</span><span class="n">col</span><span class="p">[</span><span class="n">i2</span><span class="p">]</span> <span class="o">==</span> <span class="n">v</span><span class="p">])</span>
-                      <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">col</span><span class="p">[</span><span class="n">i1</span><span class="p">])</span> <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">_is_missing</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="ow">or</span> <span class="n">v</span> <span class="o">==</span> <span class="s2">""</span><span class="p">)]</span>
+                      <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">col</span><span class="p">[</span><span class="n">i1</span><span class="p">])</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">_is_missing</span><span class="p">(</span><span class="n">v</span><span class="p">)]</span>
         <span class="n">latency</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">g1</span><span class="p">,</span> <span class="n">g2</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">:</span>
             <span class="n">pairs</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_pair_with_next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">onsets</span><span class="p">[</span><span class="n">g1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">onsets</span><span class="p">[</span><span class="n">g2</span><span class="p">])</span>
@@ -1909,6 +2013,8 @@ window.runMermaid = runMermaid;</script>
         <span class="n">show_labels</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"auto"</span><span class="p">,</span>
         <span class="n">marker</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"."</span><span class="p">,</span>
         <span class="n">units</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"sec"</span><span class="p">,</span>
+        <span class="n">title</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
@@ -1923,13 +2029,17 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">            Matplotlib marker style for the events (default '.').</span>
 <span class="sd">        units : str or None, optional</span>
 <span class="sd">            Units to display in the plot. Defaults to "sec". Use None to keep existing units.</span>
+<span class="sd">        title : str, optional</span>
+<span class="sd">            title of the plot</span>
+<span class="sd">        ax : matplotlib.axes.Axes, optional</span>
+<span class="sd">            axes to plot on; default: the current axes</span>
 <span class="sd">        **kwargs :</span>
-<span class="sd">            Additional keyword arguments passed to :func:`matplotlib.axes.Axes.plot`.</span>
+<span class="sd">            Additional keyword arguments passed to :meth:`matplotlib.axes.Axes.plot`.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        None</span>
-<span class="sd">            Plot is drawn on the current matplotlib axes.</span>
+<span class="sd">        matplotlib.axes.Axes</span>
+<span class="sd">            the axes of the plot</span>
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
@@ -1940,15 +2050,17 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">           &gt;&gt;&gt; import pypillometry as pp</span>
 <span class="sd">           &gt;&gt;&gt; import matplotlib.pyplot as plt</span>
 <span class="sd">           &gt;&gt;&gt; d = pp.get_example_data("rlmw_002_short")</span>
-<span class="sd">           &gt;&gt;&gt; fig = plt.figure(figsize=(10, 3))</span>
-<span class="sd">           &gt;&gt;&gt; d.events.filter("S_").plot(units="sec")</span>
+<span class="sd">           &gt;&gt;&gt; fig, ax = plt.subplots(figsize=(10, 3))</span>
+<span class="sd">           &gt;&gt;&gt; ax = d.events.filter("S_").plot(units="sec", ax=ax)</span>
 <span class="sd">        """</span>
-        <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.plot._axes</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_ax</span>
 
         <span class="k">if</span> <span class="n">show_labels</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">"auto"</span><span class="p">,</span> <span class="s2">"all"</span><span class="p">,</span> <span class="s2">"none"</span><span class="p">}:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"show_labels must be one of {'auto', 'all', 'none'}"</span><span class="p">)</span>
 
-        <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">get_ax</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">title</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
 
         <span class="n">target_units</span> <span class="o">=</span> <span class="n">units</span> <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span>
         <span class="k">if</span> <span class="n">target_units</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">:</span>
@@ -1963,7 +2075,7 @@ window.runMermaid = runMermaid;</script>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-            <span class="k">return</span>
+            <span class="k">return</span> <span class="n">ax</span>
 
         <span class="n">y_positions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
 
@@ -2025,7 +2137,7 @@ window.runMermaid = runMermaid;</script>
                         <span class="n">rotation_mode</span><span class="o">=</span><span class="s2">"anchor"</span><span class="p">,</span>
                     <span class="p">)</span>
                     <span class="n">last_label_x</span> <span class="o">=</span> <span class="n">onset</span>
-        <span class="k">return</span></div>
+        <span class="k">return</span> <span class="n">ax</span></div>
 
     
 <div class="viewcode-block" id="Events.filter">

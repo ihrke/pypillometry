@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pypillometry.intervals &#8212; pypillometry v2.2.0</title>
+    <title>pypillometry.intervals &#8212; pypillometry v2.2.1</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=49a90b2e"></script>
+    <script src="../../_static/documentation_options.js?v=edd18f37"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -414,7 +414,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.0" />
+  <meta name="docsearch:version" content="v2.2.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1866,24 +1866,28 @@ window.runMermaid = runMermaid;</script>
     
 <div class="viewcode-block" id="Intervals.plot">
 <a class="viewcode-back" href="../../api/generated/pypillometry.Intervals.html#pypillometry.Intervals.plot">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show_labels</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show_labels</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Plot intervals as horizontal lines on a timeline.</span>
-<span class="sd">        </span>
-<span class="sd">        Uses the current matplotlib axes to create a visualization where each </span>
-<span class="sd">        interval is shown as a horizontal line at a different y-level.</span>
-<span class="sd">        </span>
+
+<span class="sd">        Each interval is shown as a horizontal line at a different y-level.</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        show_labels : bool</span>
 <span class="sd">            Whether to display event labels for each interval (default True)</span>
+<span class="sd">        title : str, optional</span>
+<span class="sd">            title of the plot; default: the label of the intervals</span>
+<span class="sd">        ax : matplotlib.axes.Axes, optional</span>
+<span class="sd">            axes to plot on; default: the current axes</span>
 <span class="sd">        **kwargs : dict</span>
-<span class="sd">            Additional keyword arguments passed to matplotlib plot()</span>
-<span class="sd">            </span>
+<span class="sd">            Additional keyword arguments passed to</span>
+<span class="sd">            :meth:`matplotlib.axes.Axes.plot`</span>
+
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        None</span>
-<span class="sd">            Modifies the current axes in place</span>
+<span class="sd">        matplotlib.axes.Axes</span>
+<span class="sd">            the axes of the plot</span>
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
@@ -1894,15 +1898,14 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">           &gt;&gt;&gt; import matplotlib.pyplot as plt</span>
 <span class="sd">           &gt;&gt;&gt; d = pp.get_example_data("rlmw_002_short")</span>
 <span class="sd">           &gt;&gt;&gt; intervals = d.get_epochs("S_", (-500, 2500) * u.ms).to_intervals("sec")</span>
-<span class="sd">           &gt;&gt;&gt; fig = plt.figure(figsize=(8, 3))</span>
-<span class="sd">           &gt;&gt;&gt; intervals.plot()</span>
+<span class="sd">           &gt;&gt;&gt; fig, ax = plt.subplots(figsize=(8, 3))</span>
+<span class="sd">           &gt;&gt;&gt; ax = intervals.plot(ax=ax)</span>
 <span class="sd">        """</span>
-        <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-        
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.plot._axes</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_ax</span>
+
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">get_ax</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">intervals</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">return</span>
-        
-        <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">ax</span>
         
         <span class="c1"># x-axis range of the intervals</span>
         <span class="n">all_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">val</span> <span class="k">for</span> <span class="n">interval</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">intervals</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">interval</span><span class="p">]</span>
@@ -1944,9 +1947,11 @@ window.runMermaid = runMermaid;</script>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">'Samples'</span><span class="p">)</span>
         
-        <span class="c1"># Set title from global label</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">label</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="p">)</span></div>
+        <span class="k">if</span> <span class="n">title</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">label</span>
+        <span class="k">if</span> <span class="n">title</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ax</span></div>
 
     
     <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>

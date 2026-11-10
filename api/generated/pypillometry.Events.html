@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Events &#8212; pypillometry v2.2.0</title>
+    <title>Events &#8212; pypillometry v2.2.1</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=49a90b2e"></script>
+    <script src="../../_static/documentation_options.js?v=edd18f37"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.0" />
+  <meta name="docsearch:version" content="v2.2.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -478,11 +478,14 @@
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.load_study_osf.html">load_study_osf</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.get_osf_project_files.html">get_osf_project_files</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.osf_authenticate.html">osf_authenticate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.get_figshare_files.html">get_figshare_files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.fetch_figshare_file.html">fetch_figshare_file</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.get_available_datasets.html">get_available_datasets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.get_example_data.html">get_example_data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.get_rlmw_002.html">get_rlmw_002</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.get_rlmw_002_short.html">get_rlmw_002_short</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.get_rlmw_010_edf.html">get_rlmw_010_edf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.get_nback_001.html">get_nback_001</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../signal.html">Signal processing</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -636,7 +639,8 @@ stored in <cite>meta</cite>: a read-only mapping of column names to numpy arrays
 with one value per event. Missing values are NaN in numeric columns and “” in
 string columns. Metadata come from a behaviour log (see
 <a class="reference internal" href="#pypillometry.Events.from_table" title="pypillometry.Events.from_table"><code class="xref py py-meth docutils literal notranslate"><span class="pre">from_table()</span></code></a>), from the labels of the events (see
-<a class="reference internal" href="#pypillometry.Events.parse_labels" title="pypillometry.Events.parse_labels"><code class="xref py py-meth docutils literal notranslate"><span class="pre">parse_labels()</span></code></a>) or are added with <a class="reference internal" href="#pypillometry.Events.set_meta" title="pypillometry.Events.set_meta"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_meta()</span></code></a> and
+<a class="reference internal" href="#pypillometry.Events.parse_labels" title="pypillometry.Events.parse_labels"><code class="xref py py-meth docutils literal notranslate"><span class="pre">parse_labels()</span></code></a>), from a table with one row per trial (see
+<a class="reference internal" href="#pypillometry.Events.merge_table" title="pypillometry.Events.merge_table"><code class="xref py py-meth docutils literal notranslate"><span class="pre">merge_table()</span></code></a>) or are added with <a class="reference internal" href="#pypillometry.Events.set_meta" title="pypillometry.Events.set_meta"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_meta()</span></code></a> and
 <a class="reference internal" href="#pypillometry.Events.add_latency" title="pypillometry.Events.add_latency"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_latency()</span></code></a>; events are selected by their metadata with
 <a class="reference internal" href="#pypillometry.Events.filter" title="pypillometry.Events.filter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">filter()</span></code></a>.</p>
 <dl class="field-list simple">
@@ -703,31 +707,34 @@ None or samples).</p>
 <tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.Events.keep" title="pypillometry.Events.keep"><code class="xref py py-obj docutils literal notranslate"><span class="pre">keep</span></code></a></p></td>
 <td><p>Events where <cite>mask</cite> is True.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.Events.onset" title="pypillometry.Events.onset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">onset</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.Events.merge_table" title="pypillometry.Events.merge_table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">merge_table</span></code></a></p></td>
+<td><p>Add metadata from a table with one row per trial.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.Events.onset" title="pypillometry.Events.onset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">onset</span></code></a></p></td>
 <td><p>Onset of the one event with the given label.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.Events.parse_labels" title="pypillometry.Events.parse_labels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parse_labels</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.Events.parse_labels" title="pypillometry.Events.parse_labels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parse_labels</span></code></a></p></td>
 <td><p>Metadata from the labels of the events.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.Events.plot" title="pypillometry.Events.plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.Events.plot" title="pypillometry.Events.plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot</span></code></a></p></td>
 <td><p>Plot events as points on a time axis.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.Events.row" title="pypillometry.Events.row"><code class="xref py py-obj docutils literal notranslate"><span class="pre">row</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.Events.row" title="pypillometry.Events.row"><code class="xref py py-obj docutils literal notranslate"><span class="pre">row</span></code></a></p></td>
 <td><p>One event as a dict with its onset, label and metadata.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.Events.set_meta" title="pypillometry.Events.set_meta"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_meta</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.Events.set_meta" title="pypillometry.Events.set_meta"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_meta</span></code></a></p></td>
 <td><p>Set a metadata column.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.Events.shift" title="pypillometry.Events.shift"><code class="xref py py-obj docutils literal notranslate"><span class="pre">shift</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.Events.shift" title="pypillometry.Events.shift"><code class="xref py py-obj docutils literal notranslate"><span class="pre">shift</span></code></a></p></td>
 <td><p>Events with shifted onsets.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.Events.to_array" title="pypillometry.Events.to_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_array</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.Events.to_array" title="pypillometry.Events.to_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_array</span></code></a></p></td>
 <td><p>Convert events to numpy arrays.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.Events.to_table" title="pypillometry.Events.to_table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_table</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.Events.to_table" title="pypillometry.Events.to_table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_table</span></code></a></p></td>
 <td><p>Events as a table (copies of the columns).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.Events.to_units" title="pypillometry.Events.to_units"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_units</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.Events.to_units" title="pypillometry.Events.to_units"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_units</span></code></a></p></td>
 <td><p>Convert event onsets to different time units.</p></td>
 </tr>
 </tbody>
@@ -994,6 +1001,59 @@ array) and returns a boolean array, e.g.
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.Events.merge_table">
+<span class="sig-name descname"><span class="pre">merge_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/events.html#Events.merge_table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.Events.merge_table" title="Link to this definition">#</a></dt>
+<dd><p>Add metadata from a table with one row per trial.</p>
+<p>Behaviour logs usually have one row per trial (e.g., stimulus,
+response, reaction time). If the events already have metadata that
+identify the trial (e.g., a “trial” column from
+<a class="reference internal" href="#pypillometry.Events.parse_labels" title="pypillometry.Events.parse_labels"><code class="xref py py-meth docutils literal notranslate"><span class="pre">parse_labels()</span></code></a>), each event gets the values of the row with
+the same values in the columns <cite>on</cite>, so all events of a trial
+(e.g., fixation, stimulus and response) get the trial’s data.</p>
+<p>Unlike <a class="reference internal" href="#pypillometry.Events.from_table" title="pypillometry.Events.from_table"><code class="xref py py-meth docutils literal notranslate"><span class="pre">from_table()</span></code></a>, this does not create events and needs no
+clock synchronization: the rows are matched by their values, not by
+their times.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>table</strong> (<a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.1)"><em>pandas.DataFrame</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a>) – table with one row per trial</p></li>
+<li><p><strong>on</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – columns that identify a row; they must be metadata columns of
+the events and columns of the table with the same names</p></li>
+<li><p><strong>columns</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a><em>, </em><em>optional</em>) – columns to add: list of column names, or dict mapping metadata
+names to column names or to arrays of values (one per row);
+default all columns of the table except <cite>on</cite></p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#pypillometry.Events" title="pypillometry.events.Events"><code class="xref py py-class docutils literal notranslate"><span class="pre">Events</span></code></a></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>new Events object with the columns added; events without a
+matching row (e.g., events outside of the trials) get missing
+values, or keep their values if the column exists already. Rows
+without events are ignored.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#KeyError" title="(in Python v3.15)"><strong>KeyError</strong></a> – if a column in <cite>on</cite> is not in the metadata or the table</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – if several rows of the table have the same values in <cite>on</cite></p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ev</span> <span class="o">=</span> <span class="n">Events</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="mi">1000</span><span class="p">],</span> <span class="p">[</span><span class="s2">"start"</span><span class="p">,</span> <span class="s2">"S_1"</span><span class="p">,</span> <span class="s2">"R_1"</span><span class="p">,</span> <span class="s2">"S_2"</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ev</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">parse_labels</span><span class="p">(</span><span class="sa">r</span><span class="s2">"_(?P&lt;trial&gt;\d+)"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">log</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"trial"</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="s2">"cond"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"easy"</span><span class="p">,</span> <span class="s2">"hard"</span><span class="p">],</span> <span class="s2">"rt"</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">]}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ev</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">merge_table</span><span class="p">(</span><span class="n">log</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s2">"trial"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ev</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">"cond"</span><span class="p">]</span>
+<span class="go">array(['', 'easy', 'easy', 'hard'], dtype='&lt;U4')</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ev</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">"rt"</span><span class="p">]</span>
+<span class="go">array([nan, 0.3, 0.3, nan])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.Events.onset">
 <span class="sig-name descname"><span class="pre">onset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ms'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/events.html#Events.onset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.Events.onset" title="Link to this definition">#</a></dt>
 <dd><p>Onset of the one event with the given label.</p>
@@ -1074,7 +1134,7 @@ one column, e.g., “trial”, from different kinds of events)</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.Events.plot">
-<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">show_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">marker</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sec'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/events.html#Events.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.Events.plot" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">show_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">marker</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sec'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/events.html#Events.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.Events.plot" title="Link to this definition">#</a></dt>
 <dd><p>Plot events as points on a time axis.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1083,14 +1143,16 @@ one column, e.g., “trial”, from different kinds of events)</p>
 “all” annotates every event, “none” disables labels.</p></li>
 <li><p><strong>marker</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Matplotlib marker style for the events (default ‘.’).</p></li>
 <li><p><strong>units</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span>) – Units to display in the plot. Defaults to “sec”. Use None to keep existing units.</p></li>
-<li><p><strong>**kwargs</strong> – Additional keyword arguments passed to <code class="xref py py-func docutils literal notranslate"><span class="pre">matplotlib.axes.Axes.plot()</span></code>.</p></li>
+<li><p><strong>title</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span>) – title of the plot</p></li>
+<li><p><strong>ax</strong> (<a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html#matplotlib.axes.Axes" title="(in Matplotlib v3.11.2)"><em>matplotlib.axes.Axes</em></a><em>, </em><em>optional</em>) – axes to plot on; default: the current axes</p></li>
+<li><p><strong>**kwargs</strong> – Additional keyword arguments passed to <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.plot.html#matplotlib.axes.Axes.plot" title="(in Matplotlib v3.11.2)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">matplotlib.axes.Axes.plot()</span></code></a>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
+<dd class="field-even"><p><a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html#matplotlib.axes.Axes" title="(in Matplotlib v3.11.2)">matplotlib.axes.Axes</a></p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Plot is drawn on the current matplotlib axes.</p>
+<dd class="field-odd"><p>the axes of the plot</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
@@ -1098,8 +1160,8 @@ one column, e.g., “trial”, from different kinds of events)</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002_short"</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s2">"S_"</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ax</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s2">"S_"</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
 </pre></div>
 </div>
 <figure class="align-default">
@@ -1272,7 +1334,8 @@ displayed as a table; <code class="docutils literal notranslate"><span class="pr
 <dd><p>Metadata of the events (read-only).</p>
 <p>A mapping of column name -&gt; numpy array (one value per event). It
 cannot be changed in place; <a class="reference internal" href="#pypillometry.Events.set_meta" title="pypillometry.Events.set_meta"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_meta()</span></code></a>, <a class="reference internal" href="#pypillometry.Events.drop_meta" title="pypillometry.Events.drop_meta"><code class="xref py py-meth docutils literal notranslate"><span class="pre">drop_meta()</span></code></a>,
-<a class="reference internal" href="#pypillometry.Events.parse_labels" title="pypillometry.Events.parse_labels"><code class="xref py py-meth docutils literal notranslate"><span class="pre">parse_labels()</span></code></a>, <a class="reference internal" href="#pypillometry.Events.fill_meta" title="pypillometry.Events.fill_meta"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fill_meta()</span></code></a> and <a class="reference internal" href="#pypillometry.Events.add_latency" title="pypillometry.Events.add_latency"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_latency()</span></code></a>
+<a class="reference internal" href="#pypillometry.Events.parse_labels" title="pypillometry.Events.parse_labels"><code class="xref py py-meth docutils literal notranslate"><span class="pre">parse_labels()</span></code></a>, <a class="reference internal" href="#pypillometry.Events.merge_table" title="pypillometry.Events.merge_table"><code class="xref py py-meth docutils literal notranslate"><span class="pre">merge_table()</span></code></a>, <a class="reference internal" href="#pypillometry.Events.fill_meta" title="pypillometry.Events.fill_meta"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fill_meta()</span></code></a> and
+<a class="reference internal" href="#pypillometry.Events.add_latency" title="pypillometry.Events.add_latency"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_latency()</span></code></a>
 return new Events with changed metadata.</p>
 </dd></dl>
 
@@ -1334,6 +1397,7 @@ return new Events with changed metadata.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.Events.fill_meta"><code class="docutils literal notranslate"><span class="pre">fill_meta()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.Events.filter"><code class="docutils literal notranslate"><span class="pre">filter()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.Events.keep"><code class="docutils literal notranslate"><span class="pre">keep()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.Events.merge_table"><code class="docutils literal notranslate"><span class="pre">merge_table()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.Events.onset"><code class="docutils literal notranslate"><span class="pre">onset()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.Events.parse_labels"><code class="docutils literal notranslate"><span class="pre">parse_labels()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.Events.plot"><code class="docutils literal notranslate"><span class="pre">plot()</span></code></a></li>

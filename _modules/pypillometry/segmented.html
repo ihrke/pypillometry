@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pypillometry.segmented &#8212; pypillometry v2.2.0</title>
+    <title>pypillometry.segmented &#8212; pypillometry v2.2.1</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=49a90b2e"></script>
+    <script src="../../_static/documentation_options.js?v=edd18f37"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -414,7 +414,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.0" />
+  <meta name="docsearch:version" content="v2.2.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -2345,9 +2345,10 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        """</span>
         <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.plot._axes</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_ax</span>
         <span class="n">channels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_plot_channels</span><span class="p">(</span><span class="n">channels</span><span class="p">)</span>
         <span class="n">standalone</span> <span class="o">=</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span>
-        <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span> <span class="k">if</span> <span class="n">standalone</span> <span class="k">else</span> <span class="n">ax</span>
+        <span class="n">ax1</span> <span class="o">=</span> <span class="n">get_ax</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
 
         <span class="n">_check_accepts_axis</span><span class="p">(</span><span class="n">meanfct</span><span class="p">,</span> <span class="s2">"meanfct"</span><span class="p">)</span>
         <span class="n">_warn_if_ignores_mask</span><span class="p">(</span><span class="n">meanfct</span><span class="p">,</span> <span class="s2">"meanfct"</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -2500,6 +2501,7 @@ window.runMermaid = runMermaid;</script>
         <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">mpl_toolkits.axes_grid1</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_axes_locatable</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">.epochs</span><span class="w"> </span><span class="kn">import</span> <span class="n">Epochs</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.plot._axes</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_ax</span>
 
         <span class="k">if</span> <span class="n">channel</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
@@ -2537,7 +2539,7 @@ window.runMermaid = runMermaid;</script>
             <span class="n">cmap</span> <span class="o">=</span> <span class="s2">"RdBu_r"</span> <span class="k">if</span> <span class="n">center</span> <span class="k">else</span> <span class="s2">"viridis"</span>
 
         <span class="n">standalone</span> <span class="o">=</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span>
-        <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span> <span class="k">if</span> <span class="n">standalone</span> <span class="k">else</span> <span class="n">ax</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">get_ax</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
         <span class="n">step</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">)))</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_timepoints</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="mf">1.</span>
         <span class="n">extent</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">step</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">step</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_segments</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
         <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">"interpolation"</span><span class="p">,</span> <span class="s2">"nearest"</span><span class="p">)</span>

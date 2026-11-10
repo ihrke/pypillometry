@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Reading and writing data &#8212; pypillometry v2.2.0</title>
+    <title>Reading and writing data &#8212; pypillometry v2.2.1</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=49a90b2e"></script>
+    <script src="../_static/documentation_options.js?v=edd18f37"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.0" />
+  <meta name="docsearch:version" content="v2.2.1" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -478,11 +478,14 @@
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.load_study_osf.html">load_study_osf</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.get_osf_project_files.html">get_osf_project_files</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.osf_authenticate.html">osf_authenticate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.get_figshare_files.html">get_figshare_files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.fetch_figshare_file.html">fetch_figshare_file</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.get_available_datasets.html">get_available_datasets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.get_example_data.html">get_example_data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.get_rlmw_002.html">get_rlmw_002</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.get_rlmw_002_short.html">get_rlmw_002_short</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.get_rlmw_010_edf.html">get_rlmw_010_edf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.get_nback_001.html">get_nback_001</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="signal.html">Signal processing</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -659,6 +662,21 @@ objects with <a class="reference internal" href="generated/pypillometry.EyeData.
 </table>
 </div>
 </section>
+<section id="figshare">
+<h2>figshare<a class="headerlink" href="#figshare" title="Link to this heading">#</a></h2>
+<p>Files from public <a class="reference external" href="https://figshare.com">figshare</a> items.</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pypillometry.get_figshare_files.html#pypillometry.get_figshare_files" title="pypillometry.get_figshare_files"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_figshare_files</span></code></a></p></td>
+<td><p>List the files of a public figshare item.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pypillometry.fetch_figshare_file.html#pypillometry.fetch_figshare_file" title="pypillometry.fetch_figshare_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fetch_figshare_file</span></code></a></p></td>
+<td><p>Download a file from a public figshare item, with caching.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
 <section id="example-datasets">
 <h2>Example datasets<a class="headerlink" href="#example-datasets" title="Link to this heading">#</a></h2>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
@@ -677,6 +695,9 @@ objects with <a class="reference internal" href="generated/pypillometry.EyeData.
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/pypillometry.get_rlmw_010_edf.html#pypillometry.get_rlmw_010_edf" title="pypillometry.get_rlmw_010_edf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_rlmw_010_edf</span></code></a></p></td>
 <td><p>Load the &quot;rlmw_010_edf&quot; example dataset (downloaded from OSF).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pypillometry.get_nback_001.html#pypillometry.get_nback_001" title="pypillometry.get_nback_001"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_nback_001</span></code></a></p></td>
+<td><p>Load the &quot;nback_001&quot; example dataset (downloaded from figshare).</p></td>
 </tr>
 </tbody>
 </table>
@@ -733,6 +754,7 @@ objects with <a class="reference internal" href="generated/pypillometry.EyeData.
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#files-and-urls">Files and URLs</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#studies-and-osf">Studies and OSF</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#figshare">figshare</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-datasets">Example datasets</a></li>
 </ul>
   </nav></div>

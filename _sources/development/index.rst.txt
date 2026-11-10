@@ -66,8 +66,19 @@ domain in its own module (``plot/generic.py``: ``GenericPlots``,
 ``plot/pupil.py``: ``PupilPlots``, ``plot/gaze.py``: ``GazePlots``). These
 classes hold no state; a new plot goes into the module of its domain and
 uses ``self._d`` (and ``self._d._require(...)`` for the channels it needs).
-There is no forwarding of unknown attributes: ``d.pupil_plot()`` does not
-exist, only ``d.plot.pupil_plot()``.
+There is no forwarding of unknown attributes: ``d.plot_pupil()`` does not
+exist, only ``d.plot.plot_pupil()``.
+
+All plotting functions (also those outside ``d.plot``) are named
+``plot_*`` (or ``plot``) and follow the conventions in
+``plot/_axes.py``: one-panel plots take ``ax=None`` (``get_ax()``), draw
+with ``ax.*`` (not with ``plt.plot()`` etc.) and return the axes; multi-panel
+plots take ``axes=None`` and ``figsize=None`` and return the figure; plots
+with several figures return the list of figures. A ``plot_range`` is the
+first argument (so that ``plot_pupil((0, 20) * u.sec)`` works). All take
+``title=``, and
+none calls ``plt.show()``. ``tests/test_plotting_conventions.py`` checks
+each function.
 
 Every transforming method can also be used as a pipeline step
 (``eyedata/pipes.py``): decorated with ``@step``, the same method runs

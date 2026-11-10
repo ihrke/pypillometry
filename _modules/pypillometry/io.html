@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pypillometry.io &#8212; pypillometry v2.2.0</title>
+    <title>pypillometry.io &#8212; pypillometry v2.2.1</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=49a90b2e"></script>
+    <script src="../../_static/documentation_options.js?v=edd18f37"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -414,7 +414,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.0" />
+  <meta name="docsearch:version" content="v2.2.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -810,6 +810,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">- files from URLs (HTTP(S), SSH, OSF) and the download cache:</span>
 <span class="sd">  :func:`fetch_url`, :func:`local_copy`, :func:`download`,</span>
 <span class="sd">  :func:`osf_authenticate`</span>
+<span class="sd">- files from public figshare items: :func:`get_figshare_files`,</span>
+<span class="sd">  :func:`fetch_figshare_file`</span>
 
 <span class="sd">See the user guide (Loading and saving data) for an overview.</span>
 <span class="sd">"""</span>
@@ -841,7 +843,7 @@ window.runMermaid = runMermaid;</script>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">"osf_authenticate"</span><span class="p">,</span> <span class="s2">"download"</span><span class="p">,</span> <span class="s2">"fetch_url"</span><span class="p">,</span> <span class="s2">"local_copy"</span><span class="p">,</span> <span class="s2">"write_file"</span><span class="p">,</span>
-    <span class="s2">"read_file"</span><span class="p">,</span> <span class="s2">"read_eyelink"</span><span class="p">,</span>
+    <span class="s2">"read_file"</span><span class="p">,</span> <span class="s2">"read_eyelink"</span><span class="p">,</span> <span class="s2">"get_figshare_files"</span><span class="p">,</span> <span class="s2">"fetch_figshare_file"</span><span class="p">,</span>
 <span class="p">]</span>
 
 
@@ -1276,6 +1278,173 @@ window.runMermaid = runMermaid;</script>
     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">cache_file</span><span class="p">):</span>
         <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">cache_file</span><span class="p">)</span>
     <span class="n">os</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="n">cache_file</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">cache_file</span></div>
+
+
+
+<span class="n">_FIGSHARE_API</span> <span class="o">=</span> <span class="s2">"https://api.figshare.com/v2"</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_figshare_article</span><span class="p">(</span><span class="n">article</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""(item ID, version or None) from an item ID, a figshare URL or a DOI."""</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">article</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">s</span><span class="p">,</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="s2">"figshare"</span> <span class="ow">in</span> <span class="n">s</span><span class="p">:</span>
+        <span class="c1"># DOI: 10.6084/m9.figshare.&lt;id&gt;[.v&lt;version&gt;]</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">"figshare\.(\d+)(?:\.v(\d+))?/?$"</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+        <span class="c1"># URL: https://figshare.com/articles/&lt;type&gt;/&lt;title&gt;/&lt;id&gt;[/&lt;version&gt;]</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">m</span> <span class="ow">or</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">"/(\d+)(?:/(\d+))?/?(?:[?#].*)?$"</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span> <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Not a figshare item ID, URL or DOI: '</span><span class="si">{</span><span class="n">article</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="get_figshare_files">
+<a class="viewcode-back" href="../../api/generated/pypillometry.get_figshare_files.html#pypillometry.get_figshare_files">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_figshare_files</span><span class="p">(</span><span class="n">article</span><span class="p">,</span> <span class="n">version</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""List the files of a public figshare item.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    article : int or str</span>
+<span class="sd">        figshare item ID (e.g., ``28776617``), the item's URL</span>
+<span class="sd">        (``https://figshare.com/articles/dataset/&lt;title&gt;/28776617``) or its</span>
+<span class="sd">        DOI (``10.6084/m9.figshare.28776617``)</span>
+<span class="sd">    version : int, optional</span>
+<span class="sd">        version of the item; default the latest one (or the version in the</span>
+<span class="sd">        URL or DOI, if it contains one)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        file name -&gt; dict with the file's ``id``, ``download_url``, ``size``</span>
+<span class="sd">        (bytes) and ``md5`` checksum</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; files = get_figshare_files(28776617)  # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; files["sub-001_ses-1.pypil"]["size"]  # doctest: +SKIP</span>
+<span class="sd">    30879440</span>
+<span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+    <span class="n">article_id</span><span class="p">,</span> <span class="n">url_version</span> <span class="o">=</span> <span class="n">_figshare_article</span><span class="p">(</span><span class="n">article</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">version</span> <span class="o">=</span> <span class="n">url_version</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">_FIGSHARE_API</span><span class="si">}</span><span class="s2">/articles/</span><span class="si">{</span><span class="n">article_id</span><span class="si">}</span><span class="s2">"</span>
+    <span class="k">if</span> <span class="n">version</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">url</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"/versions/</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">"</span>
+    <span class="n">url</span> <span class="o">+=</span> <span class="s2">"/files"</span>
+
+    <span class="n">files</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">page</span><span class="p">,</span> <span class="n">page_size</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1000</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s2">"page"</span><span class="p">:</span> <span class="n">page</span><span class="p">,</span> <span class="s2">"page_size"</span><span class="p">:</span> <span class="n">page_size</span><span class="p">},</span>
+                            <span class="n">timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">resp</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">404</span><span class="p">:</span>
+            <span class="n">which</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"item </span><span class="si">{</span><span class="n">article_id</span><span class="si">}</span><span class="s2">"</span> <span class="o">+</span> <span class="p">(</span><span class="sa">f</span><span class="s2">", version </span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">,"</span> <span class="k">if</span> <span class="n">version</span> <span class="k">else</span> <span class="s2">""</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"figshare </span><span class="si">{</span><span class="n">which</span><span class="si">}</span><span class="s2"> not found (only public items "</span>
+                             <span class="s2">"are supported)"</span><span class="p">)</span>
+        <span class="n">resp</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+        <span class="n">batch</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">batch</span><span class="p">:</span>
+            <span class="n">files</span><span class="p">[</span><span class="n">f</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">"id"</span><span class="p">:</span> <span class="n">f</span><span class="p">[</span><span class="s2">"id"</span><span class="p">],</span>
+                <span class="s2">"download_url"</span><span class="p">:</span> <span class="n">f</span><span class="p">[</span><span class="s2">"download_url"</span><span class="p">],</span>
+                <span class="s2">"size"</span><span class="p">:</span> <span class="n">f</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"size"</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                <span class="s2">"md5"</span><span class="p">:</span> <span class="n">f</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"computed_md5"</span><span class="p">)</span> <span class="ow">or</span> <span class="n">f</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"supplied_md5"</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">page_size</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">files</span>
+        <span class="n">page</span> <span class="o">+=</span> <span class="mi">1</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_md5</span><span class="p">(</span><span class="n">fname</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">md5</span><span class="p">()</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s2">"rb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="nb">iter</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">20</span><span class="p">),</span> <span class="sa">b</span><span class="s2">""</span><span class="p">):</span>
+            <span class="n">h</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">h</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="fetch_figshare_file">
+<a class="viewcode-back" href="../../api/generated/pypillometry.fetch_figshare_file.html#pypillometry.fetch_figshare_file">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">fetch_figshare_file</span><span class="p">(</span>
+    <span class="n">article</span><span class="p">,</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">version</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">cache_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">force_download</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">cache_layout</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"flat"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Download a file from a public figshare item, with caching.</span>
+
+<span class="sd">    The download is checked against the MD5 checksum that figshare provides.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    article : int or str</span>
+<span class="sd">        figshare item ID, URL or DOI (see :func:`get_figshare_files`)</span>
+<span class="sd">    name : str</span>
+<span class="sd">        name of the file in the item (see :func:`get_figshare_files`)</span>
+<span class="sd">    version : int, optional</span>
+<span class="sd">        version of the item; default the latest one (or the version in the</span>
+<span class="sd">        URL or DOI, if it contains one)</span>
+<span class="sd">    cache_dir : str, optional</span>
+<span class="sd">        directory to store the download in; if None, a new temporary</span>
+<span class="sd">        directory is used</span>
+<span class="sd">    force_download : bool, optional</span>
+<span class="sd">        if False (default), an existing local copy is reused (without</span>
+<span class="sd">        contacting figshare); if True, the file is downloaded again</span>
+<span class="sd">    cache_layout : str, optional</span>
+<span class="sd">        ``"flat"`` (default) stores the file as ``cache_dir/&lt;name&gt;``,</span>
+<span class="sd">        ``"mirror"`` as ``cache_dir/figshare.com/&lt;id&gt;/&lt;version&gt;/&lt;name&gt;``</span>
+<span class="sd">        (``latest`` if no version is given), so that files with the same</span>
+<span class="sd">        name from different items do not share a local copy</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        local path of the downloaded file</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; fname = fetch_figshare_file(28776617, "sub-001_ses-1.pypil",</span>
+<span class="sd">    ...                             cache_dir="data")  # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; d = EyeData.from_file(fname)  # doctest: +SKIP</span>
+<span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+    <span class="n">article_id</span><span class="p">,</span> <span class="n">url_version</span> <span class="o">=</span> <span class="n">_figshare_article</span><span class="p">(</span><span class="n">article</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">version</span> <span class="o">=</span> <span class="n">url_version</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">!=</span> <span class="n">name</span> <span class="ow">or</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">""</span><span class="p">,</span> <span class="s2">"."</span><span class="p">,</span> <span class="s2">".."</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Not a file name: '</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">cache_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">cache_dir</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s2">"pypillometry_"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">cache_layout</span> <span class="o">==</span> <span class="s2">"flat"</span><span class="p">:</span>
+        <span class="n">cache_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">cache_layout</span> <span class="o">==</span> <span class="s2">"mirror"</span><span class="p">:</span>
+        <span class="n">cache_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">,</span> <span class="s2">"figshare.com"</span><span class="p">,</span> <span class="n">article_id</span><span class="p">,</span>
+                                  <span class="sa">f</span><span class="s2">"v</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="n">version</span> <span class="k">else</span> <span class="s2">"latest"</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"cache_layout must be 'flat' or 'mirror', not '</span><span class="si">{</span><span class="n">cache_layout</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">cache_file</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">force_download</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Using cached copy of '</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">' (figshare </span><span class="si">{</span><span class="n">article_id</span><span class="si">}</span><span class="s2">): </span><span class="si">{</span><span class="n">cache_file</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">cache_file</span>
+
+    <span class="n">files</span> <span class="o">=</span> <span class="n">get_figshare_files</span><span class="p">(</span><span class="n">article_id</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"File '</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">' not found in figshare item </span><span class="si">{</span><span class="n">article_id</span><span class="si">}</span><span class="s2">; "</span>
+                         <span class="sa">f</span><span class="s2">"available: </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">files</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">info</span> <span class="o">=</span> <span class="n">files</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+    <span class="n">fetch_url</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">"download_url"</span><span class="p">],</span> <span class="n">cache_file</span><span class="o">=</span><span class="n">cache_file</span><span class="p">,</span> <span class="n">force_download</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">info</span><span class="p">[</span><span class="s2">"md5"</span><span class="p">]</span> <span class="ow">and</span> <span class="n">_md5</span><span class="p">(</span><span class="n">cache_file</span><span class="p">)</span> <span class="o">!=</span> <span class="n">info</span><span class="p">[</span><span class="s2">"md5"</span><span class="p">]:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">cache_file</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Download of '</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">' (figshare </span><span class="si">{</span><span class="n">article_id</span><span class="si">}</span><span class="s2">) is "</span>
+                         <span class="s2">"corrupted (MD5 checksum does not match); try again"</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">cache_file</span></div>
 
 

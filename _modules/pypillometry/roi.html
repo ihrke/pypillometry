@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pypillometry.roi &#8212; pypillometry v2.2.0</title>
+    <title>pypillometry.roi &#8212; pypillometry v2.2.1</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=49a90b2e"></script>
+    <script src="../../_static/documentation_options.js?v=edd18f37"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -414,7 +414,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.0" />
+  <meta name="docsearch:version" content="v2.2.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -901,8 +901,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">            </span>
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        matplotlib.artist.Artist</span>
-<span class="sd">            The artist object created for the ROI.</span>
+<span class="sd">        matplotlib.axes.Axes</span>
+<span class="sd">            the axes of the plot</span>
 <span class="sd">        """</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"Subclasses must implement plot()"</span><span class="p">)</span></div>
 
@@ -1137,8 +1137,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">            </span>
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        matplotlib.patches.Circle</span>
-<span class="sd">            The circle patch object.</span>
+<span class="sd">        matplotlib.axes.Axes</span>
+<span class="sd">            the axes of the plot (the circle is ``ax.patches[-1]``)</span>
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
@@ -1152,19 +1152,18 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">           &gt;&gt;&gt; d = pp.get_example_data("rlmw_002_short")</span>
 <span class="sd">           &gt;&gt;&gt; left = pp.CircularROI((280, 512), radius=150, name="left stimulus")</span>
 <span class="sd">           &gt;&gt;&gt; right = pp.RectangularROI((850, 350), (1150, 650), name="right stimulus")</span>
-<span class="sd">           &gt;&gt;&gt; d.plot.plot_heatmap(eyes="left")</span>
-<span class="sd">           &gt;&gt;&gt; ax = plt.gcf().axes[0]  # the heatmap (axes[1] is the colorbar)</span>
-<span class="sd">           &gt;&gt;&gt; patch = left.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)</span>
-<span class="sd">           &gt;&gt;&gt; patch = right.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)</span>
+<span class="sd">           &gt;&gt;&gt; fig = d.plot.plot_heatmap(eyes="left")</span>
+<span class="sd">           &gt;&gt;&gt; ax = fig.axes[0]  # the heatmap (axes[1] is the colorbar)</span>
+<span class="sd">           &gt;&gt;&gt; ax = left.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)</span>
+<span class="sd">           &gt;&gt;&gt; ax = right.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)</span>
 
 <span class="sd">        :meth:`d.plot.plot_heatmap() &lt;pypillometry.plot.PlotNamespace.plot_heatmap&gt;` and</span>
 <span class="sd">        :meth:`d.plot.plot_scanpath() &lt;pypillometry.plot.PlotNamespace.plot_scanpath&gt;` can also draw them</span>
 <span class="sd">        (``rois=[left, right]``).</span>
 <span class="sd">        """</span>
-        <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
         <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.patches</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">patches</span>
-        <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.plot._axes</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_ax</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">get_ax</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
             
         <span class="c1"># Set default style if not provided</span>
         <span class="k">if</span> <span class="s1">'facecolor'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
@@ -1178,7 +1177,7 @@ window.runMermaid = runMermaid;</script>
             
         <span class="n">circle</span> <span class="o">=</span> <span class="n">patches</span><span class="o">.</span><span class="n">Circle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">center</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">radius</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">add_patch</span><span class="p">(</span><span class="n">circle</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">circle</span></div>
+        <span class="k">return</span> <span class="n">ax</span></div>
 
     
     <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -1398,8 +1397,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">            </span>
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        matplotlib.patches.Rectangle</span>
-<span class="sd">            The rectangle patch object.</span>
+<span class="sd">        matplotlib.axes.Axes</span>
+<span class="sd">            the axes of the plot (the rectangle is ``ax.patches[-1]``)</span>
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
@@ -1413,19 +1412,18 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">           &gt;&gt;&gt; d = pp.get_example_data("rlmw_002_short")</span>
 <span class="sd">           &gt;&gt;&gt; left = pp.CircularROI((280, 512), radius=150, name="left stimulus")</span>
 <span class="sd">           &gt;&gt;&gt; right = pp.RectangularROI((850, 350), (1150, 650), name="right stimulus")</span>
-<span class="sd">           &gt;&gt;&gt; d.plot.plot_heatmap(eyes="left")</span>
-<span class="sd">           &gt;&gt;&gt; ax = plt.gcf().axes[0]  # the heatmap (axes[1] is the colorbar)</span>
-<span class="sd">           &gt;&gt;&gt; patch = left.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)</span>
-<span class="sd">           &gt;&gt;&gt; patch = right.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)</span>
+<span class="sd">           &gt;&gt;&gt; fig = d.plot.plot_heatmap(eyes="left")</span>
+<span class="sd">           &gt;&gt;&gt; ax = fig.axes[0]  # the heatmap (axes[1] is the colorbar)</span>
+<span class="sd">           &gt;&gt;&gt; ax = left.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)</span>
+<span class="sd">           &gt;&gt;&gt; ax = right.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)</span>
 
 <span class="sd">        :meth:`d.plot.plot_heatmap() &lt;pypillometry.plot.PlotNamespace.plot_heatmap&gt;` and</span>
 <span class="sd">        :meth:`d.plot.plot_scanpath() &lt;pypillometry.plot.PlotNamespace.plot_scanpath&gt;` can also draw them</span>
 <span class="sd">        (``rois=[left, right]``).</span>
 <span class="sd">        """</span>
-        <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
         <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.patches</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">patches</span>
-        <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.plot._axes</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_ax</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">get_ax</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
             
         <span class="c1"># Set default style if not provided</span>
         <span class="k">if</span> <span class="s1">'facecolor'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
@@ -1441,7 +1439,7 @@ window.runMermaid = runMermaid;</script>
         <span class="n">height</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_coords</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_coords</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">rect</span> <span class="o">=</span> <span class="n">patches</span><span class="o">.</span><span class="n">Rectangle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_coords</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">add_patch</span><span class="p">(</span><span class="n">rect</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">rect</span></div>
+        <span class="k">return</span> <span class="n">ax</span></div>
 
     
     <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>

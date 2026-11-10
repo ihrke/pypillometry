@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Data objects &#8212; pypillometry v2.2.0</title>
+    <title>Data objects &#8212; pypillometry v2.2.1</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=49a90b2e"></script>
+    <script src="../_static/documentation_options.js?v=edd18f37"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.0" />
+  <meta name="docsearch:version" content="v2.2.1" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -498,7 +498,7 @@ the object has no pupil data (“no pupil data; available channels: left_x,
 left_y”). The same holds for the methods that need gaze data, in <code class="docutils literal notranslate"><span class="pre">d.gaze</span></code>
 (e.g., <a class="reference internal" href="../api/generated/pypillometry.eyedata.gaze.GazeNamespace.html#pypillometry.eyedata.gaze.GazeNamespace.mask_offscreen" title="pypillometry.eyedata.gaze.GazeNamespace.mask_offscreen"><code class="xref py py-meth docutils literal notranslate"><span class="pre">EyeData.gaze.mask_offscreen()</span></code></a>), or both (e.g.,
 <a class="reference internal" href="../experimental/foreshortening.html"><span class="doc">foreshortening correction</span></a>). The plots
-are in <code class="docutils literal notranslate"><span class="pre">d.plot</span></code> (e.g., <code class="docutils literal notranslate"><span class="pre">d.plot.pupil_plot()</span></code>, see <a class="reference internal" href="plotting.html"><span class="doc">Plotting</span></a>).</p>
+are in <code class="docutils literal notranslate"><span class="pre">d.plot</span></code> (e.g., <code class="docutils literal notranslate"><span class="pre">d.plot.plot_pupil()</span></code>, see <a class="reference internal" href="plotting.html"><span class="doc">Plotting</span></a>).</p>
 <p>An object is usually created by reading a file (see
 <a class="reference internal" href="loading_data.html"><span class="doc">Loading and saving data</span></a>):</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>

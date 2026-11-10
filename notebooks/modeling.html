@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Modeling the pupillometric signal &#8212; pypillometry v2.2.0</title>
+    <title>Modeling the pupillometric signal &#8212; pypillometry v2.2.1</title>
   
   
   
@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=49a90b2e"></script>
+    <script src="../_static/documentation_options.js?v=edd18f37"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -62,7 +62,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.0" />
+  <meta name="docsearch:version" content="v2.2.1" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -437,6 +437,7 @@
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">Modeling the pupillometric signal</a></li>
 <li class="toctree-l1"><a class="reference internal" href="preproc_example_pavlov.html">Example: Preprocessing of a full dataset with multiple subjects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="case_study_nback.html">Case study: an N-back task</a></li>
 </ul>
 </div>
 </nav></div>
@@ -530,7 +531,7 @@
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
-<span class="n">pp</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">plot_prf</span><span class="p">(</span><span class="n">npar</span><span class="o">=</span><span class="mf">10.1</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="mi">930</span><span class="p">)</span>
+<span class="n">pp</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">plot_prf</span><span class="p">(</span><span class="n">npar</span><span class="o">=</span><span class="mf">10.1</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="mi">930</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -566,7 +567,7 @@
                    <span class="n">name</span><span class="o">=</span><span class="s2">"simulated"</span><span class="p">)</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
-<span class="n">faked</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">pupil_plot</span><span class="p">(</span><span class="n">show_events</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">faked</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_pupil</span><span class="p">(</span><span class="n">show_events</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">tx</span><span class="o">/</span><span class="mi">1000</span><span class="p">,</span> <span class="n">real_baseline</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"baseline"</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">vlines</span><span class="p">(</span><span class="n">event_onsets</span><span class="o">/</span><span class="mi">1000</span><span class="p">,</span> <span class="o">*</span><span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(),</span> <span class="n">color</span><span class="o">=</span><span class="s2">"grey"</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">();</span>
@@ -704,15 +705,16 @@
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-<span class="ansi-green-fg">pp: 13:20:02</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">pupil_response</span>:<span class="ansi-cyan-fg">578</span> | <span class="ansi-bold">optimizing both npar and tmax, might take a while...</span>
-<span class="ansi-green-fg">pp: 13:20:03</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">581</span> | <span class="ansi-bold">npar=9.38, tmax=975.42</span>
-<span class="ansi-green-fg">pp: 13:20:03</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">581</span> | <span class="ansi-bold">npar=8.34, tmax=966.08</span>
-<span class="ansi-green-fg">pp: 13:20:03</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">581</span> | <span class="ansi-bold">npar=7.22, tmax=952.14</span>
-<span class="ansi-green-fg">pp: 13:20:03</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">581</span> | <span class="ansi-bold">npar=7.44, tmax=950.43</span>
-<span class="ansi-green-fg">pp: 13:20:03</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">581</span> | <span class="ansi-bold">npar=7.44, tmax=949.00</span>
-<span class="ansi-green-fg">pp: 13:20:03</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">581</span> | <span class="ansi-bold">npar=7.44, tmax=948.66</span>
-<span class="ansi-green-fg">pp: 13:20:04</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">581</span> | <span class="ansi-bold">npar=7.44, tmax=948.69</span>
-<span class="ansi-green-fg">pp: 13:20:04</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">581</span> | <span class="ansi-bold">npar=7.44, tmax=948.68</span>
+<span class="ansi-green-fg">pp: 14:34:37</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">pupil_response</span>:<span class="ansi-cyan-fg">598</span> | <span class="ansi-bold">optimizing both npar and tmax, might take a while...</span>
+<span class="ansi-green-fg">pp: 14:34:38</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">601</span> | <span class="ansi-bold">npar=9.25, tmax=992.01</span>
+<span class="ansi-green-fg">pp: 14:34:39</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">601</span> | <span class="ansi-bold">npar=7.68, tmax=976.09</span>
+<span class="ansi-green-fg">pp: 14:34:39</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">601</span> | <span class="ansi-bold">npar=6.66, tmax=959.13</span>
+<span class="ansi-green-fg">pp: 14:34:39</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">601</span> | <span class="ansi-bold">npar=6.89, tmax=955.95</span>
+<span class="ansi-green-fg">pp: 14:34:39</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">601</span> | <span class="ansi-bold">npar=6.91, tmax=953.34</span>
+<span class="ansi-green-fg">pp: 14:34:40</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">601</span> | <span class="ansi-bold">npar=6.90, tmax=952.99</span>
+<span class="ansi-green-fg">pp: 14:34:40</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">601</span> | <span class="ansi-bold">npar=6.90, tmax=952.96</span>
+<span class="ansi-green-fg">pp: 14:34:40</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">601</span> | <span class="ansi-bold">npar=6.90, tmax=952.98</span>
+<span class="ansi-green-fg">pp: 14:34:41</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">601</span> | <span class="ansi-bold">npar=6.90, tmax=952.98</span>
 </pre></div></div>
 </div>
 <p>Here, we allowed the two shape parameters of the response kernel, <code class="docutils literal notranslate"><span class="pre">npar</span></code> and <code class="docutils literal notranslate"><span class="pre">tmax</span></code>, to vary freely together with the amplitudes of the responses. This allows an individualized shape of the pupillary response for each subject (which appears reasonable given the results in Hoeks &amp; Levelt, 1993) but may take a long time to optimize and can result in pathological solutions. In that case, one or both of the parameters can be fixed, for example to reasonable group-level values (e.g.,
@@ -750,35 +752,35 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-{&#39;npar&#39;: np.float64(7.437253858661091),
+{&#39;npar&#39;: np.float64(6.898073863824489),
  &#39;npar_free&#39;: True,
- &#39;tmax&#39;: np.float64(948.6800696447696),
+ &#39;tmax&#39;: np.float64(952.9813212623851),
  &#39;tmax_free&#39;: True,
- &#39;coef&#39;: array([199.18918166,  96.55632077,  86.86773469,  65.34151355,
-         73.66660524, 100.88277476,  90.95695309,  66.16464612,
-        143.35082451, 149.11331544,  33.27831286,  97.5107787 ,
-         83.13343866,  73.55102023,  68.3048812 ,  78.06171313,
-        102.04553169,  72.98044987, 123.5646382 ,  74.89471421,
-         83.5536221 , 172.88219268,  93.2201661 ,  98.98099503,
-         85.50761577, 108.33827386, 118.35877231, 135.08936122,
-         81.40384649,  69.92192609,  89.37766488, 174.72580811,
-         66.11041839,  89.46027127,  84.5765768 , 106.53739911,
-        118.06439808, 113.61925596,  45.38523476,  93.06963233,
-         78.00924971,  50.96288039,  79.37177074, 150.47896152,
-         95.27100988, 143.41450802,  63.92723781,  84.4458926 ,
-        134.101498  ,  97.40838597, 138.98760219,  96.1338983 ,
-        112.53555387, 164.88521392,  90.21407579, 102.01233935,
-        124.22599478,  91.95337941,  96.90356693, 114.22418543,
-        100.48685516, 135.72014313, 124.44066123, 126.31935176,
-        109.27806309,  54.82754395, 107.09088516, 158.3788698 ,
-         50.12123263, 100.50830803, 117.71939191,  99.19541087,
-        104.25013929,  53.21001775,  88.88577754, 110.33041067,
-         85.83633425,  75.65233023,  50.69587927, 112.48200673,
-         75.72260242,  95.0712575 ,  93.79136656, 123.05653707,
-        146.79583503, 101.42201514,  88.75727924, 117.24128917,
-         82.5734936 ,  60.92760422, 137.17727781, 158.86302229,
-        151.34278519, 114.29166478,   0.        ,  97.47394005,
-        132.91596722, 150.16028664,  87.12501517, 195.77168958]),
+ &#39;coef&#39;: array([183.28911879,  84.04643122,  77.54227549,  53.06493822,
+         80.82517569,  98.19065567,  66.771559  ,  60.47232813,
+        150.46244084, 156.96295404,  42.39546353, 110.77393718,
+         86.08681697,  61.37768494,  68.38481793, 108.44439133,
+        127.15683717,  76.50062899, 117.40338136,  73.73638378,
+         83.78826984, 161.86545469,  95.14261821, 106.27273525,
+         88.61519282,  94.76137818, 112.60369117, 153.57435172,
+         83.21178757,  81.47609056, 107.79893068, 183.3302553 ,
+         66.75597556,  85.36239623,  73.62776758,  96.02169245,
+        120.18382614, 130.98046227,  60.55223607,  84.67406329,
+         76.09955041,  54.48380836,  72.6847929 , 155.25686911,
+        141.13478619, 163.9118957 ,  48.92529894,  80.84413828,
+        157.44370732, 157.71781099, 206.24919954, 126.34508741,
+        121.80487169, 167.62832281, 187.02334815, 191.95811714,
+        118.65565098,  99.18828573,  83.30767876,  83.4939494 ,
+         73.41970949,  97.41950475,  75.12146785,  84.91750688,
+         85.60071323,  48.83913909, 106.40510061, 143.88505571,
+         32.72912238,  85.63759271,  97.54719046,  86.56839365,
+        102.06446948,  58.10358953,  99.21977287, 126.88673397,
+         90.02978459,  68.66468092,  39.91344642, 100.61478132,
+         86.54381202, 118.91362733, 119.97832558, 153.76445372,
+        177.40643497, 120.67078531,  84.15320822, 106.65904961,
+         87.83733635,  82.1974781 , 144.08721123, 149.99290614,
+        157.01548329, 100.83537451,   0.        , 137.45475764,
+        157.59419856, 161.5473934 ,  84.83611519, 186.01864865]),
  &#39;bounds&#39;: {&#39;npar&#39;: (1, 20), &#39;tmax&#39;: (100, 2000)},
  &#39;valid&#39;: array([1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
         1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
@@ -860,8 +862,8 @@ Baseline: Corr(trad, real) = 0.9552897127692387
 Response: Corr(trad, real) = 0.4355020295417933
 
 Novel method:
-Baseline: Corr(nov, real) = 0.9779788173389102
-Response: Corr(nov, real) = 0.608274644822552
+Baseline: Corr(nov, real) = 0.9695993602751325
+Response: Corr(nov, real) = 0.6044710168795537
 </pre></div></div>
 </div>
 <p>The correlations are higher for the novel method than for the traditional method. More detailed simulation studies are reported in <a class="reference external" href="https://doi.org/10.3758/s13428-025-02755-7">Mittner &amp; Groot (2025)</a>.</p>

@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Event-related pupil dilations &#8212; pypillometry v2.2.0</title>
+    <title>Event-related pupil dilations &#8212; pypillometry v2.2.1</title>
   
   
   
@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=49a90b2e"></script>
+    <script src="../_static/documentation_options.js?v=edd18f37"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -62,7 +62,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.0" />
+  <meta name="docsearch:version" content="v2.2.1" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -437,6 +437,7 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="modeling.html">Modeling the pupillometric signal</a></li>
 <li class="toctree-l1"><a class="reference internal" href="preproc_example_pavlov.html">Example: Preprocessing of a full dataset with multiple subjects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="case_study_nback.html">Case study: an N-back task</a></li>
 </ul>
 </div>
 </nav></div>
@@ -538,8 +539,8 @@
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-<span class="ansi-green-fg">pp: 17:46:30</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">_read_edf</span>:<span class="ansi-cyan-fg">726</span> | <span class="ansi-bold">Loading EDF file: ../../data/test.edf (current log level: INFO, set to DEBUG to see eyelinkio output)</span>
-<span class="ansi-green-fg">pp: 17:46:41</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">from_eyelink</span>:<span class="ansi-cyan-fg">1561</span> | <span class="ansi-bold">Filtering out Eyelink triggers</span>
+<span class="ansi-green-fg">pp: 14:34:47</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">_read_edf</span>:<span class="ansi-cyan-fg">730</span> | <span class="ansi-bold">Loading EDF file: ../../data/test.edf (current log level: INFO, set to DEBUG to see eyelinkio output)</span>
+<span class="ansi-green-fg">pp: 14:35:01</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">from_eyelink</span>:<span class="ansi-cyan-fg">1639</span> | <span class="ansi-bold">Filtering out Eyelink triggers</span>
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -646,7 +647,7 @@
          <span class="o">|</span> <span class="n">pp</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">variables</span><span class="o">=</span><span class="s2">"pupil"</span><span class="p">))</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
-<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">pupil_plot</span><span class="p">(</span><span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"min"</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_pupil</span><span class="p">(</span><span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"min"</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -655,8 +656,8 @@
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-<span class="ansi-green-fg">pp: 17:46:43</span> | <span class="ansi-yellow-intense-fg ansi-bold">WARNING </span> | <span class="ansi-cyan-fg">blinks_interpolate</span>:<span class="ansi-cyan-fg">846</span> | <span class="ansi-yellow-intense-fg ansi-bold">Skipping blink 552 for left: no usable data at its anchor points (t1=1104152, t2=1104471, t3=1245361, t4=1245362)</span>
-<span class="ansi-green-fg">pp: 17:46:43</span> | <span class="ansi-yellow-intense-fg ansi-bold">WARNING </span> | <span class="ansi-cyan-fg">blinks_interpolate</span>:<span class="ansi-cyan-fg">846</span> | <span class="ansi-yellow-intense-fg ansi-bold">Skipping blink 538 for right: no usable data at its anchor points (t1=1104179, t2=1104469, t3=1245361, t4=1245362)</span>
+<span class="ansi-green-fg">pp: 14:35:02</span> | <span class="ansi-yellow-intense-fg ansi-bold">WARNING </span> | <span class="ansi-cyan-fg">blinks_interpolate</span>:<span class="ansi-cyan-fg">846</span> | <span class="ansi-yellow-intense-fg ansi-bold">Skipping blink 552 for left: no usable data at its anchor points (t1=1104152, t2=1104471, t3=1245361, t4=1245362)</span>
+<span class="ansi-green-fg">pp: 14:35:02</span> | <span class="ansi-yellow-intense-fg ansi-bold">WARNING </span> | <span class="ansi-cyan-fg">blinks_interpolate</span>:<span class="ansi-cyan-fg">846</span> | <span class="ansi-yellow-intense-fg ansi-bold">Skipping blink 538 for right: no usable data at its anchor points (t1=1104179, t2=1104469, t3=1245361, t4=1245362)</span>
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -723,7 +724,7 @@ Epochs &#39;C_&#39; | 400 epochs, window (-500, 2000) ms
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-<span class="ansi-green-fg">pp: 17:46:44</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">360</span> | <span class="ansi-bold">Baseline correction (subtract) applied using window [-200.    0.]</span>
+<span class="ansi-green-fg">pp: 14:35:03</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">361</span> | <span class="ansi-bold">Baseline correction (subtract) applied using window [-200.    0.]</span>
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -933,8 +934,8 @@ array([&#39;C_NW_1_2_UD_UD&#39;, &#39;C_GA_1_4_UD_UD&#39;, &#39;C_GA_1_5_UD_UD&#
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-<span class="ansi-green-fg">pp: 17:46:44</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">360</span> | <span class="ansi-bold">Baseline correction (subtract) applied using window [-200.    0.]</span>
-<span class="ansi-green-fg">pp: 17:46:44</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">360</span> | <span class="ansi-bold">Baseline correction (subtract) applied using window [-200.    0.]</span>
+<span class="ansi-green-fg">pp: 14:35:03</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">361</span> | <span class="ansi-bold">Baseline correction (subtract) applied using window [-200.    0.]</span>
+<span class="ansi-green-fg">pp: 14:35:03</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">361</span> | <span class="ansi-bold">Baseline correction (subtract) applied using window [-200.    0.]</span>
 </pre></div></div>
 </div>
 <p>Finally, we plot both into the same axes to compare them:</p>
@@ -1120,10 +1121,10 @@ or whose units differ (e.g., between eye trackers or camera distances): the same
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-<span class="ansi-green-fg">pp: 17:47:04</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">360</span> | <span class="ansi-bold">Baseline correction (subtract) applied using window [-200.    0.]</span>
-<span class="ansi-green-fg">pp: 17:47:04</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">360</span> | <span class="ansi-bold">Baseline correction (divide) applied using window [-200.    0.]</span>
-<span class="ansi-green-fg">pp: 17:47:04</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">360</span> | <span class="ansi-bold">Baseline correction (subtract) applied using window [-200.    0.]</span>
-<span class="ansi-green-fg">pp: 17:47:04</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">360</span> | <span class="ansi-bold">Baseline correction (divide) applied using window [-200.    0.]</span>
+<span class="ansi-green-fg">pp: 14:35:26</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">361</span> | <span class="ansi-bold">Baseline correction (subtract) applied using window [-200.    0.]</span>
+<span class="ansi-green-fg">pp: 14:35:26</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">361</span> | <span class="ansi-bold">Baseline correction (divide) applied using window [-200.    0.]</span>
+<span class="ansi-green-fg">pp: 14:35:26</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">361</span> | <span class="ansi-bold">Baseline correction (subtract) applied using window [-200.    0.]</span>
+<span class="ansi-green-fg">pp: 14:35:26</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">361</span> | <span class="ansi-bold">Baseline correction (divide) applied using window [-200.    0.]</span>
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">

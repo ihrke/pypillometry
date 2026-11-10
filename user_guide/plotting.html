@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Plotting &#8212; pypillometry v2.2.0</title>
+    <title>Plotting &#8212; pypillometry v2.2.1</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=49a90b2e"></script>
+    <script src="../_static/documentation_options.js?v=edd18f37"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.0" />
+  <meta name="docsearch:version" content="v2.2.1" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -485,7 +485,7 @@
   <section id="plotting">
 <h1>Plotting<a class="headerlink" href="#plotting" title="Link to this heading">#</a></h1>
 <p>Every data object has a <code class="docutils literal notranslate"><span class="pre">plot</span></code> namespace with the plotting functions
-(<a class="reference internal" href="../api/plotting.html#pypillometry.plot.PlotNamespace" title="pypillometry.plot.PlotNamespace"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlotNamespace</span></code></a>), e.g. <code class="docutils literal notranslate"><span class="pre">d.plot.pupil_plot()</span></code>;
+(<a class="reference internal" href="../api/plotting.html#pypillometry.plot.PlotNamespace" title="pypillometry.plot.PlotNamespace"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlotNamespace</span></code></a>), e.g. <code class="docutils literal notranslate"><span class="pre">d.plot.plot_pupil()</span></code>;
 <code class="docutils literal notranslate"><span class="pre">dir(d.plot)</span></code> lists them. Pupil plots need pupil data and gaze plots need
 gaze data; they raise an error if the data are missing. Gaze plots draw the
 screen as it is seen: pixel y increases downward. All plots use
@@ -494,7 +494,9 @@ functions take <code class="docutils literal notranslate"><span class="pre">eyes
 arguments. <code class="docutils literal notranslate"><span class="pre">units=</span></code> is the unit of the time axis and of plain numbers
 in <code class="docutils literal notranslate"><span class="pre">plot_range</span></code> (and <code class="docutils literal notranslate"><span class="pre">interv</span></code> of the <code class="docutils literal notranslate"><span class="pre">*_segments</span></code> plots):
 <code class="docutils literal notranslate"><span class="pre">plot_range=(0,</span> <span class="pre">20),</span> <span class="pre">units=&quot;sec&quot;</span></code> plots the first 20 seconds. Values
-with units are converted, e.g., <code class="docutils literal notranslate"><span class="pre">plot_range=(0,</span> <span class="pre">20)</span> <span class="pre">*</span> <span class="pre">u.sec</span></code>.</p>
+with units are converted, e.g., <code class="docutils literal notranslate"><span class="pre">plot_range=(0,</span> <span class="pre">20)</span> <span class="pre">*</span> <span class="pre">u.sec</span></code>. In all
+plots that have it, <code class="docutils literal notranslate"><span class="pre">plot_range</span></code> is the first argument, so it can be
+given without its name: <code class="docutils literal notranslate"><span class="pre">d.plot.plot_pupil((0,</span> <span class="pre">20)</span> <span class="pre">*</span> <span class="pre">u.sec)</span></code>.</p>
 <p>The examples on this page use the short example dataset with detected
 blinks:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
@@ -506,11 +508,44 @@ blinks:</p>
 </pre></div>
 </div>
 <p>Each function’s API documentation has another example.</p>
+<section id="figures-and-axes">
+<h2>Figures and axes<a class="headerlink" href="#figures-and-axes" title="Link to this heading">#</a></h2>
+<p>All plotting functions follow one of three conventions, depending on how
+many panels and figures they draw:</p>
+<ul>
+<li><p><strong>One panel</strong> (e.g., <a class="reference internal" href="../api/plotting.html#pypillometry.plot.PlotNamespace.plot_pupil" title="pypillometry.plot.PlotNamespace.plot_pupil"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot_pupil()</span></code></a>,
+<a class="reference internal" href="../api/plotting.html#pypillometry.plot.PlotNamespace.plot_masked" title="pypillometry.plot.PlotNamespace.plot_masked"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot_masked()</span></code></a>, <a class="reference internal" href="../api/plotting.html#pypillometry.plot.PlotNamespace.plot_scanpath" title="pypillometry.plot.PlotNamespace.plot_scanpath"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot_scanpath()</span></code></a>,
+<a class="reference internal" href="../api/generated/pypillometry.Events.html#pypillometry.Events.plot" title="pypillometry.Events.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Events.plot()</span></code></a>, <a class="reference internal" href="../api/generated/pypillometry.Intervals.html#pypillometry.Intervals.plot" title="pypillometry.Intervals.plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Intervals.plot()</span></code></a>, the plots of the segments
+and of ROIs): the plot is drawn on <code class="docutils literal notranslate"><span class="pre">ax=</span></code> (default: the current axes),
+and the axes are returned. Several plots can be combined in one figure
+this way:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_pupil</span><span class="p">(</span><span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">sec</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_pupil</span><span class="p">(</span><span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">40</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">sec</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Several panels</strong> in one figure (<a class="reference internal" href="../api/plotting.html#pypillometry.plot.PlotNamespace.plot_timeseries" title="pypillometry.plot.PlotNamespace.plot_timeseries"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot_timeseries()</span></code></a>,
+<a class="reference internal" href="../api/plotting.html#pypillometry.plot.PlotNamespace.plot_heatmap" title="pypillometry.plot.PlotNamespace.plot_heatmap"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot_heatmap()</span></code></a>,
+<a class="reference internal" href="../api/plotting.html#pypillometry.plot.PlotNamespace.plot_calibration" title="pypillometry.plot.PlotNamespace.plot_calibration"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot_calibration()</span></code></a>, …): the function makes a new
+figure of size <code class="docutils literal notranslate"><span class="pre">figsize=</span></code> and returns it. <code class="docutils literal notranslate"><span class="pre">axes=</span></code> (one axes per
+panel) draws on existing axes instead, e.g., <code class="docutils literal notranslate"><span class="pre">fig.axes</span></code> of an earlier
+call to overlay two datasets.</p></li>
+<li><p><strong>Several figures</strong> (<a class="reference internal" href="../api/plotting.html#pypillometry.plot.PlotNamespace.plot_blinks" title="pypillometry.plot.PlotNamespace.plot_blinks"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot_blinks()</span></code></a>,
+<a class="reference internal" href="../api/plotting.html#pypillometry.plot.PlotNamespace.plot_intervals" title="pypillometry.plot.PlotNamespace.plot_intervals"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot_intervals()</span></code></a> and the <code class="docutils literal notranslate"><span class="pre">*_segments</span></code> plots): a
+list of figures of size <code class="docutils literal notranslate"><span class="pre">figsize=</span></code> is returned; with <code class="docutils literal notranslate"><span class="pre">pdf_file=</span></code>,
+they are also written to a multi-page PDF file (and closed).</p></li>
+</ul>
+<p>All of them take <code class="docutils literal notranslate"><span class="pre">title=</span></code>, and the one-panel plots pass further
+arguments to matplotlib (e.g., <code class="docutils literal notranslate"><span class="pre">color=&quot;red&quot;</span></code>; see the API documentation
+of each function). In a notebook, end a line with a plotting function with
+<code class="docutils literal notranslate"><span class="pre">;</span></code> (or assign the result) to hide the returned object.</p>
+</section>
 <section id="time-series">
 <h2>Time series<a class="headerlink" href="#time-series" title="Link to this heading">#</a></h2>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="../api/plotting.html#pypillometry.plot.PlotNamespace.pupil_plot" title="pypillometry.plot.PlotNamespace.pupil_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.plot.pupil_plot</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../api/plotting.html#pypillometry.plot.PlotNamespace.plot_pupil" title="pypillometry.plot.PlotNamespace.plot_pupil"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.plot.plot_pupil</span></code></a></p></td>
 <td><p>Make a plot of the pupil data using <cite>matplotlib</cite>.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="../api/plotting.html#pypillometry.plot.PlotNamespace.plot_timeseries" title="pypillometry.plot.PlotNamespace.plot_timeseries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.plot.plot_timeseries</span></code></a></p></td>
@@ -522,10 +557,10 @@ blinks:</p>
 </tbody>
 </table>
 </div>
-<p><a class="reference internal" href="../api/plotting.html#pypillometry.plot.PlotNamespace.pupil_plot" title="pypillometry.plot.PlotNamespace.pupil_plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pupil_plot()</span></code></a> shows the pupil size of all eyes in one
+<p><a class="reference internal" href="../api/plotting.html#pypillometry.plot.PlotNamespace.plot_pupil" title="pypillometry.plot.PlotNamespace.plot_pupil"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot_pupil()</span></code></a> shows the pupil size of all eyes in one
 plot, with blinks (red) and events (grey lines):</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
-<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">pupil_plot</span><span class="p">(</span><span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">sec</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_pupil</span><span class="p">(</span><span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">sec</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
 </pre></div>
 </div>
 <figure class="align-default">
@@ -533,15 +568,15 @@ plot, with blinks (red) and events (grey lines):</p>
 </figure>
 <p><a class="reference internal" href="../api/plotting.html#pypillometry.plot.PlotNamespace.plot_timeseries" title="pypillometry.plot.PlotNamespace.plot_timeseries"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot_timeseries()</span></code></a> plots each variable (here: gaze and
 pupil) in its own panel:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
-<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_timeseries</span><span class="p">(</span><span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">sec</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_timeseries</span><span class="p">(</span><span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">sec</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">,</span>
+                             <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
 </pre></div>
 </div>
 <figure class="align-default">
 <img alt="../_images/plotting-31.png" class="plot-directive" src="../_images/plotting-31.png" />
 </figure>
 <p>To save a plot, use matplotlib as usual, e.g.
-<code class="docutils literal notranslate"><span class="pre">plt.savefig(&quot;pupil.pdf&quot;)</span></code>.</p>
+<code class="docutils literal notranslate"><span class="pre">fig.savefig(&quot;pupil.pdf&quot;)</span></code>.</p>
 </section>
 <section id="long-recordings">
 <h2>Long recordings<a class="headerlink" href="#long-recordings" title="Link to this heading">#</a></h2>
@@ -554,7 +589,7 @@ multi-page PDF file with <code class="docutils literal notranslate"><span class=
 <tr class="row-odd"><td><p><a class="reference internal" href="../api/plotting.html#pypillometry.plot.PlotNamespace.plot_timeseries_segments" title="pypillometry.plot.PlotNamespace.plot_timeseries_segments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.plot.plot_timeseries_segments</span></code></a></p></td>
 <td><p>Plot the whole dataset chunked up into segments (usually to a PDF file).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../api/plotting.html#pypillometry.plot.PlotNamespace.pupil_plot_segments" title="pypillometry.plot.PlotNamespace.pupil_plot_segments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.plot.pupil_plot_segments</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../api/plotting.html#pypillometry.plot.PlotNamespace.plot_pupil_segments" title="pypillometry.plot.PlotNamespace.plot_pupil_segments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.plot.plot_pupil_segments</span></code></a></p></td>
 <td><p>Plot the whole dataset chunked up into segments (usually to a PDF file).</p></td>
 </tr>
 </tbody>
@@ -582,8 +617,8 @@ multi-page PDF file with <code class="docutils literal notranslate"><span class=
 </div>
 <p><a class="reference internal" href="../api/plotting.html#pypillometry.plot.PlotNamespace.plot_blinks" title="pypillometry.plot.PlotNamespace.plot_blinks"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot_blinks()</span></code></a> draws one small plot per blink, e.g., to
 check blink detection and interpolation:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_blinks</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="s2">"left"</span><span class="p">,</span> <span class="n">nrow</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span>
-                   <span class="n">units</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">figs</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_blinks</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="s2">"left"</span><span class="p">,</span> <span class="n">nrow</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span>
+                          <span class="n">units</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">)</span>
 </pre></div>
 </div>
 <figure class="align-default">
@@ -592,22 +627,22 @@ check blink detection and interpolation:</p>
 <p><a class="reference internal" href="../api/plotting.html#pypillometry.plot.PlotNamespace.plot_intervals" title="pypillometry.plot.PlotNamespace.plot_intervals"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot_intervals()</span></code></a> does the same for any
 <a class="reference internal" href="../api/generated/pypillometry.Intervals.html#pypillometry.Intervals" title="pypillometry.Intervals"><code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code></a>, here the three seconds around each stimulus:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">epochs</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_epochs</span><span class="p">(</span><span class="s2">"S_"</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">2500</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>
-<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_intervals</span><span class="p">(</span><span class="n">epochs</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="s2">"pupil"</span><span class="p">,</span> <span class="n">nrow</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
-                      <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">figs</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_intervals</span><span class="p">(</span><span class="n">epochs</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="s2">"pupil"</span><span class="p">,</span> <span class="n">nrow</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                             <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
 </pre></div>
 </div>
 <figure class="align-default">
 <img alt="../_images/plotting-51.png" class="plot-directive" src="../_images/plotting-51.png" />
 </figure>
-<p>The plots with a time axis (<a class="reference internal" href="../api/plotting.html#pypillometry.plot.PlotNamespace.pupil_plot" title="pypillometry.plot.PlotNamespace.pupil_plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pupil_plot()</span></code></a>,
+<p>The plots with a time axis (<a class="reference internal" href="../api/plotting.html#pypillometry.plot.PlotNamespace.plot_pupil" title="pypillometry.plot.PlotNamespace.plot_pupil"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot_pupil()</span></code></a>,
 <a class="reference internal" href="../api/plotting.html#pypillometry.plot.PlotNamespace.plot_timeseries" title="pypillometry.plot.PlotNamespace.plot_timeseries"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot_timeseries()</span></code></a>, <a class="reference internal" href="../api/plotting.html#pypillometry.plot.PlotNamespace.plot_masked" title="pypillometry.plot.PlotNamespace.plot_masked"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot_masked()</span></code></a>
 and the <code class="docutils literal notranslate"><span class="pre">*_segments</span></code> plots) shade <a class="reference internal" href="../api/generated/pypillometry.Intervals.html#pypillometry.Intervals" title="pypillometry.Intervals"><code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code></a> or <a class="reference internal" href="../api/generated/pypillometry.Epochs.html#pypillometry.Epochs" title="pypillometry.Epochs"><code class="xref py py-class docutils literal notranslate"><span class="pre">Epochs</span></code></a>
 with <code class="docutils literal notranslate"><span class="pre">highlight=</span></code>. They are converted to the units of the time axis. A
 list of them gets one color each from <code class="docutils literal notranslate"><span class="pre">highlight_color=</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">trials</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="s2">"F_"</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">"R_"</span><span class="p">)</span>
 <span class="n">stim</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_epochs</span><span class="p">(</span><span class="s2">"S_"</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
-<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">pupil_plot</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="s2">"left"</span><span class="p">,</span> <span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">sec</span><span class="p">,</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_pupil</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="s2">"left"</span><span class="p">,</span> <span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">sec</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span>
                   <span class="n">show_events</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">highlight</span><span class="o">=</span><span class="p">[</span><span class="n">trials</span><span class="p">,</span> <span class="n">stim</span><span class="p">],</span>
                   <span class="n">highlight_color</span><span class="o">=</span><span class="p">[</span><span class="s2">"lightgrey"</span><span class="p">,</span> <span class="s2">"green"</span><span class="p">])</span>
 </pre></div>
@@ -679,8 +714,10 @@ time), and <code class="docutils literal notranslate"><span class="pre">show_mea
 </tbody>
 </table>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_heatmap</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="s2">"left"</span><span class="p">)</span>
-<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_scanpath</span><span class="p">(</span><span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">sec</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="s2">"left"</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_heatmap</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="s2">"left"</span><span class="p">)</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_scanpath</span><span class="p">(</span><span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">sec</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="s2">"left"</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
 </pre></div>
 </div>
 <figure class="align-default">
@@ -696,14 +733,16 @@ Regions of interest can be drawn on top of heatmaps and scan paths (see
 </section>
 <section id="comparing-versions-of-the-data">
 <h2>Comparing versions of the data<a class="headerlink" href="#comparing-versions-of-the-data" title="Link to this heading">#</a></h2>
-<p>To compare, e.g., raw and filtered data, plot both into the same axes and
-give each a <code class="docutils literal notranslate"><span class="pre">label_prefix</span></code> and a <code class="docutils literal notranslate"><span class="pre">style</span></code>:</p>
+<p>To compare, e.g., raw and filtered data, plot both into the same axes
+(<code class="docutils literal notranslate"><span class="pre">ax=</span></code> for one-panel plots, <code class="docutils literal notranslate"><span class="pre">axes=fig.axes</span></code> for
+<a class="reference internal" href="../api/plotting.html#pypillometry.plot.PlotNamespace.plot_timeseries" title="pypillometry.plot.PlotNamespace.plot_timeseries"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot_timeseries()</span></code></a>) and give each a <code class="docutils literal notranslate"><span class="pre">label_prefix</span></code>
+and a <code class="docutils literal notranslate"><span class="pre">style</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">filtered</span> <span class="o">=</span> <span class="n">d</span> <span class="o">|</span> <span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">lowpass_filter</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 
-<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
-<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">pupil_plot</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="s2">"left"</span><span class="p">,</span> <span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">15</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">sec</span><span class="p">,</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_pupil</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="s2">"left"</span><span class="p">,</span> <span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">15</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">sec</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span>
                   <span class="n">label_prefix</span><span class="o">=</span><span class="s2">"raw"</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s2">"color"</span><span class="p">:</span> <span class="s2">"grey"</span><span class="p">})</span>
-<span class="n">filtered</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">pupil_plot</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="s2">"left"</span><span class="p">,</span> <span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">15</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">sec</span><span class="p">,</span>
+<span class="n">filtered</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_pupil</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="s2">"left"</span><span class="p">,</span> <span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">15</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">sec</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span>
                          <span class="n">label_prefix</span><span class="o">=</span><span class="s2">"filtered"</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -761,6 +800,7 @@ give each a <code class="docutils literal notranslate"><span class="pre">label_p
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#figures-and-axes">Figures and axes</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#time-series">Time series</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#long-recordings">Long recordings</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#blinks-and-intervals">Blinks and intervals</a></li>

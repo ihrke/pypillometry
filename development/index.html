@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Development &#8212; pypillometry v2.2.0</title>
+    <title>Development &#8212; pypillometry v2.2.1</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=49a90b2e"></script>
+    <script src="../_static/documentation_options.js?v=edd18f37"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.0" />
+  <meta name="docsearch:version" content="v2.2.1" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -516,8 +516,18 @@ domain in its own module (<code class="docutils literal notranslate"><span class
 <code class="docutils literal notranslate"><span class="pre">plot/pupil.py</span></code>: <code class="docutils literal notranslate"><span class="pre">PupilPlots</span></code>, <code class="docutils literal notranslate"><span class="pre">plot/gaze.py</span></code>: <code class="docutils literal notranslate"><span class="pre">GazePlots</span></code>). These
 classes hold no state; a new plot goes into the module of its domain and
 uses <code class="docutils literal notranslate"><span class="pre">self._d</span></code> (and <code class="docutils literal notranslate"><span class="pre">self._d._require(...)</span></code> for the channels it needs).
-There is no forwarding of unknown attributes: <code class="docutils literal notranslate"><span class="pre">d.pupil_plot()</span></code> does not
-exist, only <code class="docutils literal notranslate"><span class="pre">d.plot.pupil_plot()</span></code>.</p>
+There is no forwarding of unknown attributes: <code class="docutils literal notranslate"><span class="pre">d.plot_pupil()</span></code> does not
+exist, only <code class="docutils literal notranslate"><span class="pre">d.plot.plot_pupil()</span></code>.</p>
+<p>All plotting functions (also those outside <code class="docutils literal notranslate"><span class="pre">d.plot</span></code>) are named
+<code class="docutils literal notranslate"><span class="pre">plot_*</span></code> (or <code class="docutils literal notranslate"><span class="pre">plot</span></code>) and follow the conventions in
+<code class="docutils literal notranslate"><span class="pre">plot/_axes.py</span></code>: one-panel plots take <code class="docutils literal notranslate"><span class="pre">ax=None</span></code> (<code class="docutils literal notranslate"><span class="pre">get_ax()</span></code>), draw
+with <code class="docutils literal notranslate"><span class="pre">ax.*</span></code> (not with <code class="docutils literal notranslate"><span class="pre">plt.plot()</span></code> etc.) and return the axes; multi-panel
+plots take <code class="docutils literal notranslate"><span class="pre">axes=None</span></code> and <code class="docutils literal notranslate"><span class="pre">figsize=None</span></code> and return the figure; plots
+with several figures return the list of figures. A <code class="docutils literal notranslate"><span class="pre">plot_range</span></code> is the
+first argument (so that <code class="docutils literal notranslate"><span class="pre">plot_pupil((0,</span> <span class="pre">20)</span> <span class="pre">*</span> <span class="pre">u.sec)</span></code> works). All take
+<code class="docutils literal notranslate"><span class="pre">title=</span></code>, and
+none calls <code class="docutils literal notranslate"><span class="pre">plt.show()</span></code>. <code class="docutils literal notranslate"><span class="pre">tests/test_plotting_conventions.py</span></code> checks
+each function.</p>
 <p>Every transforming method can also be used as a pipeline step
 (<code class="docutils literal notranslate"><span class="pre">eyedata/pipes.py</span></code>): decorated with <code class="docutils literal notranslate"><span class="pre">&#64;step</span></code>, the same method runs
 when it is called on data (<code class="docutils literal notranslate"><span class="pre">d.crop(...)</span></code>, <code class="docutils literal notranslate"><span class="pre">d.pupil.blinks_detect()</span></code>)

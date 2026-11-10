@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pypillometry.signal.pupil &#8212; pypillometry v2.2.0</title>
+    <title>pypillometry.signal.pupil &#8212; pypillometry v2.2.1</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../../_static/documentation_options.js?v=49a90b2e"></script>
+    <script src="../../../_static/documentation_options.js?v=edd18f37"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -414,7 +414,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.0" />
+  <meta name="docsearch:version" content="v2.2.1" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -1170,12 +1170,10 @@ window.runMermaid = runMermaid;</script>
 
 <div class="viewcode-block" id="plot_prf">
 <a class="viewcode-back" href="../../../api/generated/pypillometry.signal.plot_prf.html#pypillometry.signal.plot_prf">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">plot_prf</span><span class="p">(</span><span class="n">npar</span><span class="o">=</span><span class="mf">10.1</span><span class="p">,</span><span class="n">tmax</span><span class="o">=</span><span class="mi">930</span><span class="p">,</span><span class="n">max_duration</span><span class="o">=</span><span class="s2">"estimate"</span><span class="p">,</span><span class="n">fs</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_prf</span><span class="p">(</span><span class="n">npar</span><span class="o">=</span><span class="mf">10.1</span><span class="p">,</span><span class="n">tmax</span><span class="o">=</span><span class="mi">930</span><span class="p">,</span><span class="n">max_duration</span><span class="o">=</span><span class="s2">"estimate"</span><span class="p">,</span><span class="n">fs</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span><span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Plot profile of the pupil-response function (PRF) with</span>
 <span class="sd">    parameters `npar` and `tmax`.</span>
-
-<span class="sd">    The PRF is plotted into the current matplotlib axes.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1188,8 +1186,17 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        :py:func:`pupil_get_max_duration()`</span>
 <span class="sd">    fs : float</span>
 <span class="sd">        sampling rate in Hz used to evaluate the PRF</span>
+<span class="sd">    title : str, optional</span>
+<span class="sd">        title of the plot</span>
+<span class="sd">    ax : matplotlib.axes.Axes, optional</span>
+<span class="sd">        axes to plot on; default: the current axes</span>
 <span class="sd">    **kwargs</span>
-<span class="sd">        passed on to :func:`matplotlib.pyplot.plot`</span>
+<span class="sd">        passed on to :meth:`matplotlib.axes.Axes.plot`</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    matplotlib.axes.Axes</span>
+<span class="sd">        the axes of the plot</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -1199,18 +1206,23 @@ window.runMermaid = runMermaid;</script>
 
 <span class="sd">       &gt;&gt;&gt; import pypillometry as pp</span>
 <span class="sd">       &gt;&gt;&gt; import matplotlib.pyplot as plt</span>
-<span class="sd">       &gt;&gt;&gt; pp.signal.plot_prf()</span>
-<span class="sd">       &gt;&gt;&gt; pp.signal.plot_prf(npar=5, tmax=500)</span>
+<span class="sd">       &gt;&gt;&gt; fig, ax = plt.subplots()</span>
+<span class="sd">       &gt;&gt;&gt; ax = pp.signal.plot_prf(ax=ax)</span>
+<span class="sd">       &gt;&gt;&gt; ax = pp.signal.plot_prf(npar=5, tmax=500, ax=ax)</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="n">max_duration</span><span class="o">==</span><span class="s2">"estimate"</span><span class="p">:</span>
         <span class="n">max_duration</span><span class="o">=</span><span class="n">pupil_get_max_duration</span><span class="p">(</span><span class="n">npar</span><span class="p">,</span><span class="n">tmax</span><span class="p">)</span>
     <span class="n">n</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">fs</span><span class="o">*</span><span class="p">(</span><span class="n">max_duration</span><span class="o">/</span><span class="mf">1000.</span><span class="p">))</span>
     <span class="n">tx</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">max_duration</span><span class="p">,</span><span class="n">n</span><span class="p">)</span>
     <span class="n">prf</span><span class="o">=</span><span class="n">pupil_kernel_t</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span><span class="n">npar</span><span class="p">,</span><span class="n">tmax</span><span class="p">)</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span><span class="n">prf</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">"time [ms]"</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">"AU"</span><span class="p">)</span></div>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">..plot._axes</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_ax</span>
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">get_ax</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span><span class="n">prf</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"time [ms]"</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"AU"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">title</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ax</span></div>
 
     
 

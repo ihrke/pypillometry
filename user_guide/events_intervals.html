@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Events, intervals and segments &#8212; pypillometry v2.2.0</title>
+    <title>Events, intervals and segments &#8212; pypillometry v2.2.1</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=49a90b2e"></script>
+    <script src="../_static/documentation_options.js?v=edd18f37"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -417,7 +417,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.0" />
+  <meta name="docsearch:version" content="v2.2.1" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -900,9 +900,19 @@ with named groups (or a function that returns a dict):</p>
 </pre></div>
 </div>
 </li>
-<li><p><strong>A behaviour log</strong>: <a class="reference internal" href="../api/generated/pypillometry.Events.html#pypillometry.Events.from_table" title="pypillometry.Events.from_table"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Events.from_table()</span></code></a> takes the columns with
-metadata as <code class="docutils literal notranslate"><span class="pre">meta</span></code> (see <a class="reference internal" href="#behaviour-log-events"><span class="std std-ref">below</span></a>); each
-event of a row gets the values of that row.</p></li>
+<li><p><strong>A behaviour log</strong> with one row per trial. If the eye tracker’s events
+already identify the trials (e.g., by a trial number from the labels),
+<a class="reference internal" href="../api/generated/pypillometry.Events.html#pypillometry.Events.merge_table" title="pypillometry.Events.merge_table"><code class="xref py py-meth docutils literal notranslate"><span class="pre">merge_table()</span></code></a> adds the columns of the log to all events of
+each trial, matched by the values in the columns <code class="docutils literal notranslate"><span class="pre">on</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">log</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">"behaviour.csv"</span><span class="p">)</span>  <span class="c1"># columns trial, cond, rt, ...</span>
+<span class="n">ev</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">merge_table</span><span class="p">(</span><span class="n">log</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s2">"trial"</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"cond"</span><span class="p">,</span> <span class="s2">"rt"</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>If the events are only in the log, <a class="reference internal" href="../api/generated/pypillometry.Events.html#pypillometry.Events.from_table" title="pypillometry.Events.from_table"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Events.from_table()</span></code></a> creates
+them and takes the columns with metadata as <code class="docutils literal notranslate"><span class="pre">meta</span></code> (see
+<a class="reference internal" href="#behaviour-log-events"><span class="std std-ref">below</span></a>); each event of a row gets the
+values of that row.</p>
+</li>
 </ul>
 <p>Information that is coded at one event (e.g., the reward at the feedback)
 is copied to the other events of the same trial with
