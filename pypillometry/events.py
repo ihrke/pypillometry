@@ -25,8 +25,21 @@ _RESERVED = ("onset", "label")
 
 
 def _is_missing(v) -> bool:
-    """True for None and NaN (missing metadata values)."""
-    return v is None or (isinstance(v, (float, np.floating)) and np.isnan(v))
+    """True for missing metadata values: None, NaN, "" and pandas' NA."""
+    return (v is None or (isinstance(v, (float, np.floating)) and np.isnan(v))
+            or (isinstance(v, str) and v == "") or type(v).__name__ == "NAType")
+
+
+def _match_key(v):
+    """Value of `v` for matching rows (numbers as float, so 1 matches
+    1.0); None for missing values."""
+    if _is_missing(v):
+        return None
+    if isinstance(v, (bool, np.bool_)):
+        return bool(v)
+    if isinstance(v, (int, float, np.integer, np.floating)):
+        return float(v)
+    return str(v)
 
 
 def _is_int(v) -> bool:
@@ -37,8 +50,8 @@ def _column_from_values(values) -> np.ndarray:
     """
     Metadata column from a list of values; None and NaN are missing.
 
-    Without missing values, bools give a bool column and integers an int
-    column. Otherwise, numbers give a float column (missing: NaN) and
+    Without missing values (None, NaN, "" or pandas' NA), bools give a
+    bool column and integers an int column. Otherwise, numbers give a float column (missing: NaN) and
     anything else a string column (missing: "").
     """
     present = [v for v in values if not _is_missing(v)]
@@ -182,7 +195,8 @@ class Events(Stateful):
     with one value per event. Missing values are NaN in numeric columns and "" in
     string columns. Metadata come from a behaviour log (see
     :meth:`from_table`), from the labels of the events (see
-    :meth:`parse_labels`) or are added with :meth:`set_meta` and
+    :meth:`parse_labels`), from a table with one row per trial (see
+    :meth:`merge_table`) or are added with :meth:`set_meta` and
     :meth:`add_latency`; events are selected by their metadata with
     :meth:`filter`.
 
@@ -282,7 +296,8 @@ class Events(Stateful):
 
         A mapping of column name -> numpy array (one value per event). It
         cannot be changed in place; :meth:`set_meta`, :meth:`drop_meta`,
-        :meth:`parse_labels`, :meth:`fill_meta` and :meth:`add_latency`
+        :meth:`parse_labels`, :meth:`merge_table`, :meth:`fill_meta` and
+        :meth:`add_latency`
         return new Events with changed metadata.
         """
         return MappingProxyType(self._meta)
@@ -757,8 +772,7 @@ class Events(Stateful):
 
     def _replace_column(self, name, values) -> 'Events':
         """New Events with column `name` set to `values` (list; None, NaN or "" = missing)."""
-        values = [None if _is_missing(v) or (isinstance(v, str) and v == "") else v
-                  for v in values]
+        values = [None if _is_missing(v) else v for v in values]
         meta = dict(self.meta)
         meta[name] = _column_from_values(values)
         return Events(self.onsets, self.labels, units=self.units,
@@ -782,6 +796,94 @@ class Events(Stateful):
         return Events(self.onsets, self.labels, units=self.units,
                       data_time_range=self.data_time_range, meta=meta,
                       needs_sync=self.needs_sync)
+
+    def merge_table(self, table, on, columns=None) -> 'Events':
+        r"""
+        Add metadata from a table with one row per trial.
+
+        Behaviour logs usually have one row per trial (e.g., stimulus,
+        response, reaction time). If the events already have metadata that
+        identify the trial (e.g., a "trial" column from
+        :meth:`parse_labels`), each event gets the values of the row with
+        the same values in the columns `on`, so all events of a trial
+        (e.g., fixation, stimulus and response) get the trial's data.
+
+        Unlike :meth:`from_table`, this does not create events and needs no
+        clock synchronization: the rows are matched by their values, not by
+        their times.
+
+        Parameters
+        ----------
+        table : pandas.DataFrame or dict
+            table with one row per trial
+        on : str or list of str
+            columns that identify a row; they must be metadata columns of
+            the events and columns of the table with the same names
+        columns : list or dict, optional
+            columns to add: list of column names, or dict mapping metadata
+            names to column names or to arrays of values (one per row);
+            default all columns of the table except `on`
+
+        Returns
+        -------
+        Events
+            new Events object with the columns added; events without a
+            matching row (e.g., events outside of the trials) get missing
+            values, or keep their values if the column exists already. Rows
+            without events are ignored.
+
+        Raises
+        ------
+        KeyError
+            if a column in `on` is not in the metadata or the table
+        ValueError
+            if several rows of the table have the same values in `on`
+
+        Examples
+        --------
+        >>> ev = Events([0, 100, 400, 1000], ["start", "S_1", "R_1", "S_2"])
+        >>> ev = ev.parse_labels(r"_(?P<trial>\d+)")
+        >>> log = {"trial": [1, 2], "cond": ["easy", "hard"], "rt": [0.3, np.nan]}
+        >>> ev = ev.merge_table(log, on="trial")
+        >>> ev.meta["cond"]
+        array(['', 'easy', 'easy', 'hard'], dtype='<U4')
+        >>> ev.meta["rt"]
+        array([nan, 0.3, 0.3, nan])
+        """
+        on = [on] if isinstance(on, str) else list(on)
+        for name in on:
+            if name not in self.meta:
+                raise KeyError(f"no metadata column '{name}'")
+            if name not in table:
+                raise KeyError(f"no column '{name}' in the table")
+        if columns is None:
+            columns = [name for name in table if name not in on]
+        if not isinstance(columns, dict):
+            columns = {name: name for name in columns}
+        for name in columns:
+            _as_column([], 0, name)  # check the name
+
+        # row of the table for each combination of values in `on`
+        rows = {}
+        for i, key in enumerate(zip(*(map(_match_key, table[k]) for k in on))):
+            if None in key:
+                continue
+            if key in rows:
+                raise ValueError(f"rows {rows[key]} and {i} of the table have "
+                                 f"the same values: {dict(zip(on, key))}")
+            rows[key] = i
+        match = [rows.get(key) for key in
+                 zip(*(map(_match_key, self.meta[k].tolist()) for k in on))]
+
+        values = {}
+        for name, col in columns.items():
+            vals = list(table[col] if isinstance(col, str) else col)
+            if len(vals) != len(table[on[0]]):
+                raise ValueError(f"'{name}' has {len(vals)} values, expected "
+                                 f"{len(table[on[0]])} (one per row)")
+            values[name] = [None if r is None or _is_missing(vals[r]) else vals[r]
+                            for r in match]
+        return self._with_columns(values)
 
     def fill_meta(self, columns, by: str = "trial") -> 'Events':
         """
@@ -826,10 +928,9 @@ class Events(Stateful):
         for name in columns:
             if name not in self.meta:
                 raise KeyError(f"no metadata column '{name}'")
-            vals = [None if _is_missing(v) or v == "" else v
-                    for v in self.meta[name].tolist()]
+            vals = [None if _is_missing(v) else v for v in self.meta[name].tolist()]
             for g in np.unique(group):
-                if _is_missing(g) or g == "":  # events without a group
+                if _is_missing(g):  # events without a group
                     continue
                 ix = np.flatnonzero(group == g)
                 present = {vals[i] for i in ix if vals[i] is not None}
@@ -890,7 +991,7 @@ class Events(Stateful):
                 raise KeyError(f"no metadata column '{by}'")
             col = self.meta[by]
             groups = [(i1[col[i1] == v], i2[col[i2] == v])
-                      for v in np.unique(col[i1]) if not (_is_missing(v) or v == "")]
+                      for v in np.unique(col[i1]) if not _is_missing(v)]
         latency = np.full(len(self), np.nan)
         for g1, g2 in groups:
             pairs, _, _ = _pair_with_next(self.onsets[g1], self.onsets[g2])
