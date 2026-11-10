@@ -85,12 +85,12 @@ class ConventionTest(unittest.TestCase):
 
 
 class TestSinglePanel(ConventionTest):
-    def test_pupil_plot(self):
-        self.assertSinglePanel(self.d.plot.pupil_plot, plot_range=(0, 5) * u.sec)
+    def test_plot_pupil(self):
+        self.assertSinglePanel(self.d.plot.plot_pupil, plot_range=(0, 5) * u.sec)
 
-    def test_pupil_plot_title_kwargs(self):
+    def test_plot_pupil_title_kwargs(self):
         fig, ax = plt.subplots()
-        self.d.plot.pupil_plot(plot_range=(0, 5) * u.sec, eyes="left", ax=ax,
+        self.d.plot.plot_pupil(plot_range=(0, 5) * u.sec, eyes="left", ax=ax,
                                title="T", color="red", show_events=False)
         self.assertEqual(ax.get_title(), "T")
         self.assertEqual(ax.lines[0].get_color(), "red")
@@ -195,7 +195,7 @@ class TestMultiFigure(ConventionTest):
             "plot_blinks": lambda **kw: self.d.plot.plot_blinks(eyes="left", **kw),
             "plot_timeseries_segments": lambda **kw: self.d.plot.plot_timeseries_segments(
                 interv=20 * u.sec, **kw),
-            "pupil_plot_segments": lambda **kw: self.d.plot.pupil_plot_segments(
+            "plot_pupil_segments": lambda **kw: self.d.plot.plot_pupil_segments(
                 interv=20 * u.sec, **kw),
         }
         for name, plot in plots.items():

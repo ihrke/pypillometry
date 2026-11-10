@@ -63,45 +63,45 @@ class TestPlottingSmokePupil(unittest.TestCase):
         """Clean up after each test"""
         plt.close('all')
     
-    def test_pupil_plot_runs(self):
-        """Test that pupil_plot completes without error"""
+    def test_plot_pupil_runs(self):
+        """Test that plot_pupil completes without error"""
         fig = plt.figure()
-        self.data.plot.pupil_plot()
+        self.data.plot.plot_pupil()
         self.assertIsNotNone(plt.gcf())
     
-    def test_pupil_plot_with_eyes(self):
-        """Test pupil_plot with specific eyes"""
+    def test_plot_pupil_with_eyes(self):
+        """Test plot_pupil with specific eyes"""
         fig = plt.figure()
-        self.data.plot.pupil_plot(eyes=['left'])
+        self.data.plot.plot_pupil(eyes=['left'])
         self.assertIsNotNone(plt.gcf())
     
-    def test_pupil_plot_with_range(self):
-        """Test pupil_plot with custom range"""
+    def test_plot_pupil_with_range(self):
+        """Test plot_pupil with custom range"""
         fig = plt.figure()
-        self.data.plot.pupil_plot(plot_range=(0, 10))
+        self.data.plot.plot_pupil(plot_range=(0, 10))
         self.assertIsNotNone(plt.gcf())
 
-    def test_pupil_plot_range_positional(self):
+    def test_plot_pupil_range_positional(self):
         """plot_range can be given as the first positional argument"""
         fig = plt.figure()
-        self.data.plot.pupil_plot((0, 10))
+        self.data.plot.plot_pupil((0, 10))
         self.assertIsNotNone(plt.gcf())
     
-    def test_pupil_plot_no_events(self):
-        """Test pupil_plot without events"""
+    def test_plot_pupil_no_events(self):
+        """Test plot_pupil without events"""
         fig = plt.figure()
-        self.data.plot.pupil_plot(show_events=False)
+        self.data.plot.plot_pupil(show_events=False)
         self.assertIsNotNone(plt.gcf())
     
-    def test_pupil_plot_no_blinks(self):
-        """Test pupil_plot without blink highlighting"""
+    def test_plot_pupil_no_blinks(self):
+        """Test plot_pupil without blink highlighting"""
         fig = plt.figure()
-        self.data.plot.pupil_plot(show_blinks=False)
+        self.data.plot.plot_pupil(show_blinks=False)
         self.assertIsNotNone(plt.gcf())
     
-    def test_pupil_plot_segments_runs(self):
-        """Test that pupil_plot_segments completes without error"""
-        figs = self.data.plot.pupil_plot_segments(interv="0.5 min")
+    def test_plot_pupil_segments_runs(self):
+        """Test that plot_pupil_segments completes without error"""
+        figs = self.data.plot.plot_pupil_segments(interv="0.5 min")
         self.assertIsNotNone(figs)
     
     def test_plot_blinks_runs(self):
@@ -126,10 +126,10 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
         """Clean up after each test"""
         plt.close('all')
     
-    def test_simple_pupil_plot(self):
-        """Test pupil_plot with simple data"""
+    def test_simple_plot_pupil(self):
+        """Test plot_pupil with simple data"""
         fig = plt.figure()
-        self.data.plot.pupil_plot()
+        self.data.plot.plot_pupil()
         self.assertIsNotNone(plt.gcf())
     
     def test_simple_plot_timeseries(self):
@@ -268,7 +268,7 @@ class TestPlotRange(unittest.TestCase):
     def test_reversed_plot_range_raises(self):
         d = pp.EyeData(sampling_rate=100, left_pupil=np.ones(500),
                        left_x=np.ones(500), left_y=np.ones(500))
-        for name in ["plot_timeseries", "pupil_plot", "plot_heatmap", "plot_scanpath",
+        for name in ["plot_timeseries", "plot_pupil", "plot_heatmap", "plot_scanpath",
                      "plot_pupil_foreshortening_error_surface"]:
             with self.subTest(plot=name):
                 with self.assertRaisesRegex(ValueError, "start must be before end"):
@@ -281,7 +281,7 @@ class TestPlotRequire(unittest.TestCase):
 
     def test_gaze_only(self):
         d = pp.EyeData(sampling_rate=100, left_x=np.ones(500), left_y=np.ones(500))
-        for name in ["pupil_plot", "pupil_plot_segments", "plot_blinks",
+        for name in ["plot_pupil", "plot_pupil_segments", "plot_blinks",
                      "plot_pupil_foreshortening_error_surface"]:
             with self.subTest(plot=name):
                 with self.assertRaisesRegex(ValueError, "no pupil data"):

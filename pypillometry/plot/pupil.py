@@ -11,10 +11,10 @@ class PupilPlots(GenericPlots):
     """
     Plots of pupil data (pupil size, blinks, foreshortening); part of the
     plotting namespace ``d.plot`` (:class:`~pypillometry.plot.PlotNamespace`),
-    e.g. ``d.plot.pupil_plot()``.
+    e.g. ``d.plot.plot_pupil()``.
     """
 
-    def pupil_plot(self, 
+    def plot_pupil(self, 
                    plot_range: Tuple[float,float]=(-np.inf, +np.inf),
                    eyes: str|list=[],
                    show_events: bool=True,
@@ -95,7 +95,7 @@ class PupilPlots(GenericPlots):
            >>> d = pp.get_example_data("rlmw_002_short")
            >>> d = d.pupil.blinks_detect()
            >>> fig, ax = plt.subplots(figsize=(10, 3))
-           >>> ax = d.plot.pupil_plot(plot_range=(0, 20) * u.sec, ax=ax)
+           >>> ax = d.plot.plot_pupil(plot_range=(0, 20) * u.sec, ax=ax)
 
         Shade the trials (feedback to response) and the first second after
         each stimulus in different colors:
@@ -109,7 +109,7 @@ class PupilPlots(GenericPlots):
            >>> trials = d.get_intervals(start="F_", end="R_")
            >>> stim = d.get_epochs("S_", (0, 1000) * u.ms)
            >>> fig, ax = plt.subplots(figsize=(10, 3))
-           >>> ax = d.plot.pupil_plot(plot_range=(0, 20) * u.sec, show_blinks=False,
+           >>> ax = d.plot.plot_pupil(plot_range=(0, 20) * u.sec, show_blinks=False,
            ...                        highlight=[trials, stim],
            ...                        highlight_color=["lightgrey", "green"], ax=ax)
         """
@@ -237,7 +237,7 @@ class PupilPlots(GenericPlots):
         return ax
 
 
-    def pupil_plot_segments(
+    def plot_pupil_segments(
         self,
         pdf_file: Optional[str] = None,
         interv: float = "1 min",
@@ -261,9 +261,9 @@ class PupilPlots(GenericPlots):
         ylim : Tuple[float,float] or None
             y-axis limits for the plots; if None, matplotlib's automatic limits are used
         units : str, optional
-            Units of the time axis, passed to :meth:`pupil_plot`. Default "sec".
+            Units of the time axis, passed to :meth:`plot_pupil`. Default "sec".
         **kwargs
-            arguments passed to :meth:`pupil_plot` (e.g., `highlight` and
+            arguments passed to :meth:`plot_pupil` (e.g., `highlight` and
             `highlight_color`)
 
         Returns
@@ -284,7 +284,7 @@ class PupilPlots(GenericPlots):
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
            >>> d = d.pupil.blinks_detect()
-           >>> figs = d.plot.pupil_plot_segments(interv=10 * u.sec, units="sec",
+           >>> figs = d.plot.plot_pupil_segments(interv=10 * u.sec, units="sec",
            ...                                   figsize=(10, 3))
            >>> for f in figs[1:]:
            ...     plt.close(f)
@@ -312,7 +312,7 @@ class PupilPlots(GenericPlots):
 
         for start,end in segments:
             fig, ax = plt.subplots(figsize=figsize)
-            self.pupil_plot(plot_range=(start, end), units=units, ax=ax, **kwargs)
+            self.plot_pupil(plot_range=(start, end), units=units, ax=ax, **kwargs)
             if ylim is not None:
                 ax.set_ylim(*ylim)
             figs.append(fig)
@@ -545,7 +545,7 @@ class PupilPlots(GenericPlots):
             # Extract only non-masked data
             x_plot = x_masked.data[~combined_mask]
             y_plot = y_masked.data[~combined_mask]
-            pupil_plot = pupil_masked.data[~combined_mask]
+            pupil_values = pupil_masked.data[~combined_mask]
             
             # Check if we have any data to plot
             if len(x_plot) == 0:
@@ -573,14 +573,14 @@ class PupilPlots(GenericPlots):
                 # Use rectangular binning with Gaussian smoothing
                 # Compute binned statistics (mean pupil per bin)
                 stat, xedges, yedges, binnumber = binned_statistic_2d(
-                    x_plot, y_plot, pupil_plot,
+                    x_plot, y_plot, pupil_values,
                     statistic='mean', 
                     bins=gridsize,
                     range=[[xmin, xmax], [ymin, ymax]]
                 )
                 # Also get counts to mask bins with insufficient samples
                 counts, _, _, _ = binned_statistic_2d(
-                    x_plot, y_plot, pupil_plot,
+                    x_plot, y_plot, pupil_values,
                     statistic='count',
                     bins=gridsize,
                     range=[[xmin, xmax], [ymin, ymax]]
@@ -652,7 +652,7 @@ class PupilPlots(GenericPlots):
                 im = ax.hexbin(
                     x_plot, 
                     y_plot, 
-                    C=pupil_plot,
+                    C=pupil_values,
                     gridsize=gridsize, 
                     cmap=cmap,
                     reduce_C_function=np.mean,

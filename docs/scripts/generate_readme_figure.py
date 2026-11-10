@@ -3,7 +3,7 @@
 
 Both panels are drawn with pypillometry's own plotting functions. Left: a
 stretch of raw pupil data, and the same data after blink interpolation and
-low-pass filtering (`pupil_plot()`, blinks shaded). Right: the average pupil
+low-pass filtering (`plot_pupil()`, blinks shaded). Right: the average pupil
 response to the stimuli with its standard error (`seg.pupil.plot()`).
 
 Uses the "rlmw_002" example dataset (downloaded from OSF on the first call).
@@ -41,10 +41,10 @@ def main():
 
     # raw vs. cleaned pupil, detected blinks shaded
     plt.sca(ax1)
-    raw.plot.pupil_plot(eyes=EYE, plot_range=WINDOW, units="sec",
+    raw.plot.plot_pupil(eyes=EYE, plot_range=WINDOW, units="sec",
                         show_events=False, show_blinks=False,
                         style={"color": "0.7", "linewidth": 1, "label": "raw"})
-    d.plot.pupil_plot(eyes=EYE, plot_range=WINDOW, units="sec",
+    d.plot.plot_pupil(eyes=EYE, plot_range=WINDOW, units="sec",
                       show_events=False, show_blinks=True,
                       style={"color": "C0", "linewidth": 2, "label": "cleaned"})
     ax1.set_title("Blinks detected, interpolated and filtered", loc="left")

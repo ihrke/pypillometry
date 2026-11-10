@@ -100,10 +100,10 @@ class TestPlottingOverlay(unittest.TestCase):
         self.assertEqual(lines[0].get_linestyle(), '-')
         self.assertEqual(lines[1].get_linestyle(), '--')
     
-    def test_pupil_plot_with_label_prefix(self):
-        """Test pupil_plot with label_prefix"""
+    def test_plot_pupil_with_label_prefix(self):
+        """Test plot_pupil with label_prefix"""
         fig = plt.figure()
-        self.data.plot.pupil_plot(
+        self.data.plot.plot_pupil(
             label_prefix="v1"
         )
         
@@ -111,16 +111,16 @@ class TestPlottingOverlay(unittest.TestCase):
         labels = [line.get_label() for line in plt.gca().get_lines()]
         self.assertTrue(any('v1' in label for label in labels))
     
-    def test_pupil_plot_overlay_two_datasets(self):
-        """Test overlaying two datasets with pupil_plot"""
+    def test_plot_pupil_overlay_two_datasets(self):
+        """Test overlaying two datasets with plot_pupil"""
         fig = plt.figure()
         
-        self.data.plot.pupil_plot(
+        self.data.plot.plot_pupil(
             label_prefix="original",
             style={'alpha': 0.8}
         )
         
-        self.data2.plot.pupil_plot(
+        self.data2.plot.plot_pupil(
             label_prefix="interpolated",
             style={'alpha': 0.6, 'linestyle': '--'}
         )
@@ -129,10 +129,10 @@ class TestPlottingOverlay(unittest.TestCase):
         self.assertTrue(any('original' in label for label in labels))
         self.assertTrue(any('interpolated' in label for label in labels))
     
-    def test_pupil_plot_with_style(self):
-        """Test pupil_plot with custom style"""
+    def test_plot_pupil_with_style(self):
+        """Test plot_pupil with custom style"""
         fig = plt.figure()
-        self.data.plot.pupil_plot(
+        self.data.plot.plot_pupil(
             style={'color': 'green', 'linewidth': 2}
         )
         
@@ -176,12 +176,12 @@ class TestPlottingOverlayMultipleEyes(unittest.TestCase):
         """Test overlaying with both eyes"""
         fig = plt.figure()
         
-        self.data.plot.pupil_plot(
+        self.data.plot.plot_pupil(
             eyes=['left', 'right'],
             label_prefix="v1"
         )
         
-        self.data2.plot.pupil_plot(
+        self.data2.plot.plot_pupil(
             eyes=['left', 'right'],
             label_prefix="v2"
         )

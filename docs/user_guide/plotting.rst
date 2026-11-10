@@ -4,7 +4,7 @@ Plotting
 ========
 
 Every data object has a ``plot`` namespace with the plotting functions
-(:class:`~pypillometry.plot.PlotNamespace`), e.g. ``d.plot.pupil_plot()``;
+(:class:`~pypillometry.plot.PlotNamespace`), e.g. ``d.plot.plot_pupil()``;
 ``dir(d.plot)`` lists them. Pupil plots need pupil data and gaze plots need
 gaze data; they raise an error if the data are missing. Gaze plots draw the
 screen as it is seen: pixel y increases downward. All plots use
@@ -38,18 +38,18 @@ Time series
 .. autosummary::
    :nosignatures:
 
-   EyeData.plot.pupil_plot
+   EyeData.plot.plot_pupil
    EyeData.plot.plot_timeseries
    EyeData.plot.plot_masked
 
-:meth:`~EyeData.plot.pupil_plot` shows the pupil size of all eyes in one
+:meth:`~EyeData.plot.plot_pupil` shows the pupil size of all eyes in one
 plot, with blinks (red) and events (grey lines):
 
 .. plot::
    :context: close-figs
 
    plt.figure(figsize=(10, 3))
-   d.plot.pupil_plot(plot_range=(0, 20) * u.sec)
+   d.plot.plot_pupil(plot_range=(0, 20) * u.sec)
 
 :meth:`~EyeData.plot.plot_timeseries` plots each variable (here: gaze and
 pupil) in its own panel:
@@ -76,7 +76,7 @@ multi-page PDF file with ``pdf_file=``. For interactive browsing, the
    :nosignatures:
 
    EyeData.plot.plot_timeseries_segments
-   EyeData.plot.pupil_plot_segments
+   EyeData.plot.plot_pupil_segments
 
 
 Blinks and intervals
@@ -109,7 +109,7 @@ check blink detection and interpolation:
    d.plot.plot_intervals(epochs, variables="pupil", nrow=2, ncol=5,
                          figsize=(12, 4))
 
-The plots with a time axis (:meth:`~EyeData.plot.pupil_plot`,
+The plots with a time axis (:meth:`~EyeData.plot.plot_pupil`,
 :meth:`~EyeData.plot.plot_timeseries`, :meth:`~EyeData.plot.plot_masked`
 and the ``*_segments`` plots) shade :class:`Intervals` or :class:`Epochs`
 with ``highlight=``. They are converted to the units of the time axis. A
@@ -121,7 +121,7 @@ list of them gets one color each from ``highlight_color=``:
    trials = d.get_intervals(start="F_", end="R_")
    stim = d.get_epochs("S_", (0, 1000) * u.ms)
    plt.figure(figsize=(10, 3))
-   d.plot.pupil_plot(eyes="left", plot_range=(0, 20) * u.sec,
+   d.plot.plot_pupil(eyes="left", plot_range=(0, 20) * u.sec,
                      show_events=False, highlight=[trials, stim],
                      highlight_color=["lightgrey", "green"])
 
@@ -199,9 +199,9 @@ give each a ``label_prefix`` and a ``style``:
    filtered = d | pp.pupil.lowpass_filter(cutoff=4)
 
    plt.figure(figsize=(10, 3))
-   d.plot.pupil_plot(eyes="left", plot_range=(5, 15) * u.sec,
+   d.plot.plot_pupil(eyes="left", plot_range=(5, 15) * u.sec,
                      label_prefix="raw", style={"color": "grey"})
-   filtered.plot.pupil_plot(eyes="left", plot_range=(5, 15) * u.sec,
+   filtered.plot.plot_pupil(eyes="left", plot_range=(5, 15) * u.sec,
                             label_prefix="filtered")
 
 See the tutorial :doc:`/notebooks/plotting` for more examples.

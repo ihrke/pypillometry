@@ -471,13 +471,13 @@ def test_plot_range_with_units(eyedata):
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
-    eyedata.plot.pupil_plot(plot_range=(10, 20) * u.sec, units="min")
+    eyedata.plot.plot_pupil(plot_range=(10, 20) * u.sec, units="min")
     eyedata.plot.plot_heatmap(plot_range=("10 sec", "20 sec"))
     eyedata.plot.plot_timeseries(plot_range=(10, 20) * u.sec, units="sec")
     eyedata.plot.plot_timeseries(plot_range=("10 sec", "20 sec"))
     plt.close("all")
     with pytest.raises(ValueError, match="does not overlap"):
-        eyedata.plot.pupil_plot(plot_range=(10, 20) * u.min)
+        eyedata.plot.plot_pupil(plot_range=(10, 20) * u.min)
 
 
 def test_unset_repr_and_identity():

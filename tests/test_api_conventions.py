@@ -92,7 +92,7 @@ class TestEyesVariables:
 
     @pytest.mark.parametrize("call", [
         lambda d, e: d.quality_report(eyes=e),
-        lambda d, e: d.plot.pupil_plot(eyes=e),
+        lambda d, e: d.plot.plot_pupil(eyes=e),
         lambda d, e: d.plot.plot_timeseries(eyes=e),
         lambda d, e: d.plot.plot_heatmap(eyes=e),
         lambda d, e: d.plot.plot_scanpath(eyes=e),
@@ -161,7 +161,7 @@ class TestMs:
         msgs = []
         hid = logger.add(lambda m: msgs.append(m.record["message"]), level="WARNING")
         try:
-            for f in (data.plot.plot_timeseries_segments, data.plot.pupil_plot_segments):
+            for f in (data.plot.plot_timeseries_segments, data.plot.plot_pupil_segments):
                 assert len(f(interv=1, units="sec", pdf_file=None)) == 10
                 plt.close("all")
         finally:

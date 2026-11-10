@@ -66,8 +66,8 @@ domain in its own module (``plot/generic.py``: ``GenericPlots``,
 ``plot/pupil.py``: ``PupilPlots``, ``plot/gaze.py``: ``GazePlots``). These
 classes hold no state; a new plot goes into the module of its domain and
 uses ``self._d`` (and ``self._d._require(...)`` for the channels it needs).
-There is no forwarding of unknown attributes: ``d.pupil_plot()`` does not
-exist, only ``d.plot.pupil_plot()``.
+There is no forwarding of unknown attributes: ``d.plot_pupil()`` does not
+exist, only ``d.plot.plot_pupil()``.
 
 Every transforming method can also be used as a pipeline step
 (``eyedata/pipes.py``): decorated with ``@step``, the same method runs
