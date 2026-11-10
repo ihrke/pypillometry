@@ -314,20 +314,22 @@ def get_nback_001(cache_dir=None):
     """
     import pandas as pd
     info = example_datasets["nback_001"]
+    figshare_id, version = info["figshare"]["id"], info["figshare"]["version"]
+    cache_dir = cache_dir or _user_cache_dir()
 
-    def fetch(name):
-        """Download a file of the figshare item (or use the cached copy)."""
-        return fetch_figshare_file(info["figshare"]["id"], info["files"][name],
-                                   version=info["figshare"]["version"],
-                                   cache_dir=cache_dir or _user_cache_dir(),
-                                   cache_layout="mirror")
+    # download the files from figshare (or use the cached copies)
+    fname_data = fetch_figshare_file(figshare_id, info["files"]["data"],
+                                     version=version, cache_dir=cache_dir,
+                                     cache_layout="mirror")
+    fname_log = fetch_figshare_file(figshare_id, info["files"]["behaviour"],
+                                    version=version, cache_dir=cache_dir,
+                                    cache_layout="mirror")
 
     # eye-tracking data, saved with pypillometry
-    d = EyeData.from_file(fetch("data"))
+    d = EyeData.from_file(fname_data)
     d.name = "nback_001"
 
     # behavioural log: a header of "# key: value" lines, then one row per trial
-    fname_log = fetch("behaviour")
     with open(fname_log) as f:
         comments = [line.lstrip("# ").strip() for line in f if line.startswith("#")]
     d.info["behaviour_log"] = dict(c.split(": ", 1) for c in comments if ": " in c)
