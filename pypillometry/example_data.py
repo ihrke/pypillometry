@@ -61,12 +61,14 @@ example_datasets = {
         "source": "figshare",
         "filetype": "pkl",
         "figshare": {"id": 28776617, "version": 1},
-        "files": {"data": "sub-001_ses-1.pypil"},  # name in the figshare item
+        # names in the figshare item
+        "files": {"data": "sub-001_ses-1.pypil", "behaviour": "sub-001_ses-1.csv"},
         "description": "Binocular data from a 56-minute N-back task "
         "(0-, 1- and 2-back blocks in three runs with grey, black and white "
         "screen background), saved as a pypillometry file. "
         "Data from a single participant, with events for fixation, stimulus "
-        "and response in each trial.",
+        "and response in each trial; the behavioural data (stimulus, "
+        "response, accuracy, reaction time) are in the events' metadata.",
     },
 }
 
@@ -280,15 +282,68 @@ def get_rlmw_010_edf(cache_dir=None):
     return d
 
 
+#: event label of the "nback" task, e.g. "run-1_scr-grey_block-1_task-0b_trial-1_stim_target-1"
+_NBACK_LABEL = (r"^run-(?P<run>\d+)_scr-(?P<screen>[a-z]+)"
+                r"(?:_block-(?P<block>\d+)_task-(?P<task>[^_]+)_trial-(?P<trial>\d+))?")
+_NBACK_KEYS = ["run", "block", "task", "trial"]
+_NBACK_COLUMNS = ["stimulus", "target", "response", "accuracy", "rt"]
+
+
+def _read_nback_log(fname):
+    """Behavioural log of the "nback" task: (header dict, trial DataFrame).
+
+    The header are the ``# key: value`` lines at the top of the file.
+    """
+    import pandas as pd
+    header = {}
+    with open(fname) as f:
+        for line in f:
+            if not line.startswith("#"):
+                break
+            key, sep, value = line[1:].partition(":")
+            if sep:
+                header[key.strip()] = value.strip()
+    return header, pd.read_csv(fname, comment="#", dtype={"subj": str})
+
+
+def _merge_nback_log(d, header, df):
+    """Add the behavioural log to the events of `d` (in-place).
+
+    Run, screen, block, task and trial are parsed from the labels; the
+    trial's stimulus, target, response, accuracy and rt (s) from the log are
+    added to all events of a trial (matched by run, block, task and
+    trial). The header is stored in ``d.info["behaviour_log"]``.
+    """
+    import pandas as pd
+    ev = d.events.parse_labels(_NBACK_LABEL)
+    meta = pd.DataFrame({k: ev.meta[k] for k in _NBACK_KEYS})
+    trials = df[_NBACK_KEYS + _NBACK_COLUMNS].astype({"task": object})
+    merged = meta.merge(trials, on=_NBACK_KEYS, how="left", validate="many_to_one")
+    for col in _NBACK_COLUMNS:
+        ev = ev.set_meta(col, merged[col].to_numpy())
+    d.set_events(ev)
+    d.info["behaviour_log"] = header
+    return d
+
+
 def get_nback_001(cache_dir=None):
     """Load the "nback_001" example dataset (downloaded from figshare).
 
     Binocular gaze and pupil data from a 56-minute N-back task (single
     participant), saved as a pypillometry file. Events mark fixation,
     stimulus and response in each trial (e.g.,
-    ``run-1_scr-grey_block-1_task-0b_trial-1_stim_target-1``). The file is
-    downloaded into `cache_dir` on the first call and reused later. Usually
-    called via :func:`~pypillometry.get_example_data`.
+    ``run-1_scr-grey_block-1_task-0b_trial-1_stim_target-1``).
+
+    The behavioural log of the task is merged into the events' metadata
+    (see :attr:`Events.meta <pypillometry.Events.meta>`): ``run``,
+    ``screen``, ``block``, ``task`` (``0b``, ``1b``, ``2b`` or ``p``) and
+    ``trial`` are parsed from the labels, and ``stimulus``, ``target``,
+    ``response``, ``accuracy`` and ``rt`` (reaction time in s) are added to
+    all events of each trial. The log's header (date, ambient light, ...)
+    is in ``d.info["behaviour_log"]``.
+
+    The files are downloaded into `cache_dir` on the first call and reused
+    later. Usually called via :func:`~pypillometry.get_example_data`.
 
     Parameters
     ----------
@@ -302,10 +357,14 @@ def get_nback_001(cache_dir=None):
         the example dataset
     """
     info = example_datasets["nback_001"]
-    fname = fetch_figshare_file(info["figshare"]["id"], info["files"]["data"],
-                                version=info["figshare"]["version"],
-                                cache_dir=cache_dir or _user_cache_dir(),
-                                cache_layout="mirror")
-    d = EyeData.from_file(fname)
+
+    def fetch(name):
+        return fetch_figshare_file(info["figshare"]["id"], info["files"][name],
+                                   version=info["figshare"]["version"],
+                                   cache_dir=cache_dir or _user_cache_dir(),
+                                   cache_layout="mirror")
+
+    d = EyeData.from_file(fetch("data"))
     d.name = "nback_001"
-    return d
+    header, df = _read_nback_log(fetch("behaviour"))
+    return _merge_nback_log(d, header, df)

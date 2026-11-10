@@ -16,7 +16,7 @@
 - `plot_timeseries_segments()` and `plot_pupil_segments()` return the figures also with `pdf_file=`
 - `get_figshare_files()` and `fetch_figshare_file()`: list and download files from public figshare items
 - `get_figshare_files()` and `fetch_figshare_file()`: list and download files from public figshare items
-- Example dataset `nback_001` (N-back task, downloaded from figshare)
+- Example dataset `nback_001` (N-back task, downloaded from figshare; behavioural log merged into the events' metadata)
 - Example dataset entries list their files under `files` (e.g., `files["samples"]` instead of `samples_asc`) and show their `source` and `filetype`
 
 ## 2.2.0 (2026-11-10)
