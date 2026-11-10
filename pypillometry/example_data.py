@@ -299,7 +299,8 @@ def get_nback_001(cache_dir=None):
     is in ``d.info["behaviour_log"]``.
 
     The files are downloaded into `cache_dir` on the first call and reused
-    later. Usually called via :func:`~pypillometry.get_example_data`.
+    later. Usually called via :func:`~pypillometry.get_example_data`. The
+    tutorial :doc:`/notebooks/case_study_nback` analyses this dataset.
 
     Parameters
     ----------
