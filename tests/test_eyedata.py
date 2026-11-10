@@ -606,14 +606,14 @@ class TestEyeData(unittest.TestCase):
         self.assertEqual(corrected.data.mask['left_pupil_corrected'][10], 1)
         self.assertEqual(corrected.data.mask['left_pupil_corrected'][0], 0)
 
-    def test_layer_stats_returns_table(self):
-        """layer_stats returns a Table with one row per channel and layer"""
+    def test_layer_stats_returns_record_dict(self):
+        """layer_stats returns channel -> layer -> statistics"""
         from pypillometry.intervals import Intervals
         self.eyedata.set_blinks(Intervals([(100, 200)], units="samples"),
                                 eyes=['left'], variables=['pupil'])
-        t = self.eyedata.layer_stats("blink", eyes="left", variables="pupil")
-        self.assertIsInstance(t, pp.Table)
-        self.assertEqual(t["n"].tolist(), [1])
+        stats = self.eyedata.layer_stats("blink", eyes="left", variables="pupil")
+        self.assertIsInstance(stats, pp.RecordDict)
+        self.assertEqual(stats["left_pupil"]["blink"]["n"], 1)
 
     def test_detectors_have_no_apply_mask(self):
         """the detectors set their layer (no apply_mask argument)"""

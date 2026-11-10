@@ -840,12 +840,12 @@ def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[],
     # percentages of the layers per channel (of the included samples), as
     # in d.layer_stats()
     stats = obj.layer_stats(policy=policy)
-    layer_pct = dict(zip(zip(stats["channel"].tolist(), stats["layer"].tolist()),
-                         stats["percent"].tolist()))
 
     def channel_pct(key, name):
         """Percentage of `key` in layer `name` (0 if the layer is not set there)."""
-        return layer_pct.get((key, name), 0.0) if n > 0 else np.nan
+        if n == 0:
+            return np.nan
+        return stats.get(key, {}).get(name, {}).get("percent", 0.0)
 
     def layer(keys, name):
         """Included samples where layer `name` is set for one of `keys`."""

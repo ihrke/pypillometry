@@ -1,4 +1,4 @@
-"""Table and EyeData.layer_stats()."""
+"""Table, RecordDict and EyeData.layer_stats()."""
 import numpy as np
 import pytest
 
@@ -16,47 +16,68 @@ def test_table():
         pp.Table(a=[1, 2], b=[1])
 
 
+def test_record_dict():
+    two = pp.RecordDict({"a": {"x": {"n": 1}, "y": {"n": 2}}, "b": {"x": {"n": 3}}},
+                        index_names=("channel", "layer"))
+    assert two["a"]["y"]["n"] == 2 and isinstance(two, dict)
+    df = two.to_pandas()
+    assert list(df.index) == [("a", "x"), ("a", "y"), ("b", "x")]
+    assert list(df.index.names) == ["channel", "layer"] and list(df["n"]) == [1, 2, 3]
+    one = pp.RecordDict({"a": {"n": 1, "m": "u"}}, index_names=("name",))
+    assert one.to_pandas().index.name == "name" and one.to_pandas().loc["a", "m"] == "u"
+    assert "<table" in two._repr_html_() and "channel" in repr(two)
+    assert pp.RecordDict().to_pandas().empty
+
+
+def test_dataset_dict():
+    ds = pp.get_available_datasets()
+    assert isinstance(ds, pp.RecordDict)
+    assert "rlmw_002_short" in ds and "description" in ds["rlmw_002"]
+    df = ds.to_pandas()
+    assert df.loc["rlmw_010_edf", "type"] == "EDF" and df.index.name == "dataset"
+
+
 def data():
-    """12 samples at 100 Hz: blinks at 2-4 and 8, excluded 10-12."""
+    """12 samples at 100 Hz: blinks at 2-4 and 8."""
     d = pp.EyeData(left_pupil=np.arange(12.), left_x=np.zeros(12), left_y=np.zeros(12),
                    sampling_rate=100)
     d.set_blinks(pp.Intervals([(2, 4), (8, 9)], "samples"), eyes="left", variables="pupil")
     return d
 
 
-def rows(t):
-    return {(c, l): i for i, (c, l) in enumerate(zip(t["channel"].tolist(), t["layer"].tolist()))}
-
-
-def test_layer_stats_rows_and_values():
+def test_layer_stats_entries_and_values():
     d = data()
-    t = d.layer_stats()
-    assert isinstance(t, pp.Table)
-    # layers that are set on a channel, and "masked" for every channel
-    assert list(rows(t)) == [("left_x", "masked"), ("left_y", "masked"),
-                             ("left_pupil", "blink"), ("left_pupil", "masked")]
-    i = rows(t)[("left_pupil", "blink")]
-    assert t["n"][i] == 2
-    assert t["total_duration"][i] == 30. and t["max"][i] == 20. and t["min"][i] == 10.
-    assert t["percent"][i] == pytest.approx(25.)          # 3 of 12 samples
-    assert t["n"][rows(t)[("left_x", "masked")]] == 0
-    assert d.layer_stats(units="samples")["total_duration"][i] == 3
+    stats = d.layer_stats()
+    assert isinstance(stats, pp.RecordDict)
+    # the layers that are set on a channel, and "masked" for every channel
+    assert {ch: list(layers) for ch, layers in stats.items()} == {
+        "left_x": ["masked"], "left_y": ["masked"], "left_pupil": ["blink", "masked"]}
+    b = stats["left_pupil"]["blink"]
+    assert b["n"] == 2 and b["units"] == "ms"
+    assert b["total_duration"] == 30. and b["max"] == 20. and b["min"] == 10.
+    assert b["percent"] == pytest.approx(25.)              # 3 of 12 samples
+    assert type(b["percent"]) is float
+    assert stats["left_x"]["masked"]["n"] == 0
+    assert d.layer_stats(units="samples")["left_pupil"]["blink"]["total_duration"] == 3
+    df = stats.to_pandas()
+    assert ("left_pupil", "blink") in df.index and "percent" in df.columns
 
 
 def test_layer_stats_excluded_and_policy():
     d = data()
     d.exclude_intervals(pp.Intervals([(10, 12)], "samples"))
-    t = d.layer_stats(eyes="left", variables="pupil")
-    r = rows(t)
-    assert list(r) == [("left_pupil", "blink"), ("left_pupil", "masked"), ("all", "excluded")]
+    stats = d.layer_stats(eyes="left", variables="pupil")
+    assert list(stats["left_pupil"]) == ["blink", "masked"]
     # percentages and stretches within the included 10 samples
-    assert t["percent"][r[("left_pupil", "blink")]] == pytest.approx(30.)
-    assert t["n"][r[("left_pupil", "masked")]] == 2       # the excluded period is not a stretch
-    assert t["percent"][r[("all", "excluded")]] == pytest.approx(100 * 2 / 12)
+    assert stats["left_pupil"]["blink"]["percent"] == pytest.approx(30.)
+    assert stats["left_pupil"]["masked"]["n"] == 2        # the excluded period is not a stretch
+    with pytest.raises(ValueError, match="excluded periods apply to all channels"):
+        d.layer_stats("excluded")
     # explicit layers, also layers that are not set
-    t = d.layer_stats(["offscreen", "masked"], eyes="left", variables="pupil", policy="raw")
-    assert list(rows(t)) == [("left_pupil", "offscreen"), ("left_pupil", "masked")]
-    assert t["n"].tolist() == [0, 0] and np.isnan(t["mean"][0])
+    stats = d.layer_stats(["offscreen", "masked"], eyes="left", variables="pupil", policy="raw")
+    assert list(stats["left_pupil"]) == ["offscreen", "masked"]
+    assert stats["left_pupil"]["offscreen"]["n"] == 0
+    assert np.isnan(stats["left_pupil"]["offscreen"]["mean"])
 
 
 def test_blink_stats_is_a_shortcut():
@@ -75,10 +96,9 @@ def test_quality_report_agrees():
     d = d | pp.pupil.blinks_detect() | pp.pupil.blinks_interpolate() | pp.gaze.mask_offscreen()
     d.exclude_intervals([(0, 3000)])
     q = d.quality_report().to_dict(flat=True)
-    t = d.layer_stats()
-    r = rows(t)
+    stats = d.layer_stats()
     for eye in ("left", "right"):
         assert q[f"artifacts.{eye}.interpolated_pct"] == pytest.approx(
-            t["percent"][r[(f"{eye}_pupil", "interpolated")]])
+            stats[f"{eye}_pupil"]["interpolated"]["percent"])
         assert q[f"artifacts.{eye}.offscreen_pct"] == pytest.approx(
-            t["percent"][r[(f"{eye}_x", "offscreen")]])
+            stats[f"{eye}_x"]["offscreen"]["percent"])
