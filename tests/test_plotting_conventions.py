@@ -101,6 +101,16 @@ class TestSinglePanel(ConventionTest):
         self.d.plot.plot_masked(variables="pupil", ax=ax, title="T")
         self.assertEqual(ax.get_title(), "T")
 
+    def test_events_plot(self):
+        self.assertSinglePanel(self.d.events.filter("S_").plot, title="T")
+        self.assertEqual(plt.gca().get_title(), "T")
+
+    def test_intervals_plot(self):
+        intervals = self.d.get_epochs("S_", (0, 1000) * u.ms).to_intervals("sec")
+        self.assertSinglePanel(intervals.plot)
+        fig, ax = plt.subplots()
+        self.assertIs(pp.Intervals([], units="ms").plot(ax=ax), ax)
+
 
 if __name__ == "__main__":
     unittest.main()

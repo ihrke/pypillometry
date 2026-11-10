@@ -1031,24 +1031,28 @@ class Intervals(Stateful):
 
         return pd.DataFrame(records)
     
-    def plot(self, show_labels: bool = True, **kwargs):
+    def plot(self, show_labels: bool = True, title: str = None, ax=None, **kwargs):
         """
         Plot intervals as horizontal lines on a timeline.
-        
-        Uses the current matplotlib axes to create a visualization where each 
-        interval is shown as a horizontal line at a different y-level.
-        
+
+        Each interval is shown as a horizontal line at a different y-level.
+
         Parameters
         ----------
         show_labels : bool
             Whether to display event labels for each interval (default True)
+        title : str, optional
+            title of the plot; default: the label of the intervals
+        ax : matplotlib.axes.Axes, optional
+            axes to plot on; default: the current axes
         **kwargs : dict
-            Additional keyword arguments passed to matplotlib plot()
-            
+            Additional keyword arguments passed to
+            :meth:`matplotlib.axes.Axes.plot`
+
         Returns
         -------
-        None
-            Modifies the current axes in place
+        matplotlib.axes.Axes
+            the axes of the plot
 
         Examples
         --------
@@ -1059,15 +1063,14 @@ class Intervals(Stateful):
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
            >>> intervals = d.get_epochs("S_", (-500, 2500) * u.ms).to_intervals("sec")
-           >>> fig = plt.figure(figsize=(8, 3))
-           >>> intervals.plot()
+           >>> fig, ax = plt.subplots(figsize=(8, 3))
+           >>> ax = intervals.plot(ax=ax)
         """
-        import matplotlib.pyplot as plt
-        
+        from .plot._axes import get_ax
+
+        ax = get_ax(ax)
         if len(self.intervals) == 0:
-            return
-        
-        ax = plt.gca()
+            return ax
         
         # x-axis range of the intervals
         all_values = [val for interval in self.intervals for val in interval]
@@ -1109,9 +1112,11 @@ class Intervals(Stateful):
         else:
             ax.set_xlabel('Samples')
         
-        # Set title from global label
-        if self.label is not None:
-            ax.set_title(self.label)
+        if title is None:
+            title = self.label
+        if title is not None:
+            ax.set_title(title)
+        return ax
     
     def __repr__(self):
         """

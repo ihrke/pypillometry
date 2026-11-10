@@ -1169,6 +1169,8 @@ class Events(Stateful):
         show_labels: str = "auto",
         marker: str = ".",
         units: Optional[str] = "sec",
+        title: Optional[str] = None,
+        ax=None,
         **kwargs,
     ):
         """
@@ -1183,13 +1185,17 @@ class Events(Stateful):
             Matplotlib marker style for the events (default '.').
         units : str or None, optional
             Units to display in the plot. Defaults to "sec". Use None to keep existing units.
+        title : str, optional
+            title of the plot
+        ax : matplotlib.axes.Axes, optional
+            axes to plot on; default: the current axes
         **kwargs :
-            Additional keyword arguments passed to :func:`matplotlib.axes.Axes.plot`.
+            Additional keyword arguments passed to :meth:`matplotlib.axes.Axes.plot`.
 
         Returns
         -------
-        None
-            Plot is drawn on the current matplotlib axes.
+        matplotlib.axes.Axes
+            the axes of the plot
 
         Examples
         --------
@@ -1200,15 +1206,17 @@ class Events(Stateful):
            >>> import pypillometry as pp
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
-           >>> fig = plt.figure(figsize=(10, 3))
-           >>> d.events.filter("S_").plot(units="sec")
+           >>> fig, ax = plt.subplots(figsize=(10, 3))
+           >>> ax = d.events.filter("S_").plot(units="sec", ax=ax)
         """
-        import matplotlib.pyplot as plt
+        from .plot._axes import get_ax
 
         if show_labels not in {"auto", "all", "none"}:
             raise ValueError("show_labels must be one of {'auto', 'all', 'none'}")
 
-        ax = plt.gca()
+        ax = get_ax(ax)
+        if title is not None:
+            ax.set_title(title)
 
         target_units = units if units is not None else self.units
         if target_units != self.units:
@@ -1223,7 +1231,7 @@ class Events(Stateful):
 
         if len(self) == 0:
             ax.set_ylim(0, 1)
-            return
+            return ax
 
         y_positions = np.arange(1, len(self) + 1)
 
@@ -1285,7 +1293,7 @@ class Events(Stateful):
                         rotation_mode="anchor",
                     )
                     last_label_x = onset
-        return
+        return ax
     
     def filter(self, selector=None, exact: bool = False, **conditions) -> 'Events':
         """
