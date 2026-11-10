@@ -3,6 +3,17 @@
 ## Unreleased
 
 - `Events.merge_table()` and `Epochs.merge_table()`: add the columns of a behaviour log (one row per trial) to the events of each trial
+- All plotting functions follow the same conventions (see the user guide on plotting): one-panel plots draw on `ax=` (default: the current axes) and return the axes, multi-panel plots make their own figure (or draw on `axes=`) and return it, plots with several figures return the list of figures; all take `title=`
+
+### Breaking changes
+
+- `pupil_plot()` is `plot_pupil()`, `pupil_plot_segments()` is `plot_pupil_segments()`
+- One-panel plots return the axes instead of None (`plot_pupil()`, `plot_masked()`, `plot_scanpath()`, `Events.plot()`, `Intervals.plot()`, `plot_prf()`); the ROI plots return the axes instead of the patch, `SpatialCalibration.plot()` the axes instead of `(fig, ax)`
+- `plot_timeseries()`, `plot_heatmap()` and `plot_pupil_foreshortening_error_surface()` make a new figure instead of using the current one, and return it; use `axes=` to draw on existing axes
+- `plot_calibration()` and the experimental setup plots return the figure instead of `(fig, axes)`; `figsize` of `plot_calibration()` is the size of the whole figure; the setup plots take `axes=` instead of `ax=`
+- `plot_scanpath()` draws on `ax=` instead of making a figure of `figsize=`
+- `plot_range` is the first argument of all plots that have it (changed for `plot_pupil_foreshortening_error_surface()`, where it came after `eyes`)
+- `plot_timeseries_segments()` and `plot_pupil_segments()` return the figures also with `pdf_file=`
 
 ## 2.2.0 (2026-11-10)
 

@@ -561,7 +561,7 @@ class TestEventsPlot(unittest.TestCase):
         fig, ax = plt.subplots()
         try:
             returned = self.events.plot(show_labels="auto", units="ms")
-            self.assertIsNone(returned)
+            self.assertIs(returned, ax)
             self.assertIs(ax, plt.gca())
             texts = ax.texts
             self.assertGreater(len(texts), 0)
@@ -576,7 +576,7 @@ class TestEventsPlot(unittest.TestCase):
         fig, ax = plt.subplots()
         try:
             returned = self.events.plot(show_labels="all", units="ms")
-            self.assertIsNone(returned)
+            self.assertIs(returned, ax)
             self.assertEqual(len(ax.texts), len(self.events))
         finally:
             plt.close(fig)
@@ -585,7 +585,7 @@ class TestEventsPlot(unittest.TestCase):
         fig, ax = plt.subplots()
         try:
             returned = self.events.plot(show_labels="none", units="ms")
-            self.assertIsNone(returned)
+            self.assertIs(returned, ax)
             self.assertEqual(len(ax.texts), 0)
         finally:
             plt.close(fig)

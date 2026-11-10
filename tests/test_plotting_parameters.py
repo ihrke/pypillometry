@@ -14,7 +14,7 @@ import numpy as np
 
 
 class TestPupilPlotParameters(unittest.TestCase):
-    """Test different parameter combinations for pupil_plot"""
+    """Test different parameter combinations for plot_pupil"""
     
     def setUp(self):
         """Create test data"""
@@ -25,79 +25,79 @@ class TestPupilPlotParameters(unittest.TestCase):
         """Clean up after each test"""
         plt.close('all')
     
-    def test_pupil_plot_units_sec(self):
-        """Test pupil_plot with seconds"""
+    def test_plot_pupil_units_sec(self):
+        """Test plot_pupil with seconds"""
         fig = plt.figure()
-        self.data.plot.pupil_plot(units="sec")
+        self.data.plot.plot_pupil(units="sec")
         self.assertIsNotNone(plt.gcf())
     
-    def test_pupil_plot_units_ms(self):
-        """Test pupil_plot with milliseconds"""
+    def test_plot_pupil_units_ms(self):
+        """Test plot_pupil with milliseconds"""
         fig = plt.figure()
-        self.data.plot.pupil_plot(units="ms")
+        self.data.plot.plot_pupil(units="ms")
         self.assertIsNotNone(plt.gcf())
     
-    def test_pupil_plot_units_min(self):
-        """Test pupil_plot with minutes"""
+    def test_plot_pupil_units_min(self):
+        """Test plot_pupil with minutes"""
         fig = plt.figure()
-        self.data.plot.pupil_plot(units="min")
+        self.data.plot.plot_pupil(units="min")
         self.assertIsNotNone(plt.gcf())
     
-    def test_pupil_plot_units_h(self):
-        """Test pupil_plot with hours"""
+    def test_plot_pupil_units_h(self):
+        """Test plot_pupil with hours"""
         fig = plt.figure()
-        self.data.plot.pupil_plot(units="h")
+        self.data.plot.plot_pupil(units="h")
         self.assertIsNotNone(plt.gcf())
     
-    def test_pupil_plot_eyes_empty_list(self):
-        """Test pupil_plot with empty eyes list (should plot all)"""
+    def test_plot_pupil_eyes_empty_list(self):
+        """Test plot_pupil with empty eyes list (should plot all)"""
         fig = plt.figure()
-        self.data.plot.pupil_plot(eyes=[])
+        self.data.plot.plot_pupil(eyes=[])
         self.assertIsNotNone(plt.gcf())
     
-    def test_pupil_plot_eyes_left(self):
-        """Test pupil_plot with left eye only"""
+    def test_plot_pupil_eyes_left(self):
+        """Test plot_pupil with left eye only"""
         fig = plt.figure()
-        self.data.plot.pupil_plot(eyes=["left"])
+        self.data.plot.plot_pupil(eyes=["left"])
         self.assertIsNotNone(plt.gcf())
     
-    def test_pupil_plot_eyes_right(self):
-        """Test pupil_plot with right eye only"""
+    def test_plot_pupil_eyes_right(self):
+        """Test plot_pupil with right eye only"""
         fig = plt.figure()
-        self.data.plot.pupil_plot(eyes=["right"])
+        self.data.plot.plot_pupil(eyes=["right"])
         self.assertIsNotNone(plt.gcf())
     
-    def test_pupil_plot_eyes_string(self):
-        """Test pupil_plot with single eye as string (not list)"""
+    def test_plot_pupil_eyes_string(self):
+        """Test plot_pupil with single eye as string (not list)"""
         fig = plt.figure()
-        self.data.plot.pupil_plot(eyes="left")
+        self.data.plot.plot_pupil(eyes="left")
         self.assertIsNotNone(plt.gcf())
     
-    def test_pupil_plot_show_events_false(self):
-        """Test pupil_plot without events"""
+    def test_plot_pupil_show_events_false(self):
+        """Test plot_pupil without events"""
         fig = plt.figure()
-        self.data.plot.pupil_plot(show_events=False)
+        self.data.plot.plot_pupil(show_events=False)
         self.assertIsNotNone(plt.gcf())
     
-    def test_pupil_plot_show_blinks_false(self):
-        """Test pupil_plot without blink highlighting"""
+    def test_plot_pupil_show_blinks_false(self):
+        """Test plot_pupil without blink highlighting"""
         fig = plt.figure()
-        self.data.plot.pupil_plot(show_blinks=False)
+        self.data.plot.plot_pupil(show_blinks=False)
         self.assertIsNotNone(plt.gcf())
     
-    def test_pupil_plot_style_single_dict(self):
-        """Test pupil_plot with single style dict (should auto-differentiate eyes)"""
+    def test_plot_pupil_style_single_dict(self):
+        """Test plot_pupil with single style dict (should auto-differentiate eyes)"""
         fig = plt.figure()
-        self.data.plot.pupil_plot(eyes=["left", "right"], style={'color': 'red', 'alpha': 0.7})
+        self.data.plot.plot_pupil(eyes=["left", "right"], style={'color': 'red', 'alpha': 0.7})
         self.assertIsNotNone(plt.gcf())
         # Check that lines were created
         lines = plt.gca().get_lines()
         self.assertGreater(len(lines), 0)
     
-    def test_pupil_plot_style_per_eye(self):
-        """Test pupil_plot with per-eye style dict"""
+    def test_plot_pupil_style_per_eye(self):
+        """Test plot_pupil with per-eye style dict"""
         fig = plt.figure()
-        self.data.plot.pupil_plot(
+        self.data.plot.plot_pupil(
             eyes=["left", "right"],
             style={
                 'left': {'color': 'blue', 'linestyle': '-'},
@@ -123,82 +123,69 @@ class TestPlotTimeseriesParameters(unittest.TestCase):
     
     def test_show_onsets_line(self):
         """Test plot_timeseries with line onsets"""
-        fig = plt.figure()
-        self.data.plot.plot_timeseries(show_onsets="line")
+        fig = self.data.plot.plot_timeseries(show_onsets="line")
         self.assertIsNotNone(plt.gcf())
     
     def test_show_onsets_label(self):
         """Test plot_timeseries with label onsets"""
-        fig = plt.figure()
-        self.data.plot.plot_timeseries(show_onsets="label")
+        fig = self.data.plot.plot_timeseries(show_onsets="label")
         self.assertIsNotNone(plt.gcf())
     
     def test_show_onsets_both(self):
         """Test plot_timeseries with both line and label onsets"""
-        fig = plt.figure()
-        self.data.plot.plot_timeseries(show_onsets="both")
+        fig = self.data.plot.plot_timeseries(show_onsets="both")
         self.assertIsNotNone(plt.gcf())
     
     def test_show_onsets_none(self):
         """Test plot_timeseries with no onsets"""
-        fig = plt.figure()
-        self.data.plot.plot_timeseries(show_onsets="none")
+        fig = self.data.plot.plot_timeseries(show_onsets="none")
         self.assertIsNotNone(plt.gcf())
     
     def test_show_masked_true(self):
         """Test plot_timeseries with show_masked=True (plots all data including masked regions)"""
-        fig = plt.figure()
-        self.data.plot.plot_timeseries(show_masked=True)
+        fig = self.data.plot.plot_timeseries(show_masked=True)
         self.assertIsNotNone(plt.gcf())
     
     def test_show_masked_false(self):
         """Test plot_timeseries with show_masked=False (creates gaps at masked regions)"""
-        fig = plt.figure()
-        self.data.plot.plot_timeseries(show_masked=False)
+        fig = self.data.plot.plot_timeseries(show_masked=False)
         self.assertIsNotNone(plt.gcf())
     
     def test_show_mask_highlight_true(self):
         """Test plot_timeseries with mask highlighting enabled"""
-        fig = plt.figure()
-        self.data.plot.plot_timeseries(show_mask_highlight=True)
+        fig = self.data.plot.plot_timeseries(show_mask_highlight=True)
         self.assertIsNotNone(plt.gcf())
     
     def test_show_mask_highlight_false(self):
         """Test plot_timeseries with mask highlighting disabled"""
-        fig = plt.figure()
-        self.data.plot.plot_timeseries(show_mask_highlight=False)
+        fig = self.data.plot.plot_timeseries(show_mask_highlight=False)
         self.assertIsNotNone(plt.gcf())
     
     def test_show_masked_false_with_highlight(self):
         """Test plot_timeseries with gaps at masked regions but still highlighting"""
-        fig = plt.figure()
-        self.data.plot.plot_timeseries(show_masked=False, show_mask_highlight=True)
+        fig = self.data.plot.plot_timeseries(show_masked=False, show_mask_highlight=True)
         self.assertIsNotNone(plt.gcf())
     
     def test_show_masked_true_no_highlight(self):
         """Test plot_timeseries with masked data plotted but no highlighting"""
-        fig = plt.figure()
-        self.data.plot.plot_timeseries(show_masked=True, show_mask_highlight=False)
+        fig = self.data.plot.plot_timeseries(show_masked=True, show_mask_highlight=False)
         self.assertIsNotNone(plt.gcf())
     
     def test_units_none(self):
         """Test plot_timeseries with the default units (ms)"""
-        fig = plt.figure()
-        self.data.plot.plot_timeseries(units="ms")
+        fig = self.data.plot.plot_timeseries(units="ms")
         self.assertIsNotNone(plt.gcf())
     
     def test_plot_timeseries_style_single_dict(self):
         """Test plot_timeseries with single style dict (should auto-differentiate eyes)"""
-        fig = plt.figure()
-        self.data.plot.plot_timeseries(eyes=["left", "right"], style={'color': 'blue', 'alpha': 0.8})
+        fig = self.data.plot.plot_timeseries(eyes=["left", "right"], style={'color': 'blue', 'alpha': 0.8})
         self.assertIsNotNone(plt.gcf())
         # Check that axes were created
         self.assertGreater(len(fig.axes), 0)
     
     def test_plot_timeseries_style_per_eye(self):
         """Test plot_timeseries with per-eye style dict"""
-        fig = plt.figure()
-        self.data.plot.plot_timeseries(
+        fig = self.data.plot.plot_timeseries(
             eyes=["left", "right"],
             style={
                 'left': {'color': 'red', 'linestyle': '-'},
@@ -321,7 +308,7 @@ class TestSegmentPlotParameters(unittest.TestCase):
         self.assertEqual(len(figs[0].axes), 2)
         for ax in figs[0].axes:
             self.assertEqual(ax.get_ylim(), (0, 10))
-        figs = self.data.plot.pupil_plot_segments(interv="1 min", ylim=(0, 10))
+        figs = self.data.plot.plot_pupil_segments(interv="1 min", ylim=(0, 10))
         for ax in figs[0].axes:
             self.assertEqual(ax.get_ylim(), (0, 10))
     
@@ -375,7 +362,7 @@ def test_plot_range_includes_end_sample():
     d = pp.EyeData(left_pupil=np.arange(100.), left_x=np.arange(100.),
                    left_y=np.arange(100.), sampling_rate=100)
     try:
-        for plot in (d.plot.plot_timeseries, d.plot.pupil_plot):
+        for plot in (d.plot.plot_timeseries, d.plot.plot_pupil):
             plt.figure()
             plot(plot_range=(100, 500), units="ms")
             xs = [line.get_xdata() for ax in plt.gcf().axes for line in ax.lines
@@ -392,7 +379,7 @@ def test_plot_range_plain_numbers_in_units(plot_range):
     d = pp.EyeData(left_pupil=np.arange(1000.), left_x=np.arange(1000.),
                    left_y=np.arange(1000.), sampling_rate=100)
     try:
-        for plot in (d.plot.plot_timeseries, d.plot.pupil_plot):
+        for plot in (d.plot.plot_timeseries, d.plot.plot_pupil):
             plt.figure()
             plot(plot_range=plot_range, units="sec")
             xs = [line.get_xdata() for ax in plt.gcf().axes for line in ax.lines
@@ -409,7 +396,7 @@ def test_default_time_units_are_seconds():
                    event_onsets=[1000., 5000.], event_labels=["a", "b"])
     d.mask_intervals([(1000, 2000)])  # plot_masked needs a masked period
     try:
-        for plot in (d.plot.plot_timeseries, d.plot.pupil_plot, d.plot.plot_masked,
+        for plot in (d.plot.plot_timeseries, d.plot.plot_pupil, d.plot.plot_masked,
                      d.events.plot):
             plt.figure()
             plot()
@@ -446,9 +433,9 @@ class TestHighlight(unittest.TestCase):
                         matplotlib.colors.to_hex(p.get_facecolor())))
         return sorted(out)
 
-    def test_pupil_plot_converts_units_and_clips(self):
+    def test_plot_pupil_converts_units_and_clips(self):
         plt.figure()
-        self.d.plot.pupil_plot(units="sec", highlight=self.iv, highlight_color="green")
+        self.d.plot.plot_pupil(units="sec", highlight=self.iv, highlight_color="green")
         # in seconds; the second interval is cut at the end of the data
         self.assertEqual(self.spans(plt.gca()),
                          [(1.0, 2.0, "#008000"), (9.5, 9.99, "#008000")])
@@ -456,7 +443,7 @@ class TestHighlight(unittest.TestCase):
     def test_several_with_colors(self):
         plt.figure()
         ep = self.d.get_epochs("S_", (0, 500))
-        self.d.plot.pupil_plot(units="ms", highlight=[self.iv, ep],
+        self.d.plot.plot_pupil(units="ms", highlight=[self.iv, ep],
                                highlight_color=("red", "blue"))
         spans = self.spans(plt.gca())
         self.assertIn((1000.0, 1500.0, "#0000ff"), spans)
@@ -465,7 +452,7 @@ class TestHighlight(unittest.TestCase):
 
     def test_one_color_for_all_and_rgb_tuple(self):
         plt.figure()
-        self.d.plot.pupil_plot(units="ms", highlight=(self.iv, self.iv),
+        self.d.plot.plot_pupil(units="ms", highlight=(self.iv, self.iv),
                                highlight_color=(0.0, 0.5, 0.0))
         self.assertEqual(len(self.spans(plt.gca())), 4)
 
@@ -498,6 +485,6 @@ class TestHighlight(unittest.TestCase):
     def test_errors(self):
         plt.figure()
         with self.assertRaisesRegex(TypeError, "Intervals or Epochs"):
-            self.d.plot.pupil_plot(highlight=[(1000, 2000)])
+            self.d.plot.plot_pupil(highlight=[(1000, 2000)])
         with self.assertRaisesRegex(ValueError, "2 highlight colors for 1"):
-            self.d.plot.pupil_plot(highlight=self.iv, highlight_color=["red", "blue"])
+            self.d.plot.plot_pupil(highlight=self.iv, highlight_color=["red", "blue"])

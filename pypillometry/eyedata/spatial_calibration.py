@@ -224,13 +224,12 @@ class SpatialCalibration(Stateful):
             'min': float(np.min(self.errors[:, 0]))
         }
     
-    def plot(self, show_surface=True, interpolation='rbf'):
+    def plot(self, show_surface=True, interpolation='rbf', title=None, ax=None):
         """
         Plot calibration accuracy with target points, measured points, and optional error surface.
         
         Shows target points as black crosses, measured points as colored plus markers
         overlaid on an optional interpolated error surface (offset in degrees).
-        Draws into the current matplotlib axes (``plt.gca()``).
         
         Parameters
         ----------
@@ -243,13 +242,15 @@ class SpatialCalibration(Stateful):
             
             - 'rbf': Radial basis function (smooth, good for scattered data)
             - 'linear', 'cubic', 'nearest': griddata methods
-        
+        title : str, optional
+            title of the plot; default: the eye and the calibration model
+        ax : matplotlib.axes.Axes, optional
+            axes to plot on; default: the current axes
+
         Returns
         -------
-        fig : matplotlib.figure.Figure
-            The figure object
-        ax : matplotlib.axes.Axes
-            The axis object used for plotting
+        matplotlib.axes.Axes
+            the axes of the plot
         
         Raises
         ------
@@ -273,17 +274,14 @@ class SpatialCalibration(Stateful):
         >>> cal = SpatialCalibration('left', 'HV9', points, measured, errors, (1920, 1080))
         >>> 
         >>> # Plot with surface
-        >>> fig, ax = cal.plot()  # doctest: +SKIP
-        >>> plt.show()  # doctest: +SKIP
+        >>> ax = cal.plot()  # doctest: +SKIP
         >>> 
         >>> # Plot without surface
-        >>> fig, ax = cal.plot(show_surface=False)  # doctest: +SKIP
-        >>> plt.show()  # doctest: +SKIP
+        >>> fig, ax = plt.subplots()  # doctest: +SKIP
+        >>> ax = cal.plot(show_surface=False, ax=ax)  # doctest: +SKIP
         """
-        import matplotlib.pyplot as plt
-        
-        ax = plt.gca()  # Get current axes
-        fig = ax.figure  # Get the figure from the axes
+        from ..plot._axes import get_ax
+        ax = get_ax(ax)
         
         # Plot error surface if requested
         if show_surface:
@@ -315,7 +313,7 @@ class SpatialCalibration(Stateful):
                            aspect='auto', cmap='YlOrRd', alpha=0.6, zorder=1)
             
             # Colorbar
-            cbar = plt.colorbar(im, ax=ax)
+            cbar = ax.figure.colorbar(im, ax=ax)
             cbar.set_label('Error (degrees)', rotation=270, labelpad=15)
         
         # Plot target points as black crosses
@@ -331,7 +329,8 @@ class SpatialCalibration(Stateful):
         # Labels and limits
         ax.set_xlabel('X position (pixels)')
         ax.set_ylabel('Y position (pixels)')
-        ax.set_title(f'{self.eye.capitalize()} Eye Calibration ({self.model})')
+        ax.set_title(title if title is not None
+                     else f'{self.eye.capitalize()} Eye Calibration ({self.model})')
         
         if self.screen_resolution is not None:
             ax.set_xlim(0, self.screen_resolution[0])
@@ -339,8 +338,7 @@ class SpatialCalibration(Stateful):
             ax.invert_yaxis()  # Match screen coordinates
         
         ax.legend(loc='best')
-        
-        return fig, ax
+        return ax
     
     def __repr__(self) -> str:
         """

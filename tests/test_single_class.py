@@ -66,7 +66,7 @@ class TestMissingChannels(unittest.TestCase):
                  lambda: d.pupil.merge_eyes(), lambda: d.pupil.blinks_detect(),
                  lambda: d.pupil.blinks_interpolate(), lambda: d.pupil.estimate_baseline(),
                  lambda: d.pupil.estimate_response(),
-                 lambda: d.plot.pupil_plot(), lambda: d.plot.pupil_plot_segments()]
+                 lambda: d.plot.plot_pupil(), lambda: d.plot.plot_pupil_segments()]
         for call in calls:
             with self.subTest(call=call):
                 with self.assertRaisesRegex(ValueError, "no pupil data; available "

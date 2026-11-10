@@ -26,20 +26,17 @@ class TestPlottingSmokeGeneric(unittest.TestCase):
     
     def test_plot_timeseries_runs(self):
         """Test that plot_timeseries completes without error"""
-        fig = plt.figure()
-        self.data.plot.plot_timeseries()
+        fig = self.data.plot.plot_timeseries()
         self.assertIsNotNone(plt.gcf())
     
     def test_plot_timeseries_with_range(self):
         """Test plot_timeseries with custom range"""
-        fig = plt.figure()
-        self.data.plot.plot_timeseries(plot_range=(0, 10))
+        fig = self.data.plot.plot_timeseries(plot_range=(0, 10))
         self.assertIsNotNone(plt.gcf())
     
     def test_plot_timeseries_with_units(self):
         """Test plot_timeseries with different units"""
-        fig = plt.figure()
-        self.data.plot.plot_timeseries(units="sec")
+        fig = self.data.plot.plot_timeseries(units="sec")
         self.assertIsNotNone(plt.gcf())
     
     def test_plot_intervals_runs(self):
@@ -66,45 +63,45 @@ class TestPlottingSmokePupil(unittest.TestCase):
         """Clean up after each test"""
         plt.close('all')
     
-    def test_pupil_plot_runs(self):
-        """Test that pupil_plot completes without error"""
+    def test_plot_pupil_runs(self):
+        """Test that plot_pupil completes without error"""
         fig = plt.figure()
-        self.data.plot.pupil_plot()
+        self.data.plot.plot_pupil()
         self.assertIsNotNone(plt.gcf())
     
-    def test_pupil_plot_with_eyes(self):
-        """Test pupil_plot with specific eyes"""
+    def test_plot_pupil_with_eyes(self):
+        """Test plot_pupil with specific eyes"""
         fig = plt.figure()
-        self.data.plot.pupil_plot(eyes=['left'])
+        self.data.plot.plot_pupil(eyes=['left'])
         self.assertIsNotNone(plt.gcf())
     
-    def test_pupil_plot_with_range(self):
-        """Test pupil_plot with custom range"""
+    def test_plot_pupil_with_range(self):
+        """Test plot_pupil with custom range"""
         fig = plt.figure()
-        self.data.plot.pupil_plot(plot_range=(0, 10))
+        self.data.plot.plot_pupil(plot_range=(0, 10))
         self.assertIsNotNone(plt.gcf())
 
-    def test_pupil_plot_range_positional(self):
+    def test_plot_pupil_range_positional(self):
         """plot_range can be given as the first positional argument"""
         fig = plt.figure()
-        self.data.plot.pupil_plot((0, 10))
+        self.data.plot.plot_pupil((0, 10))
         self.assertIsNotNone(plt.gcf())
     
-    def test_pupil_plot_no_events(self):
-        """Test pupil_plot without events"""
+    def test_plot_pupil_no_events(self):
+        """Test plot_pupil without events"""
         fig = plt.figure()
-        self.data.plot.pupil_plot(show_events=False)
+        self.data.plot.plot_pupil(show_events=False)
         self.assertIsNotNone(plt.gcf())
     
-    def test_pupil_plot_no_blinks(self):
-        """Test pupil_plot without blink highlighting"""
+    def test_plot_pupil_no_blinks(self):
+        """Test plot_pupil without blink highlighting"""
         fig = plt.figure()
-        self.data.plot.pupil_plot(show_blinks=False)
+        self.data.plot.plot_pupil(show_blinks=False)
         self.assertIsNotNone(plt.gcf())
     
-    def test_pupil_plot_segments_runs(self):
-        """Test that pupil_plot_segments completes without error"""
-        figs = self.data.plot.pupil_plot_segments(interv="0.5 min")
+    def test_plot_pupil_segments_runs(self):
+        """Test that plot_pupil_segments completes without error"""
+        figs = self.data.plot.plot_pupil_segments(interv="0.5 min")
         self.assertIsNotNone(figs)
     
     def test_plot_blinks_runs(self):
@@ -129,16 +126,15 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
         """Clean up after each test"""
         plt.close('all')
     
-    def test_simple_pupil_plot(self):
-        """Test pupil_plot with simple data"""
+    def test_simple_plot_pupil(self):
+        """Test plot_pupil with simple data"""
         fig = plt.figure()
-        self.data.plot.pupil_plot()
+        self.data.plot.plot_pupil()
         self.assertIsNotNone(plt.gcf())
     
     def test_simple_plot_timeseries(self):
         """Test plot_timeseries with simple data"""
-        fig = plt.figure()
-        self.data.plot.plot_timeseries()
+        fig = self.data.plot.plot_timeseries()
         self.assertIsNotNone(plt.gcf())
     
     def test_plot_masked_single_eye_variable(self):
@@ -146,7 +142,7 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
         self.data.pupil.blinks_detect()
         fig = plt.figure()
         result = self.data.plot.plot_masked('left', 'pupil')
-        self.assertIsNone(result)  # Should return None
+        self.assertIsInstance(result, plt.Axes)
         self.assertIsNotNone(plt.gcf())
     
     def test_plot_masked_multiple_eyes_no_merge(self):
@@ -157,7 +153,7 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
         if sum(len(iv) for iv in intervals.values()) > 0:
             fig = plt.figure()
             result = self.data.plot.plot_masked(['left', 'right'], 'pupil', merge=False)
-            self.assertIsNone(result)
+            self.assertIsInstance(result, plt.Axes)
             self.assertIsNotNone(plt.gcf())
             # Check that a legend was created (for multiple groups)
             ax = plt.gca()
@@ -174,7 +170,7 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
         self.data.pupil.blinks_detect()
         fig = plt.figure()
         result = self.data.plot.plot_masked(['left', 'right'], 'pupil', merge=True)
-        self.assertIsNone(result)
+        self.assertIsInstance(result, plt.Axes)
         self.assertIsNotNone(plt.gcf())
     
     def test_plot_masked_with_units_ms(self):
@@ -272,7 +268,7 @@ class TestPlotRange(unittest.TestCase):
     def test_reversed_plot_range_raises(self):
         d = pp.EyeData(sampling_rate=100, left_pupil=np.ones(500),
                        left_x=np.ones(500), left_y=np.ones(500))
-        for name in ["plot_timeseries", "pupil_plot", "plot_heatmap", "plot_scanpath",
+        for name in ["plot_timeseries", "plot_pupil", "plot_heatmap", "plot_scanpath",
                      "plot_pupil_foreshortening_error_surface"]:
             with self.subTest(plot=name):
                 with self.assertRaisesRegex(ValueError, "start must be before end"):
@@ -285,7 +281,7 @@ class TestPlotRequire(unittest.TestCase):
 
     def test_gaze_only(self):
         d = pp.EyeData(sampling_rate=100, left_x=np.ones(500), left_y=np.ones(500))
-        for name in ["pupil_plot", "pupil_plot_segments", "plot_blinks",
+        for name in ["plot_pupil", "plot_pupil_segments", "plot_blinks",
                      "plot_pupil_foreshortening_error_surface"]:
             with self.subTest(plot=name):
                 with self.assertRaisesRegex(ValueError, "no pupil data"):
@@ -399,40 +395,44 @@ class TestPlottingExperimentalSetup(unittest.TestCase):
     
     def test_plot_experimental_setup_3d_with_explicit_angles(self):
         """Test 3D plot with explicit theta and phi"""
-        fig, ax = self.data.plot.plot_experimental_setup(
+        fig = self.data.plot.plot_experimental_setup(
             theta="20 degrees",
             phi="-90 degrees",
             projection='3d'
         )
+        ax = fig.axes[0]
         self.assertIsNotNone(fig)
         self.assertIsNotNone(ax)
     
     def test_plot_experimental_setup_3d_default_projection(self):
         """Test that 3D is the default projection"""
-        fig, ax = self.data.plot.plot_experimental_setup(
+        fig = self.data.plot.plot_experimental_setup(
             theta=np.radians(20),
             phi=np.radians(-90)
         )
+        ax = fig.axes[0]
         self.assertIsNotNone(fig)
         self.assertIsNotNone(ax)
     
     def test_plot_experimental_setup_2d_with_explicit_angles(self):
         """Test 2D orthogonal projections with explicit angles"""
-        fig, axes = self.data.plot.plot_experimental_setup(
+        fig = self.data.plot.plot_experimental_setup(
             theta="20 degrees",
             phi="-90 degrees",
             projection='2d'
         )
+        axes = fig.axes
         self.assertIsNotNone(fig)
         self.assertEqual(len(axes), 3)  # Should return 3 axes
     
     def test_plot_experimental_setup_with_unit_quantities(self):
         """Test with Pint quantities for angles"""
-        fig, axes = self.data.plot.plot_experimental_setup(
+        fig = self.data.plot.plot_experimental_setup(
             theta=20 * pp.u.degree,
             phi=-90 * pp.u.degree,
             projection='2d'
         )
+        axes = fig.axes
         self.assertIsNotNone(fig)
         self.assertEqual(len(axes), 3)
     
@@ -468,10 +468,11 @@ class TestPlottingExperimentalSetup(unittest.TestCase):
         with warnings.catch_warnings():
             # fitted angles are in radians, no "plain number" warning (bug 1.4)
             warnings.filterwarnings("error", message=".*plain number provided.*")
-            fig, axes = self.data.plot.plot_experimental_setup(
+            fig = self.data.plot.plot_experimental_setup(
                 calibration=calib,
                 projection='2d'
             )
+            axes = fig.axes
         self.assertIsNotNone(fig)
         self.assertEqual(len(axes), 3)
     
@@ -479,7 +480,8 @@ class TestPlottingExperimentalSetup(unittest.TestCase):
         """Test that plot uses angles from experimental_setup when not explicitly provided"""
         # setUp already configured angles in experimental_setup
         # Plot should work without providing theta/phi explicitly
-        fig, ax = self.data.plot.plot_experimental_setup(projection='3d')
+        fig = self.data.plot.plot_experimental_setup(projection='3d')
+        ax = fig.axes[0]
         self.assertIsNotNone(fig)
         self.assertIsNotNone(ax)
     
@@ -511,34 +513,37 @@ class TestPlottingExperimentalSetup(unittest.TestCase):
     
     def test_plot_experimental_setup_without_gaze_samples(self):
         """Test 2D plot without gaze samples"""
-        fig, axes = self.data.plot.plot_experimental_setup(
+        fig = self.data.plot.plot_experimental_setup(
             theta="20 degrees",
             phi="-90 degrees",
             projection='2d',
             show_gaze_samples=False
         )
+        axes = fig.axes
         self.assertIsNotNone(fig)
         self.assertEqual(len(axes), 3)
     
     def test_plot_experimental_setup_custom_gaze_samples(self):
         """Test with custom number of gaze samples"""
-        fig, axes = self.data.plot.plot_experimental_setup(
+        fig = self.data.plot.plot_experimental_setup(
             theta="20 degrees",
             phi="-90 degrees",
             projection='2d',
             n_gaze_samples=16  # 4x4 grid
         )
+        axes = fig.axes
         self.assertIsNotNone(fig)
         self.assertEqual(len(axes), 3)
     
     def test_plot_experimental_setup_custom_viewing_angle_3d(self):
         """Test 3D with custom viewing angle"""
-        fig, ax = self.data.plot.plot_experimental_setup(
+        fig = self.data.plot.plot_experimental_setup(
             theta="20 degrees",
             phi="-90 degrees",
             projection='3d',
             viewing_angle=("60 degrees", "-45 degrees")
         )
+        ax = fig.axes[0]
         self.assertIsNotNone(fig)
         self.assertIsNotNone(ax)
         self.assertAlmostEqual(ax.elev, 60)
@@ -546,9 +551,10 @@ class TestPlottingExperimentalSetup(unittest.TestCase):
 
     def test_plot_experimental_setup_viewing_angle_numbers_are_degrees(self):
         """Plain numbers in viewing_angle are degrees"""
-        fig, ax = self.data.plot.plot_experimental_setup(
+        fig = self.data.plot.plot_experimental_setup(
             projection='3d', viewing_angle=(30, -60)
         )
+        ax = fig.axes[0]
         self.assertAlmostEqual(ax.elev, 30)
         self.assertAlmostEqual(ax.azim, -60)
 

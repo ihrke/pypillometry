@@ -9,7 +9,7 @@ from ..epochs import Epochs
 from ..units import parse_time, normalize_unit, parse_angle, u, _ms_to
 import numpy as np
 from loguru import logger
-from pathlib import Path
+from ._axes import get_ax, get_axes, write_pdf
 
 
 class GenericPlots(Namespace):
@@ -186,7 +186,6 @@ class GenericPlots(Namespace):
            ...                              figsize=(12, 4))
         """
         import matplotlib.pyplot as plt
-        from matplotlib.backends.backend_pdf import PdfPages
         intervals = _as_intervals(intervals)
         
         obj = self._d  # EyeData object
@@ -251,18 +250,8 @@ class GenericPlots(Namespace):
                 plt.close(fig)
 
         if pdf_file is not None:
-            # Create parent directories if they don't exist
-            pdf_path = Path(pdf_file)
-            if pdf_path.parent != Path('.') and not pdf_path.parent.exists():
-                pdf_path.parent.mkdir(parents=True, exist_ok=True)
-                logger.info("Created directory: {}", pdf_path.parent)
-            
-            logger.info("Saving file '{}'", pdf_file)
-            with PdfPages(pdf_file) as pdf:
-                for fig in figs:
-                    pdf.savefig(fig)
-            
-        return figs    
+            write_pdf(figs, pdf_file)
+        return figs
 
     def plot_timeseries(self, 
             plot_range: tuple=(-np.inf, +np.inf),
@@ -275,12 +264,14 @@ class GenericPlots(Namespace):
             label_prefix: str="",
             style: dict=None,
             highlight=None,
-            highlight_color="lightblue"
-            ) -> None:
+            highlight_color="lightblue",
+            title: str=None,
+            axes=None,
+            figsize: tuple=None,
+            **kwargs):
         """
-        Plot a part of the EyeData. Each data type is plotted in a separate subplot.
-        
-        Uses the current figure/axes. If no figure exists, creates one automatically.
+        Plot a part of the EyeData. Each variable is plotted in a separate
+        subplot (one below the other), all eyes in the same subplot.
 
         Parameters
         ----------
@@ -325,12 +316,29 @@ class GenericPlots(Namespace):
         highlight_color : color or list of colors, optional
             color of the shading: one for all or one per element of
             `highlight`; default "lightblue"
+        title : str, optional
+            title of the figure
+        axes : list of matplotlib.axes.Axes, optional
+            axes to plot on, one per variable (e.g., ``fig.axes`` of an
+            earlier call, to overlay several datasets); default: a new
+            figure
+        figsize : tuple, optional
+            size of the new figure
+        **kwargs
+            passed to :meth:`matplotlib.axes.Axes.plot` for all lines
+            (after `style`)
+
+        Returns
+        -------
+        matplotlib.figure.Figure
+            the figure of the plot
 
         Raises
         ------
         ValueError
-            if `show_onsets` is not one of the allowed values or if
-            `plot_range` does not overlap with the data
+            if `show_onsets` is not one of the allowed values, if
+            `plot_range` does not overlap with the data or if `axes` does not
+            contain one axes per variable
 
         Examples
         --------
@@ -340,8 +348,8 @@ class GenericPlots(Namespace):
            >>> from pypillometry import u
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
-           >>> fig = plt.figure(figsize=(10, 6))
-           >>> d.plot.plot_timeseries(plot_range=(0, 20) * u.sec, units="sec")
+           >>> fig = d.plot.plot_timeseries(plot_range=(0, 20) * u.sec, units="sec",
+           ...                              figsize=(10, 6))
 
         The first second after each stimulus, shaded in all subplots:
 
@@ -351,12 +359,10 @@ class GenericPlots(Namespace):
            >>> from pypillometry import u
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
-           >>> fig = plt.figure(figsize=(10, 6))
-           >>> d.plot.plot_timeseries(plot_range=(0, 20) * u.sec,
-           ...                        highlight=d.get_epochs("S_", (0, 1000) * u.ms),
-           ...                        highlight_color="green")
+           >>> fig = d.plot.plot_timeseries(plot_range=(0, 20) * u.sec, figsize=(10, 6),
+           ...                              highlight=d.get_epochs("S_", (0, 1000) * u.ms),
+           ...                              highlight_color="green")
         """
-        import matplotlib.pyplot as plt
         obj = self._d
         pairs = obj.data.select(eyes, variables)
         eyes = list(dict.fromkeys(eye for eye, _ in pairs))
@@ -405,26 +411,8 @@ class GenericPlots(Namespace):
         evlab=obj.events.labels[ixx]
         evon=evon[ixx]
 
-        nplots = len(variables)
-        # Use current figure or create new one if none exists
-        fig = plt.gcf()
-        # Check if current figure is empty/new
-        if len(fig.axes) == 0:
-            # Create subplots in the current figure
-            axs = fig.subplots(nplots, 1)
-            # for the case when nplots=1, make axs iterable
-            if not isinstance(axs, Iterable):
-                axs=[axs]
-        else:
-            # Use existing axes
-            axs = fig.axes
-            if len(axs) != nplots:
-                logger.warning(f"Current figure has {len(axs)} axes but {nplots} variables to plot. Creating new subplots.")
-                fig.clear()
-                axs = fig.subplots(nplots, 1)
-                if not isinstance(axs, Iterable):
-                    axs=[axs]
-        
+        fig, axs = get_axes(axes, len(variables), "variable", figsize)
+
         # Determine if style is per-eye or global
         per_eye_style = (style is not None and 
                          isinstance(style, dict) and 
@@ -468,7 +456,8 @@ class GenericPlots(Namespace):
                     elif len(eyes) > 1:
                         # No style provided but multiple eyes: use default colors with varied linestyles
                         plot_kwargs['linestyle'] = linestyles[idx % len(linestyles)]
-                    
+                    plot_kwargs.update(kwargs)
+
                     # Plot the data - use masked array if show_masked is False
                     if show_masked:
                         # Plot all data including masked regions
@@ -499,10 +488,12 @@ class GenericPlots(Namespace):
                     ax.text(ev, ll+(ul-ll)/2., "%s"%lab, fontsize=8, rotation=90)
             ax.set_title(var)
             ax.legend()
-        
-        plt.legend()
-        plt.xlabel(xlab)
-        
+
+        axs[-1].set_xlabel(xlab)
+        if title is not None:
+            fig.suptitle(title)
+        return fig
+
     def plot_timeseries_segments(self, pdf_file: str=None, interv: float="1 min", figsize=(15,5), 
                                   ylim=None, eyes: list=[], variables: list=[], 
                                   units: str="sec", **kwargs):
@@ -533,8 +524,9 @@ class GenericPlots(Namespace):
 
         Returns
         -------
-        list of matplotlib.figure.Figure or None
-            one figure per segment; None if `pdf_file` is given
+        list of matplotlib.figure.Figure
+            one figure per segment (also returned when `pdf_file` is given;
+            the figures are then closed)
 
         Examples
         --------
@@ -555,9 +547,7 @@ class GenericPlots(Namespace):
         With ``pdf_file="segments.pdf"``, the figures are written to a PDF file
         instead.
         """
-
         import matplotlib.pyplot as plt
-        from matplotlib.backends.backend_pdf import PdfPages
         # Calculate start and end times in the specified units
         obj=self._d
         interv = parse_time(interv, to=units, default=units)
@@ -577,10 +567,8 @@ class GenericPlots(Namespace):
         figs=[]
 
         for start,end in segments:
-            # Create a new figure for each segment
-            fig = plt.figure(figsize=figsize)
-            self.plot_timeseries(plot_range=(start, end), units=units, 
-                               eyes=eyes, variables=variables, **kwargs)
+            fig = self.plot_timeseries(plot_range=(start, end), units=units, figsize=figsize,
+                                       eyes=eyes, variables=variables, **kwargs)
             if ylim is not None:
                 for ax in fig.axes:
                     ax.set_ylim(*ylim)
@@ -591,24 +579,14 @@ class GenericPlots(Namespace):
                 plt.close(fig)
 
         if pdf_file is not None:
-            # Create parent directories if they don't exist
-            pdf_path = Path(pdf_file)
-            if pdf_path.parent != Path('.') and not pdf_path.parent.exists():
-                pdf_path.parent.mkdir(parents=True, exist_ok=True)
-                logger.info("Created directory: {}", pdf_path.parent)
-            
-            logger.info("Writing PDF file '{}'", pdf_file)
-            with PdfPages(pdf_file) as pdf:
-                for fig in figs:
-                    pdf.savefig(fig)
-
-        return figs if pdf_file is None else None
+            write_pdf(figs, pdf_file)
+        return figs
 
     def plot_masked(self, eyes: str|list = [], variables: str|list = [], 
                     units: str = "sec", merge: bool = False, 
                     show_labels: bool = True, show_events: bool = False,
                     policy="default", highlight=None, highlight_color="lightblue",
-                    **kwargs):
+                    title: str = None, ax=None, **kwargs):
         """
         Plot masked intervals for specified eyes and variables.
         
@@ -632,7 +610,8 @@ class GenericPlots(Namespace):
             If False, plot each eye/variable separately with different colors.
             Default is False.
         show_labels : bool, optional
-            Whether to show labels for each interval group. Default is True.
+            Whether to show a legend of the eyes/variables and a title.
+            Default is True.
         show_events : bool, optional
             Whether to show vertical grey stripes at event positions. Default is False.
         policy : str, MaskPolicy or list of str
@@ -647,13 +626,19 @@ class GenericPlots(Namespace):
         highlight_color : color or list of colors, optional
             color of the shading: one for all or one per element of
             `highlight`; default "lightblue"
+        title : str, optional
+            title of the plot; default: "Masked Intervals" (if
+            `show_labels`)
+        ax : matplotlib.axes.Axes, optional
+            axes to plot on; default: the current axes
         **kwargs : dict
-            Additional keyword arguments passed to matplotlib plot()
-            
+            Additional keyword arguments passed to
+            :meth:`matplotlib.axes.Axes.plot`
+
         Returns
         -------
-        None
-            Modifies the current axes in place
+        matplotlib.axes.Axes
+            the axes of the plot
 
         Examples
         --------
@@ -666,8 +651,8 @@ class GenericPlots(Namespace):
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
            >>> d = d.pupil.blinks_detect()
-           >>> fig = plt.figure(figsize=(8, 4))
-           >>> d.plot.plot_masked(variables="pupil", units="sec")
+           >>> fig, ax = plt.subplots(figsize=(8, 4))
+           >>> ax = d.plot.plot_masked(variables="pupil", units="sec", ax=ax)
 
         With ``merge=True``, the masks of all eyes and variables are combined;
         ``show_events=True`` adds the event markers.
@@ -676,17 +661,16 @@ class GenericPlots(Namespace):
         from ..intervals import concat_intervals
         
         obj = self._d
-        
+        ax = get_ax(ax)
+
         # Get masked intervals for specified eyes/variables
         intervals_dict = obj.mask_as_intervals(eyes, variables, units=units, policy=policy)
         
         # Handle empty result
         if len(intervals_dict) == 0:
             logger.warning("No masked intervals found")
-            return
-        
-        ax = plt.gca()
-        
+            return ax
+
         if merge:
             # Merge all intervals and plot as one set
             merged = concat_intervals(intervals_dict, label='All masked intervals')
@@ -701,9 +685,8 @@ class GenericPlots(Namespace):
             ax.set_ylim(0, len(merged.intervals) + 1)
             ax.set_ylabel('Interval #')
             
-            # Set title
-            if show_labels:
-                ax.set_title('Masked Intervals (merged)')
+            if title is None and show_labels:
+                title = 'Masked Intervals (merged)'
         else:
             # Plot each eye/variable separately with different colors and offsets
             color_cycle = plt.rcParams['axes.prop_cycle'].by_key()['color']
@@ -713,7 +696,7 @@ class GenericPlots(Namespace):
             
             if max_intervals == 0:
                 logger.warning("No masked intervals found")
-                return
+                return ax
             
             # Offset for multiple variables (small vertical shift)
             offset_increment = 0.15
@@ -754,10 +737,11 @@ class GenericPlots(Namespace):
             if show_labels and len(intervals_dict) > 1:
                 ax.legend(legend_handles, legend_labels, loc='best')
             
-            # Set title
-            if show_labels:
-                ax.set_title('Masked Intervals')
-        
+            if title is None and show_labels:
+                title = 'Masked Intervals'
+        if title is not None:
+            ax.set_title(title)
+
         if normalize_unit(units) == "samples":
             xrange = (0, len(obj.tx))
         else:
@@ -782,6 +766,7 @@ class GenericPlots(Namespace):
             ax.set_xlabel(f'Time ({units})')
         else:
             ax.set_xlabel('Samples')
+        return ax
 
     def plot_experimental_setup(
         self,
@@ -790,10 +775,12 @@ class GenericPlots(Namespace):
         calibration = None,
         show_gaze_samples: bool = True,
         n_gaze_samples: int = 9,
-        ax: Optional["matplotlib.axes.Axes"] = None,
         viewing_angle: tuple = None,
-        projection: str = '2d'
-    ) -> tuple:
+        projection: str = '2d',
+        title: str = None,
+        axes=None,
+        figsize: tuple = None,
+    ):
         """
         Plot visualization of eye-tracking experimental setup geometry.
         
@@ -817,19 +804,24 @@ class GenericPlots(Namespace):
             Show sample gaze vectors to screen positions
         n_gaze_samples : int, default 9
             Number of sample gaze positions
-        ax : matplotlib axis, optional
-            Existing axis to plot on (only for '3d' projection)
         viewing_angle : tuple, optional
             Viewing angle for 3D projection (elev, azim) or (elev, azim, roll).
             Plain numbers are in degrees (as in matplotlib's ``view_init``);
             strings with units (e.g., ``("30 deg", "-60 deg")``) are parsed.
         projection : str, default '2d'
             '2d' for three orthogonal views, '3d' for interactive 3D view
+        title : str, optional
+            title of the figure; default: the camera angles
+        axes : matplotlib Axes or list of Axes, optional
+            axes to plot on: three axes (front, top, side view) for '2d',
+            one 3D axes for '3d'; default: a new figure
+        figsize : tuple, optional
+            size of the new figure
 
         Returns
         -------
-        fig : matplotlib Figure
-        ax : matplotlib axis or array of axes
+        matplotlib.figure.Figure
+            the figure (``fig.axes`` are the axes of the views)
 
         Raises
         ------
@@ -847,7 +839,7 @@ class GenericPlots(Namespace):
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
            >>> d = d.set_experimental_setup(camera_spherical=("20 deg", "-90 deg", "70 cm"))
-           >>> fig, axs = d.plot.plot_experimental_setup()
+           >>> fig = d.plot.plot_experimental_setup()
 
         To show fitted angles, pass the result of
         :meth:`d.pupil.fit_foreshortening() <pypillometry.eyedata.pupil.PupilNamespace.fit_foreshortening>` as ``calibration=``, or
@@ -880,6 +872,8 @@ class GenericPlots(Namespace):
             projection=projection,
             show_gaze_samples=show_gaze_samples,
             n_gaze_samples=n_gaze_samples,
-            ax=ax,
             viewing_angle=viewing_angle,
+            title=title,
+            axes=axes,
+            figsize=figsize,
         )

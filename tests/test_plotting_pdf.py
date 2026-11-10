@@ -51,11 +51,11 @@ class TestPlottingPDFGeneration(unittest.TestCase):
         self.assertTrue(os.path.exists(pdf_path))
         self.assertGreater(os.path.getsize(pdf_path), 0)
     
-    def test_pupil_plot_segments_creates_pdf(self):
-        """Test that pupil_plot_segments creates PDF file"""
+    def test_plot_pupil_segments_creates_pdf(self):
+        """Test that plot_pupil_segments creates PDF file"""
         pdf_path = os.path.join(self.temp_dir, "test_pupil_segments.pdf")
         
-        figs = self.data.plot.pupil_plot_segments(
+        figs = self.data.plot.plot_pupil_segments(
             pdf_file=pdf_path, 
             interv="1 min"
         )
@@ -121,13 +121,13 @@ class TestPlottingPDFDirectoryCreation(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.dirname(pdf_path)))
         self.assertTrue(os.path.exists(pdf_path))
     
-    def test_pupil_plot_segments_nested_directories(self):
-        """Test that nested directories are created for pupil_plot_segments"""
+    def test_plot_pupil_segments_nested_directories(self):
+        """Test that nested directories are created for plot_pupil_segments"""
         pdf_path = os.path.join(self.temp_dir, "a", "b", "c", "pupil.pdf")
         
         self.assertFalse(os.path.exists(os.path.dirname(pdf_path)))
         
-        figs = self.data.plot.pupil_plot_segments(
+        figs = self.data.plot.plot_pupil_segments(
             pdf_file=pdf_path, 
             interv="1 min"
         )

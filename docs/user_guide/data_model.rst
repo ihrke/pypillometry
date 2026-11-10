@@ -19,7 +19,7 @@ the object has no pupil data ("no pupil data; available channels: left_x,
 left_y"). The same holds for the methods that need gaze data, in ``d.gaze``
 (e.g., :meth:`EyeData.gaze.mask_offscreen`), or both (e.g.,
 :doc:`foreshortening correction </experimental/foreshortening>`). The plots
-are in ``d.plot`` (e.g., ``d.plot.pupil_plot()``, see :doc:`plotting`).
+are in ``d.plot`` (e.g., ``d.plot.plot_pupil()``, see :doc:`plotting`).
 
 An object is usually created by reading a file (see
 :doc:`loading_data`):

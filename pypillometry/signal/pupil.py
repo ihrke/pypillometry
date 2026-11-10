@@ -352,12 +352,10 @@ def pupil_kernel(duration=4000, fs=1000, npar=10.1, tmax=930.0):
     #hmax=np.exp(-npar)*tmax**npar ## theoretical maximum
     return h#/h.max() # rescale to height=1
 
-def plot_prf(npar=10.1,tmax=930,max_duration="estimate",fs=500,**kwargs):
+def plot_prf(npar=10.1,tmax=930,max_duration="estimate",fs=500,title=None,ax=None,**kwargs):
     """
     Plot profile of the pupil-response function (PRF) with
     parameters `npar` and `tmax`.
-
-    The PRF is plotted into the current matplotlib axes.
 
     Parameters
     ----------
@@ -370,8 +368,17 @@ def plot_prf(npar=10.1,tmax=930,max_duration="estimate",fs=500,**kwargs):
         :py:func:`pupil_get_max_duration()`
     fs : float
         sampling rate in Hz used to evaluate the PRF
+    title : str, optional
+        title of the plot
+    ax : matplotlib.axes.Axes, optional
+        axes to plot on; default: the current axes
     **kwargs
-        passed on to :func:`matplotlib.pyplot.plot`
+        passed on to :meth:`matplotlib.axes.Axes.plot`
+
+    Returns
+    -------
+    matplotlib.axes.Axes
+        the axes of the plot
 
     Examples
     --------
@@ -381,18 +388,23 @@ def plot_prf(npar=10.1,tmax=930,max_duration="estimate",fs=500,**kwargs):
 
        >>> import pypillometry as pp
        >>> import matplotlib.pyplot as plt
-       >>> pp.signal.plot_prf()
-       >>> pp.signal.plot_prf(npar=5, tmax=500)
+       >>> fig, ax = plt.subplots()
+       >>> ax = pp.signal.plot_prf(ax=ax)
+       >>> ax = pp.signal.plot_prf(npar=5, tmax=500, ax=ax)
     """
     if max_duration=="estimate":
         max_duration=pupil_get_max_duration(npar,tmax)
     n=int(fs*(max_duration/1000.))
     tx=np.linspace(0,max_duration,n)
     prf=pupil_kernel_t(tx,npar,tmax)
-    import matplotlib.pyplot as plt
-    plt.plot(tx,prf,**kwargs)
-    plt.xlabel("time [ms]")
-    plt.ylabel("AU")
+    from ..plot._axes import get_ax
+    ax = get_ax(ax)
+    ax.plot(tx,prf,**kwargs)
+    ax.set_xlabel("time [ms]")
+    ax.set_ylabel("AU")
+    if title is not None:
+        ax.set_title(title)
+    return ax
     
 
 def pupil_build_design_matrix(tx,event_onsets,fs,npar,tmax,max_duration="estimate"):

@@ -150,7 +150,7 @@ class ExperimentalSetup(Stateful):
     ... )
     
     >>> # Visualize the setup
-    >>> fig, axes = setup.plot()
+    >>> fig = setup.plot()
     """
 
     # state (see pypillometry.state): the stored values (mm, radians); they
@@ -949,8 +949,10 @@ class ExperimentalSetup(Stateful):
         projection: str = '2d',
         show_gaze_samples: bool = True,
         n_gaze_samples: int = 9,
-        ax = None,
         viewing_angle: tuple = None,
+        title: str = None,
+        axes=None,
+        figsize: tuple = None,
     ):
         """
         Visualize the experimental setup geometry.
@@ -974,20 +976,22 @@ class ExperimentalSetup(Stateful):
         n_gaze_samples : int, default 9
             Number of sample gaze positions; drawn as a square grid with
             ``int(sqrt(n_gaze_samples))`` points per side.
-        ax : matplotlib Axes, optional
-            Existing 3D axis to plot on (only for '3d' projection; ignored
-            for '2d', which always creates a new figure).
         viewing_angle : tuple, optional
             Viewing angle for 3D projection (elev, azim) or (elev, azim, roll) in degrees.
             Default is (-49, 50, 45) for 3D.
-        
+        title : str, optional
+            title of the figure; default: the camera angles
+        axes : matplotlib Axes or list of Axes, optional
+            axes to plot on: three axes (front, top, side view) for '2d',
+            one 3D axes for '3d'; default: a new figure
+        figsize : tuple, optional
+            size of the new figure; default (15, 5) for '2d', (10, 8) for
+            '3d'
+
         Returns
         -------
-        fig : matplotlib.figure.Figure
-            The figure.
-        ax : matplotlib.axes.Axes or numpy.ndarray
-            The 3D axis for '3d'; an array of the three axes (front, top,
-            side) for '2d'.
+        matplotlib.figure.Figure
+            the figure (``fig.axes`` are the axes of the views)
         
         Raises
         ------
@@ -1008,8 +1012,8 @@ class ExperimentalSetup(Stateful):
            ...     eye_to_screen_center="60 cm",
            ...     camera_spherical=("20 deg", "-90 deg", "70 cm"),
            ... )
-           >>> fig, ax = setup.plot()  # 2D views
-           >>> fig, ax = setup.plot(projection='3d')  # 3D view
+           >>> fig = setup.plot()  # 2D views
+           >>> fig = setup.plot(projection='3d')  # 3D view
         """
         
         # Validate required parameters
@@ -1033,14 +1037,26 @@ class ExperimentalSetup(Stateful):
         d = self.d
         w, h = self.physical_screen_width, self.physical_screen_height
         
+        from ..plot._axes import get_axes
+        if title is None:
+            title = f'Experimental Setup: θ={np.degrees(theta):.1f}°, φ={np.degrees(phi):.1f}°'
         if projection.lower() == '3d':
-            return self._plot_3d(theta, phi, r, d, w, h, show_gaze_samples, 
-                                n_gaze_samples, ax, viewing_angle)
+            fig, (ax,) = get_axes(axes, 1, "3D view", figsize or (10, 8),
+                                  subplot_kw={"projection": "3d"})
+            self._plot_3d(theta, phi, r, d, w, h, show_gaze_samples,
+                          n_gaze_samples, ax, viewing_angle)
+            ax.set_title(title)
         elif projection.lower() == '2d':
-            return self._plot_2d(theta, phi, r, d, w, h, show_gaze_samples, n_gaze_samples)
+            fig, views = get_axes(axes, 3, "view (front, top, side)", figsize or (15, 5),
+                                  nrows=1, ncols=3)
+            self._plot_2d(theta, phi, r, d, w, h, show_gaze_samples, n_gaze_samples, views)
+            fig.suptitle(title, fontsize=13, fontweight='bold', y=0.98)
         else:
             raise ValueError(f"projection must be '2d' or '3d', got '{projection}'")
-    
+        if axes is None:
+            fig.tight_layout()
+        return fig
+
     def _plot_3d(self, theta, phi, r, d, w, h, show_gaze_samples, n_gaze_samples, ax, viewing_angle):
         """3D visualization of experimental setup."""
         import matplotlib.pyplot as plt
@@ -1054,11 +1070,6 @@ class ExperimentalSetup(Stateful):
             for a in viewing_angle
         )
         
-        if ax is None:
-            fig = plt.figure(figsize=(10, 8))
-            ax = fig.add_subplot(111, projection='3d')
-        else:
-            fig = ax.figure
         
         eye_pos = np.array([0, 0, 0])
         camera_pos = np.array([
@@ -1129,10 +1140,8 @@ class ExperimentalSetup(Stateful):
             ax.view_init(elev=viewing_angle[0], azim=viewing_angle[1])
         elif len(viewing_angle) == 3:
             ax.view_init(elev=viewing_angle[0], azim=viewing_angle[1], roll=viewing_angle[2])
-        plt.tight_layout()
-        return fig, ax
-    
-    def _plot_2d(self, theta, phi, r, d, w, h, show_gaze_samples, n_gaze_samples):
+
+    def _plot_2d(self, theta, phi, r, d, w, h, show_gaze_samples, n_gaze_samples, axes):
         """2D orthogonal projections of experimental setup."""
         import matplotlib.pyplot as plt
         import matplotlib.patches as mpatches
@@ -1142,7 +1151,6 @@ class ExperimentalSetup(Stateful):
         C = np.array([r * np.sin(theta) * np.cos(phi), r * np.sin(theta) * np.sin(phi), r * np.cos(theta)])
         screen_corners = np.array([[-w/2, -h/2, d], [w/2, -h/2, d], [w/2, h/2, d], [-w/2, h/2, d], [-w/2, -h/2, d]])
         
-        fig, axes = plt.subplots(1, 3, figsize=(15, 5))
         eye_radius = max(r, d, w/2, h/2) * 0.03
         cam_size = eye_radius * 1.5
         
@@ -1224,9 +1232,7 @@ class ExperimentalSetup(Stateful):
                    bbox=dict(boxstyle='round,pad=0.2', facecolor='white', edgecolor='orange', alpha=0.9))
         ax.set_xlabel('z (mm)'); ax.set_ylabel('y (mm)'); ax.set_title('Side View (z-y plane)', fontweight='bold'); ax.grid(True, alpha=0.2)
         
-        fig.suptitle(f'Experimental Setup: θ={np.degrees(theta):.1f}°, φ={np.degrees(phi):.1f}°', fontsize=13, fontweight='bold', y=0.98)
-        plt.tight_layout()
-        return fig, axes
+
     
     # =========================================================================
     # String representation

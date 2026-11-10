@@ -1,9 +1,8 @@
 from .generic import GenericPlots
+from ._axes import get_ax, get_axes, write_pdf
 from ..units import parse_time, _ms_to
 import numpy as np
-from collections.abc import Iterable
 from typing import List, Optional, Tuple
-from pathlib import Path
 
 from loguru import logger
 
@@ -12,10 +11,10 @@ class PupilPlots(GenericPlots):
     """
     Plots of pupil data (pupil size, blinks, foreshortening); part of the
     plotting namespace ``d.plot`` (:class:`~pypillometry.plot.PlotNamespace`),
-    e.g. ``d.plot.pupil_plot()``.
+    e.g. ``d.plot.plot_pupil()``.
     """
 
-    def pupil_plot(self, 
+    def plot_pupil(self, 
                    plot_range: Tuple[float,float]=(-np.inf, +np.inf),
                    eyes: str|list=[],
                    show_events: bool=True,
@@ -24,12 +23,15 @@ class PupilPlots(GenericPlots):
                    label_prefix: str="",
                    style: dict=None,
                    highlight=None,
-                   highlight_color="lightblue"
-            ) -> None:
+                   highlight_color="lightblue",
+                   title: str = None,
+                   ax=None,
+                   **kwargs):
         """Make a plot of the pupil data using `matplotlib`.
 
         Has pupil-specific options which makes it different from
-        :meth:`plot_timeseries`. All eyes are plotted into the current axes.
+        :meth:`plot_timeseries`. All eyes are plotted into one axes (`ax`,
+        or the current axes).
 
         Parameters
         ----------
@@ -63,6 +65,18 @@ class PupilPlots(GenericPlots):
         highlight_color : color or list of colors, optional
             color of the shading: one for all or one per element of
             `highlight`; default "lightblue"
+        title : str, optional
+            title of the plot
+        ax : matplotlib.axes.Axes, optional
+            axes to plot on; default: the current axes
+        **kwargs
+            passed to :meth:`matplotlib.axes.Axes.plot` for all eyes (after
+            `style`)
+
+        Returns
+        -------
+        matplotlib.axes.Axes
+            the axes of the plot
 
         Raises
         ------
@@ -80,8 +94,8 @@ class PupilPlots(GenericPlots):
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
            >>> d = d.pupil.blinks_detect()
-           >>> fig = plt.figure(figsize=(10, 3))
-           >>> d.plot.pupil_plot(plot_range=(0, 20) * u.sec)
+           >>> fig, ax = plt.subplots(figsize=(10, 3))
+           >>> ax = d.plot.plot_pupil(plot_range=(0, 20) * u.sec, ax=ax)
 
         Shade the trials (feedback to response) and the first second after
         each stimulus in different colors:
@@ -94,12 +108,11 @@ class PupilPlots(GenericPlots):
            >>> d = pp.get_example_data("rlmw_002_short")
            >>> trials = d.get_intervals(start="F_", end="R_")
            >>> stim = d.get_epochs("S_", (0, 1000) * u.ms)
-           >>> fig = plt.figure(figsize=(10, 3))
-           >>> d.plot.pupil_plot(plot_range=(0, 20) * u.sec, show_blinks=False,
-           ...                   highlight=[trials, stim],
-           ...                   highlight_color=["lightgrey", "green"])
+           >>> fig, ax = plt.subplots(figsize=(10, 3))
+           >>> ax = d.plot.plot_pupil(plot_range=(0, 20) * u.sec, show_blinks=False,
+           ...                        highlight=[trials, stim],
+           ...                        highlight_color=["lightgrey", "green"], ax=ax)
         """
-        import matplotlib.pyplot as plt
         self._d._require("pupil")
         eyes = self._d._eyes_with(eyes, "pupil")
         logger.debug("Plotting eyes %s"%eyes)
@@ -138,6 +151,7 @@ class PupilPlots(GenericPlots):
         logger.debug("Plotting from %.2f to %.2f %s, (%i to %i)"%(start,end,units,startix,endix))
 
         tx=tx[startix:endix]
+        ax = get_ax(ax)
 
         # Determine if style is per-eye or global
         per_eye_style = (style is not None and 
@@ -176,20 +190,20 @@ class PupilPlots(GenericPlots):
             elif len(eyes) > 1:
                 # No style provided but multiple eyes: use default colors with varied linestyles
                 plot_kwargs['linestyle'] = linestyles[idx % len(linestyles)]
-            
-            plt.plot(tx, self._d.data[eye,"pupil"][startix:endix], **plot_kwargs)
+            plot_kwargs.update(kwargs)
+
+            ax.plot(tx, self._d.data[eye,"pupil"][startix:endix], **plot_kwargs)
 
         # plot grey lines for events
         if show_events:
             logger.debug("Plotting events, %i in range"%len(evon))
-            plt.vlines(evon, *plt.ylim(), color="grey", alpha=0.5)
-            ll,ul=plt.ylim()
+            ax.vlines(evon, *ax.get_ylim(), color="grey", alpha=0.5)
+            ll,ul=ax.get_ylim()
             for ev,lab in zip(evon,evlab):
-                plt.text(ev, ll+(ul-ll)/2., "%s"%lab, fontsize=8, rotation=90)
+                ax.text(ev, ll+(ul-ll)/2., "%s"%lab, fontsize=8, rotation=90)
         
         # highlight if a blink in any of the eyes
         if show_blinks:
-            ax = plt.gca()
             for eye in eyes:
                 if f"{eye}_pupil" not in self._d.data:
                     continue
@@ -213,14 +227,17 @@ class PupilPlots(GenericPlots):
 
 
         if len(tx):
-            self._draw_highlight([plt.gca()], highlight, highlight_color, units,
+            self._draw_highlight([ax], highlight, highlight_color, units,
                                  (tx[0], tx[-1]))
 
-        plt.legend()
-        plt.xlabel(xlab)
+        ax.legend()
+        ax.set_xlabel(xlab)
+        if title is not None:
+            ax.set_title(title)
+        return ax
 
 
-    def pupil_plot_segments(
+    def plot_pupil_segments(
         self,
         pdf_file: Optional[str] = None,
         interv: float = "1 min",
@@ -244,15 +261,16 @@ class PupilPlots(GenericPlots):
         ylim : Tuple[float,float] or None
             y-axis limits for the plots; if None, matplotlib's automatic limits are used
         units : str, optional
-            Units of the time axis, passed to :meth:`pupil_plot`. Default "sec".
+            Units of the time axis, passed to :meth:`plot_pupil`. Default "sec".
         **kwargs
-            arguments passed to :meth:`pupil_plot` (e.g., `highlight` and
+            arguments passed to :meth:`plot_pupil` (e.g., `highlight` and
             `highlight_color`)
 
         Returns
         -------
-        list of matplotlib.figure.Figure or None
-            one figure per segment; None if `pdf_file` is given
+        list of matplotlib.figure.Figure
+            one figure per segment (also returned when `pdf_file` is given;
+            the figures are then closed)
 
         Examples
         --------
@@ -266,7 +284,7 @@ class PupilPlots(GenericPlots):
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
            >>> d = d.pupil.blinks_detect()
-           >>> figs = d.plot.pupil_plot_segments(interv=10 * u.sec, units="sec",
+           >>> figs = d.plot.plot_pupil_segments(interv=10 * u.sec, units="sec",
            ...                                   figsize=(10, 3))
            >>> for f in figs[1:]:
            ...     plt.close(f)
@@ -275,7 +293,6 @@ class PupilPlots(GenericPlots):
         instead.
         """
         import matplotlib.pyplot as plt
-        from matplotlib.backends.backend_pdf import PdfPages
         self._d._require("pupil")
         obj = self._d
         interv = parse_time(interv, to=units, default=units)
@@ -294,12 +311,10 @@ class PupilPlots(GenericPlots):
         figs=[]
 
         for start,end in segments:
-            fig = plt.figure(figsize=figsize)
-            self.pupil_plot(plot_range=(start, end), units=units,
-                            **kwargs)
+            fig, ax = plt.subplots(figsize=figsize)
+            self.plot_pupil(plot_range=(start, end), units=units, ax=ax, **kwargs)
             if ylim is not None:
-                for ax in fig.axes:
-                    ax.set_ylim(*ylim)
+                ax.set_ylim(*ylim)
             figs.append(fig)
             
             # Close figure immediately after creation if saving to PDF to prevent display and memory issues
@@ -307,18 +322,8 @@ class PupilPlots(GenericPlots):
                 plt.close(fig)
 
         if pdf_file is not None:
-            # Create parent directories if they don't exist
-            pdf_path = Path(pdf_file)
-            if pdf_path.parent != Path('.') and not pdf_path.parent.exists():
-                pdf_path.parent.mkdir(parents=True, exist_ok=True)
-                logger.info("Created directory: {}", pdf_path.parent)
-            
-            logger.info("Writing PDF file '{}'", pdf_file)
-            with PdfPages(pdf_file) as pdf:
-                for fig in figs:
-                    pdf.savefig(fig)
-
-        return figs if pdf_file is None else None
+            write_pdf(figs, pdf_file)
+        return figs
 
     def plot_blinks(self, eyes: str|list = [], variables: str|list = "pupil",
                    pdf_file: str|None = None, nrow: int = 5, ncol: int = 3, 
@@ -353,8 +358,9 @@ class PupilPlots(GenericPlots):
             
         Returns
         -------
-        list
-            List of matplotlib Figure objects
+        list of matplotlib.figure.Figure
+            one figure per `nrow` x `ncol` blinks (also returned when
+            `pdf_file` is given; the figures are then closed)
 
         Raises
         ------
@@ -399,8 +405,8 @@ class PupilPlots(GenericPlots):
 
     def plot_pupil_foreshortening_error_surface(
         self,
-        eyes: str | List[str] = [],
         plot_range: tuple = (-np.inf, +np.inf),
+        eyes: str | List[str] = [],
         units: str = "sec",
         show_screen: bool = True,
         cmap: str = "jet",
@@ -409,8 +415,11 @@ class PupilPlots(GenericPlots):
         vmax: Optional[float] = None,
         min_samples: Optional[int] = None,
         smooth: Optional[float] = None,
-        limits: Optional[Tuple[float, float, float, float]] = None
-    ) -> None:
+        limits: Optional[Tuple[float, float, float, float]] = None,
+        title: str = None,
+        axes=None,
+        figsize: tuple = None,
+    ):
         """
         Plot a heatmap showing average pupil size across x/y gaze positions.
         
@@ -421,14 +430,14 @@ class PupilPlots(GenericPlots):
         
         Parameters
         ----------
-        eyes : str or list, optional
-            Which eye(s) to plot: "left", "right", "average", or a list of these.
-            Default is [] which plots all eyes with pupil and gaze data; a
-            requested eye without them raises a KeyError.
         plot_range : tuple, optional
             The time range to include in the analysis (plain numbers are
             in `units`, or with units, e.g. ``(3, 5) * u.min``). Default is (-np.inf, +np.inf),
             i.e. all data.
+        eyes : str or list, optional
+            Which eye(s) to plot: "left", "right", "average", or a list of these.
+            Default is [] which plots all eyes with pupil and gaze data; a
+            requested eye without them raises a KeyError.
         units : str, optional
             Time units of the plot. Default is "sec".
         show_screen : bool, optional
@@ -454,11 +463,19 @@ class PupilPlots(GenericPlots):
         limits : tuple, optional
             Axis limits as (xmin, xmax, ymin, ymax). If not provided, uses screen
             limits when available (and data falls within), otherwise uses data extent.
-            
+        title : str, optional
+            title of the figure
+        axes : list of matplotlib.axes.Axes, optional
+            axes to plot on, one per eye; default: a new figure (one
+            subplot per eye, side by side)
+        figsize : tuple, optional
+            size of the new figure
+
         Returns
         -------
-        None
-            Creates a matplotlib figure with the heatmap(s)
+        matplotlib.figure.Figure
+            the figure of the plot (``fig.axes`` also contains the
+            colorbars)
 
         Examples
         --------
@@ -470,12 +487,11 @@ class PupilPlots(GenericPlots):
            >>> from pypillometry import u
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
-           >>> d.plot.plot_pupil_foreshortening_error_surface(eyes="left")
+           >>> fig = d.plot.plot_pupil_foreshortening_error_surface(eyes="left")
 
         ``vmin``/``vmax`` set the color range, ``min_samples`` hides bins with
         few samples and ``smooth`` applies Gaussian smoothing.
         """
-        import matplotlib.pyplot as plt
         import matplotlib.patches as patches
         from mpl_toolkits.axes_grid1 import make_axes_locatable
         from scipy.ndimage import gaussian_filter
@@ -504,26 +520,8 @@ class PupilPlots(GenericPlots):
         else:
             endix = np.argmin(np.abs(tx - end)) + 1  # the end sample is plotted too
         
-        # Use current figure or create new one if none exists
         nplots = len(eyes)
-        fig = plt.gcf()
-        
-        # Check if current figure is empty/new
-        if len(fig.axes) == 0:
-            # Create subplots in the current figure
-            axs = fig.subplots(1, nplots)
-            # Make axs iterable even for single plot
-            if not isinstance(axs, Iterable):
-                axs = [axs]
-        else:
-            # Use existing axes
-            axs = fig.axes
-            if len(axs) != nplots:
-                logger.warning(f"Current figure has {len(axs)} axes but {nplots} eyes to plot. Creating new subplots.")
-                fig.clear()
-                axs = fig.subplots(1, nplots)
-                if not isinstance(axs, Iterable):
-                    axs = [axs]
+        fig, axs = get_axes(axes, nplots, "eye", figsize, nrows=1, ncols=nplots)
         
         # Plot each eye
         for eye, ax in zip(eyes, axs):
@@ -547,7 +545,7 @@ class PupilPlots(GenericPlots):
             # Extract only non-masked data
             x_plot = x_masked.data[~combined_mask]
             y_plot = y_masked.data[~combined_mask]
-            pupil_plot = pupil_masked.data[~combined_mask]
+            pupil_values = pupil_masked.data[~combined_mask]
             
             # Check if we have any data to plot
             if len(x_plot) == 0:
@@ -575,14 +573,14 @@ class PupilPlots(GenericPlots):
                 # Use rectangular binning with Gaussian smoothing
                 # Compute binned statistics (mean pupil per bin)
                 stat, xedges, yedges, binnumber = binned_statistic_2d(
-                    x_plot, y_plot, pupil_plot,
+                    x_plot, y_plot, pupil_values,
                     statistic='mean', 
                     bins=gridsize,
                     range=[[xmin, xmax], [ymin, ymax]]
                 )
                 # Also get counts to mask bins with insufficient samples
                 counts, _, _, _ = binned_statistic_2d(
-                    x_plot, y_plot, pupil_plot,
+                    x_plot, y_plot, pupil_values,
                     statistic='count',
                     bins=gridsize,
                     range=[[xmin, xmax], [ymin, ymax]]
@@ -654,7 +652,7 @@ class PupilPlots(GenericPlots):
                 im = ax.hexbin(
                     x_plot, 
                     y_plot, 
-                    C=pupil_plot,
+                    C=pupil_values,
                     gridsize=gridsize, 
                     cmap=cmap,
                     reduce_C_function=np.mean,
@@ -691,3 +689,6 @@ class PupilPlots(GenericPlots):
                     linewidth=2
                 )
                 ax.add_patch(screenrect)
+        if title is not None:
+            fig.suptitle(title)
+        return fig
