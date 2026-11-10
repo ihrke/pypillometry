@@ -1,0 +1,181 @@
+Recording timestamp	Sensor	Participant name	Recording name	Recording media name	Recording media width	Recording media height	Event	Gaze point X	Gaze point Y	Gaze point 3D X	Gaze point 3D Y	Gaze point 3D Z	Pupil diameter left	Pupil diameter right	Validity left	Validity right	Gyro X	Gyro Y	Gyro Z	Accelerometer X	Accelerometer Y	Accelerometer Z	Magnetometer X	Magnetometer Y	Magnetometer Z
+1000		P01	rec1	scenevideo.mp4	64	36	Start																		
+1002	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1002	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	-0.128			
+1005	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		41.0	18.0	10.0	-20.0	1500.0	5.013	5.187	Valid	Valid									
+1007	Magnetometer	P01	rec1	scenevideo.mp4	64	36																	-20.0	-137.0	85.0
+1010	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1010	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	0.063			
+1015	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		42.0	18.0	10.0	-20.0	1510.0	5.064	5.21	Valid	Valid									
+1018	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1018	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	0.058			
+1025	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		42.0	18.0	10.0	-20.0	1520.0	4.946	5.236	Valid	Valid									
+1026	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1026	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	0.129			
+1034	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1034	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	-0.075			
+1035	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		42.0	18.0	10.0	-20.0	1530.0	5.13	5.295	Valid	Valid									
+1042	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1042	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	0.169			
+1045	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		41.0	18.0	10.0	-20.0	1540.0	4.93	5.073	Valid	Valid									
+1050	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1050	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	-0.029			
+1055	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		40.0	18.0	10.0	-20.0	1550.0	4.938	5.204	Valid	Valid									
+1058	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1058	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	0.157			
+1065	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		39.0	18.0	10.0	-20.0	1560.0	4.767	5.178	Valid	Valid									
+1066	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1066	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	-0.043			
+1074	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1074	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	-0.074			
+1075	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		38.0	18.0	10.0	-20.0	1570.0	4.875	5.127	Valid	Valid									
+1082	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1082	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	0.025			
+1085	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		36.0	18.0	10.0	-20.0	1580.0	4.946	5.168	Valid	Valid									
+1090	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1090	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	0.103			
+1095	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		34.0	18.0	10.0	-20.0	1590.0	5.041	5.304	Valid	Valid									
+1098	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1098	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	0.016			
+1100		P01	rec1	scenevideo.mp4	64	36	SyncPortOutHigh																		
+1105	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		32.0	18.0	10.0	-20.0	1600.0	4.987	5.337	Valid	Valid									
+1106	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1106	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	-0.059			
+1107	Magnetometer	P01	rec1	scenevideo.mp4	64	36																	-20.0	-137.0	85.0
+1114	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1114	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	-0.134			
+1115	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		30.0	18.0	10.0	-20.0	1610.0	4.933	5.235	Valid	Valid									
+1122	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1122	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	-0.14			
+1125	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		28.0	18.0	10.0	-20.0	1620.0	5.09	5.209	Valid	Valid									
+1130	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1130	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	0.05			
+1135	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		26.0	18.0	10.0	-20.0	1630.0	4.926	5.108	Valid	Valid									
+1138	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1138	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	0.099			
+1145	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		25.0	18.0	10.0	-20.0	1640.0	4.954	5.222	Valid	Valid									
+1146	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1146	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	-0.016			
+1154	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1154	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	-0.107			
+1155	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		24.0	18.0	10.0	-20.0	1650.0	4.899	5.179	Valid	Valid									
+1162	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1162	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	0.087			
+1165	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		23.0	18.0	10.0	-20.0	1660.0	4.984	5.254	Valid	Valid									
+1170	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1170	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	-0.128			
+1175	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		22.0	18.0	10.0	-20.0	1670.0	5.021	5.236	Valid	Valid									
+1178	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1178	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	-0.071			
+1185	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		22.0	18.0	10.0	-20.0	1680.0	4.935	5.187	Valid	Valid									
+1186	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1186	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	0.062			
+1194	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1194	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	-0.225			
+1195	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		22.0	18.0	10.0	-20.0	1690.0	5.078	5.349	Valid	Valid									
+1202	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1202	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	0.039			
+1207	Magnetometer	P01	rec1	scenevideo.mp4	64	36																	-20.0	-137.0	85.0
+1210	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1210	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	-0.058			
+1218	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1218	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	0.011			
+1226	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1226	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	-0.008			
+1234	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1234	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	0.02			
+1242	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1242	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	0.069			
+1250	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1250	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	-0.076			
+1255	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		31.0	18.0	10.0	-20.0	1750.0	4.874	5.351	Valid	Valid									
+1258	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1258	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	0.142			
+1265	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		33.0	18.0	10.0	-20.0	1760.0	5.135	5.278	Valid	Valid									
+1266	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1266	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	0.073			
+1274	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1274	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	0.084			
+1275	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		35.0	18.0	10.0	-20.0	1770.0	5.026	5.169	Valid	Valid									
+1282	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1282	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	0.116			
+1285	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		37.0	18.0	10.0	-20.0	1780.0	5.146	5.396	Valid	Valid									
+1290	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1290	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	0.079			
+1295	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		38.0	18.0	10.0	-20.0	1790.0	5.18	5.332	Valid	Valid									
+1298	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1298	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	0.084			
+1305	Eye Tracker	P01	rec1	scenevideo.mp4	64	36									Invalid	Invalid									
+1306	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1306	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	0.008			
+1307	Magnetometer	P01	rec1	scenevideo.mp4	64	36																	-20.0	-137.0	85.0
+1314	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1314	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	-0.143			
+1315	Eye Tracker	P01	rec1	scenevideo.mp4	64	36									Invalid	Invalid									
+1322	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1322	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	-0.014			
+1325	Eye Tracker	P01	rec1	scenevideo.mp4	64	36									Invalid	Invalid									
+1330	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1330	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	-0.077			
+1335	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		42.0	18.0	10.0	-20.0	1830.0	5.036	5.079	Valid	Valid									
+1338	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1338	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	-0.142			
+1345	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		42.0	18.0	10.0	-20.0	1840.0	5.0	5.266	Valid	Valid									
+1346	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1346	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	0.026			
+1354	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1354	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	-0.057			
+1355	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		42.0	18.0	10.0	-20.0	1850.0	4.871	5.24	Valid	Valid									
+1362	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1362	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	-0.103			
+1365	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		41.0	18.0	10.0	-20.0	1860.0	5.043	5.27	Valid	Valid									
+1370	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1370	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	-0.104			
+1375	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		40.0	18.0	10.0	-20.0	1870.0	4.882	5.134	Valid	Valid									
+1378	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1378	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	0.027			
+1385	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		38.0	18.0	10.0	-20.0	1880.0	4.956	5.083	Valid	Valid									
+1386	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1386	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	0.036			
+1394	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1394	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	0.132			
+1395	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		37.0	18.0	10.0	-20.0	1890.0	5.174	5.15	Valid	Valid									
+1400		P01	rec1	scenevideo.mp4	64	36	stimulus																		
+1402	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1402	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	-0.001			
+1405	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		35.0	18.0	10.0	-20.0	1900.0	5.033	5.174	Valid	Valid									
+1407	Magnetometer	P01	rec1	scenevideo.mp4	64	36																	-20.0	-137.0	85.0
+1410	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1410	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	0.104			
+1415	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		33.0	18.0	10.0	-20.0	1910.0	5.158	5.332	Valid	Valid									
+1418	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1418	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	0.14			
+1425	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		31.0	18.0	10.0	-20.0	1920.0	5.063	4.98	Valid	Valid									
+1426	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1426	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	0.115			
+1434	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1434	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	-0.237			
+1435	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		29.0	18.0	10.0	-20.0	1930.0	5.005	5.268	Valid	Valid									
+1442	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1442	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	0.123			
+1445	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		27.0	18.0	10.0	-20.0	1940.0	5.1	5.138	Valid	Valid									
+1450	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1450	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	0.034			
+1455	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		25.0	18.0	10.0	-20.0	1950.0	5.182	5.068	Valid	Valid									
+1458	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1458	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	0.042			
+1465	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		24.0	18.0	10.0	-20.0	1960.0	4.934	5.294	Valid	Valid									
+1466	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1466	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	0.037			
+1474	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1474	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	0.038			
+1475	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		23.0	18.0	10.0	-20.0	1970.0	5.005	5.4	Valid	Valid									
+1482	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1482	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	0.032			
+1485	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		22.0	18.0	10.0	-20.0	1980.0	5.019	5.137	Valid	Valid									
+1490	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1490	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	-0.036			
+1495	Eye Tracker	P01	rec1	scenevideo.mp4	64	36		22.0	18.0	10.0	-20.0	1990.0	4.962	5.091	Valid	Valid									
+1498	Gyroscope	P01	rec1	scenevideo.mp4	64	36											3.0	4.0	0.0						
+1498	Accelerometer	P01	rec1	scenevideo.mp4	64	36														0.0	9.8	-0.19			
+1499		P01	rec1	scenevideo.mp4	64	36	Stopp																		
