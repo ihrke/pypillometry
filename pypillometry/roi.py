@@ -93,8 +93,8 @@ class ROI:
             
         Returns
         -------
-        matplotlib.artist.Artist
-            The artist object created for the ROI.
+        matplotlib.axes.Axes
+            the axes of the plot
         """
         raise NotImplementedError("Subclasses must implement plot()")
     
@@ -314,8 +314,8 @@ class CircularROI(ROI):
             
         Returns
         -------
-        matplotlib.patches.Circle
-            The circle patch object.
+        matplotlib.axes.Axes
+            the axes of the plot (the circle is ``ax.patches[-1]``)
 
         Examples
         --------
@@ -331,8 +331,8 @@ class CircularROI(ROI):
            >>> right = pp.RectangularROI((850, 350), (1150, 650), name="right stimulus")
            >>> d.plot.plot_heatmap(eyes="left")
            >>> ax = plt.gcf().axes[0]  # the heatmap (axes[1] is the colorbar)
-           >>> patch = left.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)
-           >>> patch = right.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)
+           >>> ax = left.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)
+           >>> ax = right.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)
 
         :meth:`d.plot.plot_heatmap() <pypillometry.plot.PlotNamespace.plot_heatmap>` and
         :meth:`d.plot.plot_scanpath() <pypillometry.plot.PlotNamespace.plot_scanpath>` can also draw them
@@ -355,7 +355,7 @@ class CircularROI(ROI):
             
         circle = patches.Circle(self.center, self.radius, **kwargs)
         ax.add_patch(circle)
-        return circle
+        return ax
     
     def __str__(self) -> str:
         """String representation of the circular ROI."""
@@ -560,8 +560,8 @@ class RectangularROI(ROI):
             
         Returns
         -------
-        matplotlib.patches.Rectangle
-            The rectangle patch object.
+        matplotlib.axes.Axes
+            the axes of the plot (the rectangle is ``ax.patches[-1]``)
 
         Examples
         --------
@@ -577,8 +577,8 @@ class RectangularROI(ROI):
            >>> right = pp.RectangularROI((850, 350), (1150, 650), name="right stimulus")
            >>> d.plot.plot_heatmap(eyes="left")
            >>> ax = plt.gcf().axes[0]  # the heatmap (axes[1] is the colorbar)
-           >>> patch = left.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)
-           >>> patch = right.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)
+           >>> ax = left.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)
+           >>> ax = right.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)
 
         :meth:`d.plot.plot_heatmap() <pypillometry.plot.PlotNamespace.plot_heatmap>` and
         :meth:`d.plot.plot_scanpath() <pypillometry.plot.PlotNamespace.plot_scanpath>` can also draw them
@@ -603,7 +603,7 @@ class RectangularROI(ROI):
         height = self.max_coords[1] - self.min_coords[1]
         rect = patches.Rectangle(self.min_coords, width, height, **kwargs)
         ax.add_patch(rect)
-        return rect
+        return ax
     
     def __str__(self) -> str:
         """String representation of the rectangular ROI."""

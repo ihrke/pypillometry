@@ -111,6 +111,24 @@ class TestSinglePanel(ConventionTest):
         fig, ax = plt.subplots()
         self.assertIs(pp.Intervals([], units="ms").plot(ax=ax), ax)
 
+    def test_plot_prf(self):
+        self.assertSinglePanel(pp.signal.plot_prf, title="T")
+
+    def test_roi_plot(self):
+        for roi in [pp.CircularROI((100, 100), radius=50),
+                    pp.RectangularROI((0, 0), (10, 10))]:
+            self.assertSinglePanel(roi.plot)
+
+    def test_calibration_plot(self):
+        from pypillometry.eyedata.spatial_calibration import SpatialCalibration
+        points = np.array([[640, 512], [640, 87], [640, 936], [96, 512], [1183, 512]])
+        errors = np.array([[0.3, -13, -2], [0.3, 13, -0.2], [0.42, 16, 9],
+                           [0.79, -19, 30], [0.62, 13, 24]])
+        cal = SpatialCalibration("left", "HV5", points, points + errors[:, 1:],
+                                 errors, (1280, 1024))
+        self.assertSinglePanel(cal.plot, title="T")
+        self.assertEqual(plt.gca().get_title(), "T")
+
 
 if __name__ == "__main__":
     unittest.main()
