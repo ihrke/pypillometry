@@ -291,11 +291,20 @@ Version numbers follow the scheme ``x.y.z``: increment ``z`` for bug
 fixes, ``y`` for new features and ``x`` for changes that break backward
 compatibility.
 
-Releases are created on `GitHub releases
-<https://github.com/ihrke/pypillometry/releases>`_. A GitHub action then
-writes the tag into the file ``VERSION`` (it must follow `PEP 440
-<https://peps.python.org/pep-0440/#version-scheme>`_) and uploads the
-release to `PyPI <https://pypi.org/project/pypillometry/>`_.
+To release a version:
+
+1. On ``master``, set the file ``VERSION`` to the new version (e.g.,
+   ``v2.2.0``; it must follow `PEP 440
+   <https://peps.python.org/pep-0440/#version-scheme>`_) and give the
+   version and the date as heading of its section in ``CHANGELOG.md``
+   (``## 2.2.0 (2026-11-10)``); commit and push.
+2. Create a release with the same tag (``v2.2.0``) on `GitHub releases
+   <https://github.com/ihrke/pypillometry/releases>`_. A GitHub action
+   checks that the tag matches ``VERSION`` and uploads the release to
+   `PyPI <https://pypi.org/project/pypillometry/>`_.
+
+The documentation is built and published by another action whenever
+``master`` is pushed.
 
 
 Major versions
