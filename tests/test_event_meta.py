@@ -110,6 +110,19 @@ class TestMetaColumns(unittest.TestCase):
             ev.drop_meta("z")
 
 
+class TestMissingValues(unittest.TestCase):
+
+    def test_empty_string_and_pandas_na_are_missing(self):
+        ev = Events([1, 2, 3], ["a", "b", "c"])
+        values = np.array(["", 1, 2], dtype=object)  # a list would become strings
+        np.testing.assert_array_equal(ev.set_meta("x", values).meta["x"],
+                                      [np.nan, 1, 2])
+        np.testing.assert_array_equal(ev.set_meta("x", [pd.NA, "u", "v"]).meta["x"],
+                                      ["", "u", "v"])
+        ev = Events([1, 2], ["a", "b"], meta={"x": np.array(["", 1], dtype=object)})
+        np.testing.assert_array_equal(ev.meta["x"], [np.nan, 1])
+
+
 class TestParseLabels(unittest.TestCase):
 
     def test_regex_converts_numbers(self):

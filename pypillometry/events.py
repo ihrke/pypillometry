@@ -25,20 +25,15 @@ _RESERVED = ("onset", "label")
 
 
 def _is_missing(v) -> bool:
-    """True for None and NaN (missing metadata values)."""
-    return v is None or (isinstance(v, (float, np.floating)) and np.isnan(v))
-
-
-def _is_missing_value(v) -> bool:
-    """True for None, NaN, "" and pandas' NA (missing values in a table)."""
-    return (_is_missing(v) or (isinstance(v, str) and v == "")
-            or type(v).__name__ == "NAType")
+    """True for missing metadata values: None, NaN, "" and pandas' NA."""
+    return (v is None or (isinstance(v, (float, np.floating)) and np.isnan(v))
+            or (isinstance(v, str) and v == "") or type(v).__name__ == "NAType")
 
 
 def _match_key(v):
     """Value of `v` for matching rows (numbers as float, so 1 matches
     1.0); None for missing values."""
-    if _is_missing_value(v):
+    if _is_missing(v):
         return None
     if isinstance(v, (bool, np.bool_)):
         return bool(v)
@@ -55,8 +50,8 @@ def _column_from_values(values) -> np.ndarray:
     """
     Metadata column from a list of values; None and NaN are missing.
 
-    Without missing values, bools give a bool column and integers an int
-    column. Otherwise, numbers give a float column (missing: NaN) and
+    Without missing values (None, NaN, "" or pandas' NA), bools give a
+    bool column and integers an int column. Otherwise, numbers give a float column (missing: NaN) and
     anything else a string column (missing: "").
     """
     present = [v for v in values if not _is_missing(v)]
@@ -777,8 +772,7 @@ class Events(Stateful):
 
     def _replace_column(self, name, values) -> 'Events':
         """New Events with column `name` set to `values` (list; None, NaN or "" = missing)."""
-        values = [None if _is_missing(v) or (isinstance(v, str) and v == "") else v
-                  for v in values]
+        values = [None if _is_missing(v) else v for v in values]
         meta = dict(self.meta)
         meta[name] = _column_from_values(values)
         return Events(self.onsets, self.labels, units=self.units,
@@ -887,7 +881,7 @@ class Events(Stateful):
             if len(vals) != len(table[on[0]]):
                 raise ValueError(f"'{name}' has {len(vals)} values, expected "
                                  f"{len(table[on[0]])} (one per row)")
-            values[name] = [None if r is None or _is_missing_value(vals[r]) else vals[r]
+            values[name] = [None if r is None or _is_missing(vals[r]) else vals[r]
                             for r in match]
         return self._with_columns(values)
 
@@ -934,10 +928,9 @@ class Events(Stateful):
         for name in columns:
             if name not in self.meta:
                 raise KeyError(f"no metadata column '{name}'")
-            vals = [None if _is_missing(v) or v == "" else v
-                    for v in self.meta[name].tolist()]
+            vals = [None if _is_missing(v) else v for v in self.meta[name].tolist()]
             for g in np.unique(group):
-                if _is_missing(g) or g == "":  # events without a group
+                if _is_missing(g):  # events without a group
                     continue
                 ix = np.flatnonzero(group == g)
                 present = {vals[i] for i in ix if vals[i] is not None}
@@ -998,7 +991,7 @@ class Events(Stateful):
                 raise KeyError(f"no metadata column '{by}'")
             col = self.meta[by]
             groups = [(i1[col[i1] == v], i2[col[i2] == v])
-                      for v in np.unique(col[i1]) if not (_is_missing(v) or v == "")]
+                      for v in np.unique(col[i1]) if not _is_missing(v)]
         latency = np.full(len(self), np.nan)
         for g1, g2 in groups:
             pairs, _, _ = _pair_with_next(self.onsets[g1], self.onsets[g2])
