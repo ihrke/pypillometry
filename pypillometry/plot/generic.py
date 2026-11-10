@@ -10,6 +10,7 @@ from ..units import parse_time, normalize_unit, parse_angle, u, _ms_to
 import numpy as np
 from loguru import logger
 from pathlib import Path
+from ._axes import get_ax, get_axes, write_pdf
 
 
 class GenericPlots(Namespace):
@@ -608,7 +609,7 @@ class GenericPlots(Namespace):
                     units: str = "sec", merge: bool = False, 
                     show_labels: bool = True, show_events: bool = False,
                     policy="default", highlight=None, highlight_color="lightblue",
-                    **kwargs):
+                    title: str = None, ax=None, **kwargs):
         """
         Plot masked intervals for specified eyes and variables.
         
@@ -632,7 +633,8 @@ class GenericPlots(Namespace):
             If False, plot each eye/variable separately with different colors.
             Default is False.
         show_labels : bool, optional
-            Whether to show labels for each interval group. Default is True.
+            Whether to show a legend of the eyes/variables and a title.
+            Default is True.
         show_events : bool, optional
             Whether to show vertical grey stripes at event positions. Default is False.
         policy : str, MaskPolicy or list of str
@@ -647,13 +649,19 @@ class GenericPlots(Namespace):
         highlight_color : color or list of colors, optional
             color of the shading: one for all or one per element of
             `highlight`; default "lightblue"
+        title : str, optional
+            title of the plot; default: "Masked Intervals" (if
+            `show_labels`)
+        ax : matplotlib.axes.Axes, optional
+            axes to plot on; default: the current axes
         **kwargs : dict
-            Additional keyword arguments passed to matplotlib plot()
-            
+            Additional keyword arguments passed to
+            :meth:`matplotlib.axes.Axes.plot`
+
         Returns
         -------
-        None
-            Modifies the current axes in place
+        matplotlib.axes.Axes
+            the axes of the plot
 
         Examples
         --------
@@ -666,8 +674,8 @@ class GenericPlots(Namespace):
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
            >>> d = d.pupil.blinks_detect()
-           >>> fig = plt.figure(figsize=(8, 4))
-           >>> d.plot.plot_masked(variables="pupil", units="sec")
+           >>> fig, ax = plt.subplots(figsize=(8, 4))
+           >>> ax = d.plot.plot_masked(variables="pupil", units="sec", ax=ax)
 
         With ``merge=True``, the masks of all eyes and variables are combined;
         ``show_events=True`` adds the event markers.
@@ -676,17 +684,16 @@ class GenericPlots(Namespace):
         from ..intervals import concat_intervals
         
         obj = self._d
-        
+        ax = get_ax(ax)
+
         # Get masked intervals for specified eyes/variables
         intervals_dict = obj.mask_as_intervals(eyes, variables, units=units, policy=policy)
         
         # Handle empty result
         if len(intervals_dict) == 0:
             logger.warning("No masked intervals found")
-            return
-        
-        ax = plt.gca()
-        
+            return ax
+
         if merge:
             # Merge all intervals and plot as one set
             merged = concat_intervals(intervals_dict, label='All masked intervals')
@@ -701,9 +708,8 @@ class GenericPlots(Namespace):
             ax.set_ylim(0, len(merged.intervals) + 1)
             ax.set_ylabel('Interval #')
             
-            # Set title
-            if show_labels:
-                ax.set_title('Masked Intervals (merged)')
+            if title is None and show_labels:
+                title = 'Masked Intervals (merged)'
         else:
             # Plot each eye/variable separately with different colors and offsets
             color_cycle = plt.rcParams['axes.prop_cycle'].by_key()['color']
@@ -713,7 +719,7 @@ class GenericPlots(Namespace):
             
             if max_intervals == 0:
                 logger.warning("No masked intervals found")
-                return
+                return ax
             
             # Offset for multiple variables (small vertical shift)
             offset_increment = 0.15
@@ -754,10 +760,11 @@ class GenericPlots(Namespace):
             if show_labels and len(intervals_dict) > 1:
                 ax.legend(legend_handles, legend_labels, loc='best')
             
-            # Set title
-            if show_labels:
-                ax.set_title('Masked Intervals')
-        
+            if title is None and show_labels:
+                title = 'Masked Intervals'
+        if title is not None:
+            ax.set_title(title)
+
         if normalize_unit(units) == "samples":
             xrange = (0, len(obj.tx))
         else:
@@ -782,6 +789,7 @@ class GenericPlots(Namespace):
             ax.set_xlabel(f'Time ({units})')
         else:
             ax.set_xlabel('Samples')
+        return ax
 
     def plot_experimental_setup(
         self,

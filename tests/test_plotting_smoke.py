@@ -146,7 +146,7 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
         self.data.pupil.blinks_detect()
         fig = plt.figure()
         result = self.data.plot.plot_masked('left', 'pupil')
-        self.assertIsNone(result)  # Should return None
+        self.assertIsInstance(result, plt.Axes)
         self.assertIsNotNone(plt.gcf())
     
     def test_plot_masked_multiple_eyes_no_merge(self):
@@ -157,7 +157,7 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
         if sum(len(iv) for iv in intervals.values()) > 0:
             fig = plt.figure()
             result = self.data.plot.plot_masked(['left', 'right'], 'pupil', merge=False)
-            self.assertIsNone(result)
+            self.assertIsInstance(result, plt.Axes)
             self.assertIsNotNone(plt.gcf())
             # Check that a legend was created (for multiple groups)
             ax = plt.gca()
@@ -174,7 +174,7 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
         self.data.pupil.blinks_detect()
         fig = plt.figure()
         result = self.data.plot.plot_masked(['left', 'right'], 'pupil', merge=True)
-        self.assertIsNone(result)
+        self.assertIsInstance(result, plt.Axes)
         self.assertIsNotNone(plt.gcf())
     
     def test_plot_masked_with_units_ms(self):

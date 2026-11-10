@@ -95,6 +95,12 @@ class TestSinglePanel(ConventionTest):
         self.assertEqual(ax.get_title(), "T")
         self.assertEqual(ax.lines[0].get_color(), "red")
 
+    def test_plot_masked(self):
+        self.assertSinglePanel(self.d.plot.plot_masked, variables="pupil")
+        fig, ax = plt.subplots()
+        self.d.plot.plot_masked(variables="pupil", ax=ax, title="T")
+        self.assertEqual(ax.get_title(), "T")
+
 
 if __name__ == "__main__":
     unittest.main()
