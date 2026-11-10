@@ -286,6 +286,75 @@ def data_with_meta():
     return d.set_events(ev)
 
 
+class TestMergeTable(unittest.TestCase):
+
+    def setUp(self):
+        # trial events with run and trial in the labels, plus events outside trials
+        self.ev = Events([0, 100, 200, 300, 400, 500, 600],
+                         ["start", "F_1_1", "S_1_1", "R_1_1", "F_1_2", "S_1_2", "F_2_1"]
+                         ).parse_labels(r"_(?P<run>\d+)_(?P<trial>\d+)")
+        self.log = pd.DataFrame({"run": [1, 1, 2, 2], "trial": [1, 2, 1, 2],
+                                 "cond": ["easy", "hard", "easy", "hard"],
+                                 "rt": [0.3, np.nan, 0.5, 0.7]})
+
+    def test_all_columns(self):
+        ev = self.ev.merge_table(self.log, on=["run", "trial"])
+        self.assertEqual(list(ev.meta), ["run", "trial", "cond", "rt"])
+        np.testing.assert_array_equal(
+            ev.meta["cond"], ["", "easy", "easy", "easy", "hard", "hard", "easy"])
+        np.testing.assert_array_equal(
+            ev.meta["rt"], [np.nan, .3, .3, .3, np.nan, np.nan, .5])
+
+    def test_columns_list_and_dict(self):
+        ev = self.ev.merge_table(self.log, on=["run", "trial"], columns=["rt"])
+        self.assertEqual(list(ev.meta), ["run", "trial", "rt"])
+        ev = self.ev.merge_table(self.log, on=["run", "trial"],
+                                 columns={"condition": "cond",
+                                          "rt_ms": self.log.rt * 1000})
+        np.testing.assert_array_equal(ev.meta["condition"][1:3], ["easy", "easy"])
+        np.testing.assert_array_equal(ev.meta["rt_ms"][[1, 6]], [300, 500])
+
+    def test_dict_table_and_int_float_keys(self):
+        # parse_labels gives floats if some labels have no trial
+        log = {"run": [1.0, 2.0], "trial": [1.0, 1.0], "acc": [1, 0]}
+        ev = self.ev.merge_table(log, on=["run", "trial"])
+        np.testing.assert_array_equal(ev.meta["acc"],
+                                      [np.nan, 1, 1, 1, np.nan, np.nan, 0])
+
+    def test_string_keys_and_pandas_na(self):
+        ev = Events([0, 100], ["S_a", "S_b"]).parse_labels(r"_(?P<task>\w+)")
+        log = pd.DataFrame({"task": ["a", "b"], "resp": ["left", None]},
+                           dtype="string")
+        ev = ev.merge_table(log, on="task")
+        np.testing.assert_array_equal(ev.meta["resp"], ["left", ""])
+
+    def test_existing_column_kept_without_match(self):
+        ev = self.ev.set_meta("rt", 9.0)
+        ev = ev.merge_table(self.log, on=["run", "trial"], columns=["rt"])
+        np.testing.assert_array_equal(ev.meta["rt"], [9, .3, .3, .3, 9, 9, .5])
+
+    def test_duplicate_rows(self):
+        log = pd.concat([self.log, self.log.iloc[[1]]])
+        with self.assertRaisesRegex(ValueError, "rows 1 and 4"):
+            self.ev.merge_table(log, on=["run", "trial"])
+
+    def test_missing_key_column(self):
+        with self.assertRaises(KeyError):
+            self.ev.merge_table(self.log, on="block")
+        with self.assertRaises(KeyError):
+            self.ev.merge_table(self.log.drop(columns="run"), on=["run", "trial"])
+
+    def test_reserved_name(self):
+        with self.assertRaises(ValueError):
+            self.ev.merge_table(self.log, on=["run", "trial"], columns={"onset": "rt"})
+
+    def test_epochs(self):
+        ep = pp.Epochs.from_events(self.ev.filter("S_"), (-100, 200))
+        ep = ep.merge_table(self.log, on=["run", "trial"], columns=["cond"])
+        self.assertIsInstance(ep, pp.Epochs)
+        np.testing.assert_array_equal(ep.meta["cond"], ["easy", "hard"])
+
+
 class TestEyedataMeta(unittest.TestCase):
 
     def test_set_and_get(self):

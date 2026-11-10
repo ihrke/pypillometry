@@ -280,6 +280,17 @@ class Epochs(Stateful):
         """
         return self._with_events(self.events.parse_labels(parser))
 
+    def merge_table(self, table, on, columns=None) -> 'Epochs':
+        """
+        Epochs with metadata from a table with one row per trial (see
+        :meth:`Events.merge_table <pypillometry.Events.merge_table>`).
+
+        Returns
+        -------
+        Epochs
+        """
+        return self._with_events(self.events.merge_table(table, on, columns))
+
     def to_intervals(self, units="ms", data=None):
         """
         The spans of the epochs as :class:`~pypillometry.Intervals`.
