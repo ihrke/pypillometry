@@ -27,6 +27,8 @@ __all__ = [
 
 example_datasets = {
     "rlmw_002": {
+        "source": "OSF",
+        "filetype": "asc",
         "samples_asc":"https://osf.io/download/67cec1a4fb24855200fd6db7/",
         "events_asc":"https://osf.io/download/67cec1a183c337a5effd6fb6/",
         "description":"Binocular data from a 20-minute reinforcement learning task. "
@@ -34,6 +36,8 @@ example_datasets = {
         "between the two stimuli presented on the left and right.",
     },
     "rlmw_002_short": {
+        "source": "local",
+        "filetype": "asc",
         "sample_asc":files('pypillometry.data').joinpath('002_rlmw_samples_short.asc'),
         "events_asc":files('pypillometry.data').joinpath('002_rlmw_events_short.asc'),
         "description":"Short version (first 40 sec) of a 20-minute reinforcement learning task. "
@@ -41,6 +45,8 @@ example_datasets = {
         "between the two stimuli presented on the left and right.",
     },
     "rlmw_010_edf": {
+        "source": "OSF",
+        "filetype": "edf",
         "edf":"https://osf.io/trsuq/download",
         "description":"Binocular data from a 20-minute reinforcement learning task "
         "in EDF (Eyelink) format. "
@@ -48,6 +54,8 @@ example_datasets = {
         "between the two stimuli presented on the left and right.",
     },
     "nback_001": {
+        "source": "figshare",
+        "filetype": "pkl",
         "figshare": 28776617,
         "figshare_version": 1,
         "pypil": "sub-001_ses-1.pypil",
@@ -62,7 +70,8 @@ example_datasets = {
 class DatasetDict(RecordDict):
     """The example datasets: name -> properties (description, files).
 
-    A dict that is displayed as a table with the name, type and description
+    A dict that is displayed as a table with the name, source (OSF,
+    figshare, local, ssh), file type (asc, edf, pkl, hdf5) and description
     of each dataset (see :class:`~pypillometry.RecordDict`).
     """
 
@@ -72,16 +81,8 @@ class DatasetDict(RecordDict):
     def _rows(self) -> list:
         rows = []
         for key, info in self.items():
-            if "edf" in info:
-                source_type = "EDF"
-            elif "pypil" in info:
-                source_type = "pypil (figshare)" if "figshare" in info else "pypil"
-            elif "samples_asc" in info or "sample_asc" in info:
-                sample = str(info.get("samples_asc", info.get("sample_asc")))
-                source_type = "ASC (OSF)" if "osf.io" in sample else "ASC (local)"
-            else:
-                source_type = "unknown"
-            rows.append(((key,), {"type": source_type,
+            rows.append(((key,), {"source": info.get("source", "unknown"),
+                                  "filetype": info.get("filetype", "unknown"),
                                   "description": info.get("description", "")}))
         return rows
 
@@ -94,8 +95,9 @@ def get_available_datasets():
     Returns
     -------
     DatasetDict
-        dataset name -> its properties (description, files); displayed as
-        a table with the name, type and description of each dataset
+        dataset name -> its properties (source, file type, description,
+        files); displayed as a table with the name, source, file type and
+        description of each dataset
     
     Examples
     --------

@@ -30,6 +30,11 @@ class TestExampleData(unittest.TestCase):
         self.assertEqual(d.name, "rlmw_010")
         self.assertAlmostEqual(d.experimental_setup.eye_to_screen_center, 600.0)
 
+    def test_source_and_filetype(self):
+        for key, info in example_data.example_datasets.items():
+            self.assertIn(info["source"], {"OSF", "figshare", "local", "ssh"}, key)
+            self.assertIn(info["filetype"], {"edf", "hdf5", "pkl", "asc"}, key)
+
     def test_descriptions_have_spaces(self):
         """Concatenated description strings are separated by spaces"""
         for key, info in example_data.example_datasets.items():
