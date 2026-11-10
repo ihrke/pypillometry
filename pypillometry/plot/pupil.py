@@ -2,9 +2,7 @@ from .generic import GenericPlots
 from ._axes import get_ax, get_axes, write_pdf
 from ..units import parse_time, _ms_to
 import numpy as np
-from collections.abc import Iterable
 from typing import List, Optional, Tuple
-from pathlib import Path
 
 from loguru import logger
 
@@ -270,8 +268,9 @@ class PupilPlots(GenericPlots):
 
         Returns
         -------
-        list of matplotlib.figure.Figure or None
-            one figure per segment; None if `pdf_file` is given
+        list of matplotlib.figure.Figure
+            one figure per segment (also returned when `pdf_file` is given;
+            the figures are then closed)
 
         Examples
         --------
@@ -294,7 +293,6 @@ class PupilPlots(GenericPlots):
         instead.
         """
         import matplotlib.pyplot as plt
-        from matplotlib.backends.backend_pdf import PdfPages
         self._d._require("pupil")
         obj = self._d
         interv = parse_time(interv, to=units, default=units)
@@ -313,12 +311,10 @@ class PupilPlots(GenericPlots):
         figs=[]
 
         for start,end in segments:
-            fig = plt.figure(figsize=figsize)
-            self.pupil_plot(plot_range=(start, end), units=units,
-                            **kwargs)
+            fig, ax = plt.subplots(figsize=figsize)
+            self.pupil_plot(plot_range=(start, end), units=units, ax=ax, **kwargs)
             if ylim is not None:
-                for ax in fig.axes:
-                    ax.set_ylim(*ylim)
+                ax.set_ylim(*ylim)
             figs.append(fig)
             
             # Close figure immediately after creation if saving to PDF to prevent display and memory issues
@@ -326,18 +322,8 @@ class PupilPlots(GenericPlots):
                 plt.close(fig)
 
         if pdf_file is not None:
-            # Create parent directories if they don't exist
-            pdf_path = Path(pdf_file)
-            if pdf_path.parent != Path('.') and not pdf_path.parent.exists():
-                pdf_path.parent.mkdir(parents=True, exist_ok=True)
-                logger.info("Created directory: {}", pdf_path.parent)
-            
-            logger.info("Writing PDF file '{}'", pdf_file)
-            with PdfPages(pdf_file) as pdf:
-                for fig in figs:
-                    pdf.savefig(fig)
-
-        return figs if pdf_file is None else None
+            write_pdf(figs, pdf_file)
+        return figs
 
     def plot_blinks(self, eyes: str|list = [], variables: str|list = "pupil",
                    pdf_file: str|None = None, nrow: int = 5, ncol: int = 3, 
@@ -372,8 +358,9 @@ class PupilPlots(GenericPlots):
             
         Returns
         -------
-        list
-            List of matplotlib Figure objects
+        list of matplotlib.figure.Figure
+            one figure per `nrow` x `ncol` blinks (also returned when
+            `pdf_file` is given; the figures are then closed)
 
         Raises
         ------

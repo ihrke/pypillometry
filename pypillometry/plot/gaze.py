@@ -1,7 +1,6 @@
 from .generic import GenericPlots
 from ._axes import get_ax, get_axes
 import numpy as np
-from collections.abc import Iterable
 from typing import List, Union, Optional, Tuple
 
 from ..roi import ROI

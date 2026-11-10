@@ -186,5 +186,32 @@ class TestMultiPanel(ConventionTest):
         np.testing.assert_allclose(fig.get_size_inches(), (5, 4))
 
 
+class TestMultiFigure(ConventionTest):
+    def test_lists_of_figures(self):
+        import tempfile, os
+        epochs = self.d.get_epochs("S_", (-500, 1000) * u.ms)
+        plots = {
+            "plot_intervals": lambda **kw: self.d.plot.plot_intervals(epochs, **kw),
+            "plot_blinks": lambda **kw: self.d.plot.plot_blinks(eyes="left", **kw),
+            "plot_timeseries_segments": lambda **kw: self.d.plot.plot_timeseries_segments(
+                interv=20 * u.sec, **kw),
+            "pupil_plot_segments": lambda **kw: self.d.plot.pupil_plot_segments(
+                interv=20 * u.sec, **kw),
+        }
+        for name, plot in plots.items():
+            with self.subTest(name), tempfile.TemporaryDirectory() as tmp:
+                figs = plot(figsize=(4, 3))
+                self.assertGreater(len(figs), 0)
+                for fig in figs:
+                    self.assertIsInstance(fig, plt.Figure)
+                    np.testing.assert_allclose(fig.get_size_inches(), (4, 3))
+                pdf = os.path.join(tmp, "sub", "plots.pdf")
+                figs_pdf = plot(pdf_file=pdf)
+                self.assertEqual(len(figs_pdf), len(figs))
+                self.assertTrue(os.path.exists(pdf))
+                # the figures written to the PDF are closed
+                self.assertFalse(set(f.number for f in figs_pdf) & set(plt.get_fignums()))
+
+
 if __name__ == "__main__":
     unittest.main()

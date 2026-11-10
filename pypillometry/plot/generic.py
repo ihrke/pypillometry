@@ -9,7 +9,6 @@ from ..epochs import Epochs
 from ..units import parse_time, normalize_unit, parse_angle, u, _ms_to
 import numpy as np
 from loguru import logger
-from pathlib import Path
 from ._axes import get_ax, get_axes, write_pdf
 
 
@@ -187,7 +186,6 @@ class GenericPlots(Namespace):
            ...                              figsize=(12, 4))
         """
         import matplotlib.pyplot as plt
-        from matplotlib.backends.backend_pdf import PdfPages
         intervals = _as_intervals(intervals)
         
         obj = self._d  # EyeData object
@@ -252,18 +250,8 @@ class GenericPlots(Namespace):
                 plt.close(fig)
 
         if pdf_file is not None:
-            # Create parent directories if they don't exist
-            pdf_path = Path(pdf_file)
-            if pdf_path.parent != Path('.') and not pdf_path.parent.exists():
-                pdf_path.parent.mkdir(parents=True, exist_ok=True)
-                logger.info("Created directory: {}", pdf_path.parent)
-            
-            logger.info("Saving file '{}'", pdf_file)
-            with PdfPages(pdf_file) as pdf:
-                for fig in figs:
-                    pdf.savefig(fig)
-            
-        return figs    
+            write_pdf(figs, pdf_file)
+        return figs
 
     def plot_timeseries(self, 
             plot_range: tuple=(-np.inf, +np.inf),
@@ -536,8 +524,9 @@ class GenericPlots(Namespace):
 
         Returns
         -------
-        list of matplotlib.figure.Figure or None
-            one figure per segment; None if `pdf_file` is given
+        list of matplotlib.figure.Figure
+            one figure per segment (also returned when `pdf_file` is given;
+            the figures are then closed)
 
         Examples
         --------
@@ -558,9 +547,7 @@ class GenericPlots(Namespace):
         With ``pdf_file="segments.pdf"``, the figures are written to a PDF file
         instead.
         """
-
         import matplotlib.pyplot as plt
-        from matplotlib.backends.backend_pdf import PdfPages
         # Calculate start and end times in the specified units
         obj=self._d
         interv = parse_time(interv, to=units, default=units)
@@ -592,18 +579,8 @@ class GenericPlots(Namespace):
                 plt.close(fig)
 
         if pdf_file is not None:
-            # Create parent directories if they don't exist
-            pdf_path = Path(pdf_file)
-            if pdf_path.parent != Path('.') and not pdf_path.parent.exists():
-                pdf_path.parent.mkdir(parents=True, exist_ok=True)
-                logger.info("Created directory: {}", pdf_path.parent)
-            
-            logger.info("Writing PDF file '{}'", pdf_file)
-            with PdfPages(pdf_file) as pdf:
-                for fig in figs:
-                    pdf.savefig(fig)
-
-        return figs if pdf_file is None else None
+            write_pdf(figs, pdf_file)
+        return figs
 
     def plot_masked(self, eyes: str|list = [], variables: str|list = [], 
                     units: str = "sec", merge: bool = False, 
