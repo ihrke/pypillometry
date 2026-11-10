@@ -798,10 +798,12 @@ class GenericPlots(Namespace):
         calibration = None,
         show_gaze_samples: bool = True,
         n_gaze_samples: int = 9,
-        ax: Optional["matplotlib.axes.Axes"] = None,
         viewing_angle: tuple = None,
-        projection: str = '2d'
-    ) -> tuple:
+        projection: str = '2d',
+        title: str = None,
+        axes=None,
+        figsize: tuple = None,
+    ):
         """
         Plot visualization of eye-tracking experimental setup geometry.
         
@@ -825,19 +827,24 @@ class GenericPlots(Namespace):
             Show sample gaze vectors to screen positions
         n_gaze_samples : int, default 9
             Number of sample gaze positions
-        ax : matplotlib axis, optional
-            Existing axis to plot on (only for '3d' projection)
         viewing_angle : tuple, optional
             Viewing angle for 3D projection (elev, azim) or (elev, azim, roll).
             Plain numbers are in degrees (as in matplotlib's ``view_init``);
             strings with units (e.g., ``("30 deg", "-60 deg")``) are parsed.
         projection : str, default '2d'
             '2d' for three orthogonal views, '3d' for interactive 3D view
+        title : str, optional
+            title of the figure; default: the camera angles
+        axes : matplotlib Axes or list of Axes, optional
+            axes to plot on: three axes (front, top, side view) for '2d',
+            one 3D axes for '3d'; default: a new figure
+        figsize : tuple, optional
+            size of the new figure
 
         Returns
         -------
-        fig : matplotlib Figure
-        ax : matplotlib axis or array of axes
+        matplotlib.figure.Figure
+            the figure (``fig.axes`` are the axes of the views)
 
         Raises
         ------
@@ -855,7 +862,7 @@ class GenericPlots(Namespace):
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
            >>> d = d.set_experimental_setup(camera_spherical=("20 deg", "-90 deg", "70 cm"))
-           >>> fig, axs = d.plot.plot_experimental_setup()
+           >>> fig = d.plot.plot_experimental_setup()
 
         To show fitted angles, pass the result of
         :meth:`d.pupil.fit_foreshortening() <pypillometry.eyedata.pupil.PupilNamespace.fit_foreshortening>` as ``calibration=``, or
@@ -888,6 +895,8 @@ class GenericPlots(Namespace):
             projection=projection,
             show_gaze_samples=show_gaze_samples,
             n_gaze_samples=n_gaze_samples,
-            ax=ax,
             viewing_angle=viewing_angle,
+            title=title,
+            axes=axes,
+            figsize=figsize,
         )

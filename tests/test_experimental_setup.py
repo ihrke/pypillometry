@@ -679,41 +679,44 @@ class TestExperimentalSetupPlot:
     
     def test_plot_3d(self):
         """Test 3D plot."""
-        fig, ax = self.setup.plot(projection='3d')
+        fig = self.setup.plot(projection='3d')
+        ax = fig.axes[0]
         assert fig is not None
         assert ax is not None
     
     def test_plot_2d(self):
         """Test 2D plot (returns fig and 3 axes)."""
-        result = self.setup.plot(projection='2d')
-        # 2D plot returns fig and list of axes
-        fig, axes = result
+        fig = self.setup.plot(projection='2d')
+        axes = fig.axes
         assert fig is not None
         assert len(axes) == 3  # Three orthogonal views
     
     def test_plot_3d_with_viewing_angle(self):
         """Test 3D plot with custom viewing angle."""
-        fig, ax = self.setup.plot(
+        fig = self.setup.plot(
             projection='3d',
             viewing_angle=("30 deg", "-60 deg")
         )
+        ax = fig.axes[0]
         assert fig is not None
         assert ax is not None
     
     def test_plot_2d_without_gaze_samples(self):
         """Test 2D plot without gaze samples."""
-        fig, axes = self.setup.plot(
+        fig = self.setup.plot(
             projection='2d',
             show_gaze_samples=False
         )
+        axes = fig.axes
         assert fig is not None
     
     def test_plot_2d_custom_gaze_samples(self):
         """Test 2D plot with custom gaze samples."""
-        fig, axes = self.setup.plot(
+        fig = self.setup.plot(
             projection='2d',
             n_gaze_samples=16
         )
+        axes = fig.axes
         assert fig is not None
 
 

@@ -399,40 +399,44 @@ class TestPlottingExperimentalSetup(unittest.TestCase):
     
     def test_plot_experimental_setup_3d_with_explicit_angles(self):
         """Test 3D plot with explicit theta and phi"""
-        fig, ax = self.data.plot.plot_experimental_setup(
+        fig = self.data.plot.plot_experimental_setup(
             theta="20 degrees",
             phi="-90 degrees",
             projection='3d'
         )
+        ax = fig.axes[0]
         self.assertIsNotNone(fig)
         self.assertIsNotNone(ax)
     
     def test_plot_experimental_setup_3d_default_projection(self):
         """Test that 3D is the default projection"""
-        fig, ax = self.data.plot.plot_experimental_setup(
+        fig = self.data.plot.plot_experimental_setup(
             theta=np.radians(20),
             phi=np.radians(-90)
         )
+        ax = fig.axes[0]
         self.assertIsNotNone(fig)
         self.assertIsNotNone(ax)
     
     def test_plot_experimental_setup_2d_with_explicit_angles(self):
         """Test 2D orthogonal projections with explicit angles"""
-        fig, axes = self.data.plot.plot_experimental_setup(
+        fig = self.data.plot.plot_experimental_setup(
             theta="20 degrees",
             phi="-90 degrees",
             projection='2d'
         )
+        axes = fig.axes
         self.assertIsNotNone(fig)
         self.assertEqual(len(axes), 3)  # Should return 3 axes
     
     def test_plot_experimental_setup_with_unit_quantities(self):
         """Test with Pint quantities for angles"""
-        fig, axes = self.data.plot.plot_experimental_setup(
+        fig = self.data.plot.plot_experimental_setup(
             theta=20 * pp.u.degree,
             phi=-90 * pp.u.degree,
             projection='2d'
         )
+        axes = fig.axes
         self.assertIsNotNone(fig)
         self.assertEqual(len(axes), 3)
     
@@ -468,10 +472,11 @@ class TestPlottingExperimentalSetup(unittest.TestCase):
         with warnings.catch_warnings():
             # fitted angles are in radians, no "plain number" warning (bug 1.4)
             warnings.filterwarnings("error", message=".*plain number provided.*")
-            fig, axes = self.data.plot.plot_experimental_setup(
+            fig = self.data.plot.plot_experimental_setup(
                 calibration=calib,
                 projection='2d'
             )
+            axes = fig.axes
         self.assertIsNotNone(fig)
         self.assertEqual(len(axes), 3)
     
@@ -479,7 +484,8 @@ class TestPlottingExperimentalSetup(unittest.TestCase):
         """Test that plot uses angles from experimental_setup when not explicitly provided"""
         # setUp already configured angles in experimental_setup
         # Plot should work without providing theta/phi explicitly
-        fig, ax = self.data.plot.plot_experimental_setup(projection='3d')
+        fig = self.data.plot.plot_experimental_setup(projection='3d')
+        ax = fig.axes[0]
         self.assertIsNotNone(fig)
         self.assertIsNotNone(ax)
     
@@ -511,34 +517,37 @@ class TestPlottingExperimentalSetup(unittest.TestCase):
     
     def test_plot_experimental_setup_without_gaze_samples(self):
         """Test 2D plot without gaze samples"""
-        fig, axes = self.data.plot.plot_experimental_setup(
+        fig = self.data.plot.plot_experimental_setup(
             theta="20 degrees",
             phi="-90 degrees",
             projection='2d',
             show_gaze_samples=False
         )
+        axes = fig.axes
         self.assertIsNotNone(fig)
         self.assertEqual(len(axes), 3)
     
     def test_plot_experimental_setup_custom_gaze_samples(self):
         """Test with custom number of gaze samples"""
-        fig, axes = self.data.plot.plot_experimental_setup(
+        fig = self.data.plot.plot_experimental_setup(
             theta="20 degrees",
             phi="-90 degrees",
             projection='2d',
             n_gaze_samples=16  # 4x4 grid
         )
+        axes = fig.axes
         self.assertIsNotNone(fig)
         self.assertEqual(len(axes), 3)
     
     def test_plot_experimental_setup_custom_viewing_angle_3d(self):
         """Test 3D with custom viewing angle"""
-        fig, ax = self.data.plot.plot_experimental_setup(
+        fig = self.data.plot.plot_experimental_setup(
             theta="20 degrees",
             phi="-90 degrees",
             projection='3d',
             viewing_angle=("60 degrees", "-45 degrees")
         )
+        ax = fig.axes[0]
         self.assertIsNotNone(fig)
         self.assertIsNotNone(ax)
         self.assertAlmostEqual(ax.elev, 60)
@@ -546,9 +555,10 @@ class TestPlottingExperimentalSetup(unittest.TestCase):
 
     def test_plot_experimental_setup_viewing_angle_numbers_are_degrees(self):
         """Plain numbers in viewing_angle are degrees"""
-        fig, ax = self.data.plot.plot_experimental_setup(
+        fig = self.data.plot.plot_experimental_setup(
             projection='3d', viewing_angle=(30, -60)
         )
+        ax = fig.axes[0]
         self.assertAlmostEqual(ax.elev, 30)
         self.assertAlmostEqual(ax.azim, -60)
 

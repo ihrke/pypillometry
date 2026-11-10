@@ -135,5 +135,24 @@ class TestSinglePanel(ConventionTest):
         self.assertEqual(plt.gca().get_title(), "T")
 
 
+class TestMultiPanel(ConventionTest):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.setup = pp.ExperimentalSetup(
+            screen_resolution=(1920, 1080), physical_screen_size=("52 cm", "29 cm"),
+            eye_to_screen_center="60 cm", camera_spherical=("20 deg", "-90 deg", "70 cm"))
+
+    def test_setup_plot_2d(self):
+        self.assertMultiPanel(self.setup.plot, 3)
+
+    def test_setup_plot_3d(self):
+        fig = self.setup.plot(projection="3d", title="T")
+        self.assertEqual(fig.axes[0].get_title(), "T")
+        fig2 = plt.figure()
+        ax = fig2.add_subplot(projection="3d")
+        self.assertIs(self.setup.plot(projection="3d", axes=ax), fig2)
+
+
 if __name__ == "__main__":
     unittest.main()
