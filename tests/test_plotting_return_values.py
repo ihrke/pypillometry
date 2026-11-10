@@ -49,11 +49,10 @@ class TestPlottingReturnValues(unittest.TestCase):
     
     def test_plot_timeseries_creates_axes(self):
         """Test that plot_timeseries creates the correct number of axes"""
-        fig = plt.figure()
         # Get available variables
         available_vars = list(set([k.split('_')[1] for k in self.data.data.keys() if '_' in k]))
         if len(available_vars) > 0:
-            self.data.plot.plot_timeseries(variables=[available_vars[0]])
+            fig = self.data.plot.plot_timeseries(variables=[available_vars[0]])
             # Should create 1 subplot for 1 variable
             self.assertGreaterEqual(len(fig.axes), 1)
     

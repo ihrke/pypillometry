@@ -123,82 +123,69 @@ class TestPlotTimeseriesParameters(unittest.TestCase):
     
     def test_show_onsets_line(self):
         """Test plot_timeseries with line onsets"""
-        fig = plt.figure()
-        self.data.plot.plot_timeseries(show_onsets="line")
+        fig = self.data.plot.plot_timeseries(show_onsets="line")
         self.assertIsNotNone(plt.gcf())
     
     def test_show_onsets_label(self):
         """Test plot_timeseries with label onsets"""
-        fig = plt.figure()
-        self.data.plot.plot_timeseries(show_onsets="label")
+        fig = self.data.plot.plot_timeseries(show_onsets="label")
         self.assertIsNotNone(plt.gcf())
     
     def test_show_onsets_both(self):
         """Test plot_timeseries with both line and label onsets"""
-        fig = plt.figure()
-        self.data.plot.plot_timeseries(show_onsets="both")
+        fig = self.data.plot.plot_timeseries(show_onsets="both")
         self.assertIsNotNone(plt.gcf())
     
     def test_show_onsets_none(self):
         """Test plot_timeseries with no onsets"""
-        fig = plt.figure()
-        self.data.plot.plot_timeseries(show_onsets="none")
+        fig = self.data.plot.plot_timeseries(show_onsets="none")
         self.assertIsNotNone(plt.gcf())
     
     def test_show_masked_true(self):
         """Test plot_timeseries with show_masked=True (plots all data including masked regions)"""
-        fig = plt.figure()
-        self.data.plot.plot_timeseries(show_masked=True)
+        fig = self.data.plot.plot_timeseries(show_masked=True)
         self.assertIsNotNone(plt.gcf())
     
     def test_show_masked_false(self):
         """Test plot_timeseries with show_masked=False (creates gaps at masked regions)"""
-        fig = plt.figure()
-        self.data.plot.plot_timeseries(show_masked=False)
+        fig = self.data.plot.plot_timeseries(show_masked=False)
         self.assertIsNotNone(plt.gcf())
     
     def test_show_mask_highlight_true(self):
         """Test plot_timeseries with mask highlighting enabled"""
-        fig = plt.figure()
-        self.data.plot.plot_timeseries(show_mask_highlight=True)
+        fig = self.data.plot.plot_timeseries(show_mask_highlight=True)
         self.assertIsNotNone(plt.gcf())
     
     def test_show_mask_highlight_false(self):
         """Test plot_timeseries with mask highlighting disabled"""
-        fig = plt.figure()
-        self.data.plot.plot_timeseries(show_mask_highlight=False)
+        fig = self.data.plot.plot_timeseries(show_mask_highlight=False)
         self.assertIsNotNone(plt.gcf())
     
     def test_show_masked_false_with_highlight(self):
         """Test plot_timeseries with gaps at masked regions but still highlighting"""
-        fig = plt.figure()
-        self.data.plot.plot_timeseries(show_masked=False, show_mask_highlight=True)
+        fig = self.data.plot.plot_timeseries(show_masked=False, show_mask_highlight=True)
         self.assertIsNotNone(plt.gcf())
     
     def test_show_masked_true_no_highlight(self):
         """Test plot_timeseries with masked data plotted but no highlighting"""
-        fig = plt.figure()
-        self.data.plot.plot_timeseries(show_masked=True, show_mask_highlight=False)
+        fig = self.data.plot.plot_timeseries(show_masked=True, show_mask_highlight=False)
         self.assertIsNotNone(plt.gcf())
     
     def test_units_none(self):
         """Test plot_timeseries with the default units (ms)"""
-        fig = plt.figure()
-        self.data.plot.plot_timeseries(units="ms")
+        fig = self.data.plot.plot_timeseries(units="ms")
         self.assertIsNotNone(plt.gcf())
     
     def test_plot_timeseries_style_single_dict(self):
         """Test plot_timeseries with single style dict (should auto-differentiate eyes)"""
-        fig = plt.figure()
-        self.data.plot.plot_timeseries(eyes=["left", "right"], style={'color': 'blue', 'alpha': 0.8})
+        fig = self.data.plot.plot_timeseries(eyes=["left", "right"], style={'color': 'blue', 'alpha': 0.8})
         self.assertIsNotNone(plt.gcf())
         # Check that axes were created
         self.assertGreater(len(fig.axes), 0)
     
     def test_plot_timeseries_style_per_eye(self):
         """Test plot_timeseries with per-eye style dict"""
-        fig = plt.figure()
-        self.data.plot.plot_timeseries(
+        fig = self.data.plot.plot_timeseries(
             eyes=["left", "right"],
             style={
                 'left': {'color': 'red', 'linestyle': '-'},

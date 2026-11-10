@@ -51,16 +51,14 @@ class TestPlottingEdgeCases(unittest.TestCase):
     
     def test_plot_timeseries_empty_variables(self):
         """Test plot_timeseries with empty variables list"""
-        fig = plt.figure()
         # Empty list should plot all available variables
-        self.data.plot.plot_timeseries(variables=[])
+        fig = self.data.plot.plot_timeseries(variables=[])
         self.assertIsNotNone(plt.gcf())
     
     def test_plot_timeseries_empty_eyes(self):
         """Test plot_timeseries with empty eyes list"""
-        fig = plt.figure()
         # Empty list should plot all available eyes
-        self.data.plot.plot_timeseries(eyes=[])
+        fig = self.data.plot.plot_timeseries(eyes=[])
         self.assertIsNotNone(plt.gcf())
 
 
@@ -78,9 +76,8 @@ class TestPlottingErrorHandling(unittest.TestCase):
     
     def test_show_onsets_invalid_option(self):
         """Test that invalid show_onsets raises ValueError"""
-        fig = plt.figure()
         with self.assertRaises(ValueError):
-            self.data.plot.plot_timeseries(show_onsets="invalid_option")
+            fig = self.data.plot.plot_timeseries(show_onsets="invalid_option")
     
     def test_plot_intervals_invalid_type(self):
         """Test that invalid input type raises TypeError"""
@@ -114,8 +111,7 @@ class TestPlottingMinimalData(unittest.TestCase):
     
     def test_plot_timeseries_minimal_data(self):
         """Test plot_timeseries with minimal data"""
-        fig = plt.figure()
-        self.data.plot.plot_timeseries()
+        fig = self.data.plot.plot_timeseries()
         self.assertIsNotNone(plt.gcf())
     
     def test_plot_intervals_minimal_data(self):
@@ -180,8 +176,7 @@ class TestPlottingLargeData(unittest.TestCase):
     
     def test_plot_timeseries_large_data(self):
         """Test plot_timeseries with large dataset"""
-        fig = plt.figure()
-        self.data.plot.plot_timeseries()
+        fig = self.data.plot.plot_timeseries()
         self.assertIsNotNone(plt.gcf())
 
 

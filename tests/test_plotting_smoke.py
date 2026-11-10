@@ -26,20 +26,17 @@ class TestPlottingSmokeGeneric(unittest.TestCase):
     
     def test_plot_timeseries_runs(self):
         """Test that plot_timeseries completes without error"""
-        fig = plt.figure()
-        self.data.plot.plot_timeseries()
+        fig = self.data.plot.plot_timeseries()
         self.assertIsNotNone(plt.gcf())
     
     def test_plot_timeseries_with_range(self):
         """Test plot_timeseries with custom range"""
-        fig = plt.figure()
-        self.data.plot.plot_timeseries(plot_range=(0, 10))
+        fig = self.data.plot.plot_timeseries(plot_range=(0, 10))
         self.assertIsNotNone(plt.gcf())
     
     def test_plot_timeseries_with_units(self):
         """Test plot_timeseries with different units"""
-        fig = plt.figure()
-        self.data.plot.plot_timeseries(units="sec")
+        fig = self.data.plot.plot_timeseries(units="sec")
         self.assertIsNotNone(plt.gcf())
     
     def test_plot_intervals_runs(self):
@@ -137,8 +134,7 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
     
     def test_simple_plot_timeseries(self):
         """Test plot_timeseries with simple data"""
-        fig = plt.figure()
-        self.data.plot.plot_timeseries()
+        fig = self.data.plot.plot_timeseries()
         self.assertIsNotNone(plt.gcf())
     
     def test_plot_masked_single_eye_variable(self):

@@ -28,8 +28,7 @@ class TestPlottingOverlay(unittest.TestCase):
     
     def test_plot_timeseries_with_label_prefix(self):
         """Test plot_timeseries with label_prefix"""
-        fig = plt.figure()
-        self.data.plot.plot_timeseries(
+        fig = self.data.plot.plot_timeseries(
             variables=['pupil'],
             label_prefix="original"
         )
@@ -41,16 +40,15 @@ class TestPlottingOverlay(unittest.TestCase):
     
     def test_plot_timeseries_overlay_two_datasets(self):
         """Test overlaying two datasets with different prefixes"""
-        fig = plt.figure()
         
         # Plot original data
-        self.data.plot.plot_timeseries(
+        fig = self.data.plot.plot_timeseries(
             variables=['pupil'],
             label_prefix="original"
         )
         
         # Plot modified data on same axes
-        self.data2.plot.plot_timeseries(
+        self.data2.plot.plot_timeseries(axes=fig.axes,
             variables=['pupil'],
             label_prefix="processed"
         )
@@ -63,10 +61,9 @@ class TestPlottingOverlay(unittest.TestCase):
     
     def test_plot_timeseries_with_style(self):
         """Test plot_timeseries with custom style"""
-        fig = plt.figure()
         custom_style = {'color': 'red', 'linestyle': '--', 'alpha': 0.7}
         
-        self.data.plot.plot_timeseries(
+        fig = self.data.plot.plot_timeseries(
             variables=['pupil'],
             style=custom_style
         )
@@ -80,10 +77,9 @@ class TestPlottingOverlay(unittest.TestCase):
     
     def test_plot_timeseries_overlay_with_styles(self):
         """Test overlaying with different styles"""
-        fig = plt.figure()
         
         # Plot with solid line (only left eye)
-        self.data.plot.plot_timeseries(
+        fig = self.data.plot.plot_timeseries(
             variables=['pupil'],
             eyes=['left'],
             label_prefix="solid",
@@ -91,7 +87,7 @@ class TestPlottingOverlay(unittest.TestCase):
         )
         
         # Plot with dashed line (only left eye)
-        self.data2.plot.plot_timeseries(
+        self.data2.plot.plot_timeseries(axes=fig.axes,
             variables=['pupil'],
             eyes=['left'],
             label_prefix="dashed",
@@ -146,10 +142,9 @@ class TestPlottingOverlay(unittest.TestCase):
     
     def test_overlay_without_prefix(self):
         """Test that overlay works without prefix (default behavior)"""
-        fig = plt.figure()
         
         # Without prefix
-        self.data.plot.plot_timeseries(variables=['pupil'])
+        fig = self.data.plot.plot_timeseries(variables=['pupil'])
         
         # Should still work and create labels
         ax = fig.axes[0]
@@ -215,19 +210,18 @@ class TestPlottingOverlayMultipleVariables(unittest.TestCase):
     
     def test_overlay_multiple_variables(self):
         """Test overlaying with multiple variables"""
-        fig = plt.figure()
         
         # Get available variables
         available_vars = list(set([k.split('_')[1] for k in self.data.data.keys() if '_' in k]))
         if len(available_vars) >= 2:
             vars_to_plot = available_vars[:2]
             
-            self.data.plot.plot_timeseries(
+            fig = self.data.plot.plot_timeseries(
                 variables=vars_to_plot,
                 label_prefix="original"
             )
             
-            self.data2.plot.plot_timeseries(
+            self.data2.plot.plot_timeseries(axes=fig.axes,
                 variables=vars_to_plot,
                 label_prefix="modified"
             )

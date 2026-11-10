@@ -276,12 +276,14 @@ class GenericPlots(Namespace):
             label_prefix: str="",
             style: dict=None,
             highlight=None,
-            highlight_color="lightblue"
-            ) -> None:
+            highlight_color="lightblue",
+            title: str=None,
+            axes=None,
+            figsize: tuple=None,
+            **kwargs):
         """
-        Plot a part of the EyeData. Each data type is plotted in a separate subplot.
-        
-        Uses the current figure/axes. If no figure exists, creates one automatically.
+        Plot a part of the EyeData. Each variable is plotted in a separate
+        subplot (one below the other), all eyes in the same subplot.
 
         Parameters
         ----------
@@ -326,12 +328,29 @@ class GenericPlots(Namespace):
         highlight_color : color or list of colors, optional
             color of the shading: one for all or one per element of
             `highlight`; default "lightblue"
+        title : str, optional
+            title of the figure
+        axes : list of matplotlib.axes.Axes, optional
+            axes to plot on, one per variable (e.g., ``fig.axes`` of an
+            earlier call, to overlay several datasets); default: a new
+            figure
+        figsize : tuple, optional
+            size of the new figure
+        **kwargs
+            passed to :meth:`matplotlib.axes.Axes.plot` for all lines
+            (after `style`)
+
+        Returns
+        -------
+        matplotlib.figure.Figure
+            the figure of the plot
 
         Raises
         ------
         ValueError
-            if `show_onsets` is not one of the allowed values or if
-            `plot_range` does not overlap with the data
+            if `show_onsets` is not one of the allowed values, if
+            `plot_range` does not overlap with the data or if `axes` does not
+            contain one axes per variable
 
         Examples
         --------
@@ -341,8 +360,8 @@ class GenericPlots(Namespace):
            >>> from pypillometry import u
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
-           >>> fig = plt.figure(figsize=(10, 6))
-           >>> d.plot.plot_timeseries(plot_range=(0, 20) * u.sec, units="sec")
+           >>> fig = d.plot.plot_timeseries(plot_range=(0, 20) * u.sec, units="sec",
+           ...                              figsize=(10, 6))
 
         The first second after each stimulus, shaded in all subplots:
 
@@ -352,12 +371,10 @@ class GenericPlots(Namespace):
            >>> from pypillometry import u
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
-           >>> fig = plt.figure(figsize=(10, 6))
-           >>> d.plot.plot_timeseries(plot_range=(0, 20) * u.sec,
-           ...                        highlight=d.get_epochs("S_", (0, 1000) * u.ms),
-           ...                        highlight_color="green")
+           >>> fig = d.plot.plot_timeseries(plot_range=(0, 20) * u.sec, figsize=(10, 6),
+           ...                              highlight=d.get_epochs("S_", (0, 1000) * u.ms),
+           ...                              highlight_color="green")
         """
-        import matplotlib.pyplot as plt
         obj = self._d
         pairs = obj.data.select(eyes, variables)
         eyes = list(dict.fromkeys(eye for eye, _ in pairs))
@@ -406,26 +423,8 @@ class GenericPlots(Namespace):
         evlab=obj.events.labels[ixx]
         evon=evon[ixx]
 
-        nplots = len(variables)
-        # Use current figure or create new one if none exists
-        fig = plt.gcf()
-        # Check if current figure is empty/new
-        if len(fig.axes) == 0:
-            # Create subplots in the current figure
-            axs = fig.subplots(nplots, 1)
-            # for the case when nplots=1, make axs iterable
-            if not isinstance(axs, Iterable):
-                axs=[axs]
-        else:
-            # Use existing axes
-            axs = fig.axes
-            if len(axs) != nplots:
-                logger.warning(f"Current figure has {len(axs)} axes but {nplots} variables to plot. Creating new subplots.")
-                fig.clear()
-                axs = fig.subplots(nplots, 1)
-                if not isinstance(axs, Iterable):
-                    axs=[axs]
-        
+        fig, axs = get_axes(axes, len(variables), "variable", figsize)
+
         # Determine if style is per-eye or global
         per_eye_style = (style is not None and 
                          isinstance(style, dict) and 
@@ -469,7 +468,8 @@ class GenericPlots(Namespace):
                     elif len(eyes) > 1:
                         # No style provided but multiple eyes: use default colors with varied linestyles
                         plot_kwargs['linestyle'] = linestyles[idx % len(linestyles)]
-                    
+                    plot_kwargs.update(kwargs)
+
                     # Plot the data - use masked array if show_masked is False
                     if show_masked:
                         # Plot all data including masked regions
@@ -500,10 +500,12 @@ class GenericPlots(Namespace):
                     ax.text(ev, ll+(ul-ll)/2., "%s"%lab, fontsize=8, rotation=90)
             ax.set_title(var)
             ax.legend()
-        
-        plt.legend()
-        plt.xlabel(xlab)
-        
+
+        axs[-1].set_xlabel(xlab)
+        if title is not None:
+            fig.suptitle(title)
+        return fig
+
     def plot_timeseries_segments(self, pdf_file: str=None, interv: float="1 min", figsize=(15,5), 
                                   ylim=None, eyes: list=[], variables: list=[], 
                                   units: str="sec", **kwargs):
@@ -578,10 +580,8 @@ class GenericPlots(Namespace):
         figs=[]
 
         for start,end in segments:
-            # Create a new figure for each segment
-            fig = plt.figure(figsize=figsize)
-            self.plot_timeseries(plot_range=(start, end), units=units, 
-                               eyes=eyes, variables=variables, **kwargs)
+            fig = self.plot_timeseries(plot_range=(start, end), units=units, figsize=figsize,
+                                       eyes=eyes, variables=variables, **kwargs)
             if ylim is not None:
                 for ax in fig.axes:
                     ax.set_ylim(*ylim)

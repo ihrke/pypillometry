@@ -153,6 +153,15 @@ class TestMultiPanel(ConventionTest):
         ax = fig2.add_subplot(projection="3d")
         self.assertIs(self.setup.plot(projection="3d", axes=ax), fig2)
 
+    def test_plot_timeseries(self):
+        self.assertMultiPanel(self.d.plot.plot_timeseries, 2, variables=["pupil", "x"],
+                              plot_range=(0, 5) * u.sec)
+        fig = self.d.plot.plot_timeseries(variables="pupil", eyes="left", title="T",
+                                          color="red", figsize=(4, 3))
+        self.assertEqual(fig._suptitle.get_text(), "T")
+        self.assertEqual(fig.axes[0].lines[0].get_color(), "red")
+        np.testing.assert_allclose(fig.get_size_inches(), (4, 3))
+
 
 if __name__ == "__main__":
     unittest.main()
