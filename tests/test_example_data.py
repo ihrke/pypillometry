@@ -57,6 +57,34 @@ class TestExampleData(unittest.TestCase):
             self.assertEqual(len(downloaded), 2)
         self.assertEqual(d.name, "rlmw_002")
 
+    def test_get_nback_001(self):
+        """Loader reads the downloaded pypil file (figshare mocked)"""
+        info = example_data.example_datasets["nback_001"]
+        with tempfile.TemporaryDirectory() as cache:
+            src = os.path.join(cache, "src.pypil")
+            pp.get_example_data("rlmw_002_short").write_file(src)
+            with open(src, "rb") as f:
+                content = f.read()
+            listing = {info["pypil"]: {"id": 1, "download_url": "https://x/files/1",
+                                       "size": len(content), "md5": ""}}
+            downloaded = []
+
+            def fake_download(url, fname, **kwargs):
+                downloaded.append(url)
+                with open(fname, "wb") as f:
+                    f.write(content)
+
+            with mock.patch.object(pp.io, "get_figshare_files",
+                                   return_value=listing) as mock_list, \
+                 mock.patch.object(pp.io, "download", fake_download):
+                d = pp.get_example_data("nback_001", cache_dir=cache)
+                pp.get_example_data("nback_001", cache_dir=cache)
+            self.assertEqual(len(downloaded), 1)
+            mock_list.assert_called_once_with(str(info["figshare"]),
+                                              info["figshare_version"])
+        self.assertIsInstance(d, pp.EyeData)
+        self.assertEqual(d.name, "nback_001")
+
     def test_default_cache_dir(self):
         with mock.patch.dict("os.environ", {"XDG_CACHE_HOME": "/some/cache"}):
             self.assertEqual(example_data._user_cache_dir(),

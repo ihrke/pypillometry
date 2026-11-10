@@ -6,7 +6,8 @@ Example datasets for pypillometry.
 
 This module provides example datasets for pypillometry. The datasets are
 used in the documentation and for testing purposes. Most of them are stored on
-OSF: https://osf.io/p2u74/
+OSF (https://osf.io/p2u74/) or figshare
+(https://figshare.com/articles/dataset/Example_pypillometry_dataset/28776617).
 """
 
 import numpy as np
@@ -16,12 +17,12 @@ from importlib.resources import files
 import inspect
 import os
 import os.path
-from .io import fetch_url
+from .io import fetch_url, fetch_figshare_file
 from .convenience import _user_cache_dir
 
 __all__ = [
     "get_available_datasets", "get_example_data", "get_rlmw_002",
-    "get_rlmw_002_short", "get_rlmw_010_edf",
+    "get_rlmw_002_short", "get_rlmw_010_edf", "get_nback_001",
 ]
 
 example_datasets = {
@@ -46,6 +47,16 @@ example_datasets = {
         "Data from a single participant, features strong horizontal eye-movements "
         "between the two stimuli presented on the left and right.",
     },
+    "nback_001": {
+        "figshare": 28776617,
+        "figshare_version": 1,
+        "pypil": "sub-001_ses-1.pypil",
+        "description": "Binocular data from a 56-minute N-back task "
+        "(0-, 1- and 2-back blocks in three runs with grey, black and white "
+        "screen background), saved as a pypillometry file. "
+        "Data from a single participant, with events for fixation, stimulus "
+        "and response in each trial.",
+    },
 }
 
 class DatasetDict(RecordDict):
@@ -63,6 +74,8 @@ class DatasetDict(RecordDict):
         for key, info in self.items():
             if "edf" in info:
                 source_type = "EDF"
+            elif "pypil" in info:
+                source_type = "pypil (figshare)" if "figshare" in info else "pypil"
             elif "samples_asc" in info or "sample_asc" in info:
                 sample = str(info.get("samples_asc", info.get("sample_asc")))
                 source_type = "ASC (OSF)" if "osf.io" in sample else "ASC (local)"
@@ -326,4 +339,35 @@ def get_rlmw_010_edf(cache_dir=None):
         physical_screen_size=("30 cm", "20 cm"),
         eye_to_screen_center="60 cm",
     )
+    return d
+
+
+def get_nback_001(cache_dir=None):
+    """Load the "nback_001" example dataset (downloaded from figshare).
+
+    Binocular gaze and pupil data from a 56-minute N-back task (single
+    participant), saved as a pypillometry file. Events mark fixation,
+    stimulus and response in each trial (e.g.,
+    ``run-1_scr-grey_block-1_task-0b_trial-1_stim_target-1``). The file is
+    downloaded into `cache_dir` on the first call and reused later. Usually
+    called via :func:`~pypillometry.get_example_data`.
+
+    Parameters
+    ----------
+    cache_dir : str, optional
+        directory for the downloaded files; default
+        ``$XDG_CACHE_HOME/pypillometry`` (``~/.cache/pypillometry``)
+
+    Returns
+    -------
+    EyeData
+        the example dataset
+    """
+    info = example_datasets["nback_001"]
+    fname = fetch_figshare_file(info["figshare"], info["pypil"],
+                                version=info["figshare_version"],
+                                cache_dir=cache_dir or _user_cache_dir(),
+                                cache_layout="mirror")
+    d = EyeData.from_file(fname)
+    d.name = "nback_001"
     return d

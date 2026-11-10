@@ -15,6 +15,8 @@
 - `plot_range` is the first argument of all plots that have it (changed for `plot_pupil_foreshortening_error_surface()`, where it came after `eyes`)
 - `plot_timeseries_segments()` and `plot_pupil_segments()` return the figures also with `pdf_file=`
 - `get_figshare_files()` and `fetch_figshare_file()`: list and download files from public figshare items
+- `get_figshare_files()` and `fetch_figshare_file()`: list and download files from public figshare items
+- Example dataset `nback_001` (N-back task, downloaded from figshare)
 
 ## 2.2.0 (2026-11-10)
 

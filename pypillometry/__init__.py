@@ -79,7 +79,7 @@ from .io import (
 from .study import load_study_local, load_study_osf, get_osf_project_files
 from .example_data import (
     get_available_datasets, get_example_data, get_rlmw_002,
-    get_rlmw_002_short, get_rlmw_010_edf,
+    get_rlmw_002_short, get_rlmw_010_edf, get_nback_001,
 )
 
 # ---------------------------------------------------------------------------
@@ -123,7 +123,7 @@ __all__ = [
     "fetch_figshare_file",
     "load_study_local", "load_study_osf", "get_osf_project_files",
     "get_available_datasets", "get_example_data", "get_rlmw_002",
-    "get_rlmw_002_short", "get_rlmw_010_edf",
+    "get_rlmw_002_short", "get_rlmw_010_edf", "get_nback_001",
     # viewer
     "view", "tweak",
     # units, settings and logging
