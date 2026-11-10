@@ -22,6 +22,7 @@ This version is a major refactor of the package without changing functionality (
 - `downsample()` stores the actual sampling rate (`fs/factor`)
 - Gaze plots (heatmap, scanpath) draw y downward (screen pixels)
 - The time axis of all plots is in seconds by default 
+- `nblinks()` was removed (use `blink_stats()` or `layer_stats()`)
 
 ### Added
 
@@ -44,11 +45,13 @@ This version is a major refactor of the package without changing functionality (
 - `d.plot.plot_masked(policy=...)` to show the
   interpolated stretches
 - `"<start>"` and `"<end>"` for interval selectors
+- `d.layer_stats()`: stats for each mask layer per channel
+- `pp.Table` and `pp.RecordDict`
+- `seg.plot_carpet()`: all segments of a channel as an image
 
 ### Fixed
 
-- `from_eyelink()` failed with "time data ... does not match format" in
-  programs that use a locale with non-English day and month names
+- `from_eyelink()` with non-English day and month names
 - Download progress bars hidden in `pp.nologging()` 
 - `fs` after `downsample` did not match the time vector
 - `reset_time` did not shift blinks stored in time units
