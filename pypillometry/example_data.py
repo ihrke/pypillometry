@@ -345,11 +345,8 @@ def get_nback_001(cache_dir=None):
 
     # add each trial's row of the log to all its events (fixation, stimulus,
     # response), matched by run, block, task and trial
-    keys = ["run", "block", "task", "trial"]
-    columns = ["stimulus", "target", "response", "accuracy", "rt"]
-    trials = pd.DataFrame({k: events.meta[k] for k in keys}).merge(
-        log[keys + columns], on=keys, how="left", validate="many_to_one")
-    for col in columns:
-        events = events.set_meta(col, trials[col].to_numpy())
+    events = events.merge_table(
+        log, on=["run", "block", "task", "trial"],
+        columns=["stimulus", "target", "response", "accuracy", "rt"])
     d.set_events(events)
     return d
