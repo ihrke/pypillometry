@@ -24,6 +24,8 @@ INTERNAL = {
         "test_selector", "is_url", "requires_package", "normalize_unit",
     },
     "pypillometry.example_data": {"DatasetDict"},
+    # helpers of the plotting functions
+    "pypillometry.plot._axes": {"get_ax", "get_axes", "write_pdf"},
     # namespaces: used as d.pupil / pp.pupil, documented in their modules
     "pypillometry.eyedata.namespace": {"Namespace", "accessor"},
     "pypillometry.eyedata.pupil": {"PupilNamespace"},
