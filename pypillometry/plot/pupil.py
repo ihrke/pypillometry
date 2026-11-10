@@ -428,8 +428,11 @@ class PupilPlots(GenericPlots):
         vmax: Optional[float] = None,
         min_samples: Optional[int] = None,
         smooth: Optional[float] = None,
-        limits: Optional[Tuple[float, float, float, float]] = None
-    ) -> None:
+        limits: Optional[Tuple[float, float, float, float]] = None,
+        title: str = None,
+        axes=None,
+        figsize: tuple = None,
+    ):
         """
         Plot a heatmap showing average pupil size across x/y gaze positions.
         
@@ -473,11 +476,19 @@ class PupilPlots(GenericPlots):
         limits : tuple, optional
             Axis limits as (xmin, xmax, ymin, ymax). If not provided, uses screen
             limits when available (and data falls within), otherwise uses data extent.
-            
+        title : str, optional
+            title of the figure
+        axes : list of matplotlib.axes.Axes, optional
+            axes to plot on, one per eye; default: a new figure (one
+            subplot per eye, side by side)
+        figsize : tuple, optional
+            size of the new figure
+
         Returns
         -------
-        None
-            Creates a matplotlib figure with the heatmap(s)
+        matplotlib.figure.Figure
+            the figure of the plot (``fig.axes`` also contains the
+            colorbars)
 
         Examples
         --------
@@ -489,12 +500,11 @@ class PupilPlots(GenericPlots):
            >>> from pypillometry import u
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
-           >>> d.plot.plot_pupil_foreshortening_error_surface(eyes="left")
+           >>> fig = d.plot.plot_pupil_foreshortening_error_surface(eyes="left")
 
         ``vmin``/``vmax`` set the color range, ``min_samples`` hides bins with
         few samples and ``smooth`` applies Gaussian smoothing.
         """
-        import matplotlib.pyplot as plt
         import matplotlib.patches as patches
         from mpl_toolkits.axes_grid1 import make_axes_locatable
         from scipy.ndimage import gaussian_filter
@@ -523,26 +533,8 @@ class PupilPlots(GenericPlots):
         else:
             endix = np.argmin(np.abs(tx - end)) + 1  # the end sample is plotted too
         
-        # Use current figure or create new one if none exists
         nplots = len(eyes)
-        fig = plt.gcf()
-        
-        # Check if current figure is empty/new
-        if len(fig.axes) == 0:
-            # Create subplots in the current figure
-            axs = fig.subplots(1, nplots)
-            # Make axs iterable even for single plot
-            if not isinstance(axs, Iterable):
-                axs = [axs]
-        else:
-            # Use existing axes
-            axs = fig.axes
-            if len(axs) != nplots:
-                logger.warning(f"Current figure has {len(axs)} axes but {nplots} eyes to plot. Creating new subplots.")
-                fig.clear()
-                axs = fig.subplots(1, nplots)
-                if not isinstance(axs, Iterable):
-                    axs = [axs]
+        fig, axs = get_axes(axes, nplots, "eye", figsize, nrows=1, ncols=nplots)
         
         # Plot each eye
         for eye, ax in zip(eyes, axs):
@@ -710,3 +702,6 @@ class PupilPlots(GenericPlots):
                     linewidth=2
                 )
                 ax.add_patch(screenrect)
+        if title is not None:
+            fig.suptitle(title)
+        return fig

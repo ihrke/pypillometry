@@ -329,8 +329,8 @@ class CircularROI(ROI):
            >>> d = pp.get_example_data("rlmw_002_short")
            >>> left = pp.CircularROI((280, 512), radius=150, name="left stimulus")
            >>> right = pp.RectangularROI((850, 350), (1150, 650), name="right stimulus")
-           >>> d.plot.plot_heatmap(eyes="left")
-           >>> ax = plt.gcf().axes[0]  # the heatmap (axes[1] is the colorbar)
+           >>> fig = d.plot.plot_heatmap(eyes="left")
+           >>> ax = fig.axes[0]  # the heatmap (axes[1] is the colorbar)
            >>> ax = left.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)
            >>> ax = right.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)
 
@@ -575,8 +575,8 @@ class RectangularROI(ROI):
            >>> d = pp.get_example_data("rlmw_002_short")
            >>> left = pp.CircularROI((280, 512), radius=150, name="left stimulus")
            >>> right = pp.RectangularROI((850, 350), (1150, 650), name="right stimulus")
-           >>> d.plot.plot_heatmap(eyes="left")
-           >>> ax = plt.gcf().axes[0]  # the heatmap (axes[1] is the colorbar)
+           >>> fig = d.plot.plot_heatmap(eyes="left")
+           >>> ax = fig.axes[0]  # the heatmap (axes[1] is the colorbar)
            >>> ax = left.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)
            >>> ax = right.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)
 

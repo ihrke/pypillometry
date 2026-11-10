@@ -28,14 +28,16 @@ class GazePlots(GenericPlots):
         gridsize: int|str = 30,#"auto"
         min_samples: Optional[int] = 1,
         smooth: Optional[float] = None,
-        limits: Optional[Tuple[float, float, float, float]] = None
-    ) -> None:
+        limits: Optional[Tuple[float, float, float, float]] = None,
+        title: str = None,
+        axes=None,
+        figsize: tuple = None,
+    ):
         """
         Plot EyeData as a heatmap. Typically used for a large amount of data
         to spot the most frequent locations.
         To plot a scanpath, use :meth:`.plot_scanpath()` instead.
-        Each eye is plotted in a separate subplot of the current figure
-        (a new figure is created if none exists); the colorbar shows the
+        Each eye is plotted in a separate subplot; the colorbar shows the
         number of samples per bin. The y-axis points down (screen pixel
         coordinates, as in :meth:`plot_calibration`).
 
@@ -86,6 +88,19 @@ class GazePlots(GenericPlots):
         limits : tuple, optional
             Axis limits as (xmin, xmax, ymin, ymax). If not provided, uses screen
             limits when available (and data falls within), otherwise uses data extent.
+        title : str, optional
+            title of the figure
+        axes : list of matplotlib.axes.Axes, optional
+            axes to plot on, one per eye; default: a new figure (one
+            subplot per eye, side by side)
+        figsize : tuple, optional
+            size of the new figure
+
+        Returns
+        -------
+        matplotlib.figure.Figure
+            the figure of the plot (``fig.axes`` also contains the
+            colorbars)
 
         Raises
         ------
@@ -100,9 +115,8 @@ class GazePlots(GenericPlots):
            >>> from pypillometry import u
            >>> import matplotlib.pyplot as plt
            >>> d = pp.get_example_data("rlmw_002_short")
-           >>> d.plot.plot_heatmap(eyes="left")
+           >>> fig = d.plot.plot_heatmap(eyes="left")
         """
-        import matplotlib.pyplot as plt
         import matplotlib.patches as patches
         from mpl_toolkits.axes_grid1 import make_axes_locatable
         from scipy.ndimage import gaussian_filter
@@ -134,26 +148,8 @@ class GazePlots(GenericPlots):
         if gridsize=="auto":
             gridsize=int(np.sqrt(endix-startix))
 
-        # Use current figure or create new one if none exists
         nplots = len(eyes)
-        fig = plt.gcf()
-        
-        # Check if current figure is empty/new
-        if len(fig.axes) == 0:
-            # Create subplots in the current figure
-            axs = fig.subplots(1, nplots)
-            # Make axs iterable even for single plot
-            if not isinstance(axs, Iterable):
-                axs = [axs]
-        else:
-            # Use existing axes
-            axs = fig.axes
-            if len(axs) != nplots:
-                logger.warning(f"Current figure has {len(axs)} axes but {nplots} eyes to plot. Creating new subplots.")
-                fig.clear()
-                axs = fig.subplots(1, nplots)
-                if not isinstance(axs, Iterable):
-                    axs = [axs]
+        fig, axs = get_axes(axes, nplots, "eye", figsize, nrows=1, ncols=nplots)
         
         for eye, ax in zip(eyes, axs):
             vx = "_".join([eye,"x"])
@@ -282,6 +278,9 @@ class GazePlots(GenericPlots):
             if rois is not None:
                 for roi in rois:
                     roi.plot(ax, **roi_style)
+        if title is not None:
+            fig.suptitle(title)
+        return fig
 
     def plot_scanpath(self, 
             plot_range: tuple=(-np.inf, +np.inf), 
