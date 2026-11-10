@@ -74,7 +74,7 @@ from .quality import QualityReport, QualityMetric
 # Reading and writing data
 from .io import (
     read_eyelink, read_file, write_file, download, fetch_url, local_copy,
-    osf_authenticate,
+    osf_authenticate, get_figshare_files, fetch_figshare_file,
 )
 from .study import load_study_local, load_study_osf, get_osf_project_files
 from .example_data import (
@@ -119,7 +119,8 @@ __all__ = [
     "QualityReport", "QualityMetric",
     # reading and writing data
     "read_eyelink", "read_file", "write_file", "download", "fetch_url",
-    "local_copy", "osf_authenticate",
+    "local_copy", "osf_authenticate", "get_figshare_files",
+    "fetch_figshare_file",
     "load_study_local", "load_study_osf", "get_osf_project_files",
     "get_available_datasets", "get_example_data", "get_rlmw_002",
     "get_rlmw_002_short", "get_rlmw_010_edf",
