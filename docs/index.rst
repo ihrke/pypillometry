@@ -29,6 +29,8 @@ processing step is recorded in the object's history.
 Version 2 is a major rewrite and not compatible with version 1; the
 `documentation of version 1 <https://ihrke.github.io/pypillometry/v1/html/index.html>`_
 is still available.
+What is new in each version is listed in the :doc:`changelog
+<development/changelog>`.
 
 .. code-block:: python
 
