@@ -6,6 +6,7 @@
 - `HeadMountedEyeData.from_tobii_prolab()`, `read_tobii_prolab()`: read data exports of Tobii Pro Lab (Tobii Pro Glasses 3)
 - `d.scene`: `luminance()` of the scene video, viewing `distance()`, `head_movement()`, `frame()`
 - `d.plot.plot_scene_scanpath()`: scanpath on a frame of the scene video
+- `d.scene.render_video()`: write the scene video with the gaze position drawn on it
 
 ## 2.2.1 (2026-11-10)
 

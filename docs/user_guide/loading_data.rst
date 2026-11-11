@@ -59,6 +59,7 @@ Pro Lab (an Excel or tab-separated file) with
 
     d = d.scene.luminance()                    # luminance of the scene video
     d.plot.plot_scene_scanpath((10, 12))       # gaze on a frame of the video
+    d.scene.render_video("gaze.mp4", (10, 30)) # video with the gaze position
 
 The result is a :class:`HeadMountedEyeData` object, an :class:`EyeData`
 object with the additional data of eye-tracking glasses:
@@ -79,6 +80,8 @@ covariates of the pupil size: the luminance of the scene video
 distance (:meth:`~eyedata.head_mounted.SceneNamespace.distance`) and the
 speed of the head rotation
 (:meth:`~eyedata.head_mounted.SceneNamespace.head_movement`).
+:meth:`~eyedata.head_mounted.SceneNamespace.render_video` writes the
+scene video with the gaze position drawn on it.
 
 Excel files need the package `openpyxl`, the scene video the package `av`
 (both are optional: ``pip install openpyxl av``). Reading the Excel file

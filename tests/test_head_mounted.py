@@ -111,7 +111,7 @@ class TestScene:
             data.scene.head_movement()
 
     def test_video(self, data, tmp_path):
-        pytest.importorskip("av")
+        av = pytest.importorskip("av")
         import matplotlib
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
@@ -132,3 +132,17 @@ class TestScene:
         assert len(ax.images) == 1 and ax.get_title() == "T"
         assert ax.get_xlim() == (0, 64) and ax.get_ylim() == (36, 0)
         plt.close(fig)
+
+        # video with the gaze position: 1.1 to 1.2 s are 10 frames, red at the gaze
+        out = data.scene.render_video(str(tmp_path / "gaze.mp4"), (1.1, 1.2), radius=3)
+        from pypillometry import _video
+        assert _video._video_info(out)["size"] == (64, 36)
+        with av.open(out) as container:
+            frames = [f.to_ndarray(format="rgb24") for f in container.decode(video=0)]
+        assert len(frames) == 10
+        i = np.argmin(np.abs(data.tx - 1105))
+        x, y = int(data.data["both_x"][i]), int(data.data["both_y"][i])
+        r, g, b = frames[0][y, x - 3].astype(int)
+        assert r > g + 80 and r > b + 80
+        with pytest.raises(ValueError, match="does not overlap with the scene video"):
+            data.scene.render_video(str(tmp_path / "gaze.mp4"), (10, 20))
