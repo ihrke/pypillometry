@@ -99,3 +99,39 @@ class TestAxisWidget(unittest.TestCase):
             vb.rect = Rect(x, 0, w, 500)
             ax.size, ax.pos = (w, 50), (x, 500)
             np.testing.assert_allclose(ax.axis.domain, (cam.left, cam.right), atol=1e-4)
+
+
+class TestMinMaxDownsample(unittest.TestCase):
+    def downsample(self, data, mask=None, factor=4):
+        from pypillometry.viewer.visuals import _minmax_downsample
+        data = np.asarray(data, dtype=np.float32)
+        time = np.arange(len(data), dtype=np.float32)
+        if mask is None:
+            mask = np.zeros(len(data), dtype=bool)
+        return _minmax_downsample(time, data, np.asarray(mask, dtype=bool), factor)
+
+    def test_min_and_max_in_order(self):
+        """each chunk gives its minimum and maximum, in order of occurrence;
+        samples after the last full chunk are dropped"""
+        normal, masked = self.downsample([1, 5, 0, 2,  3, -1, 7, 4,  9])
+        np.testing.assert_array_equal(normal, [(1, 5), (2, 0), (5, -1), (6, 7)])
+        self.assertTrue(np.all(np.isnan(masked[:, 1])))
+        self.assertEqual(normal.dtype, np.float32)
+
+    def test_non_finite(self):
+        """non-finite samples are ignored, chunks without finite samples
+        are NaN"""
+        nan, inf = np.nan, np.inf
+        normal, _ = self.downsample([nan, 2, inf, 1,  nan, inf, -inf, nan])
+        np.testing.assert_array_equal(normal, [(1, 2), (3, 1), (4, nan), (7, nan)])
+
+    def test_mask(self):
+        """masked samples are in `masked`, the others in `normal`"""
+        nan = np.nan
+        normal, masked = self.downsample([1, 5, 0, 2], mask=[0, 1, 0, 0])
+        np.testing.assert_array_equal(normal, [(1, nan), (2, 0)])
+        np.testing.assert_array_equal(masked, [(1, 5), (2, nan)])
+
+    def test_shorter_than_chunk(self):
+        normal, _ = self.downsample([3, 1, 2], factor=10)
+        np.testing.assert_array_equal(normal, [(0, 3), (1, 1)])

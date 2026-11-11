@@ -33,6 +33,55 @@ class _AxisWidget(scene.AxisWidget):
             self._view_changed()
 
 
+def _minmax_downsample(time, data, mask, factor):
+    """Downsample a line by keeping the minimum and maximum of each chunk.
+
+    The data is split into chunks of `factor` samples (samples after the
+    last full chunk are dropped). Each chunk gives two points, its minimum
+    and its maximum in the order in which they occur; non-finite samples
+    are ignored and a chunk without finite samples gives two NaN points.
+
+    Parameters
+    ----------
+    time, data : ndarray of float32
+        Time and value of each sample.
+    mask : ndarray of bool
+        True where a sample is masked.
+    factor : int
+        Number of samples per chunk.
+
+    Returns
+    -------
+    normal, masked : ndarray of float32, shape (2 * n_chunks, 2)
+        Columns are time and value; `normal` is NaN where the selected
+        sample is masked, `masked` is NaN where it is not.
+    """
+    n = len(data)
+    size = min(factor, n)       # data shorter than a chunk: a single chunk
+    n_out = n // size
+    chunks = data[:n_out * size].reshape(n_out, size)
+    valid = np.isfinite(chunks)
+    min_idx = np.argmin(np.where(valid, chunks, np.inf), axis=1)
+    max_idx = np.argmax(np.where(valid, chunks, -np.inf), axis=1)
+
+    # chunks without finite samples span the whole chunk (values are NaN)
+    empty = ~valid.any(axis=1)
+    first = np.where(empty, 0, np.minimum(min_idx, max_idx))
+    second = np.where(empty, size - 1, np.maximum(min_idx, max_idx))
+
+    start = np.arange(n_out) * size
+    idx = np.column_stack([start + first, start + second]).ravel()
+    values = data[idx]
+    values[np.repeat(empty, 2)] = np.nan
+    masked_sample = mask[idx]
+
+    time_ds = time[idx]
+    normal = np.where(masked_sample, np.nan, values)
+    masked = np.where(masked_sample, values, np.nan)
+    return (np.column_stack([time_ds, normal]).astype(np.float32),
+            np.column_stack([time_ds, masked]).astype(np.float32))
+
+
 class LODLine:
     """Line visual with LOD - normal color + lighter color in masked regions."""
     
@@ -101,51 +150,9 @@ class LODLine:
                 self.lod_normal[1] = np.column_stack([self.time_full, data_normal]).astype(np.float32)
                 self.lod_masked[1] = np.column_stack([self.time_full, data_masked]).astype(np.float32)
             else:
-                n_out = max(1, self.n_points // factor)
-                time_ds = np.zeros(n_out * 2, dtype=np.float32)
-                data_normal_ds = np.zeros(n_out * 2, dtype=np.float32)
-                data_masked_ds = np.zeros(n_out * 2, dtype=np.float32)
-                
-                for i in range(n_out):
-                    start = i * factor
-                    end = min(start + factor, self.n_points)
-                    chunk = self.data_full[start:end]
-                    chunk_mask = self.mask[start:end]
-                    
-                    valid = np.isfinite(chunk)
-                    if not np.any(valid):
-                        time_ds[i*2] = self.time_full[start]
-                        time_ds[i*2+1] = self.time_full[end-1]
-                        data_normal_ds[i*2] = np.nan
-                        data_normal_ds[i*2+1] = np.nan
-                        data_masked_ds[i*2] = np.nan
-                        data_masked_ds[i*2+1] = np.nan
-                    else:
-                        valid_chunk = np.where(valid, chunk, np.inf)
-                        min_idx = np.argmin(valid_chunk)
-                        valid_chunk = np.where(valid, chunk, -np.inf)
-                        max_idx = np.argmax(valid_chunk)
-                        
-                        if min_idx <= max_idx:
-                            time_ds[i*2] = self.time_full[start + min_idx]
-                            time_ds[i*2+1] = self.time_full[start + max_idx]
-                            v1, v2 = chunk[min_idx], chunk[max_idx]
-                            m1, m2 = chunk_mask[min_idx], chunk_mask[max_idx]
-                        else:
-                            time_ds[i*2] = self.time_full[start + max_idx]
-                            time_ds[i*2+1] = self.time_full[start + min_idx]
-                            v1, v2 = chunk[max_idx], chunk[min_idx]
-                            m1, m2 = chunk_mask[max_idx], chunk_mask[min_idx]
-                        
-                        # Normal: NaN where masked
-                        data_normal_ds[i*2] = np.nan if m1 else v1
-                        data_normal_ds[i*2+1] = np.nan if m2 else v2
-                        # Masked: NaN where NOT masked
-                        data_masked_ds[i*2] = v1 if m1 else np.nan
-                        data_masked_ds[i*2+1] = v2 if m2 else np.nan
-                
-                self.lod_normal[factor] = np.column_stack([time_ds, data_normal_ds]).astype(np.float32)
-                self.lod_masked[factor] = np.column_stack([time_ds, data_masked_ds]).astype(np.float32)
+                self.lod_normal[factor], self.lod_masked[factor] = _minmax_downsample(
+                    self.time_full, self.data_full, self.mask, factor
+                )
     
     def _create_lines(self):
         """Create two line visuals - normal and masked (lighter)."""
