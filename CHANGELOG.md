@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.2.2 (2026-11-11)
 
 - `HeadMountedEyeData`: data from eye-tracking glasses 
 - `HeadMountedEyeData.from_tobii_prolab()`, `read_tobii_prolab()`: read data exports of Tobii Pro Lab (Tobii Pro Glasses 3)
