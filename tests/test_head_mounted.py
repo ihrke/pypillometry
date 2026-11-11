@@ -79,6 +79,12 @@ class TestFromTobii:
         assert len(data.crop(1100, 1300, inplace=False).aux["gyro_x"]) == 20
         assert len(data.downsample(50, inplace=False).aux["gyro_x"]) == 25
 
+    def test_repr_html(self, data):
+        pytest.importorskip("jinja2")
+        html = data._repr_html_()
+        assert "Aux channels" in html and "gyro_x" in html and "Additional channels (aux)" in html
+        assert "<figure" not in html  # no scene video
+
     def test_save_and_load(self, data, tmp_path):
         for name in ("d.pypil", "d.h5"):
             data.write_file(str(tmp_path / name))
@@ -160,6 +166,10 @@ class TestScene:
         assert len(ax.images) == 1 and ax.get_title() == "T"
         assert ax.get_xlim() == (0, 64) and ax.get_ylim() == (36, 0)
         plt.close(fig)
+
+        pytest.importorskip("jinja2")
+        html = data._repr_html_()
+        assert "data:image/jpeg;base64," in html and "scene.mp4 (64x36)" in html
 
         # video with the gaze position: 1.1 to 1.2 s are 10 frames, red at the gaze
         out = data.scene.render_video(str(tmp_path / "gaze.mp4"), (1.1, 1.2), radius=3)

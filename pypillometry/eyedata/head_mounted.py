@@ -18,6 +18,7 @@ from ..convenience import requires_package
 from ..events import Events
 from ..logging import _show_progress
 from ..plot import HeadMountedPlotNamespace
+from ..templates import sparkline
 from ..units import parse_time
 from .eyedata import EyeData
 from .eyedatadict import EyeDataDict
@@ -598,6 +599,40 @@ class HeadMountedEyeData(EyeData):
             raise ValueError(f"scene video '{self.scene_video}' not found: set the "
                              "attribute `scene_video` to the name of the video file")
         return self.scene_video
+
+    def _html_context(self) -> dict:
+        """Adds the channels in `aux`, the scene video and one of its frames."""
+        context = super()._html_context()
+        rows = [("Aux channels", ", ".join(self.aux.keys()) or "none")]
+        if self.scene_video is not None:
+            size = "" if self.scene_size is None else " ({}x{})".format(*self.scene_size)
+            rows.append(("Scene video", os.path.basename(self.scene_video) + size))
+        context["overview"] = context["overview"] + rows
+        context["aux_sparklines"] = [
+            {"label": key, "image": sparkline(self.aux[key])} for key in self.aux.keys()]
+        context["image"] = self._scene_frame_html()
+        return context
+
+    def _scene_frame_html(self, width: int = 480) -> Optional[dict]:
+        """
+        The frame of the scene video in the middle of the data for the HTML
+        representation: dict with "src" (small JPEG as a data URI) and
+        "caption". None without scene video, frame or the package `av`.
+        """
+        try:
+            import base64
+            from io import BytesIO
+            from PIL import Image
+            t = (self.tx[0] + self.tx[-1]) / 2.
+            img = Image.fromarray(self.scene.frame(t))
+            img.thumbnail((width, width))
+            buf = BytesIO()
+            img.save(buf, format="JPEG", quality=80)
+        except Exception as exc:  # the display works without the frame
+            logger.debug(f"No frame of the scene video: {exc}")
+            return None
+        return {"src": "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode("ascii"),
+                "caption": f"Scene video at {t / 1000.:.1f} s (middle of the data)"}
 
     def __repr__(self):
         """String-representation with the additional channels and the scene video."""
