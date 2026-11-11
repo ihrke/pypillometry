@@ -144,6 +144,11 @@ class TestScene:
         x, y = int(data.data["both_x"][i]), int(data.data["both_y"][i])
         r, g, b = frames[0][y, x - 3].astype(int)
         assert r > g + 80 and r > b + 80
+        # strip with the pupil size at the bottom: white line in its middle
+        assert frames[0][32, 32].mean() > 100 and frames[0][32, 10].mean() < 60
+        out = data.scene.render_video(out, (1.1, 1.2), pupil=False)
+        with av.open(out) as container:
+            assert next(container.decode(video=0)).to_ndarray(format="rgb24")[32, 32].mean() < 60
         # only the part of the video with samples is written
         part = data.crop(1100, 1300, inplace=False)
         assert _video._video_info(part.scene.render_video(out))["duration"] == pytest.approx(0.2, abs=0.02)

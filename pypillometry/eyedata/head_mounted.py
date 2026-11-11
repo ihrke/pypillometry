@@ -27,6 +27,10 @@ from .pipes import step
 
 #: width (pixels) to which the scene video is scaled for the luminance
 _LUMINANCE_WIDTH = 320
+#: duration (ms) of the pupil trace shown in a rendered video
+_PUPIL_WINDOW = 10000.
+#: colors (RGB) of the pupil traces in a rendered video
+_PUPIL_COLORS = ((107, 174, 214), (253, 141, 60), (161, 217, 155))
 
 
 class SceneNamespace(Namespace):
@@ -82,15 +86,21 @@ class SceneNamespace(Namespace):
     @requires_package("av")
     def render_video(self, fname: str, plot_range: tuple = (-np.inf, +np.inf),
                      trail=500, radius: float = 30, color="red",
-                     audio: bool = True, units: str = "sec") -> str:
+                     pupil: bool = True, audio: bool = True,
+                     units: str = "sec") -> str:
         """
         Write the scene video with the gaze position drawn on it.
 
         Each frame gets a ring at the gaze position (``both_x``,
         ``both_y``; the mean of the usable samples during the frame) and a
         fading line through the positions before it. Frames without a
-        usable gaze position get no ring. The video is useful for checking
-        the data and the timing of the video relative to it
+        usable gaze position get no ring. A strip at the bottom of the
+        frame shows the pupil size of each eye (usable samples) from 5
+        seconds before to 5 seconds after the frame; the white line in
+        its middle is the time of the frame. The scale of the strip (the
+        numbers at its right) is the same in all frames and leaves out
+        the most extreme 1% of the values at each end. The video is useful for
+        checking the data and the timing of the video relative to it
         (`scene_video_offset`).
 
         Requires the optional package `av`. All frames are decoded and
@@ -115,6 +125,9 @@ class SceneNamespace(Namespace):
         color : color, optional
             color of the ring and the line (any matplotlib color);
             default "red"
+        pupil : bool, optional
+            if True (default), draw the strip with the pupil size (if the
+            object has pupil data); it covers the lower fifth of the frame
         audio : bool, optional
             if True (default), copy the sound of the scene video (if any)
         units : str
@@ -139,7 +152,7 @@ class SceneNamespace(Namespace):
         >>> d.scene.render_video("gaze.mp4", (10, 30))  # doctest: +SKIP
         """
         from matplotlib.colors import to_rgb
-        from PIL import ImageDraw
+        from PIL import ImageDraw, ImageFont
         from tqdm import tqdm
         obj = self._d
         if "both_x" not in obj.data or "both_y" not in obj.data:
@@ -169,10 +182,55 @@ class SceneNamespace(Namespace):
         current = max(dt, 1000. / obj.fs)
         width = max(2, int(round(radius / 6.)))
 
+        # strip with the pupil size: the lower fifth of the frame
+        W, H = info["size"]
+        top, pad, lw = H - H // 5, max(1, H // 100), max(1, H // 400)
+        traces = {}  # eye -> y-position (pixels) of the pupil size per sample
+        if pupil:
+            sizes = {eye: np.where(obj.mask(eye, "pupil"), np.nan, obj.data[f"{eye}_pupil"])
+                     for eye in obj.eyes if f"{eye}_pupil" in obj.data}
+            shown = (obj.tx >= start) & (obj.tx <= end)
+            vals = np.concatenate([v[shown] for v in sizes.values()] or [[np.nan]])
+            if not np.isnan(vals).all():
+                # range without the extreme values (artifacts), which are cut off
+                lo, hi = np.nanpercentile(vals, [1, 99])
+                lo, hi = lo - 0.1 * (hi - lo), hi + 0.1 * (hi - lo)
+                hi = hi if hi > lo else lo + 1.
+                traces = {eye: np.clip((H - pad) - (v - lo) / (hi - lo) * (H - top - 2 * pad),
+                                       top, H) for eye, v in sizes.items()}
+                try:
+                    font = ImageFont.load_default(size=max(10, H // 45))
+                except TypeError:  # Pillow < 10.1: one size only
+                    font = ImageFont.load_default()
+
+        def draw_pupil(canvas, now):
+            canvas.rectangle([0, top, W, H], fill=(0, 0, 0, 150))
+            a, b = np.searchsorted(obj.tx, [now - _PUPIL_WINDOW / 2., now + _PUPIL_WINDOW / 2.])
+            x = W / 2. + (obj.tx[a:b] - now) / _PUPIL_WINDOW * W
+            for i, (eye, ypos) in enumerate(traces.items()):
+                col = _PUPIL_COLORS[i % len(_PUPIL_COLORS)]
+                y = ypos[a:b]
+                ok = ~np.isnan(y)
+                # one line per run of usable samples
+                edges = np.flatnonzero(np.diff(np.concatenate([[False], ok, [False]]).astype(int)))
+                for r0, r1 in zip(edges[::2], edges[1::2]):
+                    if r1 - r0 > 1:
+                        canvas.line(list(zip(x[r0:r1], y[r0:r1])), fill=col + (255,), width=lw)
+                if H >= 200:
+                    canvas.text((pad * 2, top + pad + i * font.size * 1.2), f"{eye} pupil",
+                                fill=col + (255,), font=font)
+            if H >= 200:
+                for val, y in ((hi, top + pad), (lo, H - pad - font.size * 1.2)):
+                    canvas.text((W - pad * 2, y), f"{val:.2f}", fill=(255, 255, 255, 255),
+                                font=font, anchor="ra")
+            canvas.line([(W / 2., top), (W / 2., H)], fill=(255, 255, 255, 255), width=lw)
+
         def draw(t, img):
             now = t * 1000. + obj.scene_video_offset + dt
             j0, i0, i1 = np.searchsorted(obj.tx, [now - dt - ntrail, now - current, now])
             canvas = ImageDraw.Draw(img, "RGBA")
+            if traces:
+                draw_pupil(canvas, now - dt / 2.)
             for k in range(j0, i1 - 1):
                 if usable[k] and usable[k + 1]:
                     alpha = int(200 * (k + 1 - j0) / max(i1 - 1 - j0, 1))
