@@ -88,7 +88,7 @@ class SceneNamespace(Namespace):
                      trail=500, radius: float = 30, color="red",
                      pupil: bool = True, pupil_alpha: float = 0.3,
                      audio: bool = True, fps: Optional[float] = None,
-                     threads: Optional[int] = None, units: str = "sec") -> str:
+                     threads: int = 2, units: str = "sec") -> str:
         """
         Write the scene video with the gaze position drawn on it.
 
@@ -143,8 +143,8 @@ class SceneNamespace(Namespace):
             25 frames per second), which is faster by about this factor.
         threads : int, optional
             number of processor cores used for reading and for writing
-            the video. Default (None): half of the cores, so that the
-            computer stays usable; 0: all cores (fastest).
+            the video. Default 2, so that the computer stays usable; more
+            is faster, 0 uses all cores.
         units : str
             The units of plain numbers in `plot_range` ("ms", "sec",
             "min", "h"). Default "sec".
@@ -166,7 +166,7 @@ class SceneNamespace(Namespace):
         >>> import pypillometry as pp
         >>> d = pp.HeadMountedEyeData.from_tobii_prolab("rec.xlsx")  # doctest: +SKIP
         >>> d.scene.render_video("gaze.mp4", (10, 30))  # doctest: +SKIP
-        >>> d.scene.render_video("preview.mp4", fps=5, threads=2)  # doctest: +SKIP
+        >>> d.scene.render_video("preview.mp4", fps=5, threads=4)  # doctest: +SKIP
         """
         from matplotlib.colors import to_rgb
         from PIL import ImageDraw, ImageFont
@@ -276,7 +276,7 @@ class SceneNamespace(Namespace):
     @keephistory
     @requires_package("av")
     def luminance(self, radius: float = 100, gamma: float = 2.2,
-                  threads: Optional[int] = None, inplace=None):
+                  threads: int = 2, inplace=None):
         """
         Calculate the luminance of the scene video over time.
 
@@ -311,8 +311,8 @@ class SceneNamespace(Namespace):
             Use 1 for the pixel values as they are.
         threads : int, optional
             number of processor cores used for reading the video. Default
-            (None): half of the cores, so that the computer stays usable;
-            0: all cores (fastest).
+            2, so that the computer stays usable; more is faster, 0 uses
+            all cores.
         inplace : bool or None
             If True, make change in-place and return the object.
             If False, make and return copy before making changes.

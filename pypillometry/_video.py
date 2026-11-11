@@ -5,20 +5,13 @@ Used for the scene video of head-mounted eye trackers (see
 :class:`~pypillometry.HeadMountedEyeData`). The functions that call these
 helpers are decorated with ``requires_package("av")``.
 """
-import os
-
 import numpy as np
 
 
 def _threads(threads) -> int:
-    """
-    Number of threads for decoding/encoding from the argument `threads` of
-    the calling methods: None is half of the cores, 0 all cores (as `av`).
-    """
-    if threads is None:
-        return max(1, (os.cpu_count() or 2) // 2)
-    if int(threads) != threads or threads < 0:
-        raise ValueError(f"threads must be None, 0 or a positive integer, got {threads!r}")
+    """Check the argument `threads` of the calling methods (0: all cores)."""
+    if isinstance(threads, bool) or int(threads) != threads or threads < 0:
+        raise ValueError(f"threads must be 0 or a positive integer, got {threads!r}")
     return int(threads)
 
 
