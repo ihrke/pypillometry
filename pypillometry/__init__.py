@@ -19,11 +19,12 @@ Example
 Overview
 --------
 EyeData
-    The main data class; ``SegmentedEyeData`` for data cut into segments.
+    The main data class; ``SegmentedEyeData`` for data cut into segments,
+    ``HeadMountedEyeData`` for eye-tracking glasses.
 pupil, gaze
     Pipeline steps for pupil and gaze data, used as ``d | pp.pupil.<step>()``.
     General steps (``crop``, ``downsample``, ...) are at the top level.
-read_eyelink, read_file, load_study_local, get_example_data
+read_eyelink, read_tobii_prolab, read_file, load_study_local, get_example_data
     Reading and writing data.
 Events, Intervals, Epochs
     Event markers, time intervals and event-related segments.
@@ -44,7 +45,7 @@ import os.path
 # ---------------------------------------------------------------------------
 # Data classes
 from .eyedata import (
-    EyeData, FakeEyeData,
+    EyeData, FakeEyeData, HeadMountedEyeData,
     EyeDataDict, MaskPolicy, ExperimentalSetup, SpatialCalibration,
     ForeshorteningCalibration, keephistory,
 )
@@ -53,7 +54,7 @@ from .eyedata.pipes import Step, Pipeline
 # ---------------------------------------------------------------------------
 # Pipeline steps: d | pp.pupil.blinks_detect() | pp.crop(...) | ...
 from .eyedata.steps import (
-    pupil, gaze,
+    pupil, gaze, scene,
     crop, downsample, scale, unscale, merge_eyes, reset_time,
     mask_intervals, interpolate_intervals, exclude_intervals, keep_intervals,
     remove_intervals, merge_masks, clear_layer, set_blinks, set_events,
@@ -73,7 +74,8 @@ from .quality import QualityReport, QualityMetric
 # ---------------------------------------------------------------------------
 # Reading and writing data
 from .io import (
-    read_eyelink, read_file, write_file, download, fetch_url, local_copy,
+    read_eyelink, read_tobii_prolab, read_file, write_file, download, fetch_url,
+    local_copy,
     osf_authenticate, get_figshare_files, fetch_figshare_file,
 )
 from .study import load_study_local, load_study_osf, get_osf_project_files
@@ -102,11 +104,11 @@ from loguru import logger  # available as pp.logger, not part of __all__
 
 __all__ = [
     # data classes
-    "EyeData", "FakeEyeData",
+    "EyeData", "FakeEyeData", "HeadMountedEyeData",
     "EyeDataDict", "MaskPolicy", "ExperimentalSetup", "SpatialCalibration",
     "ForeshorteningCalibration", "keephistory", "Step", "Pipeline",
     # pipeline steps
-    "pupil", "gaze",
+    "pupil", "gaze", "scene",
     "crop", "downsample", "scale", "unscale", "merge_eyes", "reset_time",
     "mask_intervals", "interpolate_intervals", "exclude_intervals",
     "keep_intervals", "remove_intervals", "merge_masks", "clear_layer",
@@ -118,7 +120,7 @@ __all__ = [
     "ROI", "CircularROI", "RectangularROI",
     "QualityReport", "QualityMetric",
     # reading and writing data
-    "read_eyelink", "read_file", "write_file", "download", "fetch_url",
+    "read_eyelink", "read_tobii_prolab", "read_file", "write_file", "download", "fetch_url",
     "local_copy", "osf_authenticate", "get_figshare_files",
     "fetch_figshare_file",
     "load_study_local", "load_study_osf", "get_osf_project_files",

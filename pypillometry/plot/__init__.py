@@ -5,9 +5,12 @@ e.g. ``d.plot.plot_timeseries()``.
 
 The plots are written in one module per domain (:mod:`.generic`,
 :mod:`.pupil`, :mod:`.gaze`); :class:`PlotNamespace` combines them.
+:class:`HeadMountedPlotNamespace` adds the plots with the scene video of
+head-mounted eye trackers (:mod:`.scene`).
 """
 from .pupil import PupilPlots
 from .gaze import GazePlots
+from .scene import ScenePlots
 
 
 class PlotNamespace(PupilPlots, GazePlots):
@@ -22,3 +25,11 @@ class PlotNamespace(PupilPlots, GazePlots):
     not have raise a ValueError.
     """
     _name = "plot"
+
+
+class HeadMountedPlotNamespace(PlotNamespace, ScenePlots):
+    """
+    Plotting methods of a :class:`~pypillometry.HeadMountedEyeData` object
+    (``d.plot``): those of :class:`PlotNamespace` and the plots that use
+    the scene video (e.g., ``d.plot.plot_scene_scanpath()``).
+    """

@@ -14,9 +14,9 @@
 {% endmacro %}
 
 {#- Collapsible grid of sparklines (dicts with "label" and "image", a data URI or None). -#}
-{% macro sparkline_grid(title, items, min_width=220) %}
+{% macro sparkline_grid(title, items, min_width=220, open=True) %}
   {% if items %}
-  <details open style="margin-bottom:8px;">
+  <details {% if open %}open {% endif %}style="margin-bottom:8px;">
     <summary style="cursor:pointer; font-weight:600;">{{ title }}</summary>
     <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax({{ min_width }}px,1fr)); gap:8px; margin-top:8px;">
       {% for item in items %}

@@ -4,7 +4,16 @@
 
   {{ m.overview_grid(overview) }}
 
+  {% if image %}
+  <figure style="margin:0 0 10px 0;">
+    <img src="{{ image.src }}" alt="{{ image.caption }}" style="max-width:100%; border-radius:4px;">
+    <figcaption style="font-size:0.85em; color:#666;">{{ image.caption }}</figcaption>
+  </figure>
+  {% endif %}
+
   {{ m.sparkline_grid("Signal overview", sparklines) }}
+
+  {{ m.sparkline_grid("Additional channels (aux)", aux_sparklines, open=False) }}
 
   {% if blink_stats %}
   <details open style="margin-bottom:8px;">

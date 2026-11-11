@@ -73,14 +73,14 @@ class TestSteps:
         """the step factories exist exactly for the methods marked with @step"""
         marked = {n for n in dir(pp.EyeData)
                   if getattr(getattr(pp.EyeData, n, None), "_is_step", False)}
-        assert marked == set(steps.__all__) - {"pupil", "gaze"}
+        assert marked == set(steps.__all__) - {"pupil", "gaze", "scene"}
         for ns in (pp.pupil, pp.gaze):
             for n in type(ns)._methods():
                 if n != "fit_foreshortening":
                     assert getattr(type(ns), n)._is_step, n
 
     def test_step_methods_return_data_and_take_inplace(self):
-        for n in set(steps.__all__) - {"pupil", "gaze"}:
+        for n in set(steps.__all__) - {"pupil", "gaze", "scene"}:
             params = inspect.signature(getattr(pp.EyeData, n)).parameters
             assert ("inplace" in params) != n.startswith("set_"), n
 

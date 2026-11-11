@@ -1720,7 +1720,11 @@ class EyeData(state.VersionedState):
     @requires_package("jinja2")
     def _repr_html_(self):
         """Rich HTML representation for notebooks using Jinja templates."""
+        return render("eyedata_repr.html", **self._html_context())
 
+    def _html_context(self) -> dict:
+        """The values shown in the HTML representation (see the template
+        ``eyedata_repr.html``); subclasses add to them."""
         summary = self.summary()
         blink_stats_raw = summary.get("blinks", {}) or {}
         history_items = [ev["funcstring"] for ev in getattr(self, "history", [])[-5:]]
@@ -1774,7 +1778,7 @@ class EyeData(state.VersionedState):
             if image is not None:
                 sparklines.append({"label": label, "image": image})
 
-        context = {
+        return {
             "class_name": self.__class__.__name__,
             "name": summary["name"],
             "overview": overview,
@@ -1783,8 +1787,6 @@ class EyeData(state.VersionedState):
             "history": history_items,
             "sparklines": sparklines,
         }
-
-        return render("eyedata_repr.html", **context)
 
     def copy(self, new_name: Optional[str]=None):
         """
