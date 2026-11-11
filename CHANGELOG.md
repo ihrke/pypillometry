@@ -2,14 +2,14 @@
 
 ## Unreleased
 
-- `HeadMountedEyeData`: data from eye-tracking glasses (gaze in the scene video, motion sensors and other channels in `d.aux`)
+- `HeadMountedEyeData`: data from eye-tracking glasses 
 - `HeadMountedEyeData.from_tobii_prolab()`, `read_tobii_prolab()`: read data exports of Tobii Pro Lab (Tobii Pro Glasses 3)
-- `d.scene`: `luminance()` of the scene video, viewing `distance()`, `head_movement()`, `frame()`
+- `d.scene` functions to analyze scene from video
 - `d.plot.plot_scene_scanpath()`: scanpath on a frame of the scene video
 - `d.scene.render_video()`: write the scene video with the gaze position drawn on it
 - `d.plot.plot_timeseries()` of `HeadMountedEyeData` also plots channels in `d.aux` (e.g. `variables=["pupil", "luminance", "gyro"]`)
 - `d.plot.plot_pupil_covariate()`: pupil size against a channel in `d.aux`
-- `pp.view()` and `pp.tweak()` start faster
+- `pp.view()` and `pp.tweak()` start much faster
 
 ## 2.2.1 (2026-11-10)
 
