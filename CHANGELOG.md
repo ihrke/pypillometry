@@ -9,6 +9,7 @@
 - `d.scene.render_video()`: write the scene video with the gaze position drawn on it
 - `d.plot.plot_timeseries()` of `HeadMountedEyeData` also plots channels in `d.aux` (e.g. `variables=["pupil", "luminance", "gyro"]`)
 - `d.plot.plot_pupil_covariate()`: pupil size against a channel in `d.aux`
+- `pp.view()` and `pp.tweak()` start faster
 
 ## 2.2.1 (2026-11-10)
 
