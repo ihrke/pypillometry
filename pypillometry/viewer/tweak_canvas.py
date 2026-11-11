@@ -10,7 +10,7 @@ from vispy.scene import SceneCanvas
 from vispy.color import Color
 from typing import Dict, Callable, Any, Optional, List, Union, Tuple
 
-from .visuals import _AxisWidget, LODLine, DynamicMaskRegions, HighlightRegion
+from .visuals import _AxisWidget, LODLine, DynamicMaskRegions, HighlightRegion, _share_fonts
 from .navigation import NavigationHandler
 
 # Colors for multiple overlay lines
@@ -148,6 +148,7 @@ class TweakCanvas(SceneCanvas):
         self._plot_overlays()
         
         self._create_legend()
+        _share_fonts(self)
         self._set_initial_view()
         self._last_x_range = (self.data_min, self.data_max)
         
