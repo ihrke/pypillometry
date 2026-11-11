@@ -86,8 +86,8 @@ class SceneNamespace(Namespace):
     @requires_package("av")
     def render_video(self, fname: str, plot_range: tuple = (-np.inf, +np.inf),
                      trail=500, radius: float = 30, color="red",
-                     pupil: bool = True, audio: bool = True,
-                     units: str = "sec") -> str:
+                     pupil: bool = True, pupil_alpha: float = 0.3,
+                     audio: bool = True, units: str = "sec") -> str:
         """
         Write the scene video with the gaze position drawn on it.
 
@@ -128,6 +128,10 @@ class SceneNamespace(Namespace):
         pupil : bool, optional
             if True (default), draw the strip with the pupil size (if the
             object has pupil data); it covers the lower fifth of the frame
+        pupil_alpha : float, optional
+            opacity of the dark background of the strip, from 0 (no
+            background, the traces are drawn on the scene) to 1 (black);
+            default 0.3
         audio : bool, optional
             if True (default), copy the sound of the scene video (if any)
         units : str
@@ -186,6 +190,7 @@ class SceneNamespace(Namespace):
         W, H = info["size"]
         top, pad, lw = H - H // 5, max(1, H // 100), max(1, H // 400)
         traces = {}  # eye -> y-position (pixels) of the pupil size per sample
+        background = int(round(255 * min(max(pupil_alpha, 0.), 1.)))
         if pupil:
             sizes = {eye: np.where(obj.mask(eye, "pupil"), np.nan, obj.data[f"{eye}_pupil"])
                      for eye in obj.eyes if f"{eye}_pupil" in obj.data}
@@ -204,7 +209,7 @@ class SceneNamespace(Namespace):
                     font = ImageFont.load_default()
 
         def draw_pupil(canvas, now):
-            canvas.rectangle([0, top, W, H], fill=(0, 0, 0, 150))
+            canvas.rectangle([0, top, W, H], fill=(0, 0, 0, background))
             a, b = np.searchsorted(obj.tx, [now - _PUPIL_WINDOW / 2., now + _PUPIL_WINDOW / 2.])
             x = W / 2. + (obj.tx[a:b] - now) / _PUPIL_WINDOW * W
             for i, (eye, ypos) in enumerate(traces.items()):
