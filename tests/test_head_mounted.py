@@ -88,6 +88,34 @@ class TestFromTobii:
             np.testing.assert_array_equal(res.aux["acc_z"], data.aux["acc_z"])
 
 
+class TestPlots:
+    def test_timeseries_with_aux(self, data):
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+        fig = data.plot.plot_timeseries(variables=["pupil", "gyro", "acc_x"])
+        assert [ax.get_title() for ax in fig.axes] == ["pupil", "gyro", "acc_x"]
+        assert [line.get_label() for line in fig.axes[1].lines] == ["gyro_x", "gyro_y", "gyro_z"]
+        assert fig.axes[0].get_xlabel() == "" and fig.axes[2].get_xlabel() == "sec"
+        assert len(data.plot.plot_timeseries().axes) == 3  # pupil, x, y: no aux
+        with pytest.raises(ValueError, match="no variable or aux channel nothing"):
+            data.plot.plot_timeseries(variables=["pupil", "nothing"])
+        plt.close("all")
+
+    def test_pupil_covariate(self, data):
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+        fig, ax = plt.subplots()
+        assert data.plot.plot_pupil_covariate("gaze3d_z", log=True, ax=ax) is ax
+        labels = ax.get_legend_handles_labels()[1]
+        assert len(labels) == 2 and labels[0].startswith("left (r = ")
+        assert ax.get_xlabel() == "gaze3d_z" and ax.get_xscale() == "log"
+        with pytest.raises(ValueError, match=r"no channel\(s\) nothing in aux"):
+            data.plot.plot_pupil_covariate("nothing")
+        plt.close(fig)
+
+
 class TestScene:
     def test_distance_and_head_movement(self, data):
         res = data.scene.distance(window=0).scene.head_movement()

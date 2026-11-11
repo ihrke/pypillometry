@@ -81,7 +81,10 @@ distance (:meth:`~eyedata.head_mounted.SceneNamespace.distance`) and the
 speed of the head rotation
 (:meth:`~eyedata.head_mounted.SceneNamespace.head_movement`).
 :meth:`~eyedata.head_mounted.SceneNamespace.render_video` writes the
-scene video with the gaze position drawn on it.
+scene video with the gaze position drawn on it. The channels in ``d.aux``
+can be plotted with ``d.plot.plot_timeseries(variables=["pupil",
+"luminance", "gyro"])`` and, against the pupil size, with
+``d.plot.plot_pupil_covariate("gaze_luminance")``.
 
 Excel files need the package `openpyxl`, the scene video the package `av`
 (both are optional: ``pip install openpyxl av``). Reading the Excel file

@@ -46,6 +46,8 @@ Scene video (:class:`HeadMountedEyeData`)
    :nosignatures:
 
    plot.HeadMountedPlotNamespace.plot_scene_scanpath
+   plot.HeadMountedPlotNamespace.plot_timeseries
+   plot.HeadMountedPlotNamespace.plot_pupil_covariate
 
 Experimental setup and foreshortening
 -------------------------------------
