@@ -105,7 +105,8 @@ class SceneNamespace(Namespace):
         plot_range : tuple
             The time range to write, on the clock of the data (plain
             numbers are in `units`, or with units, e.g. ``(3, 5) * u.min``).
-            Default is (-np.inf, +np.inf), i.e. the whole video.
+            Default is (-np.inf, +np.inf), i.e. all data. Only the part of
+            the video for which the object has samples is written.
         trail : float, str or Quantity, optional
             duration of the line behind the gaze position, e.g. ``500``
             (ms) or ``"1 sec"``; default 500 ms. Use 0 for no line.
@@ -129,7 +130,7 @@ class SceneNamespace(Namespace):
         ------
         ValueError
             if the object has no scene video or no gaze position, or
-            `plot_range` does not overlap with the video
+            `plot_range` does not overlap with the data and the video
 
         Examples
         --------
@@ -146,13 +147,15 @@ class SceneNamespace(Namespace):
         video = obj._scene_video_file()
         info = _video._video_info(video)
         start, end = (float(v) for v in parse_time(plot_range, to="ms", default=units))
+        # only the part with samples (e.g., after cropping)
+        start, end = max(start, obj.tx[0]), min(end, obj.tx[-1] + 1000. / obj.fs)
         t0 = max((start - obj.scene_video_offset) / 1000., 0.)
         t1 = (end - obj.scene_video_offset) / 1000.
         if not np.isnan(info["duration"]):
             t1 = min(t1, info["duration"])
         if not t0 < t1:
             raise ValueError(f"plot_range {tuple(plot_range)} ({units}) does not "
-                             "overlap with the scene video")
+                             "overlap with the data and the scene video")
 
         # gaze position in pixels of the video, NaN where not usable
         sx, sy = (v / s for v, s in zip(info["size"], obj.scene_size or info["size"]))

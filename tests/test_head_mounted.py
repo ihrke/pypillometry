@@ -144,5 +144,8 @@ class TestScene:
         x, y = int(data.data["both_x"][i]), int(data.data["both_y"][i])
         r, g, b = frames[0][y, x - 3].astype(int)
         assert r > g + 80 and r > b + 80
-        with pytest.raises(ValueError, match="does not overlap with the scene video"):
-            data.scene.render_video(str(tmp_path / "gaze.mp4"), (10, 20))
+        # only the part of the video with samples is written
+        part = data.crop(1100, 1300, inplace=False)
+        assert _video._video_info(part.scene.render_video(out))["duration"] == pytest.approx(0.2, abs=0.02)
+        with pytest.raises(ValueError, match="does not overlap with the data"):
+            part.scene.render_video(out, (1.35, 1.45))
