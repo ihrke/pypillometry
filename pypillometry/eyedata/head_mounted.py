@@ -78,6 +78,109 @@ class SceneNamespace(Namespace):
         return _video._read_frame(obj._scene_video_file(),
                                   (t - obj.scene_video_offset) / 1000.)
 
+    @requires_package("av")
+    def render_video(self, fname: str, plot_range: tuple = (-np.inf, +np.inf),
+                     trail=500, radius: float = 30, color="red",
+                     audio: bool = True, units: str = "sec") -> str:
+        """
+        Write the scene video with the gaze position drawn on it.
+
+        Each frame gets a ring at the gaze position (``both_x``,
+        ``both_y``; the mean of the usable samples during the frame) and a
+        fading line through the positions before it. Frames without a
+        usable gaze position get no ring. The video is useful for checking
+        the data and the timing of the video relative to it
+        (`scene_video_offset`).
+
+        Requires the optional package `av`. All frames are decoded and
+        encoded again (H.264), which takes about as long as the part of
+        the video that is written. An existing file `fname` is overwritten.
+
+        Parameters
+        ----------
+        fname : str
+            name of the video file to write (e.g., ``"gaze.mp4"``)
+        plot_range : tuple
+            The time range to write, on the clock of the data (plain
+            numbers are in `units`, or with units, e.g. ``(3, 5) * u.min``).
+            Default is (-np.inf, +np.inf), i.e. the whole video.
+        trail : float, str or Quantity, optional
+            duration of the line behind the gaze position, e.g. ``500``
+            (ms) or ``"1 sec"``; default 500 ms. Use 0 for no line.
+        radius : float, optional
+            radius of the ring in pixels of the scene video; default 30
+        color : color, optional
+            color of the ring and the line (any matplotlib color);
+            default "red"
+        audio : bool, optional
+            if True (default), copy the sound of the scene video (if any)
+        units : str
+            The units of plain numbers in `plot_range` ("ms", "sec",
+            "min", "h"). Default "sec".
+
+        Returns
+        -------
+        str
+            `fname`
+
+        Raises
+        ------
+        ValueError
+            if the object has no scene video or no gaze position, or
+            `plot_range` does not overlap with the video
+
+        Examples
+        --------
+        >>> import pypillometry as pp
+        >>> d = pp.HeadMountedEyeData.from_tobii_prolab("rec.xlsx")  # doctest: +SKIP
+        >>> d.scene.render_video("gaze.mp4", (10, 30))  # doctest: +SKIP
+        """
+        from matplotlib.colors import to_rgb
+        from PIL import ImageDraw
+        obj = self._d
+        if "both_x" not in obj.data or "both_y" not in obj.data:
+            raise ValueError("the object has no gaze position (both_x, both_y)")
+        video = obj._scene_video_file()
+        info = _video._video_info(video)
+        start, end = (float(v) for v in parse_time(plot_range, to="ms", default=units))
+        t0 = max((start - obj.scene_video_offset) / 1000., 0.)
+        t1 = (end - obj.scene_video_offset) / 1000.
+        if not np.isnan(info["duration"]):
+            t1 = min(t1, info["duration"])
+        if not t0 < t1:
+            raise ValueError(f"plot_range {tuple(plot_range)} ({units}) does not "
+                             "overlap with the scene video")
+
+        # gaze position in pixels of the video, NaN where not usable
+        sx, sy = (v / s for v, s in zip(info["size"], obj.scene_size or info["size"]))
+        usable = ~obj.mask("both", "x") & ~obj.mask("both", "y")
+        gx = np.where(usable, obj.data["both_x"], np.nan) * sx
+        gy = np.where(usable, obj.data["both_y"], np.nan) * sy
+        rgb = tuple(int(round(255 * v)) for v in to_rgb(color))
+        ntrail = float(parse_time(trail, to="ms", default="ms"))
+        dt = 1000. / info["fps"]
+        # a frame shows the samples during it (at least the latest sample)
+        current = max(dt, 1000. / obj.fs)
+        width = max(2, int(round(radius / 6.)))
+
+        def draw(t, img):
+            now = t * 1000. + obj.scene_video_offset + dt
+            j0, i0, i1 = np.searchsorted(obj.tx, [now - dt - ntrail, now - current, now])
+            canvas = ImageDraw.Draw(img, "RGBA")
+            for k in range(j0, i1 - 1):
+                if usable[k] and usable[k + 1]:
+                    alpha = int(200 * (k + 1 - j0) / max(i1 - 1 - j0, 1))
+                    canvas.line([(gx[k], gy[k]), (gx[k + 1], gy[k + 1])],
+                                fill=rgb + (alpha,), width=width)
+            if usable[i0:i1].any():
+                x, y = np.nanmean(gx[i0:i1]), np.nanmean(gy[i0:i1])
+                canvas.ellipse([x - radius, y - radius, x + radius, y + radius],
+                               outline=rgb + (255,), width=width)
+
+        logger.info(f"Writing '{fname}' ({t1 - t0:.1f} s of '{video}')")
+        _video._render(video, fname, t0, t1, draw, audio=audio)
+        return str(fname)
+
     @step
     @keephistory
     @requires_package("av")
