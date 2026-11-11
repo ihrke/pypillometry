@@ -87,7 +87,8 @@ class SceneNamespace(Namespace):
     def render_video(self, fname: str, plot_range: tuple = (-np.inf, +np.inf),
                      trail=500, radius: float = 30, color="red",
                      pupil: bool = True, pupil_alpha: float = 0.3,
-                     audio: bool = True, units: str = "sec") -> str:
+                     audio: bool = True, fps: Optional[float] = None,
+                     threads: Optional[int] = None, units: str = "sec") -> str:
         """
         Write the scene video with the gaze position drawn on it.
 
@@ -104,9 +105,10 @@ class SceneNamespace(Namespace):
         (`scene_video_offset`).
 
         Requires the optional package `av`. All frames are decoded and
-        encoded again (H.264), which takes about as long as the part of
-        the video that is written; a progress bar counts the frames. An
-        existing file `fname` is overwritten.
+        encoded again (H.264); a progress bar counts the frames. With
+        the default settings, this takes about as long as the part of
+        the video that is written. For a fast preview, write fewer frames
+        (`fps`). An existing file `fname` is overwritten.
 
         Parameters
         ----------
@@ -134,6 +136,15 @@ class SceneNamespace(Namespace):
             default 0.3
         audio : bool, optional
             if True (default), copy the sound of the scene video (if any)
+        fps : float, optional
+            frames per second of the written video. Default: as the scene
+            video. With a lower value, only every n-th frame is written
+            (e.g., every fifth frame for ``fps=5`` and a scene video with
+            25 frames per second), which is faster by about this factor.
+        threads : int, optional
+            number of processor cores used for reading and for writing
+            the video. Default (None): half of the cores, so that the
+            computer stays usable; 0: all cores (fastest).
         units : str
             The units of plain numbers in `plot_range` ("ms", "sec",
             "min", "h"). Default "sec".
@@ -146,14 +157,16 @@ class SceneNamespace(Namespace):
         Raises
         ------
         ValueError
-            if the object has no scene video or no gaze position, or
-            `plot_range` does not overlap with the data and the video
+            if the object has no scene video or no gaze position,
+            `plot_range` does not overlap with the data and the video, or
+            `fps` is not positive
 
         Examples
         --------
         >>> import pypillometry as pp
         >>> d = pp.HeadMountedEyeData.from_tobii_prolab("rec.xlsx")  # doctest: +SKIP
         >>> d.scene.render_video("gaze.mp4", (10, 30))  # doctest: +SKIP
+        >>> d.scene.render_video("preview.mp4", fps=5, threads=2)  # doctest: +SKIP
         """
         from matplotlib.colors import to_rgb
         from PIL import ImageDraw, ImageFont
@@ -163,6 +176,10 @@ class SceneNamespace(Namespace):
             raise ValueError("the object has no gaze position (both_x, both_y)")
         video = obj._scene_video_file()
         info = _video._video_info(video)
+        threads = _video._threads(threads)
+        if fps is not None and not fps > 0:
+            raise ValueError(f"fps must be positive, got {fps!r}")
+        every = 1 if fps is None else max(1, int(round(info["fps"] / fps)))
         start, end = (float(v) for v in parse_time(plot_range, to="ms", default=units))
         # only the part with samples (e.g., after cropping)
         start, end = max(start, obj.tx[0]), min(end, obj.tx[-1] + 1000. / obj.fs)
@@ -249,15 +266,17 @@ class SceneNamespace(Namespace):
 
         logger.info(f"Writing '{fname}' ({t1 - t0:.1f} s of '{video}')")
         nframes = int(np.ceil(t1 * info["fps"] - 1e-6) - np.floor(t0 * info["fps"] + 1e-6))
-        with tqdm(desc=os.path.basename(str(fname)), total=nframes, unit="frames",
-                  disable=not _show_progress()) as bar:
-            _video._render(video, fname, t0, t1, draw, audio=audio)
+        with tqdm(desc=os.path.basename(str(fname)), total=-(-nframes // every),
+                  unit="frames", disable=not _show_progress()) as bar:
+            _video._render(video, fname, t0, t1, draw, audio=audio, every=every,
+                           threads=threads)
         return str(fname)
 
     @step
     @keephistory
     @requires_package("av")
-    def luminance(self, radius: float = 100, gamma: float = 2.2, inplace=None):
+    def luminance(self, radius: float = 100, gamma: float = 2.2,
+                  threads: Optional[int] = None, inplace=None):
         """
         Calculate the luminance of the scene video over time.
 
@@ -290,6 +309,10 @@ class SceneNamespace(Namespace):
             averaging, which undoes the gamma encoding of the video
             (approximately, values proportional to the light); default 2.2.
             Use 1 for the pixel values as they are.
+        threads : int, optional
+            number of processor cores used for reading the video. Default
+            (None): half of the cores, so that the computer stays usable;
+            0: all cores (fastest).
         inplace : bool or None
             If True, make change in-place and return the object.
             If False, make and return copy before making changes.
@@ -332,7 +355,7 @@ class SceneNamespace(Namespace):
         scene = np.full(len(obj), np.nan)
         local = np.full(len(obj), np.nan)
         logger.info(f"Reading the frames of '{fname}'")
-        for t, img in _video._iter_gray_frames(fname, size):
+        for t, img in _video._iter_gray_frames(fname, size, _video._threads(threads)):
             # the samples during which the frame was shown
             start = t * 1000. + obj.scene_video_offset
             i0, i1 = np.searchsorted(obj.tx, [start, start + dt])

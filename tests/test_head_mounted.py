@@ -149,6 +149,13 @@ class TestScene:
         out = data.scene.render_video(out, (1.1, 1.2), pupil=False)
         with av.open(out) as container:
             assert next(container.decode(video=0)).to_ndarray(format="rgb24")[32, 32].mean() < 60
+        # preview: every fifth frame, limited number of threads
+        out = data.scene.render_video(out, (1.1, 1.2), fps=20, threads=1)
+        with av.open(out) as container:
+            assert len(list(container.decode(video=0))) == 2
+            assert float(container.streams.video[0].average_rate) == 20
+        with pytest.raises(ValueError, match="threads must be"):
+            data.scene.luminance(threads=-1)
         # only the part of the video with samples is written
         part = data.crop(1100, 1300, inplace=False)
         assert _video._video_info(part.scene.render_video(out))["duration"] == pytest.approx(0.2, abs=0.02)

@@ -5,7 +5,21 @@ Used for the scene video of head-mounted eye trackers (see
 :class:`~pypillometry.HeadMountedEyeData`). The functions that call these
 helpers are decorated with ``requires_package("av")``.
 """
+import os
+
 import numpy as np
+
+
+def _threads(threads) -> int:
+    """
+    Number of threads for decoding/encoding from the argument `threads` of
+    the calling methods: None is half of the cores, 0 all cores (as `av`).
+    """
+    if threads is None:
+        return max(1, (os.cpu_count() or 2) // 2)
+    if int(threads) != threads or threads < 0:
+        raise ValueError(f"threads must be None, 0 or a positive integer, got {threads!r}")
+    return int(threads)
 
 
 def _video_info(fname: str) -> dict:
@@ -40,24 +54,30 @@ def _read_frame(fname: str, t: float) -> np.ndarray:
     raise ValueError(f"no frame at {t:.3f} s in '{fname}'")
 
 
-def _render(fname: str, out: str, t0: float, t1: float, draw, audio: bool = True) -> int:
+def _render(fname: str, out: str, t0: float, t1: float, draw, audio: bool = True,
+            every: int = 1, threads: int = 0) -> int:
     """
     Write the frames of the video `fname` between `t0` and `t1` (seconds
     from the start of the video) to the video file `out` (H.264) after
     drawing on them: `draw(t, image)` is called with the time of the frame
-    and the frame as a PIL image, which it changes. The audio track is
-    copied if `audio`. Returns the number of frames written.
+    and the frame as a PIL image, which it changes. Only one of `every`
+    frames is written (with a frame rate that is lower by this factor).
+    The audio track is copied if `audio`. `threads` is the number of
+    threads for decoding and for encoding (0: all cores). Returns the
+    number of frames written.
     """
     import av
     from fractions import Fraction
     with av.open(str(fname)) as src, av.open(str(out), "w") as dst:
         vin = src.streams.video[0]
         vin.thread_type = "AUTO"
-        rate = vin.average_rate
-        dt = 1. / float(rate)
+        vin.codec_context.thread_count = threads
+        dt = 1. / float(vin.average_rate)
+        rate = vin.average_rate / every
         vout = dst.add_stream("h264", rate=rate, options={"crf": "20", "preset": "veryfast"})
         vout.width, vout.height, vout.pix_fmt = vin.width, vin.height, "yuv420p"
         vout.thread_type = "AUTO"
+        vout.codec_context.thread_count = threads
         streams = [vin]
         if audio and len(src.streams.audio) > 0:
             ain = src.streams.audio[0]
@@ -66,7 +86,7 @@ def _render(fname: str, out: str, t0: float, t1: float, draw, audio: bool = True
         src.seek(int(t0 * av.time_base), backward=True)
         # time of the first frame written (the frame shown at t0)
         first = np.floor(t0 / dt + 1e-6) * dt
-        n, done, t = 0, False, -np.inf
+        n, nread, done, t = 0, 0, False, -np.inf
         for packet in src.demux(streams):
             if packet.stream is vin:
                 for frame in packet.decode():
@@ -74,6 +94,9 @@ def _render(fname: str, out: str, t0: float, t1: float, draw, audio: bool = True
                         continue
                     if frame.time >= t1:
                         done = True
+                        continue
+                    nread += 1
+                    if (nread - 1) % every != 0:
                         continue
                     img = frame.to_image()
                     draw(frame.time, img)
@@ -94,16 +117,18 @@ def _render(fname: str, out: str, t0: float, t1: float, draw, audio: bool = True
     return n
 
 
-def _iter_gray_frames(fname: str, size: tuple):
+def _iter_gray_frames(fname: str, size: tuple, threads: int = 0):
     """
     Iterate over all frames of a video: tuples of the time of the frame
     (seconds from the start of the video) and the frame as a gray-scale
     array (height x width, uint8), scaled to `size` (width, height).
+    `threads` is the number of threads for decoding (0: all cores).
     """
     import av
     w, h = size
     with av.open(str(fname)) as container:
         stream = container.streams.video[0]
         stream.thread_type = "AUTO"
+        stream.codec_context.thread_count = threads
         for frame in container.decode(stream):
             yield frame.time, frame.reformat(width=w, height=h, format="gray").to_ndarray()
