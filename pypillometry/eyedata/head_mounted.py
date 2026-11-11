@@ -613,7 +613,7 @@ class HeadMountedEyeData(EyeData):
         context["image"] = self._scene_frame_html()
         return context
 
-    def _scene_frame_html(self, width: int = 480) -> Optional[dict]:
+    def _scene_frame_html(self, width: int = 240) -> Optional[dict]:
         """
         The frame of the scene video in the middle of the data for the HTML
         representation: dict with "src" (small JPEG as a data URI) and
@@ -627,7 +627,7 @@ class HeadMountedEyeData(EyeData):
             img = Image.fromarray(self.scene.frame(t))
             img.thumbnail((width, width))
             buf = BytesIO()
-            img.save(buf, format="JPEG", quality=80)
+            img.save(buf, format="JPEG", quality=60)
         except Exception as exc:  # the display works without the frame
             logger.debug(f"No frame of the scene video: {exc}")
             return None
