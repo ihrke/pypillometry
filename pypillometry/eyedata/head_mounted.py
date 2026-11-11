@@ -16,6 +16,7 @@ from loguru import logger
 from .. import io, _video
 from ..convenience import requires_package
 from ..events import Events
+from ..logging import _show_progress
 from ..plot import HeadMountedPlotNamespace
 from ..units import parse_time
 from .eyedata import EyeData
@@ -94,7 +95,8 @@ class SceneNamespace(Namespace):
 
         Requires the optional package `av`. All frames are decoded and
         encoded again (H.264), which takes about as long as the part of
-        the video that is written. An existing file `fname` is overwritten.
+        the video that is written; a progress bar counts the frames. An
+        existing file `fname` is overwritten.
 
         Parameters
         ----------
@@ -137,6 +139,7 @@ class SceneNamespace(Namespace):
         """
         from matplotlib.colors import to_rgb
         from PIL import ImageDraw
+        from tqdm import tqdm
         obj = self._d
         if "both_x" not in obj.data or "both_y" not in obj.data:
             raise ValueError("the object has no gaze position (both_x, both_y)")
@@ -176,9 +179,13 @@ class SceneNamespace(Namespace):
                 x, y = np.nanmean(gx[i0:i1]), np.nanmean(gy[i0:i1])
                 canvas.ellipse([x - radius, y - radius, x + radius, y + radius],
                                outline=rgb + (255,), width=width)
+            bar.update(1)
 
         logger.info(f"Writing '{fname}' ({t1 - t0:.1f} s of '{video}')")
-        _video._render(video, fname, t0, t1, draw, audio=audio)
+        nframes = int(np.ceil(t1 * info["fps"] - 1e-6) - np.floor(t0 * info["fps"] + 1e-6))
+        with tqdm(desc=os.path.basename(str(fname)), total=nframes, unit="frames",
+                  disable=not _show_progress()) as bar:
+            _video._render(video, fname, t0, t1, draw, audio=audio)
         return str(fname)
 
     @step
