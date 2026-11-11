@@ -135,3 +135,19 @@ class TestMinMaxDownsample(unittest.TestCase):
     def test_shorter_than_chunk(self):
         normal, _ = self.downsample([3, 1, 2], factor=10)
         np.testing.assert_array_equal(normal, [(0, 3), (1, 1)])
+
+
+class TestShareFonts(unittest.TestCase):
+    def test_one_font_manager(self):
+        """text, tick labels and axis labels use the same font manager"""
+        from types import SimpleNamespace
+        from vispy import scene
+        from pypillometry.viewer.visuals import _share_fonts
+
+        root = scene.Widget()
+        ax = scene.AxisWidget(orientation="left", axis_label="y")
+        ax.parent = root
+        text = scene.Text("label", parent=root)
+        _share_fonts(SimpleNamespace(scene=root))
+        fonts = {id(t._font) for t in (text, ax.axis._text, ax.axis._axis_label_vis)}
+        self.assertEqual(len(fonts), 1)

@@ -5,7 +5,7 @@ from vispy import scene
 from vispy.scene import SceneCanvas
 from typing import List, Dict, Optional
 
-from .visuals import LODLine, DynamicMaskRegions, DynamicEventMarkers, SelectionRegion, HighlightRegion
+from .visuals import LODLine, DynamicMaskRegions, DynamicEventMarkers, SelectionRegion, HighlightRegion, _share_fonts
 from .navigation import NavigationHandler
 
 
@@ -148,6 +148,7 @@ class ViewerCanvas(SceneCanvas):
         self._create_selection_regions()
         self._create_highlight_regions()
         self._create_legend()
+        _share_fonts(self)
         self._set_initial_view()
         
         self._last_x_range = (self.data_min, self.data_max)

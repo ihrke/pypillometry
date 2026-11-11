@@ -3,6 +3,7 @@
 import numpy as np
 from vispy import scene
 from vispy.color import Color
+from vispy.visuals.text.text import TextVisual, FontManager
 from typing import List, Tuple, Dict
 import numpy.ma as ma
 
@@ -31,6 +32,34 @@ class _AxisWidget(scene.AxisWidget):
         super().on_resize(event)
         if self._linked_view is not None:
             self._view_changed()
+
+
+def _share_fonts(canvas):
+    """Let all text visuals of `canvas` use the same font manager.
+
+    Each vispy text visual (also the tick and axis labels) has its own font
+    manager and renders every character it shows into its own texture when
+    it is first drawn. With one font manager, each character is rendered
+    once, which shortens the first draw of the canvas.
+
+    This sets private attributes of vispy's text visuals; visuals without
+    them keep their own font manager.
+    """
+    def text_visuals(node):
+        if isinstance(node, TextVisual):
+            yield node
+        axis = getattr(node, 'axis', None)      # AxisWidget
+        for name in ('_text', '_axis_label_vis'):
+            if isinstance(getattr(axis, name, None), TextVisual):
+                yield getattr(axis, name)
+        for child in node.children:
+            yield from text_visuals(child)
+
+    font_manager = FontManager()
+    for text in text_visuals(canvas.scene):
+        if hasattr(text, '_font_manager') and hasattr(text, '_update_font'):
+            text._font_manager = font_manager
+            text._update_font()
 
 
 def _minmax_downsample(time, data, mask, factor):
