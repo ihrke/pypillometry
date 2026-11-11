@@ -137,9 +137,12 @@ class TestScene:
         res = data | pp.scene.head_movement()
         assert "head_speed" in res.aux and "head_speed" not in data.aux
 
-    def test_missing_channels_and_video(self, data):
+    def test_missing_video(self, data):
+        pytest.importorskip("av")
         with pytest.raises(ValueError, match="no scene video"):
             data.scene.luminance()
+
+    def test_missing_channels(self, data):
         del data.aux["gyro_x"]
         with pytest.raises(ValueError, match=r"no channel\(s\) gyro_x in aux"):
             data.scene.head_movement()
