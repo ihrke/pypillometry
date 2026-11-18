@@ -151,3 +151,22 @@ class TestShareFonts(unittest.TestCase):
         _share_fonts(SimpleNamespace(scene=root))
         fonts = {id(t._font) for t in (text, ax.axis._text, ax.axis._axis_label_vis)}
         self.assertEqual(len(fonts), 1)
+
+
+class TestTweakResult(unittest.TestCase):
+    """the result of func is checked before the viewer opens"""
+
+    def test_none(self):
+        import pypillometry as pp
+        with self.assertRaisesRegex(TypeError, "return its result"):
+            pp.tweak(np.zeros(10), lambda x, a=1: None, {"a": 1})
+
+    def test_scalar(self):
+        import pypillometry as pp
+        with self.assertRaisesRegex(TypeError, "1-d array"):
+            pp.tweak(np.zeros(10), lambda x, a=1: 3.0, {"a": 1})
+
+    def test_func_fails(self):
+        import pypillometry as pp
+        with self.assertRaises(RuntimeError):
+            pp.tweak(np.zeros(10), lambda x, a=1: 1 / 0, {"a": 1})

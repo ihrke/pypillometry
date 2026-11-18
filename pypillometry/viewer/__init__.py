@@ -520,7 +520,8 @@ def tweak(data, func, params, variable=None, time=None):
     Raises
     ------
     TypeError
-        If a value in `params` is not an int or float.
+        If a value in `params` is not an int or float, or if `func` returns
+        something that cannot be shown (e.g., None).
     ValueError
         If `variable` is not found in the EyeData object, or if `func`
         returns an array with a different length than the displayed data.
@@ -705,11 +706,34 @@ def tweak(data, func, params, variable=None, time=None):
         else:
             # Single array
             arrays_dict['tweaked'] = np.asarray(result, dtype=np.float32)
-        
+
+        for k, v in arrays_dict.items():
+            if v.ndim != 1:
+                hint = " (does the function return its result?)" if result is None else ""
+                raise TypeError(
+                    f"Function returned {type(result).__name__}{hint}; expected "
+                    "EyeData, a 1-d array, Intervals or a dict of these"
+                )
         return arrays_dict, mask, intervals_dict
     
     time_vec = np.asarray(time_vec, dtype=np.float32)
-    
+
+    # Compute initial overlay - pass full data to function
+    current_params = dict(params)
+    try:
+        result = func(data, **current_params)
+    except Exception as e:
+        raise RuntimeError(f"Function failed with initial parameters: {e}") from e
+    initial_arrays, overlay_mask, initial_intervals = extract_result(result)
+
+    # Validate overlay array lengths
+    for k, v in initial_arrays.items():
+        if len(v) != len(data_array):
+            raise ValueError(
+                f"Function returned array '{k}' of length {len(v)}, "
+                f"but input has length {len(data_array)}"
+            )
+
     # Save LC_TIME locale before Qt initialization
     try:
         saved_lc_time = locale.getlocale(locale.LC_TIME)
@@ -735,22 +759,6 @@ def tweak(data, func, params, variable=None, time=None):
     
     from vispy import app
     from .tweak_canvas import TweakCanvas, TweakViewer
-    
-    # Compute initial overlay - pass full data to function
-    current_params = dict(params)
-    try:
-        result = func(data, **current_params)
-        initial_arrays, overlay_mask, initial_intervals = extract_result(result)
-    except Exception as e:
-        raise RuntimeError(f"Function failed with initial parameters: {e}")
-    
-    # Validate overlay array lengths
-    for k, v in initial_arrays.items():
-        if len(v) != len(data_array):
-            raise ValueError(
-                f"Function returned array '{k}' of length {len(v)}, "
-                f"but input has length {len(data_array)}"
-            )
     
     # Create canvas with mask and intervals support
     canvas = TweakCanvas(
