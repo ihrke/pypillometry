@@ -87,6 +87,8 @@ def test_smoother_matches_gp_posterior():
     gp_cov = Kf - Kfy @ np.linalg.solve(Kyy, Kfy.T)
     np.testing.assert_allclose(f_mean, gp_mean, atol=1e-7)
     np.testing.assert_allclose(f_var, np.diag(gp_cov), atol=1e-7)
+    np.testing.assert_allclose(sres.signal, gp_mean, atol=1e-7)
+    np.testing.assert_allclose(sres.signal_var, np.diag(gp_cov), atol=1e-7)
 
     parts = gm.component_states(model, sres)
     np.testing.assert_allclose(parts["ou0"][0] + parts["matern1"][0], f_mean)
@@ -122,6 +124,8 @@ def test_multichannel_partial_missing():
     assert fres.loglik == pytest.approx(expected, rel=1e-8)
     assert fres.std_innov.shape == (T, 2)
     assert np.all(fres.gain[10:15, :, 0] == 0)
+    assert fres.signal.shape == fres.signal_var.shape == (T, 2)
+    np.testing.assert_allclose(fres.signal[:, 0], fres.m_filt[:, 0])
 
 
 def test_simulated_variogram_matches_model():

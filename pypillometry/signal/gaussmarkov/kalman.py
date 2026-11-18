@@ -222,6 +222,18 @@ class LGSSM:
         return A, Q, H, R, f(self.m0), f(self.P0)
 
 
+def _signal_mean(H, m):
+    """H m for each t: (T,) for one channel, else (T, m)"""
+    f = m @ H.T
+    return f[:, 0] if H.shape[0] == 1 else f
+
+
+def _signal_var(H, P):
+    """diag(H P H') for each t: (T,) for one channel, else (T, m)"""
+    v = np.einsum("ij,tjk,ik->ti", H, P, H)
+    return v[:, 0] if H.shape[0] == 1 else v
+
+
 def _obs(y, mask, m):
     """observations as a (T, m) float array with NaN where missing"""
     if isinstance(y, np.ma.MaskedArray):
@@ -262,6 +274,8 @@ class FilterResult:
         total log-likelihood
     valid : (T, m)
         True where y was observed
+    H : (m, n)
+        observation matrix of the model (for :attr:`signal`)
     """
     m_pred: np.ndarray
     P_pred: np.ndarray
@@ -273,6 +287,20 @@ class FilterResult:
     loglik_t: np.ndarray
     loglik: float
     valid: np.ndarray
+    H: np.ndarray
+
+    @property
+    def signal(self):
+        """
+        Filtered mean of the noise-free signal, ``H m_filt[t]``: (T,) for
+        one channel, (T, m) for several.
+        """
+        return _signal_mean(self.H, self.m_filt)
+
+    @property
+    def signal_var(self):
+        """Its variance, ``diag(H P_filt[t] H')``; shaped like :attr:`signal`."""
+        return _signal_var(self.H, self.P_filt)
 
     @property
     def std_innov(self):
@@ -300,11 +328,27 @@ class SmootherResult:
         smoother gains (``G[T-1]`` is 0)
     P_lag1 : (T, n, n)
         ``Cov(x[t], x[t-1] | all data)`` (``P_lag1[0]`` is 0); needed for EM
+    H : (m, n)
+        observation matrix of the model (for :attr:`signal`)
     """
     m_smooth: np.ndarray
     P_smooth: np.ndarray
     G: np.ndarray
     P_lag1: np.ndarray
+    H: np.ndarray
+
+    @property
+    def signal(self):
+        """
+        Smoothed mean of the noise-free signal, ``H m_smooth[t]``: (T,) for
+        one channel, (T, m) for several.
+        """
+        return _signal_mean(self.H, self.m_smooth)
+
+    @property
+    def signal_var(self):
+        """Its variance, ``diag(H P_smooth[t] H')``; shaped like :attr:`signal`."""
+        return _signal_var(self.H, self.P_smooth)
 
 
 # ---------------------------------------------------------------------------
@@ -344,7 +388,7 @@ def kalman_filter(model, y, mask=None):
     K = np.zeros((T, n, m))
     llt = np.zeros(T)
     ll = flt(A, Q, H, R, m0, P0, y, True, mp, Pp, mf, Pf, v, S, K, llt)
-    return FilterResult(mp, Pp, mf, Pf, v, S, K, llt, float(ll), ~np.isnan(y))
+    return FilterResult(mp, Pp, mf, Pf, v, S, K, llt, float(ll), ~np.isnan(y), H)
 
 
 def kalman_loglik(model, y, mask=None):
@@ -387,11 +431,11 @@ def rts_smoother(model, fres):
     _, smo, _ = _kernels()
     T, n = fres.m_filt.shape
     _check_cost("rts_smoother", T, n, fres.innov.shape[1])
-    A = model._arrays()[0]
+    A, _, H, *_ = model._arrays()
     ms, Ps = np.zeros((T, n)), np.zeros((T, n, n))
     G, Plag = np.zeros((T, n, n)), np.zeros((T, n, n))
     smo(A, fres.m_pred, fres.P_pred, fres.m_filt, fres.P_filt, ms, Ps, G, Plag)
-    return SmootherResult(ms, Ps, G, Plag)
+    return SmootherResult(ms, Ps, G, Plag, H)
 
 
 def component_states(model, m, P=None):
