@@ -2,7 +2,7 @@
 import subprocess
 import sys
 
-HEAVY = ("pandas", "matplotlib", "scipy", "mpl_toolkits", "h5py", "requests", "tqdm")
+HEAVY = ("pandas", "matplotlib", "scipy", "mpl_toolkits", "h5py", "requests", "tqdm", "numba")
 
 
 def test_import_loads_no_heavy_packages():
