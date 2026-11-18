@@ -23,7 +23,7 @@ Examples
 >>> parts = gm.component_states(model, sres)
 >>> sorted(parts)
 ['matern1', 'ou0']
->>> bool(np.isclose(fres.loglik, gm.loglik_signal(model, y, fs=500, demean=False)))
+>>> bool(np.isclose(fres.loglik, gm.loglik_signal(model, y, fs=500, mean_tol=None)))
 True
 """
 from . import components, kalman, likelihood

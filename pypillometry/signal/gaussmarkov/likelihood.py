@@ -14,40 +14,36 @@ from ...units import parse_time
 from ..variogram import Variogram, _valid_data
 from .kalman import kalman_loglik
 
-__all__ = ["prepare_signal", "loglik_signal", "loglik_variogram",
+__all__ = ["check_zero_mean", "loglik_signal", "loglik_variogram",
            "neg_objective", "fit", "FitResult"]
 
 _LOG2PI = np.log(2 * np.pi)
 
 
-def prepare_signal(signal, mask=None, demean=True, downsample=1):
+def check_zero_mean(signal, mask=None, tol=0.05):
     """
-    Signal as a float array with NaN at invalid samples.
+    Raise a ValueError unless the valid samples have mean ~0.
+
+    The models have mean 0; subtract the mean (or a baseline) first.
 
     Parameters
     ----------
     signal : array or masked array
     mask : array of bool, optional
         True for invalid samples
-    demean : bool, optional
-        subtract the mean of the valid samples (default True; the models
-        have mean 0)
-    downsample : int, optional
-        keep every `downsample`-th sample (no low-pass filtering; the model
-        stays exact when evaluated at ``fs / downsample``)
-
-    Returns
-    -------
-    np.ndarray
+    tol : float, optional
+        largest allowed ``|mean| / std`` of the valid samples (default 0.05)
     """
     x, v = _valid_data(signal, mask)
-    y = np.where(v, x, np.nan)
-    if demean and v.any():
-        y = y - x[v].mean()
-    return y[::int(downsample)]
+    if not v.any():
+        raise ValueError("signal has no valid samples")
+    mean, sd = x[v].mean(), x[v].std()
+    if abs(mean) > tol * sd:
+        raise ValueError(f"signal is not zero-mean (mean {mean:.4g}, sd {sd:.4g}); "
+                         "the models have mean 0, subtract the mean first")
 
 
-def loglik_signal(model, signal, fs, mask=None, demean=True, downsample=1):
+def loglik_signal(model, signal, fs, mask=None, mean_tol=0.05):
     """
     Exact Gaussian log-likelihood of a signal under `model` (Kalman filter).
 
@@ -55,23 +51,22 @@ def loglik_signal(model, signal, fs, mask=None, demean=True, downsample=1):
     ----------
     model : GaussMarkovModel
     signal : array or masked array
-        the signal; masked, NaN and inf samples are missing (gaps are
-        handled exactly, not interpolated)
+        the zero-mean signal; masked, NaN and inf samples are missing (gaps
+        are handled exactly, not interpolated)
     fs : float
         sampling rate of `signal` in Hz
     mask : array of bool, optional
         True for additional invalid samples
-    demean : bool, optional
-        subtract the mean of the valid samples first (default True)
-    downsample : int, optional
-        evaluate on every `downsample`-th sample (faster; default 1)
+    mean_tol : float or None, optional
+        tolerance of :func:`check_zero_mean`; None skips the check
 
     Returns
     -------
     float
     """
-    y = prepare_signal(signal, mask, demean=demean, downsample=downsample)
-    return kalman_loglik(model.to_lgssm(fs / downsample), y)
+    if mean_tol is not None:
+        check_zero_mean(signal, mask, tol=mean_tol)
+    return kalman_loglik(model.to_lgssm(fs), signal, mask)
 
 
 def _vg_select(vg, min_pairs, max_lag):
@@ -144,9 +139,8 @@ def neg_objective(theta, model, which="signal", signal=None, fs=None, vg=None,
         use :func:`loglik_signal` (needs `signal`, `fs`) or
         :func:`loglik_variogram` (needs `vg`)
     **kw
-        passed to the log-likelihood function; for "signal" pass an already
-        prepared signal (see :func:`prepare_signal`) with ``demean=False``
-        to avoid redoing that work in every call
+        passed to the log-likelihood function (e.g. ``mean_tol=None`` to
+        skip the zero-mean check of the signal in every call)
 
     Returns
     -------
@@ -205,7 +199,7 @@ def fit(model, signal=None, fs=None, vg=None, which="signal", method="L-BFGS-B",
     options : dict, optional
         passed to :func:`scipy.optimize.minimize`
     **kw
-        passed to :func:`loglik_signal` (mask, demean, downsample) or
+        passed to :func:`loglik_signal` (mask, mean_tol) or
         :func:`loglik_variogram` (min_pairs, max_lag, method -> use
         ``vg_method``, neff_scale)
 
@@ -217,11 +211,11 @@ def fit(model, signal=None, fs=None, vg=None, which="signal", method="L-BFGS-B",
     if which == "signal":
         if signal is None or fs is None:
             raise ValueError("which='signal' needs signal and fs")
-        ds = kw.pop("downsample", 1)
-        signal = prepare_signal(signal, kw.pop("mask", None),
-                                demean=kw.pop("demean", True), downsample=ds)
-        fs = fs / ds
-        kw["demean"] = False
+        # check once here, not in every evaluation
+        mean_tol = kw.pop("mean_tol", 0.05)
+        if mean_tol is not None:
+            check_zero_mean(signal, kw.get("mask"), tol=mean_tol)
+        kw["mean_tol"] = None
     elif which == "variogram":
         if vg is None:
             raise ValueError("which='variogram' needs vg")

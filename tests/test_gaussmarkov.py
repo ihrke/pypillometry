@@ -73,7 +73,7 @@ def test_loglik_matches_dense_gaussian(gaps):
     assert gm.kalman_loglik(ssm, y) == pytest.approx(expected, rel=1e-8)
     assert fres.loglik_t.sum() == pytest.approx(expected, rel=1e-8)
     assert np.isnan(fres.innov[~valid]).all()
-    assert gm.loglik_signal(model, y, FS, demean=False) == pytest.approx(expected, rel=1e-8)
+    assert gm.loglik_signal(model, y, FS, mean_tol=None) == pytest.approx(expected, rel=1e-8)
 
 
 def test_smoother_matches_gp_posterior():
@@ -154,6 +154,7 @@ def test_fit_recovers_parameters():
     true = gm.GaussMarkovModel([gm.OU(1.0, 50.0)], noise=0.3)
     y = gm.simulate(true, 20_000, fs=FS, rng=9)
     y[5000:5500] = np.nan
+    y -= np.nanmean(y)
     start = gm.GaussMarkovModel([gm.OU(0.5, 150.0)], noise=0.6)
 
     res = gm.fit(start, signal=y, fs=FS)
@@ -164,3 +165,16 @@ def test_fit_recovers_parameters():
     res = gm.fit(start, vg=vg, which="variogram", neff_scale=1e-3)
     for k, v in true.params.items():
         assert res.model.params[k] == pytest.approx(v, rel=0.25), k
+
+
+def test_loglik_signal_requires_zero_mean():
+    model = gm.GaussMarkovModel([gm.OU(1.0, 30.0)], noise=0.3)
+    y = gm.simulate(model, 2000, fs=FS, rng=10)
+    y -= y.mean()
+    gm.loglik_signal(model, y, FS)
+    with pytest.raises(ValueError, match="zero-mean"):
+        gm.loglik_signal(model, y + 5.0, FS)
+    with pytest.raises(ValueError, match="zero-mean"):
+        gm.fit(model, signal=y + 5.0, fs=FS)
+    gm.loglik_signal(model, y + 5.0, FS, mean_tol=None)
+
