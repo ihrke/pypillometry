@@ -12,7 +12,7 @@ milliseconds; see the individual docstrings for units.
   response estimation and signal quality
 - :mod:`~pypillometry.signal.fake`: generation of synthetic data
 """
-from . import baseline, preproc, pupil, fake, variogram
+from . import baseline, preproc, pupil, fake, variogram, gaussmarkov
 from .baseline import *
 from .preproc import *
 from .pupil import *

@@ -64,8 +64,10 @@ SHADOWED = {
 }
 
 # Modules whose public names are only in a namespace submodule, not at the
-# top level (pp.signal.smooth_window, not pp.smooth_window).
-SUBMODULE_API = {"pypillometry.signal": "pypillometry.signal"}
+# top level (pp.signal.smooth_window, not pp.smooth_window). The longest
+# matching prefix wins (pp.signal.gaussmarkov.OU, not pp.signal.OU).
+SUBMODULE_API = {"pypillometry.signal": "pypillometry.signal",
+                 "pypillometry.signal.gaussmarkov": "pypillometry.signal.gaussmarkov"}
 
 # Modules that are not imported by the package (legacy code).
 SKIP_MODULES = set()
@@ -79,9 +81,9 @@ def _package_modules():
 
 def _api_module(module):
     """The module whose __all__ exports the public names of `module`."""
-    for prefix, api in SUBMODULE_API.items():
+    for prefix in sorted(SUBMODULE_API, key=len, reverse=True):
         if module.__name__ == prefix or module.__name__.startswith(prefix + "."):
-            return importlib.import_module(api)
+            return importlib.import_module(SUBMODULE_API[prefix])
     return pp
 
 
