@@ -157,11 +157,17 @@ def test_fit_recovers_parameters():
     res = gm.fit(start, signal=y, fs=FS)
     for k, v in true.params.items():
         assert res.model.params[k] == pytest.approx(v, rel=0.15), k
+    assert res.n_obs == 19_500 and res.n_params == 3
+    assert res.aic == pytest.approx(-2 * res.loglik + 6)
+    assert res.bic == pytest.approx(-2 * res.loglik + 3 * np.log(19_500))
 
     vg = semivariogram(y, fs=FS, max_lag=500)
     res = gm.fit(start, vg=vg, which="variogram", neff_scale=1e-3)
     for k, v in true.params.items():
         assert res.model.params[k] == pytest.approx(v, rel=0.25), k
+    assert res.n_obs is None
+    with pytest.raises(ValueError):
+        res.aic
 
 
 def test_loglik_signal_requires_zero_mean():

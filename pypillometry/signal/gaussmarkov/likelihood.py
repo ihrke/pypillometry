@@ -172,11 +172,39 @@ class FitResult(NamedTuple):
         maximised log-likelihood (of the objective in `which`)
     which : str
     opt : scipy.optimize.OptimizeResult
+    n_obs : int or None
+        number of valid samples (None for a variogram fit)
     """
     model: object
     loglik: float
     which: str
     opt: object
+    n_obs: object = None
+
+    @property
+    def n_params(self):
+        """number of free (fitted) parameters"""
+        return len(self.model.free_names)
+
+    def _check_ic(self):
+        if self.which != "signal":
+            raise ValueError("AIC/BIC need the likelihood of the signal; the "
+                             "variogram objective is not a likelihood")
+
+    @property
+    def aic(self):
+        """Akaike information criterion, ``-2 loglik + 2 k`` (lower is better)"""
+        self._check_ic()
+        return -2 * self.loglik + 2 * self.n_params
+
+    @property
+    def bic(self):
+        """
+        Bayesian information criterion, ``-2 loglik + k log(n_obs)``
+        (lower is better)
+        """
+        self._check_ic()
+        return -2 * self.loglik + self.n_params * np.log(self.n_obs)
 
 
 def fit(model, signal=None, fs=None, vg=None, which="signal", method="L-BFGS-B",
@@ -208,9 +236,11 @@ def fit(model, signal=None, fs=None, vg=None, which="signal", method="L-BFGS-B",
     FitResult
     """
     from scipy.optimize import minimize
+    n_obs = None
     if which == "signal":
         if signal is None or fs is None:
             raise ValueError("which='signal' needs signal and fs")
+        n_obs = int(_valid_data(signal, kw.get("mask"))[1].sum())
         # check once here, not in every evaluation
         mean_tol = kw.pop("mean_tol", 0.05)
         if mean_tol is not None:
@@ -223,4 +253,4 @@ def fit(model, signal=None, fs=None, vg=None, which="signal", method="L-BFGS-B",
             kw["method"] = kw.pop("vg_method")
     opt = minimize(lambda th: neg_objective(th, model, which, signal, fs, vg, **kw),
                    model.theta, method=method, options=options)
-    return FitResult(model.from_theta(opt.x), float(-opt.fun), which, opt)
+    return FitResult(model.from_theta(opt.x), float(-opt.fun), which, opt, n_obs)
