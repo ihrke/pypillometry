@@ -33,7 +33,7 @@ _LOG2PI = float(np.log(2 * np.pi))
 # ---------------------------------------------------------------------------
 # kernels (plain numpy; compiled with numba when available)
 # ---------------------------------------------------------------------------
-def _filter_kernel(A, Q, aidx, H, R, m0, P0, y, store,
+def _filter_kernel(A, Q, H, R, m0, P0, y, store,
                    mp, Pp, mf, Pf, v, S, K, llt):
     T, m = y.shape
     n = m0.shape[0]
@@ -42,9 +42,8 @@ def _filter_kernel(A, Q, aidx, H, R, m0, P0, y, store,
     ll = 0.0
     for t in range(T):
         if t > 0:
-            Ak = A[aidx[t]]
-            x = Ak @ x
-            P = Ak @ P @ Ak.T + Q[aidx[t]]
+            x = A @ x
+            P = A @ P @ A.T + Q
             P = 0.5 * (P + P.T)
         if store:
             mp[t] = x
@@ -107,13 +106,12 @@ def _filter_kernel(A, Q, aidx, H, R, m0, P0, y, store,
     return ll
 
 
-def _smoother_kernel(A, aidx, mp, Pp, mf, Pf, ms, Ps, G, Plag):
+def _smoother_kernel(A, mp, Pp, mf, Pf, ms, Ps, G, Plag):
     T = mf.shape[0]
     ms[T - 1] = mf[T - 1]
     Ps[T - 1] = Pf[T - 1]
     for t in range(T - 2, -1, -1):
-        Ak = A[aidx[t + 1]]
-        Gt = np.linalg.solve(Pp[t + 1], Ak @ Pf[t]).T
+        Gt = np.linalg.solve(Pp[t + 1], A @ Pf[t]).T
         ms[t] = mf[t] + Gt @ (ms[t + 1] - mp[t + 1])
         Pt = Pf[t] + Gt @ (Ps[t + 1] - Pp[t + 1]) @ Gt.T
         Ps[t] = 0.5 * (Pt + Pt.T)
@@ -121,12 +119,12 @@ def _smoother_kernel(A, aidx, mp, Pp, mf, Pf, ms, Ps, G, Plag):
         Plag[t + 1] = Ps[t + 1] @ Gt.T
 
 
-def _simulate_kernel(A, Qsqrt, aidx, H, Rsqrt, x0, ex, ey, xs, ys):
+def _simulate_kernel(A, Qsqrt, H, Rsqrt, x0, ex, ey, xs, ys):
     T = ex.shape[0]
     x = x0.copy()
     for t in range(T):
         if t > 0:
-            x = A[aidx[t]] @ x + Qsqrt[aidx[t]] @ ex[t]
+            x = A @ x + Qsqrt @ ex[t]
         xs[t] = x
         ys[t] = H @ x + Rsqrt @ ey[t]
 
@@ -184,11 +182,10 @@ class LGSSM:
 
     Attributes
     ----------
-    A : (n, n) or (T, n, n)
-        transition matrix; if 3-d, ``A[t]`` is the transition from t-1 to t
-        (``A[0]`` is unused)
-    Q : (n, n) or (T, n, n)
-        process-noise covariance, shaped like `A`
+    A : (n, n)
+        transition matrix from one sample to the next
+    Q : (n, n)
+        process-noise covariance
     H : (m, n)
         observation matrix
     R : (m, m)
@@ -213,20 +210,16 @@ class LGSSM:
     def dim_obs(self):
         return self.H.shape[0]
 
-    def _arrays(self, T):
-        """float64 C-contiguous arrays and the index of A/Q for each step"""
+    def _arrays(self):
+        """float64 C-contiguous arrays for the kernels"""
         f = lambda a: np.ascontiguousarray(a, dtype=np.float64)
         A, Q = f(self.A), f(self.Q)
-        if A.ndim == 2:
-            A, Q = A[None], Q[None]
-            aidx = np.zeros(T, dtype=np.int64)
-        else:
-            if A.shape[0] != T:
-                raise ValueError(f"time-varying A has {A.shape[0]} steps, data {T}")
-            aidx = np.arange(T, dtype=np.int64)
+        n = self.dim_state
+        if A.shape != (n, n) or Q.shape != (n, n):
+            raise ValueError(f"A and Q must be ({n}, {n}), got {A.shape} and {Q.shape}")
         H = f(np.atleast_2d(self.H))
         R = f(np.atleast_2d(self.R))
-        return A, Q, aidx, H, R, f(self.m0), f(self.P0)
+        return A, Q, H, R, f(self.m0), f(self.P0)
 
 
 def _obs(y, mask, m):
@@ -341,7 +334,7 @@ def kalman_filter(model, y, mask=None):
     flt, _, _ = _kernels()
     y = _obs(y, mask, model.dim_obs)
     T, m = y.shape
-    A, Q, aidx, H, R, m0, P0 = model._arrays(T)
+    A, Q, H, R, m0, P0 = model._arrays()
     n = m0.shape[0]
     _check_cost("kalman_filter", T, n, m)
     mp, mf = np.zeros((T, n)), np.zeros((T, n))
@@ -350,7 +343,7 @@ def kalman_filter(model, y, mask=None):
     S = np.zeros((T, m, m))
     K = np.zeros((T, n, m))
     llt = np.zeros(T)
-    ll = flt(A, Q, aidx, H, R, m0, P0, y, True, mp, Pp, mf, Pf, v, S, K, llt)
+    ll = flt(A, Q, H, R, m0, P0, y, True, mp, Pp, mf, Pf, v, S, K, llt)
     return FilterResult(mp, Pp, mf, Pf, v, S, K, llt, float(ll), ~np.isnan(y))
 
 
@@ -367,11 +360,11 @@ def kalman_loglik(model, y, mask=None):
     flt, _, _ = _kernels()
     y = _obs(y, mask, model.dim_obs)
     T, m = y.shape
-    A, Q, aidx, H, R, m0, P0 = model._arrays(T)
+    A, Q, H, R, m0, P0 = model._arrays()
     n = m0.shape[0]
     _check_cost("kalman_loglik", T, n, m)
     d2, d3 = np.zeros((1, n)), np.zeros((1, n, n))
-    return float(flt(A, Q, aidx, H, R, m0, P0, y, False, d2, d3, d2, d3,
+    return float(flt(A, Q, H, R, m0, P0, y, False, d2, d3, d2, d3,
                      np.zeros((1, m)), np.zeros((1, m, m)), np.zeros((1, n, m)),
                      np.zeros(1)))
 
@@ -394,10 +387,10 @@ def rts_smoother(model, fres):
     _, smo, _ = _kernels()
     T, n = fres.m_filt.shape
     _check_cost("rts_smoother", T, n, fres.innov.shape[1])
-    A, _, aidx, *_ = model._arrays(T)
+    A = model._arrays()[0]
     ms, Ps = np.zeros((T, n)), np.zeros((T, n, n))
     G, Plag = np.zeros((T, n, n)), np.zeros((T, n, n))
-    smo(A, aidx, fres.m_pred, fres.P_pred, fres.m_filt, fres.P_filt, ms, Ps, G, Plag)
+    smo(A, fres.m_pred, fres.P_pred, fres.m_filt, fres.P_filt, ms, Ps, G, Plag)
     return SmootherResult(ms, Ps, G, Plag)
 
 
@@ -475,13 +468,13 @@ def simulate(model, n, fs=None, rng=None, return_states=False):
         model = model.to_lgssm(fs)
     _, _, sim = _kernels()
     rng = np.random.default_rng(rng)
-    A, Q, aidx, H, R, m0, P0 = model._arrays(n)
-    Qsqrt = np.ascontiguousarray([_sqrtm_psd(q) for q in Q])
+    A, Q, H, R, m0, P0 = model._arrays()
+    Qsqrt = np.ascontiguousarray(_sqrtm_psd(Q))
     Rsqrt = np.ascontiguousarray(_sqrtm_psd(R))
     d, m = m0.shape[0], H.shape[0]
     x0 = m0 + _sqrtm_psd(P0) @ rng.standard_normal(d)
     ex, ey = rng.standard_normal((n, d)), rng.standard_normal((n, m))
     xs, ys = np.zeros((n, d)), np.zeros((n, m))
-    sim(A, Qsqrt, aidx, H, Rsqrt, x0, ex, ey, xs, ys)
+    sim(A, Qsqrt, H, Rsqrt, x0, ex, ey, xs, ys)
     y = ys[:, 0] if m == 1 else ys
     return (y, xs) if return_states else y
