@@ -132,11 +132,12 @@ def _simulate_kernel(A, Qsqrt, aidx, H, Rsqrt, x0, ex, ey, xs, ys):
 
 
 _KERNELS = None
+_JIT = False
 
 
 def _kernels():
     """the kernels, compiled with numba on first use if it is installed"""
-    global _KERNELS
+    global _KERNELS, _JIT
     if _KERNELS is None:
         try:
             import numba
@@ -148,7 +149,29 @@ def _kernels():
             jit = numba.njit(cache=True)
             _KERNELS = (jit(_filter_kernel), jit(_smoother_kernel),
                         jit(_simulate_kernel))
+            _JIT = True
     return _KERNELS
+
+
+# rough cost per step and squared state dimension (s, with numba; measured)
+_SEC_PER_STEP = {"kalman_loglik": 1e-7, "kalman_filter": 2e-7, "rts_smoother": 4e-7}
+_FLOATS_PER_STEP = {"kalman_loglik": lambda n, m: 0,
+                    "kalman_filter": lambda n, m: 2 * n * n + 2 * n + n * m + m * m + m,
+                    "rts_smoother": lambda n, m: 3 * n * n + n}
+_MAX_SEC, _MAX_BYTES = 30.0, 2e9
+_WARNED = set()
+
+
+def _check_cost(what, T, n, m):
+    """warn (once per call signature) if a run will be slow or use much memory"""
+    sec = _SEC_PER_STEP[what] * T * n * n * (1 if _JIT else 30)
+    mem = 8.0 * T * _FLOATS_PER_STEP[what](n, m)
+    if (sec > _MAX_SEC or mem > _MAX_BYTES) and (what, T, n, m) not in _WARNED:
+        _WARNED.add((what, T, n, m))
+        logger.warning(f"{what}: {T} samples with a {n}-dim state will take "
+                       f"~{sec:.0f} s and ~{mem / 1e9:.1f} GB "
+                       f"{'' if _JIT else '(numba not installed) '}"
+                       "- consider downsampling or a shorter segment")
 
 
 # ---------------------------------------------------------------------------
@@ -320,6 +343,7 @@ def kalman_filter(model, y, mask=None):
     T, m = y.shape
     A, Q, aidx, H, R, m0, P0 = model._arrays(T)
     n = m0.shape[0]
+    _check_cost("kalman_filter", T, n, m)
     mp, mf = np.zeros((T, n)), np.zeros((T, n))
     Pp, Pf = np.zeros((T, n, n)), np.zeros((T, n, n))
     v = np.full((T, m), np.nan)
@@ -345,6 +369,7 @@ def kalman_loglik(model, y, mask=None):
     T, m = y.shape
     A, Q, aidx, H, R, m0, P0 = model._arrays(T)
     n = m0.shape[0]
+    _check_cost("kalman_loglik", T, n, m)
     d2, d3 = np.zeros((1, n)), np.zeros((1, n, n))
     return float(flt(A, Q, aidx, H, R, m0, P0, y, False, d2, d3, d2, d3,
                      np.zeros((1, m)), np.zeros((1, m, m)), np.zeros((1, n, m)),
@@ -368,6 +393,7 @@ def rts_smoother(model, fres):
     """
     _, smo, _ = _kernels()
     T, n = fres.m_filt.shape
+    _check_cost("rts_smoother", T, n, fres.innov.shape[1])
     A, _, aidx, *_ = model._arrays(T)
     ms, Ps = np.zeros((T, n)), np.zeros((T, n, n))
     G, Plag = np.zeros((T, n, n)), np.zeros((T, n, n))

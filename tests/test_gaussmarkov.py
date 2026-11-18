@@ -178,3 +178,14 @@ def test_loglik_signal_requires_zero_mean():
         gm.fit(model, signal=y + 5.0, fs=FS)
     gm.loglik_signal(model, y + 5.0, FS, mean_tol=None)
 
+
+def test_heavy_computation_warns(monkeypatch):
+    from pypillometry.signal.gaussmarkov import kalman
+    messages = []
+    monkeypatch.setattr(kalman.logger, "warning", messages.append)
+    monkeypatch.setattr(kalman, "_MAX_SEC", 0.0)
+    monkeypatch.setattr(kalman, "_WARNED", set())
+    ssm = _model().to_lgssm(FS)
+    gm.kalman_loglik(ssm, np.zeros(10))
+    gm.kalman_loglik(ssm, np.zeros(10))
+    assert len(messages) == 1 and "kalman_loglik" in messages[0]
