@@ -8,11 +8,11 @@ Each component is a linear SDE
 
 .. math::
 
-    dx = F x \\, dt + L \\, dW, \\qquad f(t) = H x(t),
+    dx = F x \\, dt + dW, \\qquad \\mathrm{Cov}(dW) = Q_n \\, dt,
+    \\qquad f(t) = H x(t),
 
-with white-noise spectral density :math:`Q_c`, whose output :math:`f(t)` is a
-Gaussian process. A :class:`GaussMarkovModel` stacks components
-(block-diagonal state) and adds white measurement noise;
+whose output :math:`f(t)` is a Gaussian process. A :class:`GaussMarkovModel`
+stacks components (block-diagonal state) and adds white measurement noise;
 :meth:`GaussMarkovModel.to_lgssm` turns it into the discrete matrices used by
 :mod:`~pypillometry.signal.gaussmarkov.kalman`.
 
@@ -34,25 +34,24 @@ class ContinuousSS(NamedTuple):
     Attributes
     ----------
     F : (n, n) feedback matrix
-    L : (n, 1) noise-effect matrix
-    Qc : (1, 1) spectral density of the white noise
+    Qn : (n, n) intensity of the white noise driving the state
+        (rate at which it adds covariance)
     H : (1, n) observation row
     Pinf : (n, n) stationary covariance of the state
     """
     F: np.ndarray
-    L: np.ndarray
-    Qc: np.ndarray
+    Qn: np.ndarray
     H: np.ndarray
     Pinf: np.ndarray
 
 
-def _van_loan(F, L, Qc, dt):
-    """A = expm(F dt) and Q = int_0^dt expm(F s) L Qc L' expm(F' s) ds."""
+def _van_loan(F, Qn, dt):
+    """A = expm(F dt) and Q = int_0^dt expm(F s) Qn expm(F' s) ds."""
     from scipy.linalg import expm
     n = F.shape[0]
     M = np.zeros((2 * n, 2 * n))
     M[:n, :n] = -F
-    M[:n, n:] = L @ Qc @ L.T
+    M[:n, n:] = Qn
     M[n:, n:] = F.T
     E = expm(M * dt)
     A = E[n:, n:].T
@@ -89,7 +88,7 @@ class Component:
             ``x[t+dt] = A x[t] + w, w ~ N(0, Q)``
         """
         s = self.ss()
-        return _van_loan(s.F, s.L, s.Qc, dt)
+        return _van_loan(s.F, s.Qn, dt)
 
     def cov(self, tau):
         """Autocovariance k(tau) of the output at lags `tau` (ms)."""
@@ -124,8 +123,8 @@ class Matern(Component):
                \\sum_{i=0}^{p} \\frac{(p+i)!}{i!(p-i)!} (2\\lambda r)^{p-i},
         \\qquad \\lambda = \\sqrt{2\\nu} / \\ell
 
-    The state holds the process and its first p derivatives
-    (Hartikainen & Särkkä, 2010).
+    The state holds the process and its first p derivatives; the white noise
+    drives only the highest one (Hartikainen & Särkkä, 2010).
 
     Parameters
     ----------
@@ -170,15 +169,13 @@ class Matern(Component):
         n = p + 1
         F = np.diag(np.ones(n - 1), 1)
         F[-1, :] = [-comb(n, k) * lam**(n - k) for k in range(n)]
-        L = np.zeros((n, 1))
-        L[-1, 0] = 1.0
-        q = (self.sigma**2 * factorial(p)**2 / factorial(2 * p)
-             * (2 * lam)**(2 * p + 1))
-        Qc = np.array([[q]])
+        Qn = np.zeros((n, n))
+        Qn[-1, -1] = (self.sigma**2 * factorial(p)**2 / factorial(2 * p)
+                      * (2 * lam)**(2 * p + 1))
         H = np.zeros((1, n))
         H[0, 0] = 1.0
-        Pinf = solve_continuous_lyapunov(F, -L @ Qc @ L.T)
-        return ContinuousSS(F, L, Qc, H, 0.5 * (Pinf + Pinf.T))
+        Pinf = solve_continuous_lyapunov(F, -Qn)
+        return ContinuousSS(F, Qn, H, 0.5 * (Pinf + Pinf.T))
 
     def cov(self, tau):
         p, lam = self.p, self.lam
