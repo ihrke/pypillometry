@@ -1,5 +1,5 @@
 """
-Gauss-Markov processes (OU, Matérn, random walk) as linear state-space
+Stationary Gauss-Markov processes (OU, Matérn) as linear state-space
 models: Kalman filter, RTS smoother, simulation and likelihoods.
 
 Low-level machinery on numpy arrays; experimental, the API may change.

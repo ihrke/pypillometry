@@ -2,7 +2,7 @@
 components.py
 =============
 
-Continuous-time Gauss-Markov processes and sums of them.
+Continuous-time stationary Gauss-Markov processes and sums of them.
 
 Each component is a linear SDE
 
@@ -24,8 +24,7 @@ from typing import NamedTuple
 
 import numpy as np
 
-__all__ = ["ContinuousSS", "Component", "OU", "Matern", "RandomWalk",
-           "GaussMarkovModel"]
+__all__ = ["ContinuousSS", "Component", "OU", "Matern", "GaussMarkovModel"]
 
 
 class ContinuousSS(NamedTuple):
@@ -38,7 +37,7 @@ class ContinuousSS(NamedTuple):
     L : (n, 1) noise-effect matrix
     Qc : (1, 1) spectral density of the white noise
     H : (1, n) observation row
-    Pinf : (n, n) stationary covariance, or None for non-stationary components
+    Pinf : (n, n) stationary covariance of the state
     """
     F: np.ndarray
     L: np.ndarray
@@ -75,10 +74,6 @@ class Component:
         """dimension of the state"""
         return self.ss().F.shape[0]
 
-    @property
-    def stationary(self):
-        return True
-
     def ss(self):
         """Continuous-time state space (:class:`ContinuousSS`)."""
         raise NotImplementedError
@@ -100,8 +95,6 @@ class Component:
         """Autocovariance k(tau) of the output at lags `tau` (ms)."""
         from scipy.linalg import expm
         s = self.ss()
-        if s.Pinf is None:
-            raise ValueError(f"{type(self).__name__} is not stationary: no covariance")
         tau = np.abs(np.asarray(tau, dtype=float))
         out = [(s.H @ expm(s.F * t) @ s.Pinf @ s.H.T)[0, 0] for t in tau.ravel()]
         return np.reshape(out, tau.shape)
@@ -229,39 +222,7 @@ class OU(Component):
         return self._matern().cov(tau)
 
 
-@dataclass(frozen=True)
-class RandomWalk(Component):
-    """
-    Random walk (Brownian motion), ``dx = sqrt(q) dW``: a slow drift.
-
-    Not stationary: its semivariogram ``gamma(tau) = q tau / 2`` grows
-    without bound and the state starts with the (large) variance `p0`.
-
-    Parameters
-    ----------
-    q : float
-        diffusion rate (signal units^2 per ms)
-    p0 : float
-        variance of the initial state (not fitted); should be large compared
-        to the variance of the signal
-    """
-    q: float = 1e-3
-    p0: float = 1e6
-    param_names = ("q",)
-
-    @property
-    def stationary(self):
-        return False
-
-    def ss(self):
-        one = np.ones((1, 1))
-        return ContinuousSS(np.zeros((1, 1)), one, self.q * one, one, None)
-
-    def variogram(self, tau):
-        return 0.5 * self.q * np.abs(np.asarray(tau, dtype=float))
-
-
-_PREFIX = {"OU": "ou", "Matern": "matern", "RandomWalk": "rw"}
+_PREFIX = {"OU": "ou", "Matern": "matern"}
 
 
 class GaussMarkovModel:
@@ -336,10 +297,6 @@ class GaussMarkovModel:
     @property
     def dim(self):
         return sum(c.dim for _, c in self._items)
-
-    @property
-    def stationary(self):
-        return all(c.stationary for _, c in self._items)
 
     def __repr__(self):
         comps = ", ".join(f"{n}={c!r}" for n, c in self._items)
@@ -425,7 +382,7 @@ class GaussMarkovModel:
         return g + self.noise**2 * (tau != 0)
 
     # -- discrete model ------------------------------------------------------
-    def to_lgssm(self, fs, diffuse=True):
+    def to_lgssm(self, fs):
         """
         Discrete-time model for sampling rate `fs` (Hz).
 
@@ -433,9 +390,6 @@ class GaussMarkovModel:
         ----------
         fs : float
             sampling rate in Hz
-        diffuse : bool, optional
-            initial variance of non-stationary components: their `p0` (True,
-            default, for filtering) or 0 (False, start at 0, for simulation)
 
         Returns
         -------
@@ -451,10 +405,7 @@ class GaussMarkovModel:
             As.append(A)
             Qs.append(Q)
             Hs.append(s.H)
-            if s.Pinf is not None:
-                P0s.append(s.Pinf)
-            else:
-                P0s.append(np.eye(c.dim) * (c.p0 if diffuse else 0.0))
+            P0s.append(s.Pinf)
         return LGSSM(A=block_diag(*As), Q=block_diag(*Qs), H=np.hstack(Hs),
                      R=np.array([[self.noise**2]]), m0=np.zeros(self.dim),
                      P0=block_diag(*P0s))

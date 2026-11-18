@@ -35,13 +35,6 @@ def test_discretisation_keeps_stationary_covariance(comp):
     np.testing.assert_allclose(A @ P @ A.T + Q, P, rtol=1e-8, atol=1e-12)
 
 
-def test_random_walk():
-    rw = gm.RandomWalk(q=0.5)
-    A, Q = rw.discretise(4.0)
-    np.testing.assert_allclose([A[0, 0], Q[0, 0]], [1.0, 2.0])
-    np.testing.assert_allclose(rw.variogram([0.0, 10.0]), [0.0, 2.5])
-
-
 def test_parameters_roundtrip():
     model = _model().fix({"noise": 0.5})
     assert model.free_names == ["ou0.sigma", "ou0.tau", "matern1.sigma", "matern1.ell"]

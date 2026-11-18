@@ -446,8 +446,7 @@ def simulate(model, n, fs=None, rng=None, return_states=False):
     Parameters
     ----------
     model : LGSSM or GaussMarkovModel
-        a :class:`GaussMarkovModel` is discretised at `fs` with its non-stationary
-        components starting at 0
+        a :class:`GaussMarkovModel` is discretised at `fs`
     n : int
         number of samples
     fs : float, optional
@@ -473,7 +472,7 @@ def simulate(model, n, fs=None, rng=None, return_states=False):
     if not isinstance(model, LGSSM):
         if fs is None:
             raise ValueError("fs is needed to simulate from a GaussMarkovModel")
-        model = model.to_lgssm(fs, diffuse=False)
+        model = model.to_lgssm(fs)
     _, _, sim = _kernels()
     rng = np.random.default_rng(rng)
     A, Q, aidx, H, R, m0, P0 = model._arrays(n)
