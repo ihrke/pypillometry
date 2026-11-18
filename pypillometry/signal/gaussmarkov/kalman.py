@@ -12,7 +12,7 @@ linear-Gaussian state-space model (:class:`LGSSM`)
     y_t = H x_t + e_t,\\ e_t \\sim N(0, R).
 
 The functions know nothing about OU or Matérn processes; any stack of
-components (see :meth:`Sum.to_lgssm`) works. Missing observations (NaN) are
+components (see :meth:`GaussMarkovModel.to_lgssm`) works. Missing observations (NaN) are
 skipped in the update, so gaps are handled exactly; with several observed
 channels, each one can be missing on its own.
 
@@ -381,7 +381,7 @@ def component_states(model, m, P=None):
 
     Parameters
     ----------
-    model : Sum
+    model : GaussMarkovModel
     m : (T, n) array, SmootherResult or FilterResult
         state means; for a result object the smoothed (or filtered) mean and
         covariance are used and `P` is ignored
@@ -419,13 +419,13 @@ def simulate(model, n, fs=None, rng=None, return_states=False):
 
     Parameters
     ----------
-    model : LGSSM or Sum
-        a :class:`Sum` is discretised at `fs` with its non-stationary
+    model : LGSSM or GaussMarkovModel
+        a :class:`GaussMarkovModel` is discretised at `fs` with its non-stationary
         components starting at 0
     n : int
         number of samples
     fs : float, optional
-        sampling rate in Hz (needed for a Sum)
+        sampling rate in Hz (needed for a GaussMarkovModel)
     rng : np.random.Generator or int, optional
     return_states : bool, optional
         also return the states
@@ -439,14 +439,14 @@ def simulate(model, n, fs=None, rng=None, return_states=False):
 
     Examples
     --------
-    >>> from pypillometry.signal.gaussmarkov import OU, Sum
-    >>> y = simulate(Sum([OU(1., 50.)], noise=0.1), 1000, fs=1000, rng=0)
+    >>> from pypillometry.signal.gaussmarkov import OU, GaussMarkovModel
+    >>> y = simulate(GaussMarkovModel([OU(1., 50.)], noise=0.1), 1000, fs=1000, rng=0)
     >>> y.shape
     (1000,)
     """
     if not isinstance(model, LGSSM):
         if fs is None:
-            raise ValueError("fs is needed to simulate from a Sum")
+            raise ValueError("fs is needed to simulate from a GaussMarkovModel")
         model = model.to_lgssm(fs, diffuse=False)
     _, _, sim = _kernels()
     rng = np.random.default_rng(rng)

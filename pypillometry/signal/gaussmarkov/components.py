@@ -11,9 +11,10 @@ Each component is a linear SDE
     dx = F x \\, dt + L \\, dW, \\qquad f(t) = H x(t),
 
 with white-noise spectral density :math:`Q_c`, whose output :math:`f(t)` is a
-Gaussian process. A :class:`Sum` stacks components (block-diagonal state) and
-adds white measurement noise; :meth:`Sum.to_lgssm` turns it into the discrete
-matrices used by :mod:`~pypillometry.signal.gaussmarkov.kalman`.
+Gaussian process. A :class:`GaussMarkovModel` stacks components
+(block-diagonal state) and adds white measurement noise;
+:meth:`GaussMarkovModel.to_lgssm` turns it into the discrete matrices used by
+:mod:`~pypillometry.signal.gaussmarkov.kalman`.
 
 Times (``tau``, ``ell``, lags) are in ms; rates are per ms.
 """
@@ -23,7 +24,8 @@ from typing import NamedTuple
 
 import numpy as np
 
-__all__ = ["ContinuousSS", "Component", "OU", "Matern", "RandomWalk", "Sum"]
+__all__ = ["ContinuousSS", "Component", "OU", "Matern", "RandomWalk",
+           "GaussMarkovModel"]
 
 
 class ContinuousSS(NamedTuple):
@@ -262,9 +264,9 @@ class RandomWalk(Component):
 _PREFIX = {"OU": "ou", "Matern": "matern", "RandomWalk": "rw"}
 
 
-class Sum:
+class GaussMarkovModel:
     """
-    Sum of components plus white measurement noise.
+    Gauss-Markov model: a sum of components plus white measurement noise.
 
     The state is the stack of the component states (block-diagonal
     dynamics); the observation is the sum of the component outputs plus
@@ -287,7 +289,7 @@ class Sum:
 
     Examples
     --------
-    >>> model = Sum([OU(1., 50.), Matern(2., 500., nu=2.5)], noise=0.1)
+    >>> model = GaussMarkovModel([OU(1., 50.), Matern(2., 500., nu=2.5)], noise=0.1)
     >>> model.param_names
     ['ou0.sigma', 'ou0.tau', 'matern1.sigma', 'matern1.ell', 'noise']
     >>> model.dim
@@ -341,7 +343,8 @@ class Sum:
 
     def __repr__(self):
         comps = ", ".join(f"{n}={c!r}" for n, c in self._items)
-        return f"Sum({comps}, noise={self.noise!r}, fixed={sorted(self.fixed)})"
+        return (f"GaussMarkovModel({comps}, noise={self.noise!r}, "
+                f"fixed={sorted(self.fixed)})")
 
     # -- parameters ----------------------------------------------------------
     @property
@@ -371,7 +374,7 @@ class Sum:
                   if k.split(".", 1)[0] == name}
             items.append((name, c.with_params(**kw) if kw else c))
         noise = params.get("noise", self.noise)
-        return Sum(dict(items), noise=noise, fixed=self.fixed)
+        return GaussMarkovModel(dict(items), noise=noise, fixed=self.fixed)
 
     def fix(self, params):
         """
@@ -386,11 +389,13 @@ class Sum:
         unknown = set(params) - set(self.param_names)
         if unknown:
             raise ValueError(f"unknown parameters: {sorted(unknown)}")
-        return Sum(dict(new._items), noise=new.noise, fixed=self.fixed | set(params))
+        return GaussMarkovModel(dict(new._items), noise=new.noise,
+                                fixed=self.fixed | set(params))
 
     def unfix(self, names):
         """copy with the parameters `names` free again"""
-        return Sum(dict(self._items), noise=self.noise, fixed=self.fixed - set(names))
+        return GaussMarkovModel(dict(self._items), noise=self.noise,
+                                fixed=self.fixed - set(names))
 
     @property
     def theta(self):

@@ -2,7 +2,7 @@
 likelihood.py
 =============
 
-Objective functions for a :class:`Sum` of components: the exact Gaussian
+Objective functions for a :class:`GaussMarkovModel` of components: the exact Gaussian
 log-likelihood of the raw signal (Kalman filter) and an approximate
 log-likelihood of an empirical semivariogram; plus a small fitting helper.
 """
@@ -53,7 +53,7 @@ def loglik_signal(model, signal, fs, mask=None, demean=True, downsample=1):
 
     Parameters
     ----------
-    model : Sum
+    model : GaussMarkovModel
     signal : array or masked array
         the signal; masked, NaN and inf samples are missing (gaps are
         handled exactly, not interpolated)
@@ -90,7 +90,7 @@ def loglik_variogram(model, vg, min_pairs=100, max_lag=None, method="gauss",
 
     Parameters
     ----------
-    model : Sum
+    model : GaussMarkovModel
     vg : Variogram
         from :func:`~pypillometry.signal.semivariogram`
     min_pairs : int, optional
@@ -138,7 +138,7 @@ def neg_objective(theta, model, which="signal", signal=None, fs=None, vg=None,
     Parameters
     ----------
     theta : array
-    model : Sum
+    model : GaussMarkovModel
         supplies the structure, the fixed parameters and the names in theta
     which : {"signal", "variogram"}
         use :func:`loglik_signal` (needs `signal`, `fs`) or
@@ -172,7 +172,7 @@ class FitResult(NamedTuple):
 
     Attributes
     ----------
-    model : Sum
+    model : GaussMarkovModel
         the model with the fitted parameters
     loglik : float
         maximised log-likelihood (of the objective in `which`)
@@ -192,8 +192,8 @@ def fit(model, signal=None, fs=None, vg=None, which="signal", method="L-BFGS-B",
 
     Parameters
     ----------
-    model : Sum
-        starting values, fixed parameters (:meth:`Sum.fix`) and structure
+    model : GaussMarkovModel
+        starting values, fixed parameters (:meth:`GaussMarkovModel.fix`) and structure
     signal, fs : array, float
         signal and sampling rate (Hz), for ``which="signal"``
     vg : Variogram

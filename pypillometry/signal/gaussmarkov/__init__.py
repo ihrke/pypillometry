@@ -5,7 +5,7 @@ models: Kalman filter, RTS smoother, simulation and likelihoods.
 Low-level machinery on numpy arrays; experimental, the API may change.
 
 - :mod:`~pypillometry.signal.gaussmarkov.components`: components and
-  their sum (:class:`Sum`)
+  their sum (:class:`GaussMarkovModel`)
 - :mod:`~pypillometry.signal.gaussmarkov.kalman`: general Kalman filter,
   smoother and simulation (compiled with numba if installed)
 - :mod:`~pypillometry.signal.gaussmarkov.likelihood`: log-likelihood of a
@@ -15,7 +15,7 @@ Examples
 --------
 >>> import numpy as np
 >>> from pypillometry.signal import gaussmarkov as gm
->>> model = gm.Sum([gm.OU(1., 50.), gm.Matern(2., 500., nu=1.5)], noise=0.1)
+>>> model = gm.GaussMarkovModel([gm.OU(1., 50.), gm.Matern(2., 500., nu=1.5)], noise=0.1)
 >>> y = gm.simulate(model, 2000, fs=500, rng=1)
 >>> ssm = model.to_lgssm(fs=500)
 >>> fres = gm.kalman_filter(ssm, y)

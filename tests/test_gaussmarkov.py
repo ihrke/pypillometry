@@ -12,7 +12,7 @@ DT = 1000.0 / FS
 
 
 def _model():
-    return gm.Sum([gm.OU(1.0, 30.0), gm.Matern(2.0, 200.0, nu=2.5)], noise=0.3)
+    return gm.GaussMarkovModel([gm.OU(1.0, 30.0), gm.Matern(2.0, 200.0, nu=2.5)], noise=0.3)
 
 
 def _dense_cov(model, T):
@@ -100,7 +100,7 @@ def test_smoother_matches_gp_posterior():
 
 
 def test_lag1_covariance_matches_gp_posterior():
-    model = gm.Sum([gm.OU(1.0, 30.0)], noise=0.5)
+    model = gm.GaussMarkovModel([gm.OU(1.0, 30.0)], noise=0.5)
     T = 60
     y = gm.simulate(model, T, fs=FS, rng=5)
     ssm = model.to_lgssm(FS)
@@ -132,7 +132,7 @@ def test_multichannel_partial_missing():
 
 
 def test_simulated_variogram_matches_model():
-    model = gm.Sum([gm.OU(1.0, 20.0), gm.Matern(0.5, 100.0, nu=1.5)], noise=0.3)
+    model = gm.GaussMarkovModel([gm.OU(1.0, 20.0), gm.Matern(0.5, 100.0, nu=1.5)], noise=0.3)
     y = gm.simulate(model, 200_000, fs=1000.0, rng=7)
     vg = semivariogram(y, fs=1000.0, max_lag=100)
     np.testing.assert_allclose(vg.gamma, model.variogram(vg.lags), rtol=0.1)
@@ -151,10 +151,10 @@ def test_loglik_variogram():
 
 
 def test_fit_recovers_parameters():
-    true = gm.Sum([gm.OU(1.0, 50.0)], noise=0.3)
+    true = gm.GaussMarkovModel([gm.OU(1.0, 50.0)], noise=0.3)
     y = gm.simulate(true, 20_000, fs=FS, rng=9)
     y[5000:5500] = np.nan
-    start = gm.Sum([gm.OU(0.5, 150.0)], noise=0.6)
+    start = gm.GaussMarkovModel([gm.OU(0.5, 150.0)], noise=0.6)
 
     res = gm.fit(start, signal=y, fs=FS)
     for k, v in true.params.items():
