@@ -65,7 +65,13 @@ so that brief changes, e.g. from eye movements, are not taken for blinks;
 ``margin=`` extends the detected blinks on both sides, e.g. to include the
 whole transient around them.
 :meth:`~EyeData.pupil.blinks_interpolate` replaces the pupil size during
-blinks by a smooth curve (Mathôt, 2013). Interpolated samples are used by
+blinks by a smooth curve (Mathôt, 2013). With ``method="kalman"``, it
+replaces them instead by their expected value given the signal around them
+(Kalman smoother); this uses all of the signal around each blink, so it is
+less affected by noise, and it has no parameters to tune. It replaces
+exactly the detected blinks, so these should include the transients around
+the blinks (``margin=`` of :meth:`~EyeData.pupil.blinks_detect`).
+Interpolated samples are used by
 all later steps (filters, segments, statistics); they keep the
 ``"interpolated"`` layer, so they can be left out with
 ``policy="strict"`` (see :doc:`missing_data`).

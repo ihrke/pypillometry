@@ -223,7 +223,8 @@ class PupilPlots(GenericPlots):
                     blink_spans.append((span_start, len(masked_segment)))
 
                 for sblink, eblink in blink_spans:
-                    ax.axvspan(tx[sblink], tx[min(eblink - 1, len(tx) - 1)], color="red", alpha=0.2)
+                    ax.axvspan(tx[sblink], tx[min(eblink - 1, len(tx) - 1)], color="red", alpha=0.1,
+                               lw=0, zorder=0)
 
 
         if len(tx):

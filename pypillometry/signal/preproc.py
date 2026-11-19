@@ -9,7 +9,7 @@ from loguru import logger
 
 __all__ = [
     "smooth_window", "velocity_savgol", "detect_blinks_velocity",
-    "detect_blinks_zero", "blink_onsets_mahot", "zscale",
+    "detect_blinks_zero", "blink_onsets_mahot", "interpolate_blinks_kalman", "zscale",
 ]
 
 
@@ -583,3 +583,172 @@ def blink_onsets_mahot(sy, blinks, smooth_winsize, vel_onset, vel_offset, margin
         newblinks.append([onset, offset])
 
     return np.array(newblinks)
+
+
+def _blink_groups(blinks, window, n):
+    """
+    Local windows for Kalman interpolation: blinks (`(start, end)`,
+    end-exclusive) whose `window`-neighbourhoods overlap share one window.
+    Returns a list of `(wstart, wend, [blinks])`.
+    """
+    groups = []
+    for start, end in sorted((int(a), int(b)) for a, b in blinks):
+        ws, we = max(0, start - window), min(n, end + window)
+        if groups and ws < groups[-1][1]:
+            groups[-1][1] = max(groups[-1][1], we)
+            groups[-1][2].append((start, end))
+        else:
+            groups.append([ws, we, [(start, end)]])
+    return [tuple(g) for g in groups]
+
+
+def _local_trend(y, valid, gap_start, gap_end):
+    """
+    Linear trend fitted to the valid samples of `y`; a constant if all valid
+    samples are on one side of the gap `gap_start`-`gap_end` (no
+    extrapolation of a slope into the gap).
+    """
+    t = np.arange(len(y))
+    tv = t[valid]
+    deg = 1 if (tv < gap_start).any() and (tv >= gap_end).any() else 0
+    coef = np.polyfit(tv, y[valid], deg)
+    return np.polyval(coef, t)
+
+
+def _noise_sd(residuals):
+    """
+    SD of the white measurement noise from the second differences of the
+    (detrended) windows: for white noise, the variance of the second
+    difference is 6 times the noise variance; the signal hardly contributes
+    at the sampling rates of eye trackers. Robust (MAD) estimate.
+    """
+    d2 = np.concatenate([r[2:] - 2 * r[1:-1] + r[:-2] for r in residuals])
+    d2 = d2[~np.isnan(d2)]
+    if d2.size < 2:
+        return np.nan
+    return 1.4826 * np.median(np.abs(d2 - np.median(d2))) / np.sqrt(6)
+
+
+def interpolate_blinks_kalman(sy, blinks, fs, window, missing=None, optimize=False,
+                              max_fit_windows=100):
+    """
+    Interpolate blinks with a Gauss-Markov model (Kalman smoother).
+
+    Around each blink, a local window of `window` samples on each side is
+    taken (blinks with overlapping windows share one window) and a linear
+    trend fitted to its valid samples is removed. The residuals are modelled
+    as the sum of a fast and a slow Matérn process (smoothness 3/2) plus
+    white measurement noise. The blink samples are replaced by the smoothed
+    mean (Kalman filter + RTS smoother) plus the trend.
+
+    By default, the time scales of the components are fixed (5 and 300 ms),
+    their standard deviations are 0.1 and 1 times the SD of the residuals,
+    and the SD of the noise is estimated from the second differences of the
+    residuals. The smoothed mean depends only on the ratios of these SDs, so
+    the defaults do not depend on the units of the pupil data. With
+    `optimize=True`, all parameters are fitted instead (maximum likelihood
+    over the windows, exact for the missing samples), which is much slower
+    and changes the result little.
+
+    Parameters
+    ----------
+    sy : np.ndarray
+        pupil data (NaN or 0 for missing values)
+    blinks : iterable of (start, end)
+        blinks in samples (end-exclusive); these samples are replaced
+    fs : float
+        sampling rate in Hz
+    window : int
+        number of samples before and after each blink to use
+    missing : np.ndarray of bool, optional
+        further samples that are not used as observations (e.g., excluded
+        periods or other blinks); the blinks, NaN and 0 are always missing
+    optimize : bool
+        fit all parameters of the model instead of using the defaults
+    max_fit_windows : int
+        with `optimize=True`, at most this many (evenly spaced) windows are
+        used to fit the parameters
+
+    Returns
+    -------
+    filled : np.ndarray
+        copy of `sy` with the blinks replaced
+    interpolated : np.ndarray of bool
+        the replaced samples
+    model : GaussMarkovModel or None
+        the model used (None if there was nothing to interpolate)
+    """
+    from scipy.optimize import minimize
+    from .gaussmarkov import GaussMarkovModel, Matern, kalman_filter, kalman_loglik, rts_smoother
+
+    sy = np.asarray(sy, dtype=float)
+    n = len(sy)
+    filled, interpolated = sy.copy(), np.zeros(n, dtype=bool)
+    inblink = np.zeros(n, dtype=bool)
+    for start, end in blinks:
+        inblink[max(0, int(start)):min(n, int(end))] = True
+    obs_missing = inblink | np.isnan(sy) | (sy == 0)
+    if missing is not None:
+        obs_missing |= np.asarray(missing, dtype=bool)
+
+    # detrended windows
+    wins = []
+    for ws, we, bls in _blink_groups(blinks, window, n):
+        valid = ~obs_missing[ws:we]
+        if valid.sum() < 2:
+            logger.warning(f"Skipping blinks in samples {ws}-{we}: no usable data around them")
+            continue
+        y = sy[ws:we]
+        trend = _local_trend(np.where(valid, y, 0.0), valid, bls[0][0] - ws, bls[-1][1] - ws)
+        wins.append((ws, we, bls, np.where(valid, y - trend, np.nan), trend))
+    if not wins:
+        return filled, interpolated, None
+
+    # default model: fixed time scales, SDs relative to the residuals, noise
+    # estimated. A fast and a slow component: with only a slow one, the
+    # fast fluctuations are not accounted for and the fill is worse; with
+    # only a fast one, the fill reverts to the trend within a few tens of ms.
+    residuals = [w[3] for w in wins]
+    sd = max(np.nanstd(np.concatenate(residuals)), 1e-12)
+    noise = _noise_sd(residuals)
+    noise = min(max(noise if np.isfinite(noise) else 0.01 * sd, 1e-4 * sd), sd)
+    model = GaussMarkovModel([Matern(sigma=0.1 * sd, ell=5.0, nu=1.5),
+                              Matern(sigma=sd, ell=300.0, nu=1.5)], noise=noise)
+
+    if optimize:
+        # all parameters (log scale, bounded) on up to max_fit_windows windows
+        fitwins = [residuals[i] for i in
+                   np.unique(np.linspace(0, len(wins) - 1, min(len(wins), max_fit_windows)).astype(int))]
+        bounds = [(np.log(1e-3 * sd), np.log(100 * sd)),         # fast: sigma
+                  (np.log(1000.0 / fs), np.log(200.0)),          # fast: ell (ms)
+                  (np.log(1e-3 * sd), np.log(100 * sd)),         # slow: sigma
+                  (np.log(20.0), np.log(10000.0)),               # slow: ell (ms)
+                  (np.log(1e-4 * sd), np.log(10 * sd))]          # noise
+
+        def negll(theta):
+            try:
+                ssm = model.from_theta(theta).to_lgssm(fs)
+                ll = sum(kalman_loglik(ssm, r) for r in fitwins)
+            except np.linalg.LinAlgError:
+                return np.inf
+            return -ll if np.isfinite(ll) else np.inf
+
+        theta0 = np.clip(model.theta, [b[0] for b in bounds], [b[1] for b in bounds])
+        opt = minimize(negll, theta0, method="L-BFGS-B", bounds=bounds)
+        if np.isfinite(opt.fun) and (opt.success or opt.fun < negll(theta0)):
+            model = model.from_theta(opt.x)
+        else:
+            logger.warning(f"Fitting the Kalman interpolation model failed ({opt.message}); "
+                           "using the default parameters")
+    logger.debug(f"Kalman interpolation model: {model.params}")
+
+    # smooth each window and fill the blinks
+    ssm = model.to_lgssm(fs)
+    for ws, we, bls, r, trend in wins:
+        sres = rts_smoother(ssm, kalman_filter(ssm, r))
+        est = sres.signal + trend
+        for start, end in bls:
+            a, b = max(0, start), min(n, end)
+            filled[a:b] = est[a - ws:b - ws]
+            interpolated[a:b] = True
+    return filled, interpolated, model
