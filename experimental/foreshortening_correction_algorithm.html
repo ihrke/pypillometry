@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Foreshortening Correction for Pupil Size Measurements &#8212; pypillometry v2.2.1</title>
+    <title>Foreshortening Correction for Pupil Size Measurements &#8212; pypillometry v2.2.3</title>
   
   
   
@@ -33,7 +33,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=6a604523" />
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=e89b0eda" />
   
   <!-- So that users can add custom icons -->
@@ -42,12 +42,12 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=edd18f37"></script>
+    <script src="../_static/documentation_options.js?v=7e518144"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
-    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../_static/design-tabs.js?v=fcb327ea"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.1" />
+  <meta name="docsearch:version" content="v2.2.3" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -473,9 +473,9 @@
   <section class="tex2jax_ignore mathjax_ignore" id="foreshortening-correction-for-pupil-size-measurements">
 <h1>Foreshortening Correction for Pupil Size Measurements<a class="headerlink" href="#foreshortening-correction-for-pupil-size-measurements" title="Link to this heading">#</a></h1>
 <section id="problem-statement">
-<h2>1. Problem Statement<a class="headerlink" href="#problem-statement" title="Link to this heading">#</a></h2>
+<span id="1-problem-statement"></span><h2>1. Problem Statement<a class="headerlink" href="#problem-statement" title="Link to this heading">#</a></h2>
 <section id="physical-setup">
-<h3>1.1 Physical Setup<a class="headerlink" href="#physical-setup" title="Link to this heading">#</a></h3>
+<span id="11-physical-setup"></span><h3>1.1 Physical Setup<a class="headerlink" href="#physical-setup" title="Link to this heading">#</a></h3>
 <p><strong>Eye-tracking measurement scenario:</strong></p>
 <ul class="simple">
 <li><p><strong>E</strong> = (0,0,0): Eye position (origin)</p></li>
@@ -485,7 +485,7 @@
 </ul>
 </section>
 <section id="foreshortening-effect">
-<h3>1.2 Foreshortening Effect<a class="headerlink" href="#foreshortening-effect" title="Link to this heading">#</a></h3>
+<span id="12-foreshortening-effect"></span><h3>1.2 Foreshortening Effect<a class="headerlink" href="#foreshortening-effect" title="Link to this heading">#</a></h3>
 <p>The camera measures apparent pupil size A(x,y,t), which is foreshortened relative to true pupil size A_0(t) depending on viewing angle:</p>
 <div class="math notranslate nohighlight">
 \[A(x,y,t) = A_0(t) \cdot \cos(\alpha(x,y))\]</div>
@@ -498,7 +498,7 @@
 <p><strong>Physical interpretation:</strong> When gaze direction <span class="math notranslate nohighlight">\(\vec{ET}\)</span> is not aligned with camera direction <span class="math notranslate nohighlight">\(\vec{EC}\)</span>, the pupil appears elliptical/smaller to the camera. Maximum apparent size occurs when gazing directly toward camera (<span class="math notranslate nohighlight">\(\alpha = 0\)</span>).</p>
 </section>
 <section id="geometric-relationship">
-<h3>1.3 Geometric Relationship<a class="headerlink" href="#geometric-relationship" title="Link to this heading">#</a></h3>
+<span id="13-geometric-relationship"></span><h3>1.3 Geometric Relationship<a class="headerlink" href="#geometric-relationship" title="Link to this heading">#</a></h3>
 <div class="math notranslate nohighlight">
 \[\cos(\alpha(x,y)) = \frac{\vec{EC} \cdot \vec{ET}}{|\vec{EC}| \cdot |\vec{ET}|} = \frac{c_x x + c_y y + c_z d}{r\sqrt{x^2 + y^2 + d^2}}\]</div>
 <p><strong>Known parameters:</strong></p>
@@ -512,7 +512,7 @@
 </ul>
 </section>
 <section id="camera-position-parameterization">
-<h3>1.4 Camera Position Parameterization<a class="headerlink" href="#camera-position-parameterization" title="Link to this heading">#</a></h3>
+<span id="14-camera-position-parameterization"></span><h3>1.4 Camera Position Parameterization<a class="headerlink" href="#camera-position-parameterization" title="Link to this heading">#</a></h3>
 <p>Since r is known, camera position C has 2 degrees of freedom (spherical coordinates):</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\begin{aligned}
@@ -530,9 +530,9 @@ $<span class="math notranslate nohighlight">\(\cos(\alpha(x,y; \theta, \varphi))
 </section>
 </section>
 <section id="experimental-protocol">
-<h2>2. Experimental Protocol<a class="headerlink" href="#experimental-protocol" title="Link to this heading">#</a></h2>
+<span id="2-experimental-protocol"></span><h2>2. Experimental Protocol<a class="headerlink" href="#experimental-protocol" title="Link to this heading">#</a></h2>
 <section id="two-phase-design">
-<h3>2.1 Two-Phase Design<a class="headerlink" href="#two-phase-design" title="Link to this heading">#</a></h3>
+<span id="21-two-phase-design"></span><h3>2.1 Two-Phase Design<a class="headerlink" href="#two-phase-design" title="Link to this heading">#</a></h3>
 <p><strong>Phase 1: Calibration</strong> (Duration: ~2 minutes)</p>
 <ul class="simple">
 <li><p>Subject follows systematic gaze targets across screen</p></li>
@@ -547,7 +547,7 @@ $<span class="math notranslate nohighlight">\(\cos(\alpha(x,y; \theta, \varphi))
 </ul>
 </section>
 <section id="data-structure">
-<h3>2.2 Data Structure<a class="headerlink" href="#data-structure" title="Link to this heading">#</a></h3>
+<span id="22-data-structure"></span><h3>2.2 Data Structure<a class="headerlink" href="#data-structure" title="Link to this heading">#</a></h3>
 <p><strong>Measurements:</strong> <span class="math notranslate nohighlight">\(\mathcal{D} = \{(x_i, y_i, t_i, A_i)\}_{i=1}^N\)</span></p>
 <p>where for each sample i:</p>
 <ul class="simple">
@@ -563,9 +563,9 @@ $<span class="math notranslate nohighlight">\(\cos(\alpha(x,y; \theta, \varphi))
 </section>
 </section>
 <section id="data-preprocessing">
-<h2>3. Data Preprocessing<a class="headerlink" href="#data-preprocessing" title="Link to this heading">#</a></h2>
+<span id="3-data-preprocessing"></span><h2>3. Data Preprocessing<a class="headerlink" href="#data-preprocessing" title="Link to this heading">#</a></h2>
 <section id="quality-control">
-<h3>3.1 Quality Control<a class="headerlink" href="#quality-control" title="Link to this heading">#</a></h3>
+<span id="31-quality-control"></span><h3>3.1 Quality Control<a class="headerlink" href="#quality-control" title="Link to this heading">#</a></h3>
 <p>For raw pupil data sampled at 1000 Hz:</p>
 <ol class="arabic simple">
 <li><p><strong>Blink removal</strong>: Exclude samples during blinks (pupil not visible)</p></li>
@@ -574,7 +574,7 @@ $<span class="math notranslate nohighlight">\(\cos(\alpha(x,y; \theta, \varphi))
 </ol>
 </section>
 <section id="temporal-filtering">
-<h3>3.2 Temporal Filtering<a class="headerlink" href="#temporal-filtering" title="Link to this heading">#</a></h3>
+<span id="32-temporal-filtering"></span><h3>3.2 Temporal Filtering<a class="headerlink" href="#temporal-filtering" title="Link to this heading">#</a></h3>
 <p>Pupil dynamics of interest typically &lt; 5 Hz (slow changes due to light, cognition, arousal):</p>
 <ol class="arabic simple">
 <li><p><strong>Low-pass filter</strong>: Butterworth filter, cutoff <span class="math notranslate nohighlight">\(f_c = 3\text{-}5\)</span> Hz</p></li>
@@ -582,7 +582,7 @@ $<span class="math notranslate nohighlight">\(\cos(\alpha(x,y; \theta, \varphi))
 </ol>
 </section>
 <section id="valid-measurement-set">
-<h3>3.3 Valid Measurement Set<a class="headerlink" href="#valid-measurement-set" title="Link to this heading">#</a></h3>
+<span id="33-valid-measurement-set"></span><h3>3.3 Valid Measurement Set<a class="headerlink" href="#valid-measurement-set" title="Link to this heading">#</a></h3>
 <div class="math notranslate nohighlight">
 \[\mathcal{M} = \{(x_i, y_i, t_i, A_i) : \text{valid after preprocessing}\}\]</div>
 <p>Partition: <span class="math notranslate nohighlight">\(\mathcal{M} = \mathcal{M}_{\text{cal}} \cup \mathcal{M}_{\text{task}}\)</span></p>
@@ -592,9 +592,9 @@ $<span class="math notranslate nohighlight">\(\rho = \frac{|\mathcal{M}|}{N_{\te
 </section>
 </section>
 <section id="temporal-model-true-pupil-size">
-<h2>4. Temporal Model: True Pupil Size<a class="headerlink" href="#temporal-model-true-pupil-size" title="Link to this heading">#</a></h2>
+<span id="4-temporal-model-true-pupil-size"></span><h2>4. Temporal Model: True Pupil Size<a class="headerlink" href="#temporal-model-true-pupil-size" title="Link to this heading">#</a></h2>
 <section id="b-spline-basis-representation">
-<h3>4.1 B-Spline Basis Representation<a class="headerlink" href="#b-spline-basis-representation" title="Link to this heading">#</a></h3>
+<span id="41-b-spline-basis-representation"></span><h3>4.1 B-Spline Basis Representation<a class="headerlink" href="#b-spline-basis-representation" title="Link to this heading">#</a></h3>
 <p>Model smooth variation of true pupil size:</p>
 <div class="math notranslate nohighlight">
 \[A_0(t; \mathbf{a}) = \sum_{k=1}^{K} a_k B_k(t)\]</div>
@@ -611,7 +611,7 @@ $<span class="math notranslate nohighlight">\(\rho = \frac{|\mathcal{M}|}{N_{\te
 </ul>
 </section>
 <section id="predicted-measurement-model">
-<h3>4.2 Predicted Measurement Model<a class="headerlink" href="#predicted-measurement-model" title="Link to this heading">#</a></h3>
+<span id="42-predicted-measurement-model"></span><h3>4.2 Predicted Measurement Model<a class="headerlink" href="#predicted-measurement-model" title="Link to this heading">#</a></h3>
 <div class="math notranslate nohighlight">
 \[\hat{A}(x,y,t; \mathbf{a}, \theta, \varphi) = \left(\sum_{k=1}^K a_k B_k(t)\right) \cdot \cos(\alpha(x,y; \theta, \varphi))\]</div>
 <p><strong>Parameter vector:</strong>
@@ -619,9 +619,9 @@ $<span class="math notranslate nohighlight">\(\boldsymbol{\xi} = (\mathbf{a}, \t
 </section>
 </section>
 <section id="two-stage-calibration-algorithm">
-<h2>5. Two-Stage Calibration Algorithm<a class="headerlink" href="#two-stage-calibration-algorithm" title="Link to this heading">#</a></h2>
+<span id="5-two-stage-calibration-algorithm"></span><h2>5. Two-Stage Calibration Algorithm<a class="headerlink" href="#two-stage-calibration-algorithm" title="Link to this heading">#</a></h2>
 <section id="stage-1-initial-camera-geometry-estimation">
-<h3>5.1 Stage 1: Initial Camera Geometry Estimation<a class="headerlink" href="#stage-1-initial-camera-geometry-estimation" title="Link to this heading">#</a></h3>
+<span id="51-stage-1-initial-camera-geometry-estimation"></span><h3>5.1 Stage 1: Initial Camera Geometry Estimation<a class="headerlink" href="#stage-1-initial-camera-geometry-estimation" title="Link to this heading">#</a></h3>
 <p><strong>Objective:</strong> Estimate camera position from calibration data with good spatial coverage.</p>
 <div class="math notranslate nohighlight">
 \[\boldsymbol{\xi}_{\text{cal}}^* = \arg\min_{\boldsymbol{\xi}} \left[ L_{\text{data}}(\boldsymbol{\xi}; \mathcal{M}_{\text{cal}}) + \lambda_{\text{smooth}} R_{\text{smooth}}(\mathbf{a}) \right]\]</div>
@@ -640,7 +640,7 @@ $<span class="math notranslate nohighlight">\(R_{\text{smooth}}(\mathbf{a}) = \s
 $<span class="math notranslate nohighlight">\(\boldsymbol{\xi}_{\text{cal}}^* = (\mathbf{a}_{\text{cal}}^*, \theta_{\text{cal}}^*, \varphi_{\text{cal}}^*)\)</span>$</p>
 </section>
 <section id="stage-2-refinement-using-full-dataset">
-<h3>5.2 Stage 2: Refinement Using Full Dataset<a class="headerlink" href="#stage-2-refinement-using-full-dataset" title="Link to this heading">#</a></h3>
+<span id="52-stage-2-refinement-using-full-dataset"></span><h3>5.2 Stage 2: Refinement Using Full Dataset<a class="headerlink" href="#stage-2-refinement-using-full-dataset" title="Link to this heading">#</a></h3>
 <p><strong>Objective:</strong> Improve estimates using all data while preventing camera geometry from drifting due to sparse spatial sampling in task phase.</p>
 <div class="math notranslate nohighlight">
 \[\boldsymbol{\xi}_{\text{full}}^* = \arg\min_{\boldsymbol{\xi}} \Bigg[ w_{\text{cal}} L_{\text{data}}(\boldsymbol{\xi}; \mathcal{M}_{\text{cal}}) + w_{\text{task}} L_{\text{data}}(\boldsymbol{\xi}; \mathcal{M}_{\text{task}}) + \lambda_{\text{smooth}} R_{\text{smooth}}(\mathbf{a}) + \lambda_{\text{prior}} R_{\text{prior}}(\theta, \varphi) \Bigg]\]</div>
@@ -658,7 +658,7 @@ $<span class="math notranslate nohighlight">\(\lambda_{\text{prior}} \approx 0.1
 $<span class="math notranslate nohighlight">\(\boldsymbol{\xi}_{\text{full}}^* = (\mathbf{a}_{\text{full}}^*, \theta_{\text{full}}^*, \varphi_{\text{full}}^*)\)</span>$</p>
 </section>
 <section id="final-camera-calibration">
-<h3>5.3 Final Camera Calibration<a class="headerlink" href="#final-camera-calibration" title="Link to this heading">#</a></h3>
+<span id="53-final-camera-calibration"></span><h3>5.3 Final Camera Calibration<a class="headerlink" href="#final-camera-calibration" title="Link to this heading">#</a></h3>
 <p>Store estimated camera geometry:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\begin{aligned}
@@ -669,16 +669,16 @@ $<span class="math notranslate nohighlight">\(\boldsymbol{\xi}_{\text{full}}^* =
 </section>
 </section>
 <section id="foreshortening-correction">
-<h2>6. Foreshortening Correction<a class="headerlink" href="#foreshortening-correction" title="Link to this heading">#</a></h2>
+<span id="6-foreshortening-correction"></span><h2>6. Foreshortening Correction<a class="headerlink" href="#foreshortening-correction" title="Link to this heading">#</a></h2>
 <section id="correction-formula">
-<h3>6.1 Correction Formula<a class="headerlink" href="#correction-formula" title="Link to this heading">#</a></h3>
+<span id="61-correction-formula"></span><h3>6.1 Correction Formula<a class="headerlink" href="#correction-formula" title="Link to this heading">#</a></h3>
 <p>For any measured pupil size <span class="math notranslate nohighlight">\(A(x,y,t)\)</span> at gaze position (x,y):</p>
 <div class="math notranslate nohighlight">
 \[A_0(t) = \frac{A(x,y,t)}{\cos(\alpha(x,y; \theta_{\text{camera}}, \varphi_{\text{camera}}))}\]</div>
 <p><strong>Interpretation:</strong> Dividing by <span class="math notranslate nohighlight">\(\cos(\alpha)\)</span> “un-does” the foreshortening to recover true pupil size.</p>
 </section>
 <section id="practical-implementation">
-<h3>6.2 Practical Implementation<a class="headerlink" href="#practical-implementation" title="Link to this heading">#</a></h3>
+<span id="62-practical-implementation"></span><h3>6.2 Practical Implementation<a class="headerlink" href="#practical-implementation" title="Link to this heading">#</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">compute_foreshortening_factor</span><span class="p">(</span><span class="n">x_gaze</span><span class="p">,</span> <span class="n">y_gaze</span><span class="p">,</span> <span class="n">theta_cam</span><span class="p">,</span> <span class="n">phi_cam</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute cos(alpha) for given gaze position and camera geometry.</span>
@@ -749,7 +749,7 @@ $<span class="math notranslate nohighlight">\(\boldsymbol{\xi}_{\text{full}}^* =
 </div>
 </section>
 <section id="id1">
-<h3>6.3 Quality Control<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
+<span id="63-quality-control"></span><h3>6.3 Quality Control<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
 <p><strong>Reliability criterion:</strong> Only apply correction when viewing angle is reasonable:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}A_0^{\text{corrected}}(x,y,t) = 
@@ -768,9 +768,9 @@ $<span class="math notranslate nohighlight">\(\boldsymbol{\xi}_{\text{full}}^* =
 </section>
 </section>
 <section id="validation">
-<h2>7. Validation<a class="headerlink" href="#validation" title="Link to this heading">#</a></h2>
+<span id="7-validation"></span><h2>7. Validation<a class="headerlink" href="#validation" title="Link to this heading">#</a></h2>
 <section id="model-fit-quality">
-<h3>7.1 Model Fit Quality<a class="headerlink" href="#model-fit-quality" title="Link to this heading">#</a></h3>
+<span id="71-model-fit-quality"></span><h3>7.1 Model Fit Quality<a class="headerlink" href="#model-fit-quality" title="Link to this heading">#</a></h3>
 <p><strong>Residual analysis:</strong>
 $<span class="math notranslate nohighlight">\(e_i = A_i - \hat{A}(x_i, y_i, t_i; \boldsymbol{\xi}^*)\)</span>$</p>
 <p><strong>Metrics:</strong></p>
@@ -782,7 +782,7 @@ $<span class="math notranslate nohighlight">\(e_i = A_i - \hat{A}(x_i, y_i, t_i;
 <p><strong>Typical values:</strong> <span class="math notranslate nohighlight">\(R^2 &gt; 0.90\)</span> indicates good fit</p>
 </section>
 <section id="spatial-consistency-check">
-<h3>7.2 Spatial Consistency Check<a class="headerlink" href="#spatial-consistency-check" title="Link to this heading">#</a></h3>
+<span id="72-spatial-consistency-check"></span><h3>7.2 Spatial Consistency Check<a class="headerlink" href="#spatial-consistency-check" title="Link to this heading">#</a></h3>
 <p><strong>Test:</strong> Corrected pupil size should be independent of gaze position.</p>
 <p>For overlapping time periods with different gaze positions:
 $<span class="math notranslate nohighlight">\(\text{Var}_{x,y}\left[A_0^{\text{corrected}}(x,y,t)\right] \ll \text{Var}_t\left[A_0^{\text{corrected}}(t)\right]\)</span>$</p>
@@ -791,7 +791,7 @@ $<span class="math notranslate nohighlight">\(\text{ICC} = \frac{\sigma_{\text{t
 <p>Good correction: ICC &gt; 0.95 (temporal variance dominates)</p>
 </section>
 <section id="camera-geometry-stability">
-<h3>7.3 Camera Geometry Stability<a class="headerlink" href="#camera-geometry-stability" title="Link to this heading">#</a></h3>
+<span id="73-camera-geometry-stability"></span><h3>7.3 Camera Geometry Stability<a class="headerlink" href="#camera-geometry-stability" title="Link to this heading">#</a></h3>
 <p><strong>Compare Stage 1 and Stage 2 estimates:</strong>
 $<span class="math notranslate nohighlight">\(\Delta\theta = |\theta_{\text{full}}^* - \theta_{\text{cal}}^*|, \quad \Delta\varphi = |\varphi_{\text{full}}^* - \varphi_{\text{cal}}^*|\)</span>$</p>
 <p><strong>Interpretation:</strong></p>
@@ -802,7 +802,7 @@ $<span class="math notranslate nohighlight">\(\Delta\theta = |\theta_{\text{full
 </ul>
 </section>
 <section id="visual-inspection">
-<h3>7.4 Visual Inspection<a class="headerlink" href="#visual-inspection" title="Link to this heading">#</a></h3>
+<span id="74-visual-inspection"></span><h3>7.4 Visual Inspection<a class="headerlink" href="#visual-inspection" title="Link to this heading">#</a></h3>
 <p>Plot corrected vs. uncorrected pupil traces:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 
@@ -831,9 +831,9 @@ $<span class="math notranslate nohighlight">\(\Delta\theta = |\theta_{\text{full
 </section>
 </section>
 <section id="typical-parameter-values">
-<h2>8. Typical Parameter Values<a class="headerlink" href="#typical-parameter-values" title="Link to this heading">#</a></h2>
+<span id="8-typical-parameter-values"></span><h2>8. Typical Parameter Values<a class="headerlink" href="#typical-parameter-values" title="Link to this heading">#</a></h2>
 <section id="geometric-setup">
-<h3>8.1 Geometric Setup<a class="headerlink" href="#geometric-setup" title="Link to this heading">#</a></h3>
+<span id="81-geometric-setup"></span><h3>8.1 Geometric Setup<a class="headerlink" href="#geometric-setup" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Eye-to-screen distance: <span class="math notranslate nohighlight">\(d = 600\text{-}800\)</span> mm</p></li>
 <li><p>Eye-to-camera distance: <span class="math notranslate nohighlight">\(r = 500\text{-}700\)</span> mm (depends on eye-tracker model)</p></li>
@@ -841,7 +841,7 @@ $<span class="math notranslate nohighlight">\(\Delta\theta = |\theta_{\text{full
 </ul>
 </section>
 <section id="camera-position">
-<h3>8.2 Camera Position<a class="headerlink" href="#camera-position" title="Link to this heading">#</a></h3>
+<span id="82-camera-position"></span><h3>8.2 Camera Position<a class="headerlink" href="#camera-position" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Typical remote eye-trackers: Camera below screen center</p>
 <ul>
@@ -852,7 +852,7 @@ $<span class="math notranslate nohighlight">\(\Delta\theta = |\theta_{\text{full
 </ul>
 </section>
 <section id="hyperparameters">
-<h3>8.3 Hyperparameters<a class="headerlink" href="#hyperparameters" title="Link to this heading">#</a></h3>
+<span id="83-hyperparameters"></span><h3>8.3 Hyperparameters<a class="headerlink" href="#hyperparameters" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Smoothness weight: <span class="math notranslate nohighlight">\(\lambda_{\text{smooth}} = 10^{-2} \text{-} 10^{2}\)</span> (tune via cross-validation)</p></li>
 <li><p>Prior weight: <span class="math notranslate nohighlight">\(\lambda_{\text{prior}} = 0.1 \times |\mathcal{M}_{\text{cal}}|\)</span></p></li>
@@ -862,7 +862,7 @@ $<span class="math notranslate nohighlight">\(\Delta\theta = |\theta_{\text{full
 </section>
 </section>
 <section id="complete-workflow">
-<h2>9. Complete Workflow<a class="headerlink" href="#complete-workflow" title="Link to this heading">#</a></h2>
+<span id="9-complete-workflow"></span><h2>9. Complete Workflow<a class="headerlink" href="#complete-workflow" title="Link to this heading">#</a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>═══════════════════════════════════════════════════════════════
                     FORESHORTENING CORRECTION
                       FOR PUPIL SIZE MEASUREMENTS
@@ -916,9 +916,9 @@ OUTPUT:
 </div>
 </section>
 <section id="extensions-and-considerations">
-<h2>10. Extensions and Considerations<a class="headerlink" href="#extensions-and-considerations" title="Link to this heading">#</a></h2>
+<span id="10-extensions-and-considerations"></span><h2>10. Extensions and Considerations<a class="headerlink" href="#extensions-and-considerations" title="Link to this heading">#</a></h2>
 <section id="head-movement">
-<h3>10.1 Head Movement<a class="headerlink" href="#head-movement" title="Link to this heading">#</a></h3>
+<span id="101-head-movement"></span><h3>10.1 Head Movement<a class="headerlink" href="#head-movement" title="Link to this heading">#</a></h3>
 <p>If subject moves head during session:</p>
 <ul class="simple">
 <li><p>Eye-camera distance r changes → violates fixed-geometry assumption</p></li>
@@ -928,7 +928,7 @@ OUTPUT:
 </ul>
 </section>
 <section id="binocular-eye-tracking-with-nose-centered-coordinates">
-<h3>10.2 Binocular Eye-Tracking with Nose-Centered Coordinates<a class="headerlink" href="#binocular-eye-tracking-with-nose-centered-coordinates" title="Link to this heading">#</a></h3>
+<span id="102-binocular-eye-tracking-with-nose-centered-coordinates"></span><h3>10.2 Binocular Eye-Tracking with Nose-Centered Coordinates<a class="headerlink" href="#binocular-eye-tracking-with-nose-centered-coordinates" title="Link to this heading">#</a></h3>
 <p>For dual-eye systems, using both eyes simultaneously provides significant advantages for geometry estimation and correction reliability.</p>
 <section id="coordinate-system">
 <h4>10.2.1 Coordinate System<a class="headerlink" href="#coordinate-system" title="Link to this heading">#</a></h4>
@@ -1107,7 +1107,7 @@ $<span class="math notranslate nohighlight">\(A_0^{\text{final}}(t) = \frac{1}{2
 </section>
 </section>
 <section id="alternative-pupil-metrics">
-<h3>10.3 Alternative Pupil Metrics<a class="headerlink" href="#alternative-pupil-metrics" title="Link to this heading">#</a></h3>
+<span id="103-alternative-pupil-metrics"></span><h3>10.3 Alternative Pupil Metrics<a class="headerlink" href="#alternative-pupil-metrics" title="Link to this heading">#</a></h3>
 <p>Algorithm generalizes to:</p>
 <ul class="simple">
 <li><p><strong>Pupil diameter</strong> (most common)</p></li>
@@ -1116,7 +1116,7 @@ $<span class="math notranslate nohighlight">\(A_0^{\text{final}}(t) = \frac{1}{2
 </ul>
 </section>
 <section id="multi-session-stability">
-<h3>10.4 Multi-Session Stability<a class="headerlink" href="#multi-session-stability" title="Link to this heading">#</a></h3>
+<span id="104-multi-session-stability"></span><h3>10.4 Multi-Session Stability<a class="headerlink" href="#multi-session-stability" title="Link to this heading">#</a></h3>
 <p>For longitudinal studies:</p>
 <ul class="simple">
 <li><p><strong>Recalibrate</strong> if setup changes (camera moved, new subject session)</p></li>
@@ -1125,7 +1125,7 @@ $<span class="math notranslate nohighlight">\(A_0^{\text{final}}(t) = \frac{1}{2
 </ul>
 </section>
 <section id="computational-efficiency">
-<h3>10.5 Computational Efficiency<a class="headerlink" href="#computational-efficiency" title="Link to this heading">#</a></h3>
+<span id="105-computational-efficiency"></span><h3>10.5 Computational Efficiency<a class="headerlink" href="#computational-efficiency" title="Link to this heading">#</a></h3>
 <p>For very long recordings (hours):</p>
 <ul class="simple">
 <li><p>Use sparse temporal basis (fewer knots)</p></li>
@@ -1134,7 +1134,7 @@ $<span class="math notranslate nohighlight">\(A_0^{\text{final}}(t) = \frac{1}{2
 </ul>
 </section>
 <section id="incorporating-gaze-calibration-uncertainty">
-<h3>10.6 Incorporating Gaze Calibration Uncertainty<a class="headerlink" href="#incorporating-gaze-calibration-uncertainty" title="Link to this heading">#</a></h3>
+<span id="106-incorporating-gaze-calibration-uncertainty"></span><h3>10.6 Incorporating Gaze Calibration Uncertainty<a class="headerlink" href="#incorporating-gaze-calibration-uncertainty" title="Link to this heading">#</a></h3>
 <p>If eye-tracker calibration quality estimates are available (i.e., spatial uncertainty in gaze position measurements), this information can significantly improve the robustness and statistical optimality of the foreshortening correction.</p>
 <section id="weighted-least-squares-formulation">
 <h4>10.6.1 Weighted Least Squares Formulation<a class="headerlink" href="#weighted-least-squares-formulation" title="Link to this heading">#</a></h4>
@@ -1261,7 +1261,7 @@ If explicit uncertainty estimates are unavailable, consider robust M-estimators 
 </section>
 </section>
 <section id="extended-geometry-screen-misalignment-and-eye-offset">
-<h3>10.7 Extended Geometry: Screen Misalignment and Eye Offset<a class="headerlink" href="#extended-geometry-screen-misalignment-and-eye-offset" title="Link to this heading">#</a></h3>
+<span id="107-extended-geometry-screen-misalignment-and-eye-offset"></span><h3>10.7 Extended Geometry: Screen Misalignment and Eye Offset<a class="headerlink" href="#extended-geometry-screen-misalignment-and-eye-offset" title="Link to this heading">#</a></h3>
 <p>Real experimental setups involve unavoidable geometric imperfections: the eye is rarely perfectly centered with the screen midpoint, and the screen plane is typically not perfectly perpendicular to the primary viewing direction. This section extends the algorithm to estimate these alignment parameters from calibration data.</p>
 <section id="problem-motivation">
 <h4>10.7.1 Problem Motivation<a class="headerlink" href="#problem-motivation" title="Link to this heading">#</a></h4>
@@ -1696,7 +1696,7 @@ T_z &amp;\approx d - x_s \beta + y_s \alpha
 </section>
 </section>
 <section id="references-and-further-reading">
-<h2>11. References and Further Reading<a class="headerlink" href="#references-and-further-reading" title="Link to this heading">#</a></h2>
+<span id="11-references-and-further-reading"></span><h2>11. References and Further Reading<a class="headerlink" href="#references-and-further-reading" title="Link to this heading">#</a></h2>
 <p><strong>Foreshortening in pupillometry:</strong></p>
 <ul class="simple">
 <li><p>Hayes &amp; Petrov (2016). Mapping and correcting the influence of gaze position on pupil size measurements. <em>Behavior Research Methods</em></p></li>

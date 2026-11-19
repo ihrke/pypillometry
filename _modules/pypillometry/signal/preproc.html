@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pypillometry.signal.preproc &#8212; pypillometry v2.2.1</title>
+    <title>pypillometry.signal.preproc &#8212; pypillometry v2.2.3</title>
   
   
   
@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=6a604523" />
     <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=e89b0eda" />
   
   <!-- So that users can add custom icons -->
@@ -41,12 +41,12 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../../_static/documentation_options.js?v=edd18f37"></script>
+    <script src="../../../_static/documentation_options.js?v=7e518144"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../_static/copybutton.js?v=f281be69"></script>
-    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../../../_static/design-tabs.js?v=fcb327ea"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs";
 
@@ -414,7 +414,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.1" />
+  <meta name="docsearch:version" content="v2.2.3" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -810,7 +810,7 @@ window.runMermaid = runMermaid;</script>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">"smooth_window"</span><span class="p">,</span> <span class="s2">"velocity_savgol"</span><span class="p">,</span> <span class="s2">"detect_blinks_velocity"</span><span class="p">,</span>
-    <span class="s2">"detect_blinks_zero"</span><span class="p">,</span> <span class="s2">"blink_onsets_mahot"</span><span class="p">,</span> <span class="s2">"zscale"</span><span class="p">,</span>
+    <span class="s2">"detect_blinks_zero"</span><span class="p">,</span> <span class="s2">"blink_onsets_mahot"</span><span class="p">,</span> <span class="s2">"interpolate_blinks_kalman"</span><span class="p">,</span> <span class="s2">"zscale"</span><span class="p">,</span>
 <span class="p">]</span>
 
 
@@ -1069,7 +1069,11 @@ window.runMermaid = runMermaid;</script>
                            <span class="n">max_blink_samples</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Detect blinks as everything between a fast downward and a fast upward-trending PD-changes.</span>
-<span class="sd">    </span>
+
+<span class="sd">    Each offset is paired with the last onset before it: an onset that is</span>
+<span class="sd">    followed by another onset before the next offset has no offset of its own</span>
+<span class="sd">    and is dropped.</span>
+
 <span class="sd">    Uses asymmetric Savitzky-Golay velocity estimation to handle NaN values properly:</span>
 <span class="sd">    - Backward-looking velocity for onset detection (so future NaN doesn't affect the estimate)</span>
 <span class="sd">    - Forward-looking velocity for offset detection (so past NaN doesn't affect the estimate)</span>
@@ -1191,6 +1195,14 @@ window.runMermaid = runMermaid;</script>
             <span class="c1"># Get the first valid offset run and use its END</span>
             <span class="n">first_valid_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">valid_offset_mask</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
             <span class="n">off</span> <span class="o">=</span> <span class="n">offset_ends</span><span class="p">[</span><span class="n">first_valid_idx</span><span class="p">]</span>
+            <span class="c1"># a later onset before this offset: this onset has no offset of</span>
+            <span class="c1"># its own (e.g., a dip from an eye movement) and must not take</span>
+            <span class="c1"># the offset of the next blink</span>
+            <span class="n">later</span> <span class="o">=</span> <span class="n">onsets</span><span class="p">[(</span><span class="n">onsets</span> <span class="o">&gt;</span> <span class="n">on</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">onsets</span> <span class="o">&lt;</span> <span class="n">offset_starts</span><span class="p">[</span><span class="n">first_valid_idx</span><span class="p">])</span>
+                           <span class="o">&amp;</span> <span class="p">(</span><span class="n">off</span> <span class="o">-</span> <span class="n">onsets</span> <span class="o">&gt;=</span> <span class="n">min_blink_samples</span><span class="p">)]</span>
+            <span class="k">if</span> <span class="n">later</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">on</span> <span class="o">=</span> <span class="n">later</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">continue</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">off</span> <span class="o">=</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span>
         <span class="k">if</span> <span class="n">max_blink_samples</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">off</span> <span class="o">-</span> <span class="n">on</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&gt;</span> <span class="n">max_blink_samples</span><span class="p">:</span>
@@ -1258,30 +1270,69 @@ window.runMermaid = runMermaid;</script>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">blinks</span><span class="p">)</span></div>
 
     
+<span class="k">def</span><span class="w"> </span><span class="nf">_blink_core</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Core of the blink stored as `start`-`end` (end-exclusive): the stretch</span>
+<span class="sd">    from the first to the last missing (NaN or 0) sample in it, or the</span>
+<span class="sd">    smallest pupil if it has no missing samples. Returns `(first, last)`</span>
+<span class="sd">    (both inclusive). It does not depend on how far the stored blink was</span>
+<span class="sd">    extended (e.g., by the `margin` of the detection).</span>
+<span class="sd">    """</span>
+    <span class="n">seg</span> <span class="o">=</span> <span class="n">sy</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">]</span>
+    <span class="n">missing</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">seg</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">seg</span> <span class="o">==</span> <span class="mi">0</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">missing</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">start</span> <span class="o">+</span> <span class="n">missing</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">start</span> <span class="o">+</span> <span class="n">missing</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">seg</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">start</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">seg</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">m</span><span class="p">,</span> <span class="n">m</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_velocity_runs</span><span class="p">(</span><span class="n">cands</span><span class="p">,</span> <span class="n">max_gap</span><span class="p">,</span> <span class="n">min_len</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Runs of the (sorted) sample indices `cands`, as an array (nruns x 2) of</span>
+<span class="sd">    first/last index (both inclusive). Runs separated by at most `max_gap`</span>
+<span class="sd">    samples are joined (e.g., a drop that briefly falls below the</span>
+<span class="sd">    threshold); runs shorter than `min_len` samples are dropped (after</span>
+<span class="sd">    joining).</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">cands</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">brk</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">cands</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_gap</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">runs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">cands</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">brk</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]],</span> <span class="n">cands</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">brk</span><span class="p">,</span> <span class="n">cands</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]]]</span>
+    <span class="k">return</span> <span class="n">runs</span><span class="p">[</span><span class="n">runs</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">runs</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&gt;=</span> <span class="n">min_len</span><span class="p">]</span>
+
+
 <div class="viewcode-block" id="blink_onsets_mahot">
 <a class="viewcode-back" href="../../../api/generated/pypillometry.signal.blink_onsets_mahot.html#pypillometry.signal.blink_onsets_mahot">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">blink_onsets_mahot</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">blinks</span><span class="p">,</span> <span class="n">smooth_winsize</span><span class="p">,</span> <span class="n">vel_onset</span><span class="p">,</span> <span class="n">vel_offset</span><span class="p">,</span> <span class="n">margin</span><span class="p">,</span> <span class="n">blinkwindow</span><span class="p">,</span> <span class="n">min_onset_len</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">min_offset_len</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">blink_onsets_mahot</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">blinks</span><span class="p">,</span> <span class="n">smooth_winsize</span><span class="p">,</span> <span class="n">vel_onset</span><span class="p">,</span> <span class="n">vel_offset</span><span class="p">,</span> <span class="n">margin</span><span class="p">,</span> <span class="n">blinkwindow</span><span class="p">,</span>
+                       <span class="n">min_onset_len</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">min_offset_len</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_gap</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Method for finding the on- and offset for each blink (excluding transient).</span>
+<span class="sd">    Method for finding the on- and offset for each blink (including the transient).</span>
 <span class="sd">    See https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001.</span>
+
+<span class="sd">    The search starts from the core of each blink: the stretch from its first</span>
+<span class="sd">    to its last missing (NaN or 0) sample, or its smallest pupil if it has no</span>
+<span class="sd">    missing samples. The onset is the start of the closest closing transient</span>
+<span class="sd">    (velocity below `vel_onset`) that starts before the core, the offset the</span>
+<span class="sd">    end of the closest opening transient (velocity above `vel_offset`) that</span>
+<span class="sd">    ends after it. The result therefore does not depend on how far the</span>
+<span class="sd">    blinks were extended when they were detected, and for a blink that</span>
+<span class="sd">    contains several transients (e.g., merged blinks), the outermost ones</span>
+<span class="sd">    are used.</span>
 <span class="sd">    </span>
 <span class="sd">    Uses asymmetric Savitzky-Golay velocity estimation:</span>
 <span class="sd">    - Backward-looking velocity for onset detection (so future zeros/NaN don't affect the estimate)</span>
 <span class="sd">    - Forward-looking velocity for offset detection (so past zeros/NaN don't affect the estimate)</span>
-<span class="sd">    </span>
-<span class="sd">    The asymmetric approach naturally handles blink regions (zeros/NaN) because:</span>
-<span class="sd">    - At blink onset: backward velocity only sees valid data before the blink → detects the drop</span>
-<span class="sd">    - At blink offset: forward velocity only sees valid data after the blink → detects the rise</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    sy : np.ndarray</span>
 <span class="sd">        pupil data (can contain NaN or zeros for missing values)</span>
 <span class="sd">    blinks : np.ndarray or Intervals</span>
-<span class="sd">        blink onset/offset sample indices (nblinks x 2), e.g. from</span>
-<span class="sd">        :func:`detect_blinks_zero` or an :class:`~pypillometry.Intervals`</span>
-<span class="sd">        object in index units; anything that iterates over</span>
-<span class="sd">        `(start, end)` pairs works</span>
+<span class="sd">        blink start/end sample indices (nblinks x 2, end-exclusive), e.g. an</span>
+<span class="sd">        :class:`~pypillometry.Intervals` object in index units; anything</span>
+<span class="sd">        that iterates over `(start, end)` pairs works</span>
 <span class="sd">    smooth_winsize : int</span>
 <span class="sd">        size of the Savitzky-Golay window in samples (odd)</span>
 <span class="sd">    vel_onset : float</span>
@@ -1291,74 +1342,237 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    margin : tuple of int</span>
 <span class="sd">        `(before, after)` margin that is subtracted/added to onset and offset (in samples)</span>
 <span class="sd">    blinkwindow : int</span>
-<span class="sd">        how much time before and after each blink to search for the</span>
+<span class="sd">        how far before and after the core of each blink to search for the</span>
 <span class="sd">        on-/offset (in samples)</span>
 <span class="sd">    min_onset_len : int</span>
 <span class="sd">        minimum number of consecutive samples in an onset run to be considered valid</span>
 <span class="sd">    min_offset_len : int</span>
 <span class="sd">        minimum number of consecutive samples in an offset run to be considered valid</span>
+<span class="sd">    max_gap : int or None</span>
+<span class="sd">        runs of threshold crossings separated by at most this many samples</span>
+<span class="sd">        are joined into one transient; `None` (default) uses `smooth_winsize`</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    np.ndarray</span>
 <span class="sd">        array (n x 2) of refined onset/offset sample indices, one row per</span>
-<span class="sd">        input blink; if no valid velocity-threshold crossing is found</span>
-<span class="sd">        before (after) a blink, its detected start (end) is used</span>
+<span class="sd">        input blink; if no transient is found before (after) the core of a</span>
+<span class="sd">        blink, the start (end) of the core is used</span>
 <span class="sd">    """</span>
     <span class="c1"># Generate asymmetric velocity profiles</span>
     <span class="c1"># Backward-looking for onset detection (doesn't peek into blink)</span>
     <span class="n">vel_backward</span> <span class="o">=</span> <span class="n">velocity_savgol</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">smooth_winsize</span><span class="p">,</span> <span class="n">polyorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s2">"backward"</span><span class="p">)</span>
     <span class="c1"># Forward-looking for offset detection (doesn't peek into blink)</span>
     <span class="n">vel_forward</span> <span class="o">=</span> <span class="n">velocity_savgol</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">smooth_winsize</span><span class="p">,</span> <span class="n">polyorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s2">"forward"</span><span class="p">)</span>
-    
-    <span class="n">blinkwindow_ix</span><span class="o">=</span><span class="n">blinkwindow</span>
-    <span class="n">n</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">sy</span><span class="p">)</span>
-    
-    <span class="k">def</span><span class="w"> </span><span class="nf">closest_run</span><span class="p">(</span><span class="n">cands</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">min_len</span><span class="p">,</span> <span class="n">use_end</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""start (or end) of the run of `cands` whose start is closest to</span>
-<span class="sd">        `target`; None if there is no run of at least `min_len` samples"""</span>
-        <span class="k">if</span> <span class="n">cands</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span>
-        <span class="n">brk</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">cands</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">run_starts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">brk</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
-        <span class="n">run_ends</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">brk</span><span class="p">,</span> <span class="n">cands</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-        <span class="n">ok</span> <span class="o">=</span> <span class="p">(</span><span class="n">run_ends</span> <span class="o">-</span> <span class="n">run_starts</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">min_len</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">ok</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
-            <span class="k">return</span> <span class="kc">None</span>
-        <span class="n">run_starts</span><span class="p">,</span> <span class="n">run_ends</span> <span class="o">=</span> <span class="n">run_starts</span><span class="p">[</span><span class="n">ok</span><span class="p">],</span> <span class="n">run_ends</span><span class="p">[</span><span class="n">ok</span><span class="p">]</span>
-        <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">cands</span><span class="p">[</span><span class="n">run_starts</span><span class="p">]</span> <span class="o">-</span> <span class="n">target</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">cands</span><span class="p">[</span><span class="n">run_ends</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="k">if</span> <span class="n">use_end</span> <span class="k">else</span> <span class="n">cands</span><span class="p">[</span><span class="n">run_starts</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+    <span class="k">if</span> <span class="n">max_gap</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">max_gap</span> <span class="o">=</span> <span class="n">smooth_winsize</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sy</span><span class="p">)</span>
 
-    <span class="n">newblinks</span><span class="o">=</span><span class="p">[]</span>
-    <span class="k">for</span> <span class="n">ix</span><span class="p">,(</span><span class="n">start</span><span class="p">,</span><span class="n">end</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">blinks</span><span class="p">):</span>
-        <span class="n">winstart</span><span class="p">,</span><span class="n">winend</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">start</span><span class="o">-</span><span class="n">blinkwindow_ix</span><span class="p">),</span> <span class="nb">min</span><span class="p">(</span><span class="n">end</span><span class="o">+</span><span class="n">blinkwindow_ix</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
-        <span class="n">slic</span><span class="o">=</span><span class="nb">slice</span><span class="p">(</span><span class="n">winstart</span><span class="p">,</span> <span class="n">winend</span><span class="p">)</span>
-        <span class="n">winlength</span><span class="o">=</span><span class="n">vel_backward</span><span class="p">[</span><span class="n">slic</span><span class="p">]</span><span class="o">.</span><span class="n">size</span>
+    <span class="n">newblinks</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">ix</span><span class="p">,</span> <span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">blinks</span><span class="p">):</span>
+        <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">start</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">end</span><span class="p">)</span>
+        <span class="n">cstart</span><span class="p">,</span> <span class="n">cend</span> <span class="o">=</span> <span class="n">_blink_core</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+        <span class="n">winstart</span><span class="p">,</span> <span class="n">winend</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">cstart</span> <span class="o">-</span> <span class="n">blinkwindow</span><span class="p">),</span> <span class="nb">min</span><span class="p">(</span><span class="n">cend</span> <span class="o">+</span> <span class="n">blinkwindow</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
 
-        <span class="c1">## onsets are in "local" indices of the windows, start-end of blink global</span>
-        <span class="n">startl</span><span class="p">,</span><span class="n">endl</span><span class="o">=</span><span class="n">start</span><span class="o">-</span><span class="n">winstart</span><span class="p">,</span><span class="n">end</span><span class="o">-</span><span class="n">winstart</span>
-
-        <span class="c1"># onset: velocity crossing at or before the start of the blink</span>
-        <span class="n">onsets</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">vel_backward</span><span class="p">[</span><span class="n">slic</span><span class="p">]</span><span class="o">&lt;=</span><span class="n">vel_onset</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">onset</span> <span class="o">=</span> <span class="n">closest_run</span><span class="p">(</span><span class="n">onsets</span><span class="p">[</span><span class="n">onsets</span> <span class="o">&lt;=</span> <span class="n">startl</span><span class="p">],</span> <span class="n">startl</span><span class="p">,</span> <span class="n">min_onset_len</span><span class="p">,</span> <span class="n">use_end</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">onset</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># onset: closest closing transient that starts before the core</span>
+        <span class="n">runs</span> <span class="o">=</span> <span class="n">_velocity_runs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">vel_backward</span><span class="p">[</span><span class="n">winstart</span><span class="p">:</span><span class="n">winend</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">vel_onset</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">winstart</span><span class="p">,</span>
+                              <span class="n">max_gap</span><span class="p">,</span> <span class="n">min_onset_len</span><span class="p">)</span>
+        <span class="n">runs</span> <span class="o">=</span> <span class="n">runs</span><span class="p">[</span><span class="n">runs</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">cstart</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">runs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">onset</span> <span class="o">=</span> <span class="n">runs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
             <span class="c1"># e.g. the signal does not drop before the blink: keep the</span>
-            <span class="c1"># detected start instead of dropping the blink</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Blink </span><span class="si">{</span><span class="n">ix</span><span class="si">}</span><span class="s2"> (samples </span><span class="si">{</span><span class="n">start</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">end</span><span class="si">}</span><span class="s2">): no onset crossing, using blink start"</span><span class="p">)</span>
-            <span class="n">onset</span> <span class="o">=</span> <span class="n">startl</span>
-        <span class="n">onset</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">onset</span> <span class="o">-</span> <span class="n">margin</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># apply margin, avoid overflow to the left</span>
+            <span class="c1"># core instead of dropping the blink</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Blink </span><span class="si">{</span><span class="n">ix</span><span class="si">}</span><span class="s2"> (samples </span><span class="si">{</span><span class="n">start</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">end</span><span class="si">}</span><span class="s2">): no onset crossing, using blink core"</span><span class="p">)</span>
+            <span class="n">onset</span> <span class="o">=</span> <span class="n">cstart</span>
+        <span class="n">onset</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">onset</span> <span class="o">-</span> <span class="n">margin</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
-        <span class="c1"># offset: end of the velocity-crossing run at or after the end of the blink</span>
-        <span class="n">offsets</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">vel_forward</span><span class="p">[</span><span class="n">slic</span><span class="p">]</span><span class="o">&gt;=</span><span class="n">vel_offset</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">offset</span> <span class="o">=</span> <span class="n">closest_run</span><span class="p">(</span><span class="n">offsets</span><span class="p">[</span><span class="n">offsets</span> <span class="o">&gt;=</span> <span class="n">endl</span><span class="p">],</span> <span class="n">endl</span><span class="p">,</span> <span class="n">min_offset_len</span><span class="p">,</span> <span class="n">use_end</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">offset</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Blink </span><span class="si">{</span><span class="n">ix</span><span class="si">}</span><span class="s2"> (samples </span><span class="si">{</span><span class="n">start</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">end</span><span class="si">}</span><span class="s2">): no offset crossing, using blink end"</span><span class="p">)</span>
-            <span class="n">offset</span> <span class="o">=</span> <span class="n">endl</span>
-        <span class="n">offset</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">winlength</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">offset</span> <span class="o">+</span> <span class="n">margin</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>  <span class="c1"># apply margin, avoid overflow to the right</span>
+        <span class="c1"># offset: closest opening transient that ends after the core</span>
+        <span class="n">runs</span> <span class="o">=</span> <span class="n">_velocity_runs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">vel_forward</span><span class="p">[</span><span class="n">winstart</span><span class="p">:</span><span class="n">winend</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">vel_offset</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">winstart</span><span class="p">,</span>
+                              <span class="n">max_gap</span><span class="p">,</span> <span class="n">min_offset_len</span><span class="p">)</span>
+        <span class="n">runs</span> <span class="o">=</span> <span class="n">runs</span><span class="p">[</span><span class="n">runs</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">cend</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">runs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">offset</span> <span class="o">=</span> <span class="n">runs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Blink </span><span class="si">{</span><span class="n">ix</span><span class="si">}</span><span class="s2"> (samples </span><span class="si">{</span><span class="n">start</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">end</span><span class="si">}</span><span class="s2">): no offset crossing, using blink core"</span><span class="p">)</span>
+            <span class="n">offset</span> <span class="o">=</span> <span class="n">cend</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">offset</span> <span class="o">+</span> <span class="n">margin</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
 
-        <span class="n">newblinks</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">onset</span> <span class="o">+</span> <span class="n">winstart</span><span class="p">,</span> <span class="n">offset</span> <span class="o">+</span> <span class="n">winstart</span><span class="p">])</span>
+        <span class="n">newblinks</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">onset</span><span class="p">,</span> <span class="n">offset</span><span class="p">])</span>
 
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">newblinks</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_blink_groups</span><span class="p">(</span><span class="n">blinks</span><span class="p">,</span> <span class="n">window</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Local windows for Kalman interpolation: blinks (`(start, end)`,</span>
+<span class="sd">    end-exclusive) whose `window`-neighbourhoods overlap share one window.</span>
+<span class="sd">    Returns a list of `(wstart, wend, [blinks])`.</span>
+<span class="sd">    """</span>
+    <span class="n">groups</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">((</span><span class="nb">int</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">b</span><span class="p">))</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">blinks</span><span class="p">):</span>
+        <span class="n">ws</span><span class="p">,</span> <span class="n">we</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">start</span> <span class="o">-</span> <span class="n">window</span><span class="p">),</span> <span class="nb">min</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">end</span> <span class="o">+</span> <span class="n">window</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">groups</span> <span class="ow">and</span> <span class="n">ws</span> <span class="o">&lt;</span> <span class="n">groups</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">groups</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">groups</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">we</span><span class="p">)</span>
+            <span class="n">groups</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">groups</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">ws</span><span class="p">,</span> <span class="n">we</span><span class="p">,</span> <span class="p">[(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)]])</span>
+    <span class="k">return</span> <span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">g</span><span class="p">)</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_local_trend</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">valid</span><span class="p">,</span> <span class="n">gap_start</span><span class="p">,</span> <span class="n">gap_end</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Linear trend fitted to the valid samples of `y`; a constant if all valid</span>
+<span class="sd">    samples are on one side of the gap `gap_start`-`gap_end` (no</span>
+<span class="sd">    extrapolation of a slope into the gap).</span>
+<span class="sd">    """</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
+    <span class="n">tv</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="n">valid</span><span class="p">]</span>
+    <span class="n">deg</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="p">(</span><span class="n">tv</span> <span class="o">&lt;</span> <span class="n">gap_start</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span> <span class="ow">and</span> <span class="p">(</span><span class="n">tv</span> <span class="o">&gt;=</span> <span class="n">gap_end</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span> <span class="k">else</span> <span class="mi">0</span>
+    <span class="n">coef</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span><span class="n">tv</span><span class="p">,</span> <span class="n">y</span><span class="p">[</span><span class="n">valid</span><span class="p">],</span> <span class="n">deg</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">polyval</span><span class="p">(</span><span class="n">coef</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_noise_sd</span><span class="p">(</span><span class="n">residuals</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    SD of the white measurement noise from the second differences of the</span>
+<span class="sd">    (detrended) windows: for white noise, the variance of the second</span>
+<span class="sd">    difference is 6 times the noise variance; the signal hardly contributes</span>
+<span class="sd">    at the sampling rates of eye trackers. Robust (MAD) estimate.</span>
+<span class="sd">    """</span>
+    <span class="n">d2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">r</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">r</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">residuals</span><span class="p">])</span>
+    <span class="n">d2</span> <span class="o">=</span> <span class="n">d2</span><span class="p">[</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">d2</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="n">d2</span><span class="o">.</span><span class="n">size</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="k">return</span> <span class="mf">1.4826</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">d2</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">d2</span><span class="p">)))</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="interpolate_blinks_kalman">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.interpolate_blinks_kalman.html#pypillometry.signal.interpolate_blinks_kalman">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">interpolate_blinks_kalman</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">blinks</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">window</span><span class="p">,</span> <span class="n">missing</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">optimize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                              <span class="n">max_fit_windows</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Interpolate blinks with a Gauss-Markov model (Kalman smoother).</span>
+
+<span class="sd">    Around each blink, a local window of `window` samples on each side is</span>
+<span class="sd">    taken (blinks with overlapping windows share one window) and a linear</span>
+<span class="sd">    trend fitted to its valid samples is removed. The residuals are modelled</span>
+<span class="sd">    as the sum of a fast and a slow Matérn process (smoothness 3/2) plus</span>
+<span class="sd">    white measurement noise. The blink samples are replaced by the smoothed</span>
+<span class="sd">    mean (Kalman filter + RTS smoother) plus the trend.</span>
+
+<span class="sd">    By default, the time scales of the components are fixed (5 and 300 ms),</span>
+<span class="sd">    their standard deviations are 0.1 and 1 times the SD of the residuals,</span>
+<span class="sd">    and the SD of the noise is estimated from the second differences of the</span>
+<span class="sd">    residuals. The smoothed mean depends only on the ratios of these SDs, so</span>
+<span class="sd">    the defaults do not depend on the units of the pupil data. With</span>
+<span class="sd">    `optimize=True`, all parameters are fitted instead (maximum likelihood</span>
+<span class="sd">    over the windows, exact for the missing samples), which is much slower</span>
+<span class="sd">    and changes the result little.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sy : np.ndarray</span>
+<span class="sd">        pupil data (NaN or 0 for missing values)</span>
+<span class="sd">    blinks : iterable of (start, end)</span>
+<span class="sd">        blinks in samples (end-exclusive); these samples are replaced</span>
+<span class="sd">    fs : float</span>
+<span class="sd">        sampling rate in Hz</span>
+<span class="sd">    window : int</span>
+<span class="sd">        number of samples before and after each blink to use</span>
+<span class="sd">    missing : np.ndarray of bool, optional</span>
+<span class="sd">        further samples that are not used as observations (e.g., excluded</span>
+<span class="sd">        periods or other blinks); the blinks, NaN and 0 are always missing</span>
+<span class="sd">    optimize : bool</span>
+<span class="sd">        fit all parameters of the model instead of using the defaults</span>
+<span class="sd">    max_fit_windows : int</span>
+<span class="sd">        with `optimize=True`, at most this many (evenly spaced) windows are</span>
+<span class="sd">        used to fit the parameters</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    filled : np.ndarray</span>
+<span class="sd">        copy of `sy` with the blinks replaced</span>
+<span class="sd">    interpolated : np.ndarray of bool</span>
+<span class="sd">        the replaced samples</span>
+<span class="sd">    model : GaussMarkovModel or None</span>
+<span class="sd">        the model used (None if there was nothing to interpolate)</span>
+<span class="sd">    """</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.optimize</span><span class="w"> </span><span class="kn">import</span> <span class="n">minimize</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.gaussmarkov</span><span class="w"> </span><span class="kn">import</span> <span class="n">GaussMarkovModel</span><span class="p">,</span> <span class="n">Matern</span><span class="p">,</span> <span class="n">kalman_filter</span><span class="p">,</span> <span class="n">kalman_loglik</span><span class="p">,</span> <span class="n">rts_smoother</span>
+
+    <span class="n">sy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sy</span><span class="p">)</span>
+    <span class="n">filled</span><span class="p">,</span> <span class="n">interpolated</span> <span class="o">=</span> <span class="n">sy</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="n">inblink</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="n">blinks</span><span class="p">:</span>
+        <span class="n">inblink</span><span class="p">[</span><span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">start</span><span class="p">)):</span><span class="nb">min</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">end</span><span class="p">))]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">obs_missing</span> <span class="o">=</span> <span class="n">inblink</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">sy</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">sy</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">missing</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">obs_missing</span> <span class="o">|=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">missing</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+
+    <span class="c1"># detrended windows</span>
+    <span class="n">wins</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">ws</span><span class="p">,</span> <span class="n">we</span><span class="p">,</span> <span class="n">bls</span> <span class="ow">in</span> <span class="n">_blink_groups</span><span class="p">(</span><span class="n">blinks</span><span class="p">,</span> <span class="n">window</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="n">valid</span> <span class="o">=</span> <span class="o">~</span><span class="n">obs_missing</span><span class="p">[</span><span class="n">ws</span><span class="p">:</span><span class="n">we</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">valid</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Skipping blinks in samples </span><span class="si">{</span><span class="n">ws</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">we</span><span class="si">}</span><span class="s2">: no usable data around them"</span><span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">sy</span><span class="p">[</span><span class="n">ws</span><span class="p">:</span><span class="n">we</span><span class="p">]</span>
+        <span class="n">trend</span> <span class="o">=</span> <span class="n">_local_trend</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">valid</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="n">valid</span><span class="p">,</span> <span class="n">bls</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">ws</span><span class="p">,</span> <span class="n">bls</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">ws</span><span class="p">)</span>
+        <span class="n">wins</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">ws</span><span class="p">,</span> <span class="n">we</span><span class="p">,</span> <span class="n">bls</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">valid</span><span class="p">,</span> <span class="n">y</span> <span class="o">-</span> <span class="n">trend</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">),</span> <span class="n">trend</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">wins</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">filled</span><span class="p">,</span> <span class="n">interpolated</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="c1"># default model: fixed time scales, SDs relative to the residuals, noise</span>
+    <span class="c1"># estimated. A fast and a slow component: with only a slow one, the</span>
+    <span class="c1"># fast fluctuations are not accounted for and the fill is worse; with</span>
+    <span class="c1"># only a fast one, the fill reverts to the trend within a few tens of ms.</span>
+    <span class="n">residuals</span> <span class="o">=</span> <span class="p">[</span><span class="n">w</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">wins</span><span class="p">]</span>
+    <span class="n">sd</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nanstd</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">residuals</span><span class="p">)),</span> <span class="mf">1e-12</span><span class="p">)</span>
+    <span class="n">noise</span> <span class="o">=</span> <span class="n">_noise_sd</span><span class="p">(</span><span class="n">residuals</span><span class="p">)</span>
+    <span class="n">noise</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">noise</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">noise</span><span class="p">)</span> <span class="k">else</span> <span class="mf">0.01</span> <span class="o">*</span> <span class="n">sd</span><span class="p">,</span> <span class="mf">1e-4</span> <span class="o">*</span> <span class="n">sd</span><span class="p">),</span> <span class="n">sd</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">GaussMarkovModel</span><span class="p">([</span><span class="n">Matern</span><span class="p">(</span><span class="n">sigma</span><span class="o">=</span><span class="mf">0.1</span> <span class="o">*</span> <span class="n">sd</span><span class="p">,</span> <span class="n">ell</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">nu</span><span class="o">=</span><span class="mf">1.5</span><span class="p">),</span>
+                              <span class="n">Matern</span><span class="p">(</span><span class="n">sigma</span><span class="o">=</span><span class="n">sd</span><span class="p">,</span> <span class="n">ell</span><span class="o">=</span><span class="mf">300.0</span><span class="p">,</span> <span class="n">nu</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)],</span> <span class="n">noise</span><span class="o">=</span><span class="n">noise</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">optimize</span><span class="p">:</span>
+        <span class="c1"># all parameters (log scale, bounded) on up to max_fit_windows windows</span>
+        <span class="n">fitwins</span> <span class="o">=</span> <span class="p">[</span><span class="n">residuals</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span>
+                   <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">wins</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">wins</span><span class="p">),</span> <span class="n">max_fit_windows</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">))]</span>
+        <span class="n">bounds</span> <span class="o">=</span> <span class="p">[(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">1e-3</span> <span class="o">*</span> <span class="n">sd</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="n">sd</span><span class="p">)),</span>         <span class="c1"># fast: sigma</span>
+                  <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">1000.0</span> <span class="o">/</span> <span class="n">fs</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">200.0</span><span class="p">)),</span>          <span class="c1"># fast: ell (ms)</span>
+                  <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">1e-3</span> <span class="o">*</span> <span class="n">sd</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="n">sd</span><span class="p">)),</span>         <span class="c1"># slow: sigma</span>
+                  <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">20.0</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">10000.0</span><span class="p">)),</span>               <span class="c1"># slow: ell (ms)</span>
+                  <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">1e-4</span> <span class="o">*</span> <span class="n">sd</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">10</span> <span class="o">*</span> <span class="n">sd</span><span class="p">))]</span>          <span class="c1"># noise</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">negll</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">ssm</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">from_theta</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">.</span><span class="n">to_lgssm</span><span class="p">(</span><span class="n">fs</span><span class="p">)</span>
+                <span class="n">ll</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">kalman_loglik</span><span class="p">(</span><span class="n">ssm</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">fitwins</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">LinAlgError</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+            <span class="k">return</span> <span class="o">-</span><span class="n">ll</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">ll</span><span class="p">)</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+
+        <span class="n">theta0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">theta</span><span class="p">,</span> <span class="p">[</span><span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">bounds</span><span class="p">],</span> <span class="p">[</span><span class="n">b</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">bounds</span><span class="p">])</span>
+        <span class="n">opt</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">negll</span><span class="p">,</span> <span class="n">theta0</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">"L-BFGS-B"</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">opt</span><span class="o">.</span><span class="n">fun</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">opt</span><span class="o">.</span><span class="n">success</span> <span class="ow">or</span> <span class="n">opt</span><span class="o">.</span><span class="n">fun</span> <span class="o">&lt;</span> <span class="n">negll</span><span class="p">(</span><span class="n">theta0</span><span class="p">)):</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">from_theta</span><span class="p">(</span><span class="n">opt</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Fitting the Kalman interpolation model failed (</span><span class="si">{</span><span class="n">opt</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2">); "</span>
+                           <span class="s2">"using the default parameters"</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Kalman interpolation model: </span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="n">params</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+    <span class="c1"># smooth each window and fill the blinks</span>
+    <span class="n">ssm</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to_lgssm</span><span class="p">(</span><span class="n">fs</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">ws</span><span class="p">,</span> <span class="n">we</span><span class="p">,</span> <span class="n">bls</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">trend</span> <span class="ow">in</span> <span class="n">wins</span><span class="p">:</span>
+        <span class="n">sres</span> <span class="o">=</span> <span class="n">rts_smoother</span><span class="p">(</span><span class="n">ssm</span><span class="p">,</span> <span class="n">kalman_filter</span><span class="p">(</span><span class="n">ssm</span><span class="p">,</span> <span class="n">r</span><span class="p">))</span>
+        <span class="n">est</span> <span class="o">=</span> <span class="n">sres</span><span class="o">.</span><span class="n">signal</span> <span class="o">+</span> <span class="n">trend</span>
+        <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="n">bls</span><span class="p">:</span>
+            <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">start</span><span class="p">),</span> <span class="nb">min</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+            <span class="n">filled</span><span class="p">[</span><span class="n">a</span><span class="p">:</span><span class="n">b</span><span class="p">]</span> <span class="o">=</span> <span class="n">est</span><span class="p">[</span><span class="n">a</span> <span class="o">-</span> <span class="n">ws</span><span class="p">:</span><span class="n">b</span> <span class="o">-</span> <span class="n">ws</span><span class="p">]</span>
+            <span class="n">interpolated</span><span class="p">[</span><span class="n">a</span><span class="p">:</span><span class="n">b</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="n">filled</span><span class="p">,</span> <span class="n">interpolated</span><span class="p">,</span> <span class="n">model</span></div>
 
 </pre></div>
 

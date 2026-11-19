@@ -1,0 +1,71 @@
+﻿HeadMountedEyeData
+==================
+
+.. currentmodule:: pypillometry
+
+.. autoclass:: HeadMountedEyeData
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~HeadMountedEyeData.add_events
+      ~HeadMountedEyeData.add_to_history
+      ~HeadMountedEyeData.blink_stats
+      ~HeadMountedEyeData.clear_layer
+      ~HeadMountedEyeData.copy
+      ~HeadMountedEyeData.crop
+      ~HeadMountedEyeData.downsample
+      ~HeadMountedEyeData.drop_data
+      ~HeadMountedEyeData.drop_original
+      ~HeadMountedEyeData.exclude_intervals
+      ~HeadMountedEyeData.excluded_duration
+      ~HeadMountedEyeData.fill_time_discontinuities
+      ~HeadMountedEyeData.from_eyelink
+      ~HeadMountedEyeData.from_file
+      ~HeadMountedEyeData.from_tobii_prolab
+      ~HeadMountedEyeData.get_blinks
+      ~HeadMountedEyeData.get_duration
+      ~HeadMountedEyeData.get_epochs
+      ~HeadMountedEyeData.get_excluded
+      ~HeadMountedEyeData.get_included
+      ~HeadMountedEyeData.get_interpolated
+      ~HeadMountedEyeData.get_intervals
+      ~HeadMountedEyeData.get_layer_intervals
+      ~HeadMountedEyeData.get_segments
+      ~HeadMountedEyeData.get_size
+      ~HeadMountedEyeData.get_values
+      ~HeadMountedEyeData.interpolate_intervals
+      ~HeadMountedEyeData.keep_intervals
+      ~HeadMountedEyeData.layer_stats
+      ~HeadMountedEyeData.mask
+      ~HeadMountedEyeData.mask_as_intervals
+      ~HeadMountedEyeData.mask_intervals
+      ~HeadMountedEyeData.merge_eyes
+      ~HeadMountedEyeData.merge_masks
+      ~HeadMountedEyeData.nevents
+      ~HeadMountedEyeData.print_history
+      ~HeadMountedEyeData.quality_report
+      ~HeadMountedEyeData.remove_intervals
+      ~HeadMountedEyeData.reset_time
+      ~HeadMountedEyeData.scale
+      ~HeadMountedEyeData.set_blinks
+      ~HeadMountedEyeData.set_events
+      ~HeadMountedEyeData.set_experimental_setup
+      ~HeadMountedEyeData.split_excluded
+      ~HeadMountedEyeData.stat_per_event
+      ~HeadMountedEyeData.summary
+      ~HeadMountedEyeData.unscale
+      ~HeadMountedEyeData.write_file
+   
+   
+
+
+   .. rubric:: Details

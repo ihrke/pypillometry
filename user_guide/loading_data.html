@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Loading and saving data &#8212; pypillometry v2.2.1</title>
+    <title>Loading and saving data &#8212; pypillometry v2.2.3</title>
   
   
   
@@ -33,7 +33,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=6a604523" />
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=e89b0eda" />
   
   <!-- So that users can add custom icons -->
@@ -42,12 +42,12 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=edd18f37"></script>
+    <script src="../_static/documentation_options.js?v=7e518144"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
-    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../_static/design-tabs.js?v=fcb327ea"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'user_guide/loading_data';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
@@ -59,7 +59,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.1" />
+  <meta name="docsearch:version" content="v2.2.3" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -517,6 +517,46 @@ the file once with the <a class="reference internal" href="../getting_started/cl
 <code class="docutils literal notranslate"><span class="pre">edf2pypil</span></code>.</p>
 <p>See <a class="reference internal" href="../notebooks/importdata_edf.html"><span class="doc">Importing data from Eyelink EDF files</span></a>.</p>
 </section>
+<section id="tobii-pro-glasses-tobii-pro-lab-exports">
+<h2>Tobii Pro Glasses (Tobii Pro Lab exports)<a class="headerlink" href="#tobii-pro-glasses-tobii-pro-lab-exports" title="Link to this heading">#</a></h2>
+<p>Recordings of Tobii Pro Glasses 3 are read from the data export of Tobii
+Pro Lab (an Excel or tab-separated file) with
+<a class="reference internal" href="../api/generated/pypillometry.HeadMountedEyeData.html#pypillometry.HeadMountedEyeData.from_tobii_prolab" title="pypillometry.HeadMountedEyeData.from_tobii_prolab"><code class="xref py py-meth docutils literal notranslate"><span class="pre">HeadMountedEyeData.from_tobii_prolab()</span></code></a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">HeadMountedEyeData</span><span class="o">.</span><span class="n">from_tobii_prolab</span><span class="p">(</span><span class="s2">"rec.xlsx"</span><span class="p">)</span>   <span class="c1"># and rec.mp4</span>
+
+<span class="n">d</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">luminance</span><span class="p">()</span>                    <span class="c1"># luminance of the scene video</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_scene_scanpath</span><span class="p">((</span><span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">))</span>       <span class="c1"># gaze on a frame of the video</span>
+<span class="n">d</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">render_video</span><span class="p">(</span><span class="s2">"gaze.mp4"</span><span class="p">,</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">30</span><span class="p">))</span> <span class="c1"># video with the gaze position</span>
+</pre></div>
+</div>
+<p>The result is a <a class="reference internal" href="../api/generated/pypillometry.HeadMountedEyeData.html#pypillometry.HeadMountedEyeData" title="pypillometry.HeadMountedEyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">HeadMountedEyeData</span></code></a> object, an <a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData" title="pypillometry.EyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">EyeData</span></code></a>
+object with the additional data of eye-tracking glasses:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">left_pupil</span></code>, <code class="docutils literal notranslate"><span class="pre">right_pupil</span></code>: the pupil diameter in mm</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">both_x</span></code>, <code class="docutils literal notranslate"><span class="pre">both_y</span></code>: the gaze position in the video of the scene
+camera (pixels; one position for both eyes)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">d.aux</span></code>: channels that do not belong to an eye, e.g. the gyroscope
+(<code class="docutils literal notranslate"><span class="pre">d.aux[&quot;gyro_x&quot;]</span></code>), the accelerometer and the magnetometer,
+interpolated to the times of the eye-tracker samples, and the 3D gaze
+point</p></li>
+<li><p>the name of the scene video (the file with the name of the export and
+the extension <code class="docutils literal notranslate"><span class="pre">.mp4</span></code>, or the argument <code class="docutils literal notranslate"><span class="pre">video</span></code>)</p></li>
+</ul>
+<p>The methods in <code class="docutils literal notranslate"><span class="pre">d.scene</span></code> add channels to <code class="docutils literal notranslate"><span class="pre">d.aux</span></code> that can be used as
+covariates of the pupil size: the luminance of the scene video
+(<a class="reference internal" href="../api/generated/pypillometry.eyedata.head_mounted.SceneNamespace.html#pypillometry.eyedata.head_mounted.SceneNamespace.luminance" title="pypillometry.eyedata.head_mounted.SceneNamespace.luminance"><code class="xref py py-meth docutils literal notranslate"><span class="pre">luminance()</span></code></a>), the viewing
+distance (<a class="reference internal" href="../api/generated/pypillometry.eyedata.head_mounted.SceneNamespace.html#pypillometry.eyedata.head_mounted.SceneNamespace.distance" title="pypillometry.eyedata.head_mounted.SceneNamespace.distance"><code class="xref py py-meth docutils literal notranslate"><span class="pre">distance()</span></code></a>) and the
+speed of the head rotation
+(<a class="reference internal" href="../api/generated/pypillometry.eyedata.head_mounted.SceneNamespace.html#pypillometry.eyedata.head_mounted.SceneNamespace.head_movement" title="pypillometry.eyedata.head_mounted.SceneNamespace.head_movement"><code class="xref py py-meth docutils literal notranslate"><span class="pre">head_movement()</span></code></a>).
+<a class="reference internal" href="../api/generated/pypillometry.eyedata.head_mounted.SceneNamespace.html#pypillometry.eyedata.head_mounted.SceneNamespace.render_video" title="pypillometry.eyedata.head_mounted.SceneNamespace.render_video"><code class="xref py py-meth docutils literal notranslate"><span class="pre">render_video()</span></code></a> writes the
+scene video with the gaze position drawn on it. The channels in <code class="docutils literal notranslate"><span class="pre">d.aux</span></code>
+can be plotted with <code class="docutils literal notranslate"><span class="pre">d.plot.plot_timeseries(variables=[&quot;pupil&quot;,</span>
+<span class="pre">&quot;luminance&quot;,</span> <span class="pre">&quot;gyro&quot;])</span></code> and, against the pupil size, with
+<code class="docutils literal notranslate"><span class="pre">d.plot.plot_pupil_covariate(&quot;gaze_luminance&quot;)</span></code>.</p>
+<p>Excel files need the package <cite>openpyxl</cite>, the scene video the package <cite>av</cite>
+(both are optional: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">openpyxl</span> <span class="pre">av</span></code>). Reading the Excel file
+is slow; save the result (see below).</p>
+</section>
 <section id="text-files-and-your-own-arrays">
 <h2>Text files and your own arrays<a class="headerlink" href="#text-files-and-your-own-arrays" title="Link to this heading">#</a></h2>
 <p>Data from other eye trackers, or exported as text (e.g., Eyelink’s ASC
@@ -648,6 +688,7 @@ where the raw data are and how to read them. <a class="reference internal" href=
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#eyelink-edf-files">Eyelink EDF files</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tobii-pro-glasses-tobii-pro-lab-exports">Tobii Pro Glasses (Tobii Pro Lab exports)</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#text-files-and-your-own-arrays">Text files and your own arrays</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-datasets">Example datasets</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#saving-and-loading-objects">Saving and loading objects</a></li>

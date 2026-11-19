@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Missing data &#8212; pypillometry v2.2.1</title>
+    <title>Missing data &#8212; pypillometry v2.2.3</title>
   
   
   
@@ -33,7 +33,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=6a604523" />
     <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=e89b0eda" />
   
@@ -43,12 +43,12 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=edd18f37"></script>
+    <script src="../_static/documentation_options.js?v=7e518144"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
-    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../_static/design-tabs.js?v=fcb327ea"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
@@ -62,7 +62,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.1" />
+  <meta name="docsearch:version" content="v2.2.3" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -573,6 +573,7 @@
   </div>
 
 
+
     <details open style="margin-bottom:8px;">
     <summary style="cursor:pointer; font-weight:600;">Signal overview</summary>
     <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px; margin-top:8px;">
@@ -602,6 +603,8 @@
       </div>
     </div>
   </details>
+
+
 
 
 
@@ -756,11 +759,11 @@ right_pupil   2.07% NaN,  2.07% masked
     <tr>
       <th>left_pupil</th>
       <td>3.13</td>
-      <td>5.84</td>
+      <td>4.47</td>
       <td>0.00</td>
       <td>0.00</td>
-      <td>5.84</td>
-      <td>5.84</td>
+      <td>4.47</td>
+      <td>4.47</td>
     </tr>
     <tr>
       <th>right_x</th>
@@ -783,11 +786,11 @@ right_pupil   2.07% NaN,  2.07% masked
     <tr>
       <th>right_pupil</th>
       <td>2.07</td>
-      <td>4.08</td>
+      <td>3.47</td>
       <td>0.00</td>
       <td>0.00</td>
-      <td>4.09</td>
-      <td>4.09</td>
+      <td>3.48</td>
+      <td>3.48</td>
     </tr>
   </tbody>
 </table>
@@ -810,7 +813,7 @@ right_pupil   2.07% NaN,  2.07% masked
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Intervals &#39;left_pupil_blinks&#39; | 321 intervals (total duration: 69762.00 ms), 217.33 ms +/- 136.83 ms, [22.00 ms, 984.00 ms]
+Intervals &#39;left_pupil_blinks&#39; | 264 intervals (total duration: 53406.00 ms), 202.30 ms +/- 73.20 ms, [62.00 ms, 514.00 ms]
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -889,9 +892,9 @@ Intervals &#39;left_pupil_blinks&#39; | 321 intervals (total duration: 69762.00 
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-{&#39;left_pupil&#39;: 321, &#39;right_pupil&#39;: 307}
-{&#39;left_pupil&#39;: 253, &#39;right_pupil&#39;: 231}
-{&#39;left_pupil&#39;: 321, &#39;right_pupil&#39;: 307}
+{&#39;left_pupil&#39;: 264, &#39;right_pupil&#39;: 250}
+{&#39;left_pupil&#39;: 251, &#39;right_pupil&#39;: 227}
+{&#39;left_pupil&#39;: 264, &#39;right_pupil&#39;: 250}
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -999,12 +1002,12 @@ Intervals &#39;excluded&#39; | 1 intervals (total duration: 4.18 sec), 4.18 sec 
     <tr>
       <th>left_pupil</th>
       <td>3.13</td>
-      <td>5.84</td>
+      <td>4.47</td>
       <td>0.00</td>
       <td>0.00</td>
       <td>0.35</td>
-      <td>6.19</td>
-      <td>6.19</td>
+      <td>4.82</td>
+      <td>4.82</td>
     </tr>
     <tr>
       <th>right_x</th>
@@ -1029,12 +1032,12 @@ Intervals &#39;excluded&#39; | 1 intervals (total duration: 4.18 sec), 4.18 sec 
     <tr>
       <th>right_pupil</th>
       <td>2.07</td>
-      <td>4.08</td>
+      <td>3.47</td>
       <td>0.00</td>
       <td>0.00</td>
       <td>0.35</td>
-      <td>4.44</td>
-      <td>4.44</td>
+      <td>3.83</td>
+      <td>3.83</td>
     </tr>
   </tbody>
 </table>
@@ -1078,8 +1081,8 @@ Intervals &#39;excluded&#39; | 1 intervals (total duration: 4.18 sec), 4.18 sec 
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-default   6.19% masked
-strict    6.19% masked
+default   4.82% masked
+strict    4.82% masked
 raw       0.00% masked
 </pre></div></div>
 </div>
@@ -1098,7 +1101,7 @@ raw       0.00% masked
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-(&#39;MaskedArray&#39;, np.float64(0.0619))
+(&#39;MaskedArray&#39;, np.float64(0.0482))
 </pre></div></div>
 </div>
 <p>A policy can also be a list of layers (NaN is always included), e.g. to look only at the blinks:</p>
@@ -1116,7 +1119,7 @@ raw       0.00% masked
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-np.float64(0.0584495924165538)
+np.float64(0.04472117073301401)
 </pre></div></div>
 </div>
 </section>
@@ -1191,13 +1194,13 @@ np.float64(0.0584495924165538)
     <tr>
       <th>left_pupil</th>
       <td>0.00</td>
-      <td>5.84</td>
+      <td>4.47</td>
       <td>0.00</td>
       <td>0.00</td>
       <td>0.35</td>
-      <td>7.49</td>
+      <td>5.74</td>
       <td>0.35</td>
-      <td>7.84</td>
+      <td>6.09</td>
     </tr>
     <tr>
       <th>right_x</th>
@@ -1224,13 +1227,13 @@ np.float64(0.0584495924165538)
     <tr>
       <th>right_pupil</th>
       <td>0.00</td>
-      <td>4.08</td>
+      <td>3.47</td>
       <td>0.00</td>
       <td>0.00</td>
       <td>0.35</td>
-      <td>5.66</td>
+      <td>4.67</td>
       <td>0.35</td>
-      <td>6.01</td>
+      <td>5.01</td>
     </tr>
   </tbody>
 </table>
@@ -1314,26 +1317,26 @@ np.float64(0.0584495924165538)
     <tr>
       <th>left_pupil</th>
       <td>0.0</td>
-      <td>5.84</td>
+      <td>4.47</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.35</td>
-      <td>7.49</td>
+      <td>5.74</td>
       <td>0.97</td>
-      <td>1.04</td>
-      <td>8.53</td>
+      <td>1.08</td>
+      <td>6.83</td>
     </tr>
     <tr>
       <th>right_pupil</th>
       <td>0.0</td>
-      <td>4.08</td>
+      <td>3.47</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.35</td>
-      <td>5.66</td>
+      <td>4.67</td>
       <td>1.04</td>
-      <td>1.04</td>
-      <td>6.70</td>
+      <td>1.09</td>
+      <td>5.76</td>
     </tr>
   </tbody>
 </table>
@@ -1355,7 +1358,7 @@ np.float64(0.0584495924165538)
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-user layer: 0.97%, of that interpolated: 0.28%
+user layer: 0.97%, of that interpolated: 0.24%
 </pre></div></div>
 </div>
 <p>To leave these samples out as well, use the strict policy (which leaves out all interpolated samples), or a policy that lists the layers to mask without the exception for interpolated samples, e.g. <code class="docutils literal notranslate"><span class="pre">policy=[&quot;user&quot;,</span> <span class="pre">&quot;excluded&quot;]</span></code>.</p>
@@ -1380,7 +1383,7 @@ user layer: 0.97%, of that interpolated: 0.28%
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-masked samples unchanged: True
+masked samples unchanged: False
 usable samples filtered:  True
 </pre></div></div>
 </div>
@@ -1440,7 +1443,7 @@ usable samples filtered:  True
     <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:8px; margin-top:8px;">
       <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
         <div style="font-size:0.85em; color:#666; margin-bottom:4px;">left_pupil (0.0% missing)</div>
-        <img src="data:image/png;base64,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" alt="left_pupil (0.0% missing) sparkline" style="height:60px; width:100%; object-fit:cover;">
+        <img src="data:image/png;base64,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" alt="left_pupil (0.0% missing) sparkline" style="height:60px; width:100%; object-fit:cover;">
       </div>
     </div>
   </details>
@@ -1485,7 +1488,7 @@ usable samples filtered:  True
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-300 trials, 284 with less than 25% interpolated samples
+300 trials, 299 with less than 25% interpolated samples
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -1505,7 +1508,7 @@ usable samples filtered:  True
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-largest difference in a trial mean: 48.1 (median 3.13)
+largest difference in a trial mean: 48.1 (median 2.76)
 </pre></div></div>
 </div>
 </section>
@@ -1557,8 +1560,8 @@ largest difference in a trial mean: 48.1 (median 3.13)
     </tr>
     <tr>
       <th>blink</th>
-      <td>5.84</td>
-      <td>5.78</td>
+      <td>4.47</td>
+      <td>4.41</td>
     </tr>
     <tr>
       <th>offscreen</th>
@@ -1577,8 +1580,8 @@ largest difference in a trial mean: 48.1 (median 3.13)
     </tr>
     <tr>
       <th>interpolated</th>
-      <td>7.49</td>
-      <td>7.45</td>
+      <td>5.74</td>
+      <td>5.71</td>
     </tr>
     <tr>
       <th>masked (default)</th>
@@ -1587,8 +1590,8 @@ largest difference in a trial mean: 48.1 (median 3.13)
     </tr>
     <tr>
       <th>masked (strict)</th>
-      <td>7.84</td>
-      <td>7.80</td>
+      <td>6.09</td>
+      <td>6.06</td>
     </tr>
   </tbody>
 </table>
@@ -1644,35 +1647,35 @@ largest difference in a trial mean: 48.1 (median 3.13)
     <tr>
       <th>left_pupil</th>
       <td>0.0</td>
-      <td>5.84</td>
+      <td>4.47</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.35</td>
-      <td>7.49</td>
+      <td>5.74</td>
       <td>0.35</td>
-      <td>7.84</td>
+      <td>6.09</td>
     </tr>
     <tr>
       <th>right_pupil</th>
       <td>0.0</td>
-      <td>4.08</td>
+      <td>3.47</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.35</td>
-      <td>5.66</td>
+      <td>4.67</td>
       <td>0.35</td>
-      <td>6.01</td>
+      <td>5.01</td>
     </tr>
     <tr>
       <th>mean_pupil</th>
       <td>0.0</td>
-      <td>3.33</td>
+      <td>3.46</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.35</td>
-      <td>4.84</td>
+      <td>4.66</td>
       <td>0.35</td>
-      <td>5.19</td>
+      <td>5.01</td>
     </tr>
   </tbody>
 </table>
@@ -1717,6 +1720,7 @@ largest difference in a trial mean: 48.1 (median 3.13)
       <th>divergence</th>
       <th>excluded</th>
       <th>interpolated</th>
+      <th>user</th>
       <th>masked (default)</th>
       <th>masked (strict)</th>
     </tr>
@@ -1725,13 +1729,14 @@ largest difference in a trial mean: 48.1 (median 3.13)
     <tr>
       <th>mean_pupil</th>
       <td>0.0</td>
-      <td>3.33</td>
+      <td>3.46</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>0.35</td>
-      <td>4.84</td>
+      <td>4.66</td>
+      <td>0.0</td>
       <td>0.35</td>
-      <td>5.19</td>
+      <td>5.01</td>
     </tr>
   </tbody>
 </table>
@@ -1785,12 +1790,12 @@ largest difference in a trial mean: 48.1 (median 3.13)
     <tr>
       <th>pupil.left.missing_pct</th>
       <td>3.138882</td>
-      <td>0.0</td>
+      <td>0.00084</td>
     </tr>
     <tr>
       <th>pupil.left.dropout_rate</th>
       <td>15.423076</td>
-      <td>0.0</td>
+      <td>0.050402</td>
     </tr>
     <tr>
       <th>gaze.left.missing_pct</th>
@@ -1800,7 +1805,7 @@ largest difference in a trial mean: 48.1 (median 3.13)
     <tr>
       <th>artifacts.left.pupil_masked_pct</th>
       <td>NaN</td>
-      <td>0.0</td>
+      <td>0.00084</td>
     </tr>
     <tr>
       <th>artifacts.left.gaze_masked_pct</th>
@@ -1870,17 +1875,17 @@ largest difference in a trial mean: 48.1 (median 3.13)
     <tbody>
       <tr>
         <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="percentage of samples without valid pupil data (e.g., blinks, lost tracking) (labels: good &lt;= 10%, ok &lt;= 20%, poor &lt;= 40%, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">missing data</span></td>
-        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 40%, else bad">0.0% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 40%, else bad">0.00084% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
         <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 40%, else bad">0.0% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
       </tr>
       <tr>
         <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="number of periods with missing data per minute (including blinks; many short dropouts indicate unstable tracking) (labels: good &lt;= 30 /min, ok &lt;= 60 /min, poor &lt;= 150 /min, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">dropouts</span></td>
-        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 30 /min, ok &lt;= 60 /min, poor &lt;= 150 /min, else bad">0 /min <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 30 /min, ok &lt;= 60 /min, poor &lt;= 150 /min, else bad">0.0504 /min <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
         <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 30 /min, ok &lt;= 60 /min, poor &lt;= 150 /min, else bad">0 /min <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
       </tr>
       <tr>
         <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="duration of the longest period with missing data (long periods cannot be interpolated) (labels: good &lt;= 2 s, ok &lt;= 5 s, poor &lt;= 30 s, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">longest dropout</span></td>
-        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 2 s, ok &lt;= 5 s, poor &lt;= 30 s, else bad">0 s <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 2 s, ok &lt;= 5 s, poor &lt;= 30 s, else bad">0.01 s <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
         <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 2 s, ok &lt;= 5 s, poor &lt;= 30 s, else bad">0 s <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
       </tr>
       <tr>
@@ -1890,8 +1895,8 @@ largest difference in a trial mean: 48.1 (median 3.13)
       </tr>
       <tr>
         <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="high-frequency noise (SD) in the units of the pupil data" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">noise (SD)</span></td>
-        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="high-frequency noise (SD) in the units of the pupil data">0.283 </td>
-        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="high-frequency noise (SD) in the units of the pupil data">0.286 </td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="high-frequency noise (SD) in the units of the pupil data">0.291 </td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="high-frequency noise (SD) in the units of the pupil data">0.29 </td>
       </tr>
       <tr>
         <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="number of changes larger than 5% of the median pupil size from one sample to the next, per minute (ignoring 50 ms around missing data); indicates artifacts, e.g., during saccades (labels: good &lt;= 1 /min, ok &lt;= 10 /min, poor &lt;= 100 /min, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">jumps</span></td>
@@ -1934,7 +1939,7 @@ largest difference in a trial mean: 48.1 (median 3.13)
     <tbody>
       <tr>
         <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="correlation of left and right pupil size (samples valid in both eyes); the pupils of both eyes should move together (labels: good &gt;= 0.9, ok &gt;= 0.8, poor &gt;= 0.6, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">pupil correlation</span></td>
-        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &gt;= 0.9, ok &gt;= 0.8, poor &gt;= 0.6, else bad">0.943 <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &gt;= 0.9, ok &gt;= 0.8, poor &gt;= 0.6, else bad">0.947 <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
       </tr>
       <tr>
         <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="median distance between the gaze positions of the left and right eye; large values indicate calibration problems for one eye (labels: good &lt;= 1 deg, ok &lt;= 2 deg, poor &lt;= 3 deg, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">gaze disparity</span></td>
@@ -1952,28 +1957,28 @@ largest difference in a trial mean: 48.1 (median 3.13)
     <tbody>
       <tr>
         <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="number of detected blinks" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">number</span></td>
-        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="number of detected blinks">321 </td>
-        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="number of detected blinks">307 </td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="number of detected blinks">264 </td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="number of detected blinks">250 </td>
       </tr>
       <tr>
         <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="number of detected blinks per minute (median across people about 10 during screen tasks and 13 at rest; varies a lot between people) (labels: good &lt;= 20 /min, ok &lt;= 35 /min, poor &lt;= 70 /min, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">blink rate</span></td>
-        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 20 /min, ok &lt;= 35 /min, poor &lt;= 70 /min, else bad">16.2 /min <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
-        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 20 /min, ok &lt;= 35 /min, poor &lt;= 70 /min, else bad">15.5 /min <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 20 /min, ok &lt;= 35 /min, poor &lt;= 70 /min, else bad">13.3 /min <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 20 /min, ok &lt;= 35 /min, poor &lt;= 70 /min, else bad">12.6 /min <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
       </tr>
       <tr>
         <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="mean duration of the detected blinks" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">mean duration</span></td>
-        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="mean duration of the detected blinks">217 ms </td>
-        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="mean duration of the detected blinks">159 ms </td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="mean duration of the detected blinks">202 ms </td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="mean duration of the detected blinks">166 ms </td>
       </tr>
       <tr>
         <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="percentage of the recording covered by blinks (and the samples around them that were removed) (labels: good &lt;= 10%, ok &lt;= 20%, poor &lt;= 35%, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">time in blinks</span></td>
-        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 35%, else bad">5.9% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
-        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 35%, else bad">4.1% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 35%, else bad">4.5% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 35%, else bad">3.5% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
       </tr>
       <tr>
         <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="number of blinks longer than 500 ms (may be eye closures or tracking losses rather than blinks)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">long (&gt;500 ms)</span></td>
-        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="number of blinks longer than 500 ms (may be eye closures or tracking losses rather than blinks)">14 </td>
-        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="number of blinks longer than 500 ms (may be eye closures or tracking losses rather than blinks)">10 </td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="number of blinks longer than 500 ms (may be eye closures or tracking losses rather than blinks)">1 </td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="number of blinks longer than 500 ms (may be eye closures or tracking losses rather than blinks)">0 </td>
       </tr>
     </tbody>
   </table>
@@ -1987,13 +1992,13 @@ largest difference in a trial mean: 48.1 (median 3.13)
     <tbody>
       <tr>
         <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="percentage of masked pupil samples (missing data, blinks and other artifacts; interpolated samples only with the &#39;strict&#39; mask policy) (labels: good &lt;= 10%, ok &lt;= 20%, poor &lt;= 35%, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">pupil masked</span></td>
-        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 35%, else bad">0.0% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 35%, else bad">0.00084% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
         <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 35%, else bad">0.0% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
       </tr>
       <tr>
         <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="percentage of pupil samples that were interpolated (e.g., blinks) (labels: good &lt;= 10%, ok &lt;= 20%, poor &lt;= 30%, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">interpolated</span></td>
-        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 30%, else bad">7.5% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
-        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 30%, else bad">5.7% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 30%, else bad">5.8% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 30%, else bad">4.7% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
       </tr>
       <tr>
         <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="percentage of masked gaze samples (missing data, blinks and other artifacts; interpolated samples only with the &#39;strict&#39; mask policy) (labels: good &lt;= 10%, ok &lt;= 20%, poor &lt;= 35%, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">gaze masked</span></td>

@@ -36,6 +36,23 @@ layers make a sample unusable (``"default"``, ``"strict"``, ``"raw"``).
    EyeDataDict
    MaskPolicy
 
+Head-mounted eye trackers
+-------------------------
+
+:class:`HeadMountedEyeData` holds recordings of eye-tracking glasses (see
+:doc:`/user_guide/loading_data`): the gaze position in the scene video,
+additional channels (``d.aux``, e.g. the motion sensors) and the methods
+for the scene video in the namespace ``d.scene`` (as pipeline steps:
+``pp.scene.<method>(...)``).
+
+.. autosummary::
+   :toctree: generated
+   :template: class.rst
+   :nosignatures:
+
+   HeadMountedEyeData
+   eyedata.head_mounted.SceneNamespace
+
 Simulated data and history
 --------------------------
 

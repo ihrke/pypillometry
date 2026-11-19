@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Processing monocular and binocular data &#8212; pypillometry v2.2.1</title>
+    <title>Processing monocular and binocular data &#8212; pypillometry v2.2.3</title>
   
   
   
@@ -33,7 +33,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=6a604523" />
     <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=e89b0eda" />
   
@@ -43,12 +43,12 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=edd18f37"></script>
+    <script src="../_static/documentation_options.js?v=7e518144"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
-    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../_static/design-tabs.js?v=fcb327ea"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
@@ -62,7 +62,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.1" />
+  <meta name="docsearch:version" content="v2.2.3" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -566,13 +566,13 @@
 <span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[3]</span><span class="ansi-green-fg">, line 1</span>
 <span class="ansi-green-fg">----&gt; </span><span class="ansi-green-fg">1</span> pp.EyeData(left_x=left_x, time=time)
 
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/Nextcloud/work/projects/pupil/pypillometry/pypillometry/eyedata/eyedata.py:245</span>, in <span class="ansi-cyan-fg">EyeData.__init__</span><span class="ansi-blue-fg">(self, time, left_x, left_y, left_pupil, right_x, right_y, right_pupil, event_onsets, event_labels, events, sampling_rate, experimental_setup, name, calibration, fill_time_discontinuities, keep_orig, info, inplace)</span>
-<span class="ansi-green-fg">    243</span> <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> eye, x, y <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> ((<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">left</span><span class="ansi-yellow-fg">&#34;</span>, left_x, left_y), (<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">right</span><span class="ansi-yellow-fg">&#34;</span>, right_x, right_y)):
-<span class="ansi-green-fg">    244</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> (x <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>) != (y <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>):
-<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">245</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ValueError</span>(<span class="ansi-yellow-fg">f</span><span class="ansi-yellow-fg">&#34;</span><span class="ansi-bold" style="color: rgb(175,95,135)">{</span>eye<span class="ansi-bold" style="color: rgb(175,95,135)">}</span><span class="ansi-yellow-fg">_x and </span><span class="ansi-bold" style="color: rgb(175,95,135)">{</span>eye<span class="ansi-bold" style="color: rgb(175,95,135)">}</span><span class="ansi-yellow-fg">_y must be provided together</span><span class="ansi-yellow-fg">&#34;</span>)
-<span class="ansi-green-fg">    246</span> <span style="color: rgb(0,135,0)">self</span>.data = EyeDataDict(left_x=left_x, left_y=left_y, left_pupil=left_pupil,
-<span class="ansi-green-fg">    247</span>                         right_x=right_x, right_y=right_y, right_pupil=right_pupil)
-<span class="ansi-green-fg">    249</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> events <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span> <span class="ansi-bold" style="color: rgb(175,0,255)">and</span> (event_onsets <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span> <span class="ansi-bold" style="color: rgb(175,0,255)">or</span> event_labels <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>):
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/Nextcloud/work/projects/pupil/pypillometry/pypillometry/eyedata/eyedata.py:246</span>, in <span class="ansi-cyan-fg">EyeData.__init__</span><span class="ansi-blue-fg">(self, time, left_x, left_y, left_pupil, right_x, right_y, right_pupil, event_onsets, event_labels, events, sampling_rate, experimental_setup, name, calibration, fill_time_discontinuities, keep_orig, info, inplace)</span>
+<span class="ansi-green-fg">    244</span> <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> eye, x, y <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> ((<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">left</span><span class="ansi-yellow-fg">&#34;</span>, left_x, left_y), (<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">right</span><span class="ansi-yellow-fg">&#34;</span>, right_x, right_y)):
+<span class="ansi-green-fg">    245</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> (x <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>) != (y <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>):
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">246</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ValueError</span>(<span class="ansi-yellow-fg">f</span><span class="ansi-yellow-fg">&#34;</span><span class="ansi-bold" style="color: rgb(175,95,135)">{</span>eye<span class="ansi-bold" style="color: rgb(175,95,135)">}</span><span class="ansi-yellow-fg">_x and </span><span class="ansi-bold" style="color: rgb(175,95,135)">{</span>eye<span class="ansi-bold" style="color: rgb(175,95,135)">}</span><span class="ansi-yellow-fg">_y must be provided together</span><span class="ansi-yellow-fg">&#34;</span>)
+<span class="ansi-green-fg">    247</span> <span style="color: rgb(0,135,0)">self</span>.data = EyeDataDict(left_x=left_x, left_y=left_y, left_pupil=left_pupil,
+<span class="ansi-green-fg">    248</span>                         right_x=right_x, right_y=right_y, right_pupil=right_pupil)
+<span class="ansi-green-fg">    250</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> events <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span> <span class="ansi-bold" style="color: rgb(175,0,255)">and</span> (event_onsets <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span> <span class="ansi-bold" style="color: rgb(175,0,255)">or</span> event_labels <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>):
 
 <span class="ansi-red-fg">ValueError</span>: left_x and left_y must be provided together
 </pre></div></div>
@@ -610,7 +610,7 @@
 </div>
 <div class="output_area rendered_html docutils container">
 <div style="font-family:system-ui, sans-serif; border:1px solid #ddd; border-radius:6px; padding:12px; max-width: min(600px, 50vw); min-width: 300px;">
-  <h3 style="margin-top:0;">EyeData — <span style="color:#555;">dobogaru</span></h3>
+  <h3 style="margin-top:0;">EyeData — <span style="color:#555;">fohikafe</span></h3>
 
     <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px; margin-bottom:10px;">
     <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
@@ -644,6 +644,7 @@
   </div>
 
 
+
     <details open style="margin-bottom:8px;">
     <summary style="cursor:pointer; font-weight:600;">Signal overview</summary>
     <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px; margin-top:8px;">
@@ -661,6 +662,8 @@
       </div>
     </div>
   </details>
+
+
 
 
 
@@ -709,9 +712,9 @@
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-<span class="ansi-green-fg">pp: 19:03:54</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">scale</span>:<span class="ansi-cyan-fg">2513</span> | <span class="ansi-blue-intense-fg ansi-bold">channels: left_x, left_y, left_pupil</span>
-<span class="ansi-green-fg">pp: 19:03:54</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">scale</span>:<span class="ansi-cyan-fg">2529</span> | <span class="ansi-blue-intense-fg ansi-bold">center: {&#39;left_x&#39;: -0.028891550995946837, &#39;left_y&#39;: 0.03370120480230512, &#39;left_pupil&#39;: -0.02135748147595793}</span>
-<span class="ansi-green-fg">pp: 19:03:54</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">scale</span>:<span class="ansi-cyan-fg">2530</span> | <span class="ansi-blue-intense-fg ansi-bold">scale: {&#39;left_x&#39;: 0.988722355396508, &#39;left_y&#39;: 1.0161916099991923, &#39;left_pupil&#39;: 0.9978409919199771}</span>
+<span class="ansi-green-fg">pp: 14:28:34</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">scale</span>:<span class="ansi-cyan-fg">2594</span> | <span class="ansi-blue-intense-fg ansi-bold">channels: left_x, left_y, left_pupil</span>
+<span class="ansi-green-fg">pp: 14:28:34</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">scale</span>:<span class="ansi-cyan-fg">2610</span> | <span class="ansi-blue-intense-fg ansi-bold">center: {&#39;left_x&#39;: -0.028891550995946837, &#39;left_y&#39;: 0.03370120480230512, &#39;left_pupil&#39;: -0.02135748147595793}</span>
+<span class="ansi-green-fg">pp: 14:28:34</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">scale</span>:<span class="ansi-cyan-fg">2611</span> | <span class="ansi-blue-intense-fg ansi-bold">scale: {&#39;left_x&#39;: 0.988722355396508, &#39;left_y&#39;: 1.0161916099991923, &#39;left_pupil&#39;: 0.9978409919199771}</span>
 </pre></div></div>
 </div>
 <p>The output shows that all variables of the left eye have been processed.</p>
@@ -733,7 +736,7 @@
 </div>
 <div class="output_area rendered_html docutils container">
 <div style="font-family:system-ui, sans-serif; border:1px solid #ddd; border-radius:6px; padding:12px; max-width: min(600px, 50vw); min-width: 300px;">
-  <h3 style="margin-top:0;">EyeData — <span style="color:#555;">tumedihe</span></h3>
+  <h3 style="margin-top:0;">EyeData — <span style="color:#555;">giduvemi</span></h3>
 
     <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px; margin-bottom:10px;">
     <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
@@ -771,6 +774,7 @@
   </div>
 
 
+
     <details open style="margin-bottom:8px;">
     <summary style="cursor:pointer; font-weight:600;">Signal overview</summary>
     <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px; margin-top:8px;">
@@ -784,6 +788,8 @@
       </div>
     </div>
   </details>
+
+
 
 
 
@@ -833,26 +839,26 @@
 <span class="ansi-green-fg">     71</span> <span class="ansi-bold" style="color: rgb(0,135,0)">finally</span>:
 <span class="ansi-green-fg">     72</span>     _history_depth -= <span class="ansi-green-fg">1</span>
 
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/Nextcloud/work/projects/pupil/pypillometry/pypillometry/eyedata/pupil.py:557</span>, in <span class="ansi-cyan-fg">PupilNamespace.blinks_detect</span><span class="ansi-blue-fg">(self, eyes, min_duration, blink_val, winsize, vel_onset, vel_offset, vel_onset_min_duration, vel_offset_min_duration, max_duration, strategies, ignore_existing_mask, inplace)</span>
-<span class="ansi-green-fg">    467</span> <span style="color: rgb(175,0,255)">@step</span>
-<span class="ansi-green-fg">    468</span> <span style="color: rgb(175,0,255)">@keephistory</span>
-<span class="ansi-green-fg">    469</span> <span class="ansi-bold" style="color: rgb(0,135,0)">def</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-fg">blinks_detect</span>(<span style="color: rgb(0,135,0)">self</span>, eyes=[], min_duration:<span style="color: rgb(0,135,0)">float</span>=<span class="ansi-green-fg">20</span>, blink_val:<span style="color: rgb(0,135,0)">float</span>=<span class="ansi-green-fg">0</span>,
-<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">    473</span>                   strategies: <span style="color: rgb(0,135,0)">list</span>=[<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">zero</span><span class="ansi-yellow-fg">&#34;</span>,<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">velocity</span><span class="ansi-yellow-fg">&#34;</span>],
-<span class="ansi-green-fg">    474</span>                   ignore_existing_mask=<span class="ansi-bold" style="color: rgb(0,135,0)">False</span>, inplace=<span class="ansi-bold" style="color: rgb(0,135,0)">None</span>):
-<span class="ansi-green-fg">    475</span> <span style="color: rgb(188,188,188)">    </span><span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
-<span class="ansi-green-fg">    476</span> <span class="ansi-yellow-fg">    Detect blinks in the pupillary signal using several strategies.</span>
-<span class="ansi-green-fg">    477</span> <span class="ansi-yellow-fg">    First, blinks are detected as consecutive sequence of `blink_val` </span>
-<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">    555</span> <span class="ansi-yellow-fg">    &gt;&gt;&gt; d.get_blinks(variables=&#34;pupil&#34;, units=&#34;ms&#34;)  # doctest: +SKIP</span>
-<span class="ansi-green-fg">    556</span> <span class="ansi-yellow-fg">    &#34;&#34;&#34;</span>
-<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">557</span>     <span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">_d</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">_require</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">&#34;</span><span class="ansi-black-fg ansi-yellow-bg">pupil</span><span class="ansi-black-fg ansi-yellow-bg">&#34;</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">    558</span>     obj = <span style="color: rgb(0,135,0)">self</span>._d._get_inplace(inplace)
-<span class="ansi-green-fg">    559</span>     eyes=<span style="color: rgb(0,135,0)">self</span>._d._eyes_with(eyes, <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">pupil</span><span class="ansi-yellow-fg">&#34;</span>)
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/Nextcloud/work/projects/pupil/pypillometry/pypillometry/eyedata/pupil.py:594</span>, in <span class="ansi-cyan-fg">PupilNamespace.blinks_detect</span><span class="ansi-blue-fg">(self, eyes, min_duration, blink_val, winsize, vel_onset, vel_offset, vel_onset_min_duration, vel_offset_min_duration, max_duration, margin, strategies, ignore_existing_mask, inplace)</span>
+<span class="ansi-green-fg">    495</span> <span style="color: rgb(175,0,255)">@step</span>
+<span class="ansi-green-fg">    496</span> <span style="color: rgb(175,0,255)">@keephistory</span>
+<span class="ansi-green-fg">    497</span> <span class="ansi-bold" style="color: rgb(0,135,0)">def</span><span style="color: rgb(188,188,188)"> </span><span class="ansi-blue-fg">blinks_detect</span>(<span style="color: rgb(0,135,0)">self</span>, eyes=[], min_duration:<span style="color: rgb(0,135,0)">float</span>=<span class="ansi-green-fg">20</span>, blink_val:<span style="color: rgb(0,135,0)">float</span>=<span class="ansi-green-fg">0</span>,
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">    501</span>                   strategies: <span style="color: rgb(0,135,0)">list</span>=[<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">zero</span><span class="ansi-yellow-fg">&#34;</span>,<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">velocity</span><span class="ansi-yellow-fg">&#34;</span>],
+<span class="ansi-green-fg">    502</span>                   ignore_existing_mask=<span class="ansi-bold" style="color: rgb(0,135,0)">False</span>, inplace=<span class="ansi-bold" style="color: rgb(0,135,0)">None</span>):
+<span class="ansi-green-fg">    503</span> <span style="color: rgb(188,188,188)">    </span><span class="ansi-yellow-fg">&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">    504</span> <span class="ansi-yellow-fg">    Detect blinks in the pupillary signal using several strategies.</span>
+<span class="ansi-green-fg">    505</span> <span class="ansi-yellow-fg">    First, blinks are detected as consecutive sequence of `blink_val` </span>
+<span class="ansi-green-fg">   (...)</span><span class="ansi-green-fg">    592</span> <span class="ansi-yellow-fg">    &gt;&gt;&gt; d.get_blinks(variables=&#34;pupil&#34;, units=&#34;ms&#34;)  # doctest: +SKIP</span>
+<span class="ansi-green-fg">    593</span> <span class="ansi-yellow-fg">    &#34;&#34;&#34;</span>
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">594</span>     <span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">_d</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">_require</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">&#34;</span><span class="ansi-black-fg ansi-yellow-bg">pupil</span><span class="ansi-black-fg ansi-yellow-bg">&#34;</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    595</span>     obj = <span style="color: rgb(0,135,0)">self</span>._d._get_inplace(inplace)
+<span class="ansi-green-fg">    596</span>     eyes=<span style="color: rgb(0,135,0)">self</span>._d._eyes_with(eyes, <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">pupil</span><span class="ansi-yellow-fg">&#34;</span>)
 
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/Nextcloud/work/projects/pupil/pypillometry/pypillometry/eyedata/eyedata.py:562</span>, in <span class="ansi-cyan-fg">EyeData._require</span><span class="ansi-blue-fg">(self, *variables)</span>
-<span class="ansi-green-fg">    560</span> missing = [var <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> var <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> variables <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> var <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> available]
-<span class="ansi-green-fg">    561</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> missing:
-<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">562</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ValueError</span>(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">no </span><span class="ansi-bold" style="color: rgb(175,95,135)">%s</span><span class="ansi-yellow-fg"> data; available channels: </span><span class="ansi-bold" style="color: rgb(175,95,135)">%s</span><span class="ansi-yellow-fg">&#34;</span>
-<span class="ansi-green-fg">    563</span>                      % (<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">, </span><span class="ansi-yellow-fg">&#34;</span>.join(missing), <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">, </span><span class="ansi-yellow-fg">&#34;</span>.join(<span style="color: rgb(0,135,0)">self</span>.data.keys()) <span class="ansi-bold" style="color: rgb(175,0,255)">or</span> <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">none</span><span class="ansi-yellow-fg">&#34;</span>))
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/Nextcloud/work/projects/pupil/pypillometry/pypillometry/eyedata/eyedata.py:563</span>, in <span class="ansi-cyan-fg">EyeData._require</span><span class="ansi-blue-fg">(self, *variables)</span>
+<span class="ansi-green-fg">    561</span> missing = [var <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> var <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> variables <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> var <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> available]
+<span class="ansi-green-fg">    562</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> missing:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">563</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ValueError</span>(<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">no </span><span class="ansi-bold" style="color: rgb(175,95,135)">%s</span><span class="ansi-yellow-fg"> data; available channels: </span><span class="ansi-bold" style="color: rgb(175,95,135)">%s</span><span class="ansi-yellow-fg">&#34;</span>
+<span class="ansi-green-fg">    564</span>                      % (<span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">, </span><span class="ansi-yellow-fg">&#34;</span>.join(missing), <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">, </span><span class="ansi-yellow-fg">&#34;</span>.join(<span style="color: rgb(0,135,0)">self</span>.data.keys()) <span class="ansi-bold" style="color: rgb(175,0,255)">or</span> <span class="ansi-yellow-fg">&#34;</span><span class="ansi-yellow-fg">none</span><span class="ansi-yellow-fg">&#34;</span>))
 
 <span class="ansi-red-fg">ValueError</span>: no pupil data; available channels: left_x, left_y, right_x, right_y
 </pre></div></div>
@@ -873,7 +879,7 @@
 </div>
 <div class="output_area rendered_html docutils container">
 <div style="font-family:system-ui, sans-serif; border:1px solid #ddd; border-radius:6px; padding:12px; max-width: min(600px, 50vw); min-width: 300px;">
-  <h3 style="margin-top:0;">EyeData — <span style="color:#555;">vosawomi</span></h3>
+  <h3 style="margin-top:0;">EyeData — <span style="color:#555;">sopinadi</span></h3>
 
     <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px; margin-bottom:10px;">
     <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
@@ -907,6 +913,7 @@
   </div>
 
 
+
     <details open style="margin-bottom:8px;">
     <summary style="cursor:pointer; font-weight:600;">Signal overview</summary>
     <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px; margin-top:8px;">
@@ -928,6 +935,8 @@
       </div>
     </div>
   </details>
+
+
 
 
 
@@ -967,7 +976,7 @@
 </div>
 <div class="output_area rendered_html docutils container">
 <div style="font-family:system-ui, sans-serif; border:1px solid #ddd; border-radius:6px; padding:12px; max-width: min(600px, 50vw); min-width: 300px;">
-  <h3 style="margin-top:0;">EyeData — <span style="color:#555;">tumedihe</span></h3>
+  <h3 style="margin-top:0;">EyeData — <span style="color:#555;">giduvemi</span></h3>
 
     <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px; margin-bottom:10px;">
     <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
@@ -1005,6 +1014,7 @@
   </div>
 
 
+
     <details open style="margin-bottom:8px;">
     <summary style="cursor:pointer; font-weight:600;">Signal overview</summary>
     <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px; margin-top:8px;">
@@ -1022,6 +1032,8 @@
       </div>
     </div>
   </details>
+
+
 
 
 
@@ -1084,26 +1096,26 @@
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-<span class="ansi-green-fg">pp: 19:03:56</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">blinks_detect</span>:<span class="ansi-cyan-fg">559</span> | <span class="ansi-blue-intense-fg ansi-bold">channels: left_pupil</span>
-<span class="ansi-green-fg">pp: 19:03:56</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">blinks_detect</span>:<span class="ansi-cyan-fg">584</span> | <span class="ansi-blue-intense-fg ansi-bold">Detecting blinks for eye left</span>
-<span class="ansi-green-fg">pp: 19:03:56</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">set_blinks</span>:<span class="ansi-cyan-fg">643</span> | <span class="ansi-blue-intense-fg ansi-bold">channels: left_pupil</span>
-<span class="ansi-green-fg">pp: 19:03:56</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">_convert_velocity_thresholds</span>:<span class="ansi-cyan-fg">454</span> | <span class="ansi-blue-intense-fg ansi-bold">vel_onset -5.0/ms -&gt; -10.0000/sample</span>
-<span class="ansi-green-fg">pp: 19:03:56</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">_convert_velocity_thresholds</span>:<span class="ansi-cyan-fg">463</span> | <span class="ansi-blue-intense-fg ansi-bold">vel_offset 5.0/ms -&gt; 10.0000/sample</span>
-<span class="ansi-green-fg">pp: 19:03:56</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">detect_blinks_velocity</span>:<span class="ansi-cyan-fg">332</span> | <span class="ansi-blue-intense-fg ansi-bold">Generated asymmetric velocity profiles, length 20465</span>
-<span class="ansi-green-fg">pp: 19:03:56</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">detect_blinks_velocity</span>:<span class="ansi-cyan-fg">336</span> | <span class="ansi-blue-intense-fg ansi-bold">Found 147 potential onset points</span>
-<span class="ansi-green-fg">pp: 19:03:56</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">detect_blinks_velocity</span>:<span class="ansi-cyan-fg">346</span> | <span class="ansi-blue-intense-fg ansi-bold">After filtering, 19 onsets remain</span>
-<span class="ansi-green-fg">pp: 19:03:56</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">detect_blinks_velocity</span>:<span class="ansi-cyan-fg">354</span> | <span class="ansi-blue-intense-fg ansi-bold">Found 224 potential offset points</span>
-<span class="ansi-green-fg">pp: 19:03:56</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">detect_blinks_velocity</span>:<span class="ansi-cyan-fg">368</span> | <span class="ansi-blue-intense-fg ansi-bold">After filtering, 36 offsets remain</span>
-<span class="ansi-green-fg">pp: 19:03:56</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">detect_blinks_velocity</span>:<span class="ansi-cyan-fg">392</span> | <span class="ansi-blue-intense-fg ansi-bold">Found 13 blink pairs</span>
-<span class="ansi-green-fg">pp: 19:03:56</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">detect_blinks_velocity</span>:<span class="ansi-cyan-fg">403</span> | <span class="ansi-blue-intense-fg ansi-bold">Returning 13 blinks after invalid-region adjustment</span>
-<span class="ansi-green-fg">pp: 19:03:56</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">blinks_detect</span>:<span class="ansi-cyan-fg">601</span> | <span class="ansi-blue-intense-fg ansi-bold">Detected 13 blinks with velocity strategy</span>
-<span class="ansi-green-fg">pp: 19:03:56</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">detect_blinks_zero</span>:<span class="ansi-cyan-fg">438</span> | <span class="ansi-blue-intense-fg ansi-bold">Found 11 potential blinks</span>
-<span class="ansi-green-fg">pp: 19:03:56</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">detect_blinks_zero</span>:<span class="ansi-cyan-fg">441</span> | <span class="ansi-blue-intense-fg ansi-bold">Found 11 blinks after duration filtering</span>
-<span class="ansi-green-fg">pp: 19:03:56</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">blinks_detect</span>:<span class="ansi-cyan-fg">613</span> | <span class="ansi-blue-intense-fg ansi-bold">Detected 11 blinks with zero strategy</span>
-<span class="ansi-green-fg">pp: 19:03:56</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">blinks_detect</span>:<span class="ansi-cyan-fg">618</span> | <span class="ansi-blue-intense-fg ansi-bold">Merging 13 blinks with 11 blinks</span>
-<span class="ansi-green-fg">pp: 19:03:56</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">blinks_detect</span>:<span class="ansi-cyan-fg">620</span> | <span class="ansi-blue-intense-fg ansi-bold">Merged 14 blinks</span>
-<span class="ansi-green-fg">pp: 19:03:56</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">blinks_detect</span>:<span class="ansi-cyan-fg">632</span> | <span class="ansi-blue-intense-fg ansi-bold">Filtered 14 blinks by minimum duration</span>
-<span class="ansi-green-fg">pp: 19:03:56</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">set_blinks</span>:<span class="ansi-cyan-fg">643</span> | <span class="ansi-blue-intense-fg ansi-bold">channels: left_pupil</span>
+<span class="ansi-green-fg">pp: 14:28:36</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">blinks_detect</span>:<span class="ansi-cyan-fg">596</span> | <span class="ansi-blue-intense-fg ansi-bold">channels: left_pupil</span>
+<span class="ansi-green-fg">pp: 14:28:36</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">blinks_detect</span>:<span class="ansi-cyan-fg">628</span> | <span class="ansi-blue-intense-fg ansi-bold">Detecting blinks for eye left</span>
+<span class="ansi-green-fg">pp: 14:28:36</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">set_blinks</span>:<span class="ansi-cyan-fg">644</span> | <span class="ansi-blue-intense-fg ansi-bold">channels: left_pupil</span>
+<span class="ansi-green-fg">pp: 14:28:36</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">_convert_velocity_thresholds</span>:<span class="ansi-cyan-fg">482</span> | <span class="ansi-blue-intense-fg ansi-bold">vel_onset -5.0/ms -&gt; -10.0000/sample</span>
+<span class="ansi-green-fg">pp: 14:28:36</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">_convert_velocity_thresholds</span>:<span class="ansi-cyan-fg">491</span> | <span class="ansi-blue-intense-fg ansi-bold">vel_offset 5.0/ms -&gt; 10.0000/sample</span>
+<span class="ansi-green-fg">pp: 14:28:36</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">detect_blinks_velocity</span>:<span class="ansi-cyan-fg">336</span> | <span class="ansi-blue-intense-fg ansi-bold">Generated asymmetric velocity profiles, length 20465</span>
+<span class="ansi-green-fg">pp: 14:28:36</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">detect_blinks_velocity</span>:<span class="ansi-cyan-fg">340</span> | <span class="ansi-blue-intense-fg ansi-bold">Found 147 potential onset points</span>
+<span class="ansi-green-fg">pp: 14:28:36</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">detect_blinks_velocity</span>:<span class="ansi-cyan-fg">350</span> | <span class="ansi-blue-intense-fg ansi-bold">After filtering, 13 onsets remain</span>
+<span class="ansi-green-fg">pp: 14:28:36</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">detect_blinks_velocity</span>:<span class="ansi-cyan-fg">358</span> | <span class="ansi-blue-intense-fg ansi-bold">Found 224 potential offset points</span>
+<span class="ansi-green-fg">pp: 14:28:36</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">detect_blinks_velocity</span>:<span class="ansi-cyan-fg">372</span> | <span class="ansi-blue-intense-fg ansi-bold">After filtering, 13 offsets remain</span>
+<span class="ansi-green-fg">pp: 14:28:36</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">detect_blinks_velocity</span>:<span class="ansi-cyan-fg">404</span> | <span class="ansi-blue-intense-fg ansi-bold">Found 12 blink pairs</span>
+<span class="ansi-green-fg">pp: 14:28:36</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">detect_blinks_velocity</span>:<span class="ansi-cyan-fg">415</span> | <span class="ansi-blue-intense-fg ansi-bold">Returning 12 blinks after invalid-region adjustment</span>
+<span class="ansi-green-fg">pp: 14:28:36</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">blinks_detect</span>:<span class="ansi-cyan-fg">645</span> | <span class="ansi-blue-intense-fg ansi-bold">Detected 12 blinks with velocity strategy</span>
+<span class="ansi-green-fg">pp: 14:28:36</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">detect_blinks_zero</span>:<span class="ansi-cyan-fg">450</span> | <span class="ansi-blue-intense-fg ansi-bold">Found 11 potential blinks</span>
+<span class="ansi-green-fg">pp: 14:28:36</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">detect_blinks_zero</span>:<span class="ansi-cyan-fg">453</span> | <span class="ansi-blue-intense-fg ansi-bold">Found 11 blinks after duration filtering</span>
+<span class="ansi-green-fg">pp: 14:28:36</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">blinks_detect</span>:<span class="ansi-cyan-fg">657</span> | <span class="ansi-blue-intense-fg ansi-bold">Detected 11 blinks with zero strategy</span>
+<span class="ansi-green-fg">pp: 14:28:36</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">blinks_detect</span>:<span class="ansi-cyan-fg">662</span> | <span class="ansi-blue-intense-fg ansi-bold">Merging 12 blinks with 11 blinks</span>
+<span class="ansi-green-fg">pp: 14:28:36</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">blinks_detect</span>:<span class="ansi-cyan-fg">664</span> | <span class="ansi-blue-intense-fg ansi-bold">Merged 12 blinks</span>
+<span class="ansi-green-fg">pp: 14:28:36</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">blinks_detect</span>:<span class="ansi-cyan-fg">679</span> | <span class="ansi-blue-intense-fg ansi-bold">Filtered 12 blinks by minimum duration</span>
+<span class="ansi-green-fg">pp: 14:28:36</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">set_blinks</span>:<span class="ansi-cyan-fg">644</span> | <span class="ansi-blue-intense-fg ansi-bold">channels: left_pupil</span>
 </pre></div></div>
 </div>
 </section>

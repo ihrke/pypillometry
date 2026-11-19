@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Data classes &#8212; pypillometry v2.2.1</title>
+    <title>Data classes &#8212; pypillometry v2.2.3</title>
   
   
   
@@ -33,7 +33,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=6a604523" />
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=e89b0eda" />
   
   <!-- So that users can add custom icons -->
@@ -42,12 +42,12 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=edd18f37"></script>
+    <script src="../_static/documentation_options.js?v=7e518144"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
-    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../_static/design-tabs.js?v=fcb327ea"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'api/data';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
@@ -59,7 +59,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.1" />
+  <meta name="docsearch:version" content="v2.2.3" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -408,6 +408,8 @@
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.EyeData.html">EyeData</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.EyeDataDict.html">EyeDataDict</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.MaskPolicy.html">MaskPolicy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.HeadMountedEyeData.html">HeadMountedEyeData</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.eyedata.head_mounted.SceneNamespace.html">SceneNamespace</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.FakeEyeData.html">FakeEyeData</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.keephistory.html">keephistory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.QualityReport.html">QualityReport</a></li>
@@ -469,6 +471,7 @@
 <li class="toctree-l1"><a class="reference internal" href="plotting.html">Plotting (<code class="docutils literal notranslate"><span class="pre">d.plot</span></code>)</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="io.html">Reading and writing data</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.read_eyelink.html">read_eyelink</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.read_tobii_prolab.html">read_tobii_prolab</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.read_file.html">read_file</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.write_file.html">write_file</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.download.html">download</a></li>
@@ -503,6 +506,7 @@
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.detect_blinks_velocity.html">detect_blinks_velocity</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.detect_blinks_zero.html">detect_blinks_zero</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.blink_onsets_mahot.html">blink_onsets_mahot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.interpolate_blinks_kalman.html">interpolate_blinks_kalman</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.pupil_kernel.html">pupil_kernel</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.pupil_kernel_t.html">pupil_kernel_t</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.pupil_get_max_duration.html">pupil_get_max_duration</a></li>
@@ -646,6 +650,25 @@ layers make a sample unusable (<code class="docutils literal notranslate"><span 
 </table>
 </div>
 </section>
+<section id="head-mounted-eye-trackers">
+<h2>Head-mounted eye trackers<a class="headerlink" href="#head-mounted-eye-trackers" title="Link to this heading">#</a></h2>
+<p><a class="reference internal" href="generated/pypillometry.HeadMountedEyeData.html#pypillometry.HeadMountedEyeData" title="pypillometry.HeadMountedEyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">HeadMountedEyeData</span></code></a> holds recordings of eye-tracking glasses (see
+<a class="reference internal" href="../user_guide/loading_data.html"><span class="doc">Loading and saving data</span></a>): the gaze position in the scene video,
+additional channels (<code class="docutils literal notranslate"><span class="pre">d.aux</span></code>, e.g. the motion sensors) and the methods
+for the scene video in the namespace <code class="docutils literal notranslate"><span class="pre">d.scene</span></code> (as pipeline steps:
+<code class="docutils literal notranslate"><span class="pre">pp.scene.&lt;method&gt;(...)</span></code>).</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pypillometry.HeadMountedEyeData.html#pypillometry.HeadMountedEyeData" title="pypillometry.HeadMountedEyeData"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HeadMountedEyeData</span></code></a></p></td>
+<td><p>Data from a head-mounted eye tracker (eye-tracking glasses).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pypillometry.eyedata.head_mounted.SceneNamespace.html#pypillometry.eyedata.head_mounted.SceneNamespace" title="pypillometry.eyedata.head_mounted.SceneNamespace"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eyedata.head_mounted.SceneNamespace</span></code></a></p></td>
+<td><p>Methods for the scene video and the motion sensors of a head-mounted eye tracker, accessed as <code class="docutils literal notranslate"><span class="pre">d.scene</span></code> (e.g., <code class="docutils literal notranslate"><span class="pre">d.scene.luminance()</span></code>) on a <a class="reference internal" href="generated/pypillometry.HeadMountedEyeData.html#pypillometry.HeadMountedEyeData" title="pypillometry.HeadMountedEyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">HeadMountedEyeData</span></code></a> object.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
 <section id="simulated-data-and-history">
 <h2>Simulated data and history<a class="headerlink" href="#simulated-data-and-history" title="Link to this heading">#</a></h2>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
@@ -755,6 +778,7 @@ layer -&gt; statistics) and the list of example datasets are a
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#main-class">Main class</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#channels-layers-and-mask-policies">Channels, layers and mask policies</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#head-mounted-eye-trackers">Head-mounted eye trackers</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#simulated-data-and-history">Simulated data and history</a><ul class="pst-show_toc_level nav section-nav flex-column">
 </ul>
 </li>

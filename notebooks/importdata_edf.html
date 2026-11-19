@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Importing data from Eyelink EDF files &#8212; pypillometry v2.2.1</title>
+    <title>Importing data from Eyelink EDF files &#8212; pypillometry v2.2.3</title>
   
   
   
@@ -33,7 +33,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=6a604523" />
     <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=e89b0eda" />
   
@@ -43,12 +43,12 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=edd18f37"></script>
+    <script src="../_static/documentation_options.js?v=7e518144"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
-    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../_static/design-tabs.js?v=fcb327ea"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
@@ -62,7 +62,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.1" />
+  <meta name="docsearch:version" content="v2.2.3" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -533,11 +533,11 @@
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-<span class="ansi-green-fg">pp: 14:36:37</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fetch_url</span>:<span class="ansi-cyan-fg">462</span> | <span class="ansi-bold">Downloading &#39;https://osf.io/trsuq/download&#39; to /tmp/pypillometry_80ga7xxe/download</span>
-download: 100%|██████████| 14.2M/14.2M [00:02&lt;00:00, 5.23MiB/s]
-<span class="ansi-green-fg">pp: 14:36:42</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">_read_edf</span>:<span class="ansi-cyan-fg">730</span> | <span class="ansi-bold">Loading EDF file: /tmp/pypillometry_80ga7xxe/download (current log level: INFO, set to DEBUG to see eyelinkio output)</span>
-<span class="ansi-green-fg">pp: 14:36:48</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">local_copy</span>:<span class="ansi-cyan-fg">525</span> | <span class="ansi-bold">Deleting downloaded copy: /tmp/pypillometry_80ga7xxe</span>
-<span class="ansi-green-fg">pp: 14:36:48</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">from_eyelink</span>:<span class="ansi-cyan-fg">1639</span> | <span class="ansi-bold">Filtering out Eyelink triggers</span>
+<span class="ansi-green-fg">pp: 14:29:27</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fetch_url</span>:<span class="ansi-cyan-fg">468</span> | <span class="ansi-bold">Downloading &#39;https://osf.io/trsuq/download&#39; to /tmp/pypillometry_iftf4kbo/download</span>
+download: 100%|██████████| 14.2M/14.2M [00:02&lt;00:00, 6.19MiB/s]
+<span class="ansi-green-fg">pp: 14:29:32</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">_read_edf</span>:<span class="ansi-cyan-fg">897</span> | <span class="ansi-bold">Loading EDF file: /tmp/pypillometry_iftf4kbo/download (current log level: INFO, set to DEBUG to see eyelinkio output)</span>
+<span class="ansi-green-fg">pp: 14:29:43</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">local_copy</span>:<span class="ansi-cyan-fg">692</span> | <span class="ansi-bold">Deleting downloaded copy: /tmp/pypillometry_iftf4kbo</span>
+<span class="ansi-green-fg">pp: 14:29:43</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">from_eyelink</span>:<span class="ansi-cyan-fg">1639</span> | <span class="ansi-bold">Filtering out Eyelink triggers</span>
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -580,6 +580,7 @@ download: 100%|██████████| 14.2M/14.2M [00:02&lt;00:00, 5.23
   </div>
 
 
+
     <details open style="margin-bottom:8px;">
     <summary style="cursor:pointer; font-weight:600;">Signal overview</summary>
     <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px; margin-top:8px;">
@@ -609,6 +610,8 @@ download: 100%|██████████| 14.2M/14.2M [00:02&lt;00:00, 5.23
       </div>
     </div>
   </details>
+
+
 
 
 
@@ -646,9 +649,9 @@ download: 100%|██████████| 14.2M/14.2M [00:02&lt;00:00, 5.23
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-<span class="ansi-green-fg">pp: 14:36:49</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fetch_url</span>:<span class="ansi-cyan-fg">448</span> | <span class="ansi-bold">Using cached copy of &#39;https://osf.io/trsuq/download&#39;: example_data/test.edf</span>
-<span class="ansi-green-fg">pp: 14:36:49</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">_read_edf</span>:<span class="ansi-cyan-fg">730</span> | <span class="ansi-bold">Loading EDF file: example_data/test.edf (current log level: INFO, set to DEBUG to see eyelinkio output)</span>
-<span class="ansi-green-fg">pp: 14:37:00</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">from_eyelink</span>:<span class="ansi-cyan-fg">1639</span> | <span class="ansi-bold">Filtering out Eyelink triggers</span>
+<span class="ansi-green-fg">pp: 14:29:43</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fetch_url</span>:<span class="ansi-cyan-fg">454</span> | <span class="ansi-bold">Using cached copy of &#39;https://osf.io/trsuq/download&#39;: example_data/test.edf</span>
+<span class="ansi-green-fg">pp: 14:29:43</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">_read_edf</span>:<span class="ansi-cyan-fg">897</span> | <span class="ansi-bold">Loading EDF file: example_data/test.edf (current log level: INFO, set to DEBUG to see eyelinkio output)</span>
+<span class="ansi-green-fg">pp: 14:29:53</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">from_eyelink</span>:<span class="ansi-cyan-fg">1639</span> | <span class="ansi-bold">Filtering out Eyelink triggers</span>
 </pre></div></div>
 </div>
 <p>Reading EDF files is relatively slow. If you work with the same file repeatedly, save the <code class="docutils literal notranslate"><span class="pre">EyeData</span></code> object with <code class="docutils literal notranslate"><span class="pre">d.write_file(&quot;file.pd&quot;)</span></code> and load it with <code class="docutils literal notranslate"><span class="pre">pp.EyeData.from_file(&quot;file.pd&quot;)</span></code> (see the end of the <a class="reference internal" href="importdata_asc.html"><span class="doc">ASC notebook</span></a>), or convert it on the command line with <code class="docutils literal notranslate"><span class="pre">edf2pypil</span></code>.</p>
@@ -675,10 +678,10 @@ download: 100%|██████████| 14.2M/14.2M [00:02&lt;00:00, 5.23
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-<span class="ansi-green-fg">pp: 14:37:00</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">osf_authenticate</span>:<span class="ansi-cyan-fg">104</span> | <span class="ansi-bold">OSF token validation succeeded.</span>
-<span class="ansi-green-fg">pp: 14:37:00</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fetch_url</span>:<span class="ansi-cyan-fg">448</span> | <span class="ansi-bold">Using cached copy of &#39;https://osf.io/5vkj3/download&#39;: example_data/private.edf</span>
-<span class="ansi-green-fg">pp: 14:37:00</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">_read_edf</span>:<span class="ansi-cyan-fg">730</span> | <span class="ansi-bold">Loading EDF file: example_data/private.edf (current log level: INFO, set to DEBUG to see eyelinkio output)</span>
-<span class="ansi-green-fg">pp: 14:37:33</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">from_eyelink</span>:<span class="ansi-cyan-fg">1639</span> | <span class="ansi-bold">Filtering out Eyelink triggers</span>
+<span class="ansi-green-fg">pp: 14:29:54</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">osf_authenticate</span>:<span class="ansi-cyan-fg">110</span> | <span class="ansi-bold">OSF token validation succeeded.</span>
+<span class="ansi-green-fg">pp: 14:29:54</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fetch_url</span>:<span class="ansi-cyan-fg">454</span> | <span class="ansi-bold">Using cached copy of &#39;https://osf.io/5vkj3/download&#39;: example_data/private.edf</span>
+<span class="ansi-green-fg">pp: 14:29:54</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">_read_edf</span>:<span class="ansi-cyan-fg">897</span> | <span class="ansi-bold">Loading EDF file: example_data/private.edf (current log level: INFO, set to DEBUG to see eyelinkio output)</span>
+<span class="ansi-green-fg">pp: 14:30:25</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">from_eyelink</span>:<span class="ansi-cyan-fg">1639</span> | <span class="ansi-bold">Filtering out Eyelink triggers</span>
 </pre></div></div>
 </div>
 <p>The result is an <code class="docutils literal notranslate"><span class="pre">EyeData</span></code> object containing all the samples and events. Here we plot the pupil data for minutes 10-11. Plot ranges (and most other times in <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code>) can be given with units, either by multiplying with a unit from <code class="docutils literal notranslate"><span class="pre">pp.u</span></code> or as a string such as <code class="docutils literal notranslate"><span class="pre">(&quot;10</span> <span class="pre">min&quot;,</span> <span class="pre">&quot;11</span> <span class="pre">min&quot;)</span></code>:</p>
@@ -719,9 +722,9 @@ download: 100%|██████████| 14.2M/14.2M [00:02&lt;00:00, 5.23
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-<span class="ansi-green-fg">pp: 14:37:35</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fetch_url</span>:<span class="ansi-cyan-fg">448</span> | <span class="ansi-bold">Using cached copy of &#39;https://osf.io/5vkj3/download&#39;: example_data/private.edf</span>
-<span class="ansi-green-fg">pp: 14:37:35</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">_read_edf</span>:<span class="ansi-cyan-fg">730</span> | <span class="ansi-bold">Loading EDF file: example_data/private.edf (current log level: INFO, set to DEBUG to see eyelinkio output)</span>
-<span class="ansi-green-fg">pp: 14:38:05</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">from_eyelink</span>:<span class="ansi-cyan-fg">1639</span> | <span class="ansi-bold">Filtering out Eyelink triggers</span>
+<span class="ansi-green-fg">pp: 14:30:26</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fetch_url</span>:<span class="ansi-cyan-fg">454</span> | <span class="ansi-bold">Using cached copy of &#39;https://osf.io/5vkj3/download&#39;: example_data/private.edf</span>
+<span class="ansi-green-fg">pp: 14:30:26</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">_read_edf</span>:<span class="ansi-cyan-fg">897</span> | <span class="ansi-bold">Loading EDF file: example_data/private.edf (current log level: INFO, set to DEBUG to see eyelinkio output)</span>
+<span class="ansi-green-fg">pp: 14:30:39</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">from_eyelink</span>:<span class="ansi-cyan-fg">1639</span> | <span class="ansi-bold">Filtering out Eyelink triggers</span>
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">

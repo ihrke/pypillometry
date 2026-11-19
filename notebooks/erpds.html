@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Event-related pupil dilations &#8212; pypillometry v2.2.1</title>
+    <title>Event-related pupil dilations &#8212; pypillometry v2.2.3</title>
   
   
   
@@ -33,7 +33,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=6a604523" />
     <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=e89b0eda" />
   
@@ -43,12 +43,12 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=edd18f37"></script>
+    <script src="../_static/documentation_options.js?v=7e518144"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
-    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../_static/design-tabs.js?v=fcb327ea"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
@@ -62,7 +62,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.1" />
+  <meta name="docsearch:version" content="v2.2.3" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -539,8 +539,8 @@
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-<span class="ansi-green-fg">pp: 14:34:47</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">_read_edf</span>:<span class="ansi-cyan-fg">730</span> | <span class="ansi-bold">Loading EDF file: ../../data/test.edf (current log level: INFO, set to DEBUG to see eyelinkio output)</span>
-<span class="ansi-green-fg">pp: 14:35:01</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">from_eyelink</span>:<span class="ansi-cyan-fg">1639</span> | <span class="ansi-bold">Filtering out Eyelink triggers</span>
+<span class="ansi-green-fg">pp: 14:27:00</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">_read_edf</span>:<span class="ansi-cyan-fg">897</span> | <span class="ansi-bold">Loading EDF file: ../../data/test.edf (current log level: INFO, set to DEBUG to see eyelinkio output)</span>
+<span class="ansi-green-fg">pp: 14:27:24</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">from_eyelink</span>:<span class="ansi-cyan-fg">1639</span> | <span class="ansi-bold">Filtering out Eyelink triggers</span>
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -583,6 +583,7 @@
   </div>
 
 
+
     <details open style="margin-bottom:8px;">
     <summary style="cursor:pointer; font-weight:600;">Signal overview</summary>
     <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px; margin-top:8px;">
@@ -612,6 +613,8 @@
       </div>
     </div>
   </details>
+
+
 
 
 
@@ -656,8 +659,9 @@
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-<span class="ansi-green-fg">pp: 14:35:02</span> | <span class="ansi-yellow-intense-fg ansi-bold">WARNING </span> | <span class="ansi-cyan-fg">blinks_interpolate</span>:<span class="ansi-cyan-fg">846</span> | <span class="ansi-yellow-intense-fg ansi-bold">Skipping blink 552 for left: no usable data at its anchor points (t1=1104152, t2=1104471, t3=1245361, t4=1245362)</span>
-<span class="ansi-green-fg">pp: 14:35:02</span> | <span class="ansi-yellow-intense-fg ansi-bold">WARNING </span> | <span class="ansi-cyan-fg">blinks_interpolate</span>:<span class="ansi-cyan-fg">846</span> | <span class="ansi-yellow-intense-fg ansi-bold">Skipping blink 538 for right: no usable data at its anchor points (t1=1104179, t2=1104469, t3=1245361, t4=1245362)</span>
+<span class="ansi-green-fg">pp: 14:27:26</span> | <span class="ansi-yellow-intense-fg ansi-bold">WARNING </span> | <span class="ansi-cyan-fg">_interpolate_mahot</span>:<span class="ansi-cyan-fg">830</span> | <span class="ansi-yellow-intense-fg ansi-bold">Skipping blink 248 for left: no usable data at its anchor points (t1=554635, t2=554787, t3=554939, t4=555091)</span>
+<span class="ansi-green-fg">pp: 14:27:26</span> | <span class="ansi-yellow-intense-fg ansi-bold">WARNING </span> | <span class="ansi-cyan-fg">_interpolate_mahot</span>:<span class="ansi-cyan-fg">830</span> | <span class="ansi-yellow-intense-fg ansi-bold">Skipping blink 479 for left: no usable data at its anchor points (t1=1104278, t2=1104542, t3=1245361, t4=1245362)</span>
+<span class="ansi-green-fg">pp: 14:27:26</span> | <span class="ansi-yellow-intense-fg ansi-bold">WARNING </span> | <span class="ansi-cyan-fg">_interpolate_mahot</span>:<span class="ansi-cyan-fg">830</span> | <span class="ansi-yellow-intense-fg ansi-bold">Skipping blink 515 for right: no usable data at its anchor points (t1=1104353, t2=1104556, t3=1245361, t4=1245362)</span>
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -724,7 +728,7 @@ Epochs &#39;C_&#39; | 400 epochs, window (-500, 2000) ms
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-<span class="ansi-green-fg">pp: 14:35:03</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">361</span> | <span class="ansi-bold">Baseline correction (subtract) applied using window [-200.    0.]</span>
+<span class="ansi-green-fg">pp: 14:27:27</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">361</span> | <span class="ansi-bold">Baseline correction (subtract) applied using window [-200.    0.]</span>
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -754,7 +758,7 @@ Epochs &#39;C_&#39; | 400 epochs, window (-500, 2000) ms
     </div>
     <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
       <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Missing</div>
-      <div style="font-weight:600;">5.0%</div>
+      <div style="font-weight:600;">5.1%</div>
     </div>
     <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
       <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Sampling rate</div>
@@ -767,8 +771,8 @@ Epochs &#39;C_&#39; | 400 epochs, window (-500, 2000) ms
     <summary style="cursor:pointer; font-weight:600;">Channels (mean over segments; red line = event onset)</summary>
     <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:8px; margin-top:8px;">
       <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
-        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">left_pupil (5.0% missing)</div>
-        <img src="data:image/png;base64,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" alt="left_pupil (5.0% missing) sparkline" style="height:60px; width:100%; object-fit:cover;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">left_pupil (5.1% missing)</div>
+        <img src="data:image/png;base64,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" alt="left_pupil (5.1% missing) sparkline" style="height:60px; width:100%; object-fit:cover;">
       </div>
     </div>
   </details>
@@ -934,8 +938,8 @@ array([&#39;C_NW_1_2_UD_UD&#39;, &#39;C_GA_1_4_UD_UD&#39;, &#39;C_GA_1_5_UD_UD&#
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-<span class="ansi-green-fg">pp: 14:35:03</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">361</span> | <span class="ansi-bold">Baseline correction (subtract) applied using window [-200.    0.]</span>
-<span class="ansi-green-fg">pp: 14:35:03</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">361</span> | <span class="ansi-bold">Baseline correction (subtract) applied using window [-200.    0.]</span>
+<span class="ansi-green-fg">pp: 14:27:28</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">361</span> | <span class="ansi-bold">Baseline correction (subtract) applied using window [-200.    0.]</span>
+<span class="ansi-green-fg">pp: 14:27:28</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">361</span> | <span class="ansi-bold">Baseline correction (subtract) applied using window [-200.    0.]</span>
 </pre></div></div>
 </div>
 <p>Finally, we plot both into the same axes to compare them:</p>
@@ -1099,7 +1103,7 @@ or whose units differ (e.g., between eye trackers or camera distances): the same
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-{&#39;014&#39;: 451, &#39;018&#39;: 1479}
+{&#39;014&#39;: 451, &#39;018&#39;: 1481}
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -1121,10 +1125,10 @@ or whose units differ (e.g., between eye trackers or camera distances): the same
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-<span class="ansi-green-fg">pp: 14:35:26</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">361</span> | <span class="ansi-bold">Baseline correction (subtract) applied using window [-200.    0.]</span>
-<span class="ansi-green-fg">pp: 14:35:26</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">361</span> | <span class="ansi-bold">Baseline correction (divide) applied using window [-200.    0.]</span>
-<span class="ansi-green-fg">pp: 14:35:26</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">361</span> | <span class="ansi-bold">Baseline correction (subtract) applied using window [-200.    0.]</span>
-<span class="ansi-green-fg">pp: 14:35:26</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">361</span> | <span class="ansi-bold">Baseline correction (divide) applied using window [-200.    0.]</span>
+<span class="ansi-green-fg">pp: 14:28:02</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">361</span> | <span class="ansi-bold">Baseline correction (subtract) applied using window [-200.    0.]</span>
+<span class="ansi-green-fg">pp: 14:28:02</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">361</span> | <span class="ansi-bold">Baseline correction (divide) applied using window [-200.    0.]</span>
+<span class="ansi-green-fg">pp: 14:28:02</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">361</span> | <span class="ansi-bold">Baseline correction (subtract) applied using window [-200.    0.]</span>
+<span class="ansi-green-fg">pp: 14:28:02</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">361</span> | <span class="ansi-bold">Baseline correction (divide) applied using window [-200.    0.]</span>
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">

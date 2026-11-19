@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pypillometry.viewer &#8212; pypillometry v2.2.1</title>
+    <title>pypillometry.viewer &#8212; pypillometry v2.2.3</title>
   
   
   
@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=6a604523" />
     <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=e89b0eda" />
   
   <!-- So that users can add custom icons -->
@@ -41,12 +41,12 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=edd18f37"></script>
+    <script src="../../_static/documentation_options.js?v=7e518144"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
-    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../../_static/design-tabs.js?v=fcb327ea"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs";
 
@@ -414,7 +414,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.1" />
+  <meta name="docsearch:version" content="v2.2.3" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1326,7 +1326,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
 <span class="sd">    TypeError</span>
-<span class="sd">        If a value in `params` is not an int or float.</span>
+<span class="sd">        If a value in `params` is not an int or float, or if `func` returns</span>
+<span class="sd">        something that cannot be shown (e.g., None).</span>
 <span class="sd">    ValueError</span>
 <span class="sd">        If `variable` is not found in the EyeData object, or if `func`</span>
 <span class="sd">        returns an array with a different length than the displayed data.</span>
@@ -1511,11 +1512,34 @@ window.runMermaid = runMermaid;</script>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Single array</span>
             <span class="n">arrays_dict</span><span class="p">[</span><span class="s1">'tweaked'</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-        
+
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">arrays_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">hint</span> <span class="o">=</span> <span class="s2">" (does the function return its result?)"</span> <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">""</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"Function returned </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">result</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}{</span><span class="n">hint</span><span class="si">}</span><span class="s2">; expected "</span>
+                    <span class="s2">"EyeData, a 1-d array, Intervals or a dict of these"</span>
+                <span class="p">)</span>
         <span class="k">return</span> <span class="n">arrays_dict</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">intervals_dict</span>
     
     <span class="n">time_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">time_vec</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-    
+
+    <span class="c1"># Compute initial overlay - pass full data to function</span>
+    <span class="n">current_params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">current_params</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Function failed with initial parameters: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+    <span class="n">initial_arrays</span><span class="p">,</span> <span class="n">overlay_mask</span><span class="p">,</span> <span class="n">initial_intervals</span> <span class="o">=</span> <span class="n">extract_result</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+    <span class="c1"># Validate overlay array lengths</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">initial_arrays</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_array</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"Function returned array '</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">' of length </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="si">}</span><span class="s2">, "</span>
+                <span class="sa">f</span><span class="s2">"but input has length </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">data_array</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
+            <span class="p">)</span>
+
     <span class="c1"># Save LC_TIME locale before Qt initialization</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">saved_lc_time</span> <span class="o">=</span> <span class="n">locale</span><span class="o">.</span><span class="n">getlocale</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">LC_TIME</span><span class="p">)</span>
@@ -1541,22 +1565,6 @@ window.runMermaid = runMermaid;</script>
     
     <span class="kn">from</span><span class="w"> </span><span class="nn">vispy</span><span class="w"> </span><span class="kn">import</span> <span class="n">app</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">.tweak_canvas</span><span class="w"> </span><span class="kn">import</span> <span class="n">TweakCanvas</span><span class="p">,</span> <span class="n">TweakViewer</span>
-    
-    <span class="c1"># Compute initial overlay - pass full data to function</span>
-    <span class="n">current_params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">result</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">current_params</span><span class="p">)</span>
-        <span class="n">initial_arrays</span><span class="p">,</span> <span class="n">overlay_mask</span><span class="p">,</span> <span class="n">initial_intervals</span> <span class="o">=</span> <span class="n">extract_result</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
-    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Function failed with initial parameters: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-    
-    <span class="c1"># Validate overlay array lengths</span>
-    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">initial_arrays</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_array</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">"Function returned array '</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">' of length </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="si">}</span><span class="s2">, "</span>
-                <span class="sa">f</span><span class="s2">"but input has length </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">data_array</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
-            <span class="p">)</span>
     
     <span class="c1"># Create canvas with mask and intervals support</span>
     <span class="n">canvas</span> <span class="o">=</span> <span class="n">TweakCanvas</span><span class="p">(</span>

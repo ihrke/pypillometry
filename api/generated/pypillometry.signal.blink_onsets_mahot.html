@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>blink_onsets_mahot &#8212; pypillometry v2.2.1</title>
+    <title>blink_onsets_mahot &#8212; pypillometry v2.2.3</title>
   
   
   
@@ -33,7 +33,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=6a604523" />
     <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=e89b0eda" />
   
   <!-- So that users can add custom icons -->
@@ -42,24 +42,24 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=edd18f37"></script>
+    <script src="../../_static/documentation_options.js?v=7e518144"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
-    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../../_static/design-tabs.js?v=fcb327ea"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'api/generated/pypillometry.signal.blink_onsets_mahot';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../../_static/pypillometry_logo_200x200.png"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="pupil_kernel" href="pypillometry.signal.pupil_kernel.html" />
+    <link rel="next" title="interpolate_blinks_kalman" href="pypillometry.signal.interpolate_blinks_kalman.html" />
     <link rel="prev" title="detect_blinks_zero" href="pypillometry.signal.detect_blinks_zero.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.1" />
+  <meta name="docsearch:version" content="v2.2.3" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -408,6 +408,8 @@
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.EyeData.html">EyeData</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.EyeDataDict.html">EyeDataDict</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.MaskPolicy.html">MaskPolicy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.HeadMountedEyeData.html">HeadMountedEyeData</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.eyedata.head_mounted.SceneNamespace.html">SceneNamespace</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.FakeEyeData.html">FakeEyeData</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.keephistory.html">keephistory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.QualityReport.html">QualityReport</a></li>
@@ -469,6 +471,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../plotting.html">Plotting (<code class="docutils literal notranslate"><span class="pre">d.plot</span></code>)</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../io.html">Reading and writing data</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.read_eyelink.html">read_eyelink</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.read_tobii_prolab.html">read_tobii_prolab</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.read_file.html">read_file</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.write_file.html">write_file</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.download.html">download</a></li>
@@ -503,6 +506,7 @@
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.detect_blinks_velocity.html">detect_blinks_velocity</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.detect_blinks_zero.html">detect_blinks_zero</a></li>
 <li class="toctree-l2 current active"><a aria-current="page" class="current reference internal" href="#">blink_onsets_mahot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.interpolate_blinks_kalman.html">interpolate_blinks_kalman</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_kernel.html">pupil_kernel</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_kernel_t.html">pupil_kernel_t</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_get_max_duration.html">pupil_get_max_duration</a></li>
@@ -617,31 +621,38 @@
 <h1>blink_onsets_mahot<a class="headerlink" href="#blink-onsets-mahot" title="Link to this heading">#</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="pypillometry.signal.blink_onsets_mahot">
-<span class="sig-prename descclassname"><span class="pre">pypillometry.signal.</span></span><span class="sig-name descname"><span class="pre">blink_onsets_mahot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blinks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smooth_winsize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vel_onset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vel_offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">margin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blinkwindow</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_onset_len</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_offset_len</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/signal/preproc.html#blink_onsets_mahot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.signal.blink_onsets_mahot" title="Link to this definition">#</a></dt>
-<dd><p>Method for finding the on- and offset for each blink (excluding transient).
+<span class="sig-prename descclassname"><span class="pre">pypillometry.signal.</span></span><span class="sig-name descname"><span class="pre">blink_onsets_mahot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blinks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smooth_winsize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vel_onset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vel_offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">margin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blinkwindow</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_onset_len</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_offset_len</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_gap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/signal/preproc.html#blink_onsets_mahot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.signal.blink_onsets_mahot" title="Link to this definition">#</a></dt>
+<dd><p>Method for finding the on- and offset for each blink (including the transient).
 See <a class="reference external" href="https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001">https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001</a>.</p>
+<p>The search starts from the core of each blink: the stretch from its first
+to its last missing (NaN or 0) sample, or its smallest pupil if it has no
+missing samples. The onset is the start of the closest closing transient
+(velocity below <cite>vel_onset</cite>) that starts before the core, the offset the
+end of the closest opening transient (velocity above <cite>vel_offset</cite>) that
+ends after it. The result therefore does not depend on how far the
+blinks were extended when they were detected, and for a blink that
+contains several transients (e.g., merged blinks), the outermost ones
+are used.</p>
 <p>Uses asymmetric Savitzky-Golay velocity estimation:
 - Backward-looking velocity for onset detection (so future zeros/NaN don’t affect the estimate)
 - Forward-looking velocity for offset detection (so past zeros/NaN don’t affect the estimate)</p>
-<p>The asymmetric approach naturally handles blink regions (zeros/NaN) because:
-- At blink onset: backward velocity only sees valid data before the blink → detects the drop
-- At blink offset: forward velocity only sees valid data after the blink → detects the rise</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>sy</strong> (<em>np.ndarray</em>) – pupil data (can contain NaN or zeros for missing values)</p></li>
-<li><p><strong>blinks</strong> (<em>np.ndarray</em><em> or </em><a class="reference internal" href="pypillometry.Intervals.html#pypillometry.Intervals" title="pypillometry.Intervals"><em>Intervals</em></a>) – blink onset/offset sample indices (nblinks x 2), e.g. from
-<a class="reference internal" href="pypillometry.signal.detect_blinks_zero.html#pypillometry.signal.detect_blinks_zero" title="pypillometry.signal.detect_blinks_zero"><code class="xref py py-func docutils literal notranslate"><span class="pre">detect_blinks_zero()</span></code></a> or an <a class="reference internal" href="pypillometry.Intervals.html#pypillometry.Intervals" title="pypillometry.Intervals"><code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code></a>
-object in index units; anything that iterates over
-<cite>(start, end)</cite> pairs works</p></li>
+<li><p><strong>blinks</strong> (<em>np.ndarray</em><em> or </em><a class="reference internal" href="pypillometry.Intervals.html#pypillometry.Intervals" title="pypillometry.Intervals"><em>Intervals</em></a>) – blink start/end sample indices (nblinks x 2, end-exclusive), e.g. an
+<a class="reference internal" href="pypillometry.Intervals.html#pypillometry.Intervals" title="pypillometry.Intervals"><code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code></a> object in index units; anything
+that iterates over <cite>(start, end)</cite> pairs works</p></li>
 <li><p><strong>smooth_winsize</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – size of the Savitzky-Golay window in samples (odd)</p></li>
 <li><p><strong>vel_onset</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – velocity-threshold to detect the onset of the blink; in units per sample (negative value)</p></li>
 <li><p><strong>vel_offset</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – velocity-threshold to detect the offset of the blink; in units per sample (positive value)</p></li>
 <li><p><strong>margin</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – <cite>(before, after)</cite> margin that is subtracted/added to onset and offset (in samples)</p></li>
-<li><p><strong>blinkwindow</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – how much time before and after each blink to search for the
+<li><p><strong>blinkwindow</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – how far before and after the core of each blink to search for the
 on-/offset (in samples)</p></li>
 <li><p><strong>min_onset_len</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – minimum number of consecutive samples in an onset run to be considered valid</p></li>
 <li><p><strong>min_offset_len</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – minimum number of consecutive samples in an offset run to be considered valid</p></li>
+<li><p><strong>max_gap</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em> or </em><em>None</em>) – runs of threshold crossings separated by at most this many samples
+are joined into one transient; <cite>None</cite> (default) uses <cite>smooth_winsize</cite></p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -649,8 +660,8 @@ on-/offset (in samples)</p></li>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>array (n x 2) of refined onset/offset sample indices, one row per
-input blink; if no valid velocity-threshold crossing is found
-before (after) a blink, its detected start (end) is used</p>
+input blink; if no transient is found before (after) the core of a
+blink, the start (end) of the core is used</p>
 </dd>
 </dl>
 </dd></dl>
@@ -677,11 +688,11 @@ before (after) a blink, its detected start (end) is used</p>
       </div>
     </a>
     <a class="right-next"
-       href="pypillometry.signal.pupil_kernel.html"
+       href="pypillometry.signal.interpolate_blinks_kalman.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">pupil_kernel</p>
+        <p class="prev-next-title">interpolate_blinks_kalman</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

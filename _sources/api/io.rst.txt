@@ -16,6 +16,7 @@ Files and URLs
    :nosignatures:
 
    read_eyelink
+   read_tobii_prolab
    read_file
    write_file
    download

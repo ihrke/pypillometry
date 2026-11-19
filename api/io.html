@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Reading and writing data &#8212; pypillometry v2.2.1</title>
+    <title>Reading and writing data &#8212; pypillometry v2.2.3</title>
   
   
   
@@ -33,7 +33,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=6a604523" />
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=e89b0eda" />
   
   <!-- So that users can add custom icons -->
@@ -42,12 +42,12 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=edd18f37"></script>
+    <script src="../_static/documentation_options.js?v=7e518144"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
-    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../_static/design-tabs.js?v=fcb327ea"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'api/io';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
@@ -59,7 +59,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.1" />
+  <meta name="docsearch:version" content="v2.2.3" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -408,6 +408,8 @@
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.EyeData.html">EyeData</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.EyeDataDict.html">EyeDataDict</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.MaskPolicy.html">MaskPolicy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.HeadMountedEyeData.html">HeadMountedEyeData</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.eyedata.head_mounted.SceneNamespace.html">SceneNamespace</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.FakeEyeData.html">FakeEyeData</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.keephistory.html">keephistory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.QualityReport.html">QualityReport</a></li>
@@ -469,6 +471,7 @@
 <li class="toctree-l1"><a class="reference internal" href="plotting.html">Plotting (<code class="docutils literal notranslate"><span class="pre">d.plot</span></code>)</a></li>
 <li class="toctree-l1 current active has-children"><a aria-current="page" class="current reference internal" href="#">Reading and writing data</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.read_eyelink.html">read_eyelink</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.read_tobii_prolab.html">read_tobii_prolab</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.read_file.html">read_file</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.write_file.html">write_file</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.download.html">download</a></li>
@@ -503,6 +506,7 @@
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.detect_blinks_velocity.html">detect_blinks_velocity</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.detect_blinks_zero.html">detect_blinks_zero</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.blink_onsets_mahot.html">blink_onsets_mahot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.interpolate_blinks_kalman.html">interpolate_blinks_kalman</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.pupil_kernel.html">pupil_kernel</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.pupil_kernel_t.html">pupil_kernel_t</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.pupil_get_max_duration.html">pupil_get_max_duration</a></li>
@@ -622,19 +626,22 @@ objects with <a class="reference internal" href="generated/pypillometry.EyeData.
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/pypillometry.read_eyelink.html#pypillometry.read_eyelink" title="pypillometry.read_eyelink"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_eyelink</span></code></a></p></td>
 <td><p>Read an Eyelink file/URL and return the object returned by the &quot;eyelinkio&quot; package.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/pypillometry.read_file.html#pypillometry.read_file" title="pypillometry.read_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_file</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pypillometry.read_tobii_prolab.html#pypillometry.read_tobii_prolab" title="pypillometry.read_tobii_prolab"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_tobii_prolab</span></code></a></p></td>
+<td><p>Read a data export of Tobii Pro Lab (recordings of Tobii Pro Glasses).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pypillometry.read_file.html#pypillometry.read_file" title="pypillometry.read_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_file</span></code></a></p></td>
 <td><p>Read a Python object from a file using <a class="reference external" href="https://docs.python.org/3/library/pickle.html#module-pickle" title="(in Python v3.15)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pickle</span></code></a> (or HDF5).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/pypillometry.write_file.html#pypillometry.write_file" title="pypillometry.write_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_file</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pypillometry.write_file.html#pypillometry.write_file" title="pypillometry.write_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_file</span></code></a></p></td>
 <td><p>Store any Python object in a file using <a class="reference external" href="https://docs.python.org/3/library/pickle.html#module-pickle" title="(in Python v3.15)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pickle</span></code></a> (or HDF5).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/pypillometry.download.html#pypillometry.download" title="pypillometry.download"><code class="xref py py-obj docutils literal notranslate"><span class="pre">download</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pypillometry.download.html#pypillometry.download" title="pypillometry.download"><code class="xref py py-obj docutils literal notranslate"><span class="pre">download</span></code></a></p></td>
 <td><p>Download a file from a URL to a local file.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/pypillometry.fetch_url.html#pypillometry.fetch_url" title="pypillometry.fetch_url"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fetch_url</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/pypillometry.fetch_url.html#pypillometry.fetch_url" title="pypillometry.fetch_url"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fetch_url</span></code></a></p></td>
 <td><p>Download an HTTP(S) or SSH URL to a local file, with caching.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/pypillometry.local_copy.html#pypillometry.local_copy" title="pypillometry.local_copy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">local_copy</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/pypillometry.local_copy.html#pypillometry.local_copy" title="pypillometry.local_copy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">local_copy</span></code></a></p></td>
 <td><p>Context manager that gives a local filename for <cite>source</cite>.</p></td>
 </tr>
 </tbody>

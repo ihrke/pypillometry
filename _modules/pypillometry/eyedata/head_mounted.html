@@ -1,0 +1,1641 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pypillometry.eyedata.head_mounted &#8212; pypillometry v2.2.3</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx_autodoc_typehints.css?v=057ac668" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=6a604523" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=e89b0eda" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=75c7c72ae941e8b558d8"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
+
+    <script src="../../../_static/documentation_options.js?v=7e518144"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../../../_static/design-tabs.js?v=fcb327ea"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs";
+
+
+
+
+
+const initStyles = () => {
+    const defaultStyle = document.createElement('style');
+    defaultStyle.textContent = "pre.mermaid {\n    /* Same as .mermaid-container > pre */\n    display: block;\n    width: 100%;\n}\n\npre.mermaid > svg {\n    /* Same as .mermaid-container > pre > svg */\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}";
+    document.head.appendChild(defaultStyle);
+
+    const fullscreenStyle = document.createElement('style');
+    fullscreenStyle.textContent = ".mermaid-container {\n    position: relative;\n    display: flex;\n    flex-direction: row;\n    width: 100%;\n}\n\n.mermaid-container > pre {\n    display: block;\n    width: 100%;\n}\n\n.mermaid-container > pre > svg {\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}\n\n.mermaid-fullscreen-btn {\n    position: absolute;\n    width: 28px;\n    height: 28px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.3);\n    border-radius: 4px;\n    cursor: pointer;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    transition: all 0.2s;\n    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);\n    font-size: 14px;\n    line-height: 1;\n    padding: 0;\n    color: #333;\n}\n\n.mermaid-fullscreen-btn:hover {\n    opacity: 100% !important;\n    background: rgba(255, 255, 255, 1);\n    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-btn.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.3);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-btn.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal {\n    display: none;\n    position: fixed !important;\n    top: 0 !important;\n    left: 0 !important;\n    width: 95vw;\n    height: 100vh;\n    background: rgba(255, 255, 255, 0.98);\n    z-index: 9999;\n    padding: 20px;\n    overflow: auto;\n}\n\n.mermaid-fullscreen-modal.dark-theme {\n    background: rgba(0, 0, 0, 0.98);\n}\n\n.mermaid-fullscreen-modal.active {\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen {\n    position: relative;\n    width: 95vw;\n    height: 90vh;\n    max-width: 95vw;\n    max-height: 90vh;\n    background: white;\n    border-radius: 8px;\n    padding: 20px;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);\n    overflow: auto;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen.dark-theme {\n    background: #1a1a1a;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);\n}\n\n.mermaid-container-fullscreen pre.mermaid {\n    width: 100%;\n    height: 100%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen .mermaid svg {\n    height: 100% !important;\n    width: 100% !important;\n    cursor: grab;\n}\n\n.mermaid-fullscreen-close {\n    position: fixed !important;\n    top: 20px !important;\n    right: 20px !important;\n    width: 40px;\n    height: 40px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.2);\n    border-radius: 50%;\n    cursor: pointer;\n    z-index: 10000;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);\n    transition: all 0.2s;\n    font-size: 24px;\n    line-height: 1;\n    color: #333;\n}\n\n.mermaid-fullscreen-close:hover {\n    background: white;\n    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-close.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.2);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-close.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal .mermaid-fullscreen-btn {\n    display: none !important;\n}";
+    document.head.appendChild(fullscreenStyle);
+}
+
+// Detect if page has dark background
+const isDarkTheme = () => {
+    // We use a set of heuristics:
+    // 1. Check for common dark mode classes or attributes
+    // 2. Check computed background color brightness
+    if (document.documentElement.classList.contains('dark') ||
+        document.documentElement.getAttribute('data-theme') === 'dark' ||
+        document.body.classList.contains('dark') ||
+        document.body.getAttribute('data-theme') === 'dark') {
+        // console.log("Dark theme detected via class/attribute");
+        return true;
+    }
+    if (document.documentElement.classList.contains('light') ||
+        document.documentElement.getAttribute('data-theme') === 'light' ||
+        document.body.classList.contains('light') ||
+        document.body.getAttribute('data-theme') === 'light') {
+        // console.log("Light theme detected via class/attribute");
+        return false;
+    }
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        // console.log("Dark theme detected via prefers-color-scheme");
+        return true;
+    }
+    const bgColor = window.getComputedStyle(document.body).backgroundColor;
+    const match = bgColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)/);
+    if (match) {
+        const r = parseInt(match[1]);
+        const g = parseInt(match[2]);
+        const b = parseInt(match[3]);
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        // console.log("Background color brightness:", brightness);
+        return brightness < 128;
+    }
+    // console.log("No dark or light theme detected, defaulting to light theme");
+    return false;
+};
+
+let darkTheme = isDarkTheme();
+let modal = null;
+let modalContent = null;
+let previousScrollOffset = [window.scrollX, window.scrollY];
+let _lazyObserver = null;
+let _renderQueue = Promise.resolve();
+let closeModal = () => {};
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal?.classList.contains('active')) {
+        closeModal();
+    }
+});
+
+// Apply d3 zoom to each SVG. Idempotent: an SVG already wrapped is skipped,
+// so this is safe to call both for the initial batch and for diagrams that
+// render lazily once they become visible.
+const addZoomToSvgs = (svgs) => {
+    svgs.each(function() {
+        if (this.getAttribute('data-zoom-applied') === 'true') return;
+        var svg = d3.select(this);
+        svg.html("<g class='wrapper'>" + svg.html() + "</g>");
+        var inner = svg.select("g");
+        var zoom = d3.zoom().on("zoom", function(event) {
+            inner.attr("transform", event.transform);
+        });
+        svg.call(zoom);
+        this.setAttribute('data-zoom-applied', 'true');
+    });
+};
+
+const runMermaid = async (rerun) => {
+    console.log("Running mermaid diagrams, rerun =", rerun);
+    // clear all existing mermaid charts
+    let all_mermaids = document.querySelectorAll(".mermaid");
+
+    if (rerun) {
+        // Disconnect any previous lazy rendering observer
+        if (_lazyObserver) {
+            _lazyObserver.disconnect();
+            _lazyObserver = null;
+        }
+
+        all_mermaids.forEach((el) => {
+            el.removeAttribute('data-mermaid-deferred');
+            el.removeAttribute('data-mermaid-render-failed');
+            if(!el.hasAttribute("data-original-code")) {
+                // store original code
+                // console.log(`Storing original code for first run: `, el.innerHTML);
+                el.setAttribute('data-original-code', el.innerHTML);
+            }
+            if(el.getAttribute("data-processed") === "true") {
+                // remove and restore original
+                el.removeAttribute("data-processed");
+                // console.log(`Restoring original code for re-run: `, el.getAttribute('data-original-code'));
+                el.innerHTML = el.getAttribute('data-original-code');
+            } else {
+                // store original code
+                // console.log(`Storing original code for re-run: `, el.innerHTML);
+                el.setAttribute('data-original-code', el.innerHTML);
+            }
+        });
+
+        // Separate visible and hidden elements. Mermaid's layout engine measures
+        // text dimensions via the DOM, which fails for elements hidden by a parent
+        // (e.g., Reveal.js non-active slides, sphinx-design unopened tabs),
+        // producing broken SVGs. Render visible elements now, defer hidden ones.
+        const visible = [];
+        const hidden = [];
+        all_mermaids.forEach((el) => {
+            // offsetParent is null for display:none ancestors.
+            // getClientRects().length > 0 catches position:fixed elements
+            // (which also have null offsetParent but are still visible).
+            if (el.offsetParent !== null || el.getClientRects().length > 0) {
+                visible.push(el);
+            } else {
+                hidden.push(el);
+                el.setAttribute('data-mermaid-deferred', 'true');
+            }
+        });
+
+        if (visible.length > 0) {
+            try {
+                await mermaid.run({ nodes: visible });
+            } catch (e) {
+                console.error("Mermaid rendering failed:", e);
+            }
+        }
+
+        // Lazily render hidden elements when they become visible.
+        // Uses a promise chain (_renderQueue) to serialize rendering,
+        // since IntersectionObserver may report multiple entries at once
+        // and mermaid.run() is not safe to call concurrently.
+        if (hidden.length > 0) {
+            if (typeof IntersectionObserver === 'undefined') {
+                console.warn("IntersectionObserver not available; hidden mermaid diagrams will not render.");
+            } else {
+                _renderQueue = Promise.resolve();
+                _lazyObserver = new IntersectionObserver((entries) => {
+                    for (const entry of entries) {
+                        if (entry.isIntersecting && entry.target.getAttribute("data-processed") !== "true") {
+                            _lazyObserver.unobserve(entry.target);
+                            const el = entry.target;
+                            _renderQueue = _renderQueue.then(async () => {
+                                try {
+                                    await mermaid.run({ nodes: [el] });
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    // Apply zoom to the now-rendered diagram, matching
+                                    // the decoration visible diagrams receive.
+                                    if (false) {
+                                        addZoomToSvgs(d3.selectAll("").select(function() {
+                                            return this.querySelector("svg");
+                                        }));
+                                    }
+                                } catch (e) {
+                                    console.error("Mermaid deferred rendering failed:", e);
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    el.setAttribute('data-mermaid-render-failed', 'true');
+                                }
+                            });
+                        }
+                    }
+                });
+                hidden.forEach((el) => _lazyObserver.observe(el));
+            }
+        }
+    }
+
+    all_mermaids = document.querySelectorAll(".mermaid");
+    // Exclude deferred (hidden) and render-failed elements from completion checks
+    const mermaids_active = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])");
+    const mermaids_processed = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])[data-processed='true']");
+
+    if (false) {
+        const mermaids_to_add_zoom = 0 === -1 ? mermaids_active.length : 0;
+        if(mermaids_to_add_zoom > 0) {
+            var svgs = d3.selectAll("").select(function() {
+                return this.querySelector("svg");
+            });
+            // Wait until every active (visible) diagram has rendered. Deferred
+            // diagrams are excluded, so a fixed d3_node_count that counts a
+            // hidden diagram no longer loops forever waiting for its SVG.
+            if(mermaids_active.length !== mermaids_processed.length) {
+                setTimeout(() => runMermaid(false), 200);
+                return;
+            }
+            addZoomToSvgs(svgs);
+        }
+    } else if(mermaids_active.length !== mermaids_processed.length) {
+        // Wait for mermaid to process all diagrams
+        setTimeout(() => runMermaid(false), 200);
+        return;
+    }
+
+    // Stop here if not adding fullscreen capability
+    if (!true) return;
+
+    if (modal !== null ) {
+        // Destroy existing modal
+        modal.remove();
+        modal = null;
+        modalContent = null;
+    }
+
+    modal = document.createElement('div');
+    modal.className = 'mermaid-fullscreen-modal' + (darkTheme ? ' dark-theme' : '');
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', 'Fullscreen diagram viewer');
+    modal.innerHTML = `
+        <button class="mermaid-fullscreen-close${darkTheme ? ' dark-theme' : ''}" aria-label="Close fullscreen">✕</button>
+        <div class="mermaid-container-fullscreen${darkTheme ? ' dark-theme' : ''}"></div>
+    `;
+    document.body.appendChild(modal);
+
+    modalContent = modal.querySelector('.mermaid-container-fullscreen');
+    const closeBtn = modal.querySelector('.mermaid-fullscreen-close');
+
+    closeModal = () => {
+        modal.classList.remove('active');
+        modalContent.innerHTML = '';
+        document.body.style.overflow = ''
+        window.scrollTo({left: previousScrollOffset[0], top: previousScrollOffset[1], behavior: 'instant'});
+    };
+
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+    document.querySelectorAll('.mermaid').forEach((mermaidDiv) => {
+        if (mermaidDiv.parentNode.classList.contains('mermaid-container') ||
+            mermaidDiv.closest('.mermaid-fullscreen-modal')) {
+            // Already processed, adjust button class if needed
+            const existingBtn = mermaidDiv.parentNode.querySelector('.mermaid-fullscreen-btn');
+            if (existingBtn) {
+                existingBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
+            }
+            return;
+        }
+
+        const container = document.createElement('div');
+        container.className = 'mermaid-container';
+        mermaidDiv.parentNode.insertBefore(container, mermaidDiv);
+        container.appendChild(mermaidDiv);
+
+        const fullscreenBtn = document.createElement('button');
+        fullscreenBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
+        fullscreenBtn.setAttribute('aria-label', 'View diagram in fullscreen');
+        fullscreenBtn.textContent = "\u26f6";
+        fullscreenBtn.style.opacity = "50%";
+
+        // Calculate dynamic position based on diagram's margin and padding
+        const diagramStyle = window.getComputedStyle(mermaidDiv);
+        const marginTop = parseFloat(diagramStyle.marginTop) || 0;
+        const marginRight = parseFloat(diagramStyle.marginRight) || 0;
+        const paddingTop = parseFloat(diagramStyle.paddingTop) || 0;
+        const paddingRight = parseFloat(diagramStyle.paddingRight) || 0;
+        fullscreenBtn.style.top = `${marginTop + paddingTop + 4}px`;
+        fullscreenBtn.style.right = `${marginRight + paddingRight + 4}px`;
+
+        fullscreenBtn.addEventListener('click', () => {
+            previousScrollOffset = [window.scrollX, window.scrollY];
+            const clone = mermaidDiv.cloneNode(true);
+            modalContent.innerHTML = '';
+            modalContent.appendChild(clone);
+
+            const svg = clone.querySelector('svg');
+            if (svg) {
+                svg.removeAttribute('width');
+                svg.removeAttribute('height');
+                svg.style.width = '100%';
+                svg.style.height = 'auto';
+                svg.style.maxWidth = '100%';
+                svg.style.display = 'block';
+
+                if (false) {
+                    setTimeout(() => {
+                        const g = svg.querySelector('g');
+                        if (g) {
+                            var svgD3 = d3.select(svg);
+                            svgD3.html("<g class='wrapper'>" + svgD3.html() + "</g>");
+                            var inner = svgD3.select("g");
+                            var zoom = d3.zoom().on("zoom", function(event) {
+                                inner.attr("transform", event.transform);
+                            });
+                            svgD3.call(zoom);
+                        }
+                    }, 100);
+                }
+            }
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+        container.appendChild(fullscreenBtn);
+    });
+};
+
+
+
+const load = async () => {
+    initStyles();
+
+
+    await runMermaid(true);
+
+    const reRunIfThemeChanges = async () => {
+        const newDarkTheme = isDarkTheme();
+        if (newDarkTheme !== darkTheme) {
+            darkTheme = newDarkTheme;
+            console.log("Theme change detected, re-running mermaid with", darkTheme ? "dark" : "default", "theme");
+            await mermaid.initialize(
+                {...{"startOnLoad": false},
+                ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
+                }
+            );
+            await runMermaid(true);
+        }
+    };
+
+    // Update theme classes when theme changes
+    const themeObserver = new MutationObserver(reRunIfThemeChanges);
+    themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme']
+    });
+    themeObserver.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme']
+    });
+};
+
+
+
+
+
+console.log("Initializing mermaid with", darkTheme ? "dark" : "default", "theme");
+mermaid.initialize(
+    {...{"startOnLoad": false},
+    ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
+    }
+);
+
+window.addEventListener("load", load);
+window.runMermaid = runMermaid;</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/pypillometry/eyedata/head_mounted';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../../../_static/pypillometry_logo_200x200.png"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="v2.2.3" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="light">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation" aria-expanded="false" aria-controls="pst-primary-sidebar-modal">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="../../../_static/pypillometry_logo_200x200.png" class="logo__image only-light" alt=""/>
+    <img src="../../../_static/pypillometry_logo_200x200.png" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">pypillometry</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../experimental/index.html">
+    Experimental features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../development/index.html">
+    Development
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ihrke/pypillometry" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pypillometry/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal" tabindex="-1"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../experimental/index.html">
+    Experimental features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../development/index.html">
+    Development
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ihrke/pypillometry" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pypillometry/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-house"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">pypillometry.eyedata.head_mounted</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for pypillometry.eyedata.head_mounted</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""</span>
+<span class="sd">head_mounted.py</span>
+<span class="sd">===============</span>
+
+<span class="sd">Data from head-mounted eye trackers (eye-tracking glasses, e.g. Tobii Pro</span>
+<span class="sd">Glasses 3): :class:`HeadMountedEyeData` and its namespace ``d.scene``</span>
+<span class="sd">(:class:`SceneNamespace`) for the scene video and the motion sensors.</span>
+<span class="sd">"""</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..</span><span class="w"> </span><span class="kn">import</span> <span class="n">io</span><span class="p">,</span> <span class="n">_video</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..convenience</span><span class="w"> </span><span class="kn">import</span> <span class="n">requires_package</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..events</span><span class="w"> </span><span class="kn">import</span> <span class="n">Events</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..logging</span><span class="w"> </span><span class="kn">import</span> <span class="n">_show_progress</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..plot</span><span class="w"> </span><span class="kn">import</span> <span class="n">HeadMountedPlotNamespace</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..templates</span><span class="w"> </span><span class="kn">import</span> <span class="n">sparkline</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..units</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.eyedata</span><span class="w"> </span><span class="kn">import</span> <span class="n">EyeData</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.eyedatadict</span><span class="w"> </span><span class="kn">import</span> <span class="n">EyeDataDict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.history</span><span class="w"> </span><span class="kn">import</span> <span class="n">keephistory</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.namespace</span><span class="w"> </span><span class="kn">import</span> <span class="n">Namespace</span><span class="p">,</span> <span class="n">accessor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.pipes</span><span class="w"> </span><span class="kn">import</span> <span class="n">step</span>
+
+<span class="c1">#: width (pixels) to which the scene video is scaled for the luminance</span>
+<span class="n">_LUMINANCE_WIDTH</span> <span class="o">=</span> <span class="mi">320</span>
+<span class="c1">#: duration (ms) of the pupil trace shown in a rendered video</span>
+<span class="n">_PUPIL_WINDOW</span> <span class="o">=</span> <span class="mf">10000.</span>
+<span class="c1">#: colors (RGB) of the pupil traces in a rendered video</span>
+<span class="n">_PUPIL_COLORS</span> <span class="o">=</span> <span class="p">((</span><span class="mi">107</span><span class="p">,</span> <span class="mi">174</span><span class="p">,</span> <span class="mi">214</span><span class="p">),</span> <span class="p">(</span><span class="mi">253</span><span class="p">,</span> <span class="mi">141</span><span class="p">,</span> <span class="mi">60</span><span class="p">),</span> <span class="p">(</span><span class="mi">161</span><span class="p">,</span> <span class="mi">217</span><span class="p">,</span> <span class="mi">155</span><span class="p">))</span>
+
+
+<div class="viewcode-block" id="SceneNamespace">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.eyedata.head_mounted.SceneNamespace.html#pypillometry.SceneNamespace">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SceneNamespace</span><span class="p">(</span><span class="n">Namespace</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Methods for the scene video and the motion sensors of a head-mounted</span>
+<span class="sd">    eye tracker, accessed as ``d.scene`` (e.g., ``d.scene.luminance()``) on</span>
+<span class="sd">    a :class:`~pypillometry.HeadMountedEyeData` object.</span>
+
+<span class="sd">    The transforming methods store their result as channels in ``d.aux``</span>
+<span class="sd">    and return the data object (see</span>
+<span class="sd">    :class:`~pypillometry.eyedata.namespace.Namespace`).</span>
+<span class="sd">    """</span>
+
+    <span class="n">_name</span> <span class="o">=</span> <span class="s2">"scene"</span>
+
+<div class="viewcode-block" id="SceneNamespace.frame">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.eyedata.head_mounted.SceneNamespace.html#pypillometry.SceneNamespace.frame">[docs]</a>
+    <span class="nd">@requires_package</span><span class="p">(</span><span class="s2">"av"</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"ms"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        The frame of the scene video that was shown at a time of the recording.</span>
+
+<span class="sd">        Requires the optional package `av`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        time : float, str or Quantity</span>
+<span class="sd">            time on the clock of the data (as in ``d.tx``), e.g. ``12000``,</span>
+<span class="sd">            ``"12 sec"`` or ``12 * u.sec``</span>
+<span class="sd">        units : str, optional</span>
+<span class="sd">            units of `time` if it is a plain number; default "ms"</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        np.ndarray</span>
+<span class="sd">            the frame as an RGB image (height x width x 3, uint8)</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            if the object has no scene video or the video has no frame at</span>
+<span class="sd">            `time`</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; import pypillometry as pp</span>
+<span class="sd">        &gt;&gt;&gt; d = pp.HeadMountedEyeData.from_tobii_prolab("rec.xlsx")  # doctest: +SKIP</span>
+<span class="sd">        &gt;&gt;&gt; img = d.scene.frame("12 sec")  # doctest: +SKIP</span>
+<span class="sd">        """</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_d</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">parse_time</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">to</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">units</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">_video</span><span class="o">.</span><span class="n">_read_frame</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">_scene_video_file</span><span class="p">(),</span>
+                                  <span class="p">(</span><span class="n">t</span> <span class="o">-</span> <span class="n">obj</span><span class="o">.</span><span class="n">scene_video_offset</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1000.</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SceneNamespace.render_video">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.eyedata.head_mounted.SceneNamespace.html#pypillometry.SceneNamespace.render_video">[docs]</a>
+    <span class="nd">@requires_package</span><span class="p">(</span><span class="s2">"av"</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">render_video</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">plot_range</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="o">+</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">),</span>
+                     <span class="n">trail</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">radius</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">30</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"red"</span><span class="p">,</span>
+                     <span class="n">pupil</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">pupil_alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">,</span>
+                     <span class="n">audio</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">fps</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                     <span class="n">threads</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"sec"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Write the scene video with the gaze position drawn on it.</span>
+
+<span class="sd">        Each frame gets a ring at the gaze position (``both_x``,</span>
+<span class="sd">        ``both_y``; the mean of the usable samples during the frame) and a</span>
+<span class="sd">        fading line through the positions before it. Frames without a</span>
+<span class="sd">        usable gaze position get no ring. A strip at the bottom of the</span>
+<span class="sd">        frame shows the pupil size of each eye (usable samples) from 5</span>
+<span class="sd">        seconds before to 5 seconds after the frame; the white line in</span>
+<span class="sd">        its middle is the time of the frame. The scale of the strip (the</span>
+<span class="sd">        numbers at its right) is the same in all frames and leaves out</span>
+<span class="sd">        the most extreme 1% of the values at each end. The video is useful for</span>
+<span class="sd">        checking the data and the timing of the video relative to it</span>
+<span class="sd">        (`scene_video_offset`).</span>
+
+<span class="sd">        Requires the optional package `av`. All frames are decoded and</span>
+<span class="sd">        encoded again (H.264); a progress bar counts the frames. With</span>
+<span class="sd">        the default settings, this takes about as long as the part of</span>
+<span class="sd">        the video that is written. For a fast preview, write fewer frames</span>
+<span class="sd">        (`fps`). An existing file `fname` is overwritten.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        fname : str</span>
+<span class="sd">            name of the video file to write (e.g., ``"gaze.mp4"``)</span>
+<span class="sd">        plot_range : tuple</span>
+<span class="sd">            The time range to write, on the clock of the data (plain</span>
+<span class="sd">            numbers are in `units`, or with units, e.g. ``(3, 5) * u.min``).</span>
+<span class="sd">            Default is (-np.inf, +np.inf), i.e. all data. Only the part of</span>
+<span class="sd">            the video for which the object has samples is written.</span>
+<span class="sd">        trail : float, str or Quantity, optional</span>
+<span class="sd">            duration of the line behind the gaze position, e.g. ``500``</span>
+<span class="sd">            (ms) or ``"1 sec"``; default 500 ms. Use 0 for no line.</span>
+<span class="sd">        radius : float, optional</span>
+<span class="sd">            radius of the ring in pixels of the scene video; default 30</span>
+<span class="sd">        color : color, optional</span>
+<span class="sd">            color of the ring and the line (any matplotlib color);</span>
+<span class="sd">            default "red"</span>
+<span class="sd">        pupil : bool, optional</span>
+<span class="sd">            if True (default), draw the strip with the pupil size (if the</span>
+<span class="sd">            object has pupil data); it covers the lower fifth of the frame</span>
+<span class="sd">        pupil_alpha : float, optional</span>
+<span class="sd">            opacity of the dark background of the strip, from 0 (no</span>
+<span class="sd">            background, the traces are drawn on the scene) to 1 (black);</span>
+<span class="sd">            default 0.3</span>
+<span class="sd">        audio : bool, optional</span>
+<span class="sd">            if True (default), copy the sound of the scene video (if any)</span>
+<span class="sd">        fps : float, optional</span>
+<span class="sd">            frames per second of the written video. Default: as the scene</span>
+<span class="sd">            video. With a lower value, only every n-th frame is written</span>
+<span class="sd">            (e.g., every fifth frame for ``fps=5`` and a scene video with</span>
+<span class="sd">            25 frames per second), which is faster by about this factor.</span>
+<span class="sd">        threads : int, optional</span>
+<span class="sd">            number of processor cores used for reading and for writing</span>
+<span class="sd">            the video. Default 2, so that the computer stays usable; more</span>
+<span class="sd">            is faster, 0 uses all cores.</span>
+<span class="sd">        units : str</span>
+<span class="sd">            The units of plain numbers in `plot_range` ("ms", "sec",</span>
+<span class="sd">            "min", "h"). Default "sec".</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            `fname`</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            if the object has no scene video or no gaze position,</span>
+<span class="sd">            `plot_range` does not overlap with the data and the video, or</span>
+<span class="sd">            `fps` is not positive</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; import pypillometry as pp</span>
+<span class="sd">        &gt;&gt;&gt; d = pp.HeadMountedEyeData.from_tobii_prolab("rec.xlsx")  # doctest: +SKIP</span>
+<span class="sd">        &gt;&gt;&gt; d.scene.render_video("gaze.mp4", (10, 30))  # doctest: +SKIP</span>
+<span class="sd">        &gt;&gt;&gt; d.scene.render_video("preview.mp4", fps=5, threads=4)  # doctest: +SKIP</span>
+<span class="sd">        """</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.colors</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_rgb</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">PIL</span><span class="w"> </span><span class="kn">import</span> <span class="n">ImageDraw</span><span class="p">,</span> <span class="n">ImageFont</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_d</span>
+        <span class="k">if</span> <span class="s2">"both_x"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span> <span class="ow">or</span> <span class="s2">"both_y"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"the object has no gaze position (both_x, both_y)"</span><span class="p">)</span>
+        <span class="n">video</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">_scene_video_file</span><span class="p">()</span>
+        <span class="n">info</span> <span class="o">=</span> <span class="n">_video</span><span class="o">.</span><span class="n">_video_info</span><span class="p">(</span><span class="n">video</span><span class="p">)</span>
+        <span class="n">threads</span> <span class="o">=</span> <span class="n">_video</span><span class="o">.</span><span class="n">_threads</span><span class="p">(</span><span class="n">threads</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">fps</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">fps</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"fps must be positive, got </span><span class="si">{</span><span class="n">fps</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">every</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">fps</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">"fps"</span><span class="p">]</span> <span class="o">/</span> <span class="n">fps</span><span class="p">)))</span>
+        <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">parse_time</span><span class="p">(</span><span class="n">plot_range</span><span class="p">,</span> <span class="n">to</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">units</span><span class="p">))</span>
+        <span class="c1"># only the part with samples (e.g., after cropping)</span>
+        <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">min</span><span class="p">(</span><span class="n">end</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1000.</span> <span class="o">/</span> <span class="n">obj</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
+        <span class="n">t0</span> <span class="o">=</span> <span class="nb">max</span><span class="p">((</span><span class="n">start</span> <span class="o">-</span> <span class="n">obj</span><span class="o">.</span><span class="n">scene_video_offset</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1000.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">)</span>
+        <span class="n">t1</span> <span class="o">=</span> <span class="p">(</span><span class="n">end</span> <span class="o">-</span> <span class="n">obj</span><span class="o">.</span><span class="n">scene_video_offset</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1000.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">]):</span>
+            <span class="n">t1</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">info</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">])</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">t0</span> <span class="o">&lt;</span> <span class="n">t1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"plot_range </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">plot_range</span><span class="p">)</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">units</span><span class="si">}</span><span class="s2">) does not "</span>
+                             <span class="s2">"overlap with the data and the scene video"</span><span class="p">)</span>
+
+        <span class="c1"># gaze position in pixels of the video, NaN where not usable</span>
+        <span class="n">sx</span><span class="p">,</span> <span class="n">sy</span> <span class="o">=</span> <span class="p">(</span><span class="n">v</span> <span class="o">/</span> <span class="n">s</span> <span class="k">for</span> <span class="n">v</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">"size"</span><span class="p">],</span> <span class="n">obj</span><span class="o">.</span><span class="n">scene_size</span> <span class="ow">or</span> <span class="n">info</span><span class="p">[</span><span class="s2">"size"</span><span class="p">]))</span>
+        <span class="n">usable</span> <span class="o">=</span> <span class="o">~</span><span class="n">obj</span><span class="o">.</span><span class="n">mask</span><span class="p">(</span><span class="s2">"both"</span><span class="p">,</span> <span class="s2">"x"</span><span class="p">)</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">obj</span><span class="o">.</span><span class="n">mask</span><span class="p">(</span><span class="s2">"both"</span><span class="p">,</span> <span class="s2">"y"</span><span class="p">)</span>
+        <span class="n">gx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">usable</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">"both_x"</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span> <span class="o">*</span> <span class="n">sx</span>
+        <span class="n">gy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">usable</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">"both_y"</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span> <span class="o">*</span> <span class="n">sy</span>
+        <span class="n">rgb</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="mi">255</span> <span class="o">*</span> <span class="n">v</span><span class="p">))</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">to_rgb</span><span class="p">(</span><span class="n">color</span><span class="p">))</span>
+        <span class="n">ntrail</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">parse_time</span><span class="p">(</span><span class="n">trail</span><span class="p">,</span> <span class="n">to</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">))</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="mf">1000.</span> <span class="o">/</span> <span class="n">info</span><span class="p">[</span><span class="s2">"fps"</span><span class="p">]</span>
+        <span class="c1"># a frame shows the samples during it (at least the latest sample)</span>
+        <span class="n">current</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">dt</span><span class="p">,</span> <span class="mf">1000.</span> <span class="o">/</span> <span class="n">obj</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">radius</span> <span class="o">/</span> <span class="mf">6.</span><span class="p">)))</span>
+
+        <span class="c1"># strip with the pupil size: the lower fifth of the frame</span>
+        <span class="n">W</span><span class="p">,</span> <span class="n">H</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">"size"</span><span class="p">]</span>
+        <span class="n">top</span><span class="p">,</span> <span class="n">pad</span><span class="p">,</span> <span class="n">lw</span> <span class="o">=</span> <span class="n">H</span> <span class="o">-</span> <span class="n">H</span> <span class="o">//</span> <span class="mi">5</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">H</span> <span class="o">//</span> <span class="mi">100</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">H</span> <span class="o">//</span> <span class="mi">400</span><span class="p">)</span>
+        <span class="n">traces</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># eye -&gt; y-position (pixels) of the pupil size per sample</span>
+        <span class="n">background</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="mi">255</span> <span class="o">*</span> <span class="nb">min</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">pupil_alpha</span><span class="p">,</span> <span class="mf">0.</span><span class="p">),</span> <span class="mf">1.</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="n">pupil</span><span class="p">:</span>
+            <span class="n">sizes</span> <span class="o">=</span> <span class="p">{</span><span class="n">eye</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">mask</span><span class="p">(</span><span class="n">eye</span><span class="p">,</span> <span class="s2">"pupil"</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_pupil"</span><span class="p">])</span>
+                     <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">eyes</span> <span class="k">if</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_pupil"</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">}</span>
+            <span class="n">shown</span> <span class="o">=</span> <span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span> <span class="o">&gt;=</span> <span class="n">start</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span> <span class="o">&lt;=</span> <span class="n">end</span><span class="p">)</span>
+            <span class="n">vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">v</span><span class="p">[</span><span class="n">shown</span><span class="p">]</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">sizes</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span> <span class="ow">or</span> <span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">]])</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+                <span class="c1"># range without the extreme values (artifacts), which are cut off</span>
+                <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanpercentile</span><span class="p">(</span><span class="n">vals</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">99</span><span class="p">])</span>
+                <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span> <span class="o">=</span> <span class="n">lo</span> <span class="o">-</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="p">(</span><span class="n">hi</span> <span class="o">-</span> <span class="n">lo</span><span class="p">),</span> <span class="n">hi</span> <span class="o">+</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="p">(</span><span class="n">hi</span> <span class="o">-</span> <span class="n">lo</span><span class="p">)</span>
+                <span class="n">hi</span> <span class="o">=</span> <span class="n">hi</span> <span class="k">if</span> <span class="n">hi</span> <span class="o">&gt;</span> <span class="n">lo</span> <span class="k">else</span> <span class="n">lo</span> <span class="o">+</span> <span class="mf">1.</span>
+                <span class="n">traces</span> <span class="o">=</span> <span class="p">{</span><span class="n">eye</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">((</span><span class="n">H</span> <span class="o">-</span> <span class="n">pad</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">v</span> <span class="o">-</span> <span class="n">lo</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">hi</span> <span class="o">-</span> <span class="n">lo</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">H</span> <span class="o">-</span> <span class="n">top</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">pad</span><span class="p">),</span>
+                                       <span class="n">top</span><span class="p">,</span> <span class="n">H</span><span class="p">)</span> <span class="k">for</span> <span class="n">eye</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">sizes</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">font</span> <span class="o">=</span> <span class="n">ImageFont</span><span class="o">.</span><span class="n">load_default</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">H</span> <span class="o">//</span> <span class="mi">45</span><span class="p">))</span>
+                <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>  <span class="c1"># Pillow &lt; 10.1: one size only</span>
+                    <span class="n">font</span> <span class="o">=</span> <span class="n">ImageFont</span><span class="o">.</span><span class="n">load_default</span><span class="p">()</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">draw_pupil</span><span class="p">(</span><span class="n">canvas</span><span class="p">,</span> <span class="n">now</span><span class="p">):</span>
+            <span class="n">canvas</span><span class="o">.</span><span class="n">rectangle</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">top</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">H</span><span class="p">],</span> <span class="n">fill</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">background</span><span class="p">))</span>
+            <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="p">[</span><span class="n">now</span> <span class="o">-</span> <span class="n">_PUPIL_WINDOW</span> <span class="o">/</span> <span class="mf">2.</span><span class="p">,</span> <span class="n">now</span> <span class="o">+</span> <span class="n">_PUPIL_WINDOW</span> <span class="o">/</span> <span class="mf">2.</span><span class="p">])</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">W</span> <span class="o">/</span> <span class="mf">2.</span> <span class="o">+</span> <span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">a</span><span class="p">:</span><span class="n">b</span><span class="p">]</span> <span class="o">-</span> <span class="n">now</span><span class="p">)</span> <span class="o">/</span> <span class="n">_PUPIL_WINDOW</span> <span class="o">*</span> <span class="n">W</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">eye</span><span class="p">,</span> <span class="n">ypos</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">traces</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+                <span class="n">col</span> <span class="o">=</span> <span class="n">_PUPIL_COLORS</span><span class="p">[</span><span class="n">i</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">_PUPIL_COLORS</span><span class="p">)]</span>
+                <span class="n">y</span> <span class="o">=</span> <span class="n">ypos</span><span class="p">[</span><span class="n">a</span><span class="p">:</span><span class="n">b</span><span class="p">]</span>
+                <span class="n">ok</span> <span class="o">=</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+                <span class="c1"># one line per run of usable samples</span>
+                <span class="n">edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([[</span><span class="kc">False</span><span class="p">],</span> <span class="n">ok</span><span class="p">,</span> <span class="p">[</span><span class="kc">False</span><span class="p">]])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)))</span>
+                <span class="k">for</span> <span class="n">r0</span><span class="p">,</span> <span class="n">r1</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">edges</span><span class="p">[::</span><span class="mi">2</span><span class="p">],</span> <span class="n">edges</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]):</span>
+                    <span class="k">if</span> <span class="n">r1</span> <span class="o">-</span> <span class="n">r0</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">canvas</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">r0</span><span class="p">:</span><span class="n">r1</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">r0</span><span class="p">:</span><span class="n">r1</span><span class="p">])),</span> <span class="n">fill</span><span class="o">=</span><span class="n">col</span> <span class="o">+</span> <span class="p">(</span><span class="mi">255</span><span class="p">,),</span> <span class="n">width</span><span class="o">=</span><span class="n">lw</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">H</span> <span class="o">&gt;=</span> <span class="mi">200</span><span class="p">:</span>
+                    <span class="n">canvas</span><span class="o">.</span><span class="n">text</span><span class="p">((</span><span class="n">pad</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">top</span> <span class="o">+</span> <span class="n">pad</span> <span class="o">+</span> <span class="n">i</span> <span class="o">*</span> <span class="n">font</span><span class="o">.</span><span class="n">size</span> <span class="o">*</span> <span class="mf">1.2</span><span class="p">),</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2"> pupil"</span><span class="p">,</span>
+                                <span class="n">fill</span><span class="o">=</span><span class="n">col</span> <span class="o">+</span> <span class="p">(</span><span class="mi">255</span><span class="p">,),</span> <span class="n">font</span><span class="o">=</span><span class="n">font</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">H</span> <span class="o">&gt;=</span> <span class="mi">200</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">val</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="p">((</span><span class="n">hi</span><span class="p">,</span> <span class="n">top</span> <span class="o">+</span> <span class="n">pad</span><span class="p">),</span> <span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="n">H</span> <span class="o">-</span> <span class="n">pad</span> <span class="o">-</span> <span class="n">font</span><span class="o">.</span><span class="n">size</span> <span class="o">*</span> <span class="mf">1.2</span><span class="p">)):</span>
+                    <span class="n">canvas</span><span class="o">.</span><span class="n">text</span><span class="p">((</span><span class="n">W</span> <span class="o">-</span> <span class="n">pad</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">val</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">fill</span><span class="o">=</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">),</span>
+                                <span class="n">font</span><span class="o">=</span><span class="n">font</span><span class="p">,</span> <span class="n">anchor</span><span class="o">=</span><span class="s2">"ra"</span><span class="p">)</span>
+            <span class="n">canvas</span><span class="o">.</span><span class="n">line</span><span class="p">([(</span><span class="n">W</span> <span class="o">/</span> <span class="mf">2.</span><span class="p">,</span> <span class="n">top</span><span class="p">),</span> <span class="p">(</span><span class="n">W</span> <span class="o">/</span> <span class="mf">2.</span><span class="p">,</span> <span class="n">H</span><span class="p">)],</span> <span class="n">fill</span><span class="o">=</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">),</span> <span class="n">width</span><span class="o">=</span><span class="n">lw</span><span class="p">)</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">draw</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">img</span><span class="p">):</span>
+            <span class="n">now</span> <span class="o">=</span> <span class="n">t</span> <span class="o">*</span> <span class="mf">1000.</span> <span class="o">+</span> <span class="n">obj</span><span class="o">.</span><span class="n">scene_video_offset</span> <span class="o">+</span> <span class="n">dt</span>
+            <span class="n">j0</span><span class="p">,</span> <span class="n">i0</span><span class="p">,</span> <span class="n">i1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="p">[</span><span class="n">now</span> <span class="o">-</span> <span class="n">dt</span> <span class="o">-</span> <span class="n">ntrail</span><span class="p">,</span> <span class="n">now</span> <span class="o">-</span> <span class="n">current</span><span class="p">,</span> <span class="n">now</span><span class="p">])</span>
+            <span class="n">canvas</span> <span class="o">=</span> <span class="n">ImageDraw</span><span class="o">.</span><span class="n">Draw</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="s2">"RGBA"</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">traces</span><span class="p">:</span>
+                <span class="n">draw_pupil</span><span class="p">(</span><span class="n">canvas</span><span class="p">,</span> <span class="n">now</span> <span class="o">-</span> <span class="n">dt</span> <span class="o">/</span> <span class="mf">2.</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">j0</span><span class="p">,</span> <span class="n">i1</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">usable</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="ow">and</span> <span class="n">usable</span><span class="p">[</span><span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]:</span>
+                    <span class="n">alpha</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">200</span> <span class="o">*</span> <span class="p">(</span><span class="n">k</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">j0</span><span class="p">)</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">i1</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">j0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+                    <span class="n">canvas</span><span class="o">.</span><span class="n">line</span><span class="p">([(</span><span class="n">gx</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">gy</span><span class="p">[</span><span class="n">k</span><span class="p">]),</span> <span class="p">(</span><span class="n">gx</span><span class="p">[</span><span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="n">gy</span><span class="p">[</span><span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])],</span>
+                                <span class="n">fill</span><span class="o">=</span><span class="n">rgb</span> <span class="o">+</span> <span class="p">(</span><span class="n">alpha</span><span class="p">,),</span> <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">usable</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">]</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+                <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">gx</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">gy</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">])</span>
+                <span class="n">canvas</span><span class="o">.</span><span class="n">ellipse</span><span class="p">([</span><span class="n">x</span> <span class="o">-</span> <span class="n">radius</span><span class="p">,</span> <span class="n">y</span> <span class="o">-</span> <span class="n">radius</span><span class="p">,</span> <span class="n">x</span> <span class="o">+</span> <span class="n">radius</span><span class="p">,</span> <span class="n">y</span> <span class="o">+</span> <span class="n">radius</span><span class="p">],</span>
+                               <span class="n">outline</span><span class="o">=</span><span class="n">rgb</span> <span class="o">+</span> <span class="p">(</span><span class="mi">255</span><span class="p">,),</span> <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">)</span>
+            <span class="n">bar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Writing '</span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2">' (</span><span class="si">{</span><span class="n">t1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> s of '</span><span class="si">{</span><span class="n">video</span><span class="si">}</span><span class="s2">')"</span><span class="p">)</span>
+        <span class="n">nframes</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">t1</span> <span class="o">*</span> <span class="n">info</span><span class="p">[</span><span class="s2">"fps"</span><span class="p">]</span> <span class="o">-</span> <span class="mf">1e-6</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">t0</span> <span class="o">*</span> <span class="n">info</span><span class="p">[</span><span class="s2">"fps"</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1e-6</span><span class="p">))</span>
+        <span class="k">with</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">fname</span><span class="p">)),</span> <span class="n">total</span><span class="o">=-</span><span class="p">(</span><span class="o">-</span><span class="n">nframes</span> <span class="o">//</span> <span class="n">every</span><span class="p">),</span>
+                  <span class="n">unit</span><span class="o">=</span><span class="s2">"frames"</span><span class="p">,</span> <span class="n">disable</span><span class="o">=</span><span class="ow">not</span> <span class="n">_show_progress</span><span class="p">())</span> <span class="k">as</span> <span class="n">bar</span><span class="p">:</span>
+            <span class="n">_video</span><span class="o">.</span><span class="n">_render</span><span class="p">(</span><span class="n">video</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">t0</span><span class="p">,</span> <span class="n">t1</span><span class="p">,</span> <span class="n">draw</span><span class="p">,</span> <span class="n">audio</span><span class="o">=</span><span class="n">audio</span><span class="p">,</span> <span class="n">every</span><span class="o">=</span><span class="n">every</span><span class="p">,</span>
+                           <span class="n">threads</span><span class="o">=</span><span class="n">threads</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SceneNamespace.luminance">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.eyedata.head_mounted.SceneNamespace.html#pypillometry.SceneNamespace.luminance">[docs]</a>
+    <span class="nd">@step</span>
+    <span class="nd">@keephistory</span>
+    <span class="nd">@requires_package</span><span class="p">(</span><span class="s2">"av"</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">luminance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">radius</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="n">gamma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.2</span><span class="p">,</span>
+                  <span class="n">threads</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Calculate the luminance of the scene video over time.</span>
+
+<span class="sd">        Light is the strongest driver of pupil size, and outside the lab it</span>
+<span class="sd">        changes with every movement of the head and the eyes. This method</span>
+<span class="sd">        reads all frames of the scene video and stores two channels in</span>
+<span class="sd">        ``d.aux`` that can be used as covariates of the pupil size:</span>
+
+<span class="sd">        - ``"scene_luminance"``: mean luminance of the whole frame</span>
+<span class="sd">        - ``"gaze_luminance"``: mean luminance in a circle around the gaze</span>
+<span class="sd">          position (``both_x``, ``both_y``); NaN where the gaze position</span>
+<span class="sd">          is not usable or outside the frame</span>
+
+<span class="sd">        Each sample gets the value of the frame that was shown at its time</span>
+<span class="sd">        (NaN outside the video). The values are between 0 (black) and 1</span>
+<span class="sd">        (white). They are relative: the scene camera adapts its exposure</span>
+<span class="sd">        to the light, so that the same value can stand for different</span>
+<span class="sd">        amounts of light at different times.</span>
+
+<span class="sd">        Requires the optional package `av`. All frames are decoded, which</span>
+<span class="sd">        takes about a tenth of the duration of the video.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        radius : float, optional</span>
+<span class="sd">            radius of the circle around the gaze position in pixels of the</span>
+<span class="sd">            scene video; default 100 (about 5 degrees for Tobii Pro Glasses 3)</span>
+<span class="sd">        gamma : float, optional</span>
+<span class="sd">            the pixel values (0 to 1) are raised to this power before</span>
+<span class="sd">            averaging, which undoes the gamma encoding of the video</span>
+<span class="sd">            (approximately, values proportional to the light); default 2.2.</span>
+<span class="sd">            Use 1 for the pixel values as they are.</span>
+<span class="sd">        threads : int, optional</span>
+<span class="sd">            number of processor cores used for reading the video. Default</span>
+<span class="sd">            2, so that the computer stays usable; more is faster, 0 uses</span>
+<span class="sd">            all cores.</span>
+<span class="sd">        inplace : bool or None</span>
+<span class="sd">            If True, make change in-place and return the object.</span>
+<span class="sd">            If False, make and return copy before making changes.</span>
+<span class="sd">            If None, use the object-level setting.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        :class:`~pypillometry.HeadMountedEyeData`</span>
+<span class="sd">            the object with the new channels in `aux` (`self` or a copy,</span>
+<span class="sd">            depending on `inplace`)</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            if the object has no scene video</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; import pypillometry as pp</span>
+<span class="sd">        &gt;&gt;&gt; d = pp.HeadMountedEyeData.from_tobii_prolab("rec.xlsx")  # doctest: +SKIP</span>
+<span class="sd">        &gt;&gt;&gt; d = d.scene.luminance()  # doctest: +SKIP</span>
+<span class="sd">        &gt;&gt;&gt; d.aux["gaze_luminance"]  # doctest: +SKIP</span>
+<span class="sd">        """</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_d</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">_scene_video_file</span><span class="p">()</span>
+        <span class="n">info</span> <span class="o">=</span> <span class="n">_video</span><span class="o">.</span><span class="n">_video_info</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+        <span class="n">width</span><span class="p">,</span> <span class="n">height</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">"size"</span><span class="p">]</span>
+        <span class="n">scale</span> <span class="o">=</span> <span class="n">_LUMINANCE_WIDTH</span> <span class="o">/</span> <span class="n">width</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="p">(</span><span class="n">_LUMINANCE_WIDTH</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">height</span> <span class="o">*</span> <span class="n">scale</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))</span> <span class="o">*</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="n">lut</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">256</span><span class="p">)</span> <span class="o">/</span> <span class="mf">255.</span><span class="p">)</span> <span class="o">**</span> <span class="n">gamma</span>
+
+        <span class="n">has_gaze</span> <span class="o">=</span> <span class="s2">"both_x"</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span> <span class="ow">and</span> <span class="s2">"both_y"</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span>
+        <span class="k">if</span> <span class="n">has_gaze</span><span class="p">:</span>
+            <span class="n">usable</span> <span class="o">=</span> <span class="o">~</span><span class="n">obj</span><span class="o">.</span><span class="n">mask</span><span class="p">(</span><span class="s2">"both"</span><span class="p">,</span> <span class="s2">"x"</span><span class="p">)</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">obj</span><span class="o">.</span><span class="n">mask</span><span class="p">(</span><span class="s2">"both"</span><span class="p">,</span> <span class="s2">"y"</span><span class="p">)</span>
+            <span class="n">gx</span><span class="p">,</span> <span class="n">gy</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">"both_x"</span><span class="p">]</span> <span class="o">*</span> <span class="n">scale</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">"both_y"</span><span class="p">]</span> <span class="o">*</span> <span class="n">scale</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">radius</span> <span class="o">*</span> <span class="n">scale</span>
+        <span class="n">yy</span><span class="p">,</span> <span class="n">xx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mgrid</span><span class="p">[:</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">:</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="mf">1000.</span> <span class="o">/</span> <span class="n">info</span><span class="p">[</span><span class="s2">"fps"</span><span class="p">]</span>
+
+        <span class="n">scene</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+        <span class="n">local</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Reading the frames of '</span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">_video</span><span class="o">.</span><span class="n">_iter_gray_frames</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">_video</span><span class="o">.</span><span class="n">_threads</span><span class="p">(</span><span class="n">threads</span><span class="p">)):</span>
+            <span class="c1"># the samples during which the frame was shown</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">t</span> <span class="o">*</span> <span class="mf">1000.</span> <span class="o">+</span> <span class="n">obj</span><span class="o">.</span><span class="n">scene_video_offset</span>
+            <span class="n">i0</span><span class="p">,</span> <span class="n">i1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="p">[</span><span class="n">start</span><span class="p">,</span> <span class="n">start</span> <span class="o">+</span> <span class="n">dt</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">i0</span> <span class="o">==</span> <span class="n">i1</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">lum</span> <span class="o">=</span> <span class="n">lut</span><span class="p">[</span><span class="n">img</span><span class="p">]</span>
+            <span class="n">scene</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">]</span> <span class="o">=</span> <span class="n">lum</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+            <span class="n">ok</span> <span class="o">=</span> <span class="n">usable</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">]</span> <span class="k">if</span> <span class="n">has_gaze</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">i1</span> <span class="o">-</span> <span class="n">i0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ok</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+                <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">gx</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">][</span><span class="n">ok</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">gy</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">][</span><span class="n">ok</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+                <span class="n">circle</span> <span class="o">=</span> <span class="p">(</span><span class="n">xx</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">yy</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">&lt;=</span> <span class="n">r</span> <span class="o">**</span> <span class="mi">2</span>
+                <span class="k">if</span> <span class="n">circle</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+                    <span class="n">local</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span><span class="n">i1</span><span class="p">]</span> <span class="o">=</span> <span class="n">lum</span><span class="p">[</span><span class="n">circle</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">_set_aux</span><span class="p">(</span><span class="s2">"scene_luminance"</span><span class="p">,</span> <span class="n">scene</span><span class="p">)</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">_set_aux</span><span class="p">(</span><span class="s2">"gaze_luminance"</span><span class="p">,</span> <span class="n">local</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">obj</span></div>
+
+
+<div class="viewcode-block" id="SceneNamespace.distance">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.eyedata.head_mounted.SceneNamespace.html#pypillometry.SceneNamespace.distance">[docs]</a>
+    <span class="nd">@step</span>
+    <span class="nd">@keephistory</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Calculate the viewing distance from the 3D gaze point.</span>
+
+<span class="sd">        The eye tracker calculates the point in space at which the lines of</span>
+<span class="sd">        sight of the two eyes meet (``gaze3d_x``, ``gaze3d_y``,</span>
+<span class="sd">        ``gaze3d_z`` in ``d.aux``, in mm from the scene camera). Its</span>
+<span class="sd">        distance tells how far away the person looks, which matters for</span>
+<span class="sd">        the pupil size because the pupil constricts when looking at near</span>
+<span class="sd">        objects (near response). The distance of single samples is very</span>
+<span class="sd">        noisy for far objects (the lines of sight are almost parallel), so</span>
+<span class="sd">        it is smoothed with a running median of the vergence (1/distance).</span>
+
+<span class="sd">        The result is stored as ``"gaze_distance"`` (in mm) in ``d.aux``;</span>
+<span class="sd">        NaN where there is no 3D gaze point.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        window : float, str or Quantity, optional</span>
+<span class="sd">            width of the running median, e.g. ``500`` (ms), ``"1 sec"``;</span>
+<span class="sd">            default 500 ms. Use 0 for the distance of the single samples.</span>
+<span class="sd">        inplace : bool or None</span>
+<span class="sd">            If True, make change in-place and return the object.</span>
+<span class="sd">            If False, make and return copy before making changes.</span>
+<span class="sd">            If None, use the object-level setting.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        :class:`~pypillometry.HeadMountedEyeData`</span>
+<span class="sd">            the object with the new channel in `aux` (`self` or a copy,</span>
+<span class="sd">            depending on `inplace`)</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            if the object has no 3D gaze point</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; import pypillometry as pp</span>
+<span class="sd">        &gt;&gt;&gt; d = pp.HeadMountedEyeData.from_tobii_prolab("rec.xlsx")  # doctest: +SKIP</span>
+<span class="sd">        &gt;&gt;&gt; d = d.scene.distance(window="1 sec")  # doctest: +SKIP</span>
+<span class="sd">        """</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_d</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">_require_aux</span><span class="p">(</span><span class="s2">"gaze3d_x"</span><span class="p">,</span> <span class="s2">"gaze3d_y"</span><span class="p">,</span> <span class="s2">"gaze3d_z"</span><span class="p">)</span>
+        <span class="n">dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">aux</span><span class="p">[</span><span class="sa">f</span><span class="s2">"gaze3d_</span><span class="si">{</span><span class="n">ax</span><span class="si">}</span><span class="s2">"</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="s2">"xyz"</span><span class="p">))</span>
+        <span class="n">dist</span><span class="p">[</span><span class="n">dist</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="n">nwin</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">_samples</span><span class="p">(</span><span class="n">window</span><span class="p">,</span> <span class="n">rounding</span><span class="o">=</span><span class="s2">"nearest"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">nwin</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">vergence</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="mf">1.</span> <span class="o">/</span> <span class="n">dist</span><span class="p">)</span><span class="o">.</span><span class="n">rolling</span><span class="p">(</span><span class="n">nwin</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">min_periods</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">median</span><span class="p">()</span>
+            <span class="n">dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">dist</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">vergence</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">())</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">_set_aux</span><span class="p">(</span><span class="s2">"gaze_distance"</span><span class="p">,</span> <span class="n">dist</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">obj</span></div>
+
+
+<div class="viewcode-block" id="SceneNamespace.head_movement">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.eyedata.head_mounted.SceneNamespace.html#pypillometry.SceneNamespace.head_movement">[docs]</a>
+    <span class="nd">@step</span>
+    <span class="nd">@keephistory</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">head_movement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Calculate the speed of the head rotation from the gyroscope.</span>
+
+<span class="sd">        The result (the length of the vector ``gyro_x``, ``gyro_y``,</span>
+<span class="sd">        ``gyro_z``, in degrees per second) is stored as ``"head_speed"``</span>
+<span class="sd">        in ``d.aux``. It can be used as a covariate or to find periods in</span>
+<span class="sd">        which the head moved.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        inplace : bool or None</span>
+<span class="sd">            If True, make change in-place and return the object.</span>
+<span class="sd">            If False, make and return copy before making changes.</span>
+<span class="sd">            If None, use the object-level setting.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        :class:`~pypillometry.HeadMountedEyeData`</span>
+<span class="sd">            the object with the new channel in `aux` (`self` or a copy,</span>
+<span class="sd">            depending on `inplace`)</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            if the object has no gyroscope data</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; import pypillometry as pp</span>
+<span class="sd">        &gt;&gt;&gt; d = pp.HeadMountedEyeData.from_tobii_prolab("rec.xlsx")  # doctest: +SKIP</span>
+<span class="sd">        &gt;&gt;&gt; d = d.scene.head_movement()  # doctest: +SKIP</span>
+<span class="sd">        """</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_d</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">_require_aux</span><span class="p">(</span><span class="s2">"gyro_x"</span><span class="p">,</span> <span class="s2">"gyro_y"</span><span class="p">,</span> <span class="s2">"gyro_z"</span><span class="p">)</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">_set_aux</span><span class="p">(</span><span class="s2">"head_speed"</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">aux</span><span class="p">[</span><span class="sa">f</span><span class="s2">"gyro_</span><span class="si">{</span><span class="n">ax</span><span class="si">}</span><span class="s2">"</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="s2">"xyz"</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">obj</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="HeadMountedEyeData">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.HeadMountedEyeData.html#pypillometry.HeadMountedEyeData">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">HeadMountedEyeData</span><span class="p">(</span><span class="n">EyeData</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Data from a head-mounted eye tracker (eye-tracking glasses).</span>
+
+<span class="sd">    An :class:`~pypillometry.EyeData` object (all its methods work) with</span>
+<span class="sd">    the additional data of such trackers:</span>
+
+<span class="sd">    - the gaze position is the point at which the person looks in the</span>
+<span class="sd">      video of the scene camera: ``both_x`` and ``both_y`` in pixels of the</span>
+<span class="sd">      video (one position for both eyes, y pointing down)</span>
+<span class="sd">    - `aux`: channels that do not belong to an eye, with one value per</span>
+<span class="sd">      sample (e.g., the motion sensors ``gyro_x``, ``acc_x``, ``mag_x``).</span>
+<span class="sd">      They are cut, downsampled and saved together with the data.</span>
+<span class="sd">    - the scene video: the object stores the name of the video file</span>
+<span class="sd">      (`scene_video`), not the video itself</span>
+<span class="sd">    - the namespace ``d.scene`` (:class:`SceneNamespace`) with methods for</span>
+<span class="sd">      the scene video and the motion sensors, and the plot</span>
+<span class="sd">      ``d.plot.plot_scene_scanpath()``</span>
+
+<span class="sd">    The camera moves with the head, so there is no screen: an experimental</span>
+<span class="sd">    setup and the methods that need one (e.g., the correction of the</span>
+<span class="sd">    foreshortening) do not apply.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    time : np.ndarray or None</span>
+<span class="sd">        timing array (in ms), see :class:`~pypillometry.EyeData`</span>
+<span class="sd">    left_x, left_y, left_pupil, right_x, right_y, right_pupil : np.ndarray or None</span>
+<span class="sd">        data of the left and right eye (see :class:`~pypillometry.EyeData`);</span>
+<span class="sd">        at least one of these channels must be provided</span>
+<span class="sd">    both_x, both_y : np.ndarray or None</span>
+<span class="sd">        gaze position in the scene video (pixels); both or neither</span>
+<span class="sd">    aux : dict or None</span>
+<span class="sd">        additional channels with one value per sample: name -&gt; array.</span>
+<span class="sd">        The names have two parts joined by ``_`` (e.g., ``"gyro_x"``).</span>
+<span class="sd">    scene_video : str or None</span>
+<span class="sd">        filename of the scene video</span>
+<span class="sd">    scene_video_offset : float</span>
+<span class="sd">        time of the first frame of the scene video on the clock of the</span>
+<span class="sd">        data (ms); default 0</span>
+<span class="sd">    scene_size : tuple or None</span>
+<span class="sd">        width and height of the scene video in pixels</span>
+<span class="sd">    **kwargs</span>
+<span class="sd">        other parameters of :class:`~pypillometry.EyeData` (e.g.,</span>
+<span class="sd">        `sampling_rate`, `events`, `name`, `info`)</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; import pypillometry as pp</span>
+<span class="sd">    &gt;&gt;&gt; rng = np.random.default_rng(1)</span>
+<span class="sd">    &gt;&gt;&gt; d = pp.HeadMountedEyeData(time=np.arange(0, 1000, 10),</span>
+<span class="sd">    ...                           left_pupil=rng.normal(5, 0.1, size=100),</span>
+<span class="sd">    ...                           both_x=rng.uniform(0, 1920, size=100),</span>
+<span class="sd">    ...                           both_y=rng.uniform(0, 1080, size=100),</span>
+<span class="sd">    ...                           aux={"gyro_x": rng.normal(size=100)},</span>
+<span class="sd">    ...                           scene_size=(1920, 1080))</span>
+<span class="sd">    &gt;&gt;&gt; d.eyes, list(d.aux)</span>
+<span class="sd">    (['left', 'both'], ['gyro_x'])</span>
+<span class="sd">    """</span>
+    <span class="n">scene</span> <span class="o">=</span> <span class="n">accessor</span><span class="p">(</span><span class="n">SceneNamespace</span><span class="p">)</span>
+    <span class="n">plot</span> <span class="o">=</span> <span class="n">accessor</span><span class="p">(</span><span class="n">HeadMountedPlotNamespace</span><span class="p">)</span>
+
+    <span class="n">aux</span><span class="p">:</span> <span class="n">EyeDataDict</span>  <span class="c1">## channels that do not belong to an eye</span>
+    <span class="n">scene_video</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>  <span class="c1">## filename of the scene video</span>
+    <span class="n">scene_video_offset</span><span class="p">:</span> <span class="nb">float</span>  <span class="c1">## time of the first video frame (ms)</span>
+    <span class="n">scene_size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">]</span>  <span class="c1">## (width, height) of the scene video (pixels)</span>
+
+    <span class="c1"># state (see pypillometry.state): adds to that of EyeData</span>
+    <span class="n">_STATE_FIELDS</span> <span class="o">=</span> <span class="p">((</span><span class="s2">"aux"</span><span class="p">,</span> <span class="s2">"EyeDataDict"</span><span class="p">),</span> <span class="s2">"scene_video"</span><span class="p">,</span> <span class="s2">"scene_video_offset"</span><span class="p">,</span>
+                     <span class="s2">"scene_size"</span><span class="p">)</span>
+    <span class="c1"># the additional channels follow crop, downsample etc. with the data</span>
+    <span class="n">_SAMPLE_ALIGNED</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"data"</span><span class="p">,</span> <span class="s2">"aux"</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">left_x</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">left_y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">left_pupil</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">right_x</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">right_y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">right_pupil</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">both_x</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">both_y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">aux</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">scene_video</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">scene_video_offset</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span>
+                 <span class="n">scene_size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">fill_time_discontinuities</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">keep_orig</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Constructor for the HeadMountedEyeData class."""</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">both_x</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="o">!=</span> <span class="p">(</span><span class="n">both_y</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"both_x and both_y must be provided together"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aux</span> <span class="o">=</span> <span class="n">EyeDataDict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene_video</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">scene_video</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">scene_video</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene_video_offset</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">scene_video_offset</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene_size</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">scene_size</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">scene_size</span><span class="p">)</span>
+        <span class="c1"># gaps are filled in after all channels are there</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">time</span><span class="p">,</span> <span class="n">left_x</span><span class="o">=</span><span class="n">left_x</span><span class="p">,</span> <span class="n">left_y</span><span class="o">=</span><span class="n">left_y</span><span class="p">,</span> <span class="n">left_pupil</span><span class="o">=</span><span class="n">left_pupil</span><span class="p">,</span>
+                         <span class="n">right_x</span><span class="o">=</span><span class="n">right_x</span><span class="p">,</span> <span class="n">right_y</span><span class="o">=</span><span class="n">right_y</span><span class="p">,</span> <span class="n">right_pupil</span><span class="o">=</span><span class="n">right_pupil</span><span class="p">,</span>
+                         <span class="n">fill_time_discontinuities</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">keep_orig</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">both_x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">"both_x"</span><span class="p">]</span> <span class="o">=</span> <span class="n">both_x</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">"both_y"</span><span class="p">]</span> <span class="o">=</span> <span class="n">both_y</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="p">(</span><span class="n">aux</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_aux</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">fill_time_discontinuities</span><span class="p">:</span>
+            <span class="n">inspect</span><span class="o">.</span><span class="n">unwrap</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">fill_time_discontinuities</span><span class="p">)(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">keep_orig</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">original</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_aux</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Store `values` (one per sample) as channel `key` in `aux`."""</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">values</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">),):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"aux channel '</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">' must have one value per sample "</span>
+                             <span class="sa">f</span><span class="s2">"(</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="si">}</span><span class="s2">), got shape </span><span class="si">{</span><span class="n">values</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aux</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">values</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_require_aux</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">keys</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Raise a ValueError if one of the channels `keys` is not in `aux`."""</span>
+        <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">aux</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"no channel(s) </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">missing</span><span class="p">)</span><span class="si">}</span><span class="s2"> in aux "</span>
+                             <span class="sa">f</span><span class="s2">"(available: </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aux</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">'none'</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_scene_video_file</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Filename of the scene video (ValueError if there is none)."""</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene_video</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"the object has no scene video: set the attribute "</span>
+                             <span class="s2">"`scene_video` to the name of the video file"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene_video</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"scene video '</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">scene_video</span><span class="si">}</span><span class="s2">' not found: set the "</span>
+                             <span class="s2">"attribute `scene_video` to the name of the video file"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene_video</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_html_context</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Adds the channels in `aux`, the scene video and one of its frames."""</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_html_context</span><span class="p">()</span>
+        <span class="n">rows</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">"Aux channels"</span><span class="p">,</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aux</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="ow">or</span> <span class="s2">"none"</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene_video</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">size</span> <span class="o">=</span> <span class="s2">""</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene_size</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">" (</span><span class="si">{}</span><span class="s2">x</span><span class="si">{}</span><span class="s2">)"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">scene_size</span><span class="p">)</span>
+            <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">"Scene video"</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene_video</span><span class="p">)</span> <span class="o">+</span> <span class="n">size</span><span class="p">))</span>
+        <span class="n">context</span><span class="p">[</span><span class="s2">"overview"</span><span class="p">]</span> <span class="o">=</span> <span class="n">context</span><span class="p">[</span><span class="s2">"overview"</span><span class="p">]</span> <span class="o">+</span> <span class="n">rows</span>
+        <span class="n">context</span><span class="p">[</span><span class="s2">"aux_sparklines"</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s2">"label"</span><span class="p">:</span> <span class="n">key</span><span class="p">,</span> <span class="s2">"image"</span><span class="p">:</span> <span class="n">sparkline</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aux</span><span class="p">[</span><span class="n">key</span><span class="p">])}</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">aux</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
+        <span class="n">context</span><span class="p">[</span><span class="s2">"image"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scene_frame_html</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">context</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_scene_frame_html</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">width</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">240</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        The frame of the scene video in the middle of the data for the HTML</span>
+<span class="sd">        representation: dict with "src" (small JPEG as a data URI) and</span>
+<span class="sd">        "caption". None without scene video, frame or the package `av`.</span>
+<span class="sd">        """</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">base64</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">io</span><span class="w"> </span><span class="kn">import</span> <span class="n">BytesIO</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">PIL</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mf">2.</span>
+            <span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">frame</span><span class="p">(</span><span class="n">t</span><span class="p">))</span>
+            <span class="n">img</span><span class="o">.</span><span class="n">thumbnail</span><span class="p">((</span><span class="n">width</span><span class="p">,</span> <span class="n">width</span><span class="p">))</span>
+            <span class="n">buf</span> <span class="o">=</span> <span class="n">BytesIO</span><span class="p">()</span>
+            <span class="n">img</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">"JPEG"</span><span class="p">,</span> <span class="n">quality</span><span class="o">=</span><span class="mi">60</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>  <span class="c1"># the display works without the frame</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"No frame of the scene video: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"src"</span><span class="p">:</span> <span class="s2">"data:image/jpeg;base64,"</span> <span class="o">+</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"ascii"</span><span class="p">),</span>
+                <span class="s2">"caption"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"Scene video at </span><span class="si">{</span><span class="n">t</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1000.</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> s (middle of the data)"</span><span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""String-representation with the additional channels and the scene video."""</span>
+        <span class="n">scene</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">" Scene: video=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">scene_video</span><span class="si">}</span><span class="s2">, size=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">scene_size</span><span class="si">}</span><span class="s2">, "</span>
+                 <span class="sa">f</span><span class="s2">"aux=</span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aux</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">head</span><span class="p">,</span> <span class="n">sep</span><span class="p">,</span> <span class="n">history</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s2">" History:"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">head</span> <span class="o">+</span> <span class="n">scene</span> <span class="o">+</span> <span class="n">sep</span> <span class="o">+</span> <span class="n">history</span>
+
+<div class="viewcode-block" id="HeadMountedEyeData.from_tobii_prolab">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.HeadMountedEyeData.html#pypillometry.HeadMountedEyeData.from_tobii_prolab">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_tobii_prolab</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">fname</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">video</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                          <span class="n">video_offset</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                          <span class="n">remove_sync_events</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Reads a recording of Tobii Pro Glasses from a data export of Tobii Pro Lab.</span>
+
+<span class="sd">        The export is read with :func:`pypillometry.io.read_tobii_prolab`</span>
+<span class="sd">        (Excel files require the optional package `openpyxl`). The object</span>
+<span class="sd">        holds</span>
+
+<span class="sd">        - ``left_pupil``, ``right_pupil``: pupil diameter in mm</span>
+<span class="sd">        - ``both_x``, ``both_y``: gaze position in the scene video (pixels)</span>
+<span class="sd">        - in `aux`: the 3D gaze point in mm from the scene camera</span>
+<span class="sd">          (``gaze3d_x``, ``gaze3d_y``, ``gaze3d_z``) and, interpolated to</span>
+<span class="sd">          the times of the eye-tracker samples, the gyroscope</span>
+<span class="sd">          (``gyro_x``, ..., deg/s), the accelerometer (``acc_x``, ...,</span>
+<span class="sd">          m/s²) and the magnetometer (``mag_x``, ..., µT)</span>
+<span class="sd">        - the events of the export</span>
+<span class="sd">        - the description of the recording (participant, date, ...) in `info`</span>
+
+<span class="sd">        Samples without valid data are empty in the export; they are NaN</span>
+<span class="sd">        (and therefore masked). Gaps in the samples are filled in.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        fname : str</span>
+<span class="sd">            filename of the export (``.xlsx`` or tab-separated text)</span>
+<span class="sd">        video : str, optional</span>
+<span class="sd">            filename of the scene video; default: the file with the name</span>
+<span class="sd">            of the export and the extension ``.mp4``, if it exists</span>
+<span class="sd">        video_offset : float, optional</span>
+<span class="sd">            time of the first frame of the video on the clock of the data</span>
+<span class="sd">            (ms); default: the first timestamp of the export (the video</span>
+<span class="sd">            that Tobii Pro Lab exports covers the same period as the data)</span>
+<span class="sd">        remove_sync_events : bool, optional</span>
+<span class="sd">            if True (default), remove the events of the sync port</span>
+<span class="sd">            (``SyncPortOutHigh``, ``SyncPortInLow``, ...) from the events</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            additional arguments passed to the constructor (e.g., `name`,</span>
+<span class="sd">            `keep_orig`)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        :class:`~pypillometry.HeadMountedEyeData`</span>
+<span class="sd">            object of the class this method is called on</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; import pypillometry as pp</span>
+<span class="sd">        &gt;&gt;&gt; d = pp.HeadMountedEyeData.from_tobii_prolab("rec.xlsx")  # doctest: +SKIP</span>
+<span class="sd">        &gt;&gt;&gt; d.plot.plot_scene_scanpath((10, 12))  # doctest: +SKIP</span>
+<span class="sd">        """</span>
+        <span class="n">tabs</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">read_tobii_prolab</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+        <span class="n">eye</span> <span class="o">=</span> <span class="n">tabs</span><span class="p">[</span><span class="s2">"eye"</span><span class="p">]</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">(</span><span class="s2">"time"</span><span class="p">)</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">"time"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">eye</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2">' has no samples of the eye tracker"</span><span class="p">)</span>
+        <span class="n">tx</span> <span class="o">=</span> <span class="n">eye</span><span class="p">[</span><span class="s2">"time"</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">col</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">eye</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">eye</span><span class="o">.</span><span class="n">columns</span> <span class="k">else</span> <span class="kc">None</span>
+
+        <span class="n">info</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">tabs</span><span class="p">[</span><span class="s2">"info"</span><span class="p">],</span> <span class="n">source</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">fname</span><span class="p">),</span> <span class="nb">format</span><span class="o">=</span><span class="s2">"Tobii Pro Lab data export"</span><span class="p">)</span>
+        <span class="n">first</span> <span class="o">=</span> <span class="nb">min</span><span class="p">([</span><span class="n">tx</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">+</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">tabs</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s2">"time"</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">())</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"gyro"</span><span class="p">,</span> <span class="s2">"acc"</span><span class="p">,</span> <span class="s2">"mag"</span><span class="p">,</span> <span class="s2">"events"</span><span class="p">)</span>
+                               <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tabs</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">video</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">guess</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">fname</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">".mp4"</span>
+            <span class="n">video</span> <span class="o">=</span> <span class="n">guess</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">guess</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="s2">"media_width"</span> <span class="ow">in</span> <span class="n">info</span> <span class="ow">and</span> <span class="s2">"media_height"</span> <span class="ow">in</span> <span class="n">info</span><span class="p">:</span>
+            <span class="n">size</span> <span class="o">=</span> <span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">"media_width"</span><span class="p">],</span> <span class="n">info</span><span class="p">[</span><span class="s2">"media_height"</span><span class="p">])</span>
+
+        <span class="n">events</span> <span class="o">=</span> <span class="n">tabs</span><span class="p">[</span><span class="s2">"events"</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">remove_sync_events</span><span class="p">:</span>
+            <span class="n">events</span> <span class="o">=</span> <span class="n">events</span><span class="p">[</span><span class="o">~</span><span class="n">events</span><span class="p">[</span><span class="s2">"label"</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"SyncPort"</span><span class="p">)]</span>
+        <span class="c1"># events before the first or after the last sample (e.g., the start</span>
+        <span class="c1"># of the recording) are moved to that sample</span>
+        <span class="n">onsets</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">events</span><span class="p">[</span><span class="s2">"time"</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span> <span class="n">tx</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">tx</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="n">aux</span> <span class="o">=</span> <span class="p">{</span><span class="sa">f</span><span class="s2">"gaze3d_</span><span class="si">{</span><span class="n">ax</span><span class="si">}</span><span class="s2">"</span><span class="p">:</span> <span class="n">col</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Gaze point 3D </span><span class="si">{</span><span class="n">ax</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="s2">"xyz"</span><span class="p">}</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">"name"</span><span class="p">,</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"recording"</span><span class="p">))</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">tx</span><span class="p">,</span>
+                  <span class="n">left_pupil</span><span class="o">=</span><span class="n">col</span><span class="p">(</span><span class="s2">"Pupil diameter left"</span><span class="p">),</span>
+                  <span class="n">right_pupil</span><span class="o">=</span><span class="n">col</span><span class="p">(</span><span class="s2">"Pupil diameter right"</span><span class="p">),</span>
+                  <span class="n">both_x</span><span class="o">=</span><span class="n">col</span><span class="p">(</span><span class="s2">"Gaze point X"</span><span class="p">),</span> <span class="n">both_y</span><span class="o">=</span><span class="n">col</span><span class="p">(</span><span class="s2">"Gaze point Y"</span><span class="p">),</span>
+                  <span class="n">aux</span><span class="o">=</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">aux</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">},</span>
+                  <span class="n">events</span><span class="o">=</span><span class="n">Events</span><span class="p">(</span><span class="n">onsets</span><span class="p">,</span> <span class="n">events</span><span class="p">[</span><span class="s2">"label"</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">str</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">),</span>
+                  <span class="n">scene_video</span><span class="o">=</span><span class="n">video</span><span class="p">,</span>
+                  <span class="n">scene_video_offset</span><span class="o">=</span><span class="n">first</span> <span class="k">if</span> <span class="n">video_offset</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">video_offset</span><span class="p">,</span>
+                  <span class="n">scene_size</span><span class="o">=</span><span class="n">size</span><span class="p">,</span> <span class="n">info</span><span class="o">=</span><span class="n">info</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="c1"># motion sensors: own sampling rates, interpolated to the samples</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"gyro"</span><span class="p">,</span> <span class="s2">"acc"</span><span class="p">,</span> <span class="s2">"mag"</span><span class="p">):</span>
+            <span class="n">imu</span> <span class="o">=</span> <span class="n">tabs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">imu</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">imu</span><span class="p">[</span><span class="s2">"time"</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="s2">"xyz"</span><span class="p">:</span>
+                <span class="n">obj</span><span class="o">.</span><span class="n">_set_aux</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">ax</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">imu</span><span class="p">[</span><span class="n">ax</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+                                                      <span class="n">left</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">obj</span></div>
+</div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2026, Matthias Mittner.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
+  </p>
+</div>
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.24.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

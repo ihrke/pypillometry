@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Summarizing pupillometric data &#8212; pypillometry v2.2.1</title>
+    <title>Summarizing pupillometric data &#8212; pypillometry v2.2.3</title>
   
   
   
@@ -33,7 +33,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=6a604523" />
     <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=e89b0eda" />
   
@@ -43,12 +43,12 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=edd18f37"></script>
+    <script src="../_static/documentation_options.js?v=7e518144"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
-    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../_static/design-tabs.js?v=fcb327ea"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
@@ -62,7 +62,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.1" />
+  <meta name="docsearch:version" content="v2.2.3" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -556,8 +556,8 @@ EyeData(rlmw_002_short, 1.4MiB):
  start_min         : 0.0
  end_min           : 0.6821
  params            : {}
- nblinks           : {&#39;left_pupil&#39;: 14, &#39;right_pupil&#39;: 13}
- blinks            : {&#39;left_pupil&#39;: {&#39;n&#39;: 14, &#39;mean&#39;: 217.1429, &#39;sd&#39;: 236.4701, &#39;min&#39;: 48.0, &#39;max&#39;: 984.0, &#39;total_duration&#39;: 3040.0, &#39;units&#39;: &#39;ms&#39;}, &#39;right_pupil&#39;: {&#39;n&#39;: 13, &#39;mean&#39;: 138.0, &#39;sd&#39;: 84.8564, &#39;min&#39;: 44.0, &#39;max&#39;: 404.0, &#39;total_duration&#39;: 1794.0, &#39;units&#39;: &#39;ms&#39;}}
+ nblinks           : {&#39;left_pupil&#39;: 12, &#39;right_pupil&#39;: 11}
+ blinks            : {&#39;left_pupil&#39;: {&#39;n&#39;: 12, &#39;mean&#39;: 147.3333, &#39;sd&#39;: 41.1852, &#39;min&#39;: 68.0, &#39;max&#39;: 198.0, &#39;total_duration&#39;: 1768.0, &#39;units&#39;: &#39;ms&#39;}, &#39;right_pupil&#39;: {&#39;n&#39;: 11, &#39;mean&#39;: 126.9091, &#39;sd&#39;: 31.9131, &#39;min&#39;: 72.0, &#39;max&#39;: 164.0, &#39;total_duration&#39;: 1396.0, &#39;units&#39;: &#39;ms&#39;}}
  glimpse           : EyeDataDict(vars=6,n=20465,shape=(20465,)):
   left_x (float64): 655.6, 655.7, 655.0, 654.5, 655.0...
   left_y (float64): 599.9, 598.9, 597.6, 597.8, 597.8...
@@ -610,20 +610,20 @@ EyeData(rlmw_002_short, 1.4MiB):
  &#39;start_min&#39;: 0.0,
  &#39;end_min&#39;: 0.6821333333333333,
  &#39;params&#39;: {},
- &#39;nblinks&#39;: {&#39;left_pupil&#39;: 14, &#39;right_pupil&#39;: 13},
- &#39;blinks&#39;: {&#39;left_pupil&#39;: {&#39;n&#39;: 14,
-   &#39;mean&#39;: 217.14285714285714,
-   &#39;sd&#39;: 236.4701301411652,
-   &#39;min&#39;: 48.0,
-   &#39;max&#39;: 984.0,
-   &#39;total_duration&#39;: 3040.0,
+ &#39;nblinks&#39;: {&#39;left_pupil&#39;: 12, &#39;right_pupil&#39;: 11},
+ &#39;blinks&#39;: {&#39;left_pupil&#39;: {&#39;n&#39;: 12,
+   &#39;mean&#39;: 147.33333333333334,
+   &#39;sd&#39;: 41.1852184918597,
+   &#39;min&#39;: 68.0,
+   &#39;max&#39;: 198.0,
+   &#39;total_duration&#39;: 1768.0,
    &#39;units&#39;: &#39;ms&#39;},
-  &#39;right_pupil&#39;: {&#39;n&#39;: 13,
-   &#39;mean&#39;: 138.0,
-   &#39;sd&#39;: 84.85643985352782,
-   &#39;min&#39;: 44.0,
-   &#39;max&#39;: 404.0,
-   &#39;total_duration&#39;: 1794.0,
+  &#39;right_pupil&#39;: {&#39;n&#39;: 11,
+   &#39;mean&#39;: 126.9090909090909,
+   &#39;sd&#39;: 31.913105160603465,
+   &#39;min&#39;: 72.0,
+   &#39;max&#39;: 164.0,
+   &#39;total_duration&#39;: 1396.0,
    &#39;units&#39;: &#39;ms&#39;}}}
 </pre></div></div>
 </div>
@@ -750,7 +750,7 @@ EyeData(rlmw_002_short, 1.4MiB):
     <tbody>
       <tr>
         <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="correlation of left and right pupil size (samples valid in both eyes); the pupils of both eyes should move together (labels: good &gt;= 0.9, ok &gt;= 0.8, poor &gt;= 0.6, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">pupil correlation</span></td>
-        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &gt;= 0.9, ok &gt;= 0.8, poor &gt;= 0.6, else bad">0.914 <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &gt;= 0.9, ok &gt;= 0.8, poor &gt;= 0.6, else bad">0.918 <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
       </tr>
       <tr>
         <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="median distance between the gaze positions of the left and right eye; large values indicate calibration problems for one eye (labels: good &lt;= 1 deg, ok &lt;= 2 deg, poor &lt;= 3 deg, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">gaze disparity</span></td>
@@ -768,27 +768,27 @@ EyeData(rlmw_002_short, 1.4MiB):
     <tbody>
       <tr>
         <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="number of detected blinks" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">number</span></td>
-        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="number of detected blinks">14 </td>
-        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="number of detected blinks">13 </td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="number of detected blinks">12 </td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="number of detected blinks">11 </td>
       </tr>
       <tr>
         <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="number of detected blinks per minute (median across people about 10 during screen tasks and 13 at rest; varies a lot between people) (labels: good &lt;= 20 /min, ok &lt;= 35 /min, poor &lt;= 70 /min, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">blink rate</span></td>
-        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 20 /min, ok &lt;= 35 /min, poor &lt;= 70 /min, else bad">20.5 /min <span style="background:#9a7d0a; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">ok</span></td>
-        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 20 /min, ok &lt;= 35 /min, poor &lt;= 70 /min, else bad">19.1 /min <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 20 /min, ok &lt;= 35 /min, poor &lt;= 70 /min, else bad">17.6 /min <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 20 /min, ok &lt;= 35 /min, poor &lt;= 70 /min, else bad">16.1 /min <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
       </tr>
       <tr>
         <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="mean duration of the detected blinks" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">mean duration</span></td>
-        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="mean duration of the detected blinks">217 ms </td>
-        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="mean duration of the detected blinks">138 ms </td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="mean duration of the detected blinks">147 ms </td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="mean duration of the detected blinks">127 ms </td>
       </tr>
       <tr>
         <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="percentage of the recording covered by blinks (and the samples around them that were removed) (labels: good &lt;= 10%, ok &lt;= 20%, poor &lt;= 35%, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">time in blinks</span></td>
-        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 35%, else bad">7.4% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
-        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 35%, else bad">4.4% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 35%, else bad">4.3% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 35%, else bad">3.4% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
       </tr>
       <tr>
         <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="number of blinks longer than 500 ms (may be eye closures or tracking losses rather than blinks)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">long (&gt;500 ms)</span></td>
-        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="number of blinks longer than 500 ms (may be eye closures or tracking losses rather than blinks)">1 </td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="number of blinks longer than 500 ms (may be eye closures or tracking losses rather than blinks)">0 </td>
         <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="number of blinks longer than 500 ms (may be eye closures or tracking losses rather than blinks)">0 </td>
       </tr>
     </tbody>
@@ -808,8 +808,8 @@ EyeData(rlmw_002_short, 1.4MiB):
       </tr>
       <tr>
         <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="percentage of pupil samples that were interpolated (e.g., blinks) (labels: good &lt;= 10%, ok &lt;= 20%, poor &lt;= 30%, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">interpolated</span></td>
-        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 30%, else bad">9.9% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
-        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 30%, else bad">6.0% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 30%, else bad">5.8% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
+        <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:right; white-space:nowrap;" title="good &lt;= 10%, ok &lt;= 20%, poor &lt;= 30%, else bad">4.7% <span style="background:#2e7d32; color:#fff; border-radius:3px; padding:1px 6px; font-size:0.8em; font-weight:600; text-transform:uppercase;">good</span></td>
       </tr>
       <tr>
         <td style="padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25); text-align:left;"><span title="percentage of masked gaze samples (missing data, blinks and other artifacts; interpolated samples only with the &#39;strict&#39; mask policy) (labels: good &lt;= 10%, ok &lt;= 20%, poor &lt;= 35%, else bad)" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">gaze masked</span></td>
@@ -967,25 +967,25 @@ EyeData(rlmw_002_short, 1.4MiB):
     <tr>
       <th rowspan="3" valign="top">left_pupil</th>
       <th>blink</th>
-      <td>14</td>
-      <td>0.217143</td>
-      <td>0.236470</td>
-      <td>0.048</td>
-      <td>0.984</td>
-      <td>3.040</td>
+      <td>12</td>
+      <td>0.147333</td>
+      <td>0.041185</td>
+      <td>0.068</td>
+      <td>0.198</td>
+      <td>1.768</td>
       <td>sec</td>
-      <td>7.427315</td>
+      <td>4.319570</td>
     </tr>
     <tr>
       <th>interpolated</th>
-      <td>11</td>
-      <td>0.369455</td>
-      <td>0.298280</td>
+      <td>12</td>
+      <td>0.196667</td>
+      <td>0.039928</td>
       <td>0.116</td>
-      <td>1.026</td>
-      <td>4.064</td>
+      <td>0.244</td>
+      <td>2.360</td>
       <td>sec</td>
-      <td>9.929147</td>
+      <td>5.765942</td>
     </tr>
     <tr>
       <th>masked</th>
@@ -1047,25 +1047,25 @@ EyeData(rlmw_002_short, 1.4MiB):
     <tr>
       <th rowspan="3" valign="top">right_pupil</th>
       <th>blink</th>
-      <td>13</td>
-      <td>0.138000</td>
-      <td>0.084856</td>
-      <td>0.044</td>
-      <td>0.404</td>
-      <td>1.794</td>
+      <td>11</td>
+      <td>0.126909</td>
+      <td>0.031913</td>
+      <td>0.072</td>
+      <td>0.164</td>
+      <td>1.396</td>
       <td>sec</td>
-      <td>4.383093</td>
+      <td>3.410701</td>
     </tr>
     <tr>
       <th>interpolated</th>
-      <td>13</td>
-      <td>0.189077</td>
-      <td>0.081553</td>
-      <td>0.096</td>
-      <td>0.444</td>
-      <td>2.458</td>
+      <td>11</td>
+      <td>0.174364</td>
+      <td>0.030793</td>
+      <td>0.122</td>
+      <td>0.210</td>
+      <td>1.918</td>
       <td>sec</td>
-      <td>6.005375</td>
+      <td>4.686049</td>
     </tr>
     <tr>
       <th>masked</th>
@@ -1096,7 +1096,7 @@ EyeData(rlmw_002_short, 1.4MiB):
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-7.4273149279257265
+4.319569997556805
 </pre></div></div>
 </div>
 <p>After the interpolation, the pupil channels have no unusable samples left (<code class="docutils literal notranslate"><span class="pre">masked</span></code>: 0 stretches), because interpolated samples are usable; the gaze is still masked during blinks and off the screen.</p>
@@ -1115,12 +1115,12 @@ EyeData(rlmw_002_short, 1.4MiB):
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-({&#39;n&#39;: 14,
-  &#39;mean&#39;: 217.14285714285714,
-  &#39;sd&#39;: 236.4701301411652,
-  &#39;min&#39;: 48.0,
-  &#39;max&#39;: 984.0,
-  &#39;total_duration&#39;: 3040.0,
+({&#39;n&#39;: 12,
+  &#39;mean&#39;: 147.33333333333334,
+  &#39;sd&#39;: 41.1852184918597,
+  &#39;min&#39;: 68.0,
+  &#39;max&#39;: 198.0,
+  &#39;total_duration&#39;: 1768.0,
   &#39;units&#39;: &#39;ms&#39;},
  0.6821666666666667,
  0.0)
@@ -1191,7 +1191,7 @@ EyeData(rlmw_002_short, 1.4MiB):
       <td>500.0</td>
       <td>0.682167</td>
       <td>40</td>
-      <td>{'left_pupil': 14, 'right_pupil': 13}</td>
+      <td>{'left_pupil': 12, 'right_pupil': 11}</td>
     </tr>
     <tr>
       <th>1</th>
@@ -1200,7 +1200,7 @@ EyeData(rlmw_002_short, 1.4MiB):
       <td>500.0</td>
       <td>2.000033</td>
       <td>56</td>
-      <td>{'left_pupil': 65}</td>
+      <td>{'left_pupil': 26}</td>
     </tr>
     <tr>
       <th>2</th>
@@ -1264,8 +1264,8 @@ EyeData(rlmw_002_short, 1.4MiB):
       <td>ok</td>
       <td>2.741266</td>
       <td>good</td>
-      <td>20.522844</td>
-      <td>ok</td>
+      <td>17.591009</td>
+      <td>good</td>
     </tr>
     <tr>
       <th>1</th>
@@ -1273,8 +1273,8 @@ EyeData(rlmw_002_short, 1.4MiB):
       <td>poor</td>
       <td>0.000000</td>
       <td>good</td>
-      <td>32.499458</td>
-      <td>ok</td>
+      <td>12.999783</td>
+      <td>good</td>
     </tr>
     <tr>
       <th>2</th>
@@ -1362,10 +1362,10 @@ EyeData(rlmw_002_short, 1.4MiB):
   QualityMetric(name=&#39;rate&#39;, title=&#39;blink rate&#39;, value=52.795776337892974, unit=&#39;/min&#39;, label=&#39;poor&#39;, description=&#39;number of detected blinks per minute (median across people about 10 during screen tasks and 13 at rest; varies a lot between people)&#39;, thresholds=(20, 35, 70))),
  (&#39;blinks&#39;,
   &#39;left&#39;,
-  QualityMetric(name=&#39;time_pct&#39;, title=&#39;time in blinks&#39;, value=np.float64(21.926245900327974), unit=&#39;%&#39;, label=&#39;poor&#39;, description=&#39;percentage of the recording covered by blinks (and the samples around them that were removed)&#39;, thresholds=(10, 20, 35))),
+  QualityMetric(name=&#39;time_pct&#39;, title=&#39;time in blinks&#39;, value=np.float64(21.022318214542835), unit=&#39;%&#39;, label=&#39;poor&#39;, description=&#39;percentage of the recording covered by blinks (and the samples around them that were removed)&#39;, thresholds=(10, 20, 35))),
  (&#39;artifacts&#39;,
   &#39;left&#39;,
-  QualityMetric(name=&#39;pupil_masked_pct&#39;, title=&#39;pupil masked&#39;, value=np.float64(21.926245900327974), unit=&#39;%&#39;, label=&#39;poor&#39;, description=&#34;percentage of masked pupil samples (missing data, blinks and other artifacts; interpolated samples only with the &#39;strict&#39; mask policy)&#34;, thresholds=(10, 20, 35)))]
+  QualityMetric(name=&#39;pupil_masked_pct&#39;, title=&#39;pupil masked&#39;, value=np.float64(21.022318214542835), unit=&#39;%&#39;, label=&#39;poor&#39;, description=&#34;percentage of masked pupil samples (missing data, blinks and other artifacts; interpolated samples only with the &#39;strict&#39; mask policy)&#34;, thresholds=(10, 20, 35)))]
 </pre></div></div>
 </div>
 <p>The layer statistics of all datasets in one table, with a column for the dataset:</p>
@@ -1419,84 +1419,84 @@ EyeData(rlmw_002_short, 1.4MiB):
       <th>0</th>
       <td>left_pupil</td>
       <td>blink</td>
-      <td>14</td>
-      <td>217.142857</td>
-      <td>236.470130</td>
-      <td>48.0</td>
-      <td>984.0</td>
-      <td>3040.0</td>
+      <td>12</td>
+      <td>147.333333</td>
+      <td>41.185218</td>
+      <td>68.0</td>
+      <td>198.0</td>
+      <td>1768.0</td>
       <td>ms</td>
-      <td>7.427315</td>
+      <td>4.319570</td>
       <td>rlmw_002_short</td>
     </tr>
     <tr>
       <th>1</th>
       <td>left_pupil</td>
       <td>masked</td>
-      <td>14</td>
-      <td>217.142857</td>
-      <td>236.470130</td>
-      <td>48.0</td>
-      <td>984.0</td>
-      <td>3040.0</td>
+      <td>12</td>
+      <td>147.333333</td>
+      <td>41.185218</td>
+      <td>68.0</td>
+      <td>198.0</td>
+      <td>1768.0</td>
       <td>ms</td>
-      <td>7.427315</td>
+      <td>4.319570</td>
       <td>rlmw_002_short</td>
     </tr>
     <tr>
       <th>2</th>
       <td>right_pupil</td>
       <td>blink</td>
-      <td>13</td>
-      <td>138.000000</td>
-      <td>84.856440</td>
-      <td>44.0</td>
-      <td>404.0</td>
-      <td>1794.0</td>
+      <td>11</td>
+      <td>126.909091</td>
+      <td>31.913105</td>
+      <td>72.0</td>
+      <td>164.0</td>
+      <td>1396.0</td>
       <td>ms</td>
-      <td>4.383093</td>
+      <td>3.410701</td>
       <td>rlmw_002_short</td>
     </tr>
     <tr>
       <th>3</th>
       <td>right_pupil</td>
       <td>masked</td>
-      <td>13</td>
-      <td>138.000000</td>
-      <td>84.856440</td>
-      <td>44.0</td>
-      <td>404.0</td>
-      <td>1794.0</td>
+      <td>11</td>
+      <td>126.909091</td>
+      <td>31.913105</td>
+      <td>72.0</td>
+      <td>164.0</td>
+      <td>1396.0</td>
       <td>ms</td>
-      <td>4.383093</td>
+      <td>3.410701</td>
       <td>rlmw_002_short</td>
     </tr>
     <tr>
       <th>4</th>
       <td>left_pupil</td>
       <td>blink</td>
-      <td>65</td>
-      <td>225.230769</td>
-      <td>247.912067</td>
-      <td>24.0</td>
-      <td>990.0</td>
-      <td>14640.0</td>
+      <td>26</td>
+      <td>162.000000</td>
+      <td>61.228450</td>
+      <td>30.0</td>
+      <td>292.0</td>
+      <td>4212.0</td>
       <td>ms</td>
-      <td>12.199797</td>
+      <td>3.509942</td>
       <td>test_ro_ka_si_hu</td>
     </tr>
     <tr>
       <th>5</th>
       <td>left_pupil</td>
       <td>masked</td>
-      <td>65</td>
-      <td>225.230769</td>
-      <td>247.912067</td>
-      <td>24.0</td>
-      <td>990.0</td>
-      <td>14640.0</td>
+      <td>26</td>
+      <td>162.000000</td>
+      <td>61.228450</td>
+      <td>30.0</td>
+      <td>292.0</td>
+      <td>4212.0</td>
       <td>ms</td>
-      <td>12.199797</td>
+      <td>3.509942</td>
       <td>test_ro_ka_si_hu</td>
     </tr>
     <tr>
@@ -1504,13 +1504,13 @@ EyeData(rlmw_002_short, 1.4MiB):
       <td>left_pupil</td>
       <td>blink</td>
       <td>22</td>
-      <td>249.181818</td>
-      <td>68.717231</td>
-      <td>184.0</td>
+      <td>238.909091</td>
+      <td>72.670432</td>
+      <td>162.0</td>
       <td>538.0</td>
-      <td>5482.0</td>
+      <td>5256.0</td>
       <td>ms</td>
-      <td>21.926246</td>
+      <td>21.022318</td>
       <td>55910_1_wu</td>
     </tr>
     <tr>
@@ -1518,13 +1518,13 @@ EyeData(rlmw_002_short, 1.4MiB):
       <td>left_pupil</td>
       <td>masked</td>
       <td>22</td>
-      <td>249.181818</td>
-      <td>68.717231</td>
-      <td>184.0</td>
+      <td>238.909091</td>
+      <td>72.670432</td>
+      <td>162.0</td>
       <td>538.0</td>
-      <td>5482.0</td>
+      <td>5256.0</td>
       <td>ms</td>
-      <td>21.926246</td>
+      <td>21.022318</td>
       <td>55910_1_wu</td>
     </tr>
   </tbody>
@@ -1581,71 +1581,71 @@ EyeData(rlmw_002_short, 1.4MiB):
       <th>0</th>
       <td>5677.0</td>
       <td>S_1_1_5</td>
-      <td>1002.974000</td>
-      <td>831.318000</td>
+      <td>1002.974</td>
+      <td>831.318</td>
     </tr>
     <tr>
       <th>1</th>
       <td>9575.0</td>
       <td>S_2_6_2</td>
-      <td>1179.907489</td>
-      <td>966.048000</td>
+      <td>1180.590</td>
+      <td>966.048</td>
     </tr>
     <tr>
       <th>2</th>
       <td>12574.0</td>
       <td>S_3_2_1</td>
-      <td>1269.650000</td>
-      <td>1077.462000</td>
+      <td>1269.650</td>
+      <td>1077.462</td>
     </tr>
     <tr>
       <th>3</th>
       <td>16473.0</td>
       <td>S_4_4_1</td>
-      <td>1153.294000</td>
-      <td>956.178000</td>
+      <td>1153.294</td>
+      <td>956.178</td>
     </tr>
     <tr>
       <th>4</th>
       <td>20388.0</td>
       <td>S_5_3_5</td>
-      <td>1098.470000</td>
-      <td>912.224000</td>
+      <td>1098.470</td>
+      <td>912.224</td>
     </tr>
     <tr>
       <th>5</th>
       <td>23987.0</td>
       <td>S_6_4_5</td>
-      <td>1096.668000</td>
-      <td>914.322000</td>
+      <td>1096.668</td>
+      <td>914.322</td>
     </tr>
     <tr>
       <th>6</th>
       <td>27002.0</td>
       <td>S_7_3_1</td>
-      <td>987.372000</td>
-      <td>832.730000</td>
+      <td>987.372</td>
+      <td>832.730</td>
     </tr>
     <tr>
       <th>7</th>
       <td>30601.0</td>
       <td>S_8_6_5</td>
-      <td>1077.352000</td>
-      <td>915.889262</td>
+      <td>1077.352</td>
+      <td>891.170</td>
     </tr>
     <tr>
       <th>8</th>
       <td>34799.0</td>
       <td>S_9_4_6</td>
-      <td>955.512000</td>
-      <td>797.592000</td>
+      <td>955.512</td>
+      <td>797.592</td>
     </tr>
     <tr>
       <th>9</th>
       <td>38415.0</td>
       <td>S_10_2_5</td>
-      <td>1064.282000</td>
-      <td>888.112000</td>
+      <td>1064.282</td>
+      <td>888.112</td>
     </tr>
   </tbody>
 </table>
@@ -1672,8 +1672,8 @@ EyeData(rlmw_002_short, 1.4MiB):
  &#39;n_segments&#39;: 10,
  &#39;n_timepoints&#39;: 1500,
  &#39;window&#39;: (-500.0, 2498.0),
- &#39;percent_masked&#39;: {&#39;left_pupil&#39;: 9.806666666666667,
-  &#39;right_pupil&#39;: 5.733333333333333},
+ &#39;percent_masked&#39;: {&#39;left_pupil&#39;: 5.566666666666666,
+  &#39;right_pupil&#39;: 4.406666666666666},
  &#39;sampling_rate&#39;: 500.0,
  &#39;n_averages&#39;: 0,
  &#39;n_trials&#39;: 10}

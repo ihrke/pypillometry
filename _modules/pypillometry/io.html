@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pypillometry.io &#8212; pypillometry v2.2.1</title>
+    <title>pypillometry.io &#8212; pypillometry v2.2.3</title>
   
   
   
@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=6a604523" />
     <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=e89b0eda" />
   
   <!-- So that users can add custom icons -->
@@ -41,12 +41,12 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=edd18f37"></script>
+    <script src="../../_static/documentation_options.js?v=7e518144"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
-    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../../_static/design-tabs.js?v=fcb327ea"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs";
 
@@ -414,7 +414,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.1" />
+  <meta name="docsearch:version" content="v2.2.3" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -804,6 +804,9 @@ window.runMermaid = runMermaid;</script>
 
 <span class="sd">- Eyelink EDF files: :func:`read_eyelink` (usually used through</span>
 <span class="sd">  :meth:`~pypillometry.EyeData.from_eyelink`)</span>
+<span class="sd">- data exports of Tobii Pro Lab (Tobii Pro Glasses):</span>
+<span class="sd">  :func:`read_tobii_prolab` (usually used through</span>
+<span class="sd">  :meth:`~pypillometry.HeadMountedEyeData.from_tobii_prolab`)</span>
 <span class="sd">- saved objects: :func:`write_file` and :func:`read_file` (pickle or</span>
 <span class="sd">  HDF5 files; usually used through :meth:`~pypillometry.EyeData.write_file`</span>
 <span class="sd">  and :meth:`~pypillometry.EyeData.from_file`)</span>
@@ -843,7 +846,8 @@ window.runMermaid = runMermaid;</script>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">"osf_authenticate"</span><span class="p">,</span> <span class="s2">"download"</span><span class="p">,</span> <span class="s2">"fetch_url"</span><span class="p">,</span> <span class="s2">"local_copy"</span><span class="p">,</span> <span class="s2">"write_file"</span><span class="p">,</span>
-    <span class="s2">"read_file"</span><span class="p">,</span> <span class="s2">"read_eyelink"</span><span class="p">,</span> <span class="s2">"get_figshare_files"</span><span class="p">,</span> <span class="s2">"fetch_figshare_file"</span><span class="p">,</span>
+    <span class="s2">"read_file"</span><span class="p">,</span> <span class="s2">"read_eyelink"</span><span class="p">,</span> <span class="s2">"read_tobii_prolab"</span><span class="p">,</span> <span class="s2">"get_figshare_files"</span><span class="p">,</span>
+    <span class="s2">"fetch_figshare_file"</span><span class="p">,</span>
 <span class="p">]</span>
 
 
@@ -1723,6 +1727,111 @@ window.runMermaid = runMermaid;</script>
             <span class="n">edf</span> <span class="o">=</span> <span class="n">eyelinkio</span><span class="o">.</span><span class="n">read_edf</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">edf</span>
+
+
+<span class="c1">#: columns of a Tobii Pro Lab data export that describe the recording</span>
+<span class="n">_TOBII_INFO_COLUMNS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"Project name"</span><span class="p">:</span> <span class="s2">"project"</span><span class="p">,</span> <span class="s2">"Participant name"</span><span class="p">:</span> <span class="s2">"participant"</span><span class="p">,</span>
+    <span class="s2">"Recording name"</span><span class="p">:</span> <span class="s2">"recording"</span><span class="p">,</span> <span class="s2">"Recording date"</span><span class="p">:</span> <span class="s2">"date"</span><span class="p">,</span>
+    <span class="s2">"Recording start time"</span><span class="p">:</span> <span class="s2">"start_time"</span><span class="p">,</span> <span class="s2">"Recording duration"</span><span class="p">:</span> <span class="s2">"duration_ms"</span><span class="p">,</span>
+    <span class="s2">"Recording Fixation filter name"</span><span class="p">:</span> <span class="s2">"fixation_filter"</span><span class="p">,</span> <span class="s2">"Export date"</span><span class="p">:</span> <span class="s2">"export_date"</span><span class="p">,</span>
+    <span class="s2">"Recording media name"</span><span class="p">:</span> <span class="s2">"media_name"</span><span class="p">,</span> <span class="s2">"Recording media width"</span><span class="p">:</span> <span class="s2">"media_width"</span><span class="p">,</span>
+    <span class="s2">"Recording media height"</span><span class="p">:</span> <span class="s2">"media_height"</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="c1">#: the sensors in the export: key in the result -&gt; (name in the column</span>
+<span class="c1">#: "Sensor", prefix of its data columns)</span>
+<span class="n">_TOBII_IMU</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"gyro"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"Gyroscope"</span><span class="p">,</span> <span class="s2">"Gyro"</span><span class="p">),</span> <span class="s2">"acc"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"Accelerometer"</span><span class="p">,</span> <span class="s2">"Accelerometer"</span><span class="p">),</span>
+              <span class="s2">"mag"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"Magnetometer"</span><span class="p">,</span> <span class="s2">"Magnetometer"</span><span class="p">)}</span>
+
+
+<span class="nd">@requires_package</span><span class="p">(</span><span class="s2">"openpyxl"</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_read_excel</span><span class="p">(</span><span class="n">fname</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Read the first sheet of an Excel file as a pandas.DataFrame."""</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="read_tobii_prolab">
+<a class="viewcode-back" href="../../api/generated/pypillometry.read_tobii_prolab.html#pypillometry.read_tobii_prolab">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">read_tobii_prolab</span><span class="p">(</span><span class="n">fname</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Read a data export of Tobii Pro Lab (recordings of Tobii Pro Glasses).</span>
+
+<span class="sd">    The export ("Data Export" in Tobii Pro Lab) is one table with one row</span>
+<span class="sd">    per sample of one of the sensors (eye tracker, gyroscope,</span>
+<span class="sd">    accelerometer, magnetometer) or per event. This function splits it</span>
+<span class="sd">    into one table per sensor.</span>
+
+<span class="sd">    Reading Excel files requires the optional package `openpyxl` and is</span>
+<span class="sd">    slow (about half a minute for a three-minute recording); exports as</span>
+<span class="sd">    tab-separated text (``.tsv``) are read much faster.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    fname : str</span>
+<span class="sd">        filename of the export: an Excel file (``.xlsx``) or a</span>
+<span class="sd">        tab-separated text file (any other extension)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        - ``"eye"``: :class:`pandas.DataFrame` with the samples of the eye</span>
+<span class="sd">          tracker: ``time`` (ms) and the gaze and pupil columns of the</span>
+<span class="sd">          export under their original names (e.g., ``"Gaze point X"``,</span>
+<span class="sd">          ``"Pupil diameter left"``)</span>
+<span class="sd">        - ``"gyro"``, ``"acc"``, ``"mag"``: DataFrames with the samples of</span>
+<span class="sd">          the gyroscope (deg/s), accelerometer (m/s²) and magnetometer</span>
+<span class="sd">          (µT): ``time`` (ms), ``x``, ``y``, ``z``; empty if the export</span>
+<span class="sd">          has no such data</span>
+<span class="sd">        - ``"events"``: DataFrame with ``time`` (ms) and ``label``</span>
+<span class="sd">        - ``"info"``: dict that describes the recording (e.g.,</span>
+<span class="sd">          ``"participant"``, ``"recording"``, ``"date"``)</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    pypillometry.HeadMountedEyeData.from_tobii_prolab : create a data object from the export</span>
+<span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+    <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">((</span><span class="s2">".xlsx"</span><span class="p">,</span> <span class="s2">".xlsm"</span><span class="p">)):</span>
+        <span class="n">tab</span> <span class="o">=</span> <span class="n">_read_excel</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">tab</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">"</span><span class="se">\t</span><span class="s2">"</span><span class="p">,</span> <span class="n">low_memory</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"Recording timestamp"</span><span class="p">,</span> <span class="s2">"Sensor"</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">tab</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2">' is not a Tobii Pro Lab data export: "</span>
+                             <span class="sa">f</span><span class="s2">"no column '</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
+    <span class="n">tab</span> <span class="o">=</span> <span class="n">tab</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">"Recording timestamp"</span><span class="p">:</span> <span class="s2">"time"</span><span class="p">})</span>
+    <span class="c1"># recordings exported with a decimal comma are read as text</span>
+    <span class="n">skip</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">_TOBII_INFO_COLUMNS</span><span class="p">)</span> <span class="o">|</span> <span class="p">{</span><span class="s2">"Sensor"</span><span class="p">,</span> <span class="s2">"Event"</span><span class="p">,</span> <span class="s2">"Validity left"</span><span class="p">,</span> <span class="s2">"Validity right"</span><span class="p">,</span>
+                                       <span class="s2">"Eye movement type"</span><span class="p">}</span>
+    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">tab</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">skip</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">pd</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">is_numeric_dtype</span><span class="p">(</span><span class="n">tab</span><span class="p">[</span><span class="n">col</span><span class="p">]):</span>
+            <span class="n">tab</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">(</span><span class="n">tab</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">","</span><span class="p">,</span> <span class="s2">"."</span><span class="p">),</span>
+                                     <span class="n">errors</span><span class="o">=</span><span class="s2">"coerce"</span><span class="p">)</span>
+
+    <span class="n">info</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">tab</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">col</span><span class="p">,</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">_TOBII_INFO_COLUMNS</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">tab</span><span class="o">.</span><span class="n">columns</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">tab</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">}</span>
+    <span class="n">info</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="s2">"item"</span><span class="p">)</span> <span class="k">else</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">info</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+    <span class="n">eye</span> <span class="o">=</span> <span class="n">tab</span><span class="p">[</span><span class="n">tab</span><span class="p">[</span><span class="s2">"Sensor"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"Eye Tracker"</span><span class="p">]</span>
+    <span class="n">eye_cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">tab</span><span class="o">.</span><span class="n">columns</span>
+                <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">startswith</span><span class="p">((</span><span class="s2">"Gaze "</span><span class="p">,</span> <span class="s2">"Pupil "</span><span class="p">,</span> <span class="s2">"Validity "</span><span class="p">,</span> <span class="s2">"Eye movement"</span><span class="p">,</span> <span class="s2">"Fixation point"</span><span class="p">))]</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"eye"</span><span class="p">:</span> <span class="n">eye</span><span class="p">[[</span><span class="s2">"time"</span><span class="p">]</span> <span class="o">+</span> <span class="n">eye_cols</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)}</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="p">(</span><span class="n">sensor</span><span class="p">,</span> <span class="n">prefix</span><span class="p">)</span> <span class="ow">in</span> <span class="n">_TOBII_IMU</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">ax</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="s2">"XYZ"</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">c</span> <span class="ow">in</span> <span class="n">tab</span><span class="o">.</span><span class="n">columns</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cols</span><span class="p">):</span>
+            <span class="n">imu</span> <span class="o">=</span> <span class="n">tab</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">tab</span><span class="p">[</span><span class="s2">"Sensor"</span><span class="p">]</span> <span class="o">==</span> <span class="n">sensor</span><span class="p">,</span> <span class="p">[</span><span class="s2">"time"</span><span class="p">]</span> <span class="o">+</span> <span class="n">cols</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">imu</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"time"</span><span class="p">]</span> <span class="o">+</span> <span class="n">cols</span><span class="p">)</span>
+        <span class="n">res</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">imu</span><span class="o">.</span><span class="n">set_axis</span><span class="p">([</span><span class="s2">"time"</span><span class="p">,</span> <span class="s2">"x"</span><span class="p">,</span> <span class="s2">"y"</span><span class="p">,</span> <span class="s2">"z"</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">"Event"</span> <span class="ow">in</span> <span class="n">tab</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="n">events</span> <span class="o">=</span> <span class="n">tab</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">tab</span><span class="p">[</span><span class="s2">"Event"</span><span class="p">]</span><span class="o">.</span><span class="n">notna</span><span class="p">(),</span> <span class="p">[</span><span class="s2">"time"</span><span class="p">,</span> <span class="s2">"Event"</span><span class="p">]]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">events</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"time"</span><span class="p">,</span> <span class="s2">"Event"</span><span class="p">])</span>
+    <span class="n">res</span><span class="p">[</span><span class="s2">"events"</span><span class="p">]</span> <span class="o">=</span> <span class="n">events</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">"Event"</span><span class="p">:</span> <span class="s2">"label"</span><span class="p">})</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">res</span><span class="p">[</span><span class="s2">"info"</span><span class="p">]</span> <span class="o">=</span> <span class="n">info</span>
+    <span class="k">return</span> <span class="n">res</span></div>
+
 
 
 <span class="nd">@contextmanager</span>

@@ -40,6 +40,7 @@ Blinks
    detect_blinks_velocity
    detect_blinks_zero
    blink_onsets_mahot
+   interpolate_blinks_kalman
 
 Pupil response
 --------------

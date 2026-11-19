@@ -1,0 +1,28 @@
+﻿SceneNamespace
+==============
+
+.. currentmodule:: pypillometry.eyedata.head_mounted
+
+.. autoclass:: SceneNamespace
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~SceneNamespace.distance
+      ~SceneNamespace.frame
+      ~SceneNamespace.head_movement
+      ~SceneNamespace.luminance
+      ~SceneNamespace.render_video
+   
+   
+
+
+   .. rubric:: Details

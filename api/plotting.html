@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Plotting (d.plot) &#8212; pypillometry v2.2.1</title>
+    <title>Plotting (d.plot) &#8212; pypillometry v2.2.3</title>
   
   
   
@@ -33,7 +33,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=6a604523" />
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=e89b0eda" />
   
   <!-- So that users can add custom icons -->
@@ -42,12 +42,12 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=edd18f37"></script>
+    <script src="../_static/documentation_options.js?v=7e518144"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
-    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../_static/design-tabs.js?v=fcb327ea"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'api/plotting';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
@@ -59,7 +59,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.1" />
+  <meta name="docsearch:version" content="v2.2.3" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -408,6 +408,8 @@
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.EyeData.html">EyeData</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.EyeDataDict.html">EyeDataDict</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.MaskPolicy.html">MaskPolicy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.HeadMountedEyeData.html">HeadMountedEyeData</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.eyedata.head_mounted.SceneNamespace.html">SceneNamespace</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.FakeEyeData.html">FakeEyeData</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.keephistory.html">keephistory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.QualityReport.html">QualityReport</a></li>
@@ -469,6 +471,7 @@
 <li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">Plotting (<code class="docutils literal notranslate"><span class="pre">d.plot</span></code>)</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="io.html">Reading and writing data</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.read_eyelink.html">read_eyelink</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.read_tobii_prolab.html">read_tobii_prolab</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.read_file.html">read_file</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.write_file.html">write_file</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.download.html">download</a></li>
@@ -503,6 +506,7 @@
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.detect_blinks_velocity.html">detect_blinks_velocity</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.detect_blinks_zero.html">detect_blinks_zero</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.blink_onsets_mahot.html">blink_onsets_mahot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.interpolate_blinks_kalman.html">interpolate_blinks_kalman</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.pupil_kernel.html">pupil_kernel</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.pupil_kernel_t.html">pupil_kernel_t</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.pupil_get_max_duration.html">pupil_get_max_duration</a></li>
@@ -665,6 +669,23 @@ one).</p>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.plot.PlotNamespace.plot_calibration" title="pypillometry.plot.PlotNamespace.plot_calibration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot.PlotNamespace.plot_calibration</span></code></a></p></td>
 <td><p>Plot spatial calibration data for one or more eyes in subplots.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="scene-video-headmountedeyedata">
+<h2>Scene video (<a class="reference internal" href="generated/pypillometry.HeadMountedEyeData.html#pypillometry.HeadMountedEyeData" title="pypillometry.HeadMountedEyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">HeadMountedEyeData</span></code></a>)<a class="headerlink" href="#scene-video-headmountedeyedata" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot.HeadMountedPlotNamespace.plot_scene_scanpath</span></code></p></td>
+<td><p>Plot the gaze position during a time interval as a scanpath on a frame of the scene video.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot.HeadMountedPlotNamespace.plot_timeseries</span></code></p></td>
+<td><p>Plot a part of the data.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot.HeadMountedPlotNamespace.plot_pupil_covariate</span></code></p></td>
+<td><p>Plot the pupil size against a channel in <code class="docutils literal notranslate"><span class="pre">d.aux</span></code> (e.g., the luminance of the scene video or the viewing distance).</p></td>
 </tr>
 </tbody>
 </table>
@@ -1501,6 +1522,7 @@ instead.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#time-series">Time series</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#blinks-masks-and-intervals">Blinks, masks and intervals</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gaze">Gaze</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#scene-video-headmountedeyedata">Scene video (<code class="xref py py-class docutils literal notranslate"><span class="pre">HeadMountedEyeData</span></code>)</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#experimental-setup-and-foreshortening">Experimental setup and foreshortening</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#all-plots">All plots</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.plot.PlotNamespace"><code class="docutils literal notranslate"><span class="pre">PlotNamespace</span></code></a><ul class="nav section-nav flex-column">

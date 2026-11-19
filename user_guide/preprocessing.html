@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Preprocessing &#8212; pypillometry v2.2.1</title>
+    <title>Preprocessing &#8212; pypillometry v2.2.3</title>
   
   
   
@@ -33,7 +33,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=6a604523" />
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=e89b0eda" />
   
   <!-- So that users can add custom icons -->
@@ -42,12 +42,12 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=edd18f37"></script>
+    <script src="../_static/documentation_options.js?v=7e518144"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
-    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../_static/design-tabs.js?v=fcb327ea"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'user_guide/preprocessing';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
@@ -59,7 +59,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.1" />
+  <meta name="docsearch:version" content="v2.2.3" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -545,8 +545,19 @@ object (the <code class="docutils literal notranslate"><span class="pre">&quot;b
 returned (<code class="docutils literal notranslate"><span class="pre">d.pupil.blinks_detect()</span></code> works in place). Check them with
 <a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.get_blinks" title="pypillometry.EyeData.get_blinks"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_blinks()</span></code></a> (a dict with one <a class="reference internal" href="../api/generated/pypillometry.Intervals.html#pypillometry.Intervals" title="pypillometry.Intervals"><code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code></a>
 per channel, in ms); <code class="docutils literal notranslate"><span class="pre">d.clear_layer(&quot;blink&quot;)</span></code> removes them again.
+A drop only counts as the onset of a blink if the velocity stays beyond
+the threshold for a while (<code class="docutils literal notranslate"><span class="pre">vel_onset_min_duration</span></code>, 10 ms by default),
+so that brief changes, e.g. from eye movements, are not taken for blinks;
+<code class="docutils literal notranslate"><span class="pre">margin=</span></code> extends the detected blinks on both sides, e.g. to include the
+whole transient around them.
 <a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.blinks_interpolate" title="pypillometry.eyedata.pupil.PupilNamespace.blinks_interpolate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">blinks_interpolate()</span></code></a> replaces the pupil size during
-blinks by a smooth curve (Mathôt, 2013). Interpolated samples are used by
+blinks by a smooth curve (Mathôt, 2013). With <code class="docutils literal notranslate"><span class="pre">method=&quot;kalman&quot;</span></code>, it
+replaces them instead by their expected value given the signal around them
+(Kalman smoother); this uses all of the signal around each blink, so it is
+less affected by noise, and it has no parameters to tune. It replaces
+exactly the detected blinks, so these should include the transients around
+the blinks (<code class="docutils literal notranslate"><span class="pre">margin=</span></code> of <a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.blinks_detect" title="pypillometry.eyedata.pupil.PupilNamespace.blinks_detect"><code class="xref py py-meth docutils literal notranslate"><span class="pre">blinks_detect()</span></code></a>).
+Interpolated samples are used by
 all later steps (filters, segments, statistics); they keep the
 <code class="docutils literal notranslate"><span class="pre">&quot;interpolated&quot;</span></code> layer, so they can be left out with
 <code class="docutils literal notranslate"><span class="pre">policy=&quot;strict&quot;</span></code> (see <a class="reference internal" href="missing_data.html"><span class="doc">Missing data</span></a>).</p>

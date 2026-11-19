@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Intervals &#8212; pypillometry v2.2.1</title>
+    <title>Intervals &#8212; pypillometry v2.2.3</title>
   
   
   
@@ -33,7 +33,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=6a604523" />
     <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=e89b0eda" />
   
@@ -43,12 +43,12 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=edd18f37"></script>
+    <script src="../_static/documentation_options.js?v=7e518144"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
-    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../_static/design-tabs.js?v=fcb327ea"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
@@ -62,7 +62,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.1" />
+  <meta name="docsearch:version" content="v2.2.3" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -763,7 +763,7 @@ Epochs &#39;S_&#39; | 10 epochs, window (-200, 1000) ms
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Intervals &#39;left_pupil_blinks&#39; | 14 intervals (total duration: 3040.00 ms), 217.14 ms +/- 236.47 ms, [48.00 ms, 984.00 ms]
+Intervals &#39;left_pupil_blinks&#39; | 12 intervals (total duration: 1768.00 ms), 147.33 ms +/- 41.19 ms, [68.00 ms, 198.00 ms]
 </pre></div></div>
 </div>
 <p>Blinks stored in the object can be retrieved with <code class="docutils literal notranslate"><span class="pre">get_blinks()</span></code>, and masked samples with <code class="docutils literal notranslate"><span class="pre">mask_as_intervals()</span></code>. You can also create intervals directly:</p>
@@ -914,9 +914,9 @@ Intervals &#39;bad data&#39; | 2 intervals (total duration: 3.50 sec), 1.75 sec 
     </tr>
     <tr>
       <th>2</th>
-      <td>3932</td>
-      <td>3956</td>
-      <td>24</td>
+      <td>4065</td>
+      <td>4138</td>
+      <td>73</td>
       <td>samples</td>
     </tr>
   </tbody>
@@ -1001,9 +1001,9 @@ Intervals &#39;F_ to R_&#39; | 7 intervals (total duration: 13445.00 ms), 1920.7
     </tr>
     <tr>
       <th>2</th>
-      <td>7814.0</td>
-      <td>8012.0</td>
-      <td>198.0</td>
+      <td>8080.0</td>
+      <td>8376.0</td>
+      <td>296.0</td>
       <td>ms</td>
     </tr>
   </tbody>
@@ -1024,7 +1024,7 @@ Intervals &#39;F_ to R_&#39; | 7 intervals (total duration: 13445.00 ms), 1920.7
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-14 -&gt; 12
+12 -&gt; 12
 </pre></div></div>
 </div>
 </section>
@@ -1047,7 +1047,7 @@ Intervals &#39;F_ to R_&#39; | 7 intervals (total duration: 13445.00 ms), 1920.7
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Intervals &#39;combined&#39; | 15 intervals (total duration: 3480.00 ms), 232.00 ms +/- 232.02 ms, [48.00 ms, 984.00 ms]
+Intervals &#39;combined&#39; | 12 intervals (total duration: 1768.00 ms), 147.33 ms +/- 41.19 ms, [68.00 ms, 198.00 ms]
 </pre></div></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">-</span></code> removes the parts of one set of intervals that overlap with another. Here, the parts of each trial without blinks in either eye:</p>
@@ -1107,8 +1107,8 @@ Intervals &#39;combined&#39; | 15 intervals (total duration: 3480.00 ms), 232.00
     <tr>
       <th>2</th>
       <td>8776.0</td>
-      <td>10484.0</td>
-      <td>1708.0</td>
+      <td>10808.0</td>
+      <td>2032.0</td>
       <td>ms</td>
     </tr>
     <tr>
@@ -1190,7 +1190,7 @@ Intervals &#39;combined&#39; | 15 intervals (total duration: 3480.00 ms), 232.00
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-2791
+1784
 </pre></div></div>
 </div>
 <p><strong>One value per interval</strong>: <code class="docutils literal notranslate"><span class="pre">stat_per_event()</span></code> applies a function to the data in each interval, e.g., the mean pupil size after each stimulus:</p>
@@ -1208,11 +1208,11 @@ Intervals &#39;combined&#39; | 15 intervals (total duration: 3480.00 ms), 232.00
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-{&#39;left_pupil&#39;: array([1003.03142329, 1188.35538752, 1281.70833333, 1160.34333333,
-        1100.505     , 1095.62833333,  993.23      , 1113.09907121,
+{&#39;left_pupil&#39;: array([1003.03142329, 1185.765     , 1281.70833333, 1160.34333333,
+        1100.505     , 1095.62833333,  993.23      , 1088.62333333,
          963.89      , 1065.74666667]),
- &#39;right_pupil&#39;: array([ 830.89833641,  977.61625709, 1095.90166667,  969.57833333,
-         916.80833333,  920.22833333,  843.105     ,  932.53560372,
+ &#39;right_pupil&#39;: array([ 830.89833641,  974.38833333, 1095.90166667,  969.57833333,
+         916.80833333,  920.22833333,  843.105     ,  905.38      ,
          808.16333333,  889.60166667])}
 </pre></div></div>
 </div>
@@ -1252,7 +1252,7 @@ Intervals &#39;combined&#39; | 15 intervals (total duration: 3480.00 ms), 232.00
     </div>
     <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
       <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Missing</div>
-      <div style="font-weight:600;">6.8%</div>
+      <div style="font-weight:600;">1.0%</div>
     </div>
     <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
       <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Sampling rate</div>
@@ -1265,8 +1265,8 @@ Intervals &#39;combined&#39; | 15 intervals (total duration: 3480.00 ms), 232.00
     <summary style="cursor:pointer; font-weight:600;">Channels (mean over segments; red line = event onset)</summary>
     <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:8px; margin-top:8px;">
       <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
-        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">left_pupil (6.8% missing)</div>
-        <img src="data:image/png;base64,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" alt="left_pupil (6.8% missing) sparkline" style="height:60px; width:100%; object-fit:cover;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">left_pupil (1.0% missing)</div>
+        <img src="data:image/png;base64,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" alt="left_pupil (1.0% missing) sparkline" style="height:60px; width:100%; object-fit:cover;">
       </div>
     </div>
   </details>
@@ -1298,7 +1298,7 @@ Intervals &#39;combined&#39; | 15 intervals (total duration: 3480.00 ms), 232.00
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-(20465,) 1740 samples in blinks
+(20465,) 884 samples in blinks
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -1307,7 +1307,7 @@ Intervals &#39;combined&#39; | 15 intervals (total duration: 3480.00 ms), 232.00
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Intervals | 15 intervals (total duration: 3480.00 ms), 232.00 ms +/- 232.02 ms, [48.00 ms, 984.00 ms]
+Intervals | 12 intervals (total duration: 1768.00 ms), 147.33 ms +/- 41.19 ms, [68.00 ms, 198.00 ms]
 </pre></div></div>
 </div>
 </section>
