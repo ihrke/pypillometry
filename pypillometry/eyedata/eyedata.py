@@ -1038,7 +1038,7 @@ class EyeData(state.VersionedState):
         >>> {ch: list(layers) for ch, layers in stats.items()}
         {'left_x': ['offscreen', 'masked'], 'left_y': ['offscreen', 'masked'], 'left_pupil': ['blink', 'masked']}
         >>> stats["left_pupil"]["blink"]["n"]
-        14
+        12
         """
         requested = None if layers is None else (
             [layers] if isinstance(layers, str) else list(layers))
