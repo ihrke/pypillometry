@@ -31,6 +31,33 @@ from loguru import logger
 import numpy as np
 
 
+#: parameters of the methods of ``blinks_interpolate()`` and their defaults
+_INTERP_DEFAULTS = {
+    "mahot": dict(winsize=25, vel_onset=-5.0, vel_offset=5.0, margin=(10, 30),
+                  interp_type="cubic"),
+}
+
+
+def _interp_params(method, kwargs):
+    """Parameters of `method` (defaults updated by `kwargs`) for
+    ``blinks_interpolate()``. Parameters of other methods are ignored with a
+    warning; unknown parameters raise a TypeError."""
+    if method not in _INTERP_DEFAULTS:
+        raise ValueError(f"unknown method {method!r} for blinks_interpolate(); "
+                         f"use one of {', '.join(map(repr, _INTERP_DEFAULTS))}")
+    pars = dict(_INTERP_DEFAULTS[method])
+    for name, value in kwargs.items():
+        if name in pars:
+            pars[name] = value
+            continue
+        users = [m for m, d in _INTERP_DEFAULTS.items() if name in d]
+        if not users:
+            raise TypeError(f"blinks_interpolate() got an unexpected keyword argument {name!r}")
+        logger.warning(f"{name!r} is only used by method={users[0]!r} of "
+                       f"blinks_interpolate(), not by {method!r}; ignored")
+    return pars
+
+
 def _merge_overlapping_blink_windows(blinks, n):
     """Merge blinks whose interpolation windows overlap.
 
@@ -733,25 +760,14 @@ class PupilNamespace(Namespace):
     @step
     @keephistory
     def blinks_interpolate(self, eyes: str|list=[],
-                                 store_as: str="pupil", 
-                                 method="mahot", winsize: float=25, 
-                                 vel_onset=-5.0, vel_offset=5.0, 
-                                 margin: Tuple[float,float]=(10,30), 
+                                 store_as: str="pupil",
+                                 method: str="mahot",
                                  blinkwindow: float=500,
-                                 interp_type: str="cubic",
-                                 inplace=None):
+                                 inplace=None, **kwargs):
         """Interpolating blinks in the pupillary signal.
-
-        Implements the blink-interpolation method by Mahot (2013).
-        
-        Mahot, 2013:
-        https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001.
 
         The blinks to interpolate are taken from the blinks stored in the object,
         so blinks have to be detected first (e.g., using :meth:`blinks_detect`).
-        The on- and offsets of each blink are refined using the velocity profile
-        before interpolating. Blinks that are so close that the anchor points
-        of one fall into the other are merged and interpolated together.
         The interpolated samples get the ``"interpolated"`` layer (on the
         variable they are stored in, see `store_as`): they are used under the
         default mask policy and masked under the ``"strict"`` one (see
@@ -759,11 +775,23 @@ class PupilNamespace(Namespace):
         can be retrieved with
         :meth:`~pypillometry.EyeData.get_interpolated`.
 
-        This procedure relies heavily on eye-balling (reconstructing visually convincing signal),
-        so it can help to inspect the result visually (e.g., using
-        :meth:`d.plot.plot_blinks() <pypillometry.plot.PlotNamespace.plot_blinks>`) to set
-        good parameter values for `winsize`, `vel_onset`, `vel_offset` and `margin`
-        (see paper linked above).
+        Methods:
+
+        - ``"mahot"`` (default): the method by Mahot (2013). The on- and
+          offsets of each blink are refined using the velocity profile, and
+          the blink is replaced by a cubic curve through four anchor points
+          around it. Blinks that are so close that the anchor points of one
+          fall into the other are merged and interpolated together.
+          This procedure relies heavily on eye-balling (reconstructing
+          visually convincing signal), so it can help to inspect the result
+          visually (e.g., using
+          :meth:`d.plot.plot_blinks() <pypillometry.plot.PlotNamespace.plot_blinks>`)
+          to set good parameter values for `winsize`, `vel_onset`,
+          `vel_offset` and `margin` (see paper linked below).
+
+        Each method has its own parameters (see below), passed as keyword
+        arguments. Parameters of another method are ignored with a warning,
+        so that the method can be switched quickly.
 
         Parameters
         ----------
@@ -774,46 +802,72 @@ class PupilNamespace(Namespace):
             the original pupil data or a string that will be used as the new variable
             name in the data (e.g., "pupilinterp")
         method : str
-            method to use; so far, only "mahot" is implemented
+            method to use: ``"mahot"`` (default)
+        blinkwindow : float, str or Quantity
+            how much time before and after each blink to use (in ms, or with
+            units); for ``"mahot"``, the window in which the on- and offsets
+            are searched
+        inplace : bool or None
+            if `True`, make change in-place and return the object
+            if `False`, make and return copy before making changes
+            if `None`, use the object-level setting
+        **kwargs
+            parameters of the method (see below)
+
+        Other Parameters
+        ----------------
         winsize : float, str or Quantity
-            size of the Savitzky-Golay window (in ms, or with units)
+            ``"mahot"``: size of the Savitzky-Golay window (in ms, or with
+            units); default 25
         vel_onset : float or str
-            velocity threshold to detect blink onset (negative value).
+            ``"mahot"``: velocity threshold to detect blink onset (negative
+            value); default -5.0
 
             - If float: threshold in pupil-units per millisecond (e.g., -5.0)
             - If str: percentile of velocity distribution (e.g., "5%" for bottom 5%)
         vel_offset : float or str
-            velocity threshold to detect blink offset (positive value).
+            ``"mahot"``: velocity threshold to detect blink offset (positive
+            value); default 5.0
 
             - If float: threshold in pupil-units per millisecond (e.g., 5.0)
             - If str: percentile of velocity distribution (e.g., "95%" for top 5%)
         margin : Tuple[float,float] or Quantity
-            margin that is subtracted/added to onset and offset (in ms, or
-            with units, e.g. ``(10, 30) * u.ms``)
-        blinkwindow : float, str or Quantity
-            how much time before and after each blink to include (in ms, or
-            with units)
+            ``"mahot"``: margin that is subtracted/added to onset and offset
+            (in ms, or with units, e.g. ``(10, 30) * u.ms``); default
+            ``(10, 30)``
         interp_type : str
-            type of interpolation accepted by :func:`scipy.interpolate.interp1d()`
-        inplace : bool or None
-            if `True`, make change in-place and return the object
-            if `False`, make and return copy before making changes              
-            if `None`, use the object-level setting
+            ``"mahot"``: type of interpolation accepted by
+            :func:`scipy.interpolate.interp1d()`; default ``"cubic"``
 
         Returns
         -------
         EyeData
             the object with the interpolated pupil data
+
+        Raises
+        ------
+        ValueError
+            if `method` is unknown
+        TypeError
+            if a keyword argument is not a parameter of any method
+
+        References
+        ----------
+        Mahot, 2013:
+        https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001.
         """
         from scipy.interpolate import interp1d
+        pars = _interp_params(method, kwargs)
         self._d._require("pupil")
         obj = self._d._get_inplace(inplace)
         eyes=self._d._eyes_with(eyes, "pupil")
 
         # parameters in sampling units (from ms)
-        winsize_ix=self._d._samples(winsize, rounding="up")
-        margin_ix=self._d._samples(margin, rounding="up")
+        winsize_ix=self._d._samples(pars["winsize"], rounding="up")
+        margin_ix=self._d._samples(pars["margin"], rounding="up")
         blinkwindow_ix=self._d._samples(blinkwindow)
+        vel_onset, vel_offset = pars["vel_onset"], pars["vel_offset"]
+        interp_type = pars["interp_type"]
         if winsize_ix % 2==0: ## ensure smoothing window is odd
             winsize_ix+=1 
 

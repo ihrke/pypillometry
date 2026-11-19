@@ -242,3 +242,36 @@ def test_blinks_interpolate_without_onset_crossing():
     for eye in d.eyes:
         assert not np.isnan(d.data[eye, "pupil"]).any()
     d.pupil.estimate_baseline()
+
+
+class TestBlinksInterpolateParams(unittest.TestCase):
+    """parameters of the methods of blinks_interpolate() as keyword arguments"""
+    @classmethod
+    def setUpClass(cls):
+        cls.d = pp.get_example_data("rlmw_002_short").crop(0, 20, units="sec")
+        cls.d = cls.d.pupil.blinks_detect(eyes="left", inplace=False)
+
+    def interp(self, **kw):
+        return self.d.pupil.blinks_interpolate(eyes="left", inplace=False, **kw)
+
+    def test_method_parameters(self):
+        """method parameters are keyword arguments; defaults as documented"""
+        default = self.interp()
+        same = self.interp(margin=(10, 30), winsize=25)
+        np.testing.assert_array_equal(default.data["left", "pupil"], same.data["left", "pupil"])
+        wider = self.interp(margin=(50, 100))
+        self.assertGreater(wider.data.get_layer("left_pupil", "interpolated").sum(),
+                           default.data.get_layer("left_pupil", "interpolated").sum())
+
+    def test_unknown_parameter(self):
+        with self.assertRaisesRegex(TypeError, "unexpected keyword argument 'margins'"):
+            self.interp(margins=(10, 30))
+
+    def test_unknown_method(self):
+        with self.assertRaisesRegex(ValueError, "unknown method"):
+            self.interp(method="spline")
+
+    def test_pipeline_step(self):
+        d = self.d | pp.pupil.blinks_interpolate(eyes="left", margin=(50, 100))
+        np.testing.assert_array_equal(d.data["left", "pupil"],
+                                      self.interp(margin=(50, 100)).data["left", "pupil"])
