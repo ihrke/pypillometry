@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from pypillometry.signal.preproc import smooth_window, velocity_savgol, detect_blinks_velocity, detect_blinks_zero, blink_onsets_mahot
+from pypillometry.signal.preproc import smooth_window, velocity_savgol, detect_blinks_velocity, detect_blinks_zero, blink_onsets_mahot, interpolate_blinks_kalman
 
 
 class TestSmoothWindow(unittest.TestCase):
@@ -467,6 +467,73 @@ class TestBlinkOnsetsMahot(unittest.TestCase):
         np.testing.assert_array_equal(out, ref)
         self.assertLessEqual(ref[0][0], 975)
         self.assertGreaterEqual(ref[0][1], 1025)
+
+class TestInterpolateBlinksKalman(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        from pypillometry.signal import gaussmarkov as gm
+        cls.fs = 500
+        model = gm.GaussMarkovModel([gm.Matern(100., 300., nu=1.5)], noise=2.)
+        cls.y = gm.simulate(model, 20000, fs=cls.fs, rng=1) + 3000
+        cls.gaps = [(s, s + 75) for s in range(1000, 19000, 1000)]
+
+    def with_gaps(self, gaps):
+        p = self.y.copy()
+        for a, b in gaps:
+            p[a:b] = np.nan
+        return p
+
+    def test_better_than_linear(self):
+        """the gaps are reconstructed better than by a straight line"""
+        filled, interp, model = interpolate_blinks_kalman(self.with_gaps(self.gaps), self.gaps,
+                                                          self.fs, 250)
+        err = np.concatenate([filled[a:b] - self.y[a:b] for a, b in self.gaps])
+        lin = np.concatenate([np.linspace(self.y[a-1], self.y[b], b-a+2)[1:-1] - self.y[a:b]
+                              for a, b in self.gaps])
+        self.assertLess(np.sqrt(np.mean(err**2)), 0.8 * np.sqrt(np.mean(lin**2)))
+        self.assertAlmostEqual(model.noise, 2., delta=0.3)
+
+    def test_only_blinks_replaced(self):
+        filled, interp, _ = interpolate_blinks_kalman(self.with_gaps(self.gaps), self.gaps,
+                                                      self.fs, 250)
+        expected = np.zeros(len(self.y), dtype=bool)
+        for a, b in self.gaps:
+            expected[a:b] = True
+        np.testing.assert_array_equal(interp, expected)
+        np.testing.assert_array_equal(filled[~expected], self.y[~expected])
+        self.assertFalse(np.isnan(filled).any())
+
+    def test_continuous_at_edges(self):
+        """the fill joins the signal at both ends of a gap"""
+        filled, _, _ = interpolate_blinks_kalman(self.with_gaps(self.gaps), self.gaps,
+                                                 self.fs, 250)
+        steps = np.abs(np.diff(self.y)).max()
+        for a, b in self.gaps:
+            self.assertLess(abs(filled[a] - filled[a-1]), 2 * steps)
+            self.assertLess(abs(filled[b] - filled[b-1]), 2 * steps)
+
+    def test_gap_at_start_and_end(self):
+        gaps = [(0, 50), (5000, 5075), (len(self.y) - 50, len(self.y))]
+        filled, interp, _ = interpolate_blinks_kalman(self.with_gaps(gaps), gaps, self.fs, 250)
+        self.assertFalse(np.isnan(filled).any())
+        self.assertEqual(interp.sum(), 175)
+
+    def test_missing_samples_not_used(self):
+        """samples in `missing` are not observations (and not filled)"""
+        gaps = [(5000, 5075)]
+        p = self.with_gaps(gaps)
+        p[4900:4990] = 1e6          # e.g. an artefact masked elsewhere
+        missing = np.zeros(len(p), dtype=bool)
+        missing[4900:4990] = True
+        filled, interp, _ = interpolate_blinks_kalman(p, gaps, self.fs, 250, missing=missing)
+        self.assertLess(np.abs(filled[5000:5075] - self.y[5000:5075]).max(), 200)
+        self.assertFalse(interp[4900:4990].any())
+
+    def test_no_blinks(self):
+        filled, interp, model = interpolate_blinks_kalman(self.y, [], self.fs, 250)
+        np.testing.assert_array_equal(filled, self.y)
+        self.assertIsNone(model)
+
 
 if __name__ == '__main__':
     unittest.main()
