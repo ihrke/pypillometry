@@ -622,8 +622,8 @@ def interpolate_blinks_kalman(sy, blinks, fs, window, missing=None, max_fit_wind
     Around each blink, a local window of `window` samples on each side is
     taken (blinks with overlapping windows share one window) and a linear
     trend fitted to its valid samples is removed. The residuals are modelled
-    as a Matérn process (smoothness 3/2) plus white measurement noise, whose
-    parameters are fitted once (maximum likelihood over the windows, exact
+    as the sum of a fast and a slow Matérn process (smoothness 3/2) plus
+    white measurement noise, whose parameters are fitted once (maximum likelihood over the windows, exact
     for the missing samples). The blink samples are replaced by the smoothed
     mean (Kalman filter + RTS smoother) plus the trend.
 
@@ -688,9 +688,15 @@ def interpolate_blinks_kalman(sy, blinks, fs, window, missing=None, max_fit_wind
     sd = max(np.std(res), 1e-12)
     noise0 = np.std(diffs) / np.sqrt(2) if diffs.size > 1 else 0.1 * sd
     noise0 = min(max(noise0, 1e-3 * sd), sd)
-    model = GaussMarkovModel([Matern(sigma=sd, ell=100.0, nu=1.5)], noise=noise0)
-    bounds = [(np.log(1e-3 * sd), np.log(100 * sd)),         # sigma
-              (np.log(1000.0 / fs), np.log(10000.0)),        # ell (ms)
+    # a fast and a slow component: with one component, the length scale is
+    # set by the fast fluctuations and the fill reverts to the trend
+    # within a few tens of ms
+    model = GaussMarkovModel([Matern(sigma=sd / 2, ell=30.0, nu=1.5),
+                              Matern(sigma=sd, ell=500.0, nu=1.5)], noise=noise0)
+    bounds = [(np.log(1e-3 * sd), np.log(100 * sd)),         # fast: sigma
+              (np.log(1000.0 / fs), np.log(200.0)),          # fast: ell (ms)
+              (np.log(1e-3 * sd), np.log(100 * sd)),         # slow: sigma
+              (np.log(20.0), np.log(10000.0)),               # slow: ell (ms)
               (np.log(1e-4 * sd), np.log(10 * sd))]          # noise
 
     def negll(theta):

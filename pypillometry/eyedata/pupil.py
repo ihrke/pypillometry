@@ -870,7 +870,8 @@ class PupilNamespace(Namespace):
           value given the signal around them (Kalman smoother). Around each
           blink, `blinkwindow` before and after it is used, after removing a
           linear trend; the signal is modelled as a smooth Gauss-Markov
-          process (Matérn, smoothness 3/2) plus measurement noise, whose
+          process (a fast and a slow Matérn process, smoothness 3/2) plus
+          measurement noise, whose
           parameters are fitted to the data automatically. Exactly the
           stored blinks are replaced, so they should include the transients
           around the blinks (see the `margin` of :meth:`blinks_detect`).
