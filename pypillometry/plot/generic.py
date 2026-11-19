@@ -475,7 +475,7 @@ class GenericPlots(Namespace):
                         for start_ix, end_ix in mask_intervals:
                             # Convert indices to time values, clamp end_ix to valid range
                             end_ix = min(end_ix, len(tx) - 1)
-                            ax.axvspan(tx[start_ix], tx[end_ix], color='red', alpha=0.2, zorder=0)
+                            ax.axvspan(tx[start_ix], tx[end_ix], color='red', alpha=0.1, lw=0, zorder=0)
             
             if len(tx):
                 self._draw_highlight([ax], highlight, highlight_color, units,
