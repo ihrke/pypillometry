@@ -257,7 +257,11 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_
                            max_blink_samples=None):
     """
     Detect blinks as everything between a fast downward and a fast upward-trending PD-changes.
-    
+
+    Each offset is paired with the last onset before it: an onset that is
+    followed by another onset before the next offset has no offset of its own
+    and is dropped.
+
     Uses asymmetric Savitzky-Golay velocity estimation to handle NaN values properly:
     - Backward-looking velocity for onset detection (so future NaN doesn't affect the estimate)
     - Forward-looking velocity for offset detection (so past NaN doesn't affect the estimate)
@@ -379,6 +383,14 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_
             # Get the first valid offset run and use its END
             first_valid_idx = np.where(valid_offset_mask)[0][0]
             off = offset_ends[first_valid_idx]
+            # a later onset before this offset: this onset has no offset of
+            # its own (e.g., a dip from an eye movement) and must not take
+            # the offset of the next blink
+            later = onsets[(onsets > on) & (onsets < offset_starts[first_valid_idx])
+                           & (off - onsets >= min_blink_samples)]
+            if later.size > 0:
+                on = later[0]
+                continue
         else:
             off = n - 1
         if max_blink_samples is not None and off - on + 1 > max_blink_samples:

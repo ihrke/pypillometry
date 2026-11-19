@@ -299,6 +299,21 @@ class TestDetectBlinksVelocity(unittest.TestCase):
         self.assertEqual(len(blinks), 1)
         self.assertGreater(blinks[0][0], 250)
 
+    def test_onset_without_offset_before_next_blink(self):
+        """an onset followed by another onset does not take the offset of
+        the next blink (the signal between them is not a blink)"""
+        signal = np.ones(400) * 1000
+        signal[40:50] = np.linspace(1000, 700, 10)   # drop, slow recovery
+        signal[50:150] = np.linspace(700, 1000, 100)
+        signal[200:210] = np.linspace(1000, 100, 10) # blink
+        signal[210:230] = 0
+        signal[230:240] = np.linspace(100, 1000, 10)
+        blinks = detect_blinks_velocity(signal, smooth_winsize=5, vel_onset=-20,
+                                        vel_offset=50, min_onset_len=2, min_offset_len=2)
+        self.assertEqual(len(blinks), 1)
+        self.assertGreater(blinks[0][0], 190)
+        self.assertGreaterEqual(blinks[0][1], 230)
+
     def test_returns_empty_for_flat_signal(self):
         """Flat signal should have no blinks"""
         signal = np.ones(200) * 100
