@@ -483,15 +483,45 @@ class TestInterpolateBlinksKalman(unittest.TestCase):
             p[a:b] = np.nan
         return p
 
-    def test_better_than_linear(self):
-        """the gaps are reconstructed better than by a straight line"""
-        filled, interp, model = interpolate_blinks_kalman(self.with_gaps(self.gaps), self.gaps,
-                                                          self.fs, 250)
+    def rmse_and_linear(self, filled):
         err = np.concatenate([filled[a:b] - self.y[a:b] for a, b in self.gaps])
         lin = np.concatenate([np.linspace(self.y[a-1], self.y[b], b-a+2)[1:-1] - self.y[a:b]
                               for a, b in self.gaps])
-        self.assertLess(np.sqrt(np.mean(err**2)), 0.8 * np.sqrt(np.mean(lin**2)))
+        return np.sqrt(np.mean(err**2)), np.sqrt(np.mean(lin**2))
+
+    def test_better_than_linear(self):
+        """the gaps are reconstructed better than by a straight line; the
+        noise level is estimated"""
+        filled, interp, model = interpolate_blinks_kalman(self.with_gaps(self.gaps), self.gaps,
+                                                          self.fs, 250)
+        rmse, lin = self.rmse_and_linear(filled)
+        self.assertLess(rmse, lin)
         self.assertAlmostEqual(model.noise, 2., delta=0.3)
+        # the time scales are fixed
+        self.assertEqual(model.params["matern0.ell"], 5.)
+        self.assertEqual(model.params["matern1.ell"], 300.)
+
+    def test_optimize(self):
+        """with optimize=True, all parameters are fitted"""
+        filled, interp, model = interpolate_blinks_kalman(self.with_gaps(self.gaps), self.gaps,
+                                                          self.fs, 250, optimize=True)
+        rmse, lin = self.rmse_and_linear(filled)
+        self.assertLess(rmse, 0.8 * lin)
+        self.assertAlmostEqual(model.noise, 2., delta=0.3)
+        self.assertNotEqual(model.params["matern1.ell"], 300.)
+
+    def test_noise_level_scales(self):
+        """the estimated noise follows the noise of the data; the fill does
+        not depend on the units of the data"""
+        rng = np.random.default_rng(3)
+        p = self.with_gaps(self.gaps)
+        for sd in (5., 20.):
+            _, _, model = interpolate_blinks_kalman(p + rng.normal(0, sd, len(p)), self.gaps,
+                                                    self.fs, 250)
+            self.assertAlmostEqual(model.noise, np.hypot(2., sd), delta=0.15 * sd)
+        f1, _, _ = interpolate_blinks_kalman(p, self.gaps, self.fs, 250)
+        f2, _, _ = interpolate_blinks_kalman(10 * p, self.gaps, self.fs, 250)
+        np.testing.assert_allclose(f2, 10 * f1)
 
     def test_only_blinks_replaced(self):
         filled, interp, _ = interpolate_blinks_kalman(self.with_gaps(self.gaps), self.gaps,

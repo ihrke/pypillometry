@@ -285,6 +285,13 @@ class TestBlinksInterpolateParams(unittest.TestCase):
         finally:
             pp.logger.remove(hid)
         self.assertTrue(any("'margin' is only used by method='mahot'" in m for m in msgs))
+        msgs.clear()
+        hid = pp.logger.add(lambda m: msgs.append(m.record["message"]), level="WARNING")
+        try:
+            self.interp(optimize=True)
+        finally:
+            pp.logger.remove(hid)
+        self.assertTrue(any("'optimize' is only used by method='kalman'" in m for m in msgs))
         np.testing.assert_array_equal(d.data["left", "pupil"],
                                       self.interp(method="kalman").data["left", "pupil"])
 

@@ -35,7 +35,7 @@ import numpy as np
 _INTERP_DEFAULTS = {
     "mahot": dict(winsize=25, vel_onset=-5.0, vel_offset=5.0, margin=(10, 30),
                   interp_type="cubic"),
-    "kalman": dict(),
+    "kalman": dict(optimize=False),
 }
 
 
@@ -758,7 +758,7 @@ class PupilNamespace(Namespace):
             obj.set_blinks(merged_intervals, eyes=[eye], variables=[var])
         return obj
 
-    def _interpolate_kalman(self, obj, eye, blinkwindow_ix):
+    def _interpolate_kalman(self, obj, eye, blinkwindow_ix, optimize):
         """blinks of `eye` in `obj` interpolated with
         :func:`~pypillometry.signal.preproc.interpolate_blinks_kalman`;
         returns the signal and the interpolated samples"""
@@ -768,10 +768,12 @@ class PupilNamespace(Namespace):
         # unusable samples (other masks, excluded periods) are no observations
         missing = excl | np.isnan(obj.get_values(eye, "pupil", "strict"))
         syr, interpolated, model = preproc.interpolate_blinks_kalman(
-            obj.data[eye, "pupil"], blinks, obj.fs, blinkwindow_ix, missing=missing)
+            obj.data[eye, "pupil"], blinks, obj.fs, blinkwindow_ix, missing=missing,
+            optimize=optimize)
         if model is not None:
             pars = ", ".join(f"{k}={v:.4g}" for k, v in model.params.items())
-            logger.info(f"{eye}_pupil: Kalman interpolation model {pars}")
+            (logger.info if optimize else logger.debug)(
+                f"{eye}_pupil: Kalman interpolation model {pars}")
         return syr, interpolated
 
     def _interpolate_mahot(self, obj, eye, blinkwindow_ix, winsize, vel_onset, vel_offset,
@@ -871,8 +873,10 @@ class PupilNamespace(Namespace):
           blink, `blinkwindow` before and after it is used, after removing a
           linear trend; the signal is modelled as a smooth Gauss-Markov
           process (a fast and a slow Matérn process, smoothness 3/2) plus
-          measurement noise, whose
-          parameters are fitted to the data automatically. Exactly the
+          measurement noise. The time scales of the components are fixed
+          and the noise level is estimated from the data (with
+          ``optimize=True``, all parameters are fitted, which is much
+          slower). Exactly the
           stored blinks are replaced, so they should include the transients
           around the blinks (see the `margin` of :meth:`blinks_detect`).
 
@@ -900,7 +904,7 @@ class PupilNamespace(Namespace):
             if `False`, make and return copy before making changes
             if `None`, use the object-level setting
         **kwargs
-            parameters of the method (see below); ``"kalman"`` has none
+            parameters of the method (see below)
 
         Other Parameters
         ----------------
@@ -926,6 +930,10 @@ class PupilNamespace(Namespace):
         interp_type : str
             ``"mahot"``: type of interpolation accepted by
             :func:`scipy.interpolate.interp1d()`; default ``"cubic"``
+        optimize : bool
+            ``"kalman"``: fit all parameters of the model to the data
+            instead of using the defaults; much slower, and usually changes
+            the result little; default False
 
         Returns
         -------
@@ -953,7 +961,7 @@ class PupilNamespace(Namespace):
         for eye in eyes:
             logger.debug(f"Interpolating blinks for eye {eye} ({method})")
             if method == "kalman":
-                syr, interpolated = self._interpolate_kalman(obj, eye, blinkwindow_ix)
+                syr, interpolated = self._interpolate_kalman(obj, eye, blinkwindow_ix, **pars)
             else:
                 syr, interpolated = self._interpolate_mahot(obj, eye, blinkwindow_ix, **pars)
 

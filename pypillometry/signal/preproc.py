@@ -615,7 +615,22 @@ def _local_trend(y, valid, gap_start, gap_end):
     return np.polyval(coef, t)
 
 
-def interpolate_blinks_kalman(sy, blinks, fs, window, missing=None, max_fit_windows=100):
+def _noise_sd(residuals):
+    """
+    SD of the white measurement noise from the second differences of the
+    (detrended) windows: for white noise, the variance of the second
+    difference is 6 times the noise variance; the signal hardly contributes
+    at the sampling rates of eye trackers. Robust (MAD) estimate.
+    """
+    d2 = np.concatenate([r[2:] - 2 * r[1:-1] + r[:-2] for r in residuals])
+    d2 = d2[~np.isnan(d2)]
+    if d2.size < 2:
+        return np.nan
+    return 1.4826 * np.median(np.abs(d2 - np.median(d2))) / np.sqrt(6)
+
+
+def interpolate_blinks_kalman(sy, blinks, fs, window, missing=None, optimize=False,
+                              max_fit_windows=100):
     """
     Interpolate blinks with a Gauss-Markov model (Kalman smoother).
 
@@ -623,9 +638,17 @@ def interpolate_blinks_kalman(sy, blinks, fs, window, missing=None, max_fit_wind
     taken (blinks with overlapping windows share one window) and a linear
     trend fitted to its valid samples is removed. The residuals are modelled
     as the sum of a fast and a slow Matérn process (smoothness 3/2) plus
-    white measurement noise, whose parameters are fitted once (maximum likelihood over the windows, exact
-    for the missing samples). The blink samples are replaced by the smoothed
+    white measurement noise. The blink samples are replaced by the smoothed
     mean (Kalman filter + RTS smoother) plus the trend.
+
+    By default, the time scales of the components are fixed (5 and 300 ms),
+    their standard deviations are 0.1 and 1 times the SD of the residuals,
+    and the SD of the noise is estimated from the second differences of the
+    residuals. The smoothed mean depends only on the ratios of these SDs, so
+    the defaults do not depend on the units of the pupil data. With
+    `optimize=True`, all parameters are fitted instead (maximum likelihood
+    over the windows, exact for the missing samples), which is much slower
+    and changes the result little.
 
     Parameters
     ----------
@@ -640,9 +663,11 @@ def interpolate_blinks_kalman(sy, blinks, fs, window, missing=None, max_fit_wind
     missing : np.ndarray of bool, optional
         further samples that are not used as observations (e.g., excluded
         periods or other blinks); the blinks, NaN and 0 are always missing
+    optimize : bool
+        fit all parameters of the model instead of using the defaults
     max_fit_windows : int
-        at most this many (evenly spaced) windows are used to fit the
-        parameters
+        with `optimize=True`, at most this many (evenly spaced) windows are
+        used to fit the parameters
 
     Returns
     -------
@@ -651,7 +676,7 @@ def interpolate_blinks_kalman(sy, blinks, fs, window, missing=None, max_fit_wind
     interpolated : np.ndarray of bool
         the replaced samples
     model : GaussMarkovModel or None
-        the fitted model (None if there was nothing to interpolate)
+        the model used (None if there was nothing to interpolate)
     """
     from scipy.optimize import minimize
     from .gaussmarkov import GaussMarkovModel, Matern, kalman_filter, kalman_loglik, rts_smoother
@@ -679,42 +704,42 @@ def interpolate_blinks_kalman(sy, blinks, fs, window, missing=None, max_fit_wind
     if not wins:
         return filled, interpolated, None
 
-    # fit the parameters (log scale, bounded) on up to max_fit_windows windows
-    fitwins = [wins[i][3] for i in
-               np.unique(np.linspace(0, len(wins) - 1, min(len(wins), max_fit_windows)).astype(int))]
-    res = np.concatenate([r[~np.isnan(r)] for r in fitwins])
-    diffs = np.concatenate([np.diff(r) for r in fitwins])
-    diffs = diffs[~np.isnan(diffs)]
-    sd = max(np.std(res), 1e-12)
-    noise0 = np.std(diffs) / np.sqrt(2) if diffs.size > 1 else 0.1 * sd
-    noise0 = min(max(noise0, 1e-3 * sd), sd)
-    # a fast and a slow component: with one component, the length scale is
-    # set by the fast fluctuations and the fill reverts to the trend
-    # within a few tens of ms
-    model = GaussMarkovModel([Matern(sigma=sd / 2, ell=30.0, nu=1.5),
-                              Matern(sigma=sd, ell=500.0, nu=1.5)], noise=noise0)
-    bounds = [(np.log(1e-3 * sd), np.log(100 * sd)),         # fast: sigma
-              (np.log(1000.0 / fs), np.log(200.0)),          # fast: ell (ms)
-              (np.log(1e-3 * sd), np.log(100 * sd)),         # slow: sigma
-              (np.log(20.0), np.log(10000.0)),               # slow: ell (ms)
-              (np.log(1e-4 * sd), np.log(10 * sd))]          # noise
+    # default model: fixed time scales, SDs relative to the residuals, noise
+    # estimated. A fast and a slow component: with only a slow one, the
+    # fast fluctuations are not accounted for and the fill is worse; with
+    # only a fast one, the fill reverts to the trend within a few tens of ms.
+    residuals = [w[3] for w in wins]
+    sd = max(np.nanstd(np.concatenate(residuals)), 1e-12)
+    noise = _noise_sd(residuals)
+    noise = min(max(noise if np.isfinite(noise) else 0.01 * sd, 1e-4 * sd), sd)
+    model = GaussMarkovModel([Matern(sigma=0.1 * sd, ell=5.0, nu=1.5),
+                              Matern(sigma=sd, ell=300.0, nu=1.5)], noise=noise)
 
-    def negll(theta):
-        try:
-            ssm = model.from_theta(theta).to_lgssm(fs)
-            ll = sum(kalman_loglik(ssm, r) for r in fitwins)
-        except np.linalg.LinAlgError:
-            return np.inf
-        return -ll if np.isfinite(ll) else np.inf
+    if optimize:
+        # all parameters (log scale, bounded) on up to max_fit_windows windows
+        fitwins = [residuals[i] for i in
+                   np.unique(np.linspace(0, len(wins) - 1, min(len(wins), max_fit_windows)).astype(int))]
+        bounds = [(np.log(1e-3 * sd), np.log(100 * sd)),         # fast: sigma
+                  (np.log(1000.0 / fs), np.log(200.0)),          # fast: ell (ms)
+                  (np.log(1e-3 * sd), np.log(100 * sd)),         # slow: sigma
+                  (np.log(20.0), np.log(10000.0)),               # slow: ell (ms)
+                  (np.log(1e-4 * sd), np.log(10 * sd))]          # noise
 
-    theta0 = np.clip(model.theta, [b[0] for b in bounds], [b[1] for b in bounds])
-    opt = minimize(negll, theta0, method="L-BFGS-B", bounds=bounds)
-    if np.isfinite(opt.fun) and (opt.success or opt.fun < negll(theta0)):
-        model = model.from_theta(opt.x)
-    else:
-        logger.warning(f"Fitting the Kalman interpolation model failed ({opt.message}); "
-                       "using starting values")
-        model = model.from_theta(theta0)
+        def negll(theta):
+            try:
+                ssm = model.from_theta(theta).to_lgssm(fs)
+                ll = sum(kalman_loglik(ssm, r) for r in fitwins)
+            except np.linalg.LinAlgError:
+                return np.inf
+            return -ll if np.isfinite(ll) else np.inf
+
+        theta0 = np.clip(model.theta, [b[0] for b in bounds], [b[1] for b in bounds])
+        opt = minimize(negll, theta0, method="L-BFGS-B", bounds=bounds)
+        if np.isfinite(opt.fun) and (opt.success or opt.fun < negll(theta0)):
+            model = model.from_theta(opt.x)
+        else:
+            logger.warning(f"Fitting the Kalman interpolation model failed ({opt.message}); "
+                           "using the default parameters")
     logger.debug(f"Kalman interpolation model: {model.params}")
 
     # smooth each window and fill the blinks
