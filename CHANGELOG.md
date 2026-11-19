@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- `blinks_detect()`: `vel_onset_min_duration` and `vel_offset_min_duration` default to 10 ms (was 5 ms), which removes most false blinks from eye movements
+- `blinks_detect()`: a velocity onset without its own offset no longer takes the offset of the next blink (which marked the clean signal between them as blink)
 - `blinks_detect(margin=...)`: extend the detected blinks on each side, e.g. to include the transient
 - `blinks_interpolate()`: the Mahot method searches the transients from the missing samples of each blink, so it does not depend on how far the blinks were extended; for merged blinks, the outermost transients are used
 

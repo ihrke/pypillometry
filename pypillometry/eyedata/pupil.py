@@ -468,7 +468,7 @@ class PupilNamespace(Namespace):
     @keephistory
     def blinks_detect(self, eyes=[], min_duration:float=20, blink_val:float=0,
                       winsize: float=11, vel_onset=-5.0, vel_offset=5.0, 
-                      vel_onset_min_duration: float=5.0, vel_offset_min_duration: float=5.0,
+                      vel_onset_min_duration: float=10.0, vel_offset_min_duration: float=10.0,
                       max_duration: float=1000, margin=0,
                       strategies: list=["zero","velocity"],
                       ignore_existing_mask=False, inplace=None):

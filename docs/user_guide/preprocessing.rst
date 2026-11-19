@@ -59,6 +59,11 @@ object (the ``"blink"`` layer, which masks them) and the object is
 returned (``d.pupil.blinks_detect()`` works in place). Check them with
 :meth:`~EyeData.get_blinks` (a dict with one :class:`Intervals`
 per channel, in ms); ``d.clear_layer("blink")`` removes them again.
+A drop only counts as the onset of a blink if the velocity stays beyond
+the threshold for a while (``vel_onset_min_duration``, 10 ms by default),
+so that brief changes, e.g. from eye movements, are not taken for blinks;
+``margin=`` extends the detected blinks on both sides, e.g. to include the
+whole transient around them.
 :meth:`~EyeData.pupil.blinks_interpolate` replaces the pupil size during
 blinks by a smooth curve (Mathôt, 2013). Interpolated samples are used by
 all later steps (filters, segments, statistics); they keep the
