@@ -442,28 +442,67 @@ def detect_blinks_zero(sy, min_duration, blink_val=0):
     
     return np.array(blinks)
     
-def blink_onsets_mahot(sy, blinks, smooth_winsize, vel_onset, vel_offset, margin, blinkwindow, min_onset_len=1, min_offset_len=1):
+def _blink_core(sy, start, end):
     """
-    Method for finding the on- and offset for each blink (excluding transient).
+    Core of the blink stored as `start`-`end` (end-exclusive): the stretch
+    from the first to the last missing (NaN or 0) sample in it, or the
+    smallest pupil if it has no missing samples. Returns `(first, last)`
+    (both inclusive). It does not depend on how far the stored blink was
+    extended (e.g., by the `margin` of the detection).
+    """
+    seg = sy[start:end]
+    missing = np.where(np.isnan(seg) | (seg == 0))[0]
+    if missing.size > 0:
+        return start + missing[0], start + missing[-1]
+    if seg.size == 0:
+        return start, max(start, end - 1)
+    m = start + int(np.argmin(seg))
+    return m, m
+
+
+def _velocity_runs(cands, max_gap, min_len):
+    """
+    Runs of the (sorted) sample indices `cands`, as an array (nruns x 2) of
+    first/last index (both inclusive). Runs separated by at most `max_gap`
+    samples are joined (e.g., a drop that briefly falls below the
+    threshold); runs shorter than `min_len` samples are dropped (after
+    joining).
+    """
+    if cands.size == 0:
+        return np.zeros((0, 2), dtype=int)
+    brk = np.where(np.diff(cands) > max_gap + 1)[0]
+    runs = np.c_[cands[np.r_[0, brk + 1]], cands[np.r_[brk, cands.size - 1]]]
+    return runs[runs[:, 1] - runs[:, 0] + 1 >= min_len]
+
+
+def blink_onsets_mahot(sy, blinks, smooth_winsize, vel_onset, vel_offset, margin, blinkwindow,
+                       min_onset_len=1, min_offset_len=1, max_gap=None):
+    """
+    Method for finding the on- and offset for each blink (including the transient).
     See https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001.
+
+    The search starts from the core of each blink: the stretch from its first
+    to its last missing (NaN or 0) sample, or its smallest pupil if it has no
+    missing samples. The onset is the start of the closest closing transient
+    (velocity below `vel_onset`) that starts before the core, the offset the
+    end of the closest opening transient (velocity above `vel_offset`) that
+    ends after it. The result therefore does not depend on how far the
+    blinks were extended when they were detected, and for a blink that
+    contains several transients (e.g., merged blinks), the outermost ones
+    are used.
     
     Uses asymmetric Savitzky-Golay velocity estimation:
     - Backward-looking velocity for onset detection (so future zeros/NaN don't affect the estimate)
     - Forward-looking velocity for offset detection (so past zeros/NaN don't affect the estimate)
-    
-    The asymmetric approach naturally handles blink regions (zeros/NaN) because:
-    - At blink onset: backward velocity only sees valid data before the blink → detects the drop
-    - At blink offset: forward velocity only sees valid data after the blink → detects the rise
     
     Parameters
     ----------
     sy : np.ndarray
         pupil data (can contain NaN or zeros for missing values)
     blinks : np.ndarray or Intervals
-        blink onset/offset sample indices (nblinks x 2), e.g. from
-        :func:`detect_blinks_zero` or an :class:`~pypillometry.Intervals`
-        object in index units; anything that iterates over
-        `(start, end)` pairs works
+        blink start/end sample indices (nblinks x 2, end-exclusive), e.g. an
+        :class:`~pypillometry.Intervals` object in index units; anything
+        that iterates over `(start, end)` pairs works
     smooth_winsize : int
         size of the Savitzky-Golay window in samples (odd)
     vel_onset : float
@@ -473,71 +512,62 @@ def blink_onsets_mahot(sy, blinks, smooth_winsize, vel_onset, vel_offset, margin
     margin : tuple of int
         `(before, after)` margin that is subtracted/added to onset and offset (in samples)
     blinkwindow : int
-        how much time before and after each blink to search for the
+        how far before and after the core of each blink to search for the
         on-/offset (in samples)
     min_onset_len : int
         minimum number of consecutive samples in an onset run to be considered valid
     min_offset_len : int
         minimum number of consecutive samples in an offset run to be considered valid
+    max_gap : int or None
+        runs of threshold crossings separated by at most this many samples
+        are joined into one transient; `None` (default) uses `smooth_winsize`
 
     Returns
     -------
     np.ndarray
         array (n x 2) of refined onset/offset sample indices, one row per
-        input blink; if no valid velocity-threshold crossing is found
-        before (after) a blink, its detected start (end) is used
+        input blink; if no transient is found before (after) the core of a
+        blink, the start (end) of the core is used
     """
     # Generate asymmetric velocity profiles
     # Backward-looking for onset detection (doesn't peek into blink)
     vel_backward = velocity_savgol(sy, smooth_winsize, polyorder=2, direction="backward")
     # Forward-looking for offset detection (doesn't peek into blink)
     vel_forward = velocity_savgol(sy, smooth_winsize, polyorder=2, direction="forward")
-    
-    blinkwindow_ix=blinkwindow
-    n=len(sy)
-    
-    def closest_run(cands, target, min_len, use_end):
-        """start (or end) of the run of `cands` whose start is closest to
-        `target`; None if there is no run of at least `min_len` samples"""
-        if cands.size == 0:
-            return None
-        brk = np.where(np.diff(cands) > 1)[0]
-        run_starts = np.r_[0, brk + 1]
-        run_ends = np.r_[brk, cands.size - 1]
-        ok = (run_ends - run_starts + 1) >= min_len
-        if not ok.any():
-            return None
-        run_starts, run_ends = run_starts[ok], run_ends[ok]
-        i = np.argmin(np.abs(cands[run_starts] - target))
-        return cands[run_ends[i]] if use_end else cands[run_starts[i]]
+    if max_gap is None:
+        max_gap = smooth_winsize
+    n = len(sy)
 
-    newblinks=[]
-    for ix,(start,end) in enumerate(blinks):
-        winstart,winend=max(0,start-blinkwindow_ix), min(end+blinkwindow_ix, n)
-        slic=slice(winstart, winend)
-        winlength=vel_backward[slic].size
+    newblinks = []
+    for ix, (start, end) in enumerate(blinks):
+        start, end = int(start), int(end)
+        cstart, cend = _blink_core(sy, start, end)
+        winstart, winend = max(0, cstart - blinkwindow), min(cend + blinkwindow + 1, n)
 
-        ## onsets are in "local" indices of the windows, start-end of blink global
-        startl,endl=start-winstart,end-winstart
-
-        # onset: velocity crossing at or before the start of the blink
-        onsets=np.where(vel_backward[slic]<=vel_onset)[0]
-        onset = closest_run(onsets[onsets <= startl], startl, min_onset_len, use_end=False)
-        if onset is None:
+        # onset: closest closing transient that starts before the core
+        runs = _velocity_runs(np.where(vel_backward[winstart:winend] <= vel_onset)[0] + winstart,
+                              max_gap, min_onset_len)
+        runs = runs[runs[:, 0] < cstart]
+        if runs.shape[0] > 0:
+            onset = runs[-1, 0]
+        else:
             # e.g. the signal does not drop before the blink: keep the
-            # detected start instead of dropping the blink
-            logger.debug(f"Blink {ix} (samples {start}-{end}): no onset crossing, using blink start")
-            onset = startl
-        onset = max(0, onset - margin[0])  # apply margin, avoid overflow to the left
+            # core instead of dropping the blink
+            logger.debug(f"Blink {ix} (samples {start}-{end}): no onset crossing, using blink core")
+            onset = cstart
+        onset = max(0, onset - margin[0])
 
-        # offset: end of the velocity-crossing run at or after the end of the blink
-        offsets=np.where(vel_forward[slic]>=vel_offset)[0]
-        offset = closest_run(offsets[offsets >= endl], endl, min_offset_len, use_end=True)
-        if offset is None:
-            logger.debug(f"Blink {ix} (samples {start}-{end}): no offset crossing, using blink end")
-            offset = endl
-        offset = min(winlength - 1, offset + margin[1])  # apply margin, avoid overflow to the right
+        # offset: closest opening transient that ends after the core
+        runs = _velocity_runs(np.where(vel_forward[winstart:winend] >= vel_offset)[0] + winstart,
+                              max_gap, min_offset_len)
+        runs = runs[runs[:, 1] > cend]
+        if runs.shape[0] > 0:
+            offset = runs[0, 1]
+        else:
+            logger.debug(f"Blink {ix} (samples {start}-{end}): no offset crossing, using blink core")
+            offset = cend
+        offset = min(n - 1, offset + margin[1])
 
-        newblinks.append([onset + winstart, offset + winstart])
+        newblinks.append([onset, offset])
 
     return np.array(newblinks)

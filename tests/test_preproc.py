@@ -408,5 +408,50 @@ class TestBlinkOnsetsMahot(unittest.TestCase):
         self.assertEqual(out[0][0], 995)  # detected start minus margin
         self.assertGreaterEqual(out[0][1], 1500)
 
+    def test_independent_of_stored_extent(self):
+        """extending the stored blink (detection margin) does not change the result"""
+        p = self.make(1000, 1500)
+        ref = blink_onsets_mahot(p, [(1000, 1500)], 11, -5, 5, (0, 0), 500)
+        for blink in [(950, 1550), (900, 1520), (1000, 1600)]:
+            out = blink_onsets_mahot(p, [blink], 11, -5, 5, (0, 0), 500)
+            np.testing.assert_array_equal(out, ref)
+        # the transients are included
+        self.assertLessEqual(ref[0][0], 1000 - 25)
+        self.assertGreaterEqual(ref[0][1], 1500 + 25)
+
+    def test_outermost_transients(self):
+        """a blink with several transients gets the outermost ones"""
+        p = self.make(1000, 1100)
+        p[1200-30:1200] = np.linspace(5000, 1000, 30)
+        p[1200:1300] = np.nan
+        p[1300:1330] = np.linspace(1000, 5000, 30)
+        out = blink_onsets_mahot(p, [(990, 1310)], 11, -5, 5, (0, 0), 500)
+        self.assertLessEqual(out[0][0], 1000 - 25)
+        self.assertGreaterEqual(out[0][1], 1300 + 25)
+
+    def test_short_dip_in_transient_is_bridged(self):
+        """a transient that briefly slows down is found as a whole"""
+        p = np.full(3000, 5000.0)
+        p[940:970] = np.linspace(5000, 3000, 30)
+        p[970:976] = 3000.0          # pause in the drop
+        p[976:1000] = np.linspace(3000, 1000, 24)
+        p[1000:1500] = np.nan
+        p[1500:1530] = np.linspace(1000, 5000, 30)
+        out = blink_onsets_mahot(p, [(1000, 1500)], 11, -5, 5, (0, 0), 500)
+        self.assertLessEqual(out[0][0], 945)
+        nobridge = blink_onsets_mahot(p, [(1000, 1500)], 11, -5, 5, (0, 0), 500, max_gap=0)
+        self.assertGreater(nobridge[0][0], 970)
+
+    def test_blink_without_missing_samples(self):
+        """a blink without missing samples is searched from its smallest pupil"""
+        p = np.full(3000, 5000.0)
+        p[970:1000] = np.linspace(5000, 1000, 30)
+        p[1000:1030] = np.linspace(1000, 5000, 30)
+        ref = blink_onsets_mahot(p, [(990, 1010)], 11, -5, 5, (0, 0), 500)
+        out = blink_onsets_mahot(p, [(950, 1050)], 11, -5, 5, (0, 0), 500)
+        np.testing.assert_array_equal(out, ref)
+        self.assertLessEqual(ref[0][0], 975)
+        self.assertGreaterEqual(ref[0][1], 1025)
+
 if __name__ == '__main__':
     unittest.main()

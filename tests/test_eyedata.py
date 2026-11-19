@@ -1338,6 +1338,36 @@ class TestEyeData(unittest.TestCase):
         self.assertIsInstance(result['left_pupil'], Intervals)
         self.assertIsInstance(result['right_pupil'], Intervals)
 
+    def _blinks_with_margin(self, gaps, margin):
+        """blinks (in samples) of a flat signal with zero `gaps`"""
+        data_copy = self.eyedata.copy()
+        data_copy.data['left_pupil'][:] = 1.0
+        for start, end in gaps:
+            data_copy.data['left_pupil'][start:end] = 0.0
+        data_copy.pupil.blinks_detect(eyes=['left'], strategies=["zero"],
+                                      margin=margin, inplace=True)
+        return data_copy.get_blinks('left', 'pupil', units="samples")['left_pupil'].intervals
+
+    def test_pupil_blinks_detect_margin(self):
+        """margin extends the blinks on both sides"""
+        self.assertEqual(self.eyedata.fs, 500)
+        self.assertEqual(self._blinks_with_margin([(100, 150)], 0), [(100, 150)])
+        self.assertEqual(self._blinks_with_margin([(100, 150)], 10), [(95, 155)])
+        self.assertEqual(self._blinks_with_margin([(100, 150)], (10, 30)), [(95, 165)])
+        self.assertEqual(self._blinks_with_margin([(100, 150)], "20 ms"), [(90, 160)])
+
+    def test_pupil_blinks_detect_margin_merge_and_clip(self):
+        """extended blinks that overlap are merged and clipped to the data"""
+        self.assertEqual(self._blinks_with_margin([(100, 150), (160, 200)], 10),
+                         [(95, 205)])
+        self.assertEqual(self._blinks_with_margin([(2, 50)], 10), [(0, 55)])
+
+    def test_pupil_blinks_detect_margin_invalid(self):
+        """negative margins and tuples with other than two values are errors"""
+        for margin in (-10, (10, 20, 30)):
+            with self.assertRaises(ValueError):
+                self.eyedata.pupil.blinks_detect(margin=margin, inplace=False)
+
     def test_setitem_masked_array(self):
         """Test __setitem__ with masked array"""
         data = {
