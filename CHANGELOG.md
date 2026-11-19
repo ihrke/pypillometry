@@ -2,12 +2,12 @@
 
 ## Unreleased
 
-- `blinks_interpolate(method="kalman")`: replace the blinks by their expected value given the signal around them (Kalman smoother with a Gauss-Markov model whose noise level is estimated from the data; `optimize=True` fits all its parameters)
-- `blinks_interpolate()`: the parameters of the Mahot method are keyword arguments; parameters of another method are ignored with a warning
-- `blinks_detect()`: `vel_onset_min_duration` and `vel_offset_min_duration` default to 10 ms (was 5 ms), which removes most false blinks from eye movements
-- `blinks_detect()`: a velocity onset without its own offset no longer takes the offset of the next blink (which marked the clean signal between them as blink)
+- `blinks_interpolate(method="kalman")`: new interpolation method based on Kalman filter
+- `blinks_interpolate()`: change parameter handling to allow multiple methods
+- `blinks_detect()`: `vel_onset_min_duration` and `vel_offset_min_duration` default to 10 ms (was 5 ms)
+- `blinks_detect()`: a velocity onset without its own offset no longer takes the offset of the next blink
 - `blinks_detect(margin=...)`: extend the detected blinks on each side, e.g. to include the transient
-- `blinks_interpolate()`: the Mahot method searches the transients from the missing samples of each blink, so it does not depend on how far the blinks were extended; for merged blinks, the outermost transients are used
+- `blinks_interpolate()`: the Mahot method now searches for transient onsets in the whole window
 
 ## 2.2.2 (2026-11-11)
 
