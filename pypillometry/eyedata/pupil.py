@@ -35,6 +35,7 @@ import numpy as np
 _INTERP_DEFAULTS = {
     "mahot": dict(winsize=25, vel_onset=-5.0, vel_offset=5.0, margin=(10, 30),
                   interp_type="cubic"),
+    "kalman": dict(),
 }
 
 
@@ -757,6 +758,83 @@ class PupilNamespace(Namespace):
             obj.set_blinks(merged_intervals, eyes=[eye], variables=[var])
         return obj
 
+    def _interpolate_kalman(self, obj, eye, blinkwindow_ix):
+        """blinks of `eye` in `obj` interpolated with
+        :func:`~pypillometry.signal.preproc.interpolate_blinks_kalman`;
+        returns the signal and the interpolated samples"""
+        bls = obj.get_blinks(eye, "pupil", units="samples")[f"{eye}_pupil"]
+        excl = obj._excluded_mask()
+        blinks = Intervals.from_mask(bls.to_mask(obj).astype(bool) & ~excl).intervals
+        # unusable samples (other masks, excluded periods) are no observations
+        missing = excl | np.isnan(obj.get_values(eye, "pupil", "strict"))
+        syr, interpolated, model = preproc.interpolate_blinks_kalman(
+            obj.data[eye, "pupil"], blinks, obj.fs, blinkwindow_ix, missing=missing)
+        if model is not None:
+            pars = ", ".join(f"{k}={v:.4g}" for k, v in model.params.items())
+            logger.info(f"{eye}_pupil: Kalman interpolation model {pars}")
+        return syr, interpolated
+
+    def _interpolate_mahot(self, obj, eye, blinkwindow_ix, winsize, vel_onset, vel_offset,
+                           margin, interp_type):
+        """blinks of `eye` in `obj` interpolated with the method by Mahot;
+        returns the signal and the interpolated samples"""
+        from scipy.interpolate import interp1d
+        # parameters in sampling units (from ms)
+        winsize_ix=self._d._samples(winsize, rounding="up")
+        margin_ix=self._d._samples(margin, rounding="up")
+        if winsize_ix % 2==0: ## ensure smoothing window is odd
+            winsize_ix+=1 
+        syr=obj.data[eye,"pupil"].copy() ## interpolated signal
+        interpolated = np.zeros(len(syr), dtype=bool)  # interpolated samples
+        bls = self._d.get_blinks(eye, "pupil", units="samples")[f"{eye}_pupil"]
+        
+        # Use raw data for velocity computation - blink_onsets_mahot handles NaN/zeros internally
+        # Don't use mask-applied data here because the mask includes blink regions,
+        # which would smooth out the velocity transitions we need to detect boundaries
+        pupil_data = obj.data[eye,"pupil"]
+        
+        # Convert velocity thresholds to per-sample units
+        vel_onset_samples, vel_offset_samples = self._convert_velocity_thresholds(
+            pupil_data, winsize_ix, vel_onset, vel_offset
+        )
+        blink_onsets=preproc.blink_onsets_mahot(pupil_data, bls, 
+                                                winsize_ix, 
+                                                vel_onset_samples, vel_offset_samples,
+                                                margin_ix, blinkwindow_ix)
+        logger.debug(f"Refined {len(blink_onsets)} blink boundaries")
+        # the anchor points of a blink must not fall into a neighbouring
+        # blink (they would be NaN), so merge blinks with overlapping windows
+        blink_onsets = _merge_overlapping_blink_windows(blink_onsets, len(self._d))
+
+        excl = obj._excluded_mask()
+        
+        # loop through blinks
+        for ix,(t1,t2,t3,t4) in enumerate(blink_onsets):
+            # Ensure all 4 time points are distinct and in order
+            if t1==t2:
+                t2+=1
+            if t3==t4:
+                t3-=1
+            
+            # Check if blink is too short to interpolate (need at least 4 distinct points)
+            if not (t1 < t2 < t3 < t4):
+                logger.warning(f"Skipping blink {ix} for {eye}: blink too short to interpolate (t1={t1}, t2={t2}, t3={t3}, t4={t4})")
+                continue
+            
+            txpts=[obj.tx[pt] for pt in [t1,t2,t3,t4]]
+            sypts=[obj.data[eye,"pupil"][pt] for pt in [t1,t2,t3,t4]]
+            # e.g., a blink that ends in an excluded period (a break)
+            if np.isnan(sypts).any() or excl[[t1, t2, t3, t4]].any():
+                logger.warning(f"Skipping blink {ix} for {eye}: no usable data at its "
+                               f"anchor points (t1={t1}, t2={t2}, t3={t3}, t4={t4})")
+                continue
+            intfct=interp1d(txpts,sypts, kind=interp_type)
+            islic=slice(t2, t3)
+            syr[islic]=intfct(obj.tx[islic])
+            # mark the interpolated datapoints
+            interpolated[islic] = True
+        return syr, interpolated
+
     @step
     @keephistory
     def blinks_interpolate(self, eyes: str|list=[],
@@ -788,6 +866,14 @@ class PupilNamespace(Namespace):
           :meth:`d.plot.plot_blinks() <pypillometry.plot.PlotNamespace.plot_blinks>`)
           to set good parameter values for `winsize`, `vel_onset`,
           `vel_offset` and `margin` (see paper linked below).
+        - ``"kalman"``: the blink samples are replaced by their expected
+          value given the signal around them (Kalman smoother). Around each
+          blink, `blinkwindow` before and after it is used, after removing a
+          linear trend; the signal is modelled as a smooth Gauss-Markov
+          process (Matérn, smoothness 3/2) plus measurement noise, whose
+          parameters are fitted to the data automatically. Exactly the
+          stored blinks are replaced, so they should include the transients
+          around the blinks (see the `margin` of :meth:`blinks_detect`).
 
         Each method has its own parameters (see below), passed as keyword
         arguments. Parameters of another method are ignored with a warning,
@@ -802,17 +888,18 @@ class PupilNamespace(Namespace):
             the original pupil data or a string that will be used as the new variable
             name in the data (e.g., "pupilinterp")
         method : str
-            method to use: ``"mahot"`` (default)
+            method to use: ``"mahot"`` (default) or ``"kalman"``
         blinkwindow : float, str or Quantity
             how much time before and after each blink to use (in ms, or with
             units); for ``"mahot"``, the window in which the on- and offsets
-            are searched
+            are searched; for ``"kalman"``, the signal the blink is
+            predicted from
         inplace : bool or None
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes
             if `None`, use the object-level setting
         **kwargs
-            parameters of the method (see below)
+            parameters of the method (see below); ``"kalman"`` has none
 
         Other Parameters
         ----------------
@@ -856,77 +943,18 @@ class PupilNamespace(Namespace):
         Mahot, 2013:
         https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001.
         """
-        from scipy.interpolate import interp1d
         pars = _interp_params(method, kwargs)
         self._d._require("pupil")
         obj = self._d._get_inplace(inplace)
         eyes=self._d._eyes_with(eyes, "pupil")
-
-        # parameters in sampling units (from ms)
-        winsize_ix=self._d._samples(pars["winsize"], rounding="up")
-        margin_ix=self._d._samples(pars["margin"], rounding="up")
         blinkwindow_ix=self._d._samples(blinkwindow)
-        vel_onset, vel_offset = pars["vel_onset"], pars["vel_offset"]
-        interp_type = pars["interp_type"]
-        if winsize_ix % 2==0: ## ensure smoothing window is odd
-            winsize_ix+=1 
 
         for eye in eyes:
-            logger.debug(f"Interpolating blinks for eye {eye}")
-            syr=obj.data[eye,"pupil"].copy() ## interpolated signal
-            interpolated = np.zeros(len(syr), dtype=bool)  # interpolated samples
-            bls = self._d.get_blinks(eye, "pupil", units="samples")[f"{eye}_pupil"]
-            
-            # Use raw data for velocity computation - blink_onsets_mahot handles NaN/zeros internally
-            # Don't use mask-applied data here because the mask includes blink regions,
-            # which would smooth out the velocity transitions we need to detect boundaries
-            pupil_data = obj.data[eye,"pupil"]
-            
-            # Convert velocity thresholds to per-sample units
-            vel_onset_samples, vel_offset_samples = self._convert_velocity_thresholds(
-                pupil_data, winsize_ix, vel_onset, vel_offset
-            )
-            blink_onsets=preproc.blink_onsets_mahot(pupil_data, bls, 
-                                                    winsize_ix, 
-                                                    vel_onset_samples, vel_offset_samples,
-                                                    margin_ix, blinkwindow_ix)
-            logger.debug(f"Refined {len(blink_onsets)} blink boundaries")
-            # the anchor points of a blink must not fall into a neighbouring
-            # blink (they would be NaN), so merge blinks with overlapping windows
-            blink_onsets = _merge_overlapping_blink_windows(blink_onsets, len(self._d))
-
-            # Collect successfully interpolated blinks
-            interpolated_intervals = []
-            excl = obj._excluded_mask()
-            
-            # loop through blinks
-            for ix,(t1,t2,t3,t4) in enumerate(blink_onsets):
-                # Ensure all 4 time points are distinct and in order
-                if t1==t2:
-                    t2+=1
-                if t3==t4:
-                    t3-=1
-                
-                # Check if blink is too short to interpolate (need at least 4 distinct points)
-                if not (t1 < t2 < t3 < t4):
-                    logger.warning(f"Skipping blink {ix} for {eye}: blink too short to interpolate (t1={t1}, t2={t2}, t3={t3}, t4={t4})")
-                    continue
-                
-                txpts=[obj.tx[pt] for pt in [t1,t2,t3,t4]]
-                sypts=[obj.data[eye,"pupil"][pt] for pt in [t1,t2,t3,t4]]
-                # e.g., a blink that ends in an excluded period (a break)
-                if np.isnan(sypts).any() or excl[[t1, t2, t3, t4]].any():
-                    logger.warning(f"Skipping blink {ix} for {eye}: no usable data at its "
-                                   f"anchor points (t1={t1}, t2={t2}, t3={t3}, t4={t4})")
-                    continue
-                intfct=interp1d(txpts,sypts, kind=interp_type)
-                islic=slice(t2, t3)
-                syr[islic]=intfct(obj.tx[islic])
-                # mark the interpolated datapoints
-                interpolated[islic] = True
-                
-                # Record this successfully interpolated blink
-                interpolated_intervals.append((t2, t3))
+            logger.debug(f"Interpolating blinks for eye {eye} ({method})")
+            if method == "kalman":
+                syr, interpolated = self._interpolate_kalman(obj, eye, blinkwindow_ix)
+            else:
+                syr, interpolated = self._interpolate_mahot(obj, eye, blinkwindow_ix, **pars)
 
             # store interpolated data (with the masks and layers of the
             # pupil) and set the interpolated layer
@@ -936,7 +964,7 @@ class PupilNamespace(Namespace):
             else:
                 obj.data._set_channel(target, syr, obj.data.layers[key])
             obj.data.set_layer(target, "interpolated", interpolated)
-            logger.debug(f"Interpolated {len(interpolated_intervals)} blinks for {eye}")
+            logger.debug(f"Interpolated {interpolated.sum()} samples for {eye}")
 
         return obj
             

@@ -275,3 +275,55 @@ class TestBlinksInterpolateParams(unittest.TestCase):
         d = self.d | pp.pupil.blinks_interpolate(eyes="left", margin=(50, 100))
         np.testing.assert_array_equal(d.data["left", "pupil"],
                                       self.interp(margin=(50, 100)).data["left", "pupil"])
+
+    def test_other_method_parameter_warns(self):
+        """a parameter of another method is ignored with a warning"""
+        msgs = []
+        hid = pp.logger.add(lambda m: msgs.append(m.record["message"]), level="WARNING")
+        try:
+            d = self.interp(method="kalman", margin=(10, 30))
+        finally:
+            pp.logger.remove(hid)
+        self.assertTrue(any("'margin' is only used by method='mahot'" in m for m in msgs))
+        np.testing.assert_array_equal(d.data["left", "pupil"],
+                                      self.interp(method="kalman").data["left", "pupil"])
+
+
+class TestBlinksInterpolateKalman(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.d = pp.get_example_data("rlmw_002_short").pupil.blinks_detect(inplace=False)
+        cls.k = cls.d.pupil.blinks_interpolate(method="kalman", inplace=False)
+
+    def test_fills_all_blinks(self):
+        for eye in self.d.eyes:
+            blinks = self.d.get_blinks(eye, "pupil")[f"{eye}_pupil"].to_mask(self.d).astype(bool)
+            interp = self.k.data.get_layer(f"{eye}_pupil", "interpolated")
+            np.testing.assert_array_equal(interp, blinks)
+            self.assertFalse(np.isnan(self.k.data[eye, "pupil"]).any())
+            np.testing.assert_array_equal(self.k.data[eye, "pupil"][~blinks],
+                                          self.d.data[eye, "pupil"][~blinks])
+
+    def test_store_as(self):
+        d = self.d.pupil.blinks_interpolate(eyes="left", method="kalman",
+                                            store_as="pupilinterp", inplace=False)
+        np.testing.assert_array_equal(d.data["left", "pupilinterp"], self.k.data["left", "pupil"])
+        np.testing.assert_array_equal(d.data["left", "pupil"], self.d.data["left", "pupil"])
+        self.assertTrue(d.data.get_layer("left_pupilinterp", "interpolated").any())
+
+    def test_better_than_mahot_on_smooth_signal(self):
+        """gaps in a smooth random signal are reconstructed better than by Mahot"""
+        from pypillometry.signal import gaussmarkov as gm
+        model = gm.GaussMarkovModel([gm.Matern(100., 300., nu=1.5)], noise=2.)
+        y = gm.simulate(model, 20000, fs=500, rng=2) + 3000
+        p = y.copy()
+        gaps = [(s, s + 75) for s in range(1000, 19000, 1000)]
+        for a, b in gaps:
+            p[a:b] = np.nan
+        d = pp.EyeData(left_pupil=p, sampling_rate=500).pupil.blinks_detect(
+            strategies=["zero"], inplace=False)
+        rmse = {}
+        for method in ("mahot", "kalman"):
+            r = d.pupil.blinks_interpolate(method=method, inplace=False).data["left", "pupil"]
+            rmse[method] = np.sqrt(np.mean(np.concatenate([r[a:b] - y[a:b] for a, b in gaps])**2))
+        self.assertLess(rmse["kalman"], rmse["mahot"])
