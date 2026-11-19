@@ -469,7 +469,7 @@ class PupilNamespace(Namespace):
     def blinks_detect(self, eyes=[], min_duration:float=20, blink_val:float=0,
                       winsize: float=11, vel_onset=-5.0, vel_offset=5.0, 
                       vel_onset_min_duration: float=5.0, vel_offset_min_duration: float=5.0,
-                      max_duration: float=1000,
+                      max_duration: float=1000, margin=0,
                       strategies: list=["zero","velocity"],
                       ignore_existing_mask=False, inplace=None):
         """
@@ -492,6 +492,8 @@ class PupilNamespace(Namespace):
         reconstructed, so detect blinks before interpolating them.
 
         Finally, detected blinks have to be at least `min_duration` ms.
+        They can be extended by a `margin` on each side, e.g. to include
+        the slow parts of the transient around the blink.
         
         Parameters
         ----------
@@ -529,6 +531,13 @@ class PupilNamespace(Namespace):
             "velocity" strategy; an onset without an offset within this time
             is dropped. `None` means no limit. Does not apply to the "zero"
             strategy.
+        margin : float, str, Quantity or tuple
+            time (in ms, or with units) by which each detected blink is
+            extended to the left and right, after the `min_duration` filter;
+            a tuple `(before, after)` gives different margins on each side.
+            Blinks that overlap after extending are merged. Default 0 (no
+            extension). This is independent of the `margin` of
+            :meth:`blinks_interpolate`, which is applied on top of it.
         strategies : list
             list of strategies to use;
             so far, use a list containing any combination of "zero" and "velocity"
@@ -567,6 +576,13 @@ class PupilNamespace(Namespace):
         vel_offset_min_samples = max(1, self._d._samples(vel_offset_min_duration))
         max_duration_ix = (None if max_duration is None
                            else self._d._samples(max_duration))
+        margin_ix = self._d._samples(margin, rounding="up")
+        if np.ndim(margin_ix) == 0:
+            margin_ix = (margin_ix, margin_ix)
+        if len(margin_ix) != 2:
+            raise ValueError(f"margin must be a number or a (before, after) tuple, got {margin!r}")
+        if min(margin_ix) < 0:
+            raise ValueError(f"margin must not be negative, got {margin!r}")
 
         
         # check for unknown strategies
@@ -621,12 +637,15 @@ class PupilNamespace(Namespace):
             
             # Detected offsets are inclusive, Intervals are end-exclusive.
             # Filter by minimum duration and create Intervals object
-            filtered_blinks = [(int(on), int(off)+1) for (on,off) in blinks
+            filtered_blinks = [(int(on)-margin_ix[0], int(off)+1+margin_ix[1])
+                               for (on,off) in blinks
                                if off+1-on>=min_duration_ix]
             # blinks are cut at excluded periods (e.g., breaks without data
-            # are not blinks); blinks next to them are kept
+            # are not blinks); blinks next to them are kept. Going through
+            # the mask also clips extended blinks to the data and merges
+            # the ones that overlap.
             excl = obj._excluded_mask()
-            if excl.any():
+            if excl.any() or any(margin_ix):
                 inblink = Intervals(filtered_blinks, "samples").to_mask(obj).astype(bool)
                 filtered_blinks = Intervals.from_mask(inblink & ~excl).intervals
             logger.debug(f"Filtered {len(filtered_blinks)} blinks by minimum duration")

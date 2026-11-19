@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- `blinks_detect(margin=...)`: extend the detected blinks on each side, e.g. to include the transient
+
 ## 2.2.2 (2026-11-11)
 
 - `HeadMountedEyeData`: data from eye-tracking glasses 
