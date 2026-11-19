@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.2.3 (2026-11-19)
 
 - `blinks_interpolate(method="kalman")`: new interpolation method based on Kalman filter
 - `blinks_interpolate()`: change parameter handling to allow multiple methods
