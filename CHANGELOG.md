@@ -3,6 +3,7 @@
 ## Unreleased
 
 - `blinks_detect(margin=...)`: extend the detected blinks on each side, e.g. to include the transient
+- `blinks_interpolate()`: the Mahot method searches the transients from the missing samples of each blink, so it does not depend on how far the blinks were extended; for merged blinks, the outermost transients are used
 
 ## 2.2.2 (2026-11-11)
 
