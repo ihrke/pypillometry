@@ -15,7 +15,7 @@ import numbers
 import sys
 from collections.abc import Iterable
 from random import choice
-from typing import Callable, Dict, List, Optional, Tuple, Union
+from typing import Callable, Dict, List, Optional, Self, Tuple, Union
 
 import numpy as np
 from loguru import logger
@@ -1466,7 +1466,7 @@ class EyeData(state.VersionedState):
 
 
     @classmethod
-    def from_file(cls, fname:str, **kwargs):
+    def from_file(cls, fname: str, **kwargs) -> Self:
         """
         Reads a :class:`~pypillometry.EyeData` object from a pickle
         or HDF5 file (see :meth:`write_file`).

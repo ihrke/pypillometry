@@ -115,7 +115,7 @@ def get_available_datasets():
     """
     return DatasetDict(example_datasets)
 
-def get_example_data(key, cache_dir=None):
+def get_example_data(key: str, cache_dir=None) -> EyeData:
     """Load example data for a given example (see `example_datasets`).
 
     Parameters
