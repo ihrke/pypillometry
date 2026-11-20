@@ -35,6 +35,14 @@ def _runs(mask):
     return np.c_[np.where(x == 1)[0], np.where(x == -1)[0]]
 
 
+def _mask(runs, n):
+    """Boolean array of length `n` that is True in the `runs` (n x 2, end-exclusive)."""
+    mask = np.zeros(n, dtype=bool)
+    for a, b in runs:
+        mask[a:b] = True
+    return mask
+
+
 def _missing(sy, blink_val=0):
     """Missing samples of `sy`: NaN, or equal to `blink_val` (unless it is NaN)."""
     sy = np.asarray(sy, dtype=float)
@@ -215,7 +223,7 @@ def extract_blink_artifacts(sy, cores, window, edge=None, mode="additive", blink
     return artifacts
 
 
-def blink_artifact_profile(artifacts, null_artifacts, window, mode="additive"):
+def blink_artifact_profile(artifacts, null_artifacts, window):
     """
     The typical artifact of the blinks and how reliable the single ones are.
 
@@ -239,9 +247,6 @@ def blink_artifact_profile(artifacts, null_artifacts, window, mode="additive"):
         artifacts that were cut out the same way from clean signal
     window : int or tuple of int
         number of samples `(before, after)` the core in the artifacts
-    mode : str
-        ``"additive"`` (default) or ``"multiplicative"``: how the
-        artifacts were extracted
 
     Returns
     -------
@@ -482,7 +487,7 @@ class BlinkTransplant:
 
 def transplant_blinks(sy, window, edge=None, merge_distance=0, min_len=1, max_len=None,
                       n=None, pad=0, mode="additive", shrink=True, missing=None,
-                      blink_val=0, source=None, cores=None, seed=None):
+                      avoid=None, blink_val=0, source=None, cores=None, seed=None):
     """
     Transplant the blinks of a signal into its clean stretches.
 
@@ -535,6 +540,9 @@ def transplant_blinks(sy, window, edge=None, merge_distance=0, min_len=1, max_le
         further samples without usable signal (e.g., masked for other
         reasons); the blinks next to them are not transplanted and nothing
         is transplanted next to them
+    avoid : np.ndarray of bool, optional
+        samples of `sy` where no blinks are transplanted, e.g. other
+        artifacts (in addition to the `window` around all missing samples)
     blink_val : float
         "missing value" code in addition to NaN (default 0). The
         transplanted cores get this value if the signal uses it (and has
@@ -593,7 +601,7 @@ def transplant_blinks(sy, window, edge=None, merge_distance=0, min_len=1, max_le
         if len(null) >= _MIN_NULL:
             null = extract_blink_artifacts(src, np.c_[null + pre, null + size - post],
                                            (pre, post), edge, mode, blink_val)
-            profile = blink_artifact_profile(artifacts, null, (pre, post), mode)
+            profile = blink_artifact_profile(artifacts, null, (pre, post))
             artifacts = shrink_blink_artifacts(artifacts, profile)
         else:
             logger.warning("Not enough clean signal to estimate its fluctuations: "
@@ -605,6 +613,8 @@ def transplant_blinks(sy, window, edge=None, merge_distance=0, min_len=1, max_le
     if missing is not None:
         dirty |= np.asarray(missing, dtype=bool)
     stretches = clean_stretches(dirty, (pre, post))
+    if avoid is not None:
+        stretches = _runs(_mask(stretches, len(sy)) & ~np.asarray(avoid, dtype=bool))
     places = place_blink_artifacts(stretches, [len(a) for a in artifacts], n, pad, rng)
 
     uses_val = (blink_val is not None and not np.isnan(blink_val)
