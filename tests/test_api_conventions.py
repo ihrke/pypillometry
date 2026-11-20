@@ -198,7 +198,6 @@ class TestNamespaceInplace:
         "pupil": {"lowpass_filter": dict(cutoff=5), "smooth_window": {},
                   "merge_eyes": dict(method="offset"), "blinks_detect": {},
                   "blinks_merge_close": {}, "blinks_interpolate": {},
-                  "blinks_transplant": dict(seed=1),
                   "estimate_baseline": {}, "estimate_response": {},
                   "correct_foreshortening": {}},
         "gaze": {"mask_divergences": {}, "mask_offscreen": {}},

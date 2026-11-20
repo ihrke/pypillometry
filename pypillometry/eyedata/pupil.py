@@ -740,8 +740,8 @@ class PupilNamespace(Namespace["EyeData"]):
         """:func:`~pypillometry.signal.transplant.transplant_blinks` for the
         pupil of `eye` in `obj` (parameters in ms)"""
         if obj.data.get_layer(f"{eye}_pupil", "interpolated").any():
-            raise ValueError(f"{eye}_pupil has interpolated samples; transplant blinks "
-                             "before interpolating them")
+            raise ValueError(f"{eye}_pupil has interpolated samples; tune the parameters "
+                             "before interpolating the blinks")
         window_ix = obj._samples(window, rounding="up")
         if np.ndim(window_ix) == 0:
             window_ix = (window_ix, window_ix)
@@ -759,184 +759,9 @@ class PupilNamespace(Namespace["EyeData"]):
             missing=other & ~np.isnan(obj.data[key]), avoid=obj.data.get_layer(key, "blink"),
             cores=cores, **kwargs)
 
-    @step
-    @keephistory
-    def blinks_transplant(self, eyes=[], window=(200, 500), n=None,
-                          merge_distance: float=100, min_duration: float=20,
-                          max_duration: float=1000, pad: float=100,
-                          mode: str="additive", shrink: bool=True, blink_val: float=0,
-                          original_as: str="pupilorig", seed=None, inplace=None):
-        """
-        Transplant the blinks of the pupil signal into its clean stretches.
-
-        This gives data with realistic blinks at places where the signal
-        without the blink is known, e.g. to evaluate the interpolation of
-        blinks (see :meth:`blinks_transplant_error`) or to tune its
-        parameters (see :meth:`blinks_autotune`).
-
-        The blinks are the runs of missing samples (NaN or `blink_val`) of
-        at least `min_duration`, the cores of the blinks; the detected
-        blinks are not used. Runs that are closer than `merge_distance` are
-        one blink. Each blink that is surrounded by usable signal is cut
-        out with the `window` around its core, and a slow baseline (the
-        line through both ends of the window) is removed. What remains,
-        the artifact of the blink, is added at random places where the
-        signal is clean: no missing or masked samples (under the
-        ``"strict"`` mask policy) in the `window` around them. See
-        :func:`~pypillometry.signal.transplant.transplant_blinks`.
-
-        In the returned object, the pupil has the transplanted blinks in
-        addition to its own. Their cores are added to the blinks (the
-        ``"blink"`` layer), so :meth:`blinks_interpolate` treats them like
-        the others. The windows of the transplanted blinks, with `pad`
-        around them, get the layer ``"transplant"`` (see
-        :meth:`~pypillometry.EyeData.get_layer_intervals`), which does not
-        mask them. The signal without the transplanted blinks is kept as
-        another variable (`original_as`).
-
-        Parameters
-        ----------
-        eyes : str or list
-            eyes to process; if empty, all eyes with pupil data
-        window : float, str, Quantity or tuple
-            time `(before, after)` the core of a blink (in ms, or with
-            units) that belongs to the blink and is transplanted with it;
-            should be generous, so that it includes the whole artifact
-        n : int, optional
-            number of blinks to transplant (per eye); default (and at
-            most): as many as fit
-        merge_distance : float, str or Quantity
-            missing samples that are closer than this (in ms, or with
-            units) are one blink
-        min_duration, max_duration : float, str or Quantity
-            minimum and maximum duration (in ms, or with units) of the
-            cores of the blinks that are transplanted; `max_duration=None`:
-            no limit
-        pad : float, str or Quantity
-            clean signal (in ms, or with units) that is kept free on each
-            side of the window of a transplanted blink
-        mode : str
-            ``"additive"`` (default): the difference to the baseline is
-            transplanted; ``"multiplicative"``: the ratio to the baseline
-            (e.g., an eyelid that covers a part of the pupil), which needs
-            a positive signal
-        shrink : bool
-            remove the fluctuations of the signal around the original
-            blinks from their artifacts (default; see
-            :func:`~pypillometry.signal.transplant.shrink_blink_artifacts`)
-        blink_val : float
-            "missing value" code in addition to NaN (default 0)
-        original_as : str or None
-            name of the variable that keeps the pupil without the
-            transplanted blinks (default ``"pupilorig"``, i.e.
-            ``"left_pupilorig"`` etc.); `None`: do not keep it
-        seed : int, optional
-            seed of the random numbers (which blink goes where)
-        inplace : bool or None
-            if `True`, make change in-place and return the object
-            if `False`, make and return copy before making changes
-            if `None`, use the object-level setting
-
-        Returns
-        -------
-        EyeData
-            the object with the transplanted blinks
-
-        Raises
-        ------
-        ValueError
-            if the pupil has interpolated samples (transplant the blinks
-            before interpolating them) or already has transplanted blinks
-
-        Examples
-        --------
-        >>> import pypillometry as pp
-        >>> d = pp.get_example_data("rlmw_002_short").pupil.blinks_detect()
-        >>> dt = d.pupil.blinks_transplant(n=10, seed=1, inplace=False)
-        >>> len(dt.get_layer_intervals("transplant", "left", "pupil")["left_pupil"])
-        10
-        >>> dt = dt.pupil.blinks_interpolate()
-        >>> err = dt.pupil.blinks_transplant_error()
-        >>> list(err)
-        ['left_pupil', 'right_pupil']
-        """
-        self._d._require("pupil")
-        obj = self._d._get_inplace(inplace)
-        rng = np.random.default_rng(seed)
-        for eye in self._d._eyes_with(eyes, "pupil"):
-            key = f"{eye}_pupil"
-            if obj.data.get_layer(key, "transplant").any():
-                raise ValueError(f"{key} already has transplanted blinks")
-            tr = self._transplant(obj, eye, window, merge_distance, min_duration,
-                                  max_duration, pad, n=n, mode=mode, shrink=shrink,
-                                  blink_val=blink_val, seed=rng)
-            logger.info(f"{key}: transplanted {len(tr)} blinks ({len(tr.donors)} different ones)")
-            if original_as is not None:
-                obj.data._set_channel(f"{eye}_{original_as}", obj.data[key].copy(),
-                                      obj.data.layers[key].copy())
-            obj.data.set_with_mask(key, tr.signal, preserve_mask=True)
-            n_samples = len(tr.signal)
-            obj.data.set_layer(key, "blink", transplant._mask(tr.blinks, n_samples))
-            obj.data.set_layer(key, "transplant", transplant._mask(tr.sites, n_samples),
-                               replace=True)
-        return obj
-
-    def blinks_transplant_error(self, eyes=[], original: str="pupilorig",
-                                per_blink: bool=False, policy="default"):
-        """
-        Error of the reconstruction of transplanted blinks.
-
-        Root mean squared difference between the pupil and the pupil
-        without the transplanted blinks (see :meth:`blinks_transplant`), over
-        all samples around the transplanted blinks (the ``"transplant"``
-        layer): the missing samples, the artifacts around them and the
-        clean samples next to them. Samples that are unusable under the
-        mask `policy` (e.g., blinks that were not interpolated) are
-        interpolated linearly first.
-
-        Parameters
-        ----------
-        eyes : str or list
-            eyes to process; if empty, all eyes with pupil data
-        original : str
-            name of the variable with the pupil without the transplanted
-            blinks (`original_as` of :meth:`blinks_transplant`)
-        per_blink : bool
-            return the error of each transplanted blink instead of the
-            error over all of them
-        policy : str, MaskPolicy or list of str
-            mask policy that decides which samples are usable (see
-            :meth:`~pypillometry.EyeData.mask`); default ``"default"``
-
-        Returns
-        -------
-        dict
-            the error for each eye (keys like ``"left_pupil"``): a number,
-            or with `per_blink` an array (in the order of
-            ``d.get_layer_intervals("transplant")``)
-
-        Raises
-        ------
-        ValueError
-            if there are no transplanted blinks
-        """
-        self._d._require("pupil")
-        result = {}
-        for eye in self._d._eyes_with(eyes, "pupil"):
-            key = f"{eye}_pupil"
-            if f"{eye}_{original}" not in self._d.data:
-                raise ValueError(f"no variable {eye}_{original}; transplant blinks with "
-                                 "blinks_transplant() first")
-            sites = self._d._layer_runs(key, "transplant").intervals
-            if len(sites) == 0:
-                raise ValueError(f"{key} has no transplanted blinks")
-            result[key] = transplant.transplant_error(
-                self._d.get_values(eye, "pupil", policy), self._d.data[eye, original],
-                sites, per_site=per_blink)
-        return result
-
-    def blinks_autotune(self, eyes=[], method: str="mahot", window=(200, 500), n=None,
-                        test_fraction: float=1/3, start=None, bounds=None, fixed=None,
+    def blinks_autotune(self, eyes=[], method: str="mahot", window=(200, 500),
+                        n_tune: int=10, repeats: int=3, test_fraction: float=0.5,
+                        start=None, bounds=None, fixed=None,
                         merge_distance: float=100, min_duration: float=20,
                         max_duration: float=1000, pad: float=100,
                         mode: str="additive", shrink: bool=True, blink_val: float=0,
@@ -947,27 +772,34 @@ class PupilNamespace(Namespace["EyeData"]):
         The parameters of the ``"mahot"`` method (`winsize`, `vel_onset`,
         `vel_offset`, `margin` and `blinkwindow`) decide how much of the
         signal around the missing samples of a blink is replaced. Instead
-        of setting them by eye, they are tuned on transplanted blinks (see
-        :meth:`blinks_transplant`): the blinks of the recording are added
-        to its clean stretches, where the signal without the blink is
-        known, and the parameters that reconstruct it best are searched
-        (see :func:`~pypillometry.signal.autotune.tune_blinks_mahot`).
-        The error is the difference between the reconstructed and the
-        clean signal in the `window` around the transplanted blinks (with
-        `pad`): the root mean squared error of each blink, averaged over
-        the blinks.
+        of setting them by eye, they are tuned on transplanted blinks: the
+        blinks of the recording are cut out with a generous `window` around
+        their missing samples, a slow baseline is removed, and what remains
+        (the artifact) is added to clean stretches of the recording, where
+        the signal without the blink is known (see
+        :func:`~pypillometry.signal.transplant.transplant_blinks`). The
+        parameters that reconstruct it best are searched (see
+        :func:`~pypillometry.signal.autotune.tune_blinks_mahot`). The error
+        is the difference between the reconstructed and the clean signal in
+        the `window` around the transplanted blinks (with `pad`): the root
+        mean squared error of each blink, averaged over the blinks.
 
-        A part of the blinks (`test_fraction`) is not used for tuning:
-        they are transplanted separately, and the tuned parameters are
-        only returned if they are better for them than the starting
-        parameters (otherwise those are returned, with a warning). The
-        blinks of all `eyes` are used together; call the method for one
-        eye at a time to get parameters for each.
+        Not all blinks are needed for the search: it runs on `n_tune`
+        random blinks, each transplanted `repeats` times. The other blinks
+        are transplanted as often as they fit and split in two: one part
+        (`1 - test_fraction`) is used to refine the result (one more round
+        of the search on them and the `n_tune` blinks), the other part
+        (`test_fraction`) only to test it. The tuned parameters are only
+        returned if they are better for the test blinks than the starting
+        parameters (otherwise those are returned, with a warning). With at
+        most `n_tune` blinks, there is no refinement, and `test_fraction`
+        of them are used for testing.
 
-        The object is not changed and does not need detected blinks: the
-        blinks that are transplanted are the runs of missing samples. The
-        result depends on the random places of the transplanted blinks
-        (see `seed`).
+        The blinks of all `eyes` are used together; call the method for
+        one eye at a time to get parameters for each. The object is not
+        changed and does not need detected blinks: the blinks that are
+        transplanted are the runs of missing samples. The result depends
+        on the random choice of the blinks and their places (see `seed`).
 
         Parameters
         ----------
@@ -980,12 +812,14 @@ class PupilNamespace(Namespace["EyeData"]):
             or with units) that is transplanted with it; should be
             generous, so that it includes the whole artifact. It also
             limits the search ranges (see `bounds`).
-        n : int, optional
-            number of blinks to transplant per eye, for tuning and for
-            testing each; default (and at most): as many as fit
+        n_tune : int
+            number of different blinks for the search
+        repeats : int
+            number of times each of the `n_tune` blinks is transplanted
+            (at most as many as fit)
         test_fraction : float
-            fraction of the blinks that is only used for testing the
-            tuned parameters (0: none)
+            fraction of the other blinks that is only used for testing the
+            tuned parameters (0: none; the rest refines them)
         start : dict, optional
             starting parameters, as the arguments of
             :meth:`blinks_interpolate` (e.g., ``dict(vel_onset=-10)``);
@@ -1001,11 +835,29 @@ class PupilNamespace(Namespace["EyeData"]):
             parameters that are not tuned, with their values, as the
             arguments of :meth:`blinks_interpolate` (e.g.,
             ``dict(blinkwindow=500)``)
-        merge_distance, min_duration, max_duration, pad, mode, shrink, blink_val
-            how the blinks are transplanted, see :meth:`blinks_transplant`
+        merge_distance : float, str or Quantity
+            missing samples that are closer than this (in ms, or with
+            units) are one blink
+        min_duration, max_duration : float, str or Quantity
+            minimum and maximum duration (in ms, or with units) of the
+            missing samples of the blinks that are transplanted;
+            `max_duration=None`: no limit
+        pad : float, str or Quantity
+            clean signal (in ms, or with units) that is kept free on each
+            side of the window of a transplanted blink; it counts for the
+            error
+        mode : str
+            ``"additive"`` (default): the difference to the baseline is
+            transplanted; ``"multiplicative"``: the ratio to the baseline
+        shrink : bool
+            remove the fluctuations of the signal around the blinks from
+            their artifacts (default; see
+            :func:`~pypillometry.signal.transplant.shrink_blink_artifacts`)
+        blink_val : float
+            "missing value" code in addition to NaN (default 0)
         seed : int, optional
-            seed of the random numbers (places of the transplanted
-            blinks, blinks used for testing, search)
+            seed of the random numbers (choice of the blinks, their
+            places, search)
         **kwargs
             further arguments of
             :func:`~pypillometry.signal.autotune.tune_blinks_mahot`
@@ -1019,6 +871,12 @@ class PupilNamespace(Namespace["EyeData"]):
             the tuned and the starting parameters and all evaluated
             parameters (see
             :class:`~pypillometry.signal.autotune.BlinkTuneResult`)
+
+        Raises
+        ------
+        ValueError
+            if no blinks can be transplanted, or the pupil has
+            interpolated samples (tune before interpolating)
 
         Examples
         --------
@@ -1035,6 +893,8 @@ class PupilNamespace(Namespace["EyeData"]):
         eyes = d._eyes_with(eyes, "pupil")
         if not 0 <= test_fraction < 1:
             raise ValueError(f"test_fraction must be in [0, 1), got {test_fraction}")
+        if n_tune < 1 or repeats < 1:
+            raise ValueError("n_tune and repeats must be at least 1")
         rng = np.random.default_rng(seed)
         per_ms = 1000 / d.fs    # ms per sample
 
@@ -1080,40 +940,55 @@ class PupilNamespace(Namespace["EyeData"]):
         del start_pars["interp_type"]
         start_pars.update(start or {})
 
-        # transplant the blinks of each eye: some for tuning, the others for testing
-        train, test = [], []
+        # the blinks of all eyes, in random order: the first ones for the
+        # search, the others for refining and testing
         targs = dict(window=window, merge_distance=merge_distance, min_duration=min_duration,
                      max_duration=max_duration, pad=pad, mode=mode, shrink=shrink,
                      blink_val=blink_val)
-        for eye in eyes:
-            donors = self._transplant(d, eye, n=0, seed=rng, **targs).donors
-            perm = rng.permutation(len(donors))
-            n_test = int(round(test_fraction * len(donors)))
-            if n_test > 0:
-                test.append(self._transplant(d, eye, n=n, seed=rng,
-                                             cores=donors[np.sort(perm[:n_test])], **targs))
-            train.append(self._transplant(d, eye, n=n, seed=rng,
-                                          cores=donors[np.sort(perm[n_test:])], **targs))
-            logger.debug(f"{eye}_pupil: {len(donors)} blinks to transplant, "
-                         f"{n_test} of them for testing")
+        donors = {eye: self._transplant(d, eye, n=0, seed=rng, **targs).donors for eye in eyes}
+        pool = [(eye, k) for eye in eyes for k in range(len(donors[eye]))]
+        pool = [pool[k] for k in rng.permutation(len(pool))]
+        if len(pool) > n_tune:
+            n_test = int(round(test_fraction * (len(pool) - n_tune)))
+            n_search = n_tune
+        else:
+            n_test = int(round(test_fraction * len(pool))) if len(pool) > 1 else 0
+            n_search = len(pool) - n_test
+        parts = {"train": pool[:n_search], "test": pool[n_search:n_search + n_test],
+                 "refine": pool[n_search + n_test:]}
+        logger.debug(f"{len(pool)} blinks to transplant: {n_search} for the search, "
+                     f"{len(parts['refine'])} for refining, {n_test} for testing")
+
+        def transplants(part):
+            out = []
+            for eye in eyes:
+                ix = np.sort([k for e, k in parts[part] if e == eye])
+                if len(ix) == 0:
+                    continue
+                n = repeats * len(ix) if part == "train" else len(ix)
+                out.append(self._transplant(d, eye, n=n, seed=rng, cores=donors[eye][ix],
+                                            **targs))
+            return out
+        train, test, refine = (transplants(part) for part in ("train", "test", "refine"))
         if sum(len(tr) for tr in train) == 0:
             raise ValueError("no blinks could be transplanted: the recording needs blinks "
                              "(missing samples) that are surrounded by signal, and clean "
                              "stretches (longer than the window) to put them")
 
         res = autotune.tune_blinks_mahot(
-            train, test, start=in_samples(start_pars, "start"),
+            train, test, refine, start=in_samples(start_pars, "start"),
             bounds=None if bounds is None else in_samples(bounds, "bounds"),
             fixed=None if fixed is None else in_samples(fixed, "fixed"), seed=rng, **kwargs)
 
         # in the units of blinks_interpolate()
         hist = {("winsize" if k == "smooth_winsize" else k):
-                (v if k == "loss" else v / per_ms if k.startswith("vel_") else v * per_ms)
+                (v if k in ("loss", "stage") else v / per_ms if k.startswith("vel_") else v * per_ms)
                 for k, v in res.history.items()}
         res = replace(res, params=in_ms(res.params), tuned=in_ms(res.tuned),
                       start=in_ms(res.start), bounds=in_ms(res.bounds), history=hist,
                       units="ms")
-        logger.info(f"Tuned the blink interpolation on {res.n_blinks} transplanted blinks: "
+        logger.info(f"Tuned the blink interpolation on {res.n_blinks + res.n_refine} "
+                    "transplanted blinks: "
                     f"error {res.loss_start:.4g} -> {res.loss:.4g}"
                     + (f" ({res.test_loss_start:.4g} -> {res.test_loss:.4g} on "
                        f"{res.n_test} test blinks)" if res.n_test else ""))

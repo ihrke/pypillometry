@@ -49,8 +49,8 @@ Transplantation of blinks
 -------------------------
 
 Real blinks are cut out and added to clean stretches of a signal, where
-the signal without the blink is known (see
-:meth:`d.pupil.blinks_transplant() <pypillometry.eyedata.pupil.PupilNamespace.blinks_transplant>`).
+the signal without the blink is known, e.g. to evaluate or tune the
+interpolation of blinks or in simulations.
 
 .. autosummary::
    :toctree: generated

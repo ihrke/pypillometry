@@ -41,8 +41,6 @@ distorted as the eyelid covers the pupil.
    EyeData.pupil.blinks_merge_close
    EyeData.pupil.blinks_interpolate
    EyeData.pupil.blinks_autotune
-   EyeData.pupil.blinks_transplant
-   EyeData.pupil.blinks_transplant_error
    EyeData.get_blinks
    EyeData.get_interpolated
    EyeData.blink_stats
@@ -129,12 +127,10 @@ the missing samples is replaced. Instead of setting them by eye,
 
 It transplants the blinks of the recording into its clean stretches, where
 the signal without the blink is known, and searches for the parameters
-that reconstruct it best. A part of the blinks is kept for testing: the
-result shows the error with the tuned and with the default parameters for
-them. :meth:`~EyeData.pupil.blinks_transplant` gives the data with the
-transplanted blinks, e.g. to compare interpolation methods
-(:meth:`~EyeData.pupil.blinks_transplant_error`); the functions behind it
-are in ``pp.signal`` (see :ref:`api-transplant`).
+that reconstruct it best. The search runs on a few blinks and is refined
+on others; a part of the blinks is kept for testing: the result shows the
+error with the tuned and with the default parameters for them. The
+functions behind it are in ``pp.signal`` (see :ref:`api-transplant`).
 
 Blinks differ a lot between participants, and checking the result for
 each participant is worth the effort. The tutorial :doc:`/notebooks/blinks`
