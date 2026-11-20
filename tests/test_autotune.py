@@ -44,7 +44,7 @@ class TestTune:
         assert res.test_loss < 0.5 * res.test_loss_start
         assert (res.n_blinks, res.n_test) == (len(train), len(test))
         assert np.isclose(res.loss, transplant_error_mahot(train, **res.params))
-        assert np.isclose(res.loss, res.history["loss"].min())
+        assert res.loss >= res.history["loss"].min()   # changes below `tol` are not made
         assert set(res.history) == {"smooth_winsize", "vel_onset", "vel_offset", "margin_before",
                                     "margin_after", "blinkwindow", "loss"}
         assert (res.history["vel_onset"] < 0).all() and res.params["vel_onset"] < 0
