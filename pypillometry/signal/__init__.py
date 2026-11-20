@@ -13,14 +13,17 @@ milliseconds; see the individual docstrings for units.
 - :mod:`~pypillometry.signal.fake`: generation of synthetic data
 - :mod:`~pypillometry.signal.transplant`: transplantation of blinks into
   clean data
+- :mod:`~pypillometry.signal.autotune`: tuning the interpolation of blinks
+  on transplanted blinks
 """
-from . import baseline, preproc, pupil, fake, variogram, gaussmarkov, transplant
+from . import baseline, preproc, pupil, fake, variogram, gaussmarkov, transplant, autotune
 from .baseline import *
 from .preproc import *
 from .pupil import *
 from .fake import *
 from .variogram import *
 from .transplant import *
+from .autotune import *
 
 # Each submodule lists its public functions in its own __all__.
 __all__ = []
@@ -30,3 +33,4 @@ __all__ += pupil.__all__
 __all__ += fake.__all__
 __all__ += variogram.__all__
 __all__ += transplant.__all__
+__all__ += autotune.__all__

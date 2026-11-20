@@ -75,6 +75,25 @@ the signal without the blink is known (see
 
    BlinkTransplant
 
+The parameters of the interpolation of blinks can be tuned on
+transplanted blinks (see
+:meth:`d.pupil.blinks_autotune() <pypillometry.eyedata.pupil.PupilNamespace.blinks_autotune>`).
+
+.. autosummary::
+   :toctree: generated
+   :template: function.rst
+   :nosignatures:
+
+   tune_blinks_mahot
+   transplant_error_mahot
+
+.. autosummary::
+   :toctree: generated
+   :template: class.rst
+   :nosignatures:
+
+   BlinkTuneResult
+
 Pupil response
 --------------
 
