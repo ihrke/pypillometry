@@ -483,9 +483,11 @@ def _velocity_runs(cands, max_gap, min_len):
     """
     if cands.size == 0:
         return np.zeros((0, 2), dtype=int)
-    brk = np.where(np.diff(cands) > max_gap + 1)[0]
-    runs = np.c_[cands[np.r_[0, brk + 1]], cands[np.r_[brk, cands.size - 1]]]
-    return runs[runs[:, 1] - runs[:, 0] + 1 >= min_len]
+    brk = np.flatnonzero(np.diff(cands) > max_gap + 1)
+    first = cands[np.concatenate(([0], brk + 1))]
+    last = cands[np.concatenate((brk, [cands.size - 1]))]
+    keep = last - first + 1 >= min_len
+    return np.stack((first[keep], last[keep]), axis=1)
 
 
 def blink_onsets_mahot(sy, blinks, smooth_winsize, vel_onset, vel_offset, margin, blinkwindow,
@@ -638,6 +640,18 @@ def _anchors_close(t1, t2, t3, t4):
     return min(t2 - t1, t4 - t3) < (t3 - t2) / 2
 
 
+def _lagrange(xp, yp, x):
+    """Polynomial through the points `(xp, yp)`, evaluated at `x`."""
+    out = np.zeros(len(x))
+    for i in range(len(xp)):
+        w = np.full(len(x), float(yp[i]))
+        for j in range(len(xp)):
+            if j != i:
+                w *= (x - xp[j]) / (xp[i] - xp[j])
+        out += w
+    return out
+
+
 def interpolate_blinks_mahot(sy, blinks, smooth_winsize, vel_onset, vel_offset, margin,
                              blinkwindow, interp_type="cubic", tx=None, missing=None,
                              max_duration=None):
@@ -729,6 +743,10 @@ def interpolate_blinks_mahot(sy, blinks, smooth_winsize, vel_onset, vel_offset, 
             # far on the other overshoots; a monotone curve cannot
             from scipy.interpolate import PchipInterpolator
             filled[t2:t3] = PchipInterpolator(tx[pts], sy[pts])(tx[t2:t3])
+        elif interp_type == "cubic":
+            # the cubic polynomial through the four points (what interp1d
+            # gives for them, but much faster)
+            filled[t2:t3] = _lagrange(tx[pts], sy[pts], tx[t2:t3])
         else:
             filled[t2:t3] = interp1d(tx[pts], sy[pts], kind=interp_type)(tx[t2:t3])
         interpolated[t2:t3] = True
