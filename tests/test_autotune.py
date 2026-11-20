@@ -148,6 +148,8 @@ class TestBlinksTransplant:
             data.pupil.blinks_transplant_error()
         with pytest.raises(ValueError):
             di.pupil.blinks_transplant()     # interpolated
+        with pytest.raises(ValueError):
+            dt.pupil.blinks_transplant()     # has transplanted blinks
 
     def test_masked_samples_are_avoided(self, data):
         d = data.mask_intervals(pp.Intervals([(0, 30000)], "ms"), eyes="left", variables="pupil")

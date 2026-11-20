@@ -846,7 +846,7 @@ class PupilNamespace(Namespace["EyeData"]):
         ------
         ValueError
             if the pupil has interpolated samples (transplant the blinks
-            before interpolating them)
+            before interpolating them) or already has transplanted blinks
 
         Examples
         --------
@@ -865,6 +865,8 @@ class PupilNamespace(Namespace["EyeData"]):
         rng = np.random.default_rng(seed)
         for eye in self._d._eyes_with(eyes, "pupil"):
             key = f"{eye}_pupil"
+            if obj.data.get_layer(key, "transplant").any():
+                raise ValueError(f"{key} already has transplanted blinks")
             tr = self._transplant(obj, eye, window, merge_distance, min_duration,
                                   max_duration, pad, n=n, mode=mode, shrink=shrink,
                                   blink_val=blink_val, seed=rng)
