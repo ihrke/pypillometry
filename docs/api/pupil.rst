@@ -4,12 +4,15 @@ Pupil methods (``d.pupil``)
 ===========================
 
 The methods for pupil data are used as ``d.pupil.<method>(...)``: blink
-detection, merging and interpolation, filters, merging the eyes, baseline
-and response models, and the foreshortening correction. They raise an
-error if the object has no pupil data, change the object in place unless
-``inplace=False`` is given, and return it (except
-:meth:`~eyedata.pupil.PupilNamespace.fit_foreshortening`, which returns
-the fitted calibration).
+detection, merging, interpolation and transplantation, filters, merging
+the eyes, baseline and response models, and the foreshortening correction.
+They raise an error if the object has no pupil data, change the object in
+place unless ``inplace=False`` is given, and return it. The exceptions
+return a result instead of the object:
+:meth:`~eyedata.pupil.PupilNamespace.fit_foreshortening` (the fitted
+calibration), :meth:`~eyedata.pupil.PupilNamespace.blinks_autotune` (the
+tuned parameters of the blink interpolation) and
+:meth:`~eyedata.pupil.PupilNamespace.blinks_transplant_error`.
 
 As pipeline steps, the same methods are ``pp.pupil.<method>(...)`` with
 the same arguments (see :doc:`pipelines`):

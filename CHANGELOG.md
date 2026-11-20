@@ -8,6 +8,11 @@
 - dependency: PySide6 instead of PyQt5 (Qt 6, LGPL, wheels for all platforms and on conda-forge)
 - fix: `blinks_detect()` applies `max_duration` (now 2 s) to all blinks; long runs of missing samples (e.g., breaks) are no blinks
 - fix: `blinks_interpolate()` (Mahot) skips stretches longer than `max_duration` (2 s), e.g. chains of merged blinks, instead of bridging them with one curve
+- `d.pupil.blinks_autotune()`: tune the parameters of `blinks_interpolate()` for a recording on transplanted blinks
+- `d.pupil.blinks_transplant()`, `d.pupil.blinks_transplant_error()`: add the blinks of a recording to its clean stretches, to evaluate their interpolation against the known signal
+- `pp.signal.transplant_blinks()` and related functions: transplantation of blinks for numpy arrays
+- `pp.signal.tune_blinks_mahot()`: tuning on transplanted blinks for numpy arrays
+- `pp.signal.interpolate_blinks_mahot()`: the Mahot interpolation for numpy arrays
 
 ## 2.2.3 (2026-11-19)
 
