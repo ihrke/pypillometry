@@ -34,7 +34,7 @@ _PUPIL_WINDOW = 10000.
 _PUPIL_COLORS = ((107, 174, 214), (253, 141, 60), (161, 217, 155))
 
 
-class SceneNamespace(Namespace):
+class SceneNamespace(Namespace["HeadMountedEyeData"]):
     """
     Methods for the scene video and the motion sensors of a head-mounted
     eye tracker, accessed as ``d.scene`` (e.g., ``d.scene.luminance()``) on

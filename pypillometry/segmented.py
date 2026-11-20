@@ -245,7 +245,7 @@ def sem(data, axis=None):
 # Namespaces
 # --------------------------------------------------------------------------
 
-class SegmentedPupilNamespace(Namespace):
+class SegmentedPupilNamespace(Namespace["SegmentedEyeData"]):
     """
     Methods for pupil segments, accessed as ``seg.pupil`` (e.g.,
     ``seg.pupil.baseline_correct((-200, 0))``).
@@ -418,7 +418,7 @@ class SegmentedPupilNamespace(Namespace):
                             **kwargs)
 
 
-class SegmentedGazeNamespace(Namespace):
+class SegmentedGazeNamespace(Namespace["SegmentedEyeData"]):
     """
     Methods for gaze segments and regions of interest (ROIs), accessed as
     ``seg.gaze`` (e.g., ``seg.gaze.roi_hits(roi)``).

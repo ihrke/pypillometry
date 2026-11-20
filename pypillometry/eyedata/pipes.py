@@ -19,11 +19,15 @@ combine the steps first: ``d | (a | b)``, or ``preproc = a | b; d | preproc``.
 
 import functools
 import inspect
+from typing import Any, Callable, TypeVar, cast
 
 from .namespace import Namespace
 
+# a function; the decorators keep its signature (for type checkers and editors)
+F = TypeVar("F", bound=Callable[..., Any])
 
-def step(func):
+
+def step(func: F) -> F:
     """
     Decorator for the transforming methods (those that return the data object).
 
@@ -49,7 +53,7 @@ def step(func):
             return Step(wrapper, args, kwargs, namespace=self._name)
         return func(self, *args, **kwargs)
     wrapper._is_step = True
-    return wrapper
+    return cast(F, wrapper)
 
 
 def generic_step(method):

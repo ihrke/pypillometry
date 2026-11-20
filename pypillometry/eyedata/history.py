@@ -7,10 +7,14 @@ the decorated methods (of :class:`~pypillometry.EyeData` and its
 namespaces ``d.pupil`` and ``d.gaze``).
 """
 import functools
+from typing import Any, Callable, TypeVar, cast
 
 import numpy as np
 
 from .namespace import Namespace
+
+# a function; the decorator keeps its signature (for type checkers and editors)
+F = TypeVar("F", bound=Callable[..., Any])
 
 
 def _history_arg(v):
@@ -37,7 +41,7 @@ def _history_arg(v):
 _history_depth = 0
 
 
-def keephistory(func):
+def keephistory(func: F) -> F:
     """
     Decorator that records a method call in the history of the returned object.
 
@@ -84,4 +88,4 @@ def keephistory(func):
             fstr = f"{name}({','.join(allargs)})"
             target.add_to_history({"funcstring": fstr, "funcname": name})
         return obj
-    return wrapper
+    return cast(F, wrapper)

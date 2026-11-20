@@ -5,7 +5,7 @@ pupil.py
 Methods of :class:`~pypillometry.EyeData` for pupil data.
 """
 
-from typing import Optional, Tuple, Union
+from typing import TYPE_CHECKING, Optional, Tuple, Union
 from .history import keephistory
 from .namespace import Namespace
 from .pipes import step
@@ -29,6 +29,9 @@ from ..signal.baseline import butter_lowpass_filter, downsample
 
 from loguru import logger
 import numpy as np
+
+if TYPE_CHECKING:
+    from .eyedata import EyeData
 
 
 #: parameters of the methods of ``blinks_interpolate()`` and their defaults
@@ -91,7 +94,7 @@ def _merge_overlapping_blink_windows(blinks, n):
         out.append((t1, on, off, t4))
     return out
 
-class PupilNamespace(Namespace):
+class PupilNamespace(Namespace["EyeData"]):
     """
     Methods for pupil data, accessed as ``d.pupil`` (e.g.,
     ``d.pupil.blinks_detect()``).

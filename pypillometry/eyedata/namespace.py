@@ -5,9 +5,15 @@ namespace.py
 Base class of the method namespaces of :class:`~pypillometry.EyeData`
 (``d.pupil``, ``d.gaze``) and the descriptor that attaches them to the class.
 """
+from typing import Any, Generic, TypeVar, overload
+
+# the data class of a namespace, and a namespace class (for type checkers
+# and editors: ``d.pupil`` is a PupilNamespace whose methods return EyeData)
+D = TypeVar("D")
+N = TypeVar("N", bound="Namespace")
 
 
-class Namespace:
+class Namespace(Generic[D]):
     """
     Base class of the method namespaces of :class:`~pypillometry.EyeData`.
 
@@ -20,6 +26,10 @@ class Namespace:
     Without data (``pp.pupil``, ``pp.gaze``), the transforming methods
     return pipeline steps instead of running (see :class:`~pypillometry.Step`).
 
+    A namespace for a data class is a subclass of ``Namespace[DataClass]``
+    (e.g., ``class PupilNamespace(Namespace["EyeData"])``), so that type
+    checkers and editors know what its methods return.
+
     Parameters
     ----------
     data : EyeData or None
@@ -29,11 +39,11 @@ class Namespace:
     #: name of the namespace (attribute name on the data object)
     _name = None
 
-    def __init__(self, data=None):
+    def __init__(self, data: Any = None):
         self._data = data
 
     @property
-    def _d(self):
+    def _d(self) -> D:
         """The data object; raises a TypeError if there is none."""
         if self._data is None:
             raise TypeError(
@@ -55,7 +65,7 @@ class Namespace:
         return f"<{self._name} methods of {self._data.name!r}: {methods}>"
 
 
-class accessor:
+class accessor(Generic[N]):
     """
     Descriptor that attaches a :class:`Namespace` to a data class.
 
@@ -69,9 +79,14 @@ class accessor:
         the namespace class (a subclass of :class:`Namespace`)
     """
 
-    def __init__(self, cls):
+    def __init__(self, cls: type[N]):
         self.cls = cls
         self.__doc__ = cls.__doc__
+
+    @overload
+    def __get__(self, obj: None, owner: Any = None) -> type[N]: ...
+    @overload
+    def __get__(self, obj: object, owner: Any = None) -> N: ...
 
     def __get__(self, obj, owner=None):
         return self.cls if obj is None else self.cls(obj)

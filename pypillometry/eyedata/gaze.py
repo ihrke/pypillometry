@@ -4,9 +4,13 @@ from .namespace import Namespace
 from .pipes import step
 from .eyedatadict import _without_layer
 import numpy as np
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .eyedata import EyeData
 
 
-class GazeNamespace(Namespace):
+class GazeNamespace(Namespace["EyeData"]):
     """
     Methods for gaze data, accessed as ``d.gaze`` (e.g.,
     ``d.gaze.mask_offscreen()``).
