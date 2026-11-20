@@ -9,7 +9,8 @@ from loguru import logger
 
 __all__ = [
     "smooth_window", "velocity_savgol", "detect_blinks_velocity",
-    "detect_blinks_zero", "blink_onsets_mahot", "interpolate_blinks_kalman", "zscale",
+    "detect_blinks_zero", "blink_onsets_mahot", "interpolate_blinks_mahot",
+    "interpolate_blinks_kalman", "zscale",
 ]
 
 
@@ -594,6 +595,144 @@ def blink_onsets_mahot(sy, blinks, smooth_winsize, vel_onset, vel_offset, margin
         newblinks.append([onset, offset])
 
     return np.array(newblinks)
+
+
+def _merge_overlapping_blink_windows(blinks, n):
+    """Anchor points of the blinks, merging only blinks that overlap.
+
+    Each blink `(t2, t3)` is interpolated from the anchor points
+    ``t1 = t2-(t3-t2)`` and ``t4 = t3+(t3-t2)``. Blinks whose stretches
+    `(t2, t3)` overlap or touch are merged (the anchor points are from the
+    first and the last of them). If the anchor points of a blink would
+    reach into a neighbouring blink, they are moved closer instead: at most
+    to the on- or offset of the neighbour (which is not replaced by its
+    curve); with anchor points that close, the blink is interpolated with
+    a monotone curve instead of the cubic (see `_anchors_close`). Merging these blinks instead would replace the signal between
+    them, and the anchor points of the merged blink would reach further
+    blinks (chains of several seconds in real data).
+
+    Returns
+    -------
+    list of tuple
+        ``(t1, t2, t3, t4)`` for each (merged) blink
+    """
+    groups = []     # [t1, t2, t3, t4] before moving the anchor points
+    for on, off in sorted((int(b[0]), int(b[1])) for b in blinks):
+        t1, t4 = 2 * on - off, 2 * off - on
+        if groups and on <= groups[-1][2]:
+            groups[-1][2] = max(groups[-1][2], off)
+            groups[-1][3] = max(groups[-1][3], t4)
+            continue
+        groups.append([t1, on, off, t4])
+    out = []
+    for i, (t1, t2, t3, t4) in enumerate(groups):
+        lo = groups[i - 1][2] if i > 0 else 0
+        hi = groups[i + 1][1] if i + 1 < len(groups) else n - 1
+        out.append((max(t1, lo), t2, t3, min(t4, hi)))
+    return out
+
+def _anchors_close(t1, t2, t3, t4):
+    """Whether an anchor point of the blink `(t2, t3)` is less than half of
+    its length away from it (moved because of a neighbouring blink or the
+    end of the data, see `_merge_overlapping_blink_windows`)."""
+    return min(t2 - t1, t4 - t3) < (t3 - t2) / 2
+
+
+def interpolate_blinks_mahot(sy, blinks, smooth_winsize, vel_onset, vel_offset, margin,
+                             blinkwindow, interp_type="cubic", tx=None, missing=None,
+                             max_duration=None):
+    """
+    Interpolate blinks with the method by Mahot (2013).
+
+    The on- and offset of each blink (including the transients) are found
+    in the velocity profile (see :func:`blink_onsets_mahot`), and the samples
+    between them are replaced by a curve through four anchor points: the
+    onset `t2`, the offset `t3`, and the points one blink duration before
+    and after them (``t1 = t2-(t3-t2)``, ``t4 = t3+(t3-t2)``). Blinks that
+    are so close that the anchor points of one fall into the other are
+    merged and interpolated together. Blinks that are too short or have an
+    unusable anchor point are skipped.
+
+    Parameters
+    ----------
+    sy : np.ndarray
+        pupil data (can contain NaN or zeros for missing values)
+    blinks : np.ndarray or Intervals
+        blink start/end sample indices (nblinks x 2, end-exclusive); only
+        the core of each blink is used (see :func:`blink_onsets_mahot`)
+    smooth_winsize, vel_onset, vel_offset, margin, blinkwindow
+        see :func:`blink_onsets_mahot` (samples, and units per sample)
+    interp_type : str
+        type of interpolation accepted by :func:`scipy.interpolate.interp1d`
+    tx : np.ndarray, optional
+        time of each sample; default: the sample index
+    missing : np.ndarray of bool, optional
+        samples that cannot be used as anchor points (e.g., excluded
+        periods); NaN samples never can
+    max_duration : int, optional
+        maximum number of samples that are replaced for one blink (with its
+        margins, or after merging it with neighbouring blinks); longer ones
+        are skipped (e.g., chains of merged blinks); `None`: no limit
+
+    Returns
+    -------
+    filled : np.ndarray
+        copy of `sy` with the blinks replaced
+    interpolated : np.ndarray of bool
+        the replaced samples
+    skipped : list
+        the blinks that were not interpolated, as tuples
+        ``(index, (t1, t2, t3, t4), reason)``
+
+    References
+    ----------
+    Mahot, 2013:
+    https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001.
+    """
+    from scipy.interpolate import interp1d
+    sy = np.asarray(sy, dtype=float)
+    n = len(sy)
+    tx = np.arange(n, dtype=float) if tx is None else np.asarray(tx)
+    filled, interpolated, skipped = sy.copy(), np.zeros(n, dtype=bool), []
+    if len(blinks) == 0:
+        return filled, interpolated, skipped
+    unusable = np.isnan(sy)
+    if missing is not None:
+        unusable |= np.asarray(missing, dtype=bool)
+
+    onsets = blink_onsets_mahot(sy, blinks, smooth_winsize, vel_onset, vel_offset,
+                                margin, blinkwindow)
+    logger.debug(f"Refined {len(onsets)} blink boundaries")
+    # the anchor points of a blink must not fall into a neighbouring
+    # blink (they would be NaN), so merge blinks with overlapping windows
+    for ix, (t1, t2, t3, t4) in enumerate(_merge_overlapping_blink_windows(onsets, n)):
+        # Ensure all 4 time points are distinct and in order
+        if t1 == t2:
+            t2 += 1
+        if t3 == t4:
+            t3 -= 1
+        pts = [t1, t2, t3, t4]
+        if not (t1 < t2 < t3 < t4):
+            skipped.append((ix, tuple(pts), "blink too short to interpolate"))
+            continue
+        # e.g., several blinks merged into one long stretch: a curve through
+        # four points cannot replace it
+        if max_duration is not None and t3 - t2 > max_duration:
+            skipped.append((ix, tuple(pts), f"longer than max_duration ({t3 - t2} samples)"))
+            continue
+        # e.g., a blink that ends in an excluded period (a break)
+        if unusable[pts].any():
+            skipped.append((ix, tuple(pts), "no usable data at its anchor points"))
+            continue
+        if interp_type == "cubic" and _anchors_close(t1, t2, t3, t4):
+            # a cubic through anchor points that are close on one side and
+            # far on the other overshoots; a monotone curve cannot
+            from scipy.interpolate import PchipInterpolator
+            filled[t2:t3] = PchipInterpolator(tx[pts], sy[pts])(tx[t2:t3])
+        else:
+            filled[t2:t3] = interp1d(tx[pts], sy[pts], kind=interp_type)(tx[t2:t3])
+        interpolated[t2:t3] = True
+    return filled, interpolated, skipped
 
 
 def _blink_groups(blinks, window, n):

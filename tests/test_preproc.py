@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from pypillometry.signal.preproc import smooth_window, velocity_savgol, detect_blinks_velocity, detect_blinks_zero, blink_onsets_mahot, interpolate_blinks_kalman
+from pypillometry.signal.preproc import smooth_window, velocity_savgol, detect_blinks_velocity, detect_blinks_zero, blink_onsets_mahot, interpolate_blinks_kalman, interpolate_blinks_mahot
 
 
 class TestSmoothWindow(unittest.TestCase):
@@ -563,6 +563,35 @@ class TestInterpolateBlinksKalman(unittest.TestCase):
         filled, interp, model = interpolate_blinks_kalman(self.y, [], self.fs, 250)
         np.testing.assert_array_equal(filled, self.y)
         self.assertIsNone(model)
+
+
+class TestInterpolateBlinksMahot(unittest.TestCase):
+    make = staticmethod(TestBlinkOnsetsMahot.make)
+
+    def test_fills_blink_and_transients(self):
+        p = self.make(1000, 1100)
+        filled, interp, skipped = interpolate_blinks_mahot(p, [(1000, 1100)], 11, -5, 5, (5, 5), 500)
+        self.assertEqual(skipped, [])
+        self.assertFalse(np.isnan(filled).any())
+        self.assertTrue(interp[965:1130].all())          # transients (30 samples) included
+        np.testing.assert_allclose(filled[interp], 5000)
+        np.testing.assert_array_equal(filled[~interp], p[~interp])
+
+    def test_unusable_anchor_is_skipped(self):
+        p = self.make(1000, 1100)
+        missing = np.zeros(len(p), dtype=bool)
+        missing[1200:1400] = True
+        filled, interp, skipped = interpolate_blinks_mahot(p, [(1000, 1100)], 11, -5, 5, (5, 5), 500,
+                                                           missing=missing)
+        self.assertEqual(len(skipped), 1)
+        self.assertIn("anchor", skipped[0][2])
+        self.assertFalse(interp.any())
+
+    def test_no_blinks(self):
+        p = self.make(1000, 1100)
+        filled, interp, skipped = interpolate_blinks_mahot(p, [], 11, -5, 5, (5, 5), 500)
+        np.testing.assert_array_equal(filled, p)
+        self.assertFalse(interp.any())
 
 
 if __name__ == '__main__':

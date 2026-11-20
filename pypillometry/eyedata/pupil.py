@@ -61,48 +61,6 @@ def _interp_params(method, kwargs):
                        f"blinks_interpolate(), not by {method!r}; ignored")
     return pars
 
-
-def _merge_overlapping_blink_windows(blinks, n):
-    """Anchor points of the blinks, merging only blinks that overlap.
-
-    Each blink `(t2, t3)` is interpolated from the anchor points
-    ``t1 = t2-(t3-t2)`` and ``t4 = t3+(t3-t2)``. Blinks whose stretches
-    `(t2, t3)` overlap or touch are merged (the anchor points are from the
-    first and the last of them). If the anchor points of a blink would
-    reach into a neighbouring blink, they are moved closer instead: at most
-    to the on- or offset of the neighbour (which is not replaced by its
-    curve); with anchor points that close, the blink is interpolated with
-    a monotone curve instead of the cubic (see `_anchors_close`). Merging these blinks instead would replace the signal between
-    them, and the anchor points of the merged blink would reach further
-    blinks (chains of several seconds in real data).
-
-    Returns
-    -------
-    list of tuple
-        ``(t1, t2, t3, t4)`` for each (merged) blink
-    """
-    groups = []     # [t1, t2, t3, t4] before moving the anchor points
-    for on, off in sorted((int(b[0]), int(b[1])) for b in blinks):
-        t1, t4 = 2 * on - off, 2 * off - on
-        if groups and on <= groups[-1][2]:
-            groups[-1][2] = max(groups[-1][2], off)
-            groups[-1][3] = max(groups[-1][3], t4)
-            continue
-        groups.append([t1, on, off, t4])
-    out = []
-    for i, (t1, t2, t3, t4) in enumerate(groups):
-        lo = groups[i - 1][2] if i > 0 else 0
-        hi = groups[i + 1][1] if i + 1 < len(groups) else n - 1
-        out.append((max(t1, lo), t2, t3, min(t4, hi)))
-    return out
-
-def _anchors_close(t1, t2, t3, t4):
-    """Whether an anchor point of the blink `(t2, t3)` is less than half of
-    its length away from it (moved because of a neighbouring blink or the
-    end of the data, see `_merge_overlapping_blink_windows`)."""
-    return min(t2 - t1, t4 - t3) < (t3 - t2) / 2
-
-
 class PupilNamespace(Namespace["EyeData"]):
     """
     Methods for pupil data, accessed as ``d.pupil`` (e.g.,
@@ -793,17 +751,15 @@ class PupilNamespace(Namespace["EyeData"]):
 
     def _interpolate_mahot(self, obj, eye, blinkwindow_ix, winsize, vel_onset, vel_offset,
                            margin, interp_type, max_duration):
-        """blinks of `eye` in `obj` interpolated with the method by Mahot;
+        """blinks of `eye` in `obj` interpolated with
+        :func:`~pypillometry.signal.preproc.interpolate_blinks_mahot`;
         returns the signal and the interpolated samples"""
-        from scipy.interpolate import interp1d
         # parameters in sampling units (from ms)
         winsize_ix=self._d._samples(winsize, rounding="up")
         margin_ix=self._d._samples(margin, rounding="up")
         max_ix = None if max_duration is None else self._d._samples(max_duration)
         if winsize_ix % 2==0: ## ensure smoothing window is odd
             winsize_ix+=1 
-        syr=obj.data[eye,"pupil"].copy() ## interpolated signal
-        interpolated = np.zeros(len(syr), dtype=bool)  # interpolated samples
         bls = self._d.get_blinks(eye, "pupil", units="samples")[f"{eye}_pupil"]
         
         # Use raw data for velocity computation - blink_onsets_mahot handles NaN/zeros internally
@@ -815,55 +771,13 @@ class PupilNamespace(Namespace["EyeData"]):
         vel_onset_samples, vel_offset_samples = self._convert_velocity_thresholds(
             pupil_data, winsize_ix, vel_onset, vel_offset
         )
-        blink_onsets=preproc.blink_onsets_mahot(pupil_data, bls, 
-                                                winsize_ix, 
-                                                vel_onset_samples, vel_offset_samples,
-                                                margin_ix, blinkwindow_ix)
-        logger.debug(f"Refined {len(blink_onsets)} blink boundaries")
-        # the anchor points of a blink must not fall into a neighbouring
-        # blink (they would be NaN), so merge blinks with overlapping windows
-        blink_onsets = _merge_overlapping_blink_windows(blink_onsets, len(self._d))
-
-        excl = obj._excluded_mask()
-        
-        # loop through blinks
-        for ix,(t1,t2,t3,t4) in enumerate(blink_onsets):
-            # Ensure all 4 time points are distinct and in order
-            if t1==t2:
-                t2+=1
-            if t3==t4:
-                t3-=1
-            
-            # Check if blink is too short to interpolate (need at least 4 distinct points)
-            if not (t1 < t2 < t3 < t4):
-                logger.warning(f"Skipping blink {ix} for {eye}: blink too short to interpolate (t1={t1}, t2={t2}, t3={t3}, t4={t4})")
-                continue
-            # e.g., several blinks merged into one long stretch: a curve
-            # through four points cannot replace it
-            if max_ix is not None and t3 - t2 > max_ix:
-                logger.warning(f"Skipping blink {ix} for {eye}: longer than max_duration "
-                               f"({(t3 - t2) * 1000 / self._d.fs:.0f} ms; t1={t1}, t2={t2}, "
-                               f"t3={t3}, t4={t4})")
-                continue
-            
-            txpts=[obj.tx[pt] for pt in [t1,t2,t3,t4]]
-            sypts=[obj.data[eye,"pupil"][pt] for pt in [t1,t2,t3,t4]]
-            # e.g., a blink that ends in an excluded period (a break)
-            if np.isnan(sypts).any() or excl[[t1, t2, t3, t4]].any():
-                logger.warning(f"Skipping blink {ix} for {eye}: no usable data at its "
-                               f"anchor points (t1={t1}, t2={t2}, t3={t3}, t4={t4})")
-                continue
-            if interp_type == "cubic" and _anchors_close(t1, t2, t3, t4):
-                # a cubic through anchor points that are close on one side
-                # and far on the other overshoots; a monotone curve cannot
-                from scipy.interpolate import PchipInterpolator
-                intfct = PchipInterpolator(txpts, sypts)
-            else:
-                intfct=interp1d(txpts,sypts, kind=interp_type)
-            islic=slice(t2, t3)
-            syr[islic]=intfct(obj.tx[islic])
-            # mark the interpolated datapoints
-            interpolated[islic] = True
+        syr, interpolated, skipped = preproc.interpolate_blinks_mahot(
+            pupil_data, bls, winsize_ix, vel_onset_samples, vel_offset_samples,
+            margin_ix, blinkwindow_ix, interp_type=interp_type, tx=obj.tx,
+            missing=obj._excluded_mask(), max_duration=max_ix)
+        for ix, (t1, t2, t3, t4), reason in skipped:
+            logger.warning(f"Skipping blink {ix} for {eye}: {reason} "
+                           f"(t1={t1}, t2={t2}, t3={t3}, t4={t4})")
         return syr, interpolated
 
     @step

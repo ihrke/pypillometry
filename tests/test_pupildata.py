@@ -213,7 +213,7 @@ if __name__ == '__main__':
 
 class TestMergeBlinkWindows(unittest.TestCase):
     def merge(self, blinks, n=10000):
-        from pypillometry.eyedata.pupil import _merge_overlapping_blink_windows
+        from pypillometry.signal.preproc import _merge_overlapping_blink_windows
         return _merge_overlapping_blink_windows(blinks, n)
 
     def test_separate_blinks(self):
@@ -262,7 +262,7 @@ def test_onset_search_stops_at_neighbour():
 
 def test_close_anchor_points_no_overshoot():
     """a blink with an anchor point close to it gets a monotone curve"""
-    from pypillometry.eyedata.pupil import _anchors_close
+    from pypillometry.signal.preproc import _anchors_close
     assert _anchors_close(0, 100, 200, 220) and not _anchors_close(0, 100, 200, 300)
     y = np.full(4000, 1000.0)
     y[1000:1400] = np.nan                        # a long blink
