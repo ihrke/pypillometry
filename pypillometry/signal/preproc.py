@@ -359,32 +359,38 @@ def _pair_velocity_blinks(onsets, offset_starts, offset_ends, invalid, min_blink
     moved back to the last valid sample).
     """
     n = len(invalid)
-    blinks = []
-    k = 0
-    while k < len(onsets):
-        on = onsets[k]
-        # first offset run that starts after the onset and is far enough
-        j = max(np.searchsorted(offset_starts, on, "right"),
-                np.searchsorted(offset_ends, on + min_blink_samples, "left"))
-        k = np.searchsorted(onsets, on, "right")   # next onset
-        if j < len(offset_starts):
-            off = offset_ends[j]
-            # a later onset before this offset: this onset has no offset of
-            # its own (e.g., a dip from an eye movement) and must not take
-            # the offset of the next blink
-            if (k < len(onsets) and onsets[k] < offset_starts[j]
-                    and off - onsets[k] >= min_blink_samples):
-                continue
-        else:
-            off = n - 1
-        if max_blink_samples is not None and off - on + 1 > max_blink_samples:
-            continue    # no offset close enough: try the next onset
-        # onsets in an invalid region grow back to the first valid sample
-        # (offsets do not grow: the offset runs end with the recovery)
-        while on > 0 and invalid[on]:
-            on -= 1
-        blinks.append([on, off])
-        k = np.searchsorted(onsets, off, "right")
+    onsets = np.asarray(onsets, dtype=int)
+    offset_starts = np.asarray(offset_starts, dtype=int)
+    offset_ends = np.asarray(offset_ends, dtype=int)
+    if len(onsets) == 0:
+        return np.array([])
+    # for each onset, the first offset run that starts after it and is far
+    # enough (or the end of the signal if there is none)
+    j = np.maximum(np.searchsorted(offset_starts, onsets, "right"),
+                   np.searchsorted(offset_ends, onsets + min_blink_samples, "left"))
+    has = j < len(offset_starts)
+    jj = np.minimum(j, max(0, len(offset_starts) - 1))
+    off = np.where(has, offset_ends[jj] if len(offset_ends) else 0, n - 1)
+    # a later onset before this offset: this onset has no offset of its own
+    # (e.g., a dip from an eye movement) and must not take the offset of
+    # the next blink
+    nxt = np.r_[onsets[1:], -1]
+    ok = ~(has & (np.arange(len(onsets)) < len(onsets) - 1)
+           & (nxt < (offset_starts[jj] if len(offset_starts) else 0))
+           & (off - nxt >= min_blink_samples))
+    if max_blink_samples is not None:
+        ok &= off - onsets + 1 <= max_blink_samples   # no offset close enough
+    # the blinks do not overlap: after a blink, the next onset after its offset
+    blinks, last = [], -1
+    for on, of in zip(onsets[ok].tolist(), off[ok].tolist()):
+        if on > last:
+            # onsets in an invalid region grow back to the first valid
+            # sample (offsets do not grow: the offset runs end with the
+            # recovery)
+            while on > 0 and invalid[on]:
+                on -= 1
+            blinks.append([on, of])
+            last = of
     return np.array(blinks)
 
 def detect_blinks_zero(sy, min_duration, blink_val=0):
