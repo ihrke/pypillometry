@@ -1597,13 +1597,26 @@ class TestEyeDataDelitem(unittest.TestCase):
         self.assertIn('left_x', self.eyedata.data)
         np.testing.assert_array_equal(self.eyedata.data['left_x'], new_data)
     
+    def test_pupil_blinks_interpolate_max_duration(self):
+        """Blinks longer than max_duration (with their margins) are not interpolated"""
+        p = 1000 + 50 * np.sin(np.arange(10000) / 500)
+        p[2000:2100] = np.nan                    # 100 ms
+        p[5000:6500] = np.nan                    # 1.5 s
+        d = pp.EyeData(left_pupil=p, sampling_rate=1000).pupil.blinks_detect()
+        self.assertEqual(len(d.get_blinks("left", "pupil")["left_pupil"]), 2)
+        for max_duration, long_done in ((None, True), (2000, True), (1000, False)):
+            r = d.pupil.blinks_interpolate(max_duration=max_duration, inplace=False)
+            self.assertFalse(np.isnan(r.data["left_pupil"][2000:2100]).any())
+            self.assertEqual(not np.isnan(r.data["left_pupil"][5000:6500]).any(), long_done)
+
     def test_pupil_blinks_interpolate_preserves_mask(self):
         """Test that blink interpolation preserves original mask and marks interpolated regions"""
-        # Create pupil data with some manually masked regions (seeded noise:
-        # with some noise, velocity detection marks the masked region)
+        # Create pupil data with some manually masked regions (a little
+        # seeded noise; much noise would be full of velocity "blinks" that
+        # merge into one stretch that is too long to interpolate)
         rng = np.random.default_rng(1)
         pd = pp.EyeData(
-            left_pupil=rng.random(1000) * 100 + 3000,
+            left_pupil=rng.normal(0, 1, 1000) + 3000,
             sampling_rate=100
         )
         

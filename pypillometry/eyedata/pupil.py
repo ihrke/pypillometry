@@ -37,7 +37,7 @@ if TYPE_CHECKING:
 #: parameters of the methods of ``blinks_interpolate()`` and their defaults
 _INTERP_DEFAULTS = {
     "mahot": dict(winsize=25, vel_onset=-5.0, vel_offset=5.0, margin=(10, 30),
-                  interp_type="cubic"),
+                  interp_type="cubic", max_duration=2000),
     "kalman": dict(optimize=False),
 }
 
@@ -783,13 +783,14 @@ class PupilNamespace(Namespace["EyeData"]):
         return syr, interpolated
 
     def _interpolate_mahot(self, obj, eye, blinkwindow_ix, winsize, vel_onset, vel_offset,
-                           margin, interp_type):
+                           margin, interp_type, max_duration):
         """blinks of `eye` in `obj` interpolated with the method by Mahot;
         returns the signal and the interpolated samples"""
         from scipy.interpolate import interp1d
         # parameters in sampling units (from ms)
         winsize_ix=self._d._samples(winsize, rounding="up")
         margin_ix=self._d._samples(margin, rounding="up")
+        max_ix = None if max_duration is None else self._d._samples(max_duration)
         if winsize_ix % 2==0: ## ensure smoothing window is odd
             winsize_ix+=1 
         syr=obj.data[eye,"pupil"].copy() ## interpolated signal
@@ -827,6 +828,13 @@ class PupilNamespace(Namespace["EyeData"]):
             # Check if blink is too short to interpolate (need at least 4 distinct points)
             if not (t1 < t2 < t3 < t4):
                 logger.warning(f"Skipping blink {ix} for {eye}: blink too short to interpolate (t1={t1}, t2={t2}, t3={t3}, t4={t4})")
+                continue
+            # e.g., several blinks merged into one long stretch: a curve
+            # through four points cannot replace it
+            if max_ix is not None and t3 - t2 > max_ix:
+                logger.warning(f"Skipping blink {ix} for {eye}: longer than max_duration "
+                               f"({(t3 - t2) * 1000 / self._d.fs:.0f} ms; t1={t1}, t2={t2}, "
+                               f"t3={t3}, t4={t4})")
                 continue
             
             txpts=[obj.tx[pt] for pt in [t1,t2,t3,t4]]
@@ -936,6 +944,12 @@ class PupilNamespace(Namespace["EyeData"]):
         interp_type : str
             ``"mahot"``: type of interpolation accepted by
             :func:`scipy.interpolate.interp1d()`; default ``"cubic"``
+        max_duration : float, str, Quantity or None
+            ``"mahot"``: maximum duration (in ms, or with units) of a stretch
+            that is interpolated; blinks that are longer (with their margins,
+            or after merging with neighbouring blinks whose anchor points
+            overlap) are skipped with a warning; default 2000, `None`: no
+            limit
         optimize : bool
             ``"kalman"``: fit all parameters of the model to the data
             instead of using the defaults; much slower, and usually changes
