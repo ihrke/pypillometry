@@ -500,7 +500,7 @@ class PupilNamespace(Namespace["EyeData"]):
     def blinks_detect(self, eyes=[], min_duration:float=20, blink_val:float=0,
                       winsize: float=11, vel_onset=-5.0, vel_offset=5.0, 
                       vel_onset_min_duration: float=10.0, vel_offset_min_duration: float=10.0,
-                      max_duration: float=1000, margin=0,
+                      max_duration: float=2000, margin=0,
                       strategies: list=["zero","velocity"],
                       ignore_existing_mask=False, inplace=None):
         """
@@ -522,7 +522,9 @@ class PupilNamespace(Namespace["EyeData"]):
         with a warning and keep their blinks: the values there are
         reconstructed, so detect blinks before interpolating them.
 
-        Finally, detected blinks have to be at least `min_duration` ms.
+        Finally, detected blinks have to be at least `min_duration` and at
+        most `max_duration` long; longer runs of missing samples (e.g., loss
+        of the pupil or breaks) stay missing, but are not blinks.
         They can be extended by a `margin` on each side, e.g. to include
         the slow parts of the transient around the blink.
         
@@ -558,10 +560,10 @@ class PupilNamespace(Namespace["EyeData"]):
             minimum duration (in ms, or with units) that velocity must exceed threshold to detect as offset
             (to avoid noise-induced false detections)
         max_duration : float, str, Quantity or None
-            maximum duration (in ms, or with units) of a blink detected by the
-            "velocity" strategy; an onset without an offset within this time
-            is dropped. `None` means no limit. Does not apply to the "zero"
-            strategy.
+            maximum duration (in ms, or with units) of a blink (default 2 s,
+            generous for blinks that are merged later); for the "velocity"
+            strategy, an onset without an offset within this time is
+            dropped. `None` means no limit.
         margin : float, str, Quantity or tuple
             time (in ms, or with units) by which each detected blink is
             extended to the left and right, after the `min_duration` filter;
@@ -670,7 +672,8 @@ class PupilNamespace(Namespace["EyeData"]):
             # Filter by minimum duration and create Intervals object
             filtered_blinks = [(int(on)-margin_ix[0], int(off)+1+margin_ix[1])
                                for (on,off) in blinks
-                               if off+1-on>=min_duration_ix]
+                               if off+1-on>=min_duration_ix
+                               and (max_duration_ix is None or off+1-on<=max_duration_ix)]
             # blinks are cut at excluded periods (e.g., breaks without data
             # are not blinks); blinks next to them are kept. Going through
             # the mask also clips extended blinks to the data and merges
@@ -679,7 +682,7 @@ class PupilNamespace(Namespace["EyeData"]):
             if excl.any() or any(margin_ix):
                 inblink = Intervals(filtered_blinks, "samples").to_mask(obj).astype(bool)
                 filtered_blinks = Intervals.from_mask(inblink & ~excl).intervals
-            logger.debug(f"Filtered {len(filtered_blinks)} blinks by minimum duration")
+            logger.debug(f"Filtered {len(filtered_blinks)} blinks by duration")
             intervals_obj = Intervals(
                 intervals=filtered_blinks,
                 units="samples",

@@ -2436,6 +2436,18 @@ class TestPupilBlinksDetectZero(unittest.TestCase):
                                                   ignore_existing_mask=ign).get_blinks("left", "pupil", units="samples")["left_pupil"]
             self.assertEqual(list(iv.intervals), [(1000, 1100)])
 
+    def test_long_missing_runs_are_not_blinks(self):
+        # longer than max_duration (default 2 s): stays missing, not a blink
+        p = self.signal(); p[500:600] = np.nan; p[1000:3500] = np.nan
+        d = self.make(p).pupil.blinks_detect(eyes=["left"], strategies=["zero"])
+        iv = d.get_blinks("left", "pupil", units="samples")["left_pupil"]
+        self.assertEqual(list(iv.intervals), [(500, 600)])
+        self.assertTrue(np.isnan(d.data["left_pupil"][1000:3500]).all())
+        iv = self.make(p).pupil.blinks_detect(eyes=["left"], strategies=["zero"],
+                                              max_duration=None).get_blinks(
+            "left", "pupil", units="samples")["left_pupil"]
+        self.assertEqual(list(iv.intervals), [(500, 600), (1000, 3500)])
+
     def test_other_masks_are_not_blinks(self):
         # a masked region with valid data must not be detected by "zero"
         d = self.make(self.signal())
