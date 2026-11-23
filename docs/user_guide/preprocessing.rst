@@ -122,12 +122,16 @@ the missing samples is replaced. Instead of setting them by eye,
 
 .. code-block:: python
 
+    d = d.pupil.blinks_detect()
     res = d.pupil.blinks_optimize_parameters()
     d = d.pupil.blinks_interpolate(**res.params)
 
-It transplants the blinks of the recording into its clean stretches, where
-the signal without the blink is known, and searches for the parameters
-that reconstruct it best. The search runs on a few blinks and is refined
+It transplants the obvious blinks of the recording into its clean
+stretches, where the signal without the blink is known, and searches for
+the parameters that reconstruct it best. Obvious blinks are detected
+blinks with missing samples, a large drop of the pupil before and a large
+rise after them, and no other blinks close by; other gaps (e.g., the eye
+tracker losing the pupil, or eye movements) are not transplanted. The search runs on a few blinks and is refined
 on others; a part of the blinks is kept for testing: the result shows the
 error with the tuned and with the default parameters for them. The
 functions behind it are in ``pp.signal`` (see :ref:`api-transplant`).

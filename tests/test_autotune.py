@@ -122,11 +122,20 @@ class TestTune:
 
 @pytest.fixture(scope="module")
 def data():
-    """Binocular pupil, 60 s at 500 Hz, with blinks."""
+    """Binocular pupil, 60 s at 500 Hz, with detected blinks."""
     left, _, _ = make_signal(n=30000, nblinks=20, seed=1)
     right, _, _ = make_signal(n=30000, nblinks=20, seed=2)
     return pp.EyeData(left_pupil=left, right_pupil=right, sampling_rate=500, name="blinks",
-                      inplace=False)
+                      inplace=False).pupil.blinks_detect()
+
+
+def record_transplants(monkeypatch):
+    """list that gets the transplants made by blinks_optimize_parameters()"""
+    from pypillometry.signal import transplant
+    made, orig = [], transplant.transplant_blinks
+    monkeypatch.setattr(transplant, "transplant_blinks",
+                        lambda *a, **kw: made.append(orig(*a, **kw)) or made[-1])
+    return made
 
 
 class TestBlinksOptimizeParameters:
@@ -155,11 +164,7 @@ class TestBlinksOptimizeParameters:
         assert set(res.history["stage"]) == {1}
 
     def test_excluded_and_masked_samples_are_avoided(self, data, monkeypatch):
-        # record the transplants (blinks taken and places used)
-        from pypillometry.signal import transplant
-        made, orig = [], transplant.transplant_blinks
-        monkeypatch.setattr(transplant, "transplant_blinks",
-                            lambda *a, **kw: made.append(orig(*a, **kw)) or made[-1])
+        made = record_transplants(monkeypatch)
         d = data.exclude_intervals([(0, 20000)])                     # samples 0-10000
         d = d.mask_intervals(pp.Intervals([(40000, 60000)], "ms"), variables="pupil")
         d.pupil.blinks_optimize_parameters(eyes="left", seed=1, **FAST)
@@ -182,9 +187,34 @@ class TestBlinksOptimizeParameters:
             data.pupil.blinks_optimize_parameters(start=dict(vel_onset="5%"))
         with pytest.raises(ValueError):
             data.pupil.blinks_optimize_parameters(fixed=dict(interp_type="linear"))
-        with pytest.raises(ValueError):
-            data.pupil.blinks_optimize_parameters(min_duration=500)   # no blinks of this size
+        with pytest.raises(ValueError, match="detect the blinks"):
+            pp.EyeData(left_pupil=data.data["left_pupil"], sampling_rate=500,
+                       inplace=False).pupil.blinks_optimize_parameters()
+        loss = data.data["left_pupil"].copy()
+        loss[np.isnan(loss)] = 1000         # no blinks, only tracker loss
+        for s in range(1000, 29000, 1000):
+            loss[s:s + 60] = np.nan
+        with pytest.raises(ValueError, match="obvious"):
+            pp.EyeData(left_pupil=loss, sampling_rate=500, inplace=False) \
+                .pupil.blinks_detect().pupil.blinks_optimize_parameters()
         with pytest.raises(ValueError):
             data.pupil.blinks_optimize_parameters(n_tune=0)
         with pytest.raises(ValueError):    # interpolated
             data.pupil.blinks_detect().pupil.blinks_interpolate().pupil.blinks_optimize_parameters()
+
+
+def test_only_obvious_blinks_are_transplanted(monkeypatch):
+    # blinks and tracker loss (missing samples without transients); both
+    # are detected, only the blinks are transplanted
+    y, _, cores = make_signal(n=30000, nblinks=20, seed=1)
+    loss = cores[::4, 0] + 300
+    for s in loss:
+        y[s:s + 60] = np.nan
+    d = pp.EyeData(left_pupil=y, sampling_rate=500, inplace=False).pupil.blinks_detect()
+    assert len(d.get_blinks("left", "pupil")["left_pupil"]) == len(cores) + len(loss)
+    made = record_transplants(monkeypatch)
+    d.pupil.blinks_optimize_parameters(seed=1, **FAST)
+    donors = np.concatenate([tr.donors for tr in made if len(tr)])
+    assert len(donors) > 0
+    assert not np.isin(donors[:, 0], loss).any()
+    assert np.isin(donors[:, 0], cores[:, 0]).all()

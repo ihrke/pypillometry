@@ -735,35 +735,70 @@ class PupilNamespace(Namespace["EyeData"]):
             obj.set_blinks(merged_intervals, eyes=[eye], variables=[var])
         return obj
 
-    def _transplant(self, obj, eye, window, merge_distance, min_duration, max_duration,
-                    pad, cores=None, **kwargs):
-        """:func:`~pypillometry.signal.transplant.transplant_blinks` for the
-        pupil of `eye` in `obj` (parameters in ms)"""
-        if obj.data.get_layer(f"{eye}_pupil", "interpolated").any():
-            raise ValueError(f"{eye}_pupil has interpolated samples; tune the parameters "
-                             "before interpolating the blinks")
+    def _window(self, obj, window):
+        """`window` (ms) as `(before, after)` in samples"""
         window_ix = obj._samples(window, rounding="up")
         if np.ndim(window_ix) == 0:
             window_ix = (window_ix, window_ix)
+        return tuple(window_ix)
+
+    def _other_unusable(self, obj, eye):
+        """samples of the pupil of `eye` that are unusable for other reasons
+        than missing values or blinks (other masks, excluded periods)"""
+        key = f"{eye}_pupil"
+        other = obj.data.get_policy_mask(key, _without_layer("strict", "blink"))
+        return other & ~np.isnan(obj.data[key])
+
+    def _obvious_donors(self, obj, eye, window, quantile, blink_val):
+        """cores (samples) of the detected blinks of `eye` in `obj` that are
+        obvious blinks (see :meth:`blinks_optimize_parameters`), and the
+        number of detected blinks"""
+        key = f"{eye}_pupil"
+        sy = obj.data[key]
+        pre, post = self._window(obj, window)
+        blinks = np.array([(int(a), int(b)) for a, b in
+                           obj.get_blinks(eye, "pupil", units="samples")[key]],
+                          dtype=int).reshape(-1, 2)
+        blinks = blinks[np.argsort(blinks[:, 0])]
+        # the core of each blink as in the interpolation: its first to its
+        # last missing sample (blinks without missing samples have none)
+        missing = transplant._missing(sy, blink_val)
+        cores, ok = np.zeros_like(blinks), np.zeros(len(blinks), dtype=bool)
+        for i, (a, b) in enumerate(blinks):
+            ix = np.flatnonzero(missing[a:b])
+            if ix.size:
+                cores[i], ok[i] = (a + ix[0], a + ix[-1] + 1), True
+        # no other detected blink in the window
+        before = np.r_[-np.inf, blinks[:-1, 1]] <= cores[:, 0] - pre
+        after = np.r_[blinks[1:, 0], np.inf] >= cores[:, 1] + post
+        ok &= before & after
+        if not ok.any():
+            return cores[ok], len(blinks)
+        ob = transplant.obvious_blinks(sy, (pre, post), missing=self._other_unusable(obj, eye),
+                                       quantile=quantile, cores=cores[ok],
+                                       avoid=obj.data.get_layer(key, "blink"),
+                                       blink_val=blink_val)
+        logger.debug(f"{eye}: {len(ob)} obvious of {len(blinks)} detected blinks "
+                     f"({ok.sum()} with missing samples and no other blink nearby); "
+                     f"drop > {ob.drop_threshold:.4g}, rise > {ob.rise_threshold:.4g}")
+        return ob.blinks, len(blinks)
+
+    def _transplant(self, obj, eye, window, pad, cores, **kwargs):
+        """:func:`~pypillometry.signal.transplant.transplant_blinks` of the
+        `cores` (samples) of the pupil of `eye` in `obj` (parameters in ms)"""
         # no blinks from or to samples that are unusable for other reasons
         # (other masks, excluded periods), and none to the detected blinks
         # (they are larger than their cores or have none)
         key = f"{eye}_pupil"
-        other = obj.data.get_policy_mask(key, _without_layer("strict", "blink"))
         return transplant.transplant_blinks(
-            obj.data[eye, "pupil"], window_ix,
-            merge_distance=obj._samples(merge_distance),
-            min_len=max(1, obj._samples(min_duration)),
-            max_len=None if max_duration is None else obj._samples(max_duration),
-            pad=obj._samples(pad, rounding="up"),
-            missing=other & ~np.isnan(obj.data[key]), avoid=obj.data.get_layer(key, "blink"),
+            obj.data[key], self._window(obj, window), pad=obj._samples(pad, rounding="up"),
+            missing=self._other_unusable(obj, eye), avoid=obj.data.get_layer(key, "blink"),
             cores=cores, **kwargs)
 
     def blinks_optimize_parameters(self, eyes=[], method: str="mahot", window=(200, 500),
                         n_tune: int=10, repeats: int=3, test_fraction: float=0.5,
                         start=None, bounds=None, fixed=None,
-                        merge_distance: float=100, min_duration: float=20,
-                        max_duration: float=1000, pad: float=100,
+                        quantile: float=0.99, pad: float=100,
                         mode: str="additive", shrink: bool=True, blink_val: float=0,
                         seed=None, **kwargs):
         """
@@ -773,8 +808,8 @@ class PupilNamespace(Namespace["EyeData"]):
         `vel_offset`, `margin` and `blinkwindow`) decide how much of the
         signal around the missing samples of a blink is replaced. Instead
         of setting them by eye, they are tuned on transplanted blinks: the
-        blinks of the recording are cut out with a generous `window` around
-        their missing samples, a slow baseline is removed, and what remains
+        obvious blinks of the recording are cut out with a generous `window`
+        around their missing samples, a slow baseline is removed, and what remains
         (the artifact) is added to clean stretches of the recording, where
         the signal without the blink is known (see
         :func:`~pypillometry.signal.transplant.transplant_blinks`). The
@@ -783,6 +818,20 @@ class PupilNamespace(Namespace["EyeData"]):
         is the difference between the reconstructed and the clean signal in
         the `window` around the transplanted blinks (with `pad`): the root
         mean squared error of each blink, averaged over the blinks.
+
+        The blinks have to be detected first (:meth:`blinks_detect`), so
+        the workflow is :meth:`blinks_detect`, this method, and
+        :meth:`blinks_interpolate` with the tuned parameters. Of the
+        detected blinks, only the obvious ones are transplanted (see
+        :func:`~pypillometry.signal.transplant.obvious_blinks`): their
+        missing samples (from the first to the last, as in the
+        interpolation) have no other blink or missing samples in the
+        `window` around them, and the drop of the pupil before and the rise
+        after them are larger than the `quantile` of the changes over the
+        same distance in the clean signal. Other blinks (e.g., loss of the
+        pupil by the eye tracker without transients, eye movements that
+        make the pupil drop and rise in steps, blinks without missing
+        samples) are not used, but no blinks are put on them.
 
         Not all blinks are needed for the search: it runs on `n_tune`
         random blinks, each transplanted `repeats` times. The other blinks
@@ -797,9 +846,8 @@ class PupilNamespace(Namespace["EyeData"]):
 
         The blinks of all `eyes` are used together; call the method for
         one eye at a time to get parameters for each. The object is not
-        changed and does not need detected blinks: the blinks that are
-        transplanted are the runs of missing samples. The result depends
-        on the random choice of the blinks and their places (see `seed`).
+        changed. The result depends on the random choice of the blinks and
+        their places (see `seed`).
 
         Parameters
         ----------
@@ -835,13 +883,10 @@ class PupilNamespace(Namespace["EyeData"]):
             parameters that are not tuned, with their values, as the
             arguments of :meth:`blinks_interpolate` (e.g.,
             ``dict(blinkwindow=500)``)
-        merge_distance : float, str or Quantity
-            missing samples that are closer than this (in ms, or with
-            units) are one blink
-        min_duration, max_duration : float, str or Quantity
-            minimum and maximum duration (in ms, or with units) of the
-            missing samples of the blinks that are transplanted;
-            `max_duration=None`: no limit
+        quantile : float
+            quantile of the changes in the clean signal that the drop and
+            rise around an obvious blink must exceed (higher: fewer, more
+            obvious blinks)
         pad : float, str or Quantity
             clean signal (in ms, or with units) that is kept free on each
             side of the window of a transplanted blink; it counts for the
@@ -875,8 +920,9 @@ class PupilNamespace(Namespace["EyeData"]):
         Raises
         ------
         ValueError
-            if no blinks can be transplanted, or the pupil has
-            interpolated samples (tune before interpolating)
+            if there are no detected blinks, none of them is obvious, no
+            blinks can be transplanted, or the pupil has interpolated
+            samples (tune before interpolating)
 
         Examples
         --------
@@ -942,10 +988,28 @@ class PupilNamespace(Namespace["EyeData"]):
 
         # the blinks of all eyes, in random order: the first ones for the
         # search, the others for refining and testing
-        targs = dict(window=window, merge_distance=merge_distance, min_duration=min_duration,
-                     max_duration=max_duration, pad=pad, mode=mode, shrink=shrink,
-                     blink_val=blink_val)
-        donors = {eye: self._transplant(d, eye, n=0, seed=rng, **targs).donors for eye in eyes}
+        for eye in eyes:
+            if d.data.get_layer(f"{eye}_pupil", "interpolated").any():
+                raise ValueError(f"{eye}_pupil has interpolated samples; tune the parameters "
+                                 "before interpolating the blinks")
+        targs = dict(window=window, pad=pad, mode=mode, shrink=shrink, blink_val=blink_val)
+        donors, n_detected = {}, 0
+        for eye in eyes:
+            cores, n = self._obvious_donors(d, eye, window, quantile, blink_val)
+            n_detected += n
+            donors[eye] = self._transplant(d, eye, n=0, seed=rng, cores=cores, **targs).donors
+        n_donors = sum(len(v) for v in donors.values())
+        if n_detected == 0:
+            raise ValueError("no detected blinks: detect the blinks first (blinks_detect())")
+        if n_donors == 0:
+            raise ValueError(f"none of the {n_detected} detected blinks is an obvious blink "
+                             "that can be transplanted (missing samples with a large drop "
+                             "before and rise after them, and no other blink or missing "
+                             "samples in the window)")
+        logger.info(f"{n_donors} of {n_detected} detected blinks are obvious blinks and "
+                    "are transplanted")
+        if n_donors < 2 * n_tune:
+            logger.warning(f"only {n_donors} obvious blinks: the tuning may be unreliable")
         pool = [(eye, k) for eye in eyes for k in range(len(donors[eye]))]
         pool = [pool[k] for k in rng.permutation(len(pool))]
         if len(pool) > n_tune:
@@ -971,8 +1035,7 @@ class PupilNamespace(Namespace["EyeData"]):
             return out
         train, test, refine = (transplants(part) for part in ("train", "test", "refine"))
         if sum(len(tr) for tr in train) == 0:
-            raise ValueError("no blinks could be transplanted: the recording needs blinks "
-                             "(missing samples) that are surrounded by signal, and clean "
+            raise ValueError("no blinks could be transplanted: the recording needs clean "
                              "stretches (longer than the window) to put them")
 
         res = autotune.tune_blinks_mahot(
