@@ -236,6 +236,8 @@ class TestBlinksOptimizeParameters:
         with pytest.raises(ValueError, match="obvious"):
             pp.EyeData(left_pupil=loss, sampling_rate=500, inplace=False) \
                 .pupil.blinks_detect().pupil.blinks_optimize_parameters()
+        with pytest.raises(ValueError, match="obvious"):     # cores of 120 ms
+            data.pupil.blinks_optimize_parameters(max_core=100)
         with pytest.raises(ValueError):
             data.pupil.blinks_optimize_parameters(n_tune=0)
         with pytest.raises(ValueError):

@@ -749,7 +749,7 @@ class PupilNamespace(Namespace["EyeData"]):
         other = obj.data.get_policy_mask(key, _without_layer("strict", "blink"))
         return other & ~np.isnan(obj.data[key])
 
-    def _obvious_donors(self, obj, eye, window, quantile, blink_val):
+    def _obvious_donors(self, obj, eye, window, quantile, max_core, blink_val):
         """cores (samples) of the detected blinks of `eye` in `obj` that are
         obvious blinks (see :meth:`blinks_optimize_parameters`), and the
         number of detected blinks"""
@@ -768,6 +768,9 @@ class PupilNamespace(Namespace["EyeData"]):
             ix = np.flatnonzero(missing[a:b])
             if ix.size:
                 cores[i], ok[i] = (a + ix[0], a + ix[-1] + 1), True
+        # not too long (e.g., loss of the pupil with transients around it)
+        if max_core is not None:
+            ok &= cores[:, 1] - cores[:, 0] <= obj._samples(max_core)
         # no other detected blink in the window
         before = np.r_[-np.inf, blinks[:-1, 1]] <= cores[:, 0] - pre
         after = np.r_[blinks[1:, 0], np.inf] >= cores[:, 1] + post
@@ -799,7 +802,7 @@ class PupilNamespace(Namespace["EyeData"]):
                         n_tune: int=10, repeats: int=3, n_starts: int=3,
                         n_refine: int=30, n_test: int=30,
                         start=None, bounds=None, fixed=None,
-                        quantile: float=0.99, pad: float=100,
+                        quantile: float=0.99, max_core: float=500, pad: float=100,
                         mode: str="additive", shrink: bool=True, blink_val: float=0,
                         seed=None, **kwargs):
         """
@@ -825,7 +828,8 @@ class PupilNamespace(Namespace["EyeData"]):
         :meth:`blinks_interpolate` with the tuned parameters. Of the
         detected blinks, only the obvious ones are transplanted: their
         missing samples (from the first to the last, as in the
-        interpolation) have no other blink or missing samples in the
+        interpolation) last at most `max_core`, have no other blink or
+        missing samples in the
         `window` around them, and the drop of the pupil before and the rise
         after them are larger than the `quantile` of the changes over the
         same distance in the clean signal. Other blinks (e.g., loss of the
@@ -894,6 +898,10 @@ class PupilNamespace(Namespace["EyeData"]):
             quantile of the changes in the clean signal that the drop and
             rise around an obvious blink must exceed (higher: fewer, more
             obvious blinks)
+        max_core : float, str or Quantity
+            maximum duration (in ms, or with units) of the missing samples of
+            an obvious blink (longer ones are, e.g., loss of the pupil);
+            `None`: no limit
         pad : float, str or Quantity
             clean signal (in ms, or with units) that is kept free on each
             side of the window of a transplanted blink; it counts for the
@@ -1002,7 +1010,7 @@ class PupilNamespace(Namespace["EyeData"]):
         targs = dict(window=window, pad=pad, mode=mode, shrink=shrink, blink_val=blink_val)
         donors, n_detected = {}, 0
         for eye in eyes:
-            cores, n = self._obvious_donors(d, eye, window, quantile, blink_val)
+            cores, n = self._obvious_donors(d, eye, window, quantile, max_core, blink_val)
             n_detected += n
             donors[eye] = self._transplant(d, eye, n=0, seed=rng, cores=cores, **targs).donors
         n_donors = sum(len(v) for v in donors.values())
