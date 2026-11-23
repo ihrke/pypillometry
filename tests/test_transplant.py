@@ -227,50 +227,41 @@ class TestObviousBlinks:
     @pytest.fixture(scope="class")
     def mixed(self):
         y, slots, kinds = make_mixed()
-        return y, slots, kinds, T.obvious_blinks(y, WINDOW, min_len=10, max_len=250)
+        cores = T.blink_cores(y)
+        return y, slots, kinds, cores, T._obvious_blinks(y, cores, WINDOW)
 
     def test_only_blinks_with_transients(self, mixed):
-        y, slots, kinds, ob = mixed
-        np.testing.assert_array_equal(ob.blinks[:, 0], slots[kinds == "blink"])
-        assert len(ob) == (kinds == "blink").sum()
-        assert len(ob.cores) == (kinds != "dip").sum() + (kinds == "double").sum()
+        y, slots, kinds, cores, obvious = mixed
+        np.testing.assert_array_equal(cores[obvious, 0], slots[kinds == "blink"])
+        assert len(cores) == (kinds != "dip").sum() + (kinds == "double").sum()
         # tracker loss is isolated, but has no transients; the double blink is not isolated
-        loss = np.isin(ob.cores[:, 0], slots[kinds == "loss"])
-        double = np.isin(ob.cores[:, 0], slots[kinds == "double"])
-        assert ob.isolated[loss].all() and not ob.obvious[loss].any()
-        assert not ob.isolated[double].any() and np.isnan(ob.drop[double]).all()
-        assert (ob.drop[ob.obvious] > ob.drop_threshold).all() and ob.drop_threshold > 0
-        assert (ob.rise[ob.obvious] > ob.rise_threshold).all() and ob.rise_threshold > 0
-        assert "obvious" in repr(ob)
+        assert not obvious[np.isin(cores[:, 0], slots[kinds == "loss"])].any()
+        assert not obvious[np.isin(cores[:, 0], slots[kinds == "double"])].any()
+        assert T.blink_donors(cores[np.isin(cores[:, 0], slots[kinds == "loss"])],
+                              np.isnan(y), WINDOW).all()
 
-    def test_lengths_and_other_missing_samples(self, mixed):
-        y, slots, kinds, ob = mixed
-        assert len(T.obvious_blinks(y, WINDOW, min_len=61)) == 0
-        assert len(T.obvious_blinks(y, WINDOW, max_len=59)) == 0
+    def test_other_missing_samples(self, mixed):
+        y, slots, kinds, cores, obvious = mixed
         masked = np.zeros(len(y), dtype=bool)
-        first = ob.blinks[0, 0]
+        first = cores[obvious][0, 0]
         masked[first - 10] = True      # in the window of the first blink
-        other = T.obvious_blinks(y, WINDOW, missing=masked)
-        assert first not in other.blinks[:, 0] and len(other) == len(ob) - 1
+        other = T._obvious_blinks(y, cores, WINDOW, missing=masked)
+        assert not other[cores[:, 0] == first].any() and other.sum() == obvious.sum() - 1
 
-    def test_given_cores_and_avoid(self, mixed):
-        y, slots, kinds, ob = mixed
-        some = ob.cores[[0, 1, 2]]
-        given = T.obvious_blinks(y, WINDOW, cores=some)
-        np.testing.assert_array_equal(given.cores, some)
-        np.testing.assert_array_equal(given.obvious, ob.obvious[:3])
-        # the dips are not used for the thresholds when avoided
-        dips = np.zeros(len(y), dtype=bool)
-        for s in slots[kinds == "dip"]:
-            dips[s:s + 8] = True
-        avoided = T.obvious_blinks(y, WINDOW, avoid=dips)
-        assert avoided.drop_threshold < ob.drop_threshold
+    def test_avoid(self, mixed):
+        y, slots, kinds, cores, obvious = mixed
+        # avoided samples are not used for the thresholds
+        with pytest.raises(ValueError, match="places in clean stretches"):
+            T._obvious_blinks(y, cores, WINDOW, avoid=np.ones(len(y), dtype=bool))
+        # but do not make a blink less obvious
+        np.testing.assert_array_equal(T._obvious_blinks(y, cores, WINDOW, avoid=np.isnan(y)),
+                                      obvious)
 
     def test_errors(self, mixed):
-        y = mixed[0]
+        y, cores = mixed[0], mixed[3]
+        with pytest.raises(ValueError):    # no clean signal
+            T._obvious_blinks(np.r_[np.ones(50), np.nan, np.ones(50)], [[50, 51]], WINDOW)
         with pytest.raises(ValueError):
-            T.obvious_blinks(np.r_[np.ones(50), np.nan, np.ones(50)], WINDOW)   # no clean signal
+            T._obvious_blinks(y, cores, WINDOW, edge=60)
         with pytest.raises(ValueError):
-            T.obvious_blinks(y, WINDOW, edge=60)
-        with pytest.raises(ValueError):
-            T.obvious_blinks(y, WINDOW, quantile=1)
+            T._obvious_blinks(y, cores, WINDOW, quantile=1)

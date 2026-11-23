@@ -774,14 +774,14 @@ class PupilNamespace(Namespace["EyeData"]):
         ok &= before & after
         if not ok.any():
             return cores[ok], len(blinks)
-        ob = transplant.obvious_blinks(sy, (pre, post), missing=self._other_unusable(obj, eye),
-                                       quantile=quantile, cores=cores[ok],
-                                       avoid=obj.data.get_layer(key, "blink"),
-                                       blink_val=blink_val)
-        logger.debug(f"{eye}: {len(ob)} obvious of {len(blinks)} detected blinks "
-                     f"({ok.sum()} with missing samples and no other blink nearby); "
-                     f"drop > {ob.drop_threshold:.4g}, rise > {ob.rise_threshold:.4g}")
-        return ob.blinks, len(blinks)
+        cores = cores[ok]
+        obvious = transplant._obvious_blinks(sy, cores, (pre, post), quantile=quantile,
+                                             missing=self._other_unusable(obj, eye),
+                                             avoid=obj.data.get_layer(key, "blink"),
+                                             blink_val=blink_val)
+        logger.debug(f"{eye}: {obvious.sum()} obvious of {len(blinks)} detected blinks "
+                     f"({ok.sum()} with missing samples and no other blink nearby)")
+        return cores[obvious], len(blinks)
 
     def _transplant(self, obj, eye, window, pad, cores, **kwargs):
         """:func:`~pypillometry.signal.transplant.transplant_blinks` of the
@@ -822,8 +822,7 @@ class PupilNamespace(Namespace["EyeData"]):
         The blinks have to be detected first (:meth:`blinks_detect`), so
         the workflow is :meth:`blinks_detect`, this method, and
         :meth:`blinks_interpolate` with the tuned parameters. Of the
-        detected blinks, only the obvious ones are transplanted (see
-        :func:`~pypillometry.signal.transplant.obvious_blinks`): their
+        detected blinks, only the obvious ones are transplanted: their
         missing samples (from the first to the last, as in the
         interpolation) have no other blink or missing samples in the
         `window` around them, and the drop of the pupil before and the rise
