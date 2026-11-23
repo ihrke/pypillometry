@@ -61,9 +61,10 @@ def transplant_error_mahot(transplants, smooth_winsize, vel_onset, vel_offset, m
     depends less on a few blinks with a large error than the root mean
     squared error over all of them.
 
-    As in the interpolation of a recording, the other missing samples of
-    the signal (e.g., its own blinks) are interpolated together with the
-    transplanted blinks, so that a blink whose anchor points fall into
+    As in the interpolation of a recording, the other runs of missing
+    samples of the signal (e.g., its own blinks; not the ones longer than
+    `max_duration`, which are not blinks) are interpolated together with
+    the transplanted blinks, so that a blink whose anchor points fall into
     them is merged with them instead of being skipped. Only the error at
     the transplanted blinks counts.
 
@@ -86,7 +87,8 @@ def transplant_error_mahot(transplants, smooth_winsize, vel_onset, vel_offset, m
     """
     errors = []
     for tr in _as_list(transplants):
-        filled, _, _ = interpolate_blinks_mahot(tr.signal, _all_blinks(tr), smooth_winsize,
+        filled, _, _ = interpolate_blinks_mahot(tr.signal, _all_blinks(tr, max_duration),
+                                                smooth_winsize,
                                                 vel_onset, vel_offset, margin, blinkwindow,
                                                 interp_type, max_duration=max_duration)
         errors.append(tr.error(filled, per_site=True))
@@ -96,12 +98,15 @@ def transplant_error_mahot(transplants, smooth_winsize, vel_onset, vel_offset, m
     return float(errors.mean()) if errors.size else np.nan
 
 
-def _all_blinks(tr):
+def _all_blinks(tr, max_len=None):
     """The transplanted blinks of `tr` and the other runs of missing
-    samples of its signal (n x 2, sorted)."""
+    samples of its signal (n x 2, sorted); without the runs longer than
+    `max_len` (they are not blinks, e.g. breaks)."""
     if len(tr) == 0:
         return tr.blinks
     other = blink_cores(tr.signal)
+    if max_len is not None:
+        other = other[other[:, 1] - other[:, 0] <= max_len]
     if len(other):
         # runs that overlap a transplanted blink are part of it
         k = np.searchsorted(tr.blinks[:, 0], other[:, 1], side="left")
