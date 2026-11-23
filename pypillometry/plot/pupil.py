@@ -437,7 +437,12 @@ class PupilPlots(GenericPlots):
         the blinks of the group in color and their median in black; the time
         before the core is relative to its start, the time after it relative
         to its end, and the cores (of different durations) are the shaded
-        gap. The percentages are of all detected blinks of the eye.
+        gap. Below each panel, a histogram of the durations of the cores
+        (the time the eye was closed) of the group, with the one of all
+        blinks with missing samples as outline (both normalized; the last
+        bin has all durations above the 99th percentile), and of the
+        durations of the blinks without missing samples. The percentages are
+        of all detected blinks of the eye.
 
         Parameters
         ----------
@@ -451,7 +456,7 @@ class PupilPlots(GenericPlots):
         min_size : float
             minimum fraction of the blinks with missing samples in a group
         figsize : tuple, optional
-            size of the figure; default: 4 x 3.5 inches per panel
+            size of the figure; default: 4 x 4.5 inches per panel
         title : str, optional
             title of the figure
         axes : sequence of Axes, optional
@@ -497,7 +502,7 @@ class PupilPlots(GenericPlots):
 
         ncol = n_clusters + 2
         fig, axs = get_axes(axes, len(eyes) * ncol, "group of an eye",
-                            figsize=figsize or (4 * ncol, 3.5 * len(eyes)),
+                            figsize=figsize or (4 * ncol, 4.5 * len(eyes)),
                             nrows=len(eyes), ncols=ncol)
         rng = np.random.default_rng(seed)
         ms = 1000 / d.fs
@@ -517,6 +522,41 @@ class PupilPlots(GenericPlots):
             if len(parts):
                 y = np.c_[parts, np.full(len(parts), np.nan)].ravel()
                 ax.plot(np.tile(np.r_[t, np.nan], len(parts)), y, **kw)
+
+        def hist(ax, values, background, label):
+            """histogram of `values` (ms) below `ax`, with the one of
+            `background` as outline, both normalized; log-spaced bins up to
+            the 99th percentile of `background`, the last bin also has the
+            larger values"""
+            from matplotlib.ticker import FuncFormatter, NullFormatter
+            from mpl_toolkits.axes_grid1 import make_axes_locatable
+            hax = make_axes_locatable(ax).append_axes("bottom", size="30%", pad=0.45)
+            pos = background[background > 0]
+            if len(pos):
+                lo, hi = pos.min(), np.percentile(pos, 99)
+                if hi <= lo:
+                    lo, hi = lo / 1.5, lo * 1.5
+                bins = np.geomspace(lo, hi, 26)
+                over = (pos > hi).any()
+                if over:   # one more bin for the larger values
+                    bins = np.r_[bins, hi * (bins[1] / bins[0])]
+                clip = lambda v: np.minimum(v, bins[-1] * 0.999)
+                hax.hist(clip(pos), bins, density=True, histtype="step", color="0.6", lw=0.8)
+                values = values[values > 0]
+                if len(values):
+                    hax.hist(clip(values), bins, density=True, alpha=0.7,
+                             color=ax.lines[-1].get_color() if ax.lines else "C0")
+                hax.set_xscale("log")
+                hax.set_xlim(bins[0], bins[-1])
+                if over:
+                    hax.axvline(hi, color="0.4", lw=0.6, ls=":")
+                    label += f" (last bin: > {hi:.0f})"
+                hax.xaxis.set_major_formatter(FuncFormatter(lambda v, _: f"{v:g}"))
+                hax.xaxis.set_minor_formatter(NullFormatter())
+            hax.set_yticks([])
+            hax.tick_params(axis="x", labelsize=8)
+            hax.set_xlabel(label, fontsize=8)
+            return hax
 
         def ylim(ax, *parts):
             values = np.concatenate([p.ravel() for p in parts])
@@ -547,6 +587,7 @@ class PupilPlots(GenericPlots):
                     if g >= 0:
                         ax.plot(tpre, np.nanmedian(before[sel], 0), color="k", lw=2)
                         ax.plot(tpost, np.nanmedian(after[sel], 0), color="k", lw=2)
+                    ax.plot([], [], color=color)    # the color of the histogram
                     ax.set_title(f"{eye}, {name}: {sel.sum()} ({100 * sel.sum() / nall:.0f}%)\n"
                                  f"core {np.median(core[sel]) * ms:.0f} ms (median)", fontsize=9)
                 else:
@@ -557,6 +598,8 @@ class PupilPlots(GenericPlots):
                 ax.set_xlim(tpre[0], tpost[-1])
                 ylim(ax, before, after)
                 ax.set_xlabel("ms before | after the core", fontsize=8)
+                hist(ax, core[sel] * ms if sel.any() else np.array([]), core * ms,
+                     "core (closed) duration, ms")
 
             # blinks without missing samples
             ax = ax_row[-1]
@@ -576,6 +619,9 @@ class PupilPlots(GenericPlots):
             ax.set_xlim(tmid[0], tmid[-1])
             ax.tick_params(axis="x", labelsize=8)
             ax.set_xlabel("ms from the middle of the blink", fontsize=8)
+            widths = np.diff(blinks[eye][~has_core], axis=1).ravel() * ms
+            ax.plot([], [], color="C4")
+            hist(ax, widths, widths, "blink duration, ms")
             ax_row[0].set_ylabel(f"{eye} pupil (shifted)\n"
                                  f"{100 * (~has_core).sum() / nall:.0f}% without missing samples")
         if title:

@@ -85,8 +85,11 @@ class TestPlot:
         y[30300:30320] -= np.r_[np.linspace(0, 300, 10), np.linspace(300, 0, 10)]
         d = pp.EyeData(left_pupil=y, sampling_rate=500, inplace=False).pupil.blinks_detect()
         fig = d.plot.plot_blink_clusters(n_clusters=2, window=(200, 500))
-        axs = fig.axes
-        assert len(axs) == 4
+        axs, hists = fig.axes[:4], fig.axes[4:]   # the panels, then the histograms below them
+        assert len(axs) == 4 and len(hists) == 4
+        assert all(h.get_xscale() == "log" for h in hists)
+        assert hists[0].get_xlabel().startswith("core (closed) duration")
+        assert hists[3].get_xlabel().startswith("blink duration")
         titles = [ax.get_title() for ax in axs]
         assert titles[0].startswith("left, group 1: ") and "other" in titles[2]
         assert titles[3].startswith("left, without missing samples: 1 ")
