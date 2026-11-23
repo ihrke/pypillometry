@@ -798,7 +798,7 @@ class PupilNamespace(Namespace["EyeData"]):
             missing=self._other_unusable(obj, eye), avoid=obj.data.get_layer(key, "blink"),
             cores=cores, **kwargs)
 
-    def blinks_optimize_parameters(self, eyes=[], method: str="mahot", window=(200, 500),
+    def blinks_optimize_parameters(self, eyes=[], method: str="mahot", window=(200, 250),
                         n_tune: int=10, repeats: int=3, n_starts: int=3,
                         n_refine: int=30, n_test: int=30,
                         start=None, bounds=None, fixed=None,
@@ -812,7 +812,7 @@ class PupilNamespace(Namespace["EyeData"]):
         `vel_offset`, `margin` and `blinkwindow`) decide how much of the
         signal around the missing samples of a blink is replaced. Instead
         of setting them by eye, they are tuned on transplanted blinks: the
-        obvious blinks of the recording are cut out with a generous `window`
+        obvious blinks of the recording are cut out with a `window`
         around their missing samples, a slow baseline is removed, and what remains
         (the artifact) is added to clean stretches of the recording, where
         the signal without the blink is known (see
@@ -863,9 +863,11 @@ class PupilNamespace(Namespace["EyeData"]):
             method of :meth:`blinks_interpolate` to tune; only ``"mahot"``
         window : float, str, Quantity or tuple
             time `(before, after)` the missing samples of a blink (in ms,
-            or with units) that is transplanted with it; should be
-            generous, so that it includes the whole artifact. It also
-            limits the search ranges (see `bounds`).
+            or with units) that is transplanted with it. It should include
+            the whole artifact, but not much more: everything in it that
+            differs from a straight line (e.g., slower changes of the pupil)
+            is transplanted as part of the artifact. It also limits the
+            search ranges (see `bounds`).
         n_tune : int
             number of different blinks for the search
         repeats : int

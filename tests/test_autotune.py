@@ -184,7 +184,7 @@ class TestBlinksOptimizeParameters:
         assert res.n_test > 0 and res.n_refine > 0
         assert "winsize" in res.history and "winsize" in res.bounds
         assert set(res.history["stage"]) == {1, 2}
-        assert res.bounds["margin_after"] == (0.0, 500.0)
+        assert res.bounds["margin_after"] == (0.0, 250.0)   # up to the window
 
     def test_subsets_of_blinks(self, data):
         # 10 blinks for the search, each 3 times; the others once
