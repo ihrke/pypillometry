@@ -796,7 +796,7 @@ class PupilNamespace(Namespace["EyeData"]):
             cores=cores, **kwargs)
 
     def blinks_optimize_parameters(self, eyes=[], method: str="mahot", window=(200, 500),
-                        n_tune: int=10, repeats: int=3, test_fraction: float=0.5,
+                        n_tune: int=10, repeats: int=3, n_refine: int=100, n_test: int=100,
                         start=None, bounds=None, fixed=None,
                         quantile: float=0.99, pad: float=100,
                         mode: str="additive", shrink: bool=True, blink_val: float=0,
@@ -832,16 +832,16 @@ class PupilNamespace(Namespace["EyeData"]):
         make the pupil drop and rise in steps, blinks without missing
         samples) are not used, but no blinks are put on them.
 
-        Not all blinks are needed for the search: it runs on `n_tune`
-        random blinks, each transplanted `repeats` times. The other blinks
-        are transplanted as often as they fit and split in two: one part
-        (`1 - test_fraction`) is used to refine the result (one more round
-        of the search on them and the `n_tune` blinks), the other part
-        (`test_fraction`) only to test it. The tuned parameters are only
-        returned if they are better for the test blinks than the starting
-        parameters (otherwise those are returned, with a warning). With at
-        most `n_tune` blinks, there is no refinement, and `test_fraction`
-        of them are used for testing.
+        Not all blinks are needed: the search runs on `n_tune` random
+        blinks, each transplanted `repeats` times. Of the other blinks,
+        `n_refine` are used to refine the result (one more round of the
+        search on them and the `n_tune` blinks) and `n_test` only to test
+        it; the rest are not used. If there are fewer, they are split in
+        the same proportion. The tuned parameters are only returned if they
+        are better for the test blinks than the starting parameters
+        (otherwise those are returned, with a warning). With at most
+        `n_tune` blinks, there is no refinement, and up to half of them
+        (at most `n_test`) are used for testing.
 
         The blinks of all `eyes` are used together; call the method for
         one eye at a time to get parameters for each. The object is not
@@ -864,9 +864,12 @@ class PupilNamespace(Namespace["EyeData"]):
         repeats : int
             number of times each of the `n_tune` blinks is transplanted
             (at most as many as fit)
-        test_fraction : float
-            fraction of the other blinks that is only used for testing the
-            tuned parameters (0: none; the rest refines them)
+        n_refine : int
+            number of further blinks for refining the result (0: no
+            refinement)
+        n_test : int
+            number of further blinks that are only used for testing the
+            tuned parameters (0: no test)
         start : dict, optional
             starting parameters, as the arguments of
             :meth:`blinks_interpolate` (e.g., ``dict(vel_onset=-10)``);
@@ -936,8 +939,8 @@ class PupilNamespace(Namespace["EyeData"]):
         d = self._d
         d._require("pupil")
         eyes = d._eyes_with(eyes, "pupil")
-        if not 0 <= test_fraction < 1:
-            raise ValueError(f"test_fraction must be in [0, 1), got {test_fraction}")
+        if n_refine < 0 or n_test < 0:
+            raise ValueError("n_refine and n_test must not be negative")
         if n_tune < 1 or repeats < 1:
             raise ValueError("n_tune and repeats must be at least 1")
         rng = np.random.default_rng(seed)
@@ -1005,20 +1008,21 @@ class PupilNamespace(Namespace["EyeData"]):
                              "that can be transplanted (missing samples with a large drop "
                              "before and rise after them, and no other blink or missing "
                              "samples in the window)")
-        logger.info(f"{n_donors} of {n_detected} detected blinks are obvious blinks and "
-                    "are transplanted")
+        logger.info(f"{n_donors} of {n_detected} detected blinks are obvious blinks")
         if n_donors < 2 * n_tune:
             logger.warning(f"only {n_donors} obvious blinks: the tuning may be unreliable")
         pool = [(eye, k) for eye in eyes for k in range(len(donors[eye]))]
         pool = [pool[k] for k in rng.permutation(len(pool))]
         if len(pool) > n_tune:
-            n_test = int(round(test_fraction * (len(pool) - n_tune)))
-            n_search = n_tune
+            n_search, rest = n_tune, len(pool) - n_tune
+            if rest < n_refine + n_test:    # fewer: in the same proportion
+                n_test = int(round(rest * n_test / (n_refine + n_test)))
+                n_refine = rest - n_test
         else:
-            n_test = int(round(test_fraction * len(pool))) if len(pool) > 1 else 0
+            n_test, n_refine = min(n_test, len(pool) // 2), 0
             n_search = len(pool) - n_test
         parts = {"train": pool[:n_search], "test": pool[n_search:n_search + n_test],
-                 "refine": pool[n_search + n_test:]}
+                 "refine": pool[n_search + n_test:n_search + n_test + n_refine]}
         logger.debug(f"{len(pool)} blinks to transplant: {n_search} for the search, "
                      f"{len(parts['refine'])} for refining, {n_test} for testing")
 

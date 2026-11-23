@@ -158,6 +158,9 @@ class TestBlinksOptimizeParameters:
         # 10 blinks for the search, each 3 times; the others once
         res = data.pupil.blinks_optimize_parameters(eyes="left", seed=1, **FAST)
         assert 10 < res.n_blinks <= 30 and res.n_refine + res.n_test < 15   # as many as fit
+        # at most n_refine and n_test of the others
+        res = data.pupil.blinks_optimize_parameters(n_refine=3, n_test=4, seed=1, **FAST)
+        assert 0 < res.n_refine <= 3 and 0 < res.n_test <= 4
         # few blinks: no refinement, half of them for testing
         res = data.pupil.blinks_optimize_parameters(eyes="left", n_tune=100, repeats=1, seed=1, **FAST)
         assert res.n_refine == 0 and abs(res.n_blinks - res.n_test) <= 1
@@ -175,7 +178,7 @@ class TestBlinksOptimizeParameters:
                 assert (iv[:, 0] - tr.window[0] >= 10000).all() and (iv[:, 1] + tr.window[1] <= 20000).all()
 
     def test_arguments(self, data):
-        res = data.pupil.blinks_optimize_parameters(eyes="left", test_fraction=0, n_tune=5, repeats=2,
+        res = data.pupil.blinks_optimize_parameters(eyes="left", n_test=0, n_tune=5, repeats=2,
                                          seed=1, fixed=dict(blinkwindow=300, winsize=20),
                                          bounds=dict(margin_after=(0, 100)), **FAST)
         assert res.n_test == 0 and res.n_blinks == 10 and res.success
@@ -199,6 +202,8 @@ class TestBlinksOptimizeParameters:
                 .pupil.blinks_detect().pupil.blinks_optimize_parameters()
         with pytest.raises(ValueError):
             data.pupil.blinks_optimize_parameters(n_tune=0)
+        with pytest.raises(ValueError):
+            data.pupil.blinks_optimize_parameters(n_test=-1)
         with pytest.raises(ValueError):    # interpolated
             data.pupil.blinks_detect().pupil.blinks_interpolate().pupil.blinks_optimize_parameters()
 
