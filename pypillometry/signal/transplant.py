@@ -6,7 +6,9 @@ Transplantation of blinks: real blinks (the missing samples and the
 artifacts around them) are cut out of a signal and added to clean stretches
 of a signal, where the true signal is known. This gives data with realistic
 blinks and a ground truth, e.g. to evaluate or tune the interpolation of
-blinks.
+blinks. Good blinks to transplant are the obvious ones (see
+:func:`obvious_blinks`): a large drop and rise of the signal around missing
+samples, with no other missing samples nearby.
 
 All functions work on plain numpy arrays, in samples. Intervals are arrays
 (n x 2) of start/end sample indices (end-exclusive).
@@ -20,13 +22,16 @@ __all__ = [
     "blink_cores", "blink_donors", "extract_blink_artifacts", "blink_artifact_profile",
     "shrink_blink_artifacts", "clean_stretches",
     "place_blink_artifacts", "insert_blink_artifacts", "transplant_blinks",
-    "transplant_error", "BlinkTransplant",
+    "transplant_error", "BlinkTransplant", "obvious_blinks", "ObviousBlinks",
 ]
 
 
 #: number of blink-free windows used to estimate the fluctuations of the
 #: signal (see `blink_artifact_profile`), and the minimum number needed
 _N_NULL, _MIN_NULL = 500, 10
+#: minimum number of places in clean stretches for the thresholds of the
+#: obvious blinks
+_MIN_PLACES = 100
 
 
 def _runs(mask):
@@ -335,6 +340,194 @@ def clean_stretches(missing, window=0, min_len=1):
         dirty[max(0, a - pre):b + post] = True
     runs = _runs(~dirty)
     return runs[runs[:, 1] - runs[:, 0] >= min_len]
+
+
+def _window_means(cs, a, b):
+    """Means of the signal from `a` to `b` (end-exclusive), from its
+    cumulative sum `cs` (with a leading 0)."""
+    return (cs[b] - cs[a]) / (b - a)
+
+
+def _drop_rise(cs, starts, ends, pre, post, edge, near):
+    """Drop of the signal before `starts` and rise after `ends` (see
+    :func:`obvious_blinks`)."""
+    drop = _window_means(cs, starts - pre, starts - pre + edge) - _window_means(cs, starts - near, starts)
+    rise = _window_means(cs, ends + post - edge, ends + post) - _window_means(cs, ends, ends + near)
+    return drop, rise
+
+
+@dataclass
+class ObviousBlinks:
+    """
+    Cores of blinks and which of them are obvious blinks (see
+    :func:`obvious_blinks`).
+
+    Attributes
+    ----------
+    cores : np.ndarray
+        all cores (n x 2, end-exclusive)
+    obvious : np.ndarray of bool
+        the cores that are obvious blinks
+    isolated : np.ndarray of bool
+        the cores with the length in the allowed range and no other missing
+        samples in the window around them
+    drop, rise : np.ndarray
+        drop of the signal before and rise after each core (NaN for the
+        cores that are not isolated)
+    drop_threshold, rise_threshold : float
+        the drop and rise that are needed for an obvious blink (quantile of
+        the changes in the clean stretches)
+    window : tuple of int
+        samples `(before, after)` each core that belong to the blink
+    """
+    cores: np.ndarray
+    obvious: np.ndarray
+    isolated: np.ndarray
+    drop: np.ndarray = field(repr=False)
+    rise: np.ndarray = field(repr=False)
+    drop_threshold: float = np.nan
+    rise_threshold: float = np.nan
+    window: tuple = (0, 0)
+
+    @property
+    def blinks(self):
+        """cores of the obvious blinks (n x 2, end-exclusive)"""
+        return self.cores[self.obvious]
+
+    def __len__(self):
+        return int(self.obvious.sum())
+
+    def __repr__(self):
+        return (f"ObviousBlinks({len(self)} obvious of {len(self.cores)} blinks, "
+                f"{int(self.isolated.sum())} isolated; drop > {self.drop_threshold:.4g}, "
+                f"rise > {self.rise_threshold:.4g})")
+
+
+def obvious_blinks(sy, window, missing=None, edge=None, near=None, min_len=1, max_len=None,
+                   merge_distance=0, quantile=0.99, cores=None, avoid=None, blink_val=0):
+    """
+    Find the obvious blinks of a signal.
+
+    A blink is a large downward transient, missing samples and a large
+    upward transient. The obvious blinks are the cores (runs of missing
+    samples, see :func:`blink_cores`, or the given `cores`) that
+
+    - have between `min_len` and `max_len` samples,
+    - have no other missing samples in the `window` around them, and
+    - have a large drop of the signal before them and a large rise after
+      them: the drop is the mean of the first `edge` samples of the window
+      before the core minus the mean of the `near` samples right before the
+      core; the rise is the mean of the last `edge` samples of the window
+      after the core minus the mean of the `near` samples right after it.
+      Both must be larger than the `quantile` of the same differences at
+      all places in the clean stretches of the signal (where the window has
+      no missing and no `avoid` samples).
+
+    The thresholds come from the signal itself, so the units of the signal
+    do not matter. Cores without these transients (e.g., loss of the pupil
+    by the eye tracker, or eye movements that make the pupil drop and rise
+    in steps) are not obvious blinks. The obvious blinks are good donors
+    for :func:`transplant_blinks`.
+
+    Parameters
+    ----------
+    sy : np.ndarray
+        pupil data
+    window : int or tuple of int
+        number of samples `(before, after)` the core that belong to the
+        blink (the drop and rise happen in them)
+    missing : np.ndarray of bool, optional
+        further samples without usable signal (e.g., masked for other
+        reasons); they are neither in the window of an obvious blink nor in
+        the clean stretches
+    edge : int, optional
+        number of samples at the outer ends of the window for the level of
+        the signal before and after the blink; default: a fifth of the
+        shorter side of the window (at least 1)
+    near : int, optional
+        number of samples right next to the core; default: half of `edge`
+        (at least 1)
+    min_len, max_len : int
+        minimum and maximum number of samples of a core (`max_len=None`: no
+        limit)
+    merge_distance : int
+        runs of missing samples separated by at most this many samples are
+        one core (only if `cores` is not given)
+    quantile : float
+        quantile of the drops and rises in the clean stretches that the
+        drop and rise of an obvious blink must exceed
+    cores : np.ndarray, optional
+        the cores to check (n x 2, end-exclusive; e.g., the missing samples
+        of detected blinks); default: all runs of missing samples
+    avoid : np.ndarray of bool, optional
+        samples that are not used for the thresholds (e.g., detected blinks
+        without missing samples)
+    blink_val : float
+        "missing value" code in addition to NaN (default 0)
+
+    Returns
+    -------
+    ObviousBlinks
+        the cores and which of them are obvious blinks (``.blinks``)
+
+    Raises
+    ------
+    ValueError
+        if there are not enough clean stretches for the thresholds
+
+    Examples
+    --------
+    >>> rng = np.random.default_rng(1)
+    >>> y = 1000 + np.cumsum(rng.normal(0, 0.5, 5000))
+    >>> y[2000:2050] = np.nan                                   # a blink
+    >>> y[1960:2000] -= np.linspace(0, 300, 40)
+    >>> y[2050:2120] -= np.linspace(300, 0, 70)
+    >>> y[4000:4050] = np.nan                                   # no transients
+    >>> ob = obvious_blinks(y, (100, 150))
+    >>> ob.blinks
+    array([[2000, 2050]])
+    """
+    sy = np.asarray(sy, dtype=float)
+    pre, post = _pair(window, "window")
+    if edge is None:
+        edge = max(1, min(pre, post) // 5)
+    if near is None:
+        near = max(1, edge // 2)
+    if not (0 < edge <= min(pre, post) and 0 < near <= min(pre, post)):
+        raise ValueError(f"edge and near must be between 1 and the window ({pre}, {post}), "
+                         f"got {edge} and {near}")
+    if not 0 < quantile < 1:
+        raise ValueError(f"quantile must be between 0 and 1, got {quantile}")
+    miss = _missing(sy, blink_val)
+    if missing is not None:
+        miss = miss | np.asarray(missing, dtype=bool)
+    if cores is None:
+        # only the runs of the missing values are cores, the other unusable
+        # samples are not
+        cores = blink_cores(sy, merge_distance, blink_val)
+    cores = np.asarray(cores, dtype=int).reshape(-1, 2)
+    isolated = blink_donors(cores, miss, (pre, post), min_len=min_len, max_len=max_len)
+
+    cs = np.r_[0, np.cumsum(np.where(miss, 0, sy))]
+    drop, rise = np.full(len(cores), np.nan), np.full(len(cores), np.nan)
+    drop[isolated], rise[isolated] = _drop_rise(cs, cores[isolated, 0], cores[isolated, 1],
+                                                pre, post, edge, near)
+
+    # the same changes at all places of the clean stretches
+    dirty = miss if avoid is None else miss | np.asarray(avoid, dtype=bool)
+    t = [np.arange(a + pre, b - post + 1) for a, b in clean_stretches(dirty, 0, pre + post)]
+    t = np.concatenate(t) if t else np.array([], dtype=int)
+    if len(t) < _MIN_PLACES:
+        raise ValueError(f"only {len(t)} places in clean stretches (at least {_MIN_PLACES} "
+                         "needed): the signal needs stretches without missing samples that "
+                         "are longer than the window")
+    null_drop, null_rise = _drop_rise(cs, t, t, pre, post, edge, near)
+    drop_threshold, rise_threshold = np.quantile(null_drop, quantile), np.quantile(null_rise, quantile)
+    obvious = isolated & (drop > drop_threshold) & (rise > rise_threshold)
+    logger.debug(f"{obvious.sum()} obvious blinks of {len(cores)} cores "
+                 f"({isolated.sum()} isolated)")
+    return ObviousBlinks(cores, obvious, isolated, drop, rise, float(drop_threshold),
+                         float(rise_threshold), (pre, post))
 
 
 def place_blink_artifacts(stretches, lengths, n=None, pad=0, seed=None):

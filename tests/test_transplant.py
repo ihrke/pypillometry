@@ -191,3 +191,86 @@ class TestTransplant:
         tr = T.transplant_blinks(np.ones(1000), (50, 50))
         assert len(tr) == 0 and tr.sites.shape == (0, 2)
         np.testing.assert_array_equal(tr.signal, 1)
+
+
+def make_mixed(n=40000, seed=0):
+    """Smooth signal with blinks (drop over 20 samples, 60 missing, recovery
+    over 40), tracker loss (60 missing, no transients), a blink with
+    another run of missing samples close to it, and fast, short dips
+    without missing samples."""
+    rng = np.random.default_rng(seed)
+    y = 1000 + np.convolve(rng.normal(0, 30, n + 400), np.hanning(401) / 200, "valid")
+    y += rng.normal(0, 1, n)
+    slots = np.arange(400, n - 400, 400)
+    kinds = np.resize(["blink", "dip", "blink", "loss", "blink", "dip", "blink", "double"],
+                      len(slots))
+    for s, kind in zip(slots, kinds):
+        if kind in ("blink", "double"):
+            amp = rng.uniform(300, 500)
+            y[s - 20:s] -= np.linspace(0, amp, 20)
+            y[s + 60:s + 100] -= np.linspace(amp, 0, 40)
+            y[s:s + 60] = np.nan
+            if kind == "double":
+                y[s + 130:s + 150] = np.nan
+        elif kind == "loss":
+            y[s:s + 60] = np.nan
+        else:
+            y[s:s + 4] -= np.linspace(0, 150, 4)
+            y[s + 4:s + 8] -= np.linspace(150, 0, 4)
+    return y, slots, kinds
+
+
+WINDOW = (50, 100)
+
+
+class TestObviousBlinks:
+    @pytest.fixture(scope="class")
+    def mixed(self):
+        y, slots, kinds = make_mixed()
+        return y, slots, kinds, T.obvious_blinks(y, WINDOW, min_len=10, max_len=250)
+
+    def test_only_blinks_with_transients(self, mixed):
+        y, slots, kinds, ob = mixed
+        np.testing.assert_array_equal(ob.blinks[:, 0], slots[kinds == "blink"])
+        assert len(ob) == (kinds == "blink").sum()
+        assert len(ob.cores) == (kinds != "dip").sum() + (kinds == "double").sum()
+        # tracker loss is isolated, but has no transients; the double blink is not isolated
+        loss = np.isin(ob.cores[:, 0], slots[kinds == "loss"])
+        double = np.isin(ob.cores[:, 0], slots[kinds == "double"])
+        assert ob.isolated[loss].all() and not ob.obvious[loss].any()
+        assert not ob.isolated[double].any() and np.isnan(ob.drop[double]).all()
+        assert (ob.drop[ob.obvious] > ob.drop_threshold).all() and ob.drop_threshold > 0
+        assert (ob.rise[ob.obvious] > ob.rise_threshold).all() and ob.rise_threshold > 0
+        assert "obvious" in repr(ob)
+
+    def test_lengths_and_other_missing_samples(self, mixed):
+        y, slots, kinds, ob = mixed
+        assert len(T.obvious_blinks(y, WINDOW, min_len=61)) == 0
+        assert len(T.obvious_blinks(y, WINDOW, max_len=59)) == 0
+        masked = np.zeros(len(y), dtype=bool)
+        first = ob.blinks[0, 0]
+        masked[first - 10] = True      # in the window of the first blink
+        other = T.obvious_blinks(y, WINDOW, missing=masked)
+        assert first not in other.blinks[:, 0] and len(other) == len(ob) - 1
+
+    def test_given_cores_and_avoid(self, mixed):
+        y, slots, kinds, ob = mixed
+        some = ob.cores[[0, 1, 2]]
+        given = T.obvious_blinks(y, WINDOW, cores=some)
+        np.testing.assert_array_equal(given.cores, some)
+        np.testing.assert_array_equal(given.obvious, ob.obvious[:3])
+        # the dips are not used for the thresholds when avoided
+        dips = np.zeros(len(y), dtype=bool)
+        for s in slots[kinds == "dip"]:
+            dips[s:s + 8] = True
+        avoided = T.obvious_blinks(y, WINDOW, avoid=dips)
+        assert avoided.drop_threshold < ob.drop_threshold
+
+    def test_errors(self, mixed):
+        y = mixed[0]
+        with pytest.raises(ValueError):
+            T.obvious_blinks(np.r_[np.ones(50), np.nan, np.ones(50)], WINDOW)   # no clean signal
+        with pytest.raises(ValueError):
+            T.obvious_blinks(y, WINDOW, edge=60)
+        with pytest.raises(ValueError):
+            T.obvious_blinks(y, WINDOW, quantile=1)

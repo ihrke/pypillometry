@@ -61,6 +61,7 @@ interpolation of blinks or in simulations.
    transplant_error
    blink_cores
    blink_donors
+   obvious_blinks
    extract_blink_artifacts
    blink_artifact_profile
    shrink_blink_artifacts
@@ -74,6 +75,7 @@ interpolation of blinks or in simulations.
    :nosignatures:
 
    BlinkTransplant
+   ObviousBlinks
 
 The parameters of the interpolation of blinks can be tuned on
 transplanted blinks (see

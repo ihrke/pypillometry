@@ -10,6 +10,7 @@
 - fix: `blinks_interpolate()` (Mahot) skips stretches longer than `max_duration` (2 s), e.g. chains of merged blinks, instead of bridging them with one curve
 - `d.pupil.blinks_optimize_parameters()`: tune the parameters of `blinks_interpolate()` for a recording on transplanted blinks
 - `pp.signal.transplant_blinks()` and related functions: transplantation of blinks for numpy arrays
+- `pp.signal.obvious_blinks()`: blinks with a large drop and rise around their missing samples (good donors for transplants)
 - `pp.signal.tune_blinks_mahot()`: tuning on transplanted blinks for numpy arrays
 - `pp.signal.interpolate_blinks_mahot()`: the Mahot interpolation for numpy arrays
 
