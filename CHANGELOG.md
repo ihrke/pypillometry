@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- `d.plot.plot_blink_clusters()`: the detected blinks in groups of similar shape, to spot bad detections
+
 ## 2.2.3 (2026-11-19)
 
 - `blinks_interpolate(method="kalman")`: new interpolation method based on Kalman filter

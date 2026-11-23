@@ -189,6 +189,13 @@ class TestMultiPanel(ConventionTest):
         self.assertEqual(fig.axes[0].lines[0].get_color(), "red")
         np.testing.assert_allclose(fig.get_size_inches(), (4, 3))
 
+    def test_plot_blink_clusters(self):
+        self.assertMultiPanel(self.d.plot.plot_blink_clusters, 6, n_clusters=2)
+        fig = self.d.plot.plot_blink_clusters(eyes="left", n_clusters=2, title="T",
+                                              figsize=(5, 4))
+        self.assertEqual(fig._suptitle.get_text(), "T")
+        np.testing.assert_allclose(fig.get_size_inches(), (5, 4))
+
     def test_plot_heatmap(self):
         self.assertMultiPanel(self.d.plot.plot_heatmap, 2, eyes=["left", "right"])
         fig = self.d.plot.plot_heatmap(eyes="left", title="T")

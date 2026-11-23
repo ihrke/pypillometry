@@ -1,6 +1,8 @@
 from .generic import GenericPlots
 from ._axes import get_ax, get_axes, write_pdf
 from ..units import parse_time, _ms_to
+import warnings
+
 import numpy as np
 from typing import List, Optional, Tuple
 
@@ -404,6 +406,152 @@ class PupilPlots(GenericPlots):
         return self.plot_intervals(intervals, eyes, variables,
                                   pdf_file, nrow, ncol, figsize, show_index=show_index)
 
+    def plot_blink_clusters(self, eyes: str|list = [], window=(200, 500),
+                            n_clusters: int = 3, min_size: float = 0.02,
+                            figsize: tuple = None, title: str = None, axes=None,
+                            seed=None):
+        """
+        Plot the detected blinks in groups of similar shape.
+
+        A quick check of :meth:`~pypillometry.EyeData.pupil.blinks_detect`:
+        if a group looks unlike blinks (e.g., no drop and rise, short dips,
+        steps), the detection finds too much and its parameters should be
+        changed. The pupil before and after the missing samples of each blink
+        (its core, from the first to the last missing sample; the smallest
+        pupil for blinks without missing samples) is cut out with `window`.
+        Each part is shifted to 0 at its outer end (the first fifth of the
+        time before the blink, the last fifth of the time after it), and the
+        blinks are clustered (Ward, on the parts and the log of the duration
+        of the core). The tree is cut so that there are `n_clusters` groups
+        with at least `min_size` of the blinks; the rest are shown together
+        as "other".
+
+        One row per eye, one panel per group (the largest first), and one
+        for "other". Every panel shows all detected blinks in light grey, the
+        blinks of the group in color and their median in black. The time
+        before the core is relative to its start, the time after it relative
+        to its end; the cores (of different durations) are shown as the
+        shaded gap.
+
+        Parameters
+        ----------
+        eyes : str or list
+            eyes to plot; if empty, all eyes with pupil data
+        window : float, str, Quantity or tuple
+            time `(before, after)` the core (in ms, or with units)
+        n_clusters : int
+            number of groups (besides "other")
+        min_size : float
+            minimum fraction of the blinks in a group
+        figsize : tuple, optional
+            size of the figure; default: 4 x 3.5 inches per panel
+        title : str, optional
+            title of the figure
+        axes : sequence of Axes, optional
+            axes to draw on, `len(eyes) * (n_clusters + 1)` (one row per
+            eye); default: a new figure
+        seed : int, optional
+            seed for the random subset of blinks that is clustered if there
+            are more than 5000 (the others go to the nearest group)
+
+        Returns
+        -------
+        matplotlib.figure.Figure
+
+        Raises
+        ------
+        ValueError
+            if the object has no pupil data or no detected blinks
+
+        Examples
+        --------
+        .. plot::
+
+           >>> import pypillometry as pp
+           >>> d = pp.get_example_data("rlmw_002_short").pupil.blinks_detect()
+           >>> fig = d.plot.plot_blink_clusters(n_clusters=2)
+        """
+        d = self._d
+        d._require("pupil")
+        eyes = d._eyes_with(eyes, "pupil")
+        if n_clusters < 1:
+            raise ValueError(f"n_clusters must be at least 1, got {n_clusters}")
+        if not 0 <= min_size < 1:
+            raise ValueError(f"min_size must be in [0, 1), got {min_size}")
+        pre, post = d._samples(window, rounding="up") if np.ndim(window) else \
+            (d._samples(window, rounding="up"),) * 2
+        if min(pre, post) < 5:
+            raise ValueError(f"window must be at least 5 samples on each side, got {window}")
+        blinks = {eye: np.array([(int(a), int(b)) for a, b in
+                                 d.get_blinks(eye, "pupil", units="samples")[f"{eye}_pupil"]],
+                                dtype=int).reshape(-1, 2) for eye in eyes}
+        if all(len(b) == 0 for b in blinks.values()):
+            raise ValueError("no detected blinks: detect the blinks first (blinks_detect())")
+
+        ncol = n_clusters + 1
+        fig, axs = get_axes(axes, len(eyes) * ncol, "group of an eye",
+                            figsize=figsize or (4 * ncol, 3.5 * len(eyes)),
+                            nrows=len(eyes), ncols=ncol)
+        rng = np.random.default_rng(seed)
+        ms = 1000 / d.fs
+        gap = 0.2 * (pre + post) * ms     # width of the gap in the plot
+        tpre = (np.arange(pre) - pre) * ms
+        tpost = np.arange(post) * ms + gap
+        # round ticks, the same on both sides of the gap
+        step = next(v for v in (10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 5000, np.inf)
+                    if v >= max(pre, post) * ms / 4)
+        step = step if np.isfinite(step) else max(pre, post) * ms / 4
+        ticks_pre = -np.arange(0, pre * ms + 1e-9, step)[::-1]
+        ticks_post = np.arange(0, post * ms + 1e-9, step)
+
+        def lines(ax, t, parts, **kw):
+            """all rows of `parts` as one line (NaN-separated)"""
+            if len(parts):
+                y = np.c_[parts, np.full(len(parts), np.nan)].ravel()
+                ax.plot(np.tile(np.r_[t, np.nan], len(parts)), y, **kw)
+
+        for row, eye in enumerate(eyes):
+            ax_row = axs[row * ncol:(row + 1) * ncol]
+            before, after, core = _blink_segments(d.data[f"{eye}_pupil"], blinks[eye], pre, post)
+            labels = _cluster_blinks(before, after, core, n_clusters, min_size,
+                                     max(1, int(round(10 / ms))), rng)
+            nb = len(labels)
+            lim = (np.nanpercentile(np.r_[before.ravel(), after.ravel()], [0.5, 99.5])
+                   if nb else (0, 1))
+            for g, ax in zip(list(range(n_clusters)) + [-1], ax_row):
+                ax.axvspan(0, gap, color="0.93", lw=0)
+                ax.axhline(0, color="0.6", lw=0.5)
+                lines(ax, tpre, before, color="0.85", lw=0.3)
+                lines(ax, tpost, after, color="0.85", lw=0.3)
+                sel = labels == g
+                name = "other" if g < 0 else f"group {g + 1}"
+                if sel.any():
+                    color = "C3" if g < 0 else f"C{g}"
+                    lines(ax, tpre, before[sel], color=color, lw=0.4, alpha=0.5)
+                    lines(ax, tpost, after[sel], color=color, lw=0.4, alpha=0.5)
+                    if g >= 0:
+                        ax.plot(tpre, np.nanmedian(before[sel], 0), color="k", lw=2)
+                        ax.plot(tpost, np.nanmedian(after[sel], 0), color="k", lw=2)
+                    ax.set_title(f"{eye}, {name}: {sel.sum()} ({100 * sel.mean():.0f}%)\n"
+                                 f"core {np.median(core[sel]) * ms:.0f} ms (median), "
+                                 f"{100 * np.mean(core[sel] == 0):.0f}% without missing",
+                                 fontsize=9)
+                else:
+                    ax.set_title(f"{eye}, {name}: none", fontsize=9)
+                ax.set_xticks(np.r_[ticks_pre, ticks_post + gap])
+                ax.set_xticklabels([f"{t + 0:g}" for t in np.r_[ticks_pre, ticks_post]],
+                                   fontsize=8)   # + 0: no "-0"
+                ax.set_xlim(tpre[0], tpost[-1])
+                if np.all(np.isfinite(lim)) and lim[1] > lim[0]:
+                    ax.set_ylim(*lim)
+                ax.set_xlabel("ms before | after the core", fontsize=8)
+            ax_row[0].set_ylabel(f"{eye} pupil (shifted)")
+        if title:
+            fig.suptitle(title)
+        if axes is None:
+            fig.tight_layout()
+        return fig
+
     def plot_pupil_foreshortening_error_surface(
         self,
         plot_range: tuple = (-np.inf, +np.inf),
@@ -693,3 +841,97 @@ class PupilPlots(GenericPlots):
         if title is not None:
             fig.suptitle(title)
         return fig
+
+
+def _blink_segments(sy, blinks, pre, post):
+    """
+    The `pre` samples before and `post` samples after the core of each blink
+    (`blinks`: n x 2 sample indices, end-exclusive). The core is the stretch
+    from the first to the last missing (NaN or 0) sample of the blink, or
+    its smallest sample if it has none. Missing samples and samples outside
+    the data are NaN. Returns the parts before (n x pre) and after
+    (n x post) and the number of samples of the cores (0: no missing
+    samples).
+    """
+    sy = np.asarray(sy, dtype=float)
+    sy = np.where(sy == 0, np.nan, sy)
+    n = len(sy)
+    before, after = np.full((len(blinks), pre), np.nan), np.full((len(blinks), post), np.nan)
+    core = np.zeros(len(blinks), dtype=int)
+    for i, (a, b) in enumerate(blinks):
+        miss = np.flatnonzero(np.isnan(sy[a:b]))
+        if miss.size:
+            ca, cb = a + miss[0], a + miss[-1] + 1
+            core[i] = cb - ca
+        else:
+            ca = a + int(np.argmin(sy[a:b])) if b > a else a
+            cb = ca + 1
+        lo, hi = max(0, ca - pre), min(n, cb + post)
+        before[i, pre - (ca - lo):] = sy[lo:ca]
+        after[i, :hi - cb] = sy[cb:hi]
+    # each part relative to its outer end
+    with np.errstate(all="ignore"), warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)
+        for part, end in ((before, slice(0, max(1, pre // 5))),
+                          (after, slice(-max(1, post // 5), None))):
+            level = np.nanmean(part[:, end], axis=1)
+            level = np.where(np.isnan(level), np.nanmean(part, axis=1), level)
+            part -= level[:, None]
+    return before, after, core
+
+
+def _cluster_blinks(before, after, core, n_clusters, min_size, step, rng,
+                    max_n=5000):
+    """
+    Groups of blinks (see :meth:`PupilPlots.plot_blink_clusters`): Ward
+    clustering of the parts `before` and `after` the cores (means over
+    `step` samples, missing values replaced by the median of all blinks,
+    robustly scaled) and the log of the duration of the `core`. Returns the
+    group of each blink: 0 to `n_clusters - 1` (largest first) for the
+    groups with at least `min_size` of the blinks, -1 for the others. If
+    there are more than `max_n` blinks, a random subset (`rng`) is
+    clustered and the others go to the group with the nearest mean.
+    """
+    from scipy.cluster.hierarchy import fcluster, linkage
+    n = len(core)
+    if n < 2:
+        return np.zeros(n, dtype=int)
+
+    def blocks(x, right):
+        m = x.shape[1] // step * step
+        x = x[:, x.shape[1] - m:] if right else x[:, :m]
+        return x.reshape(len(x), -1, step)
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)
+        X = np.c_[np.nanmean(blocks(before, True), axis=2), np.nanmean(blocks(after, False), axis=2)]
+        med = np.nanmedian(X, axis=0)
+    med = np.where(np.isnan(med), 0, med)
+    X = np.where(np.isnan(X), med, X)
+    scale = np.median(np.abs(X - med))
+    X = X / (scale if scale > 0 else 1)
+    # the duration counts about as much as a third of the shape
+    dur = np.log1p(core / step)
+    sd = dur.std()
+    X = np.c_[X, dur / (sd if sd > 0 else 1) * np.sqrt(X.shape[1]) / 3]
+
+    sub = np.sort(rng.choice(n, max_n, replace=False)) if n > max_n else np.arange(n)
+    tree = linkage(X[sub], "ward")
+    need = max(2, int(np.ceil(min_size * len(sub))))
+    for k in range(min(n_clusters, len(sub)), len(sub) + 1):
+        lab = fcluster(tree, k, "maxclust")
+        counts = np.bincount(lab)
+        if (counts >= need).sum() >= n_clusters or k >= 100:
+            break
+    big = [c for c in np.argsort(-counts, kind="stable") if counts[c] >= need][:n_clusters]
+    groups = np.full(lab.max() + 1, -1)
+    groups[big] = np.arange(len(big))
+    if len(sub) == n:
+        return groups[lab]
+    # the others: the cluster with the nearest mean
+    ids = np.unique(lab)
+    means = np.array([X[sub][lab == c].mean(axis=0) for c in ids])
+    nearest = ids[np.argmin(((X[:, None, :] - means[None]) ** 2).sum(axis=2), axis=1)]
+    out = groups[nearest]
+    out[sub] = groups[lab]
+    return out
