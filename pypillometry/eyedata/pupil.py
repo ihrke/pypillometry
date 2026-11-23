@@ -63,35 +63,36 @@ def _interp_params(method, kwargs):
 
 
 def _merge_overlapping_blink_windows(blinks, n):
-    """Merge blinks whose interpolation windows overlap.
+    """Anchor points of the blinks, merging only blinks that overlap.
 
     Each blink `(t2, t3)` is interpolated from the anchor points
-    ``t1 = t2-(t3-t2)`` and ``t4 = t3+(t3-t2)``. Neighbouring blinks are
-    merged if the window ``[t1, t4]`` of one reaches into the other.
-
-    Windows are computed from the original blinks, not from the merged
-    ones (a merged blink is longer, so its window would be wider and
-    would reach further blinks, merging the whole recording).
+    ``t1 = t2-(t3-t2)`` and ``t4 = t3+(t3-t2)``. Blinks whose stretches
+    `(t2, t3)` overlap or touch are merged (the anchor points are from the
+    first and the last of them). If the anchor points of a blink would
+    reach into a neighbouring blink, they are moved closer instead: at most
+    to the on- or offset of the neighbour (which is not replaced by its
+    curve). Merging these blinks instead would replace the signal between
+    them, and the anchor points of the merged blink would reach further
+    blinks (chains of several seconds in real data).
 
     Returns
     -------
     list of tuple
-        ``(t1, t2, t3, t4)`` for each merged blink: `t2`/`t3` are the
-        on-/offset of the merged blink, `t1`/`t4` the anchor points (from
-        the windows of the first/last original blink in the group)
+        ``(t1, t2, t3, t4)`` for each (merged) blink
     """
-    def window(on, off):
-        return max(0, 2*on-off), min(2*off-on, n-1)
-
-    out = []
+    groups = []     # [t1, t2, t3, t4] before moving the anchor points
     for on, off in sorted((int(b[0]), int(b[1])) for b in blinks):
-        t1, t4 = window(on, off)
-        if out:
-            pt1, pon, poff, pt4 = out[-1]
-            if pt4 >= on or t1 <= poff:
-                out[-1] = (pt1, pon, max(poff, off), max(pt4, t4))
-                continue
-        out.append((t1, on, off, t4))
+        t1, t4 = 2 * on - off, 2 * off - on
+        if groups and on <= groups[-1][2]:
+            groups[-1][2] = max(groups[-1][2], off)
+            groups[-1][3] = max(groups[-1][3], t4)
+            continue
+        groups.append([t1, on, off, t4])
+    out = []
+    for i, (t1, t2, t3, t4) in enumerate(groups):
+        lo = groups[i - 1][2] if i > 0 else 0
+        hi = groups[i + 1][1] if i + 1 < len(groups) else n - 1
+        out.append((max(t1, lo), t2, t3, min(t4, hi)))
     return out
 
 class PupilNamespace(Namespace["EyeData"]):

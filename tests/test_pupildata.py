@@ -220,18 +220,26 @@ class TestMergeBlinkWindows(unittest.TestCase):
         self.assertEqual(self.merge([(100, 110), (200, 210)]),
                          [(90, 100, 110, 120), (190, 200, 210, 220)])
 
-    def test_overlapping_windows_merge(self):
+    def test_overlapping_blinks_merge(self):
+        # anchor points from the windows of the first and the last blink
+        self.assertEqual(self.merge([(100, 110), (105, 125)]),
+                         [(90, 100, 125, 145)])
+        self.assertEqual(self.merge([(100, 110), (110, 125)]),   # touching
+                         [(90, 100, 125, 140)])
+
+    def test_close_blinks_keep_their_curves(self):
+        # the windows overlap: the anchor points move to the neighbour
         self.assertEqual(self.merge([(100, 110), (115, 125)]),
-                         [(90, 100, 125, 135)])
+                         [(90, 100, 110, 115), (110, 115, 125, 135)])
 
     def test_no_cascade(self):
-        # each blink's window only reaches its neighbour if blinks are close;
-        # the merged blink must not widen the window and swallow the rest
+        # close blinks are not merged, so nothing can swallow the rest
         blinks = [(100, 200), (290, 390)] + [(1000 + 300*i, 1050 + 300*i)
                                              for i in range(20)]
         merged = self.merge(blinks)
-        self.assertEqual(merged[0], (0, 100, 390, 490))
-        self.assertEqual(len(merged), 21)
+        self.assertEqual(merged[:2], [(0, 100, 200, 290), (200, 290, 390, 490)])
+        self.assertEqual(len(merged), 22)
+        self.assertTrue(all(t1 < t2 < t3 < t4 for t1, t2, t3, t4 in merged))
 
 
 def test_blinks_interpolate_without_onset_crossing():
