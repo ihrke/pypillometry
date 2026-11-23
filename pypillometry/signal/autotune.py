@@ -183,11 +183,14 @@ class BlinkTuneResult:
         all evaluated parameters: one array per value (``"smooth_winsize"``,
         ``"vel_onset"``, ``"vel_offset"``, ``"margin_before"``,
         ``"margin_after"``, ``"blinkwindow"``), their ``"loss"`` and the
-        ``"stage"`` (1: search on `train`, 2: refinement on `train` and
-        `refine`; the losses of the stages are on different blinks)
+        ``"stage"`` (1: search on a set of `train`, 2: choice and
+        refinement; the losses are on different blinks) and the
+        ``"search"`` (index of the set of `train`; -1 in stage 2)
     n_blinks, n_refine, n_test : int
-        number of transplanted blinks used for the search, for the
-        refinement (in addition) and for testing
+        number of transplanted blinks used for the searches (all sets), for
+        the refinement (in addition) and for testing
+    n_searches : int
+        number of searches (sets of `train`)
     units : str
         units of the parameters, the bounds and the history:
         ``"samples"``, or ``"ms"`` (as the arguments of
@@ -206,6 +209,7 @@ class BlinkTuneResult:
     n_blinks: int = 0
     n_refine: int = 0
     n_test: int = 0
+    n_searches: int = 1
     units: str = "samples"
 
     def __repr__(self):
@@ -214,8 +218,10 @@ class BlinkTuneResult:
                 return "-"
             return ", ".join(f"{k}=" + ("(%.4g, %.4g)" % tuple(v) if np.ndim(v) else f"{v:.4g}")
                              for k, v in p.items())
-        lines = [f"BlinkTuneResult ({self.units}; transplanted blinks: {self.n_blinks} for "
-                 f"the search, {self.n_refine} more for refining, {self.n_test} for testing)",
+        search = (f"{self.n_blinks} for {self.n_searches} searches" if self.n_searches > 1
+                  else f"{self.n_blinks} for the search")
+        lines = [f"BlinkTuneResult ({self.units}; transplanted blinks: {search}, "
+                 f"{self.n_refine} more for refining, {self.n_test} for testing)",
                  f"  tuned : {fmt(self.tuned)}",
                  f"          error {self.loss:.4g}, on test blinks {self.test_loss:.4g}",
                  f"  start : {fmt(self.start)}",
@@ -273,11 +279,12 @@ def tune_blinks_mahot(train, test=None, refine=None, start=None, bounds=None, fi
 
     The search needs many evaluations, so it can be run on a few blinks
     (`train`, e.g. 10 different blinks, each transplanted a few times).
-    With further transplanted blinks (`refine`), the result is then
-    refined on all of them (`train` and `refine`) with one more round on
-    the finest grid, which needs only a few evaluations. The refinement
-    starts from the starting parameters instead if they are better on all
-    these blinks (the search can fit its few blinks too closely).
+    With few blinks, the result depends on which blinks they are, so the
+    search can be run several times on different blinks (`train` as a list
+    of such sets). The results (and the starting parameters) are compared
+    on further transplanted blinks (`refine`, or else on all sets of
+    `train`), and the best one is refined on its own blinks and `refine`
+    with one more round on the finest grid.
 
     With many parameters and few blinks, the tuned parameters can fit the
     blinks they were tuned on better than other blinks. If transplanted
@@ -287,16 +294,18 @@ def tune_blinks_mahot(train, test=None, refine=None, start=None, bounds=None, fi
 
     Parameters
     ----------
-    train : BlinkTransplant or list of BlinkTransplant
+    train : BlinkTransplant, list of BlinkTransplant, or list of lists
         signal(s) with transplanted blinks to search the parameters on (see
-        :func:`~pypillometry.signal.transplant.transplant_blinks`)
+        :func:`~pypillometry.signal.transplant.transplant_blinks`); a list
+        of lists (or of lists and BlinkTransplant) is several sets, with one
+        search on each
     test : BlinkTransplant or list of BlinkTransplant, optional
         signal(s) with other transplanted blinks, to check the tuned
         parameters (e.g., using other blinks of the same recording, see
         `cores` of :func:`~pypillometry.signal.transplant.transplant_blinks`)
     refine : BlinkTransplant or list of BlinkTransplant, optional
-        signal(s) with further transplanted blinks, to refine the result of
-        the search on (together with `train`)
+        signal(s) with further transplanted blinks, to choose the best of
+        the searches and refine it on (together with its `train` set)
     start : dict, optional
         starting parameters: `smooth_winsize`, `vel_onset`, `vel_offset`,
         `margin` and `blinkwindow` (in samples, and units per sample)
@@ -349,6 +358,11 @@ def tune_blinks_mahot(train, test=None, refine=None, start=None, bounds=None, fi
     """
     from scipy.stats import qmc
     train = _as_list(train)
+    if any(isinstance(t, (list, tuple)) for t in train):
+        sets = [_as_list(t) for t in train]
+    else:
+        sets = [train]
+    train = [tr for trs in sets for tr in trs]
     test = [] if test is None else _as_list(test)
     refine = [] if refine is None else _as_list(refine)
     n_blinks, n_test = sum(len(tr) for tr in train), sum(len(tr) for tr in test)
@@ -384,7 +398,9 @@ def tune_blinks_mahot(train, test=None, refine=None, start=None, bounds=None, fi
 
     # only the signal around the transplanted blinks is needed
     context = _context(train + refine + test, hi)
-    train, test, refine = ([_crop(tr, context) for tr in trs] for trs in (train, test, refine))
+    sets, test, refine = ([[_crop(tr, context) for tr in trs] for trs in sets],
+                          [_crop(tr, context) for tr in test],
+                          [_crop(tr, context) for tr in refine])
 
     def to_x(u):
         """values from the unit cube"""
@@ -401,7 +417,7 @@ def tune_blinks_mahot(train, test=None, refine=None, start=None, bounds=None, fi
 
     history = []
 
-    def make_loss(transplants, stage):
+    def make_loss(transplants, stage, search=-1):
         """error on `transplants` of the parameters at a point of the unit cube"""
         cache = {}
 
@@ -411,13 +427,12 @@ def tune_blinks_mahot(train, test=None, refine=None, start=None, bounds=None, fi
                    params["margin"], params["blinkwindow"])
             if key not in cache:
                 cache[key] = transplant_error_mahot(transplants, **params)
-                history.append((_to_vector(params), cache[key], stage))
+                history.append((_to_vector(params), cache[key], stage, search))
             return cache[key]
         return loss
 
-    # stage 1: search on `train`, from the starting parameters or the best
-    # of an even cover of the search range
-    loss = make_loss(train, 1)
+    # stage 1: search on each set of `train`, from the starting parameters
+    # or the best of an even cover of the search range
     if n_init is None:
         n_init = 64 if start is None else 0
     if start is None and n_init < 1:
@@ -431,20 +446,31 @@ def tune_blinks_mahot(train, test=None, refine=None, start=None, bounds=None, fi
         start_u[hi <= lo] = 0.0
         points = np.vstack([start_u, points])
     points[:, hi <= lo] = 0.0
-    losses = np.array([loss(u) for u in points])
-    best_u, best = points[np.argmin(losses)].copy(), losses.min()
-    best_u, best, width = _coordinate_search(loss, best_u, best, free, 0.5, n_grid, sweeps, tol)
+    found = []
+    for i, trs in enumerate(sets):
+        loss = make_loss(trs, 1, i)
+        losses = np.array([loss(u) for u in points])
+        u, best = points[np.argmin(losses)].copy(), losses.min()
+        u, best, width = _coordinate_search(loss, u, best, free, 0.5, n_grid, sweeps, tol)
+        found.append(u)
+        logger.debug(f"Tuning: search {i + 1} of {len(sets)}: {best:.4g}")
 
-    # stage 2: one more round on the finest grid, on all blinks for tuning
-    tuning = train + refine
-    if n_refine:
-        logger.debug(f"Tuning: refining on {n_blinks + n_refine} blinks")
-        loss = make_loss(tuning, 2)
-        # from the result of the search, unless it fits only its few blinks
-        # and the starting parameters are better on all of them
-        if start is not None and loss(start_u) < loss(best_u):
+    # stage 2: the best of the searches (or the starting parameters, as the
+    # searches can fit their few blinks too closely) on further blinks,
+    # refined on them and its own blinks with one more round on the finest grid
+    k, best_u, tuning = 0, found[0], sets[0] + refine
+    if n_refine or len(sets) > 1:
+        choose = make_loss(refine if n_refine else train, 2)
+        cands = found + ([start_u] if start is not None else [])
+        losses = [choose(u) for u in cands]
+        k = int(np.argmin(losses))
+        best_u = cands[k]
+        if k == len(found):
             logger.debug("Tuning: refining from the starting parameters")
-            best_u = start_u
+            k = 0
+        tuning = (sets[k] if n_refine else []) + (refine if n_refine else train)
+        logger.debug(f"Tuning: refining on {sum(len(tr) for tr in tuning)} blinks")
+        loss = make_loss(tuning, 2)
         best_u, best, _ = _coordinate_search(loss, best_u, loss(best_u), free, 2 * width,
                                              n_grid, 1, tol)
 
@@ -463,10 +489,12 @@ def tune_blinks_mahot(train, test=None, refine=None, start=None, bounds=None, fi
     hist["vel_onset"] = -hist["vel_onset"]
     hist["loss"] = np.array([h[1] for h in history])
     hist["stage"] = np.array([h[2] for h in history], dtype=int)
+    hist["search"] = np.array([h[3] for h in history], dtype=int)
     out_bounds = {name: (float(lo[i]), float(hi[i])) for i, name in enumerate(_NAMES)}
     out_bounds["vel_onset"] = (-out_bounds["vel_onset"][1], -out_bounds["vel_onset"][0])
     return BlinkTuneResult(params=dict(tuned if success else start), tuned=tuned, start=start,
                            loss=float(best), loss_start=float(loss_start),
                            test_loss=float(test_loss), test_loss_start=float(test_loss_start),
                            success=bool(success), bounds=out_bounds, history=hist,
-                           n_blinks=n_blinks, n_refine=n_refine, n_test=n_test)
+                           n_blinks=n_blinks, n_refine=n_refine, n_test=n_test,
+                           n_searches=len(sets))

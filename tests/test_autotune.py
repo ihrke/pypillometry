@@ -46,12 +46,26 @@ class TestTune:
         assert np.isclose(res.loss, transplant_error_mahot(train, **res.params))
         assert res.loss >= res.history["loss"].min()   # changes below `tol` are not made
         assert set(res.history) == {"smooth_winsize", "vel_onset", "vel_offset", "margin_before",
-                                    "margin_after", "blinkwindow", "loss", "stage"}
+                                    "margin_after", "blinkwindow", "loss", "stage", "search"}
         assert (res.history["vel_onset"] < 0).all() and res.params["vel_onset"] < 0
         assert res.params["smooth_winsize"] % 2 == 1
         filled, interp, _ = interpolate_blinks_mahot(train.signal, train.blinks, **res.params)
         assert not np.isnan(filled[train.sites[0, 0]:train.sites[0, 1]]).any()
         assert "tuned" in repr(res)
+
+    def test_several_searches(self, transplants):
+        train, test = transplants
+        half = len(train.blinks) // 2
+        sets = [transplant_blinks(train.clean, (150, 250), pad=50, source=train.signal,
+                                  cores=train.blinks[:half], seed=1),
+                transplant_blinks(train.clean, (150, 250), pad=50, source=train.signal,
+                                  cores=train.blinks[half:], seed=2)]
+        res = tune_blinks_mahot([[sets[0]], [sets[1]]], refine=test, start=BAD, seed=1, **FAST)
+        assert res.n_searches == 2 and res.n_blinks == len(sets[0]) + len(sets[1])
+        assert set(res.history["search"]) == {-1, 0, 1}
+        assert (res.history["stage"][res.history["search"] >= 0] == 1).all()
+        assert res.loss < 0.5 * res.loss_start
+        assert "2 searches" in repr(res)
 
     def test_reproducible(self, transplants):
         a = tune_blinks_mahot(transplants[0], start=BAD, seed=3, **FAST)
@@ -158,6 +172,10 @@ class TestBlinksOptimizeParameters:
         # 10 blinks for the search, each 3 times; the others once
         res = data.pupil.blinks_optimize_parameters(eyes="left", seed=1, **FAST)
         assert 10 < res.n_blinks <= 30 and res.n_refine + res.n_test < 15   # as many as fit
+        # several searches, each on n_tune blinks
+        res = data.pupil.blinks_optimize_parameters(eyes="left", n_starts=2, n_tune=4, repeats=1,
+                                                    n_refine=2, n_test=2, seed=1, **FAST)
+        assert res.n_searches == 2 and res.n_blinks <= 8
         # at most n_refine and n_test of the others
         res = data.pupil.blinks_optimize_parameters(n_refine=3, n_test=4, seed=1, **FAST)
         assert 0 < res.n_refine <= 3 and 0 < res.n_test <= 4

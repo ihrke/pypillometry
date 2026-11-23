@@ -796,7 +796,8 @@ class PupilNamespace(Namespace["EyeData"]):
             cores=cores, **kwargs)
 
     def blinks_optimize_parameters(self, eyes=[], method: str="mahot", window=(200, 500),
-                        n_tune: int=10, repeats: int=3, n_refine: int=100, n_test: int=100,
+                        n_tune: int=10, repeats: int=3, n_starts: int=3,
+                        n_refine: int=30, n_test: int=30,
                         start=None, bounds=None, fixed=None,
                         quantile: float=0.99, pad: float=100,
                         mode: str="additive", shrink: bool=True, blink_val: float=0,
@@ -833,11 +834,13 @@ class PupilNamespace(Namespace["EyeData"]):
         samples) are not used, but no blinks are put on them.
 
         Not all blinks are needed: the search runs on `n_tune` random
-        blinks, each transplanted `repeats` times. Of the other blinks,
-        `n_refine` are used to refine the result (one more round of the
-        search on them and the `n_tune` blinks) and `n_test` only to test
-        it; the rest are not used. If there are fewer, they are split in
-        the same proportion. The tuned parameters are only returned if they
+        blinks, each transplanted `repeats` times. As the result depends on
+        which blinks these are, it runs `n_starts` times, on different
+        blinks. Of the other blinks, `n_refine` are used to choose the best
+        result (or the starting parameters) and refine it (one more round
+        of the search on them and its `n_tune` blinks), and `n_test` only
+        to test it; the rest are not used. If there are fewer blinks, there
+        are fewer searches, and the others are split in the same proportion. The tuned parameters are only returned if they
         are better for the test blinks than the starting parameters
         (otherwise those are returned, with a warning). With at most
         `n_tune` blinks, there is no refinement, and up to half of them
@@ -864,6 +867,8 @@ class PupilNamespace(Namespace["EyeData"]):
         repeats : int
             number of times each of the `n_tune` blinks is transplanted
             (at most as many as fit)
+        n_starts : int
+            number of searches, each on `n_tune` other blinks
         n_refine : int
             number of further blinks for refining the result (0: no
             refinement)
@@ -941,8 +946,8 @@ class PupilNamespace(Namespace["EyeData"]):
         eyes = d._eyes_with(eyes, "pupil")
         if n_refine < 0 or n_test < 0:
             raise ValueError("n_refine and n_test must not be negative")
-        if n_tune < 1 or repeats < 1:
-            raise ValueError("n_tune and repeats must be at least 1")
+        if n_tune < 1 or repeats < 1 or n_starts < 1:
+            raise ValueError("n_tune, repeats and n_starts must be at least 1")
         rng = np.random.default_rng(seed)
         per_ms = 1000 / d.fs    # ms per sample
 
@@ -1014,30 +1019,39 @@ class PupilNamespace(Namespace["EyeData"]):
         pool = [(eye, k) for eye in eyes for k in range(len(donors[eye]))]
         pool = [pool[k] for k in rng.permutation(len(pool))]
         if len(pool) > n_tune:
-            n_search, rest = n_tune, len(pool) - n_tune
+            # more searches only if there are enough blinks left for
+            # refining and testing
+            n_sets = 1
+            while (n_sets < n_starts
+                   and len(pool) - (n_sets + 1) * n_tune >= n_refine + n_test):
+                n_sets += 1
+            n_search, rest = n_sets * n_tune, len(pool) - n_sets * n_tune
             if rest < n_refine + n_test:    # fewer: in the same proportion
-                n_test = int(round(rest * n_test / (n_refine + n_test)))
+                n_test = int(round(rest * n_test / max(1, n_refine + n_test)))
                 n_refine = rest - n_test
         else:
-            n_test, n_refine = min(n_test, len(pool) // 2), 0
+            n_test, n_refine, n_sets = min(n_test, len(pool) // 2), 0, 1
             n_search = len(pool) - n_test
-        parts = {"train": pool[:n_search], "test": pool[n_search:n_search + n_test],
-                 "refine": pool[n_search + n_test:n_search + n_test + n_refine]}
-        logger.debug(f"{len(pool)} blinks to transplant: {n_search} for the search, "
-                     f"{len(parts['refine'])} for refining, {n_test} for testing")
+        searches = [pool[i * n_search // n_sets:(i + 1) * n_search // n_sets]
+                    for i in range(n_sets)]
+        test_part = pool[n_search:n_search + n_test]
+        refine_part = pool[n_search + n_test:n_search + n_test + n_refine]
+        logger.debug(f"{len(pool)} blinks to transplant: {n_search} for {n_sets} searches, "
+                     f"{len(refine_part)} for refining, {n_test} for testing")
 
-        def transplants(part):
+        def transplants(part, n_each):
             out = []
             for eye in eyes:
-                ix = np.sort([k for e, k in parts[part] if e == eye])
+                ix = np.sort([k for e, k in part if e == eye])
                 if len(ix) == 0:
                     continue
-                n = repeats * len(ix) if part == "train" else len(ix)
-                out.append(self._transplant(d, eye, n=n, seed=rng, cores=donors[eye][ix],
-                                            **targs))
+                out.append(self._transplant(d, eye, n=n_each * len(ix), seed=rng,
+                                            cores=donors[eye][ix], **targs))
             return out
-        train, test, refine = (transplants(part) for part in ("train", "test", "refine"))
-        if sum(len(tr) for tr in train) == 0:
+        train = [transplants(part, repeats) for part in searches]
+        test, refine = transplants(test_part, 1), transplants(refine_part, 1)
+        train = [trs for trs in train if sum(len(tr) for tr in trs)]
+        if not train:
             raise ValueError("no blinks could be transplanted: the recording needs clean "
                              "stretches (longer than the window) to put them")
 
@@ -1048,7 +1062,7 @@ class PupilNamespace(Namespace["EyeData"]):
 
         # in the units of blinks_interpolate()
         hist = {("winsize" if k == "smooth_winsize" else k):
-                (v if k in ("loss", "stage") else v / per_ms if k.startswith("vel_") else v * per_ms)
+                (v if k in ("loss", "stage", "search") else v / per_ms if k.startswith("vel_") else v * per_ms)
                 for k, v in res.history.items()}
         res = replace(res, params=in_ms(res.params), tuned=in_ms(res.tuned),
                       start=in_ms(res.start), bounds=in_ms(res.bounds), history=hist,
