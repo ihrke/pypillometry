@@ -67,9 +67,10 @@ so that brief changes, e.g. from eye movements, are not taken for blinks;
 whole transient around them.
 :meth:`d.plot.plot_blink_clusters() <EyeData.plot.plot_blink_clusters>`
 shows the detected blinks in a few groups of similar shape, on top of all
-blinks in grey. A group that does not look like blinks (e.g., no drop and
-rise, or short dips) means that the detection finds too much: change its
-parameters and plot again.
+blinks in grey, and the blinks without missing samples in a panel of their
+own. A group that does not look like blinks (e.g., no drop and rise, or
+steps) means that the detection finds too much: change its parameters and
+plot again.
 :meth:`~EyeData.pupil.blinks_interpolate` replaces the pupil size during
 blinks by a smooth curve (Mathôt, 2013). With ``method="kalman"``, it
 replaces them instead by their expected value given the signal around them

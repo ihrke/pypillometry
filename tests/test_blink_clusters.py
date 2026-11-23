@@ -6,7 +6,8 @@ import numpy as np
 import pytest
 
 import pypillometry as pp
-from pypillometry.plot.pupil import _blink_segments, _cluster_blinks
+from pypillometry.plot.pupil import (_blink_segments, _centered_segments, _cluster_blinks,
+                                     _has_missing)
 
 
 def make_data(n=60000, seed=0):
@@ -34,14 +35,18 @@ class TestHelpers:
         y[80] = 0                       # missing value code
         blinks = np.array([[35, 55], [60, 70], [78, 83], [0, 3]])
         before, after, core = _blink_segments(y, blinks, 5, 5)
+        np.testing.assert_array_equal(_has_missing(y, blinks), [True, False, True, False])
         np.testing.assert_array_equal(core, [10, 0, 1, 0])
         # core 40-50: before it 35-39, after it 50-54, each relative to its outer end
         np.testing.assert_allclose(before[0], np.arange(36, 41) - 36)
         np.testing.assert_allclose(after[0], np.arange(51, 56) - 55)
-        # no missing samples: the smallest sample (60)
-        np.testing.assert_allclose(after[1], np.arange(62, 67) - 66)
-        # outside the data: NaN
-        assert np.isnan(before[3]).all()
+        # core 80 (missing value code); no missing samples: NaN
+        np.testing.assert_allclose(after[2], np.arange(82, 87) - 86)
+        assert np.isnan(before[[1, 3]]).all() and np.isnan(after[[1, 3]]).all()
+        # around the middle, relative to the start; outside the data: NaN
+        mid = _centered_segments(y, blinks[[1, 3]], 5, 5)
+        np.testing.assert_allclose(mid[0], np.arange(61, 71) - 61)
+        assert np.isnan(mid[1, :4]).all() and np.allclose(np.diff(mid[1, 4:]), 1)
 
     def test_clusters(self):
         y, starts, loss = make_data()
@@ -76,15 +81,20 @@ class TestPlot:
     def test_panels(self):
         y, starts, loss = make_data()
         d = pp.EyeData(left_pupil=y, sampling_rate=500, inplace=False).pupil.blinks_detect()
+        # a dip without missing samples, found by the velocity
+        y[30300:30320] -= np.r_[np.linspace(0, 300, 10), np.linspace(300, 0, 10)]
+        d = pp.EyeData(left_pupil=y, sampling_rate=500, inplace=False).pupil.blinks_detect()
         fig = d.plot.plot_blink_clusters(n_clusters=2, window=(200, 500))
         axs = fig.axes
-        assert len(axs) == 3
+        assert len(axs) == 4
         titles = [ax.get_title() for ax in axs]
         assert titles[0].startswith("left, group 1: ") and "other" in titles[2]
-        # all blinks in grey in each panel
-        n = len(d.get_blinks("left", "pupil")["left_pupil"])
+        assert titles[3].startswith("left, without missing samples: 1 ")
+        # all blinks with missing samples in grey in each panel of the groups
+        n = len(d.get_blinks("left", "pupil")["left_pupil"]) - 1
         grey = [l for l in axs[0].lines if l.get_color() == "0.85"]
-        assert sum(np.isnan(l.get_ydata()).sum() >= n for l in grey) == 2
+        assert [np.isnan(l.get_ydata()).sum() for l in grey] == [n, n]
+        assert "without missing samples" in axs[0].get_ylabel()
 
     def test_errors(self):
         y, _, _ = make_data()
@@ -98,5 +108,5 @@ class TestPlot:
             d.plot.plot_blink_clusters(min_size=1)
         with pytest.raises(ValueError):
             d.plot.plot_blink_clusters(window=2)
-        with pytest.raises(ValueError, match="4 axes needed"):
+        with pytest.raises(ValueError, match="5 axes needed"):
             d.plot.plot_blink_clusters(axes=plt.subplots(1, 3)[1])

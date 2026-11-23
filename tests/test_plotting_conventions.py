@@ -190,7 +190,7 @@ class TestMultiPanel(ConventionTest):
         np.testing.assert_allclose(fig.get_size_inches(), (4, 3))
 
     def test_plot_blink_clusters(self):
-        self.assertMultiPanel(self.d.plot.plot_blink_clusters, 6, n_clusters=2)
+        self.assertMultiPanel(self.d.plot.plot_blink_clusters, 8, n_clusters=2)
         fig = self.d.plot.plot_blink_clusters(eyes="left", n_clusters=2, title="T",
                                               figsize=(5, 4))
         self.assertEqual(fig._suptitle.get_text(), "T")
