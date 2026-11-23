@@ -498,7 +498,9 @@ def blink_onsets_mahot(sy, blinks, smooth_winsize, vel_onset, vel_offset, margin
     missing samples. The onset is the start of the closest closing transient
     (velocity below `vel_onset`) that starts before the core, the offset the
     end of the closest opening transient (velocity above `vel_offset`) that
-    ends after it. The result therefore does not depend on how far the
+    ends after it. The search (and the margins) stop at the neighbouring
+    blinks, so that a transient of a neighbour is not taken for one of the
+    blink. The result therefore does not depend on how far the
     blinks were extended when they were detected, and for a blink that
     contains several transients (e.g., merged blinks), the outermost ones
     are used.
@@ -550,11 +552,20 @@ def blink_onsets_mahot(sy, blinks, smooth_winsize, vel_onset, vel_offset, margin
         max_gap = smooth_winsize
     n = len(sy)
 
+    pairs = [(int(start), int(end)) for start, end in blinks]
+    # the neighbours of each blink: the end of the previous one and the
+    # start of the next one (in the order of their starts)
+    order = sorted(range(len(pairs)), key=lambda i: pairs[i])
+    prev_end, next_start, last = {}, {}, 0
+    for k, i in enumerate(order):
+        prev_end[i] = last
+        last = max(last, pairs[i][1])
+        next_start[i] = pairs[order[k + 1]][0] if k + 1 < len(order) else n
     newblinks = []
-    for ix, (start, end) in enumerate(blinks):
-        start, end = int(start), int(end)
+    for ix, (start, end) in enumerate(pairs):
         cstart, cend = _blink_core(sy, start, end)
-        winstart, winend = max(0, cstart - blinkwindow), min(cend + blinkwindow + 1, n)
+        lo, hi = min(prev_end[ix], cstart), max(next_start[ix], cend + 1)
+        winstart, winend = max(lo, cstart - blinkwindow), min(cend + blinkwindow + 1, hi, n)
 
         # onset: closest closing transient that starts before the core
         runs = _velocity_runs(np.where(vel_backward[winstart:winend] <= vel_onset)[0] + winstart,
@@ -567,7 +578,7 @@ def blink_onsets_mahot(sy, blinks, smooth_winsize, vel_onset, vel_offset, margin
             # core instead of dropping the blink
             logger.debug(f"Blink {ix} (samples {start}-{end}): no onset crossing, using blink core")
             onset = cstart
-        onset = max(0, onset - margin[0])
+        onset = max(0, lo, onset - margin[0])
 
         # offset: closest opening transient that ends after the core
         runs = _velocity_runs(np.where(vel_forward[winstart:winend] >= vel_offset)[0] + winstart,
@@ -578,7 +589,7 @@ def blink_onsets_mahot(sy, blinks, smooth_winsize, vel_onset, vel_offset, margin
         else:
             logger.debug(f"Blink {ix} (samples {start}-{end}): no offset crossing, using blink core")
             offset = cend
-        offset = min(n - 1, offset + margin[1])
+        offset = min(n - 1, hi - 1, offset + margin[1])
 
         newblinks.append([onset, offset])
 
