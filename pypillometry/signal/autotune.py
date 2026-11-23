@@ -15,6 +15,7 @@ from loguru import logger
 
 from .preproc import interpolate_blinks_mahot
 from .transplant import BlinkTransplant, blink_cores
+from ..logging import _show_progress
 
 __all__ = ["transplant_error_mahot", "tune_blinks_mahot", "BlinkTuneResult"]
 
@@ -449,6 +450,10 @@ def tune_blinks_mahot(train, test=None, refine=None, start=None, bounds=None, fi
         return np.where(hi > lo, u, 0.0)
 
     history = []
+    from tqdm import tqdm
+    stage2 = bool(n_refine) or len(sets) > 1
+    bar = tqdm(total=len(sets) + stage2 + bool(n_test), desc="Tuning blink interpolation",
+               unit="step", disable=not _show_progress())
 
     def make_loss(transplants, stage, search=-1):
         """error on `transplants` of the parameters at a point of the unit cube"""
@@ -462,6 +467,8 @@ def tune_blinks_mahot(train, test=None, refine=None, start=None, bounds=None, fi
                 cache[key] = transplant_error_mahot(transplants, max_duration=max_duration,
                                                     **params)
                 history.append((_to_vector(params), cache[key], stage, search))
+                bar.set_postfix(evaluations=len(history), error=f"{cache[key]:.4g}",
+                                refresh=False)
             return cache[key]
         return loss
 
@@ -488,12 +495,13 @@ def tune_blinks_mahot(train, test=None, refine=None, start=None, bounds=None, fi
         u, best, width = _coordinate_search(loss, u, best, free, 0.5, n_grid, sweeps, tol)
         found.append(u)
         logger.debug(f"Tuning: search {i + 1} of {len(sets)}: {best:.4g}")
+        bar.update()
 
     # stage 2: the best of the searches (or the starting parameters, as the
     # searches can fit their few blinks too closely) on further blinks,
     # refined on them and its own blinks with one more round on the finest grid
     k, best_u, tuning = 0, found[0], sets[0] + refine
-    if n_refine or len(sets) > 1:
+    if stage2:
         choose = make_loss(refine if n_refine else train, 2)
         cands = found + ([start_u] if start is not None else [])
         losses = [choose(u) for u in cands]
@@ -507,6 +515,7 @@ def tune_blinks_mahot(train, test=None, refine=None, start=None, bounds=None, fi
         loss = make_loss(tuning, 2)
         best_u, best, _ = _coordinate_search(loss, best_u, loss(best_u), free, 2 * width,
                                              n_grid, 1, tol)
+        bar.update()
 
     tuned = _to_params(to_x(best_u))
     md = dict(max_duration=max_duration)
@@ -514,6 +523,8 @@ def tune_blinks_mahot(train, test=None, refine=None, start=None, bounds=None, fi
     test_loss = transplant_error_mahot(test, **tuned, **md) if n_test else np.nan
     test_loss_start = (transplant_error_mahot(test, **start, **md)
                        if n_test and start is not None else np.nan)
+    bar.update(bool(n_test))
+    bar.close()
     # use the tuned parameters unless they are worse on the test blinks
     success = not (test_loss >= test_loss_start)
     if not success:
