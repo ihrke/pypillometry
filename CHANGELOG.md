@@ -3,6 +3,8 @@
 ## Unreleased
 
 - `d.plot.plot_blink_clusters()`: the detected blinks in groups of similar shape, to spot bad detections
+- fix: `blinks_detect()` applies `max_duration` (now 2 s) to all blinks; long runs of missing samples (e.g., breaks) are no blinks
+- fix: `blinks_interpolate()` (Mahot) skips stretches longer than `max_duration` (2 s), e.g. chains of merged blinks, instead of bridging them with one curve
 
 ## 2.2.3 (2026-11-19)
 
