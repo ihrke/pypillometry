@@ -242,6 +242,41 @@ class TestMergeBlinkWindows(unittest.TestCase):
         self.assertTrue(all(t1 < t2 < t3 < t4 for t1, t2, t3, t4 in merged))
 
 
+def test_onset_search_stops_at_neighbour():
+    """the onset of a blink is not taken from the transient of the previous one"""
+    from pypillometry.signal.preproc import blink_onsets_mahot
+    y = np.full(2000, 1000.0)
+    y[480:500] -= np.linspace(0, 500, 20)        # blink 1: drop, missing, rise
+    y[500:560] = np.nan
+    y[560:600] -= np.linspace(500, 0, 40)
+    y[700:720] = np.nan                          # blink 2: no transients
+    on = blink_onsets_mahot(y, [(500, 560), (700, 720)], 5, -5, 5, (0, 0), 400)
+    assert on[0, 0] < 500 and on[1, 0] >= 560    # not the drop of blink 1
+    # the same in the other order of the input
+    on2 = blink_onsets_mahot(y, [(700, 720), (500, 560)], 5, -5, 5, (0, 0), 400)
+    np.testing.assert_array_equal(on2, on[::-1])
+    # margins do not reach into the neighbour either
+    on = blink_onsets_mahot(y, [(500, 560), (700, 720)], 5, -5, 5, (300, 0), 400)
+    assert on[1, 0] >= 560
+
+
+def test_close_anchor_points_no_overshoot():
+    """a blink with an anchor point close to it gets a monotone curve"""
+    from pypillometry.eyedata.pupil import _anchors_close
+    assert _anchors_close(0, 100, 200, 220) and not _anchors_close(0, 100, 200, 300)
+    y = np.full(4000, 1000.0)
+    y[1000:1400] = np.nan                        # a long blink
+    y[1400:1470] = 1000 + np.linspace(0, 300, 70)  # still rising when
+    y[1470:] += 300
+    y[1470:1490] = np.nan                        # a short one comes
+    d = pp.EyeData(left_pupil=y, sampling_rate=1000)
+    d = d.pupil.blinks_detect(strategies=["zero"], min_duration=10)
+    r = d.pupil.blinks_interpolate(inplace=False).data["left_pupil"]
+    assert not np.isnan(r[1000:1400]).any()
+    # a cubic through these anchor points would dip to about 750
+    assert np.nanmin(r[1000:1400]) >= 999 and np.nanmax(r[1000:1400]) <= 1301
+
+
 def test_blinks_interpolate_without_onset_crossing():
     """all blinks of the example data are interpolated, no NaN left (bug 1.1)"""
     import pypillometry as pp

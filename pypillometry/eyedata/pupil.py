@@ -71,7 +71,8 @@ def _merge_overlapping_blink_windows(blinks, n):
     first and the last of them). If the anchor points of a blink would
     reach into a neighbouring blink, they are moved closer instead: at most
     to the on- or offset of the neighbour (which is not replaced by its
-    curve). Merging these blinks instead would replace the signal between
+    curve); with anchor points that close, the blink is interpolated with
+    a monotone curve instead of the cubic (see `_anchors_close`). Merging these blinks instead would replace the signal between
     them, and the anchor points of the merged blink would reach further
     blinks (chains of several seconds in real data).
 
@@ -94,6 +95,13 @@ def _merge_overlapping_blink_windows(blinks, n):
         hi = groups[i + 1][1] if i + 1 < len(groups) else n - 1
         out.append((max(t1, lo), t2, t3, min(t4, hi)))
     return out
+
+def _anchors_close(t1, t2, t3, t4):
+    """Whether an anchor point of the blink `(t2, t3)` is less than half of
+    its length away from it (moved because of a neighbouring blink or the
+    end of the data, see `_merge_overlapping_blink_windows`)."""
+    return min(t2 - t1, t4 - t3) < (t3 - t2) / 2
+
 
 class PupilNamespace(Namespace["EyeData"]):
     """
@@ -845,7 +853,13 @@ class PupilNamespace(Namespace["EyeData"]):
                 logger.warning(f"Skipping blink {ix} for {eye}: no usable data at its "
                                f"anchor points (t1={t1}, t2={t2}, t3={t3}, t4={t4})")
                 continue
-            intfct=interp1d(txpts,sypts, kind=interp_type)
+            if interp_type == "cubic" and _anchors_close(t1, t2, t3, t4):
+                # a cubic through anchor points that are close on one side
+                # and far on the other overshoots; a monotone curve cannot
+                from scipy.interpolate import PchipInterpolator
+                intfct = PchipInterpolator(txpts, sypts)
+            else:
+                intfct=interp1d(txpts,sypts, kind=interp_type)
             islic=slice(t2, t3)
             syr[islic]=intfct(obj.tx[islic])
             # mark the interpolated datapoints
@@ -944,7 +958,11 @@ class PupilNamespace(Namespace["EyeData"]):
             ``(10, 30)``
         interp_type : str
             ``"mahot"``: type of interpolation accepted by
-            :func:`scipy.interpolate.interp1d()`; default ``"cubic"``
+            :func:`scipy.interpolate.interp1d()`; default ``"cubic"``. A
+            blink whose anchor points are close on one side (because of a
+            neighbouring blink) gets a monotone curve
+            (:class:`scipy.interpolate.PchipInterpolator`) instead of the
+            cubic, which would overshoot.
         max_duration : float, str, Quantity or None
             ``"mahot"``: maximum duration (in ms, or with units) of a stretch
             that is interpolated; blinks that are longer (with their margins,
