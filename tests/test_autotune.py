@@ -154,6 +154,21 @@ class TestBlinksOptimizeParameters:
         assert res.n_refine == 0 and abs(res.n_blinks - res.n_test) <= 1
         assert set(res.history["stage"]) == {1}
 
+    def test_excluded_and_masked_samples_are_avoided(self, data, monkeypatch):
+        # record the transplants (blinks taken and places used)
+        from pypillometry.signal import transplant
+        made, orig = [], transplant.transplant_blinks
+        monkeypatch.setattr(transplant, "transplant_blinks",
+                            lambda *a, **kw: made.append(orig(*a, **kw)) or made[-1])
+        d = data.exclude_intervals([(0, 20000)])                     # samples 0-10000
+        d = d.mask_intervals(pp.Intervals([(40000, 60000)], "ms"), variables="pupil")
+        d.pupil.blinks_optimize_parameters(eyes="left", seed=1, **FAST)
+        tuning = [tr for tr in made if len(tr)]
+        assert tuning
+        for tr in tuning:
+            for iv in (tr.donors, tr.windows):
+                assert (iv[:, 0] - tr.window[0] >= 10000).all() and (iv[:, 1] + tr.window[1] <= 20000).all()
+
     def test_arguments(self, data):
         res = data.pupil.blinks_optimize_parameters(eyes="left", test_fraction=0, n_tune=5, repeats=2,
                                          seed=1, fixed=dict(blinkwindow=300, winsize=20),
