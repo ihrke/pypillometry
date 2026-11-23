@@ -40,7 +40,7 @@ distorted as the eyelid covers the pupil.
    EyeData.pupil.blinks_detect
    EyeData.pupil.blinks_merge_close
    EyeData.pupil.blinks_interpolate
-   EyeData.pupil.blinks_autotune
+   EyeData.pupil.blinks_optimize_parameters
    EyeData.get_blinks
    EyeData.get_interpolated
    EyeData.blink_stats
@@ -118,11 +118,11 @@ on each side and replaced by a smooth curve (green):
 
 The parameters of the default method decide how much of the signal around
 the missing samples is replaced. Instead of setting them by eye,
-:meth:`~EyeData.pupil.blinks_autotune` tunes them for a recording:
+:meth:`~EyeData.pupil.blinks_optimize_parameters` tunes them for a recording:
 
 .. code-block:: python
 
-    res = d.pupil.blinks_autotune()
+    res = d.pupil.blinks_optimize_parameters()
     d = d.pupil.blinks_interpolate(**res.params)
 
 It transplants the blinks of the recording into its clean stretches, where

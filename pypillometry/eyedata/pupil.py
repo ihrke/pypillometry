@@ -759,7 +759,7 @@ class PupilNamespace(Namespace["EyeData"]):
             missing=other & ~np.isnan(obj.data[key]), avoid=obj.data.get_layer(key, "blink"),
             cores=cores, **kwargs)
 
-    def blinks_autotune(self, eyes=[], method: str="mahot", window=(200, 500),
+    def blinks_optimize_parameters(self, eyes=[], method: str="mahot", window=(200, 500),
                         n_tune: int=10, repeats: int=3, test_fraction: float=0.5,
                         start=None, bounds=None, fixed=None,
                         merge_distance: float=100, min_duration: float=20,
@@ -882,7 +882,7 @@ class PupilNamespace(Namespace["EyeData"]):
         --------
         >>> import pypillometry as pp
         >>> d = pp.get_example_data("rlmw_002_short").pupil.blinks_detect()
-        >>> res = d.pupil.blinks_autotune(seed=1)  # doctest: +SKIP
+        >>> res = d.pupil.blinks_optimize_parameters(seed=1)  # doctest: +SKIP
         >>> d = d.pupil.blinks_interpolate(**res.params)  # doctest: +SKIP
         """
         if method != "mahot":

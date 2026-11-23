@@ -77,7 +77,7 @@ interpolation of blinks or in simulations.
 
 The parameters of the interpolation of blinks can be tuned on
 transplanted blinks (see
-:meth:`d.pupil.blinks_autotune() <pypillometry.eyedata.pupil.PupilNamespace.blinks_autotune>`).
+:meth:`d.pupil.blinks_optimize_parameters() <pypillometry.eyedata.pupil.PupilNamespace.blinks_optimize_parameters>`).
 
 .. autosummary::
    :toctree: generated

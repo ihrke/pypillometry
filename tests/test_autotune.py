@@ -129,11 +129,11 @@ def data():
                       inplace=False)
 
 
-class TestBlinksAutotune:
+class TestBlinksOptimizeParameters:
     def test_tunes_in_ms(self, data):
         before = data.data["left_pupil"].copy()
         start = dict(vel_onset=-200, vel_offset=200, margin=(0, 0))
-        res = data.pupil.blinks_autotune(start=start, seed=1, **FAST)
+        res = data.pupil.blinks_optimize_parameters(start=start, seed=1, **FAST)
         np.testing.assert_array_equal(data.data["left_pupil"], before)
         assert res.units == "ms" and res.success
         assert set(res.params) == {"winsize", "vel_onset", "vel_offset", "margin", "blinkwindow"}
@@ -147,29 +147,29 @@ class TestBlinksAutotune:
 
     def test_subsets_of_blinks(self, data):
         # 10 blinks for the search, each 3 times; the others once
-        res = data.pupil.blinks_autotune(eyes="left", seed=1, **FAST)
+        res = data.pupil.blinks_optimize_parameters(eyes="left", seed=1, **FAST)
         assert 10 < res.n_blinks <= 30 and res.n_refine + res.n_test < 15   # as many as fit
         # few blinks: no refinement, half of them for testing
-        res = data.pupil.blinks_autotune(eyes="left", n_tune=100, repeats=1, seed=1, **FAST)
+        res = data.pupil.blinks_optimize_parameters(eyes="left", n_tune=100, repeats=1, seed=1, **FAST)
         assert res.n_refine == 0 and abs(res.n_blinks - res.n_test) <= 1
         assert set(res.history["stage"]) == {1}
 
     def test_arguments(self, data):
-        res = data.pupil.blinks_autotune(eyes="left", test_fraction=0, n_tune=5, repeats=2,
+        res = data.pupil.blinks_optimize_parameters(eyes="left", test_fraction=0, n_tune=5, repeats=2,
                                          seed=1, fixed=dict(blinkwindow=300, winsize=20),
                                          bounds=dict(margin_after=(0, 100)), **FAST)
         assert res.n_test == 0 and res.n_blinks == 10 and res.success
         assert res.params["blinkwindow"] == 300 and res.params["winsize"] == 22
         assert res.params["margin"][1] <= 100
         with pytest.raises(ValueError):
-            data.pupil.blinks_autotune(method="kalman")
+            data.pupil.blinks_optimize_parameters(method="kalman")
         with pytest.raises(ValueError):
-            data.pupil.blinks_autotune(start=dict(vel_onset="5%"))
+            data.pupil.blinks_optimize_parameters(start=dict(vel_onset="5%"))
         with pytest.raises(ValueError):
-            data.pupil.blinks_autotune(fixed=dict(interp_type="linear"))
+            data.pupil.blinks_optimize_parameters(fixed=dict(interp_type="linear"))
         with pytest.raises(ValueError):
-            data.pupil.blinks_autotune(min_duration=500)   # no blinks of this size
+            data.pupil.blinks_optimize_parameters(min_duration=500)   # no blinks of this size
         with pytest.raises(ValueError):
-            data.pupil.blinks_autotune(n_tune=0)
+            data.pupil.blinks_optimize_parameters(n_tune=0)
         with pytest.raises(ValueError):    # interpolated
-            data.pupil.blinks_detect().pupil.blinks_interpolate().pupil.blinks_autotune()
+            data.pupil.blinks_detect().pupil.blinks_interpolate().pupil.blinks_optimize_parameters()
