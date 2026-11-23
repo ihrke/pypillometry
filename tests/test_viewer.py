@@ -6,7 +6,7 @@ pytest.importorskip("vispy")
 import numpy as np
 
 from pypillometry import Intervals
-from pypillometry.viewer import _selections_to_intervals, _intervals_to_axis
+from pypillometry.viewer import _selections_to_intervals, _intervals_to_axis, _highlight_by_panel
 
 
 class TestViewerSelections(unittest.TestCase):
@@ -51,6 +51,46 @@ class TestViewerHighlight(unittest.TestCase):
         _intervals_to_axis(iv, np.arange(100) * 0.01)
         self.assertEqual(iv.units, "samples")
         self.assertEqual(iv.intervals, [(10, 20)])
+
+
+class TestHighlightByPanel(unittest.TestCase):
+    PANELS = ["pupil", "x", "extra_vel"]
+
+    def test_intervals_to_all_panels(self):
+        iv = Intervals([(1, 2)], units="sec")
+        res = _highlight_by_panel(iv, self.PANELS)
+        self.assertEqual(set(res), set(self.PANELS))
+        self.assertEqual(_highlight_by_panel(None, self.PANELS), {})
+
+    def test_panel_keys(self):
+        iv = Intervals([(1, 2)], units="sec")
+        res = _highlight_by_panel({"pupil": iv, "extra_vel": iv}, self.PANELS)
+        self.assertEqual(set(res), {"pupil", "extra_vel"})
+
+    def test_eye_keys_are_combined(self):
+        """keys from get_blinks() go to the plot of the variable"""
+        left = Intervals([(100, 200)], units="ms")
+        right = Intervals([(500, 600)], units="ms")
+        res = _highlight_by_panel({"left_pupil": left, "right_pupil": right,
+                                   "left_x": Intervals([], units="ms"),
+                                   "left_y": left}, self.PANELS)    # y not shown: fine
+        self.assertEqual(set(res), {"pupil", "x"})
+        self.assertEqual(res["pupil"].intervals, [(100, 200), (500, 600)])
+        self.assertEqual(left.intervals, [(100, 200)])
+
+    def test_unknown_keys_warn(self):
+        from loguru import logger
+        messages = []
+        sink = logger.add(messages.append, level="WARNING")
+        try:
+            res = _highlight_by_panel({"blinks": Intervals([(1, 2)], units="sec")},
+                                      self.PANELS)
+        finally:
+            logger.remove(sink)
+        self.assertEqual(res, {})
+        self.assertTrue(any("'blinks'" in m for m in messages))
+        with self.assertRaises(TypeError):
+            _highlight_by_panel([(1, 2)], self.PANELS)
 
 
 class TestTweakKeys(unittest.TestCase):

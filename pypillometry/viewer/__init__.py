@@ -187,7 +187,10 @@ def view(data, variables=None, eyes=None, time=None,
         - An :class:`~pypillometry.Intervals` object (applied to all plots)
         - A dict mapping plot key to :class:`~pypillometry.Intervals`
           objects; keys are 'pupil', 'x', 'y' and ``'extra_<label>'`` for
-          `extra_plots` (EyeData), or the plot labels (arrays)
+          `extra_plots` (EyeData), or the plot labels (arrays). Keys like
+          ``'left_pupil'`` (e.g. from :meth:`~pypillometry.EyeData.get_blinks`)
+          go to the plot of the variable; the intervals of both eyes are
+          shown together.
 
         Intervals in time units are converted to seconds; Intervals in
         sample indices (``units="samples"``) are placed using the time vector.
@@ -455,6 +458,39 @@ def _intervals_to_axis(intervals, time_seconds, sample_index=False):
     fs = 1.0 / np.median(np.diff(t)) if len(t) > 1 else 1.0
     base = SimpleNamespace(tx=t * 1000., fs=fs)
     return [(float(s), float(e)) for s, e in intervals.to_units('sec', base).intervals]
+
+
+def _highlight_by_panel(highlight, panels):
+    """`highlight` (Intervals or dict) as a dict panel -> Intervals.
+
+    Intervals go to all `panels`. Dict keys are panel names or
+    ``"<eye>_<var>"`` (e.g. from :meth:`~pypillometry.EyeData.get_blinks`),
+    which go to the panel `var`; the intervals of several eyes for the same
+    panel are combined. Keys that match no panel are ignored with a warning.
+    """
+    from ..intervals import Intervals
+    if highlight is None:
+        return {}
+    if isinstance(highlight, Intervals):
+        return {p: highlight for p in panels}
+    if not isinstance(highlight, dict):
+        raise TypeError(f"highlight must be Intervals or a dict, got {type(highlight).__name__}")
+    out, unknown = {}, []
+    for key, iv in highlight.items():
+        panel = key
+        if key not in panels and "_" in key and key.split("_", 1)[1] in panels:
+            panel = key.split("_", 1)[1]
+        if panel not in panels:
+            # variables that exist but are not shown are fine
+            if key.split("_", 1)[-1] not in ("pupil", "x", "y"):
+                unknown.append(key)
+            continue
+        out[panel] = out[panel] + iv if panel in out else iv
+    if unknown:
+        from loguru import logger
+        logger.warning(f"highlight: no plot for {', '.join(map(repr, unknown))}; "
+                       f"the plots are {', '.join(map(repr, panels))}")
+    return out
 
 
 def _selections_to_intervals(selections, sample_index=False):

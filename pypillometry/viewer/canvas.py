@@ -839,17 +839,8 @@ class ViewerCanvas(SceneCanvas):
         if self.highlight is None:
             return
         
-        # Import Intervals here to check type
-        from ..intervals import Intervals
-        
-        # Normalize highlight to a dict
-        if isinstance(self.highlight, Intervals):
-            # Apply to all plots
-            highlight_dict = {var_type: self.highlight for var_type in self.view_types}
-        elif isinstance(self.highlight, dict):
-            highlight_dict = self.highlight
-        else:
-            return
+        from . import _highlight_by_panel
+        highlight_dict = _highlight_by_panel(self.highlight, self.view_types)
         
         # Create highlight regions for each viewbox
         for viewbox, var_type in zip(self.viewboxes, self.view_types):

@@ -147,7 +147,11 @@ To use another color or to highlight different intervals in each subplot:
     # or per subplot
     pp.view(eyedata, highlight={"pupil": blinks})
 
-``highlight`` is either a single :class:`Intervals` object (shown in all subplots) or a dict mapping subplot keys to :class:`Intervals`. The keys are ``'pupil'``, ``'x'``, ``'y'`` and ``'extra_<label>'`` for ``extra_plots`` (EyeData), or the plot labels (arrays). Intervals in time units are converted to seconds, sample-index Intervals are placed using the time vector.
+    # the blinks of all eyes and variables, as returned by get_blinks()
+    d = eyedata.pupil.blinks_detect()
+    pp.view(d, highlight=d.get_blinks())
+
+``highlight`` is either a single :class:`Intervals` object (shown in all subplots) or a dict mapping subplot keys to :class:`Intervals`. The keys are ``'pupil'``, ``'x'``, ``'y'`` and ``'extra_<label>'`` for ``extra_plots`` (EyeData), or the plot labels (arrays); keys like ``'left_pupil'`` (as from :meth:`~EyeData.get_blinks`) go to the subplot of the variable, with the intervals of both eyes together. Keys that match no subplot are ignored with a warning. Intervals in time units are converted to seconds, sample-index Intervals are placed using the time vector.
 
 
 Interactive Selection
