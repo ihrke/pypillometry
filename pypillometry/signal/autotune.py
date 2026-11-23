@@ -14,7 +14,7 @@ import numpy as np
 from loguru import logger
 
 from .preproc import interpolate_blinks_mahot
-from .transplant import BlinkTransplant
+from .transplant import BlinkTransplant, blink_cores
 
 __all__ = ["transplant_error_mahot", "tune_blinks_mahot", "BlinkTuneResult"]
 
@@ -60,6 +60,12 @@ def transplant_error_mahot(transplants, smooth_winsize, vel_onset, vel_offset, m
     depends less on a few blinks with a large error than the root mean
     squared error over all of them.
 
+    As in the interpolation of a recording, the other missing samples of
+    the signal (e.g., its own blinks) are interpolated together with the
+    transplanted blinks, so that a blink whose anchor points fall into
+    them is merged with them instead of being skipped. Only the error at
+    the transplanted blinks counts.
+
     Parameters
     ----------
     transplants : BlinkTransplant or list of BlinkTransplant
@@ -77,13 +83,29 @@ def transplant_error_mahot(transplants, smooth_winsize, vel_onset, vel_offset, m
     """
     errors = []
     for tr in _as_list(transplants):
-        filled, _, _ = interpolate_blinks_mahot(tr.signal, tr.blinks, smooth_winsize, vel_onset,
-                                                vel_offset, margin, blinkwindow, interp_type)
+        filled, _, _ = interpolate_blinks_mahot(tr.signal, _all_blinks(tr), smooth_winsize,
+                                                vel_onset, vel_offset, margin, blinkwindow,
+                                                interp_type)
         errors.append(tr.error(filled, per_site=True))
     errors = np.concatenate(errors) if errors else np.zeros(0)
     if per_blink:
         return errors
     return float(errors.mean()) if errors.size else np.nan
+
+
+def _all_blinks(tr):
+    """The transplanted blinks of `tr` and the other runs of missing
+    samples of its signal (n x 2, sorted)."""
+    if len(tr) == 0:
+        return tr.blinks
+    other = blink_cores(tr.signal)
+    if len(other):
+        # runs that overlap a transplanted blink are part of it
+        k = np.searchsorted(tr.blinks[:, 0], other[:, 1], side="left")
+        hit = (k > 0) & (tr.blinks[np.maximum(k - 1, 0), 1] > other[:, 0])
+        other = other[~hit]
+    blinks = np.vstack([tr.blinks, other])
+    return blinks[np.argsort(blinks[:, 0], kind="stable")]
 
 
 def _context(transplants, hi):

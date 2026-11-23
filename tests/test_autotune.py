@@ -34,6 +34,24 @@ class TestError:
         assert len(both) == len(train) + len(test)
         assert np.isnan(transplant_error_mahot([], **BAD))
 
+    def test_other_missing_samples_are_interpolated_too(self):
+        # a blink of the host right after a transplanted blink: its anchor
+        # point falls into it, so they are merged (as in a recording)
+        from dataclasses import replace
+        from pypillometry.signal.autotune import _all_blinks
+        y, clean, cores = make_signal(n=6000, nblinks=1, seed=3)
+        tr = transplant_blinks(clean, (150, 250), pad=50, source=y, cores=cores, n=1, seed=1)
+        a, b = tr.blinks[0]
+        sig = tr.signal.copy()
+        sig[b + 120:b + 160] = np.nan           # the host's own blink
+        tr = replace(tr, signal=sig)
+        np.testing.assert_array_equal(_all_blinks(tr), [[a, b], [b + 120, b + 160]])
+        pars = dict(smooth_winsize=11, vel_onset=-5, vel_offset=5, margin=(5, 100), blinkwindow=100)
+        _, _, skipped = interpolate_blinks_mahot(sig, tr.blinks, **pars)
+        assert skipped                          # alone, the blink is skipped
+        err = transplant_error_mahot(tr, **pars)
+        assert err < 0.2 * tr.error(sig)        # with the host's blink, it is interpolated
+
 
 class TestTune:
     def test_improves_bad_parameters(self, transplants):
