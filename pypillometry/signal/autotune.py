@@ -48,7 +48,8 @@ def _to_params(x):
 
 
 def transplant_error_mahot(transplants, smooth_winsize, vel_onset, vel_offset, margin,
-                           blinkwindow, interp_type="cubic", per_blink=False):
+                           blinkwindow, interp_type="cubic", max_duration=None,
+                           per_blink=False):
     """
     Error of the Mahot interpolation of transplanted blinks.
 
@@ -71,8 +72,10 @@ def transplant_error_mahot(transplants, smooth_winsize, vel_onset, vel_offset, m
     transplants : BlinkTransplant or list of BlinkTransplant
         signal(s) with transplanted blinks (e.g., one per eye), see
         :func:`~pypillometry.signal.transplant.transplant_blinks`
-    smooth_winsize, vel_onset, vel_offset, margin, blinkwindow, interp_type
-        parameters of the interpolation (in samples, and units per sample)
+    smooth_winsize, vel_onset, vel_offset, margin, blinkwindow, interp_type, max_duration
+        parameters of the interpolation (in samples, and units per sample);
+        a transplanted blink that is skipped (e.g., longer than
+        `max_duration` after merging) is not replaced and has a large error
     per_blink : bool
         return the errors of all blinks instead of their mean
 
@@ -85,7 +88,7 @@ def transplant_error_mahot(transplants, smooth_winsize, vel_onset, vel_offset, m
     for tr in _as_list(transplants):
         filled, _, _ = interpolate_blinks_mahot(tr.signal, _all_blinks(tr), smooth_winsize,
                                                 vel_onset, vel_offset, margin, blinkwindow,
-                                                interp_type)
+                                                interp_type, max_duration=max_duration)
         errors.append(tr.error(filled, per_site=True))
     errors = np.concatenate(errors) if errors else np.zeros(0)
     if per_blink:
@@ -279,7 +282,8 @@ def _coordinate_search(loss, u, best, free, width, n_grid, rounds, tol):
 
 
 def tune_blinks_mahot(train, test=None, refine=None, start=None, bounds=None, fixed=None,
-                      n_init=None, n_grid=9, sweeps=3, tol=0.01, seed=None):
+                      n_init=None, n_grid=9, sweeps=3, tol=0.01, max_duration=None,
+                      seed=None):
     """
     Tune the parameters of the Mahot interpolation on transplanted blinks.
 
@@ -355,6 +359,8 @@ def tune_blinks_mahot(train, test=None, refine=None, start=None, bounds=None, fi
         number of rounds of the search
     tol : float
         minimum relative reduction of the error for changing a parameter
+    max_duration : int, optional
+        `max_duration` of the interpolation (samples; not tuned)
     seed : int or np.random.Generator, optional
         seed of the random numbers (only used with `n_init`)
 
@@ -448,7 +454,8 @@ def tune_blinks_mahot(train, test=None, refine=None, start=None, bounds=None, fi
             key = (params["smooth_winsize"], params["vel_onset"], params["vel_offset"],
                    params["margin"], params["blinkwindow"])
             if key not in cache:
-                cache[key] = transplant_error_mahot(transplants, **params)
+                cache[key] = transplant_error_mahot(transplants, max_duration=max_duration,
+                                                    **params)
                 history.append((_to_vector(params), cache[key], stage, search))
             return cache[key]
         return loss
@@ -497,9 +504,10 @@ def tune_blinks_mahot(train, test=None, refine=None, start=None, bounds=None, fi
                                              n_grid, 1, tol)
 
     tuned = _to_params(to_x(best_u))
-    loss_start = transplant_error_mahot(tuning, **start) if start is not None else np.nan
-    test_loss = transplant_error_mahot(test, **tuned) if n_test else np.nan
-    test_loss_start = (transplant_error_mahot(test, **start)
+    md = dict(max_duration=max_duration)
+    loss_start = transplant_error_mahot(tuning, **start, **md) if start is not None else np.nan
+    test_loss = transplant_error_mahot(test, **tuned, **md) if n_test else np.nan
+    test_loss_start = (transplant_error_mahot(test, **start, **md)
                        if n_test and start is not None else np.nan)
     # use the tuned parameters unless they are worse on the test blinks
     success = not (test_loss >= test_loss_start)

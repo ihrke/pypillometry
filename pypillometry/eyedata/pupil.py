@@ -885,7 +885,9 @@ class PupilNamespace(Namespace["EyeData"]):
             starting parameters, as the arguments of
             :meth:`blinks_interpolate` (e.g., ``dict(vel_onset=-10)``);
             default: its defaults. Velocity thresholds in percent are
-            not supported.
+            not supported. `max_duration` is not tuned, but used as in
+            :meth:`blinks_interpolate` (stretches that are longer are
+            skipped there and count with their whole error here).
         bounds : dict, optional
             search range `(lower, upper)` for ``"winsize"``,
             ``"vel_onset"``, ``"vel_offset"``, ``"margin_before"``,
@@ -1002,6 +1004,9 @@ class PupilNamespace(Namespace["EyeData"]):
         start_pars = dict(_INTERP_DEFAULTS["mahot"], blinkwindow=500)
         del start_pars["interp_type"]
         start_pars.update(start or {})
+        # not tuned, but used as in the interpolation
+        max_duration = start_pars.pop("max_duration")
+        max_duration = None if max_duration is None else d._samples(max_duration)
 
         # the blinks of all eyes, in random order: the first ones for the
         # search, the others for refining and testing
@@ -1068,7 +1073,8 @@ class PupilNamespace(Namespace["EyeData"]):
         res = autotune.tune_blinks_mahot(
             train, test, refine, start=in_samples(start_pars, "start"),
             bounds=None if bounds is None else in_samples(bounds, "bounds"),
-            fixed=None if fixed is None else in_samples(fixed, "fixed"), seed=rng, **kwargs)
+            fixed=None if fixed is None else in_samples(fixed, "fixed"),
+            max_duration=max_duration, seed=rng, **kwargs)
 
         # in the units of blinks_interpolate()
         hist = {("winsize" if k == "smooth_winsize" else k):

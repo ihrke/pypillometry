@@ -28,6 +28,17 @@ class TestError:
         good = transplant_error_mahot(train, 11, -5, 5, (5, 5), 100)
         assert good < 0.5 * err
 
+    def test_max_duration(self, transplants):
+        # blinks longer than max_duration are not replaced: the whole artifact counts
+        train, _ = transplants
+        good = dict(smooth_winsize=11, vel_onset=-5, vel_offset=5, margin=(5, 5), blinkwindow=100)
+        err = transplant_error_mahot(train, **good)
+        assert transplant_error_mahot(train, max_duration=10_000, **good) == err
+        short = transplant_error_mahot(train, max_duration=5, **good)
+        assert short > 5 * err and np.isclose(short, transplant_error_mahot(
+            train, smooth_winsize=11, vel_onset=-1e9, vel_offset=1e9, margin=(0, 0),
+            blinkwindow=1, max_duration=0))
+
     def test_several_signals(self, transplants):
         train, test = transplants
         both = transplant_error_mahot([train, test], per_blink=True, **BAD)
