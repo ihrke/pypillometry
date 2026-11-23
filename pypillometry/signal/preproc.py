@@ -303,118 +303,89 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_
         onset (and `max_blink_samples` allows it); empty array if no blinks
         were found
     """
-    n = len(sy)
-    
-    # Track NaN/zero locations (invalid data)
-    invalid_mask = np.isnan(sy) | (sy == 0)
-    
-    # Fill invalid values with linear interpolation for velocity estimation
-    # (the asymmetric Savitzky-Golay will prevent NaN from affecting edges)
-    sy_filled = sy.copy()
-    valid_indices = np.where(~invalid_mask)[0]
-    if len(valid_indices) == 0:
+    vel_backward, vel_forward, invalid = _velocity_profiles(sy, smooth_winsize)
+    if vel_backward is None:
         logger.debug("No valid samples - returning empty array")
         return np.array([])
-        
-    # Simple linear interpolation for NaN regions
-    invalid_indices = np.where(invalid_mask)[0]
-    if len(invalid_indices) > 0:
-        sy_filled[invalid_indices] = np.interp(
-            invalid_indices, valid_indices, sy[valid_indices]
-        )
-    
-    # Generate velocity profiles using asymmetric Savitzky-Golay
-    # Backward-looking velocity for onset detection (only uses past samples)
-    vel_backward = velocity_savgol(sy_filled, smooth_winsize, polyorder=2, direction="backward")
-    
-    # Forward-looking velocity for offset detection (only uses future samples)  
-    vel_forward = velocity_savgol(sy_filled, smooth_winsize, polyorder=2, direction="forward")
-    
-    # Don't detect inside invalid regions
-    vel_backward[invalid_mask] = 0
-    vel_forward[invalid_mask] = 0
-    
-    logger.debug(f"Generated asymmetric velocity profiles, length {n}")
+    onsets, _ = _threshold_runs(vel_backward <= vel_onset, min_onset_len)
+    offset_starts, offset_ends = _threshold_runs(vel_forward >= vel_offset, min_offset_len)
+    logger.debug(f"Found {len(onsets)} onsets and {len(offset_starts)} offsets")
+    blinks = _pair_velocity_blinks(onsets, offset_starts, offset_ends, invalid,
+                                   min_blink_samples, max_blink_samples)
+    logger.debug(f"Found {len(blinks)} blinks")
+    return blinks
 
-    # Find onset candidates using backward velocity (fast drop before blink)
-    onsets = np.where(vel_backward <= vel_onset)[0]
-    logger.debug(f"Found {len(onsets)} potential onset points")
-    
-    if len(onsets) == 0:
-        logger.debug("No onsets found - returning empty array")
-        return np.array([])
-        
-    onsets_ixx = np.r_[10, np.diff(onsets)] > 1
-    onsets_len = np.diff(np.r_[np.where(onsets_ixx)[0], onsets.size])
-    onsets = onsets[onsets_ixx]
-    onsets = onsets[onsets_len >= min_onset_len]
-    logger.debug(f"After filtering, {len(onsets)} onsets remain")
 
-    if len(onsets) == 0:
-        logger.debug("No valid onsets - returning empty array")
-        return np.array([])
+def _velocity_profiles(sy, smooth_winsize):
+    """
+    Velocity profiles for :func:`detect_blinks_velocity`: the backward- and
+    forward-looking velocity of `sy` (invalid samples, NaN or 0, are filled
+    linearly before, and the velocity is 0 there), and the invalid samples.
+    The velocities are `None` if there are no valid samples.
+    """
+    sy = np.asarray(sy, dtype=float)
+    invalid = np.isnan(sy) | (sy == 0)
+    valid = np.where(~invalid)[0]
+    if len(valid) == 0:
+        return None, None, invalid
+    filled = sy.copy()
+    if invalid.any():
+        filled[invalid] = np.interp(np.where(invalid)[0], valid, sy[valid])
+    # backward-looking for onsets, forward-looking for offsets: the missing
+    # samples of the blink do not affect the estimate at its edges
+    vel_backward = velocity_savgol(filled, smooth_winsize, polyorder=2, direction="backward")
+    vel_forward = velocity_savgol(filled, smooth_winsize, polyorder=2, direction="forward")
+    vel_backward[invalid] = 0
+    vel_forward[invalid] = 0
+    return vel_backward, vel_forward, invalid
 
-    # Find offset candidates using forward velocity (fast rise after blink)
-    offsets = np.where(vel_forward >= vel_offset)[0]
-    logger.debug(f"Found {len(offsets)} potential offset points")
 
-    # Without offsets, all blinks end at the last sample (see below)
-    offset_starts = offset_ends = np.array([], dtype=int)
-    if offsets.size > 0:
-        # Mark starts and ends of runs
-        offsets_start_ixx = np.r_[10, np.diff(offsets)] > 1
-        offsets_end_ixx = np.r_[np.diff(offsets), 10] > 1
-        offsets_len = np.diff(np.r_[np.where(offsets_start_ixx)[0], offsets.size])
+def _threshold_runs(crossing, min_len):
+    """First and last sample (both inclusive) of the runs of `crossing` with
+    at least `min_len` samples."""
+    x = np.diff(np.r_[0, np.asarray(crossing, dtype=np.int8), 0])
+    starts, ends = np.where(x == 1)[0], np.where(x == -1)[0] - 1
+    keep = ends - starts + 1 >= min_len
+    return starts[keep], ends[keep]
 
-        # Filter by minimum length (applied to both starts and ends of runs)
-        valid_len_mask = offsets_len >= min_offset_len
-        offset_starts = offsets[offsets_start_ixx][valid_len_mask]
-        offset_ends = offsets[offsets_end_ixx][valid_len_mask]
-    logger.debug(f"After filtering, {len(offset_starts)} offsets remain")
 
-    # Find corresponding on- and off-sets
-    # Use offset STARTS for comparison, but offset ENDS as actual values
-    # Skip offsets that would create intervals shorter than min_blink_samples
+def _pair_velocity_blinks(onsets, offset_starts, offset_ends, invalid, min_blink_samples=1,
+                          max_blink_samples=None):
+    """
+    Pair the onsets with offset runs (see :func:`detect_blinks_velocity`):
+    the first offset run that starts after the onset and ends at least
+    `min_blink_samples` after it, unless another onset comes before it.
+    `invalid` are the invalid samples of the signal (onsets in them are
+    moved back to the last valid sample).
+    """
+    n = len(invalid)
     blinks = []
-    on = onsets[0]
-    while on is not None:
-        # Find offset runs that START after this onset AND create long enough intervals
-        valid_offset_mask = (offset_starts > on) & (offset_ends - on >= min_blink_samples)
-        if valid_offset_mask.any():
-            # Get the first valid offset run and use its END
-            first_valid_idx = np.where(valid_offset_mask)[0][0]
-            off = offset_ends[first_valid_idx]
+    k = 0
+    while k < len(onsets):
+        on = onsets[k]
+        # first offset run that starts after the onset and is far enough
+        j = max(np.searchsorted(offset_starts, on, "right"),
+                np.searchsorted(offset_ends, on + min_blink_samples, "left"))
+        k = np.searchsorted(onsets, on, "right")   # next onset
+        if j < len(offset_starts):
+            off = offset_ends[j]
             # a later onset before this offset: this onset has no offset of
             # its own (e.g., a dip from an eye movement) and must not take
             # the offset of the next blink
-            later = onsets[(onsets > on) & (onsets < offset_starts[first_valid_idx])
-                           & (off - onsets >= min_blink_samples)]
-            if later.size > 0:
-                on = later[0]
+            if (k < len(onsets) and onsets[k] < offset_starts[j]
+                    and off - onsets[k] >= min_blink_samples):
                 continue
         else:
             off = n - 1
         if max_blink_samples is not None and off - on + 1 > max_blink_samples:
-            # no offset close enough: drop this onset, try the next one
-            ons = onsets[onsets > on]
-            on = ons[0] if ons.size > 0 else None
-            continue
-        blinks.append([on, off])
-        ons = onsets[onsets > off]
-        on = ons[0] if ons.size > 0 else None
-    logger.debug(f"Found {len(blinks)} blink pairs")
-        
-    # If onsets fall in an invalid region, grow backward until first valid sample
-    # (Don't grow offsets forward - offset_ends already mark the end of recovery)
-    blinks2 = []
-    for (on, off) in blinks:
-        while on > 0 and invalid_mask[on]:
+            continue    # no offset close enough: try the next onset
+        # onsets in an invalid region grow back to the first valid sample
+        # (offsets do not grow: the offset runs end with the recovery)
+        while on > 0 and invalid[on]:
             on -= 1
-        blinks2.append([on, off])
-    
-    result = np.array(blinks2)
-    logger.debug(f"Returning {len(result)} blinks after invalid-region adjustment")
-    return result
+        blinks.append([on, off])
+        k = np.searchsorted(onsets, off, "right")
+    return np.array(blinks)
 
 def detect_blinks_zero(sy, min_duration, blink_val=0):
     """
