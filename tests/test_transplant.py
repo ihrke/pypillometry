@@ -248,6 +248,22 @@ class TestObviousBlinks:
         other = T._obvious_blinks(y, cores, WINDOW, missing=masked)
         assert not other[cores[:, 0] == first].any() and other.sum() == obvious.sum() - 1
 
+    def test_slower_changes_around_the_blink(self, mixed):
+        y, slots, kinds, cores, obvious = mixed
+        first, second = cores[obvious][:2, 1]          # ends of two obvious blinks
+        y = y.copy()
+        y[first + 60:first + 85] += 300                # a plateau after the transients
+        y[second + 60:] += 300                         # a step (up to the end)
+        y[second + 60:second + 100] -= np.linspace(300, 0, 40)
+        changed = T._obvious_blinks(y, cores, WINDOW)
+        ends = cores[:, 1]
+        assert not changed[ends == first].any() and not changed[ends == second].any()
+        assert changed.sum() == obvious.sum() - 2
+        # with longer transients, the plateau is part of them
+        assert changed.sum() < T._obvious_blinks(y, cores, WINDOW, transient=(25, 99)).sum()
+        with pytest.raises(ValueError):
+            T._obvious_blinks(y, cores, WINDOW, transient=(50, 0))
+
     def test_avoid(self, mixed):
         y, slots, kinds, cores, obvious = mixed
         # avoided samples are not used for the thresholds

@@ -30,6 +30,9 @@ _N_NULL, _MIN_NULL = 500, 10
 #: minimum number of places in clean stretches for the thresholds of the
 #: obvious blinks
 _MIN_PLACES = 100
+#: maximum number of places in clean stretches for the check of the signal
+#: around the obvious blinks
+_N_FLAT = 5000
 
 
 def _runs(mask):
@@ -354,8 +357,29 @@ def _drop_rise(cs, starts, ends, pre, post, edge, near):
     return drop, rise
 
 
+def _flat_step(sy, starts, ends, pre, post, transient):
+    """How much the signal in the windows around the cores `starts`-`ends`
+    differs from the straight line through the means of the first and last
+    quarter of the shorter side of the window (as in
+    :func:`extract_blink_artifacts`): the larger of the mean absolute
+    differences before and after the transients (`transient`: samples
+    `(before, after)` the core that belong to them), and the difference
+    of the two means (a step)."""
+    edge = max(1, min(pre, post) // 4)
+    tp, tq = transient
+    flat, step = np.empty(len(starts)), np.empty(len(starts))
+    for i, (a, b) in enumerate(zip(starts, ends)):
+        y = sy[a - pre:b + post]
+        n = len(y)
+        left, right = y[:edge].mean(), y[-edge:].mean()
+        r = np.abs(y - (left + (right - left) * (np.arange(n) - (edge - 1) / 2) / (n - edge)))
+        flat[i] = max(r[:pre - tp].mean(), r[n - post + tq:].mean())
+        step[i] = abs(right - left)
+    return flat, step
+
+
 def _obvious_blinks(sy, cores, window, missing=None, edge=None, near=None, quantile=0.99,
-                    avoid=None, blink_val=0):
+                    avoid=None, transient=None, blink_val=0):
     """
     Which of the `cores` (n x 2, end-exclusive) are obvious blinks: a large
     downward transient, missing samples and a large upward transient, with
@@ -373,6 +397,16 @@ def _obvious_blinks(sy, cores, window, missing=None, edge=None, near=None, quant
     Cores without these transients (e.g., loss of the pupil by the eye
     tracker, or eye movements that make the pupil drop and rise in steps)
     are not obvious blinks.
+
+    Outside the transients (the `transient` samples `(before, after)` the
+    core; default: half of each side of the window), the signal must also
+    be close to the straight line through both ends of the window, which
+    is removed when the blink is transplanted (see
+    :func:`extract_blink_artifacts`): the mean absolute difference there
+    (before and after the transients) and the difference of the levels at
+    both ends must be at most the `quantile` of the same at places in the
+    clean stretches (at least a window away from missing samples). Otherwise, slower changes of the pupil around the
+    blink (e.g., a plateau or a step) would be transplanted with it.
 
     Returns a boolean array (True for the obvious blinks); raises a
     ValueError if there are not enough clean stretches for the thresholds.
@@ -401,6 +435,12 @@ def _obvious_blinks(sy, cores, window, missing=None, edge=None, near=None, quant
     miss = _missing(sy, blink_val)
     if missing is not None:
         miss = miss | np.asarray(missing, dtype=bool)
+    if transient is None:
+        transient = (pre // 2, post // 2)
+    transient = tuple(int(v) for v in transient)
+    if not (0 <= transient[0] < pre and 0 <= transient[1] < post):
+        raise ValueError(f"transient must be shorter than the window ({pre}, {post}), "
+                         f"got {transient}")
     isolated = blink_donors(cores, miss, (pre, post))
     cs = np.r_[0, np.cumsum(np.where(miss, 0, sy))]
 
@@ -416,10 +456,33 @@ def _obvious_blinks(sy, cores, window, missing=None, edge=None, near=None, quant
     drop_threshold, rise_threshold = np.quantile(null_drop, quantile), np.quantile(null_rise, quantile)
 
     obvious = isolated.copy()
-    drop, rise = _drop_rise(cs, cores[isolated, 0], cores[isolated, 1], pre, post, edge, near)
-    obvious[isolated] = (drop > drop_threshold) & (rise > rise_threshold)
+    if not isolated.any():
+        return obvious
+    a, b = cores[isolated, 0], cores[isolated, 1]
+    drop, rise = _drop_rise(cs, a, b, pre, post, edge, near)
+    flat, step = _flat_step(sy, a, b, pre, post, transient)
+
+    # the same for windows with a core of typical length in the clean
+    # stretches, away from the transients around missing samples (at most
+    # _N_FLAT of them, evenly spread)
+    core = int(np.median(b - a))
+    t = [np.arange(s + pre, e - post - core + 1)
+         for s, e in clean_stretches(dirty, (pre, post), pre + core + post)]
+    t = np.concatenate(t) if t else np.array([], dtype=int)
+    if len(t) > _N_FLAT:
+        t = t[np.linspace(0, len(t) - 1, _N_FLAT).astype(int)]
+    if len(t) >= _MIN_PLACES:
+        null_flat, null_step = _flat_step(sy, t, t + core, pre, post, transient)
+        flat_threshold = np.quantile(null_flat, quantile)
+        step_threshold = np.quantile(null_step, quantile)
+    else:
+        logger.warning("Not enough clean signal to check the signal around the blinks")
+        flat_threshold = step_threshold = np.inf
+    obvious[isolated] = ((drop > drop_threshold) & (rise > rise_threshold)
+                         & (flat <= flat_threshold) & (step <= step_threshold))
     logger.debug(f"{obvious.sum()} obvious blinks of {len(cores)} cores ({isolated.sum()} "
-                 f"isolated); drop > {drop_threshold:.4g}, rise > {rise_threshold:.4g}")
+                 f"isolated); drop > {drop_threshold:.4g}, rise > {rise_threshold:.4g}, "
+                 f"flat <= {flat_threshold:.4g}, step <= {step_threshold:.4g}")
     return obvious
 
 
