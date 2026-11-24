@@ -5,6 +5,7 @@
 - `d.plot.plot_blink_clusters()`: the detected blinks in groups of similar shape, to spot bad detections
 - `pp.view(..., overlay=)`: other EyeData objects (e.g., another interpolation) on the plots of the same variables
 - `pp.view()`, `pp.tweak()`: also work with PySide6 (e.g., Qt from conda-forge); the Qt binding is the imported one, or the first installed of PyQt6, PySide6, PyQt5, PySide2
+- dependency: PySide6 instead of PyQt5 (Qt 6, LGPL, wheels for all platforms and on conda-forge)
 - fix: `blinks_detect()` applies `max_duration` (now 2 s) to all blinks; long runs of missing samples (e.g., breaks) are no blinks
 - fix: `blinks_interpolate()` (Mahot) skips stretches longer than `max_duration` (2 s), e.g. chains of merged blinks, instead of bridging them with one curve
 
