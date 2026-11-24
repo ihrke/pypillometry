@@ -324,10 +324,10 @@ class TestBlinksInterpolateParams(unittest.TestCase):
         msgs = []
         hid = pp.logger.add(lambda m: msgs.append(m.record["message"]), level="WARNING")
         try:
-            d = self.interp(method="kalman", margin=(10, 30))
+            d = self.interp(method="kalman", winsize=30)
         finally:
             pp.logger.remove(hid)
-        self.assertTrue(any("'margin' is only used by method='mahot'" in m for m in msgs))
+        self.assertTrue(any("'winsize' is only used by method='mahot'" in m for m in msgs))
         msgs.clear()
         hid = pp.logger.add(lambda m: msgs.append(m.record["message"]), level="WARNING")
         try:
@@ -346,13 +346,34 @@ class TestBlinksInterpolateKalman(unittest.TestCase):
         cls.k = cls.d.pupil.blinks_interpolate(method="kalman", inplace=False)
 
     def test_fills_all_blinks(self):
+        from pypillometry.signal.preproc import blink_stretches
+        exact = self.d.pupil.blinks_interpolate(method="kalman", margin=None, inplace=False)
         for eye in self.d.eyes:
-            blinks = self.d.get_blinks(eye, "pupil")[f"{eye}_pupil"].to_mask(self.d).astype(bool)
-            interp = self.k.data.get_layer(f"{eye}_pupil", "interpolated")
-            np.testing.assert_array_equal(interp, blinks)
-            self.assertFalse(np.isnan(self.k.data[eye, "pupil"]).any())
-            np.testing.assert_array_equal(self.k.data[eye, "pupil"][~blinks],
-                                          self.d.data[eye, "pupil"][~blinks])
+            iv = self.d.get_blinks(eye, "pupil", units="samples")[f"{eye}_pupil"]
+            blinks = iv.to_mask(self.d).astype(bool)
+            # default: the cores with 50/150 ms (25/75 samples) around them
+            stretches = pp.Intervals(blink_stretches(self.d.data[eye, "pupil"], iv, (25, 75)).tolist(),
+                                     "samples").to_mask(self.d).astype(bool)
+            for k, replaced in ((self.k, stretches), (exact, blinks)):
+                interp = k.data.get_layer(f"{eye}_pupil", "interpolated")
+                np.testing.assert_array_equal(interp, replaced)
+                self.assertFalse(np.isnan(k.data[eye, "pupil"]).any())
+                np.testing.assert_array_equal(k.data[eye, "pupil"][~replaced],
+                                              self.d.data[eye, "pupil"][~replaced])
+
+    def test_margins_cover_the_transients(self):
+        """with margins, the recovery after the blink is replaced too"""
+        from tests.test_transplant import make_signal
+        y, clean, cores = make_signal(n=30000, nblinks=20, seed=4)
+        d = pp.EyeData(left_pupil=y, sampling_rate=500).pupil.blinks_detect(
+            strategies=["zero"], inplace=False)
+        err = {}
+        for margin in (None, (50, 150)):
+            r = d.pupil.blinks_interpolate(method="kalman", margin=margin,
+                                           inplace=False).data["left", "pupil"]
+            err[margin] = np.sqrt(np.mean(np.concatenate(
+                [r[a - 20:b + 40] - clean[a - 20:b + 40] for a, b in cores]) ** 2))
+        self.assertLess(err[(50, 150)], 0.2 * err[None])
 
     def test_store_as(self):
         d = self.d.pupil.blinks_interpolate(eyes="left", method="kalman",
@@ -373,7 +394,8 @@ class TestBlinksInterpolateKalman(unittest.TestCase):
         d = pp.EyeData(left_pupil=p, sampling_rate=500).pupil.blinks_detect(
             strategies=["zero"], inplace=False)
         rmse = {}
-        for method in ("mahot", "kalman"):
-            r = d.pupil.blinks_interpolate(method=method, inplace=False).data["left", "pupil"]
+        # gaps without transients: nothing for the margins of Kalman
+        for method, kw in (("mahot", {}), ("kalman", dict(margin=(0, 0)))):
+            r = d.pupil.blinks_interpolate(method=method, inplace=False, **kw).data["left", "pupil"]
             rmse[method] = np.sqrt(np.mean(np.concatenate([r[a:b] - y[a:b] for a, b in gaps])**2))
         self.assertLess(rmse["kalman"], rmse["mahot"])

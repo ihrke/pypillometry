@@ -42,7 +42,7 @@ if TYPE_CHECKING:
 _INTERP_DEFAULTS = {
     "mahot": dict(winsize=25, vel_onset=-5.0, vel_offset=5.0, margin=(10, 30),
                   interp_type="cubic", max_duration=2000),
-    "kalman": dict(optimize=False),
+    "kalman": dict(optimize=False, margin=(50, 150)),
 }
 
 
@@ -1104,13 +1104,19 @@ class PupilNamespace(Namespace["EyeData"]):
                        f"{res.n_test} test blinks)" if res.n_test else ""))
         return res
 
-    def _interpolate_kalman(self, obj, eye, blinkwindow_ix, optimize):
+    def _interpolate_kalman(self, obj, eye, blinkwindow_ix, optimize, margin):
         """blinks of `eye` in `obj` interpolated with
         :func:`~pypillometry.signal.preproc.interpolate_blinks_kalman`;
         returns the signal and the interpolated samples"""
         bls = obj.get_blinks(eye, "pupil", units="samples")[f"{eye}_pupil"]
         excl = obj._excluded_mask()
-        blinks = Intervals.from_mask(bls.to_mask(obj).astype(bool) & ~excl).intervals
+        if margin is None:      # exactly the stored blinks
+            inblink = bls.to_mask(obj).astype(bool)
+        else:                   # their cores and the transients around them
+            margin_ix = obj._samples(margin, rounding="up")
+            stretches = preproc.blink_stretches(obj.data[eye, "pupil"], bls, margin_ix)
+            inblink = Intervals(stretches.tolist(), "samples").to_mask(obj).astype(bool)
+        blinks = Intervals.from_mask(inblink & ~excl).intervals
         # unusable samples (other masks, excluded periods) are no observations
         missing = excl | np.isnan(obj.get_values(eye, "pupil", "strict"))
         syr, interpolated, model = preproc.interpolate_blinks_kalman(
@@ -1192,9 +1198,11 @@ class PupilNamespace(Namespace["EyeData"]):
           measurement noise. The time scales of the components are fixed
           and the noise level is estimated from the data (with
           ``optimize=True``, all parameters are fitted, which is much
-          slower). Exactly the
-          stored blinks are replaced, so they should include the transients
-          around the blinks (see the `margin` of :meth:`blinks_detect`).
+          slower). Each blink is replaced from its core (its first to its
+          last missing sample; the whole blink if it has none) with `margin`
+          before and after it, which should cover the transients around the
+          blink (see :meth:`blinks_optimize_parameters`); with
+          ``margin=None``, exactly the stored blinks are replaced.
 
         Each method has its own parameters (see below), passed as keyword
         arguments. Parameters of another method are ignored with a warning,
@@ -1242,7 +1250,9 @@ class PupilNamespace(Namespace["EyeData"]):
         margin : Tuple[float,float] or Quantity
             ``"mahot"``: margin that is subtracted/added to onset and offset
             (in ms, or with units, e.g. ``(10, 30) * u.ms``); default
-            ``(10, 30)``
+            ``(10, 30)``. ``"kalman"``: time before and after the core of
+            each blink that is replaced too (the transients); default
+            ``(50, 150)``; `None`: exactly the stored blinks
         interp_type : str
             ``"mahot"``: type of interpolation accepted by
             :func:`scipy.interpolate.interp1d()`; default ``"cubic"``. A

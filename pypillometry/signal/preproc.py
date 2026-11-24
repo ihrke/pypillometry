@@ -10,7 +10,7 @@ from loguru import logger
 __all__ = [
     "smooth_window", "velocity_savgol", "detect_blinks_velocity",
     "detect_blinks_zero", "blink_onsets_mahot", "interpolate_blinks_mahot",
-    "interpolate_blinks_kalman", "zscale",
+    "interpolate_blinks_kalman", "blink_stretches", "zscale",
 ]
 
 
@@ -772,6 +772,57 @@ def _noise_sd(residuals):
     if d2.size < 2:
         return np.nan
     return 1.4826 * np.median(np.abs(d2 - np.median(d2))) / np.sqrt(6)
+
+
+def blink_stretches(sy, blinks, margin, blink_val=0):
+    """
+    The stretches of the signal that are replaced for the `blinks`: the
+    core of each blink (from its first to its last missing sample, as in
+    :func:`blink_onsets_mahot`; the whole blink if it has no missing
+    samples, e.g. a blink that does not close the eye completely) extended
+    by `margin` on both sides. Stretches that overlap are merged.
+
+    Parameters
+    ----------
+    sy : np.ndarray
+        pupil data
+    blinks : np.ndarray or Intervals
+        blink start/end sample indices (n x 2, end-exclusive)
+    margin : int or tuple of int
+        samples `(before, after)` the core that are replaced too (the
+        transients around it)
+    blink_val : float
+        "missing value" code in addition to NaN (default 0)
+
+    Returns
+    -------
+    np.ndarray
+        the stretches (m x 2, end-exclusive, sorted)
+
+    Examples
+    --------
+    >>> y = np.ones(100)
+    >>> y[20:30] = np.nan
+    >>> blink_stretches(y, [(18, 32), (60, 70)], (5, 10))
+    array([[15, 40],
+           [55, 80]])
+    """
+    sy = np.asarray(sy, dtype=float)
+    n = len(sy)
+    before, after = (margin, margin) if np.ndim(margin) == 0 else margin
+    missing = np.isnan(sy) if blink_val is None or np.isnan(blink_val) else \
+        np.isnan(sy) | (sy == blink_val)
+    out = []
+    for a, b in sorted((int(a), int(b)) for a, b in blinks):
+        ix = np.flatnonzero(missing[a:b])
+        if ix.size:
+            a, b = a + ix[0], a + ix[-1] + 1
+        a, b = max(0, a - int(before)), min(n, b + int(after))
+        if out and a <= out[-1][1]:
+            out[-1][1] = max(out[-1][1], b)
+        elif b > a:
+            out.append([a, b])
+    return np.array(out, dtype=int).reshape(-1, 2)
 
 
 def interpolate_blinks_kalman(sy, blinks, fs, window, missing=None, optimize=False,

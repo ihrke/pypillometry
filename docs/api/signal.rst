@@ -42,6 +42,7 @@ Blinks
    blink_onsets_mahot
    interpolate_blinks_mahot
    interpolate_blinks_kalman
+   blink_stretches
 
 .. _api-transplant:
 
