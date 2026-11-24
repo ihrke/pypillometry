@@ -95,6 +95,19 @@ You can overlay additional data on top of the main plots for comparison. This is
 
 Use ``overlay_pupil``, ``overlay_x``, or ``overlay_y`` to add overlays to the respective subplots.
 
+To compare whole versions of the data, pass them as ``overlay`` (an EyeData
+object or a list of them, with the same number of samples): their pupil and
+gaze are drawn on the plots of the same variable, one line per eye, labelled
+with their name and the eye:
+
+.. code-block:: python
+
+    mahot = eyedata.pupil.blinks_detect().pupil.blinks_interpolate(inplace=False)
+    kalman = eyedata.pupil.blinks_detect().pupil.blinks_interpolate(method="kalman",
+                                                                     inplace=False)
+    kalman.name = "kalman"
+    pp.view(mahot, overlay=kalman, variables=["pupil"])
+
 
 Extra Subplots
 --------------

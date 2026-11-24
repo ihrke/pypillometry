@@ -123,7 +123,7 @@ def _normalize_input(data, time=None):
     )
 
 
-def view(data, variables=None, eyes=None, time=None,
+def view(data, variables=None, eyes=None, time=None, overlay=None,
          overlay_pupil=None, overlay_x=None, overlay_y=None,
          extra_plots=None,
          highlight=None, highlight_color='lightblue') -> Optional[Dict[str, 'Intervals']]:
@@ -163,6 +163,12 @@ def view(data, variables=None, eyes=None, time=None,
         index (0, 1, 2, ...). Should have same length as data arrays.
         Ignored for EyeData objects, where `data.tx` (converted to seconds)
         is used.
+    overlay : EyeData or list of EyeData, optional
+        (EyeData only) other versions of the data to overlay (e.g., with
+        the blinks interpolated in another way): their pupil and gaze are
+        drawn on the plots of the same variable, one line per eye, labelled
+        with their name (``data.name``) and the eye. They must have the
+        same number of samples as `data`.
     overlay_pupil : dict, optional
         (EyeData only) Additional timeseries to overlay on the pupil plot.
         Keys are labels for legend, values are either:
@@ -262,7 +268,11 @@ def view(data, variables=None, eyes=None, time=None,
     >>> t = np.linspace(0, 10, 1000)  # 10 seconds  # doctest: +SKIP
     >>> pp.view(x, time=t)  # doctest: +SKIP
     
-    EyeData with overlays:
+    EyeData with overlays, e.g. two interpolations of the blinks:
+
+    >>> mahot = data.pupil.blinks_interpolate(inplace=False)  # doctest: +SKIP
+    >>> kalman = data.pupil.blinks_interpolate(method="kalman", inplace=False)  # doctest: +SKIP
+    >>> pp.view(mahot, overlay=kalman, variables="pupil")  # doctest: +SKIP
     
     >>> smoothed = np.convolve(data['left_pupil'], np.ones(100)/100, 'same')  # doctest: +SKIP
     >>> pp.view(data, overlay_pupil={'smoothed': smoothed})  # doctest: +SKIP
@@ -273,6 +283,15 @@ def view(data, variables=None, eyes=None, time=None,
     
     # Normalize input to common format
     mode, plot_spec, time_seconds = _normalize_input(data, time)
+    for name, value in (("overlay_pupil", overlay_pupil), ("overlay_x", overlay_x),
+                        ("overlay_y", overlay_y)):
+        if value is not None and not isinstance(value, dict):
+            raise TypeError(f"{name} must be a dict {{label: array or channel name}}, "
+                            f"got {type(value).__name__}; use overlay= for EyeData")
+    if overlay is not None and mode != 'eyedata':
+        raise TypeError("overlay= can only be used when viewing an EyeData object")
+    from_overlay = (_overlays_from_eyedata(overlay, len(plot_spec.tx), eyes)
+                    if overlay is not None else {})
     
     # Save LC_TIME locale before Qt initialization (Qt may change it)
     # This prevents issues with date parsing in EDF files after viewer is opened
@@ -307,12 +326,10 @@ def view(data, variables=None, eyes=None, time=None,
     
     # Build overlays dict (only used for EyeData mode)
     overlays = {}
-    if overlay_pupil:
-        overlays['pupil'] = overlay_pupil
-    if overlay_x:
-        overlays['x'] = overlay_x
-    if overlay_y:
-        overlays['y'] = overlay_y
+    for var, given in (('pupil', overlay_pupil), ('x', overlay_x), ('y', overlay_y)):
+        merged = {**from_overlay.get(var, {}), **(given or {})}
+        if merged:
+            overlays[var] = merged
     
     # Normalize and validate extra_plots (only for EyeData mode)
     normalized_extra_plots = None
@@ -458,6 +475,33 @@ def _intervals_to_axis(intervals, time_seconds, sample_index=False):
     fs = 1.0 / np.median(np.diff(t)) if len(t) > 1 else 1.0
     base = SimpleNamespace(tx=t * 1000., fs=fs)
     return [(float(s), float(e)) for s, e in intervals.to_units('sec', base).intervals]
+
+
+def _overlays_from_eyedata(overlay, n, eyes=None):
+    """Overlays (``{variable: {label: array}}``) from an EyeData object or a
+    list of them: their pupil, x and y for each eye (of `eyes`, if given),
+    labelled with the name of the object and the eye. Raises a TypeError
+    for other objects and a ValueError if they do not have `n` samples."""
+    objs = list(overlay) if isinstance(overlay, (list, tuple)) else [overlay]
+    if isinstance(eyes, str):
+        eyes = [eyes]
+    out = {}
+    for i, obj in enumerate(objs):
+        if not (hasattr(obj, 'tx') and hasattr(obj, 'data')):
+            raise TypeError(f"overlay must be EyeData or a list of EyeData, got "
+                            f"{type(obj).__name__}")
+        if len(obj.tx) != n:
+            raise ValueError(f"overlay {obj.name!r} has {len(obj.tx)} samples, the data {n}")
+        name = obj.name
+        for key in obj.data.keys():
+            eye, _, var = key.partition('_')
+            if var not in ('pupil', 'x', 'y') or (eyes and eye not in eyes):
+                continue
+            label = f"{name} {eye}"
+            if label in out.get(var, {}):        # the same name twice
+                label = f"{name} ({i + 1}) {eye}"
+            out.setdefault(var, {})[label] = np.asarray(obj.data[key], dtype=float)
+    return out
 
 
 def _highlight_by_panel(highlight, panels):

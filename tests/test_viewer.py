@@ -210,3 +210,38 @@ class TestTweakResult(unittest.TestCase):
         import pypillometry as pp
         with self.assertRaises(RuntimeError):
             pp.tweak(np.zeros(10), lambda x, a=1: 1 / 0, {"a": 1})
+
+
+class TestOverlayEyeData(unittest.TestCase):
+    """overlay=: other EyeData objects on the plots of the same variables"""
+
+    @classmethod
+    def setUpClass(cls):
+        import pypillometry as pp
+        cls.pp = pp
+        cls.d = pp.get_example_data("rlmw_002_short").pupil.blinks_detect()
+        cls.k = cls.d.pupil.blinks_interpolate(method="kalman", inplace=False)
+        cls.k.name = "kalman"
+
+    def test_lines_per_eye_and_variable(self):
+        from pypillometry.viewer import _overlays_from_eyedata
+        res = _overlays_from_eyedata(self.k, len(self.d.tx))
+        self.assertEqual(set(res), {"pupil", "x", "y"})
+        self.assertEqual(set(res["pupil"]), {"kalman left", "kalman right"})
+        np.testing.assert_array_equal(res["pupil"]["kalman left"], self.k.data["left_pupil"])
+        # only the given eyes; the same name twice is numbered
+        res = _overlays_from_eyedata([self.k, self.k], len(self.d.tx), eyes="left")
+        self.assertEqual(set(res["pupil"]), {"kalman left", "kalman (2) left"})
+
+    def test_errors(self):
+        from pypillometry.viewer import _overlays_from_eyedata
+        with self.assertRaisesRegex(TypeError, "EyeData"):
+            _overlays_from_eyedata(np.zeros(10), 10)
+        with self.assertRaisesRegex(ValueError, "samples"):
+            _overlays_from_eyedata(self.k.crop(0, 10, units="sec", inplace=False),
+                                   len(self.d.tx))
+        # checked before the viewer opens
+        with self.assertRaisesRegex(TypeError, "overlay_pupil must be a dict"):
+            self.pp.view(self.d, overlay_pupil=self.k)
+        with self.assertRaisesRegex(TypeError, "only be used when viewing an EyeData"):
+            self.pp.view(np.zeros(10), overlay=self.k)
