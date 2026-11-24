@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Interactive Parameter Tweaking (pp.tweak) &#8212; pypillometry v2.2.3</title>
+    <title>Interactive Parameter Tweaking (pp.tweak) &#8212; pypillometry v2.2.4</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=7e518144"></script>
+    <script src="../_static/documentation_options.js?v=b5d81189"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.3" />
+  <meta name="docsearch:version" content="v2.2.4" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -619,9 +619,26 @@
 </pre></div>
 </div>
 </section>
+<section id="interpolation-of-blinks">
+<h2>Interpolation of blinks<a class="headerlink" href="#interpolation-of-blinks" title="Link to this heading">#</a></h2>
+<p><a class="reference internal" href="../api/generated/pypillometry.tweak_blink_interpolation.html#pypillometry.tweak_blink_interpolation" title="pypillometry.tweak_blink_interpolation"><code class="xref py py-func docutils literal notranslate"><span class="pre">tweak_blink_interpolation()</span></code></a> opens the tweak window for the
+interpolation of blinks: the pupil of one eye with its interpolation, and
+the parameters of the method (e.g. the result of
+<a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.blinks_optimize_parameters" title="pypillometry.eyedata.pupil.PupilNamespace.blinks_optimize_parameters"><code class="xref py py-meth docutils literal notranslate"><span class="pre">blinks_optimize_parameters()</span></code></a> as a start). Only a short
+part of the recording is shown (30 s around a random blink, or a given
+<cite>interval</cite>), and “Auto Update” is off, so press “Update” after a change:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span>
+<span class="n">res</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_optimize_parameters</span><span class="p">()</span>
+<span class="n">pars</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">tweak_blink_interpolation</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">pars</span><span class="o">=</span><span class="n">res</span><span class="p">)</span>        <span class="c1"># another part: seed=...</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_interpolate</span><span class="p">(</span><span class="o">**</span><span class="n">pars</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">auto_update=False</span></code> does the same for <a class="reference internal" href="../api/generated/pypillometry.tweak.html#pypillometry.tweak" title="pypillometry.tweak"><code class="xref py py-func docutils literal notranslate"><span class="pre">tweak()</span></code></a> itself.</p>
+</section>
 <section id="api-reference">
 <h2>API reference<a class="headerlink" href="#api-reference" title="Link to this heading">#</a></h2>
-<p>All parameters are documented in the API reference: <a class="reference internal" href="../api/generated/pypillometry.tweak.html#pypillometry.tweak" title="pypillometry.tweak"><code class="xref py py-func docutils literal notranslate"><span class="pre">tweak()</span></code></a>.</p>
+<p>All parameters are documented in the API reference: <a class="reference internal" href="../api/generated/pypillometry.tweak.html#pypillometry.tweak" title="pypillometry.tweak"><code class="xref py py-func docutils literal notranslate"><span class="pre">tweak()</span></code></a>,
+<a class="reference internal" href="../api/generated/pypillometry.tweak_blink_interpolation.html#pypillometry.tweak_blink_interpolation" title="pypillometry.tweak_blink_interpolation"><code class="xref py py-func docutils literal notranslate"><span class="pre">tweak_blink_interpolation()</span></code></a>.</p>
 </section>
 </section>
 
@@ -677,6 +694,7 @@
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tweaking-blink-detection">Tweaking Blink Detection</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gui-controls">GUI Controls</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#return-values">Return Values</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#interpolation-of-blinks">Interpolation of blinks</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#api-reference">API reference</a></li>
 </ul>
   </nav></div>

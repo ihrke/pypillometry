@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Reading and writing data &#8212; pypillometry v2.2.3</title>
+    <title>Reading and writing data &#8212; pypillometry v2.2.4</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=7e518144"></script>
+    <script src="../_static/documentation_options.js?v=b5d81189"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.3" />
+  <meta name="docsearch:version" content="v2.2.4" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -506,7 +506,25 @@
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.detect_blinks_velocity.html">detect_blinks_velocity</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.detect_blinks_zero.html">detect_blinks_zero</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.blink_onsets_mahot.html">blink_onsets_mahot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.interpolate_blinks_mahot.html">interpolate_blinks_mahot</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.interpolate_blinks_kalman.html">interpolate_blinks_kalman</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.blink_stretches.html">blink_stretches</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.transplant_blinks.html">transplant_blinks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.transplant_error.html">transplant_error</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.blink_cores.html">blink_cores</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.blink_donors.html">blink_donors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.extract_blink_artifacts.html">extract_blink_artifacts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.blink_artifact_profile.html">blink_artifact_profile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.shrink_blink_artifacts.html">shrink_blink_artifacts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.clean_stretches.html">clean_stretches</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.place_blink_artifacts.html">place_blink_artifacts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.insert_blink_artifacts.html">insert_blink_artifacts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.BlinkTransplant.html">BlinkTransplant</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.tune_blinks_mahot.html">tune_blinks_mahot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.transplant_error_mahot.html">transplant_error_mahot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.tune_blinks_kalman.html">tune_blinks_kalman</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.transplant_error_kalman.html">transplant_error_kalman</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.BlinkTuneResult.html">BlinkTuneResult</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.pupil_kernel.html">pupil_kernel</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.pupil_kernel_t.html">pupil_kernel_t</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.pupil_get_max_duration.html">pupil_get_max_duration</a></li>
@@ -543,6 +561,7 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="misc.html">Viewer, settings and logging</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.view.html">view</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.tweak.html">tweak</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.tweak_blink_interpolation.html">tweak_blink_interpolation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.set_default_inplace.html">set_default_inplace</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.get_default_inplace.html">get_default_inplace</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.logging_set_level.html">logging_set_level</a></li>

@@ -95,6 +95,19 @@ You can overlay additional data on top of the main plots for comparison. This is
 
 Use ``overlay_pupil``, ``overlay_x``, or ``overlay_y`` to add overlays to the respective subplots.
 
+To compare whole versions of the data, pass them as ``overlay`` (an EyeData
+object or a list of them, with the same number of samples): their pupil and
+gaze are drawn on the plots of the same variable, one line per eye, labelled
+with their name and the eye:
+
+.. code-block:: python
+
+    mahot = eyedata.pupil.blinks_detect().pupil.blinks_interpolate(inplace=False)
+    kalman = eyedata.pupil.blinks_detect().pupil.blinks_interpolate(method="kalman",
+                                                                     inplace=False)
+    kalman.name = "kalman"
+    pp.view(mahot, overlay=kalman, variables=["pupil"])
+
 
 Extra Subplots
 --------------
@@ -147,7 +160,11 @@ To use another color or to highlight different intervals in each subplot:
     # or per subplot
     pp.view(eyedata, highlight={"pupil": blinks})
 
-``highlight`` is either a single :class:`Intervals` object (shown in all subplots) or a dict mapping subplot keys to :class:`Intervals`. The keys are ``'pupil'``, ``'x'``, ``'y'`` and ``'extra_<label>'`` for ``extra_plots`` (EyeData), or the plot labels (arrays). Intervals in time units are converted to seconds, sample-index Intervals are placed using the time vector.
+    # the blinks of all eyes and variables, as returned by get_blinks()
+    d = eyedata.pupil.blinks_detect()
+    pp.view(d, highlight=d.get_blinks())
+
+``highlight`` is either a single :class:`Intervals` object (shown in all subplots) or a dict mapping subplot keys to :class:`Intervals`. The keys are ``'pupil'``, ``'x'``, ``'y'`` and ``'extra_<label>'`` for ``extra_plots`` (EyeData), or the plot labels (arrays); keys like ``'left_pupil'`` (as from :meth:`~EyeData.get_blinks`) go to the subplot of the variable, with the intervals of both eyes together. Keys that match no subplot are ignored with a warning. Intervals in time units are converted to seconds, sample-index Intervals are placed using the time vector.
 
 
 Interactive Selection

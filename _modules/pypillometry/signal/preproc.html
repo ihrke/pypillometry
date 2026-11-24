@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pypillometry.signal.preproc &#8212; pypillometry v2.2.3</title>
+    <title>pypillometry.signal.preproc &#8212; pypillometry v2.2.4</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../../_static/documentation_options.js?v=7e518144"></script>
+    <script src="../../../_static/documentation_options.js?v=b5d81189"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -414,7 +414,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.3" />
+  <meta name="docsearch:version" content="v2.2.4" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -810,7 +810,8 @@ window.runMermaid = runMermaid;</script>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">"smooth_window"</span><span class="p">,</span> <span class="s2">"velocity_savgol"</span><span class="p">,</span> <span class="s2">"detect_blinks_velocity"</span><span class="p">,</span>
-    <span class="s2">"detect_blinks_zero"</span><span class="p">,</span> <span class="s2">"blink_onsets_mahot"</span><span class="p">,</span> <span class="s2">"interpolate_blinks_kalman"</span><span class="p">,</span> <span class="s2">"zscale"</span><span class="p">,</span>
+    <span class="s2">"detect_blinks_zero"</span><span class="p">,</span> <span class="s2">"blink_onsets_mahot"</span><span class="p">,</span> <span class="s2">"interpolate_blinks_mahot"</span><span class="p">,</span>
+    <span class="s2">"interpolate_blinks_kalman"</span><span class="p">,</span> <span class="s2">"blink_stretches"</span><span class="p">,</span> <span class="s2">"zscale"</span><span class="p">,</span>
 <span class="p">]</span>
 
 
@@ -1114,119 +1115,96 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        onset (and `max_blink_samples` allows it); empty array if no blinks</span>
 <span class="sd">        were found</span>
 <span class="sd">    """</span>
-    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sy</span><span class="p">)</span>
-    
-    <span class="c1"># Track NaN/zero locations (invalid data)</span>
-    <span class="n">invalid_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">sy</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">sy</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
-    
-    <span class="c1"># Fill invalid values with linear interpolation for velocity estimation</span>
-    <span class="c1"># (the asymmetric Savitzky-Golay will prevent NaN from affecting edges)</span>
-    <span class="n">sy_filled</span> <span class="o">=</span> <span class="n">sy</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-    <span class="n">valid_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="o">~</span><span class="n">invalid_mask</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">valid_indices</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="n">vel_backward</span><span class="p">,</span> <span class="n">vel_forward</span><span class="p">,</span> <span class="n">invalid</span> <span class="o">=</span> <span class="n">_velocity_profiles</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">smooth_winsize</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">vel_backward</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"No valid samples - returning empty array"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
-        
-    <span class="c1"># Simple linear interpolation for NaN regions</span>
-    <span class="n">invalid_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">invalid_mask</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">invalid_indices</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">sy_filled</span><span class="p">[</span><span class="n">invalid_indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span>
-            <span class="n">invalid_indices</span><span class="p">,</span> <span class="n">valid_indices</span><span class="p">,</span> <span class="n">sy</span><span class="p">[</span><span class="n">valid_indices</span><span class="p">]</span>
-        <span class="p">)</span>
-    
-    <span class="c1"># Generate velocity profiles using asymmetric Savitzky-Golay</span>
-    <span class="c1"># Backward-looking velocity for onset detection (only uses past samples)</span>
-    <span class="n">vel_backward</span> <span class="o">=</span> <span class="n">velocity_savgol</span><span class="p">(</span><span class="n">sy_filled</span><span class="p">,</span> <span class="n">smooth_winsize</span><span class="p">,</span> <span class="n">polyorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s2">"backward"</span><span class="p">)</span>
-    
-    <span class="c1"># Forward-looking velocity for offset detection (only uses future samples)  </span>
-    <span class="n">vel_forward</span> <span class="o">=</span> <span class="n">velocity_savgol</span><span class="p">(</span><span class="n">sy_filled</span><span class="p">,</span> <span class="n">smooth_winsize</span><span class="p">,</span> <span class="n">polyorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s2">"forward"</span><span class="p">)</span>
-    
-    <span class="c1"># Don't detect inside invalid regions</span>
-    <span class="n">vel_backward</span><span class="p">[</span><span class="n">invalid_mask</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">vel_forward</span><span class="p">[</span><span class="n">invalid_mask</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-    
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Generated asymmetric velocity profiles, length </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">onsets</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_threshold_runs</span><span class="p">(</span><span class="n">vel_backward</span> <span class="o">&lt;=</span> <span class="n">vel_onset</span><span class="p">,</span> <span class="n">min_onset_len</span><span class="p">)</span>
+    <span class="n">offset_starts</span><span class="p">,</span> <span class="n">offset_ends</span> <span class="o">=</span> <span class="n">_threshold_runs</span><span class="p">(</span><span class="n">vel_forward</span> <span class="o">&gt;=</span> <span class="n">vel_offset</span><span class="p">,</span> <span class="n">min_offset_len</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">onsets</span><span class="p">)</span><span class="si">}</span><span class="s2"> onsets and </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">offset_starts</span><span class="p">)</span><span class="si">}</span><span class="s2"> offsets"</span><span class="p">)</span>
+    <span class="n">blinks</span> <span class="o">=</span> <span class="n">_pair_velocity_blinks</span><span class="p">(</span><span class="n">onsets</span><span class="p">,</span> <span class="n">offset_starts</span><span class="p">,</span> <span class="n">offset_ends</span><span class="p">,</span> <span class="n">invalid</span><span class="p">,</span>
+                                   <span class="n">min_blink_samples</span><span class="p">,</span> <span class="n">max_blink_samples</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">blinks</span><span class="p">)</span><span class="si">}</span><span class="s2"> blinks"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">blinks</span></div>
 
-    <span class="c1"># Find onset candidates using backward velocity (fast drop before blink)</span>
-    <span class="n">onsets</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">vel_backward</span> <span class="o">&lt;=</span> <span class="n">vel_onset</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">onsets</span><span class="p">)</span><span class="si">}</span><span class="s2"> potential onset points"</span><span class="p">)</span>
-    
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_velocity_profiles</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">smooth_winsize</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Velocity profiles for :func:`detect_blinks_velocity`: the backward- and</span>
+<span class="sd">    forward-looking velocity of `sy` (invalid samples, NaN or 0, are filled</span>
+<span class="sd">    linearly before, and the velocity is 0 there), and the invalid samples.</span>
+<span class="sd">    The velocities are `None` if there are no valid samples.</span>
+<span class="sd">    """</span>
+    <span class="n">sy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">invalid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">sy</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">sy</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">valid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="o">~</span><span class="n">invalid</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">valid</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">invalid</span>
+    <span class="n">filled</span> <span class="o">=</span> <span class="n">sy</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">invalid</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+        <span class="n">filled</span><span class="p">[</span><span class="n">invalid</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">invalid</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">valid</span><span class="p">,</span> <span class="n">sy</span><span class="p">[</span><span class="n">valid</span><span class="p">])</span>
+    <span class="c1"># backward-looking for onsets, forward-looking for offsets: the missing</span>
+    <span class="c1"># samples of the blink do not affect the estimate at its edges</span>
+    <span class="n">vel_backward</span> <span class="o">=</span> <span class="n">velocity_savgol</span><span class="p">(</span><span class="n">filled</span><span class="p">,</span> <span class="n">smooth_winsize</span><span class="p">,</span> <span class="n">polyorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s2">"backward"</span><span class="p">)</span>
+    <span class="n">vel_forward</span> <span class="o">=</span> <span class="n">velocity_savgol</span><span class="p">(</span><span class="n">filled</span><span class="p">,</span> <span class="n">smooth_winsize</span><span class="p">,</span> <span class="n">polyorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s2">"forward"</span><span class="p">)</span>
+    <span class="n">vel_backward</span><span class="p">[</span><span class="n">invalid</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">vel_forward</span><span class="p">[</span><span class="n">invalid</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">return</span> <span class="n">vel_backward</span><span class="p">,</span> <span class="n">vel_forward</span><span class="p">,</span> <span class="n">invalid</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_threshold_runs</span><span class="p">(</span><span class="n">crossing</span><span class="p">,</span> <span class="n">min_len</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""First and last sample (both inclusive) of the runs of `crossing` with</span>
+<span class="sd">    at least `min_len` samples."""</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">crossing</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int8</span><span class="p">),</span> <span class="mi">0</span><span class="p">])</span>
+    <span class="n">starts</span><span class="p">,</span> <span class="n">ends</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">x</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">x</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">keep</span> <span class="o">=</span> <span class="n">ends</span> <span class="o">-</span> <span class="n">starts</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&gt;=</span> <span class="n">min_len</span>
+    <span class="k">return</span> <span class="n">starts</span><span class="p">[</span><span class="n">keep</span><span class="p">],</span> <span class="n">ends</span><span class="p">[</span><span class="n">keep</span><span class="p">]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_pair_velocity_blinks</span><span class="p">(</span><span class="n">onsets</span><span class="p">,</span> <span class="n">offset_starts</span><span class="p">,</span> <span class="n">offset_ends</span><span class="p">,</span> <span class="n">invalid</span><span class="p">,</span> <span class="n">min_blink_samples</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                          <span class="n">max_blink_samples</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Pair the onsets with offset runs (see :func:`detect_blinks_velocity`):</span>
+<span class="sd">    the first offset run that starts after the onset and ends at least</span>
+<span class="sd">    `min_blink_samples` after it, unless another onset comes before it.</span>
+<span class="sd">    `invalid` are the invalid samples of the signal (onsets in them are</span>
+<span class="sd">    moved back to the last valid sample).</span>
+<span class="sd">    """</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">invalid</span><span class="p">)</span>
+    <span class="n">onsets</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">onsets</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">offset_starts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">offset_starts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">offset_ends</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">offset_ends</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">onsets</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"No onsets found - returning empty array"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
-        
-    <span class="n">onsets_ixx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">onsets</span><span class="p">)]</span> <span class="o">&gt;</span> <span class="mi">1</span>
-    <span class="n">onsets_len</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">onsets_ixx</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">onsets</span><span class="o">.</span><span class="n">size</span><span class="p">])</span>
-    <span class="n">onsets</span> <span class="o">=</span> <span class="n">onsets</span><span class="p">[</span><span class="n">onsets_ixx</span><span class="p">]</span>
-    <span class="n">onsets</span> <span class="o">=</span> <span class="n">onsets</span><span class="p">[</span><span class="n">onsets_len</span> <span class="o">&gt;=</span> <span class="n">min_onset_len</span><span class="p">]</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"After filtering, </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">onsets</span><span class="p">)</span><span class="si">}</span><span class="s2"> onsets remain"</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">onsets</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"No valid onsets - returning empty array"</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
-
-    <span class="c1"># Find offset candidates using forward velocity (fast rise after blink)</span>
-    <span class="n">offsets</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">vel_forward</span> <span class="o">&gt;=</span> <span class="n">vel_offset</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">offsets</span><span class="p">)</span><span class="si">}</span><span class="s2"> potential offset points"</span><span class="p">)</span>
-
-    <span class="c1"># Without offsets, all blinks end at the last sample (see below)</span>
-    <span class="n">offset_starts</span> <span class="o">=</span> <span class="n">offset_ends</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">offsets</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="c1"># Mark starts and ends of runs</span>
-        <span class="n">offsets_start_ixx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">offsets</span><span class="p">)]</span> <span class="o">&gt;</span> <span class="mi">1</span>
-        <span class="n">offsets_end_ixx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">offsets</span><span class="p">),</span> <span class="mi">10</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span>
-        <span class="n">offsets_len</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">offsets_start_ixx</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">offsets</span><span class="o">.</span><span class="n">size</span><span class="p">])</span>
-
-        <span class="c1"># Filter by minimum length (applied to both starts and ends of runs)</span>
-        <span class="n">valid_len_mask</span> <span class="o">=</span> <span class="n">offsets_len</span> <span class="o">&gt;=</span> <span class="n">min_offset_len</span>
-        <span class="n">offset_starts</span> <span class="o">=</span> <span class="n">offsets</span><span class="p">[</span><span class="n">offsets_start_ixx</span><span class="p">][</span><span class="n">valid_len_mask</span><span class="p">]</span>
-        <span class="n">offset_ends</span> <span class="o">=</span> <span class="n">offsets</span><span class="p">[</span><span class="n">offsets_end_ixx</span><span class="p">][</span><span class="n">valid_len_mask</span><span class="p">]</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"After filtering, </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">offset_starts</span><span class="p">)</span><span class="si">}</span><span class="s2"> offsets remain"</span><span class="p">)</span>
-
-    <span class="c1"># Find corresponding on- and off-sets</span>
-    <span class="c1"># Use offset STARTS for comparison, but offset ENDS as actual values</span>
-    <span class="c1"># Skip offsets that would create intervals shorter than min_blink_samples</span>
-    <span class="n">blinks</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">on</span> <span class="o">=</span> <span class="n">onsets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="k">while</span> <span class="n">on</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1"># Find offset runs that START after this onset AND create long enough intervals</span>
-        <span class="n">valid_offset_mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">offset_starts</span> <span class="o">&gt;</span> <span class="n">on</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">offset_ends</span> <span class="o">-</span> <span class="n">on</span> <span class="o">&gt;=</span> <span class="n">min_blink_samples</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">valid_offset_mask</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
-            <span class="c1"># Get the first valid offset run and use its END</span>
-            <span class="n">first_valid_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">valid_offset_mask</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">off</span> <span class="o">=</span> <span class="n">offset_ends</span><span class="p">[</span><span class="n">first_valid_idx</span><span class="p">]</span>
-            <span class="c1"># a later onset before this offset: this onset has no offset of</span>
-            <span class="c1"># its own (e.g., a dip from an eye movement) and must not take</span>
-            <span class="c1"># the offset of the next blink</span>
-            <span class="n">later</span> <span class="o">=</span> <span class="n">onsets</span><span class="p">[(</span><span class="n">onsets</span> <span class="o">&gt;</span> <span class="n">on</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">onsets</span> <span class="o">&lt;</span> <span class="n">offset_starts</span><span class="p">[</span><span class="n">first_valid_idx</span><span class="p">])</span>
-                           <span class="o">&amp;</span> <span class="p">(</span><span class="n">off</span> <span class="o">-</span> <span class="n">onsets</span> <span class="o">&gt;=</span> <span class="n">min_blink_samples</span><span class="p">)]</span>
-            <span class="k">if</span> <span class="n">later</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">on</span> <span class="o">=</span> <span class="n">later</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                <span class="k">continue</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">off</span> <span class="o">=</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span>
-        <span class="k">if</span> <span class="n">max_blink_samples</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">off</span> <span class="o">-</span> <span class="n">on</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&gt;</span> <span class="n">max_blink_samples</span><span class="p">:</span>
-            <span class="c1"># no offset close enough: drop this onset, try the next one</span>
-            <span class="n">ons</span> <span class="o">=</span> <span class="n">onsets</span><span class="p">[</span><span class="n">onsets</span> <span class="o">&gt;</span> <span class="n">on</span><span class="p">]</span>
-            <span class="n">on</span> <span class="o">=</span> <span class="n">ons</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">ons</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span>
-            <span class="k">continue</span>
-        <span class="n">blinks</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">on</span><span class="p">,</span> <span class="n">off</span><span class="p">])</span>
-        <span class="n">ons</span> <span class="o">=</span> <span class="n">onsets</span><span class="p">[</span><span class="n">onsets</span> <span class="o">&gt;</span> <span class="n">off</span><span class="p">]</span>
-        <span class="n">on</span> <span class="o">=</span> <span class="n">ons</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">ons</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">blinks</span><span class="p">)</span><span class="si">}</span><span class="s2"> blink pairs"</span><span class="p">)</span>
-        
-    <span class="c1"># If onsets fall in an invalid region, grow backward until first valid sample</span>
-    <span class="c1"># (Don't grow offsets forward - offset_ends already mark the end of recovery)</span>
-    <span class="n">blinks2</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="p">(</span><span class="n">on</span><span class="p">,</span> <span class="n">off</span><span class="p">)</span> <span class="ow">in</span> <span class="n">blinks</span><span class="p">:</span>
-        <span class="k">while</span> <span class="n">on</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">invalid_mask</span><span class="p">[</span><span class="n">on</span><span class="p">]:</span>
-            <span class="n">on</span> <span class="o">-=</span> <span class="mi">1</span>
-        <span class="n">blinks2</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">on</span><span class="p">,</span> <span class="n">off</span><span class="p">])</span>
-    
-    <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">blinks2</span><span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Returning </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)</span><span class="si">}</span><span class="s2"> blinks after invalid-region adjustment"</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">result</span></div>
-
+    <span class="c1"># for each onset, the first offset run that starts after it and is far</span>
+    <span class="c1"># enough (or the end of the signal if there is none)</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">offset_starts</span><span class="p">,</span> <span class="n">onsets</span><span class="p">,</span> <span class="s2">"right"</span><span class="p">),</span>
+                   <span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">offset_ends</span><span class="p">,</span> <span class="n">onsets</span> <span class="o">+</span> <span class="n">min_blink_samples</span><span class="p">,</span> <span class="s2">"left"</span><span class="p">))</span>
+    <span class="n">has</span> <span class="o">=</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">offset_starts</span><span class="p">)</span>
+    <span class="n">jj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">offset_starts</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">off</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">has</span><span class="p">,</span> <span class="n">offset_ends</span><span class="p">[</span><span class="n">jj</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">offset_ends</span><span class="p">)</span> <span class="k">else</span> <span class="mi">0</span><span class="p">,</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="c1"># a later onset before this offset: this onset has no offset of its own</span>
+    <span class="c1"># (e.g., a dip from an eye movement) and must not take the offset of</span>
+    <span class="c1"># the next blink</span>
+    <span class="n">nxt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">onsets</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">ok</span> <span class="o">=</span> <span class="o">~</span><span class="p">(</span><span class="n">has</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">onsets</span><span class="p">))</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">onsets</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+           <span class="o">&amp;</span> <span class="p">(</span><span class="n">nxt</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">offset_starts</span><span class="p">[</span><span class="n">jj</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">offset_starts</span><span class="p">)</span> <span class="k">else</span> <span class="mi">0</span><span class="p">))</span>
+           <span class="o">&amp;</span> <span class="p">(</span><span class="n">off</span> <span class="o">-</span> <span class="n">nxt</span> <span class="o">&gt;=</span> <span class="n">min_blink_samples</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">max_blink_samples</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ok</span> <span class="o">&amp;=</span> <span class="n">off</span> <span class="o">-</span> <span class="n">onsets</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&lt;=</span> <span class="n">max_blink_samples</span>   <span class="c1"># no offset close enough</span>
+    <span class="c1"># the blinks do not overlap: after a blink, the next onset after its offset</span>
+    <span class="n">blinks</span><span class="p">,</span> <span class="n">last</span> <span class="o">=</span> <span class="p">[],</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="k">for</span> <span class="n">on</span><span class="p">,</span> <span class="n">of</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">onsets</span><span class="p">[</span><span class="n">ok</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">off</span><span class="p">[</span><span class="n">ok</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()):</span>
+        <span class="k">if</span> <span class="n">on</span> <span class="o">&gt;</span> <span class="n">last</span><span class="p">:</span>
+            <span class="c1"># onsets in an invalid region grow back to the first valid</span>
+            <span class="c1"># sample (offsets do not grow: the offset runs end with the</span>
+            <span class="c1"># recovery)</span>
+            <span class="k">while</span> <span class="n">on</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">invalid</span><span class="p">[</span><span class="n">on</span><span class="p">]:</span>
+                <span class="n">on</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="n">blinks</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">on</span><span class="p">,</span> <span class="n">of</span><span class="p">])</span>
+            <span class="n">last</span> <span class="o">=</span> <span class="n">of</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">blinks</span><span class="p">)</span>
 
 <div class="viewcode-block" id="detect_blinks_zero">
 <a class="viewcode-back" href="../../../api/generated/pypillometry.signal.detect_blinks_zero.html#pypillometry.signal.detect_blinks_zero">[docs]</a>
@@ -1298,9 +1276,11 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="n">cands</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
-    <span class="n">brk</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">cands</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_gap</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">runs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">cands</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">brk</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]],</span> <span class="n">cands</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">brk</span><span class="p">,</span> <span class="n">cands</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]]]</span>
-    <span class="k">return</span> <span class="n">runs</span><span class="p">[</span><span class="n">runs</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">runs</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&gt;=</span> <span class="n">min_len</span><span class="p">]</span>
+    <span class="n">brk</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">cands</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_gap</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">first</span> <span class="o">=</span> <span class="n">cands</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(([</span><span class="mi">0</span><span class="p">],</span> <span class="n">brk</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))]</span>
+    <span class="n">last</span> <span class="o">=</span> <span class="n">cands</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">brk</span><span class="p">,</span> <span class="p">[</span><span class="n">cands</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]))]</span>
+    <span class="n">keep</span> <span class="o">=</span> <span class="n">last</span> <span class="o">-</span> <span class="n">first</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&gt;=</span> <span class="n">min_len</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">((</span><span class="n">first</span><span class="p">[</span><span class="n">keep</span><span class="p">],</span> <span class="n">last</span><span class="p">[</span><span class="n">keep</span><span class="p">]),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="blink_onsets_mahot">
@@ -1316,7 +1296,9 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    missing samples. The onset is the start of the closest closing transient</span>
 <span class="sd">    (velocity below `vel_onset`) that starts before the core, the offset the</span>
 <span class="sd">    end of the closest opening transient (velocity above `vel_offset`) that</span>
-<span class="sd">    ends after it. The result therefore does not depend on how far the</span>
+<span class="sd">    ends after it. The search (and the margins) stop at the neighbouring</span>
+<span class="sd">    blinks, so that a transient of a neighbour is not taken for one of the</span>
+<span class="sd">    blink. The result therefore does not depend on how far the</span>
 <span class="sd">    blinks were extended when they were detected, and for a blink that</span>
 <span class="sd">    contains several transients (e.g., merged blinks), the outermost ones</span>
 <span class="sd">    are used.</span>
@@ -1368,11 +1350,20 @@ window.runMermaid = runMermaid;</script>
         <span class="n">max_gap</span> <span class="o">=</span> <span class="n">smooth_winsize</span>
     <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sy</span><span class="p">)</span>
 
+    <span class="n">pairs</span> <span class="o">=</span> <span class="p">[(</span><span class="nb">int</span><span class="p">(</span><span class="n">start</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">end</span><span class="p">))</span> <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="n">blinks</span><span class="p">]</span>
+    <span class="c1"># the neighbours of each blink: the end of the previous one and the</span>
+    <span class="c1"># start of the next one (in the order of their starts)</span>
+    <span class="n">order</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pairs</span><span class="p">)),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">i</span><span class="p">:</span> <span class="n">pairs</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="n">prev_end</span><span class="p">,</span> <span class="n">next_start</span><span class="p">,</span> <span class="n">last</span> <span class="o">=</span> <span class="p">{},</span> <span class="p">{},</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">order</span><span class="p">):</span>
+        <span class="n">prev_end</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">last</span>
+        <span class="n">last</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">last</span><span class="p">,</span> <span class="n">pairs</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">next_start</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">pairs</span><span class="p">[</span><span class="n">order</span><span class="p">[</span><span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]][</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">k</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">order</span><span class="p">)</span> <span class="k">else</span> <span class="n">n</span>
     <span class="n">newblinks</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">ix</span><span class="p">,</span> <span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">blinks</span><span class="p">):</span>
-        <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">start</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">end</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">ix</span><span class="p">,</span> <span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pairs</span><span class="p">):</span>
         <span class="n">cstart</span><span class="p">,</span> <span class="n">cend</span> <span class="o">=</span> <span class="n">_blink_core</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
-        <span class="n">winstart</span><span class="p">,</span> <span class="n">winend</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">cstart</span> <span class="o">-</span> <span class="n">blinkwindow</span><span class="p">),</span> <span class="nb">min</span><span class="p">(</span><span class="n">cend</span> <span class="o">+</span> <span class="n">blinkwindow</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+        <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">prev_end</span><span class="p">[</span><span class="n">ix</span><span class="p">],</span> <span class="n">cstart</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="n">next_start</span><span class="p">[</span><span class="n">ix</span><span class="p">],</span> <span class="n">cend</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">winstart</span><span class="p">,</span> <span class="n">winend</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="n">cstart</span> <span class="o">-</span> <span class="n">blinkwindow</span><span class="p">),</span> <span class="nb">min</span><span class="p">(</span><span class="n">cend</span> <span class="o">+</span> <span class="n">blinkwindow</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">hi</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
 
         <span class="c1"># onset: closest closing transient that starts before the core</span>
         <span class="n">runs</span> <span class="o">=</span> <span class="n">_velocity_runs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">vel_backward</span><span class="p">[</span><span class="n">winstart</span><span class="p">:</span><span class="n">winend</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">vel_onset</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">winstart</span><span class="p">,</span>
@@ -1385,7 +1376,7 @@ window.runMermaid = runMermaid;</script>
             <span class="c1"># core instead of dropping the blink</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Blink </span><span class="si">{</span><span class="n">ix</span><span class="si">}</span><span class="s2"> (samples </span><span class="si">{</span><span class="n">start</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">end</span><span class="si">}</span><span class="s2">): no onset crossing, using blink core"</span><span class="p">)</span>
             <span class="n">onset</span> <span class="o">=</span> <span class="n">cstart</span>
-        <span class="n">onset</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">onset</span> <span class="o">-</span> <span class="n">margin</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">onset</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">lo</span><span class="p">,</span> <span class="n">onset</span> <span class="o">-</span> <span class="n">margin</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
         <span class="c1"># offset: closest opening transient that ends after the core</span>
         <span class="n">runs</span> <span class="o">=</span> <span class="n">_velocity_runs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">vel_forward</span><span class="p">[</span><span class="n">winstart</span><span class="p">:</span><span class="n">winend</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">vel_offset</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">winstart</span><span class="p">,</span>
@@ -1396,11 +1387,168 @@ window.runMermaid = runMermaid;</script>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Blink </span><span class="si">{</span><span class="n">ix</span><span class="si">}</span><span class="s2"> (samples </span><span class="si">{</span><span class="n">start</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">end</span><span class="si">}</span><span class="s2">): no offset crossing, using blink core"</span><span class="p">)</span>
             <span class="n">offset</span> <span class="o">=</span> <span class="n">cend</span>
-        <span class="n">offset</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">offset</span> <span class="o">+</span> <span class="n">margin</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">hi</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">offset</span> <span class="o">+</span> <span class="n">margin</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
 
         <span class="n">newblinks</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">onset</span><span class="p">,</span> <span class="n">offset</span><span class="p">])</span>
 
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">newblinks</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_merge_overlapping_blink_windows</span><span class="p">(</span><span class="n">blinks</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Anchor points of the blinks, merging only blinks that overlap.</span>
+
+<span class="sd">    Each blink `(t2, t3)` is interpolated from the anchor points</span>
+<span class="sd">    ``t1 = t2-(t3-t2)`` and ``t4 = t3+(t3-t2)``. Blinks whose stretches</span>
+<span class="sd">    `(t2, t3)` overlap or touch are merged (the anchor points are from the</span>
+<span class="sd">    first and the last of them). If the anchor points of a blink would</span>
+<span class="sd">    reach into a neighbouring blink, they are moved closer instead: at most</span>
+<span class="sd">    to the on- or offset of the neighbour (which is not replaced by its</span>
+<span class="sd">    curve); with anchor points that close, the blink is interpolated with</span>
+<span class="sd">    a monotone curve instead of the cubic (see `_anchors_close`). Merging these blinks instead would replace the signal between</span>
+<span class="sd">    them, and the anchor points of the merged blink would reach further</span>
+<span class="sd">    blinks (chains of several seconds in real data).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list of tuple</span>
+<span class="sd">        ``(t1, t2, t3, t4)`` for each (merged) blink</span>
+<span class="sd">    """</span>
+    <span class="n">groups</span> <span class="o">=</span> <span class="p">[]</span>     <span class="c1"># [t1, t2, t3, t4] before moving the anchor points</span>
+    <span class="k">for</span> <span class="n">on</span><span class="p">,</span> <span class="n">off</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">((</span><span class="nb">int</span><span class="p">(</span><span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">b</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">blinks</span><span class="p">):</span>
+        <span class="n">t1</span><span class="p">,</span> <span class="n">t4</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">on</span> <span class="o">-</span> <span class="n">off</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">off</span> <span class="o">-</span> <span class="n">on</span>
+        <span class="k">if</span> <span class="n">groups</span> <span class="ow">and</span> <span class="n">on</span> <span class="o">&lt;=</span> <span class="n">groups</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">2</span><span class="p">]:</span>
+            <span class="n">groups</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">groups</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">2</span><span class="p">],</span> <span class="n">off</span><span class="p">)</span>
+            <span class="n">groups</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">groups</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">3</span><span class="p">],</span> <span class="n">t4</span><span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="n">groups</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">t1</span><span class="p">,</span> <span class="n">on</span><span class="p">,</span> <span class="n">off</span><span class="p">,</span> <span class="n">t4</span><span class="p">])</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">,</span> <span class="n">t3</span><span class="p">,</span> <span class="n">t4</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">groups</span><span class="p">):</span>
+        <span class="n">lo</span> <span class="o">=</span> <span class="n">groups</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="n">hi</span> <span class="o">=</span> <span class="n">groups</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">groups</span><span class="p">)</span> <span class="k">else</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="nb">max</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">lo</span><span class="p">),</span> <span class="n">t2</span><span class="p">,</span> <span class="n">t3</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">t4</span><span class="p">,</span> <span class="n">hi</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">out</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_anchors_close</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">,</span> <span class="n">t3</span><span class="p">,</span> <span class="n">t4</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Whether an anchor point of the blink `(t2, t3)` is less than half of</span>
+<span class="sd">    its length away from it (moved because of a neighbouring blink or the</span>
+<span class="sd">    end of the data, see `_merge_overlapping_blink_windows`)."""</span>
+    <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="n">t2</span> <span class="o">-</span> <span class="n">t1</span><span class="p">,</span> <span class="n">t4</span> <span class="o">-</span> <span class="n">t3</span><span class="p">)</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">t3</span> <span class="o">-</span> <span class="n">t2</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_lagrange</span><span class="p">(</span><span class="n">xp</span><span class="p">,</span> <span class="n">yp</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Polynomial through the points `(xp, yp)`, evaluated at `x`."""</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">xp</span><span class="p">)):</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">yp</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">xp</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">j</span> <span class="o">!=</span> <span class="n">i</span><span class="p">:</span>
+                <span class="n">w</span> <span class="o">*=</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">xp</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">xp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">xp</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+        <span class="n">out</span> <span class="o">+=</span> <span class="n">w</span>
+    <span class="k">return</span> <span class="n">out</span>
+
+
+<div class="viewcode-block" id="interpolate_blinks_mahot">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.interpolate_blinks_mahot.html#pypillometry.signal.interpolate_blinks_mahot">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">interpolate_blinks_mahot</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">blinks</span><span class="p">,</span> <span class="n">smooth_winsize</span><span class="p">,</span> <span class="n">vel_onset</span><span class="p">,</span> <span class="n">vel_offset</span><span class="p">,</span> <span class="n">margin</span><span class="p">,</span>
+                             <span class="n">blinkwindow</span><span class="p">,</span> <span class="n">interp_type</span><span class="o">=</span><span class="s2">"cubic"</span><span class="p">,</span> <span class="n">tx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">missing</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                             <span class="n">max_duration</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Interpolate blinks with the method by Mahot (2013).</span>
+
+<span class="sd">    The on- and offset of each blink (including the transients) are found</span>
+<span class="sd">    in the velocity profile (see :func:`blink_onsets_mahot`), and the samples</span>
+<span class="sd">    between them are replaced by a curve through four anchor points: the</span>
+<span class="sd">    onset `t2`, the offset `t3`, and the points one blink duration before</span>
+<span class="sd">    and after them (``t1 = t2-(t3-t2)``, ``t4 = t3+(t3-t2)``). Blinks that</span>
+<span class="sd">    are so close that the anchor points of one fall into the other are</span>
+<span class="sd">    merged and interpolated together. Blinks that are too short or have an</span>
+<span class="sd">    unusable anchor point are skipped.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sy : np.ndarray</span>
+<span class="sd">        pupil data (can contain NaN or zeros for missing values)</span>
+<span class="sd">    blinks : np.ndarray or Intervals</span>
+<span class="sd">        blink start/end sample indices (nblinks x 2, end-exclusive); only</span>
+<span class="sd">        the core of each blink is used (see :func:`blink_onsets_mahot`)</span>
+<span class="sd">    smooth_winsize, vel_onset, vel_offset, margin, blinkwindow</span>
+<span class="sd">        see :func:`blink_onsets_mahot` (samples, and units per sample)</span>
+<span class="sd">    interp_type : str</span>
+<span class="sd">        type of interpolation accepted by :func:`scipy.interpolate.interp1d`</span>
+<span class="sd">    tx : np.ndarray, optional</span>
+<span class="sd">        time of each sample; default: the sample index</span>
+<span class="sd">    missing : np.ndarray of bool, optional</span>
+<span class="sd">        samples that cannot be used as anchor points (e.g., excluded</span>
+<span class="sd">        periods); NaN samples never can</span>
+<span class="sd">    max_duration : int, optional</span>
+<span class="sd">        maximum number of samples that are replaced for one blink (with its</span>
+<span class="sd">        margins, or after merging it with neighbouring blinks); longer ones</span>
+<span class="sd">        are skipped (e.g., chains of merged blinks); `None`: no limit</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    filled : np.ndarray</span>
+<span class="sd">        copy of `sy` with the blinks replaced</span>
+<span class="sd">    interpolated : np.ndarray of bool</span>
+<span class="sd">        the replaced samples</span>
+<span class="sd">    skipped : list</span>
+<span class="sd">        the blinks that were not interpolated, as tuples</span>
+<span class="sd">        ``(index, (t1, t2, t3, t4), reason)``</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Mahot, 2013:</span>
+<span class="sd">    https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001.</span>
+<span class="sd">    """</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.interpolate</span><span class="w"> </span><span class="kn">import</span> <span class="n">interp1d</span>
+    <span class="n">sy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sy</span><span class="p">)</span>
+    <span class="n">tx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span> <span class="k">if</span> <span class="n">tx</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">tx</span><span class="p">)</span>
+    <span class="n">filled</span><span class="p">,</span> <span class="n">interpolated</span><span class="p">,</span> <span class="n">skipped</span> <span class="o">=</span> <span class="n">sy</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">blinks</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">filled</span><span class="p">,</span> <span class="n">interpolated</span><span class="p">,</span> <span class="n">skipped</span>
+    <span class="n">unusable</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">sy</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">missing</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">unusable</span> <span class="o">|=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">missing</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+
+    <span class="n">onsets</span> <span class="o">=</span> <span class="n">blink_onsets_mahot</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">blinks</span><span class="p">,</span> <span class="n">smooth_winsize</span><span class="p">,</span> <span class="n">vel_onset</span><span class="p">,</span> <span class="n">vel_offset</span><span class="p">,</span>
+                                <span class="n">margin</span><span class="p">,</span> <span class="n">blinkwindow</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Refined </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">onsets</span><span class="p">)</span><span class="si">}</span><span class="s2"> blink boundaries"</span><span class="p">)</span>
+    <span class="c1"># the anchor points of a blink must not fall into a neighbouring</span>
+    <span class="c1"># blink (they would be NaN), so merge blinks with overlapping windows</span>
+    <span class="k">for</span> <span class="n">ix</span><span class="p">,</span> <span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">,</span> <span class="n">t3</span><span class="p">,</span> <span class="n">t4</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">_merge_overlapping_blink_windows</span><span class="p">(</span><span class="n">onsets</span><span class="p">,</span> <span class="n">n</span><span class="p">)):</span>
+        <span class="c1"># Ensure all 4 time points are distinct and in order</span>
+        <span class="k">if</span> <span class="n">t1</span> <span class="o">==</span> <span class="n">t2</span><span class="p">:</span>
+            <span class="n">t2</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">t3</span> <span class="o">==</span> <span class="n">t4</span><span class="p">:</span>
+            <span class="n">t3</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="n">pts</span> <span class="o">=</span> <span class="p">[</span><span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">,</span> <span class="n">t3</span><span class="p">,</span> <span class="n">t4</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">t1</span> <span class="o">&lt;</span> <span class="n">t2</span> <span class="o">&lt;</span> <span class="n">t3</span> <span class="o">&lt;</span> <span class="n">t4</span><span class="p">):</span>
+            <span class="n">skipped</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">ix</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">pts</span><span class="p">),</span> <span class="s2">"blink too short to interpolate"</span><span class="p">))</span>
+            <span class="k">continue</span>
+        <span class="c1"># e.g., several blinks merged into one long stretch: a curve through</span>
+        <span class="c1"># four points cannot replace it</span>
+        <span class="k">if</span> <span class="n">max_duration</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">t3</span> <span class="o">-</span> <span class="n">t2</span> <span class="o">&gt;</span> <span class="n">max_duration</span><span class="p">:</span>
+            <span class="n">skipped</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">ix</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">pts</span><span class="p">),</span> <span class="sa">f</span><span class="s2">"longer than max_duration (</span><span class="si">{</span><span class="n">t3</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t2</span><span class="si">}</span><span class="s2"> samples)"</span><span class="p">))</span>
+            <span class="k">continue</span>
+        <span class="c1"># e.g., a blink that ends in an excluded period (a break)</span>
+        <span class="k">if</span> <span class="n">unusable</span><span class="p">[</span><span class="n">pts</span><span class="p">]</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+            <span class="n">skipped</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">ix</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">pts</span><span class="p">),</span> <span class="s2">"no usable data at its anchor points"</span><span class="p">))</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">interp_type</span> <span class="o">==</span> <span class="s2">"cubic"</span> <span class="ow">and</span> <span class="n">_anchors_close</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">,</span> <span class="n">t3</span><span class="p">,</span> <span class="n">t4</span><span class="p">):</span>
+            <span class="c1"># a cubic through anchor points that are close on one side and</span>
+            <span class="c1"># far on the other overshoots; a monotone curve cannot</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.interpolate</span><span class="w"> </span><span class="kn">import</span> <span class="n">PchipInterpolator</span>
+            <span class="n">filled</span><span class="p">[</span><span class="n">t2</span><span class="p">:</span><span class="n">t3</span><span class="p">]</span> <span class="o">=</span> <span class="n">PchipInterpolator</span><span class="p">(</span><span class="n">tx</span><span class="p">[</span><span class="n">pts</span><span class="p">],</span> <span class="n">sy</span><span class="p">[</span><span class="n">pts</span><span class="p">])(</span><span class="n">tx</span><span class="p">[</span><span class="n">t2</span><span class="p">:</span><span class="n">t3</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="n">interp_type</span> <span class="o">==</span> <span class="s2">"cubic"</span><span class="p">:</span>
+            <span class="c1"># the cubic polynomial through the four points (what interp1d</span>
+            <span class="c1"># gives for them, but much faster)</span>
+            <span class="n">filled</span><span class="p">[</span><span class="n">t2</span><span class="p">:</span><span class="n">t3</span><span class="p">]</span> <span class="o">=</span> <span class="n">_lagrange</span><span class="p">(</span><span class="n">tx</span><span class="p">[</span><span class="n">pts</span><span class="p">],</span> <span class="n">sy</span><span class="p">[</span><span class="n">pts</span><span class="p">],</span> <span class="n">tx</span><span class="p">[</span><span class="n">t2</span><span class="p">:</span><span class="n">t3</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">filled</span><span class="p">[</span><span class="n">t2</span><span class="p">:</span><span class="n">t3</span><span class="p">]</span> <span class="o">=</span> <span class="n">interp1d</span><span class="p">(</span><span class="n">tx</span><span class="p">[</span><span class="n">pts</span><span class="p">],</span> <span class="n">sy</span><span class="p">[</span><span class="n">pts</span><span class="p">],</span> <span class="n">kind</span><span class="o">=</span><span class="n">interp_type</span><span class="p">)(</span><span class="n">tx</span><span class="p">[</span><span class="n">t2</span><span class="p">:</span><span class="n">t3</span><span class="p">])</span>
+        <span class="n">interpolated</span><span class="p">[</span><span class="n">t2</span><span class="p">:</span><span class="n">t3</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="n">filled</span><span class="p">,</span> <span class="n">interpolated</span><span class="p">,</span> <span class="n">skipped</span></div>
 
 
 
@@ -1446,6 +1594,60 @@ window.runMermaid = runMermaid;</script>
     <span class="k">if</span> <span class="n">d2</span><span class="o">.</span><span class="n">size</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
     <span class="k">return</span> <span class="mf">1.4826</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">d2</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">d2</span><span class="p">)))</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="blink_stretches">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.blink_stretches.html#pypillometry.signal.blink_stretches">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">blink_stretches</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">blinks</span><span class="p">,</span> <span class="n">margin</span><span class="p">,</span> <span class="n">blink_val</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    The stretches of the signal that are replaced for the `blinks`: the</span>
+<span class="sd">    core of each blink (from its first to its last missing sample, as in</span>
+<span class="sd">    :func:`blink_onsets_mahot`; the whole blink if it has no missing</span>
+<span class="sd">    samples, e.g. a blink that does not close the eye completely) extended</span>
+<span class="sd">    by `margin` on both sides. Stretches that overlap are merged.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sy : np.ndarray</span>
+<span class="sd">        pupil data</span>
+<span class="sd">    blinks : np.ndarray or Intervals</span>
+<span class="sd">        blink start/end sample indices (n x 2, end-exclusive)</span>
+<span class="sd">    margin : int or tuple of int</span>
+<span class="sd">        samples `(before, after)` the core that are replaced too (the</span>
+<span class="sd">        transients around it)</span>
+<span class="sd">    blink_val : float</span>
+<span class="sd">        "missing value" code in addition to NaN (default 0)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        the stretches (m x 2, end-exclusive, sorted)</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; y = np.ones(100)</span>
+<span class="sd">    &gt;&gt;&gt; y[20:30] = np.nan</span>
+<span class="sd">    &gt;&gt;&gt; blink_stretches(y, [(18, 32), (60, 70)], (5, 10))</span>
+<span class="sd">    array([[15, 40],</span>
+<span class="sd">           [55, 80]])</span>
+<span class="sd">    """</span>
+    <span class="n">sy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sy</span><span class="p">)</span>
+    <span class="n">before</span><span class="p">,</span> <span class="n">after</span> <span class="o">=</span> <span class="p">(</span><span class="n">margin</span><span class="p">,</span> <span class="n">margin</span><span class="p">)</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">ndim</span><span class="p">(</span><span class="n">margin</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">margin</span>
+    <span class="n">missing</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">sy</span><span class="p">)</span> <span class="k">if</span> <span class="n">blink_val</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">blink_val</span><span class="p">)</span> <span class="k">else</span> \
+        <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">sy</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">sy</span> <span class="o">==</span> <span class="n">blink_val</span><span class="p">)</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">((</span><span class="nb">int</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">b</span><span class="p">))</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">blinks</span><span class="p">):</span>
+        <span class="n">ix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">missing</span><span class="p">[</span><span class="n">a</span><span class="p">:</span><span class="n">b</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">ix</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+            <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="n">ix</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">a</span> <span class="o">+</span> <span class="n">ix</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">a</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">before</span><span class="p">)),</span> <span class="nb">min</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">b</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">after</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">out</span> <span class="ow">and</span> <span class="n">a</span> <span class="o">&lt;=</span> <span class="n">out</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">out</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">b</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">b</span> <span class="o">&gt;</span> <span class="n">a</span><span class="p">:</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span></div>
+
 
 
 <div class="viewcode-block" id="interpolate_blinks_kalman">

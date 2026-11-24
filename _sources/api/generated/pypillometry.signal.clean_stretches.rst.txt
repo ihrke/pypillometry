@@ -1,0 +1,6 @@
+﻿clean\_stretches
+================
+
+.. currentmodule:: pypillometry.signal
+
+.. autofunction:: clean_stretches

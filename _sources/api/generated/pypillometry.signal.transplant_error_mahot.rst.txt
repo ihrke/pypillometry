@@ -1,0 +1,6 @@
+﻿transplant\_error\_mahot
+========================
+
+.. currentmodule:: pypillometry.signal
+
+.. autofunction:: transplant_error_mahot

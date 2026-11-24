@@ -1,0 +1,6 @@
+﻿tune\_blinks\_mahot
+===================
+
+.. currentmodule:: pypillometry.signal
+
+.. autofunction:: tune_blinks_mahot

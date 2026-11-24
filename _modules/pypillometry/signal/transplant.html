@@ -1,0 +1,1738 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pypillometry.signal.transplant &#8212; pypillometry v2.2.4</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx_autodoc_typehints.css?v=057ac668" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=6a604523" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=e89b0eda" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=75c7c72ae941e8b558d8"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
+
+    <script src="../../../_static/documentation_options.js?v=b5d81189"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../../../_static/design-tabs.js?v=fcb327ea"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs";
+
+
+
+
+
+const initStyles = () => {
+    const defaultStyle = document.createElement('style');
+    defaultStyle.textContent = "pre.mermaid {\n    /* Same as .mermaid-container > pre */\n    display: block;\n    width: 100%;\n}\n\npre.mermaid > svg {\n    /* Same as .mermaid-container > pre > svg */\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}";
+    document.head.appendChild(defaultStyle);
+
+    const fullscreenStyle = document.createElement('style');
+    fullscreenStyle.textContent = ".mermaid-container {\n    position: relative;\n    display: flex;\n    flex-direction: row;\n    width: 100%;\n}\n\n.mermaid-container > pre {\n    display: block;\n    width: 100%;\n}\n\n.mermaid-container > pre > svg {\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}\n\n.mermaid-fullscreen-btn {\n    position: absolute;\n    width: 28px;\n    height: 28px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.3);\n    border-radius: 4px;\n    cursor: pointer;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    transition: all 0.2s;\n    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);\n    font-size: 14px;\n    line-height: 1;\n    padding: 0;\n    color: #333;\n}\n\n.mermaid-fullscreen-btn:hover {\n    opacity: 100% !important;\n    background: rgba(255, 255, 255, 1);\n    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-btn.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.3);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-btn.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal {\n    display: none;\n    position: fixed !important;\n    top: 0 !important;\n    left: 0 !important;\n    width: 95vw;\n    height: 100vh;\n    background: rgba(255, 255, 255, 0.98);\n    z-index: 9999;\n    padding: 20px;\n    overflow: auto;\n}\n\n.mermaid-fullscreen-modal.dark-theme {\n    background: rgba(0, 0, 0, 0.98);\n}\n\n.mermaid-fullscreen-modal.active {\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen {\n    position: relative;\n    width: 95vw;\n    height: 90vh;\n    max-width: 95vw;\n    max-height: 90vh;\n    background: white;\n    border-radius: 8px;\n    padding: 20px;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);\n    overflow: auto;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen.dark-theme {\n    background: #1a1a1a;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);\n}\n\n.mermaid-container-fullscreen pre.mermaid {\n    width: 100%;\n    height: 100%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen .mermaid svg {\n    height: 100% !important;\n    width: 100% !important;\n    cursor: grab;\n}\n\n.mermaid-fullscreen-close {\n    position: fixed !important;\n    top: 20px !important;\n    right: 20px !important;\n    width: 40px;\n    height: 40px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.2);\n    border-radius: 50%;\n    cursor: pointer;\n    z-index: 10000;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);\n    transition: all 0.2s;\n    font-size: 24px;\n    line-height: 1;\n    color: #333;\n}\n\n.mermaid-fullscreen-close:hover {\n    background: white;\n    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-close.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.2);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-close.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal .mermaid-fullscreen-btn {\n    display: none !important;\n}";
+    document.head.appendChild(fullscreenStyle);
+}
+
+// Detect if page has dark background
+const isDarkTheme = () => {
+    // We use a set of heuristics:
+    // 1. Check for common dark mode classes or attributes
+    // 2. Check computed background color brightness
+    if (document.documentElement.classList.contains('dark') ||
+        document.documentElement.getAttribute('data-theme') === 'dark' ||
+        document.body.classList.contains('dark') ||
+        document.body.getAttribute('data-theme') === 'dark') {
+        // console.log("Dark theme detected via class/attribute");
+        return true;
+    }
+    if (document.documentElement.classList.contains('light') ||
+        document.documentElement.getAttribute('data-theme') === 'light' ||
+        document.body.classList.contains('light') ||
+        document.body.getAttribute('data-theme') === 'light') {
+        // console.log("Light theme detected via class/attribute");
+        return false;
+    }
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        // console.log("Dark theme detected via prefers-color-scheme");
+        return true;
+    }
+    const bgColor = window.getComputedStyle(document.body).backgroundColor;
+    const match = bgColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)/);
+    if (match) {
+        const r = parseInt(match[1]);
+        const g = parseInt(match[2]);
+        const b = parseInt(match[3]);
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        // console.log("Background color brightness:", brightness);
+        return brightness < 128;
+    }
+    // console.log("No dark or light theme detected, defaulting to light theme");
+    return false;
+};
+
+let darkTheme = isDarkTheme();
+let modal = null;
+let modalContent = null;
+let previousScrollOffset = [window.scrollX, window.scrollY];
+let _lazyObserver = null;
+let _renderQueue = Promise.resolve();
+let closeModal = () => {};
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal?.classList.contains('active')) {
+        closeModal();
+    }
+});
+
+// Apply d3 zoom to each SVG. Idempotent: an SVG already wrapped is skipped,
+// so this is safe to call both for the initial batch and for diagrams that
+// render lazily once they become visible.
+const addZoomToSvgs = (svgs) => {
+    svgs.each(function() {
+        if (this.getAttribute('data-zoom-applied') === 'true') return;
+        var svg = d3.select(this);
+        svg.html("<g class='wrapper'>" + svg.html() + "</g>");
+        var inner = svg.select("g");
+        var zoom = d3.zoom().on("zoom", function(event) {
+            inner.attr("transform", event.transform);
+        });
+        svg.call(zoom);
+        this.setAttribute('data-zoom-applied', 'true');
+    });
+};
+
+const runMermaid = async (rerun) => {
+    console.log("Running mermaid diagrams, rerun =", rerun);
+    // clear all existing mermaid charts
+    let all_mermaids = document.querySelectorAll(".mermaid");
+
+    if (rerun) {
+        // Disconnect any previous lazy rendering observer
+        if (_lazyObserver) {
+            _lazyObserver.disconnect();
+            _lazyObserver = null;
+        }
+
+        all_mermaids.forEach((el) => {
+            el.removeAttribute('data-mermaid-deferred');
+            el.removeAttribute('data-mermaid-render-failed');
+            if(!el.hasAttribute("data-original-code")) {
+                // store original code
+                // console.log(`Storing original code for first run: `, el.innerHTML);
+                el.setAttribute('data-original-code', el.innerHTML);
+            }
+            if(el.getAttribute("data-processed") === "true") {
+                // remove and restore original
+                el.removeAttribute("data-processed");
+                // console.log(`Restoring original code for re-run: `, el.getAttribute('data-original-code'));
+                el.innerHTML = el.getAttribute('data-original-code');
+            } else {
+                // store original code
+                // console.log(`Storing original code for re-run: `, el.innerHTML);
+                el.setAttribute('data-original-code', el.innerHTML);
+            }
+        });
+
+        // Separate visible and hidden elements. Mermaid's layout engine measures
+        // text dimensions via the DOM, which fails for elements hidden by a parent
+        // (e.g., Reveal.js non-active slides, sphinx-design unopened tabs),
+        // producing broken SVGs. Render visible elements now, defer hidden ones.
+        const visible = [];
+        const hidden = [];
+        all_mermaids.forEach((el) => {
+            // offsetParent is null for display:none ancestors.
+            // getClientRects().length > 0 catches position:fixed elements
+            // (which also have null offsetParent but are still visible).
+            if (el.offsetParent !== null || el.getClientRects().length > 0) {
+                visible.push(el);
+            } else {
+                hidden.push(el);
+                el.setAttribute('data-mermaid-deferred', 'true');
+            }
+        });
+
+        if (visible.length > 0) {
+            try {
+                await mermaid.run({ nodes: visible });
+            } catch (e) {
+                console.error("Mermaid rendering failed:", e);
+            }
+        }
+
+        // Lazily render hidden elements when they become visible.
+        // Uses a promise chain (_renderQueue) to serialize rendering,
+        // since IntersectionObserver may report multiple entries at once
+        // and mermaid.run() is not safe to call concurrently.
+        if (hidden.length > 0) {
+            if (typeof IntersectionObserver === 'undefined') {
+                console.warn("IntersectionObserver not available; hidden mermaid diagrams will not render.");
+            } else {
+                _renderQueue = Promise.resolve();
+                _lazyObserver = new IntersectionObserver((entries) => {
+                    for (const entry of entries) {
+                        if (entry.isIntersecting && entry.target.getAttribute("data-processed") !== "true") {
+                            _lazyObserver.unobserve(entry.target);
+                            const el = entry.target;
+                            _renderQueue = _renderQueue.then(async () => {
+                                try {
+                                    await mermaid.run({ nodes: [el] });
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    // Apply zoom to the now-rendered diagram, matching
+                                    // the decoration visible diagrams receive.
+                                    if (false) {
+                                        addZoomToSvgs(d3.selectAll("").select(function() {
+                                            return this.querySelector("svg");
+                                        }));
+                                    }
+                                } catch (e) {
+                                    console.error("Mermaid deferred rendering failed:", e);
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    el.setAttribute('data-mermaid-render-failed', 'true');
+                                }
+                            });
+                        }
+                    }
+                });
+                hidden.forEach((el) => _lazyObserver.observe(el));
+            }
+        }
+    }
+
+    all_mermaids = document.querySelectorAll(".mermaid");
+    // Exclude deferred (hidden) and render-failed elements from completion checks
+    const mermaids_active = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])");
+    const mermaids_processed = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])[data-processed='true']");
+
+    if (false) {
+        const mermaids_to_add_zoom = 0 === -1 ? mermaids_active.length : 0;
+        if(mermaids_to_add_zoom > 0) {
+            var svgs = d3.selectAll("").select(function() {
+                return this.querySelector("svg");
+            });
+            // Wait until every active (visible) diagram has rendered. Deferred
+            // diagrams are excluded, so a fixed d3_node_count that counts a
+            // hidden diagram no longer loops forever waiting for its SVG.
+            if(mermaids_active.length !== mermaids_processed.length) {
+                setTimeout(() => runMermaid(false), 200);
+                return;
+            }
+            addZoomToSvgs(svgs);
+        }
+    } else if(mermaids_active.length !== mermaids_processed.length) {
+        // Wait for mermaid to process all diagrams
+        setTimeout(() => runMermaid(false), 200);
+        return;
+    }
+
+    // Stop here if not adding fullscreen capability
+    if (!true) return;
+
+    if (modal !== null ) {
+        // Destroy existing modal
+        modal.remove();
+        modal = null;
+        modalContent = null;
+    }
+
+    modal = document.createElement('div');
+    modal.className = 'mermaid-fullscreen-modal' + (darkTheme ? ' dark-theme' : '');
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', 'Fullscreen diagram viewer');
+    modal.innerHTML = `
+        <button class="mermaid-fullscreen-close${darkTheme ? ' dark-theme' : ''}" aria-label="Close fullscreen">✕</button>
+        <div class="mermaid-container-fullscreen${darkTheme ? ' dark-theme' : ''}"></div>
+    `;
+    document.body.appendChild(modal);
+
+    modalContent = modal.querySelector('.mermaid-container-fullscreen');
+    const closeBtn = modal.querySelector('.mermaid-fullscreen-close');
+
+    closeModal = () => {
+        modal.classList.remove('active');
+        modalContent.innerHTML = '';
+        document.body.style.overflow = ''
+        window.scrollTo({left: previousScrollOffset[0], top: previousScrollOffset[1], behavior: 'instant'});
+    };
+
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+    document.querySelectorAll('.mermaid').forEach((mermaidDiv) => {
+        if (mermaidDiv.parentNode.classList.contains('mermaid-container') ||
+            mermaidDiv.closest('.mermaid-fullscreen-modal')) {
+            // Already processed, adjust button class if needed
+            const existingBtn = mermaidDiv.parentNode.querySelector('.mermaid-fullscreen-btn');
+            if (existingBtn) {
+                existingBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
+            }
+            return;
+        }
+
+        const container = document.createElement('div');
+        container.className = 'mermaid-container';
+        mermaidDiv.parentNode.insertBefore(container, mermaidDiv);
+        container.appendChild(mermaidDiv);
+
+        const fullscreenBtn = document.createElement('button');
+        fullscreenBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
+        fullscreenBtn.setAttribute('aria-label', 'View diagram in fullscreen');
+        fullscreenBtn.textContent = "\u26f6";
+        fullscreenBtn.style.opacity = "50%";
+
+        // Calculate dynamic position based on diagram's margin and padding
+        const diagramStyle = window.getComputedStyle(mermaidDiv);
+        const marginTop = parseFloat(diagramStyle.marginTop) || 0;
+        const marginRight = parseFloat(diagramStyle.marginRight) || 0;
+        const paddingTop = parseFloat(diagramStyle.paddingTop) || 0;
+        const paddingRight = parseFloat(diagramStyle.paddingRight) || 0;
+        fullscreenBtn.style.top = `${marginTop + paddingTop + 4}px`;
+        fullscreenBtn.style.right = `${marginRight + paddingRight + 4}px`;
+
+        fullscreenBtn.addEventListener('click', () => {
+            previousScrollOffset = [window.scrollX, window.scrollY];
+            const clone = mermaidDiv.cloneNode(true);
+            modalContent.innerHTML = '';
+            modalContent.appendChild(clone);
+
+            const svg = clone.querySelector('svg');
+            if (svg) {
+                svg.removeAttribute('width');
+                svg.removeAttribute('height');
+                svg.style.width = '100%';
+                svg.style.height = 'auto';
+                svg.style.maxWidth = '100%';
+                svg.style.display = 'block';
+
+                if (false) {
+                    setTimeout(() => {
+                        const g = svg.querySelector('g');
+                        if (g) {
+                            var svgD3 = d3.select(svg);
+                            svgD3.html("<g class='wrapper'>" + svgD3.html() + "</g>");
+                            var inner = svgD3.select("g");
+                            var zoom = d3.zoom().on("zoom", function(event) {
+                                inner.attr("transform", event.transform);
+                            });
+                            svgD3.call(zoom);
+                        }
+                    }, 100);
+                }
+            }
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+        container.appendChild(fullscreenBtn);
+    });
+};
+
+
+
+const load = async () => {
+    initStyles();
+
+
+    await runMermaid(true);
+
+    const reRunIfThemeChanges = async () => {
+        const newDarkTheme = isDarkTheme();
+        if (newDarkTheme !== darkTheme) {
+            darkTheme = newDarkTheme;
+            console.log("Theme change detected, re-running mermaid with", darkTheme ? "dark" : "default", "theme");
+            await mermaid.initialize(
+                {...{"startOnLoad": false},
+                ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
+                }
+            );
+            await runMermaid(true);
+        }
+    };
+
+    // Update theme classes when theme changes
+    const themeObserver = new MutationObserver(reRunIfThemeChanges);
+    themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme']
+    });
+    themeObserver.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme']
+    });
+};
+
+
+
+
+
+console.log("Initializing mermaid with", darkTheme ? "dark" : "default", "theme");
+mermaid.initialize(
+    {...{"startOnLoad": false},
+    ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
+    }
+);
+
+window.addEventListener("load", load);
+window.runMermaid = runMermaid;</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/pypillometry/signal/transplant';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../../../_static/pypillometry_logo_200x200.png"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="v2.2.4" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="light">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation" aria-expanded="false" aria-controls="pst-primary-sidebar-modal">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="../../../_static/pypillometry_logo_200x200.png" class="logo__image only-light" alt=""/>
+    <img src="../../../_static/pypillometry_logo_200x200.png" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">pypillometry</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../experimental/index.html">
+    Experimental features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../development/index.html">
+    Development
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ihrke/pypillometry" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pypillometry/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal" tabindex="-1"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../experimental/index.html">
+    Experimental features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../development/index.html">
+    Development
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ihrke/pypillometry" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pypillometry/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-house"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">pypillometry.signal.transplant</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for pypillometry.signal.transplant</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""</span>
+<span class="sd">transplant.py</span>
+<span class="sd">=============</span>
+
+<span class="sd">Transplantation of blinks: real blinks (the missing samples and the</span>
+<span class="sd">artifacts around them) are cut out of a signal and added to clean stretches</span>
+<span class="sd">of a signal, where the true signal is known. This gives data with realistic</span>
+<span class="sd">blinks and a ground truth, e.g. to evaluate or tune the interpolation of</span>
+<span class="sd">blinks.</span>
+
+<span class="sd">All functions work on plain numpy arrays, in samples. Intervals are arrays</span>
+<span class="sd">(n x 2) of start/end sample indices (end-exclusive).</span>
+<span class="sd">"""</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">"blink_cores"</span><span class="p">,</span> <span class="s2">"blink_donors"</span><span class="p">,</span> <span class="s2">"extract_blink_artifacts"</span><span class="p">,</span> <span class="s2">"blink_artifact_profile"</span><span class="p">,</span>
+    <span class="s2">"shrink_blink_artifacts"</span><span class="p">,</span> <span class="s2">"clean_stretches"</span><span class="p">,</span>
+    <span class="s2">"place_blink_artifacts"</span><span class="p">,</span> <span class="s2">"insert_blink_artifacts"</span><span class="p">,</span> <span class="s2">"transplant_blinks"</span><span class="p">,</span>
+    <span class="s2">"transplant_error"</span><span class="p">,</span> <span class="s2">"BlinkTransplant"</span><span class="p">,</span>
+<span class="p">]</span>
+
+
+<span class="c1">#: number of blink-free windows used to estimate the fluctuations of the</span>
+<span class="c1">#: signal (see `blink_artifact_profile`), and the minimum number needed</span>
+<span class="n">_N_NULL</span><span class="p">,</span> <span class="n">_MIN_NULL</span> <span class="o">=</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">10</span>
+<span class="c1">#: minimum number of places in clean stretches for the thresholds of the</span>
+<span class="c1">#: obvious blinks</span>
+<span class="n">_MIN_PLACES</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="c1">#: maximum number of places in clean stretches for the check of the signal</span>
+<span class="c1">#: around the obvious blinks</span>
+<span class="n">_N_FLAT</span> <span class="o">=</span> <span class="mi">5000</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_runs</span><span class="p">(</span><span class="n">mask</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Runs of True in `mask` as an int array (n x 2) of start/end (end-exclusive)."""</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int8</span><span class="p">),</span> <span class="mi">0</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">x</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">x</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_mask</span><span class="p">(</span><span class="n">runs</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Boolean array of length `n` that is True in the `runs` (n x 2, end-exclusive)."""</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">runs</span><span class="p">:</span>
+        <span class="n">mask</span><span class="p">[</span><span class="n">a</span><span class="p">:</span><span class="n">b</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="n">mask</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_missing</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">blink_val</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Missing samples of `sy`: NaN, or equal to `blink_val` (unless it is NaN)."""</span>
+    <span class="n">sy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">miss</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">sy</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">blink_val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">blink_val</span><span class="p">):</span>
+        <span class="n">miss</span> <span class="o">|=</span> <span class="n">sy</span> <span class="o">==</span> <span class="n">blink_val</span>
+    <span class="k">return</span> <span class="n">miss</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_pair</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""`(before, after)` in samples from a number or a pair."""</span>
+    <span class="n">pair</span> <span class="o">=</span> <span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">ndim</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pair</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span> <span class="ow">or</span> <span class="nb">min</span><span class="p">(</span><span class="n">pair</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> must be a non-negative number or a (before, after) pair, "</span>
+                         <span class="sa">f</span><span class="s2">"got </span><span class="si">{</span><span class="n">value</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_decreasing</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Closest (least squares) non-increasing sequence to `y` (isotonic</span>
+<span class="sd">    regression, pool-adjacent-violators)."""</span>
+    <span class="n">vals</span><span class="p">,</span> <span class="n">sizes</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">):</span>
+        <span class="n">vals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="n">sizes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">vals</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">vals</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">sizes</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">sizes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">vals</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span> <span class="o">=</span> <span class="p">[(</span><span class="n">vals</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">sizes</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">vals</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">sizes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">n</span><span class="p">]</span>
+            <span class="n">sizes</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span> <span class="o">=</span> <span class="p">[</span><span class="n">n</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">vals</span><span class="p">,</span> <span class="n">sizes</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="blink_cores">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.blink_cores.html#pypillometry.signal.blink_cores">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">blink_cores</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">merge_distance</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">blink_val</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Cores of the blinks: the runs of missing samples.</span>
+
+<span class="sd">    Runs that are separated by at most `merge_distance` valid samples are one</span>
+<span class="sd">    core (e.g., several quick blinks, or a blink with a few samples of</span>
+<span class="sd">    signal in it), so that a core is surrounded by signal on both sides.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sy : np.ndarray</span>
+<span class="sd">        pupil data</span>
+<span class="sd">    merge_distance : int</span>
+<span class="sd">        runs separated by at most this many samples are merged</span>
+<span class="sd">    blink_val : float</span>
+<span class="sd">        "missing value" code in addition to NaN (default 0); `np.nan` or</span>
+<span class="sd">        `None` if only NaN is missing</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        array (n x 2) of start/end sample indices (end-exclusive) of the</span>
+<span class="sd">        cores, from the first to the last missing sample of each</span>
+<span class="sd">    """</span>
+    <span class="n">runs</span> <span class="o">=</span> <span class="n">_runs</span><span class="p">(</span><span class="n">_missing</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">blink_val</span><span class="p">))</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">runs</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">runs</span>
+    <span class="n">new</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="n">runs</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">runs</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">merge_distance</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">runs</span><span class="p">[</span><span class="n">new</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">runs</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">new</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="kc">True</span><span class="p">],</span> <span class="mi">1</span><span class="p">]]</span></div>
+
+
+
+<div class="viewcode-block" id="blink_donors">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.blink_donors.html#pypillometry.signal.blink_donors">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">blink_donors</span><span class="p">(</span><span class="n">cores</span><span class="p">,</span> <span class="n">missing</span><span class="p">,</span> <span class="n">window</span><span class="p">,</span> <span class="n">min_len</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_len</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Select the blinks that can be transplanted.</span>
+
+<span class="sd">    A blink can be transplanted if the window around its core is inside the</span>
+<span class="sd">    data and has no missing samples other than the core itself (e.g., no</span>
+<span class="sd">    other blink), so that the artifact around the blink can be separated</span>
+<span class="sd">    from the signal.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cores : np.ndarray</span>
+<span class="sd">        cores of the blinks (n x 2, end-exclusive), see :func:`blink_cores`</span>
+<span class="sd">    missing : np.ndarray of bool</span>
+<span class="sd">        samples without usable signal (the cores and, e.g., samples that</span>
+<span class="sd">        are masked for other reasons)</span>
+<span class="sd">    window : int or tuple of int</span>
+<span class="sd">        number of samples `(before, after)` the core that belong to the</span>
+<span class="sd">        blink</span>
+<span class="sd">    min_len, max_len : int</span>
+<span class="sd">        only cores with at least `min_len` and at most `max_len` samples</span>
+<span class="sd">        are used (e.g., no single missing samples, no long periods without</span>
+<span class="sd">        data); `max_len=None`: no limit</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray of bool</span>
+<span class="sd">        True for the cores that can be transplanted</span>
+<span class="sd">    """</span>
+    <span class="n">cores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">cores</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">missing</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">missing</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="n">pre</span><span class="p">,</span> <span class="n">post</span> <span class="o">=</span> <span class="n">_pair</span><span class="p">(</span><span class="n">window</span><span class="p">,</span> <span class="s2">"window"</span><span class="p">)</span>
+    <span class="c1"># number of missing samples before each sample</span>
+    <span class="n">nmiss</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">missing</span><span class="p">)]</span>
+    <span class="n">ok</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cores</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cores</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">b</span> <span class="o">-</span> <span class="n">a</span> <span class="o">&lt;</span> <span class="n">min_len</span> <span class="ow">or</span> <span class="p">(</span><span class="n">max_len</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">b</span> <span class="o">-</span> <span class="n">a</span> <span class="o">&gt;</span> <span class="n">max_len</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">a</span> <span class="o">-</span> <span class="n">pre</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">b</span> <span class="o">+</span> <span class="n">post</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">missing</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="n">ok</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">nmiss</span><span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="o">-</span> <span class="n">nmiss</span><span class="p">[</span><span class="n">a</span> <span class="o">-</span> <span class="n">pre</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">nmiss</span><span class="p">[</span><span class="n">b</span> <span class="o">+</span> <span class="n">post</span><span class="p">]</span> <span class="o">-</span> <span class="n">nmiss</span><span class="p">[</span><span class="n">b</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ok</span></div>
+
+
+
+<div class="viewcode-block" id="extract_blink_artifacts">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.extract_blink_artifacts.html#pypillometry.signal.extract_blink_artifacts">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">extract_blink_artifacts</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">cores</span><span class="p">,</span> <span class="n">window</span><span class="p">,</span> <span class="n">edge</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"additive"</span><span class="p">,</span> <span class="n">blink_val</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Cut the artifacts of blinks out of a signal.</span>
+
+<span class="sd">    For each blink, the window around its core is cut out and a slow</span>
+<span class="sd">    baseline is removed: the straight line through the means of the first</span>
+<span class="sd">    and the last `edge` samples of the window. What remains is the</span>
+<span class="sd">    artifact of the blink (plus the fluctuations of the signal and the</span>
+<span class="sd">    noise in the window). It fades out to zero over the `edge` samples</span>
+<span class="sd">    at both ends (cosine taper), so it can be added to another signal</span>
+<span class="sd">    without steps (see :func:`insert_blink_artifacts`).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sy : np.ndarray</span>
+<span class="sd">        pupil data</span>
+<span class="sd">    cores : np.ndarray</span>
+<span class="sd">        cores of the blinks to cut out (n x 2, end-exclusive); their</span>
+<span class="sd">        windows must be inside the data and should have no other missing</span>
+<span class="sd">        samples (see :func:`blink_donors`)</span>
+<span class="sd">    window : int or tuple of int</span>
+<span class="sd">        number of samples `(before, after)` the core to cut out; should</span>
+<span class="sd">        be generous, so that the whole artifact is inside the window</span>
+<span class="sd">    edge : int, optional</span>
+<span class="sd">        number of samples at each end of the window for the baseline and</span>
+<span class="sd">        the taper; default: a quarter of the smaller side of the window</span>
+<span class="sd">    mode : str</span>
+<span class="sd">        ``"additive"`` (default): the artifact is the difference to the</span>
+<span class="sd">        baseline; ``"multiplicative"``: the artifact is the ratio to the</span>
+<span class="sd">        baseline (e.g., an eyelid that covers a part of the pupil), which</span>
+<span class="sd">        needs a positive signal</span>
+<span class="sd">    blink_val : float</span>
+<span class="sd">        "missing value" code in addition to NaN (default 0)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list of np.ndarray</span>
+<span class="sd">        one artifact per blink, with `before + len(core) + after` samples;</span>
+<span class="sd">        NaN at the missing samples. Additive artifacts are 0 where there</span>
+<span class="sd">        is no artifact, multiplicative ones 1.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"additive"</span><span class="p">,</span> <span class="s2">"multiplicative"</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"mode must be 'additive' or 'multiplicative', got </span><span class="si">{</span><span class="n">mode</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">sy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">pre</span><span class="p">,</span> <span class="n">post</span> <span class="o">=</span> <span class="n">_pair</span><span class="p">(</span><span class="n">window</span><span class="p">,</span> <span class="s2">"window"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">edge</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">edge</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">pre</span><span class="p">,</span> <span class="n">post</span><span class="p">)</span> <span class="o">//</span> <span class="mi">4</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="mi">1</span> <span class="o">&lt;=</span> <span class="n">edge</span> <span class="o">&lt;=</span> <span class="nb">min</span><span class="p">(</span><span class="n">pre</span><span class="p">,</span> <span class="n">post</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"edge must be between 1 and the window size, got </span><span class="si">{</span><span class="n">edge</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">ramp</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">edge</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">/</span> <span class="n">edge</span><span class="p">)</span>
+    <span class="n">artifacts</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">cores</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">a</span> <span class="o">-</span> <span class="n">pre</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">b</span> <span class="o">+</span> <span class="n">post</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">sy</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"the window of the blink at samples </span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">b</span><span class="si">}</span><span class="s2"> is not inside the data"</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">sy</span><span class="p">[</span><span class="n">a</span> <span class="o">-</span> <span class="n">pre</span><span class="p">:</span><span class="n">b</span> <span class="o">+</span> <span class="n">post</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">y</span><span class="p">[</span><span class="n">_missing</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">blink_val</span><span class="p">)]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+        <span class="n">left</span><span class="p">,</span> <span class="n">right</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">y</span><span class="p">[:</span><span class="n">edge</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="o">-</span><span class="n">edge</span><span class="p">:])</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">left</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">right</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"no signal at the edges of the window of the blink at samples </span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">b</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="c1"># line through the centres of the edges</span>
+        <span class="n">baseline</span> <span class="o">=</span> <span class="n">left</span> <span class="o">+</span> <span class="p">(</span><span class="n">right</span> <span class="o">-</span> <span class="n">left</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">edge</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="n">edge</span><span class="p">)</span>
+        <span class="n">taper</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+        <span class="n">taper</span><span class="p">[:</span><span class="n">edge</span><span class="p">],</span> <span class="n">taper</span><span class="p">[</span><span class="o">-</span><span class="n">edge</span><span class="p">:]</span> <span class="o">=</span> <span class="n">ramp</span><span class="p">,</span> <span class="n">ramp</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">"additive"</span><span class="p">:</span>
+            <span class="n">artifacts</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">y</span> <span class="o">-</span> <span class="n">baseline</span><span class="p">)</span> <span class="o">*</span> <span class="n">taper</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">baseline</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"mode='multiplicative' needs a positive signal"</span><span class="p">)</span>
+            <span class="n">artifacts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="p">(</span><span class="n">y</span> <span class="o">/</span> <span class="n">baseline</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">taper</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">artifacts</span></div>
+
+
+
+<div class="viewcode-block" id="blink_artifact_profile">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.blink_artifact_profile.html#pypillometry.signal.blink_artifact_profile">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">blink_artifact_profile</span><span class="p">(</span><span class="n">artifacts</span><span class="p">,</span> <span class="n">null_artifacts</span><span class="p">,</span> <span class="n">window</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    The typical artifact of the blinks and how reliable the single ones are.</span>
+
+<span class="sd">    A single artifact (see :func:`extract_blink_artifacts`) also contains</span>
+<span class="sd">    the fluctuations of the signal around that blink, which cannot be told</span>
+<span class="sd">    apart from its artifact. Over all blinks, they can: the fluctuations</span>
+<span class="sd">    average out in the median artifact, and their size is known from</span>
+<span class="sd">    "artifacts" that were cut out where there is no blink</span>
+<span class="sd">    (`null_artifacts`). Where the artifacts differ more from each other</span>
+<span class="sd">    than these do, the blinks differ. The weight of the single artifacts</span>
+<span class="sd">    is the share of their variance (across blinks) that is not explained</span>
+<span class="sd">    by the fluctuations: ``1 - s**2 / v**2`` for the robust standard</span>
+<span class="sd">    deviations `v` of the artifacts and `s` of the null artifacts at each</span>
+<span class="sd">    sample (at least 0), made non-increasing with the distance to the core.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    artifacts : list of np.ndarray</span>
+<span class="sd">        artifacts of the blinks</span>
+<span class="sd">    null_artifacts : list of np.ndarray</span>
+<span class="sd">        artifacts that were cut out the same way from clean signal</span>
+<span class="sd">    window : int or tuple of int</span>
+<span class="sd">        number of samples `(before, after)` the core in the artifacts</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        ``"median"``: the median artifact, ``"weight"``: the weight of the</span>
+<span class="sd">        single artifacts (between 0 and 1); each a tuple `(before, after)`</span>
+<span class="sd">        of arrays for the samples before the core (the last one is next</span>
+<span class="sd">        to the core) and after it (the first one is next to it)</span>
+<span class="sd">    """</span>
+    <span class="n">pre</span><span class="p">,</span> <span class="n">post</span> <span class="o">=</span> <span class="n">_pair</span><span class="p">(</span><span class="n">window</span><span class="p">,</span> <span class="s2">"window"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">artifacts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">null_artifacts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"no artifacts"</span><span class="p">)</span>
+    <span class="n">median</span><span class="p">,</span> <span class="n">weight</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">before</span> <span class="ow">in</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="c1"># the samples of one side, ordered by their distance to the core</span>
+        <span class="c1"># (the core has a different size in each artifact)</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">side</span><span class="p">(</span><span class="n">arts</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">a</span><span class="p">[:</span><span class="n">pre</span><span class="p">][::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">before</span> <span class="k">else</span> <span class="n">a</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">-</span> <span class="n">post</span><span class="p">:]</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">arts</span><span class="p">])</span>
+        <span class="n">arts</span><span class="p">,</span> <span class="n">null</span> <span class="o">=</span> <span class="n">side</span><span class="p">(</span><span class="n">artifacts</span><span class="p">),</span> <span class="n">side</span><span class="p">(</span><span class="n">null_artifacts</span><span class="p">)</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">arts</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="mf">1.4826</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">arts</span> <span class="o">-</span> <span class="n">m</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="mf">1.4826</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">null</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">null</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">_decreasing</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">s</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">v</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">1e-300</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">median</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">before</span> <span class="k">else</span> <span class="n">m</span><span class="p">)</span>
+        <span class="n">weight</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">w</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">before</span> <span class="k">else</span> <span class="n">w</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">"median"</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">median</span><span class="p">),</span> <span class="s2">"weight"</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">weight</span><span class="p">)}</span></div>
+
+
+
+<div class="viewcode-block" id="shrink_blink_artifacts">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.shrink_blink_artifacts.html#pypillometry.signal.shrink_blink_artifacts">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">shrink_blink_artifacts</span><span class="p">(</span><span class="n">artifacts</span><span class="p">,</span> <span class="n">profile</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Remove the fluctuations of the signal from the artifacts of blinks.</span>
+
+<span class="sd">    Each artifact is replaced by the median artifact plus its difference</span>
+<span class="sd">    to the median artifact times the weight (see</span>
+<span class="sd">    :func:`blink_artifact_profile`): close to the core, where the blinks</span>
+<span class="sd">    differ, the artifacts are kept; further away, where they only differ</span>
+<span class="sd">    by the fluctuations of the signal around them, they become the median</span>
+<span class="sd">    artifact.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    artifacts : list of np.ndarray</span>
+<span class="sd">        artifacts of the blinks (see :func:`extract_blink_artifacts`)</span>
+<span class="sd">    profile : dict</span>
+<span class="sd">        median artifact and weights (see :func:`blink_artifact_profile`)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list of np.ndarray</span>
+<span class="sd">        the artifacts without the fluctuations</span>
+<span class="sd">    """</span>
+    <span class="p">(</span><span class="n">m0</span><span class="p">,</span> <span class="n">m1</span><span class="p">),</span> <span class="p">(</span><span class="n">w0</span><span class="p">,</span> <span class="n">w1</span><span class="p">)</span> <span class="o">=</span> <span class="n">profile</span><span class="p">[</span><span class="s2">"median"</span><span class="p">],</span> <span class="n">profile</span><span class="p">[</span><span class="s2">"weight"</span><span class="p">]</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">artifacts</span><span class="p">:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">a</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="n">m0</span><span class="p">)]</span> <span class="o">=</span> <span class="n">m0</span> <span class="o">+</span> <span class="p">(</span><span class="n">a</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="n">m0</span><span class="p">)]</span> <span class="o">-</span> <span class="n">m0</span><span class="p">)</span> <span class="o">*</span> <span class="n">w0</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">m1</span><span class="p">):</span>
+            <span class="n">a</span><span class="p">[</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">m1</span><span class="p">):]</span> <span class="o">=</span> <span class="n">m1</span> <span class="o">+</span> <span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">m1</span><span class="p">):]</span> <span class="o">-</span> <span class="n">m1</span><span class="p">)</span> <span class="o">*</span> <span class="n">w1</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">out</span></div>
+
+
+
+<div class="viewcode-block" id="clean_stretches">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.clean_stretches.html#pypillometry.signal.clean_stretches">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">clean_stretches</span><span class="p">(</span><span class="n">missing</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">min_len</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Stretches of clean signal: no missing samples and far from any.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    missing : np.ndarray of bool</span>
+<span class="sd">        samples without usable signal (e.g., blinks)</span>
+<span class="sd">    window : int or tuple of int</span>
+<span class="sd">        number of samples `(before, after)` each missing sample that are</span>
+<span class="sd">        not clean (e.g., the artifacts around the blinks)</span>
+<span class="sd">    min_len : int</span>
+<span class="sd">        minimum number of samples of a stretch</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        array (n x 2) of start/end sample indices (end-exclusive)</span>
+<span class="sd">    """</span>
+    <span class="n">missing</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">missing</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="n">pre</span><span class="p">,</span> <span class="n">post</span> <span class="o">=</span> <span class="n">_pair</span><span class="p">(</span><span class="n">window</span><span class="p">,</span> <span class="s2">"window"</span><span class="p">)</span>
+    <span class="n">dirty</span> <span class="o">=</span> <span class="n">missing</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">_runs</span><span class="p">(</span><span class="n">missing</span><span class="p">):</span>
+        <span class="n">dirty</span><span class="p">[</span><span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">a</span> <span class="o">-</span> <span class="n">pre</span><span class="p">):</span><span class="n">b</span> <span class="o">+</span> <span class="n">post</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">runs</span> <span class="o">=</span> <span class="n">_runs</span><span class="p">(</span><span class="o">~</span><span class="n">dirty</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">runs</span><span class="p">[</span><span class="n">runs</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">runs</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">min_len</span><span class="p">]</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_window_means</span><span class="p">(</span><span class="n">cs</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Means of the signal from `a` to `b` (end-exclusive), from its</span>
+<span class="sd">    cumulative sum `cs` (with a leading 0)."""</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">cs</span><span class="p">[</span><span class="n">b</span><span class="p">]</span> <span class="o">-</span> <span class="n">cs</span><span class="p">[</span><span class="n">a</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_drop_rise</span><span class="p">(</span><span class="n">cs</span><span class="p">,</span> <span class="n">starts</span><span class="p">,</span> <span class="n">ends</span><span class="p">,</span> <span class="n">pre</span><span class="p">,</span> <span class="n">post</span><span class="p">,</span> <span class="n">edge</span><span class="p">,</span> <span class="n">near</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Drop of the signal before `starts` and rise after `ends` (see</span>
+<span class="sd">    :func:`_obvious_blinks`)."""</span>
+    <span class="n">drop</span> <span class="o">=</span> <span class="n">_window_means</span><span class="p">(</span><span class="n">cs</span><span class="p">,</span> <span class="n">starts</span> <span class="o">-</span> <span class="n">pre</span><span class="p">,</span> <span class="n">starts</span> <span class="o">-</span> <span class="n">pre</span> <span class="o">+</span> <span class="n">edge</span><span class="p">)</span> <span class="o">-</span> <span class="n">_window_means</span><span class="p">(</span><span class="n">cs</span><span class="p">,</span> <span class="n">starts</span> <span class="o">-</span> <span class="n">near</span><span class="p">,</span> <span class="n">starts</span><span class="p">)</span>
+    <span class="n">rise</span> <span class="o">=</span> <span class="n">_window_means</span><span class="p">(</span><span class="n">cs</span><span class="p">,</span> <span class="n">ends</span> <span class="o">+</span> <span class="n">post</span> <span class="o">-</span> <span class="n">edge</span><span class="p">,</span> <span class="n">ends</span> <span class="o">+</span> <span class="n">post</span><span class="p">)</span> <span class="o">-</span> <span class="n">_window_means</span><span class="p">(</span><span class="n">cs</span><span class="p">,</span> <span class="n">ends</span><span class="p">,</span> <span class="n">ends</span> <span class="o">+</span> <span class="n">near</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">drop</span><span class="p">,</span> <span class="n">rise</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_flat_step</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">starts</span><span class="p">,</span> <span class="n">ends</span><span class="p">,</span> <span class="n">pre</span><span class="p">,</span> <span class="n">post</span><span class="p">,</span> <span class="n">transient</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""How much the signal in the windows around the cores `starts`-`ends`</span>
+<span class="sd">    differs from the straight line through the means of the first and last</span>
+<span class="sd">    quarter of the shorter side of the window (as in</span>
+<span class="sd">    :func:`extract_blink_artifacts`): the larger of the mean absolute</span>
+<span class="sd">    differences before and after the transients (`transient`: samples</span>
+<span class="sd">    `(before, after)` the core that belong to them), and the difference</span>
+<span class="sd">    of the two means (a step)."""</span>
+    <span class="n">edge</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">pre</span><span class="p">,</span> <span class="n">post</span><span class="p">)</span> <span class="o">//</span> <span class="mi">4</span><span class="p">)</span>
+    <span class="n">tp</span><span class="p">,</span> <span class="n">tq</span> <span class="o">=</span> <span class="n">transient</span>
+    <span class="n">flat</span><span class="p">,</span> <span class="n">step</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">starts</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">starts</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">starts</span><span class="p">,</span> <span class="n">ends</span><span class="p">)):</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">sy</span><span class="p">[</span><span class="n">a</span> <span class="o">-</span> <span class="n">pre</span><span class="p">:</span><span class="n">b</span> <span class="o">+</span> <span class="n">post</span><span class="p">]</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+        <span class="n">left</span><span class="p">,</span> <span class="n">right</span> <span class="o">=</span> <span class="n">y</span><span class="p">[:</span><span class="n">edge</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">y</span><span class="p">[</span><span class="o">-</span><span class="n">edge</span><span class="p">:]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="p">(</span><span class="n">left</span> <span class="o">+</span> <span class="p">(</span><span class="n">right</span> <span class="o">-</span> <span class="n">left</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">edge</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="n">edge</span><span class="p">)))</span>
+        <span class="n">flat</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">r</span><span class="p">[:</span><span class="n">pre</span> <span class="o">-</span> <span class="n">tp</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">r</span><span class="p">[</span><span class="n">n</span> <span class="o">-</span> <span class="n">post</span> <span class="o">+</span> <span class="n">tq</span><span class="p">:]</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+        <span class="n">step</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">right</span> <span class="o">-</span> <span class="n">left</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">flat</span><span class="p">,</span> <span class="n">step</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_obvious_blinks</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">cores</span><span class="p">,</span> <span class="n">window</span><span class="p">,</span> <span class="n">missing</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">edge</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">near</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">quantile</span><span class="o">=</span><span class="mf">0.99</span><span class="p">,</span>
+                    <span class="n">avoid</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">transient</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">blink_val</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Which of the `cores` (n x 2, end-exclusive) are obvious blinks: a large</span>
+<span class="sd">    downward transient, missing samples and a large upward transient, with</span>
+<span class="sd">    no other missing samples in the `window` (`(before, after)` samples)</span>
+<span class="sd">    around them. Good donors for :func:`transplant_blinks`.</span>
+
+<span class="sd">    The drop is the mean of the first `edge` samples of the window before</span>
+<span class="sd">    the core minus the mean of the `near` samples right before it; the rise</span>
+<span class="sd">    is the mean of the last `edge` samples of the window after the core</span>
+<span class="sd">    minus the mean of the `near` samples right after it. Both must be</span>
+<span class="sd">    larger than the `quantile` of the same differences at all places in</span>
+<span class="sd">    the clean stretches (no missing, `missing` or `avoid` samples in the</span>
+<span class="sd">    window), so the units of the signal do not matter. `edge` defaults to</span>
+<span class="sd">    a fifth of the shorter side of the window, `near` to half of `edge`.</span>
+<span class="sd">    Cores without these transients (e.g., loss of the pupil by the eye</span>
+<span class="sd">    tracker, or eye movements that make the pupil drop and rise in steps)</span>
+<span class="sd">    are not obvious blinks.</span>
+
+<span class="sd">    Outside the transients (the `transient` samples `(before, after)` the</span>
+<span class="sd">    core; default: half of each side of the window), the signal must also</span>
+<span class="sd">    be close to the straight line through both ends of the window, which</span>
+<span class="sd">    is removed when the blink is transplanted (see</span>
+<span class="sd">    :func:`extract_blink_artifacts`): the mean absolute difference there</span>
+<span class="sd">    (before and after the transients) and the difference of the levels at</span>
+<span class="sd">    both ends must be at most the `quantile` of the same at places in the</span>
+<span class="sd">    clean stretches (at least a window away from missing samples). Otherwise, slower changes of the pupil around the</span>
+<span class="sd">    blink (e.g., a plateau or a step) would be transplanted with it.</span>
+
+<span class="sd">    Returns a boolean array (True for the obvious blinks); raises a</span>
+<span class="sd">    ValueError if there are not enough clean stretches for the thresholds.</span>
+
+<span class="sd">    &gt;&gt;&gt; rng = np.random.default_rng(1)</span>
+<span class="sd">    &gt;&gt;&gt; y = 1000 + np.cumsum(rng.normal(0, 0.5, 5000))</span>
+<span class="sd">    &gt;&gt;&gt; y[2000:2050] = np.nan                                   # a blink</span>
+<span class="sd">    &gt;&gt;&gt; y[1960:2000] -= np.linspace(0, 300, 40)</span>
+<span class="sd">    &gt;&gt;&gt; y[2050:2120] -= np.linspace(300, 0, 70)</span>
+<span class="sd">    &gt;&gt;&gt; y[4000:4050] = np.nan                                   # no transients</span>
+<span class="sd">    &gt;&gt;&gt; _obvious_blinks(y, blink_cores(y), (100, 150))</span>
+<span class="sd">    array([ True, False])</span>
+<span class="sd">    """</span>
+    <span class="n">sy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">cores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">cores</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">pre</span><span class="p">,</span> <span class="n">post</span> <span class="o">=</span> <span class="n">_pair</span><span class="p">(</span><span class="n">window</span><span class="p">,</span> <span class="s2">"window"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">edge</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">edge</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">pre</span><span class="p">,</span> <span class="n">post</span><span class="p">)</span> <span class="o">//</span> <span class="mi">5</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">near</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">near</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">edge</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;</span> <span class="n">edge</span> <span class="o">&lt;=</span> <span class="nb">min</span><span class="p">(</span><span class="n">pre</span><span class="p">,</span> <span class="n">post</span><span class="p">)</span> <span class="ow">and</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="n">near</span> <span class="o">&lt;=</span> <span class="nb">min</span><span class="p">(</span><span class="n">pre</span><span class="p">,</span> <span class="n">post</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"edge and near must be between 1 and the window (</span><span class="si">{</span><span class="n">pre</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">post</span><span class="si">}</span><span class="s2">), "</span>
+                         <span class="sa">f</span><span class="s2">"got </span><span class="si">{</span><span class="n">edge</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="n">near</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="n">quantile</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"quantile must be between 0 and 1, got </span><span class="si">{</span><span class="n">quantile</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">miss</span> <span class="o">=</span> <span class="n">_missing</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">blink_val</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">missing</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">miss</span> <span class="o">=</span> <span class="n">miss</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">missing</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">transient</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">transient</span> <span class="o">=</span> <span class="p">(</span><span class="n">pre</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">post</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">transient</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">transient</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">transient</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">pre</span> <span class="ow">and</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">transient</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">post</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"transient must be shorter than the window (</span><span class="si">{</span><span class="n">pre</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">post</span><span class="si">}</span><span class="s2">), "</span>
+                         <span class="sa">f</span><span class="s2">"got </span><span class="si">{</span><span class="n">transient</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">isolated</span> <span class="o">=</span> <span class="n">blink_donors</span><span class="p">(</span><span class="n">cores</span><span class="p">,</span> <span class="n">miss</span><span class="p">,</span> <span class="p">(</span><span class="n">pre</span><span class="p">,</span> <span class="n">post</span><span class="p">))</span>
+    <span class="n">cs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">miss</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">sy</span><span class="p">))]</span>
+
+    <span class="c1"># the same changes at all places of the clean stretches</span>
+    <span class="n">dirty</span> <span class="o">=</span> <span class="n">miss</span> <span class="k">if</span> <span class="n">avoid</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">miss</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">avoid</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">a</span> <span class="o">+</span> <span class="n">pre</span><span class="p">,</span> <span class="n">b</span> <span class="o">-</span> <span class="n">post</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">clean_stretches</span><span class="p">(</span><span class="n">dirty</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">pre</span> <span class="o">+</span> <span class="n">post</span><span class="p">)]</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">if</span> <span class="n">t</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">_MIN_PLACES</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"only </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="si">}</span><span class="s2"> places in clean stretches (at least </span><span class="si">{</span><span class="n">_MIN_PLACES</span><span class="si">}</span><span class="s2"> "</span>
+                         <span class="s2">"needed): the signal needs stretches without missing samples that "</span>
+                         <span class="s2">"are longer than the window"</span><span class="p">)</span>
+    <span class="n">null_drop</span><span class="p">,</span> <span class="n">null_rise</span> <span class="o">=</span> <span class="n">_drop_rise</span><span class="p">(</span><span class="n">cs</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">pre</span><span class="p">,</span> <span class="n">post</span><span class="p">,</span> <span class="n">edge</span><span class="p">,</span> <span class="n">near</span><span class="p">)</span>
+    <span class="n">drop_threshold</span><span class="p">,</span> <span class="n">rise_threshold</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">null_drop</span><span class="p">,</span> <span class="n">quantile</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">null_rise</span><span class="p">,</span> <span class="n">quantile</span><span class="p">)</span>
+
+    <span class="n">obvious</span> <span class="o">=</span> <span class="n">isolated</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">isolated</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">obvious</span>
+    <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">cores</span><span class="p">[</span><span class="n">isolated</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">cores</span><span class="p">[</span><span class="n">isolated</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">drop</span><span class="p">,</span> <span class="n">rise</span> <span class="o">=</span> <span class="n">_drop_rise</span><span class="p">(</span><span class="n">cs</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">pre</span><span class="p">,</span> <span class="n">post</span><span class="p">,</span> <span class="n">edge</span><span class="p">,</span> <span class="n">near</span><span class="p">)</span>
+    <span class="n">flat</span><span class="p">,</span> <span class="n">step</span> <span class="o">=</span> <span class="n">_flat_step</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">pre</span><span class="p">,</span> <span class="n">post</span><span class="p">,</span> <span class="n">transient</span><span class="p">)</span>
+
+    <span class="c1"># the same for windows with a core of typical length in the clean</span>
+    <span class="c1"># stretches, away from the transients around missing samples (at most</span>
+    <span class="c1"># _N_FLAT of them, evenly spread)</span>
+    <span class="n">core</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">))</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">s</span> <span class="o">+</span> <span class="n">pre</span><span class="p">,</span> <span class="n">e</span> <span class="o">-</span> <span class="n">post</span> <span class="o">-</span> <span class="n">core</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+         <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">clean_stretches</span><span class="p">(</span><span class="n">dirty</span><span class="p">,</span> <span class="p">(</span><span class="n">pre</span><span class="p">,</span> <span class="n">post</span><span class="p">),</span> <span class="n">pre</span> <span class="o">+</span> <span class="n">core</span> <span class="o">+</span> <span class="n">post</span><span class="p">)]</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">if</span> <span class="n">t</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">_N_FLAT</span><span class="p">:</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">_N_FLAT</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">_MIN_PLACES</span><span class="p">:</span>
+        <span class="n">null_flat</span><span class="p">,</span> <span class="n">null_step</span> <span class="o">=</span> <span class="n">_flat_step</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">t</span> <span class="o">+</span> <span class="n">core</span><span class="p">,</span> <span class="n">pre</span><span class="p">,</span> <span class="n">post</span><span class="p">,</span> <span class="n">transient</span><span class="p">)</span>
+        <span class="n">flat_threshold</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">null_flat</span><span class="p">,</span> <span class="n">quantile</span><span class="p">)</span>
+        <span class="n">step_threshold</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">null_step</span><span class="p">,</span> <span class="n">quantile</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"Not enough clean signal to check the signal around the blinks"</span><span class="p">)</span>
+        <span class="n">flat_threshold</span> <span class="o">=</span> <span class="n">step_threshold</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+    <span class="n">obvious</span><span class="p">[</span><span class="n">isolated</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="n">drop</span> <span class="o">&gt;</span> <span class="n">drop_threshold</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">rise</span> <span class="o">&gt;</span> <span class="n">rise_threshold</span><span class="p">)</span>
+                         <span class="o">&amp;</span> <span class="p">(</span><span class="n">flat</span> <span class="o">&lt;=</span> <span class="n">flat_threshold</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">step</span> <span class="o">&lt;=</span> <span class="n">step_threshold</span><span class="p">))</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">obvious</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="si">}</span><span class="s2"> obvious blinks of </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">cores</span><span class="p">)</span><span class="si">}</span><span class="s2"> cores (</span><span class="si">{</span><span class="n">isolated</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="si">}</span><span class="s2"> "</span>
+                 <span class="sa">f</span><span class="s2">"isolated); drop &gt; </span><span class="si">{</span><span class="n">drop_threshold</span><span class="si">:</span><span class="s2">.4g</span><span class="si">}</span><span class="s2">, rise &gt; </span><span class="si">{</span><span class="n">rise_threshold</span><span class="si">:</span><span class="s2">.4g</span><span class="si">}</span><span class="s2">, "</span>
+                 <span class="sa">f</span><span class="s2">"flat &lt;= </span><span class="si">{</span><span class="n">flat_threshold</span><span class="si">:</span><span class="s2">.4g</span><span class="si">}</span><span class="s2">, step &lt;= </span><span class="si">{</span><span class="n">step_threshold</span><span class="si">:</span><span class="s2">.4g</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">obvious</span>
+
+
+<div class="viewcode-block" id="place_blink_artifacts">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.place_blink_artifacts.html#pypillometry.signal.place_blink_artifacts">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">place_blink_artifacts</span><span class="p">(</span><span class="n">stretches</span><span class="p">,</span> <span class="n">lengths</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Choose random, non-overlapping places for artifacts in clean stretches.</span>
+
+<span class="sd">    The stretches are filled with randomly chosen artifacts at random</span>
+<span class="sd">    distances; each artifact is used about equally often.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    stretches : np.ndarray</span>
+<span class="sd">        clean stretches (n x 2, end-exclusive), see :func:`clean_stretches`</span>
+<span class="sd">    lengths : sequence of int</span>
+<span class="sd">        number of samples of each artifact</span>
+<span class="sd">    n : int, optional</span>
+<span class="sd">        number of places; default (and at most): as many as fit</span>
+<span class="sd">    pad : int</span>
+<span class="sd">        number of clean samples to keep free on each side of each artifact</span>
+<span class="sd">        (twice as many between two artifacts)</span>
+<span class="sd">    seed : int or np.random.Generator, optional</span>
+<span class="sd">        seed of the random numbers</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        int array (n x 2), sorted by position: the first sample of each</span>
+<span class="sd">        place and the index of the artifact that goes there</span>
+<span class="sd">    """</span>
+    <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+    <span class="n">lengths</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">lengths</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">places</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lengths</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">order</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lengths</span><span class="p">)),</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">stretches</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="n">a</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">art</span> <span class="o">=</span> <span class="n">order</span><span class="p">[</span><span class="n">k</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">order</span><span class="p">)]</span>
+            <span class="n">need</span> <span class="o">=</span> <span class="n">lengths</span><span class="p">[</span><span class="n">art</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">pad</span>
+            <span class="k">if</span> <span class="n">cursor</span> <span class="o">+</span> <span class="n">need</span> <span class="o">&gt;</span> <span class="n">b</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="c1"># random distance, at most the size of the place itself</span>
+            <span class="n">cursor</span> <span class="o">+=</span> <span class="nb">int</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">integers</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">cursor</span> <span class="o">-</span> <span class="n">need</span><span class="p">,</span> <span class="n">need</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="n">places</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">cursor</span> <span class="o">+</span> <span class="n">pad</span><span class="p">,</span> <span class="n">art</span><span class="p">))</span>
+            <span class="n">cursor</span> <span class="o">+=</span> <span class="n">need</span>
+            <span class="n">k</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">order</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">order</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lengths</span><span class="p">))</span>
+    <span class="n">places</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">places</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">places</span><span class="p">):</span>
+        <span class="n">places</span> <span class="o">=</span> <span class="n">places</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">places</span><span class="p">),</span> <span class="n">n</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">))]</span>
+    <span class="k">return</span> <span class="n">places</span></div>
+
+
+
+<div class="viewcode-block" id="insert_blink_artifacts">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.insert_blink_artifacts.html#pypillometry.signal.insert_blink_artifacts">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">insert_blink_artifacts</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">artifacts</span><span class="p">,</span> <span class="n">places</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"additive"</span><span class="p">,</span> <span class="n">missing_value</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Put artifacts of blinks into a signal.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sy : np.ndarray</span>
+<span class="sd">        the (clean) signal</span>
+<span class="sd">    artifacts : list of np.ndarray</span>
+<span class="sd">        artifacts, see :func:`extract_blink_artifacts`</span>
+<span class="sd">    places : np.ndarray</span>
+<span class="sd">        int array (n x 2): the first sample and the index of the artifact</span>
+<span class="sd">        for each place, see :func:`place_blink_artifacts`</span>
+<span class="sd">    mode : str</span>
+<span class="sd">        ``"additive"`` (default) or ``"multiplicative"``: how the</span>
+<span class="sd">        artifacts were extracted</span>
+<span class="sd">    missing_value : float</span>
+<span class="sd">        value of the missing samples of the artifacts (default NaN)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        copy of `sy` with the artifacts</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"additive"</span><span class="p">,</span> <span class="s2">"multiplicative"</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"mode must be 'additive' or 'multiplicative', got </span><span class="si">{</span><span class="n">mode</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">art</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">places</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">artifacts</span><span class="p">[</span><span class="n">art</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">start</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">start</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">out</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"the artifact at sample </span><span class="si">{</span><span class="n">start</span><span class="si">}</span><span class="s2"> is not inside the data"</span><span class="p">)</span>
+        <span class="n">seg</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">start</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)]</span>
+        <span class="n">seg</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="n">missing_value</span><span class="p">,</span> <span class="n">seg</span> <span class="o">+</span> <span class="n">a</span> <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">"additive"</span> <span class="k">else</span> <span class="n">seg</span> <span class="o">*</span> <span class="n">a</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">out</span></div>
+
+
+
+<div class="viewcode-block" id="BlinkTransplant">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.BlinkTransplant.html#pypillometry.signal.BlinkTransplant">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">BlinkTransplant</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    A signal with transplanted blinks (see :func:`transplant_blinks`).</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    signal : np.ndarray</span>
+<span class="sd">        the signal with the transplanted blinks</span>
+<span class="sd">    clean : np.ndarray</span>
+<span class="sd">        the signal without them (the ground truth)</span>
+<span class="sd">    blinks : np.ndarray</span>
+<span class="sd">        the cores of the transplanted blinks (n x 2, end-exclusive): from</span>
+<span class="sd">        the first to the last missing sample</span>
+<span class="sd">    windows : np.ndarray</span>
+<span class="sd">        the windows that hold the transplanted artifacts (n x 2)</span>
+<span class="sd">    sites : np.ndarray</span>
+<span class="sd">        the windows with the clean samples reserved around them (n x 2);</span>
+<span class="sd">        the errors of a reconstruction are computed in the sites (see</span>
+<span class="sd">        :func:`transplant_error`)</span>
+<span class="sd">    donor : np.ndarray</span>
+<span class="sd">        index (into `donors`) of the blink that was transplanted to each site</span>
+<span class="sd">    donors : np.ndarray</span>
+<span class="sd">        the cores of the blinks that were cut out (n x 2)</span>
+<span class="sd">    artifacts : list of np.ndarray</span>
+<span class="sd">        their artifacts (see :func:`extract_blink_artifacts`)</span>
+<span class="sd">    window : tuple of int</span>
+<span class="sd">        number of samples `(before, after)` the cores in the windows</span>
+<span class="sd">    mode : str</span>
+<span class="sd">        ``"additive"`` or ``"multiplicative"``</span>
+<span class="sd">    profile : dict or None</span>
+<span class="sd">        the median artifact and the weights of the single artifacts (see</span>
+<span class="sd">        :func:`blink_artifact_profile`) that were used to remove the</span>
+<span class="sd">        fluctuations of the signal from the artifacts</span>
+<span class="sd">    """</span>
+    <span class="n">signal</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">clean</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">blinks</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">windows</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">sites</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">donor</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">donors</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">artifacts</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">window</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"additive"</span>
+    <span class="n">profile</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blinks</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="sa">f</span><span class="s2">"BlinkTransplant(</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blinks</span><span class="p">)</span><span class="si">}</span><span class="s2"> transplanted blinks from "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">donors</span><span class="p">)</span><span class="si">}</span><span class="s2"> donors, </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">signal</span><span class="p">)</span><span class="si">}</span><span class="s2"> samples, mode=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="si">!r}</span><span class="s2">)"</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BlinkTransplant.error">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.BlinkTransplant.html#pypillometry.signal.BlinkTransplant.error">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filled</span><span class="p">,</span> <span class="n">per_site</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""RMSE of the reconstruction `filled` (see :func:`transplant_error`)."""</span>
+        <span class="k">return</span> <span class="n">transplant_error</span><span class="p">(</span><span class="n">filled</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">clean</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sites</span><span class="p">,</span> <span class="n">per_site</span><span class="o">=</span><span class="n">per_site</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="transplant_blinks">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.transplant_blinks.html#pypillometry.signal.transplant_blinks">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">transplant_blinks</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">window</span><span class="p">,</span> <span class="n">edge</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">merge_distance</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">min_len</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_len</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                      <span class="n">n</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"additive"</span><span class="p">,</span> <span class="n">shrink</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">missing</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                      <span class="n">avoid</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">blink_val</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cores</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Transplant the blinks of a signal into its clean stretches.</span>
+
+<span class="sd">    The blinks are found as runs of missing samples (their cores, see</span>
+<span class="sd">    :func:`blink_cores`). The blinks that are surrounded by signal are cut</span>
+<span class="sd">    out with a window around the core (:func:`blink_donors`,</span>
+<span class="sd">    :func:`extract_blink_artifacts`) and put at random places where the</span>
+<span class="sd">    signal is clean (:func:`clean_stretches`,</span>
+<span class="sd">    :func:`place_blink_artifacts`, :func:`insert_blink_artifacts`). There,</span>
+<span class="sd">    the signal without the blink is known, so a reconstruction of the</span>
+<span class="sd">    transplanted blinks can be compared to it (see :func:`transplant_error`).</span>
+
+<span class="sd">    The window around a blink does not only contain its artifact but also</span>
+<span class="sd">    the fluctuations of the signal there, which would be transplanted with</span>
+<span class="sd">    it. With `shrink`, they are removed where the blinks do not differ</span>
+<span class="sd">    from each other (see :func:`shrink_blink_artifacts`), so the window can</span>
+<span class="sd">    be generous. Close to the cores, where the blinks differ, the</span>
+<span class="sd">    fluctuations and the noise are still transplanted with the artifacts.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sy : np.ndarray</span>
+<span class="sd">        pupil data (the blinks are missing samples: NaN or `blink_val`)</span>
+<span class="sd">    window : int or tuple of int</span>
+<span class="sd">        number of samples `(before, after)` the core of a blink that are</span>
+<span class="sd">        transplanted with it; should be generous, so that it includes the</span>
+<span class="sd">        whole artifact</span>
+<span class="sd">    edge : int, optional</span>
+<span class="sd">        number of samples at each end of the window for the baseline and</span>
+<span class="sd">        the taper (see :func:`extract_blink_artifacts`)</span>
+<span class="sd">    merge_distance : int</span>
+<span class="sd">        missing samples separated by at most this many samples are one</span>
+<span class="sd">        blink (see :func:`blink_cores`)</span>
+<span class="sd">    min_len, max_len : int</span>
+<span class="sd">        minimum and maximum number of samples of the cores that are</span>
+<span class="sd">        transplanted (see :func:`blink_donors`)</span>
+<span class="sd">    n : int, optional</span>
+<span class="sd">        number of blinks to transplant; default (and at most): as many as fit</span>
+<span class="sd">    pad : int</span>
+<span class="sd">        number of clean samples to keep free on each side of each window</span>
+<span class="sd">    mode : str</span>
+<span class="sd">        ``"additive"`` (default) or ``"multiplicative"`` (see</span>
+<span class="sd">        :func:`extract_blink_artifacts`)</span>
+<span class="sd">    shrink : bool</span>
+<span class="sd">        remove the fluctuations of the signal from the artifacts where the</span>
+<span class="sd">        blinks do not differ (default); needs clean signal in `source` to</span>
+<span class="sd">        estimate the fluctuations, otherwise the artifacts are used as</span>
+<span class="sd">        they are</span>
+<span class="sd">    missing : np.ndarray of bool, optional</span>
+<span class="sd">        further samples without usable signal (e.g., masked for other</span>
+<span class="sd">        reasons); the blinks next to them are not transplanted and nothing</span>
+<span class="sd">        is transplanted next to them</span>
+<span class="sd">    avoid : np.ndarray of bool, optional</span>
+<span class="sd">        samples of `sy` where no blinks are transplanted, e.g. other</span>
+<span class="sd">        artifacts (in addition to the `window` around all missing samples)</span>
+<span class="sd">    blink_val : float</span>
+<span class="sd">        "missing value" code in addition to NaN (default 0). The</span>
+<span class="sd">        transplanted cores get this value if the signal uses it (and has</span>
+<span class="sd">        no NaN), otherwise NaN.</span>
+<span class="sd">    source : np.ndarray, optional</span>
+<span class="sd">        signal to take the blinks from; default: `sy` itself. E.g., for</span>
+<span class="sd">        transplanting the blinks of a recording into a simulated signal.</span>
+<span class="sd">    cores : np.ndarray, optional</span>
+<span class="sd">        cores of the blinks to transplant (n x 2, end-exclusive), e.g. a</span>
+<span class="sd">        subset of the blinks; default: all blinks (see :func:`blink_cores`).</span>
+<span class="sd">        Those that are not surrounded by signal are left out.</span>
+<span class="sd">    seed : int or np.random.Generator, optional</span>
+<span class="sd">        seed of the random numbers</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    BlinkTransplant</span>
+<span class="sd">        the signal with the transplanted blinks, the clean signal and</span>
+<span class="sd">        where the blinks are</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; rng = np.random.default_rng(1)</span>
+<span class="sd">    &gt;&gt;&gt; y = 1000 + np.cumsum(rng.normal(0, 1, 5000))</span>
+<span class="sd">    &gt;&gt;&gt; y[980:1000] -= np.linspace(0, 500, 20)   # a blink at samples 1000-1050</span>
+<span class="sd">    &gt;&gt;&gt; y[1050:1090] -= np.linspace(500, 0, 40)</span>
+<span class="sd">    &gt;&gt;&gt; y[1000:1050] = np.nan</span>
+<span class="sd">    &gt;&gt;&gt; tr = transplant_blinks(y, window=(100, 150), n=5, seed=1)</span>
+<span class="sd">    &gt;&gt;&gt; len(tr.blinks)</span>
+<span class="sd">    5</span>
+<span class="sd">    &gt;&gt;&gt; filled = np.where(np.isnan(tr.signal), 1000, tr.signal)   # some reconstruction</span>
+<span class="sd">    &gt;&gt;&gt; rmse = tr.error(filled)</span>
+<span class="sd">    """</span>
+    <span class="n">sy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">src</span> <span class="o">=</span> <span class="n">sy</span> <span class="k">if</span> <span class="n">source</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">pre</span><span class="p">,</span> <span class="n">post</span> <span class="o">=</span> <span class="n">_pair</span><span class="p">(</span><span class="n">window</span><span class="p">,</span> <span class="s2">"window"</span><span class="p">)</span>
+
+    <span class="c1"># donors</span>
+    <span class="n">src_missing</span> <span class="o">=</span> <span class="n">_missing</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">blink_val</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">cores</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">cores</span> <span class="o">=</span> <span class="n">blink_cores</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">merge_distance</span><span class="p">,</span> <span class="n">blink_val</span><span class="p">)</span>
+    <span class="n">cores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">cores</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">unusable</span> <span class="o">=</span> <span class="n">src_missing</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">missing</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">source</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">unusable</span> <span class="o">|=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">missing</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="n">donors</span> <span class="o">=</span> <span class="n">cores</span><span class="p">[</span><span class="n">blink_donors</span><span class="p">(</span><span class="n">cores</span><span class="p">,</span> <span class="n">unusable</span><span class="p">,</span> <span class="p">(</span><span class="n">pre</span><span class="p">,</span> <span class="n">post</span><span class="p">),</span> <span class="n">min_len</span><span class="p">,</span> <span class="n">max_len</span><span class="p">)]</span>
+    <span class="n">artifacts</span> <span class="o">=</span> <span class="n">extract_blink_artifacts</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">donors</span><span class="p">,</span> <span class="p">(</span><span class="n">pre</span><span class="p">,</span> <span class="n">post</span><span class="p">),</span> <span class="n">edge</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">blink_val</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">donors</span><span class="p">)</span><span class="si">}</span><span class="s2"> of </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">cores</span><span class="p">)</span><span class="si">}</span><span class="s2"> blinks can be transplanted"</span><span class="p">)</span>
+    <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+    <span class="n">profile</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">shrink</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">donors</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># "artifacts" without a blink, with a core of typical size</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="n">pre</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">donors</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">donors</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="n">post</span>
+        <span class="n">null</span> <span class="o">=</span> <span class="n">place_blink_artifacts</span><span class="p">(</span><span class="n">clean_stretches</span><span class="p">(</span><span class="n">unusable</span><span class="p">,</span> <span class="p">(</span><span class="n">pre</span><span class="p">,</span> <span class="n">post</span><span class="p">)),</span> <span class="p">[</span><span class="n">size</span><span class="p">],</span>
+                                     <span class="n">_N_NULL</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">rng</span><span class="p">)[:,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">null</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">_MIN_NULL</span><span class="p">:</span>
+            <span class="n">null</span> <span class="o">=</span> <span class="n">extract_blink_artifacts</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">null</span> <span class="o">+</span> <span class="n">pre</span><span class="p">,</span> <span class="n">null</span> <span class="o">+</span> <span class="n">size</span> <span class="o">-</span> <span class="n">post</span><span class="p">],</span>
+                                           <span class="p">(</span><span class="n">pre</span><span class="p">,</span> <span class="n">post</span><span class="p">),</span> <span class="n">edge</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">blink_val</span><span class="p">)</span>
+            <span class="n">profile</span> <span class="o">=</span> <span class="n">blink_artifact_profile</span><span class="p">(</span><span class="n">artifacts</span><span class="p">,</span> <span class="n">null</span><span class="p">,</span> <span class="p">(</span><span class="n">pre</span><span class="p">,</span> <span class="n">post</span><span class="p">))</span>
+            <span class="n">artifacts</span> <span class="o">=</span> <span class="n">shrink_blink_artifacts</span><span class="p">(</span><span class="n">artifacts</span><span class="p">,</span> <span class="n">profile</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"Not enough clean signal to estimate its fluctuations: "</span>
+                           <span class="s2">"they are transplanted with the blinks"</span><span class="p">)</span>
+
+    <span class="c1"># places in the clean signal</span>
+    <span class="n">sy_missing</span> <span class="o">=</span> <span class="n">_missing</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">blink_val</span><span class="p">)</span>
+    <span class="n">dirty</span> <span class="o">=</span> <span class="n">sy_missing</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">missing</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">dirty</span> <span class="o">|=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">missing</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="n">stretches</span> <span class="o">=</span> <span class="n">clean_stretches</span><span class="p">(</span><span class="n">dirty</span><span class="p">,</span> <span class="p">(</span><span class="n">pre</span><span class="p">,</span> <span class="n">post</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">avoid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">stretches</span> <span class="o">=</span> <span class="n">_runs</span><span class="p">(</span><span class="n">_mask</span><span class="p">(</span><span class="n">stretches</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">sy</span><span class="p">))</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">avoid</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">))</span>
+    <span class="n">places</span> <span class="o">=</span> <span class="n">place_blink_artifacts</span><span class="p">(</span><span class="n">stretches</span><span class="p">,</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">artifacts</span><span class="p">],</span> <span class="n">n</span><span class="p">,</span> <span class="n">pad</span><span class="p">,</span> <span class="n">rng</span><span class="p">)</span>
+
+    <span class="n">uses_val</span> <span class="o">=</span> <span class="p">(</span><span class="n">blink_val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">blink_val</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">src</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span> <span class="ow">and</span> <span class="n">src_missing</span><span class="o">.</span><span class="n">any</span><span class="p">())</span>
+    <span class="n">signal</span> <span class="o">=</span> <span class="n">insert_blink_artifacts</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">artifacts</span><span class="p">,</span> <span class="n">places</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span>
+                                    <span class="n">blink_val</span> <span class="k">if</span> <span class="n">uses_val</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+    <span class="n">start</span><span class="p">,</span> <span class="n">donor</span> <span class="o">=</span> <span class="n">places</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">places</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">length</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">artifacts</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">donor</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">windows</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">start</span><span class="p">,</span> <span class="n">start</span> <span class="o">+</span> <span class="n">length</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">BlinkTransplant</span><span class="p">(</span><span class="n">signal</span><span class="o">=</span><span class="n">signal</span><span class="p">,</span> <span class="n">clean</span><span class="o">=</span><span class="n">sy</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+                           <span class="n">blinks</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">start</span> <span class="o">+</span> <span class="n">pre</span><span class="p">,</span> <span class="n">start</span> <span class="o">+</span> <span class="n">length</span> <span class="o">-</span> <span class="n">post</span><span class="p">],</span>
+                           <span class="n">windows</span><span class="o">=</span><span class="n">windows</span><span class="p">,</span> <span class="n">sites</span><span class="o">=</span><span class="n">windows</span> <span class="o">+</span> <span class="p">[</span><span class="o">-</span><span class="n">pad</span><span class="p">,</span> <span class="n">pad</span><span class="p">],</span>
+                           <span class="n">donor</span><span class="o">=</span><span class="n">donor</span><span class="p">,</span> <span class="n">donors</span><span class="o">=</span><span class="n">donors</span><span class="p">,</span> <span class="n">artifacts</span><span class="o">=</span><span class="n">artifacts</span><span class="p">,</span>
+                           <span class="n">window</span><span class="o">=</span><span class="p">(</span><span class="n">pre</span><span class="p">,</span> <span class="n">post</span><span class="p">),</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span>
+                           <span class="n">profile</span><span class="o">=</span><span class="n">profile</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="transplant_error">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.transplant_error.html#pypillometry.signal.transplant_error">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">transplant_error</span><span class="p">(</span><span class="n">filled</span><span class="p">,</span> <span class="n">clean</span><span class="p">,</span> <span class="n">sites</span><span class="p">,</span> <span class="n">per_site</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Error of a reconstruction of transplanted blinks.</span>
+
+<span class="sd">    Root mean squared difference between the reconstructed and the clean</span>
+<span class="sd">    signal over all samples of the sites, i.e., the samples of the cores,</span>
+<span class="sd">    of the artifacts around them and of the clean signal next to them (a</span>
+<span class="sd">    reconstruction can replace more samples than necessary). Samples that</span>
+<span class="sd">    are still missing in `filled` (NaN) are interpolated linearly first,</span>
+<span class="sd">    so that reconstructions that leave blinks out can be compared.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    filled : np.ndarray</span>
+<span class="sd">        the signal with the reconstructed blinks</span>
+<span class="sd">    clean : np.ndarray</span>
+<span class="sd">        the signal without the transplanted blinks</span>
+<span class="sd">    sites : np.ndarray</span>
+<span class="sd">        the sites of the transplanted blinks (n x 2, end-exclusive), see</span>
+<span class="sd">        :class:`BlinkTransplant`</span>
+<span class="sd">    per_site : bool</span>
+<span class="sd">        return the error of each site instead of the error over all sites</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float or np.ndarray</span>
+<span class="sd">        the error (NaN without sites), or one error per site</span>
+<span class="sd">    """</span>
+    <span class="n">filled</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">filled</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">clean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">clean</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">sites</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">sites</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sites</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">per_site</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="n">nan</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">filled</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">nan</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+        <span class="n">valid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="o">~</span><span class="n">nan</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">valid</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"the reconstructed signal has no valid samples"</span><span class="p">)</span>
+        <span class="n">filled</span> <span class="o">=</span> <span class="n">filled</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">filled</span><span class="p">[</span><span class="n">nan</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">nan</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">valid</span><span class="p">,</span> <span class="n">filled</span><span class="p">[</span><span class="n">valid</span><span class="p">])</span>
+    <span class="n">sse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">nansum</span><span class="p">((</span><span class="n">filled</span><span class="p">[</span><span class="n">a</span><span class="p">:</span><span class="n">b</span><span class="p">]</span> <span class="o">-</span> <span class="n">clean</span><span class="p">[</span><span class="n">a</span><span class="p">:</span><span class="n">b</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">sites</span><span class="p">])</span>
+    <span class="n">nsamp</span> <span class="o">=</span> <span class="n">sites</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">sites</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">per_site</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">sse</span> <span class="o">/</span> <span class="n">nsamp</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">sse</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">nsamp</span><span class="o">.</span><span class="n">sum</span><span class="p">()))</span></div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2026, Matthias Mittner.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
+  </p>
+</div>
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.24.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

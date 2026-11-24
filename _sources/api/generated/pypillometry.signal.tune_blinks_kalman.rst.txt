@@ -1,0 +1,6 @@
+﻿tune\_blinks\_kalman
+====================
+
+.. currentmodule:: pypillometry.signal
+
+.. autofunction:: tune_blinks_kalman

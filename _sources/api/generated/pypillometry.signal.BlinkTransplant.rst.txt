@@ -1,0 +1,24 @@
+﻿BlinkTransplant
+===============
+
+.. currentmodule:: pypillometry.signal
+
+.. autoclass:: BlinkTransplant
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~BlinkTransplant.error
+   
+   
+
+
+   .. rubric:: Details

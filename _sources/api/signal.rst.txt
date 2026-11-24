@@ -40,7 +40,62 @@ Blinks
    detect_blinks_velocity
    detect_blinks_zero
    blink_onsets_mahot
+   interpolate_blinks_mahot
    interpolate_blinks_kalman
+   blink_stretches
+
+.. _api-transplant:
+
+Transplantation of blinks
+-------------------------
+
+Real blinks are cut out and added to clean stretches of a signal, where
+the signal without the blink is known, e.g. to evaluate or tune the
+interpolation of blinks or in simulations.
+
+.. autosummary::
+   :toctree: generated
+   :template: function.rst
+   :nosignatures:
+
+   transplant_blinks
+   transplant_error
+   blink_cores
+   blink_donors
+   extract_blink_artifacts
+   blink_artifact_profile
+   shrink_blink_artifacts
+   clean_stretches
+   place_blink_artifacts
+   insert_blink_artifacts
+
+.. autosummary::
+   :toctree: generated
+   :template: class.rst
+   :nosignatures:
+
+   BlinkTransplant
+
+The parameters of the interpolation of blinks can be tuned on
+transplanted blinks (see
+:meth:`d.pupil.blinks_optimize_parameters() <pypillometry.eyedata.pupil.PupilNamespace.blinks_optimize_parameters>`).
+
+.. autosummary::
+   :toctree: generated
+   :template: function.rst
+   :nosignatures:
+
+   tune_blinks_mahot
+   transplant_error_mahot
+   tune_blinks_kalman
+   transplant_error_kalman
+
+.. autosummary::
+   :toctree: generated
+   :template: class.rst
+   :nosignatures:
+
+   BlinkTuneResult
 
 Pupil response
 --------------

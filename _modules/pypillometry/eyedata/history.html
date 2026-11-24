@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pypillometry.eyedata.history &#8212; pypillometry v2.2.3</title>
+    <title>pypillometry.eyedata.history &#8212; pypillometry v2.2.4</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../../_static/documentation_options.js?v=7e518144"></script>
+    <script src="../../../_static/documentation_options.js?v=b5d81189"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -414,7 +414,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.3" />
+  <meta name="docsearch:version" content="v2.2.4" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -808,10 +808,14 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">namespaces ``d.pupil`` and ``d.gaze``).</span>
 <span class="sd">"""</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">cast</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.namespace</span><span class="w"> </span><span class="kn">import</span> <span class="n">Namespace</span>
+
+<span class="c1"># a function; the decorator keeps its signature (for type checkers and editors)</span>
+<span class="n">F</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">"F"</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_history_arg</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
@@ -840,7 +844,7 @@ window.runMermaid = runMermaid;</script>
 
 <div class="viewcode-block" id="keephistory">
 <a class="viewcode-back" href="../../../api/generated/pypillometry.keephistory.html#pypillometry.keephistory">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">keephistory</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">keephistory</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">F</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">F</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Decorator that records a method call in the history of the returned object.</span>
 
@@ -887,7 +891,7 @@ window.runMermaid = runMermaid;</script>
             <span class="n">fstr</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="s1">','</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">allargs</span><span class="p">)</span><span class="si">}</span><span class="s2">)"</span>
             <span class="n">target</span><span class="o">.</span><span class="n">add_to_history</span><span class="p">({</span><span class="s2">"funcstring"</span><span class="p">:</span> <span class="n">fstr</span><span class="p">,</span> <span class="s2">"funcname"</span><span class="p">:</span> <span class="n">name</span><span class="p">})</span>
         <span class="k">return</span> <span class="n">obj</span>
-    <span class="k">return</span> <span class="n">wrapper</span></div>
+    <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="n">wrapper</span><span class="p">)</span></div>
 
 </pre></div>
 

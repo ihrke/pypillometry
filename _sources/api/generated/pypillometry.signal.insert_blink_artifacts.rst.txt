@@ -1,0 +1,6 @@
+﻿insert\_blink\_artifacts
+========================
+
+.. currentmodule:: pypillometry.signal
+
+.. autofunction:: insert_blink_artifacts

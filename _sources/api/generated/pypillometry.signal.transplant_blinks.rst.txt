@@ -1,0 +1,6 @@
+﻿transplant\_blinks
+==================
+
+.. currentmodule:: pypillometry.signal
+
+.. autofunction:: transplant_blinks

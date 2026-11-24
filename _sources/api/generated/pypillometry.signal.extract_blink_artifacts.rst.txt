@@ -1,0 +1,6 @@
+﻿extract\_blink\_artifacts
+=========================
+
+.. currentmodule:: pypillometry.signal
+
+.. autofunction:: extract_blink_artifacts

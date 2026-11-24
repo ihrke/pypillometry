@@ -1,0 +1,6 @@
+﻿interpolate\_blinks\_mahot
+==========================
+
+.. currentmodule:: pypillometry.signal
+
+.. autofunction:: interpolate_blinks_mahot

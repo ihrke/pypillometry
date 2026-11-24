@@ -1,0 +1,6 @@
+﻿transplant\_error\_kalman
+=========================
+
+.. currentmodule:: pypillometry.signal
+
+.. autofunction:: transplant_error_kalman

@@ -26,6 +26,7 @@ Blinks, masks and intervals
    :nosignatures:
 
    plot.PlotNamespace.plot_blinks
+   plot.PlotNamespace.plot_blink_clusters
    plot.PlotNamespace.plot_masked
    plot.PlotNamespace.plot_intervals
 

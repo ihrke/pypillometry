@@ -1,0 +1,6 @@
+﻿transplant\_error
+=================
+
+.. currentmodule:: pypillometry.signal
+
+.. autofunction:: transplant_error

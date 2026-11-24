@@ -161,8 +161,29 @@ Example returning multiple outputs:
     )
 
 
+Interpolation of blinks
+-----------------------
+
+:func:`tweak_blink_interpolation` opens the tweak window for the
+interpolation of blinks: the pupil of one eye with its interpolation, and
+the parameters of the method (e.g. the result of
+:meth:`~EyeData.pupil.blinks_optimize_parameters` as a start). Only a short
+part of the recording is shown (30 s around a random blink, or a given
+`interval`), and "Auto Update" is off, so press "Update" after a change:
+
+.. code-block:: python
+
+    d = d.pupil.blinks_detect()
+    res = d.pupil.blinks_optimize_parameters()
+    pars = pp.tweak_blink_interpolation(d, pars=res)        # another part: seed=...
+    d = d.pupil.blinks_interpolate(**pars)
+
+``auto_update=False`` does the same for :func:`tweak` itself.
+
+
 API reference
 -------------
 
-All parameters are documented in the API reference: :func:`tweak`.
+All parameters are documented in the API reference: :func:`tweak`,
+:func:`tweak_blink_interpolation`.
 

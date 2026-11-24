@@ -66,7 +66,7 @@ All of these are installed with the package (see ``pyproject.toml``):
   numerical work and plotting
 - `eyelinkio <https://github.com/scott-huberty/eyelinkio>`_ for reading
   Eyelink EDF files
-- :mod:`PyQt5` and :mod:`vispy` for the interactive :doc:`viewer
+- :mod:`PySide6` (Qt; PyQt6, PyQt5 or PySide2 also work if installed) and :mod:`vispy` for the interactive :doc:`viewer
   </user_guide/viewer>`
 - :mod:`cmdstanpy` for the baseline model (see below)
 - `loguru <https://loguru.readthedocs.io/>`_ for logging

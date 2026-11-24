@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Preprocessing &#8212; pypillometry v2.2.3</title>
+    <title>Preprocessing &#8212; pypillometry v2.2.4</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=7e518144"></script>
+    <script src="../_static/documentation_options.js?v=b5d81189"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.3" />
+  <meta name="docsearch:version" content="v2.2.4" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -518,17 +518,23 @@ distorted as the eyelid covers the pupil.</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.blinks_interpolate" title="pypillometry.eyedata.pupil.PupilNamespace.blinks_interpolate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.pupil.blinks_interpolate</span></code></a></p></td>
 <td><p>Interpolating blinks in the pupillary signal.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.get_blinks" title="pypillometry.EyeData.get_blinks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.get_blinks</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.blinks_optimize_parameters" title="pypillometry.eyedata.pupil.PupilNamespace.blinks_optimize_parameters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.pupil.blinks_optimize_parameters</span></code></a></p></td>
+<td><p>Tune the parameters of <code class="xref py py-meth docutils literal notranslate"><span class="pre">blinks_interpolate()</span></code> for this recording.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.get_blinks" title="pypillometry.EyeData.get_blinks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.get_blinks</span></code></a></p></td>
 <td><p>Get blinks as a dict of Intervals (one per eye/variable).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.get_interpolated" title="pypillometry.EyeData.get_interpolated"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.get_interpolated</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.get_interpolated" title="pypillometry.EyeData.get_interpolated"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.get_interpolated</span></code></a></p></td>
 <td><p>Get the interpolated stretches as a dict of Intervals (one per eye/variable).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.blink_stats" title="pypillometry.EyeData.blink_stats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.blink_stats</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.blink_stats" title="pypillometry.EyeData.blink_stats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.blink_stats</span></code></a></p></td>
 <td><p>Return statistics on blink durations.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../api/plotting.html#pypillometry.plot.PlotNamespace.plot_blinks" title="pypillometry.plot.PlotNamespace.plot_blinks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.plot.plot_blinks</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../api/plotting.html#pypillometry.plot.PlotNamespace.plot_blinks" title="pypillometry.plot.PlotNamespace.plot_blinks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.plot.plot_blinks</span></code></a></p></td>
 <td><p>Plot detected blinks in separate subplots.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../api/plotting.html#pypillometry.plot.PlotNamespace.plot_blink_clusters" title="pypillometry.plot.PlotNamespace.plot_blink_clusters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData.plot.plot_blink_clusters</span></code></a></p></td>
+<td><p>Plot the detected blinks in groups of similar shape.</p></td>
 </tr>
 </tbody>
 </table>
@@ -550,6 +556,12 @@ the threshold for a while (<code class="docutils literal notranslate"><span clas
 so that brief changes, e.g. from eye movements, are not taken for blinks;
 <code class="docutils literal notranslate"><span class="pre">margin=</span></code> extends the detected blinks on both sides, e.g. to include the
 whole transient around them.
+<a class="reference internal" href="../api/plotting.html#pypillometry.plot.PlotNamespace.plot_blink_clusters" title="pypillometry.plot.PlotNamespace.plot_blink_clusters"><code class="xref py py-meth docutils literal notranslate"><span class="pre">d.plot.plot_blink_clusters()</span></code></a>
+shows the detected blinks in a few groups of similar shape, on top of all
+blinks in grey, and the blinks without missing samples in a panel of their
+own. A group that does not look like blinks (e.g., no drop and rise, or
+steps) means that the detection finds too much: change its parameters and
+plot again.
 <a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.blinks_interpolate" title="pypillometry.eyedata.pupil.PupilNamespace.blinks_interpolate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">blinks_interpolate()</span></code></a> replaces the pupil size during
 blinks by a smooth curve (Mathôt, 2013). With <code class="docutils literal notranslate"><span class="pre">method=&quot;kalman&quot;</span></code>, it
 replaces them instead by their expected value given the signal around them
@@ -567,6 +579,31 @@ on each side and replaced by a smooth curve (green):</p>
 <figure class="align-default">
 <img alt="../_images/preprocessing-1.png" class="plot-directive" src="../_images/preprocessing-1.png" />
 </figure>
+<p>The parameters of the default method decide how much of the signal around
+the missing samples is replaced. Instead of setting them by eye,
+<a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.blinks_optimize_parameters" title="pypillometry.eyedata.pupil.PupilNamespace.blinks_optimize_parameters"><code class="xref py py-meth docutils literal notranslate"><span class="pre">blinks_optimize_parameters()</span></code></a> tunes them for a recording:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span>
+<span class="n">res</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_optimize_parameters</span><span class="p">()</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_interpolate</span><span class="p">(</span><span class="o">**</span><span class="n">res</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>It transplants the obvious blinks of the recording into its clean
+stretches, where the signal without the blink is known, and searches for
+the parameters that reconstruct it best. Obvious blinks are detected
+blinks with missing samples, a large drop of the pupil before and a large
+rise after them, and no other blinks close by; other gaps (e.g., the eye
+tracker losing the pupil, or eye movements) are not transplanted. The search runs on a few blinks and is refined
+on others; a part of the blinks is kept for testing: the result shows the
+error with the tuned and with the default parameters for them. The
+functions behind it are in <code class="docutils literal notranslate"><span class="pre">pp.signal</span></code> (see <a class="reference internal" href="../api/signal.html#api-transplant"><span class="std std-ref">Transplantation of blinks</span></a>).</p>
+<p>With <code class="docutils literal notranslate"><span class="pre">method=&quot;kalman&quot;</span></code>, only the margins before and after the core of the
+blinks are tuned, i.e. how far the transients reach (the Kalman
+interpolation needs no velocity thresholds); <code class="docutils literal notranslate"><span class="pre">res.params</span></code> includes the
+method:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">res</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_optimize_parameters</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">"kalman"</span><span class="p">)</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_interpolate</span><span class="p">(</span><span class="o">**</span><span class="n">res</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>Blinks differ a lot between participants, and checking the result for
 each participant is worth the effort. The tutorial <a class="reference internal" href="../notebooks/blinks.html"><span class="doc">Blink preprocessing</span></a>
 shows how.</p>

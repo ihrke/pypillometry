@@ -1,0 +1,6 @@
+﻿tweak\_blink\_interpolation
+===========================
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: tweak_blink_interpolation

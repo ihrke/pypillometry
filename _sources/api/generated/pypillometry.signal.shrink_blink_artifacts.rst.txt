@@ -1,0 +1,6 @@
+﻿shrink\_blink\_artifacts
+========================
+
+.. currentmodule:: pypillometry.signal
+
+.. autofunction:: shrink_blink_artifacts

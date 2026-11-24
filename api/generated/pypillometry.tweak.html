@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>tweak &#8212; pypillometry v2.2.3</title>
+    <title>tweak &#8212; pypillometry v2.2.4</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=7e518144"></script>
+    <script src="../../_static/documentation_options.js?v=b5d81189"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,12 +54,12 @@
     <link rel="icon" href="../../_static/pypillometry_logo_200x200.png"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="set_default_inplace" href="pypillometry.set_default_inplace.html" />
+    <link rel="next" title="tweak_blink_interpolation" href="pypillometry.tweak_blink_interpolation.html" />
     <link rel="prev" title="view" href="pypillometry.view.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.3" />
+  <meta name="docsearch:version" content="v2.2.4" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -506,7 +506,25 @@
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.detect_blinks_velocity.html">detect_blinks_velocity</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.detect_blinks_zero.html">detect_blinks_zero</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.blink_onsets_mahot.html">blink_onsets_mahot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.interpolate_blinks_mahot.html">interpolate_blinks_mahot</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.interpolate_blinks_kalman.html">interpolate_blinks_kalman</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.blink_stretches.html">blink_stretches</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.transplant_blinks.html">transplant_blinks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.transplant_error.html">transplant_error</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.blink_cores.html">blink_cores</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.blink_donors.html">blink_donors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.extract_blink_artifacts.html">extract_blink_artifacts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.blink_artifact_profile.html">blink_artifact_profile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.shrink_blink_artifacts.html">shrink_blink_artifacts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.clean_stretches.html">clean_stretches</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.place_blink_artifacts.html">place_blink_artifacts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.insert_blink_artifacts.html">insert_blink_artifacts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.BlinkTransplant.html">BlinkTransplant</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.tune_blinks_mahot.html">tune_blinks_mahot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.transplant_error_mahot.html">transplant_error_mahot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.tune_blinks_kalman.html">tune_blinks_kalman</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.transplant_error_kalman.html">transplant_error_kalman</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.BlinkTuneResult.html">BlinkTuneResult</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_kernel.html">pupil_kernel</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_kernel_t.html">pupil_kernel_t</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_get_max_duration.html">pupil_get_max_duration</a></li>
@@ -543,6 +561,7 @@
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../misc.html">Viewer, settings and logging</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.view.html">view</a></li>
 <li class="toctree-l2 current active"><a aria-current="page" class="current reference internal" href="#">tweak</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.tweak_blink_interpolation.html">tweak_blink_interpolation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.set_default_inplace.html">set_default_inplace</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.get_default_inplace.html">get_default_inplace</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.logging_set_level.html">logging_set_level</a></li>
@@ -621,7 +640,7 @@
 <h1>tweak<a class="headerlink" href="#tweak" title="Link to this heading">#</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="pypillometry.tweak">
-<span class="sig-prename descclassname"><span class="pre">pypillometry.</span></span><span class="sig-name descname"><span class="pre">tweak</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variable</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/viewer.html#tweak"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.tweak" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">pypillometry.</span></span><span class="sig-name descname"><span class="pre">tweak</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variable</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_update</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/viewer.html#tweak"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.tweak" title="Link to this definition">#</a></dt>
 <dd><p>Interactively tweak function parameters while viewing the result.</p>
 <p>Opens a viewer showing the original data with the function result overlaid.
 A parameter panel next to the plot allows adjusting numeric parameters in
@@ -653,6 +672,8 @@ uses the first available of ‘left_pupil’, ‘right_pupil’, ‘left_x’,
 ‘right_x’, ‘left_y’, ‘right_y’.</p></li>
 <li><p><strong>time</strong> (<em>ndarray</em><em>, </em><em>optional</em>) – Time vector for array data. If not provided, uses sample indices.
 For EyeData, the time vector is taken from the object.</p></li>
+<li><p><strong>auto_update</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a>) – whether “Auto Update” is on at the start (default); turn it off for
+slow functions</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -743,11 +764,11 @@ restores the initial parameter values.</p>
       </div>
     </a>
     <a class="right-next"
-       href="pypillometry.set_default_inplace.html"
+       href="pypillometry.tweak_blink_interpolation.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">set_default_inplace</p>
+        <p class="prev-next-title">tweak_blink_interpolation</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>GPU-Accelerated Viewer (pp.view) &#8212; pypillometry v2.2.3</title>
+    <title>GPU-Accelerated Viewer (pp.view) &#8212; pypillometry v2.2.4</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=7e518144"></script>
+    <script src="../_static/documentation_options.js?v=b5d81189"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.3" />
+  <meta name="docsearch:version" content="v2.2.4" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -552,6 +552,17 @@
 <a class="reference internal image-reference" href="../_images/viewer_overlay.png"><img alt="Viewer showing pupil data with smoothed overlay" src="../_images/viewer_overlay.png" style="width: 100%;" />
 </a>
 <p>Use <code class="docutils literal notranslate"><span class="pre">overlay_pupil</span></code>, <code class="docutils literal notranslate"><span class="pre">overlay_x</span></code>, or <code class="docutils literal notranslate"><span class="pre">overlay_y</span></code> to add overlays to the respective subplots.</p>
+<p>To compare whole versions of the data, pass them as <code class="docutils literal notranslate"><span class="pre">overlay</span></code> (an EyeData
+object or a list of them, with the same number of samples): their pupil and
+gaze are drawn on the plots of the same variable, one line per eye, labelled
+with their name and the eye:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mahot</span> <span class="o">=</span> <span class="n">eyedata</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_interpolate</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">kalman</span> <span class="o">=</span> <span class="n">eyedata</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_interpolate</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">"kalman"</span><span class="p">,</span>
+                                                                 <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">kalman</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">"kalman"</span>
+<span class="n">pp</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">mahot</span><span class="p">,</span> <span class="n">overlay</span><span class="o">=</span><span class="n">kalman</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s2">"pupil"</span><span class="p">])</span>
+</pre></div>
+</div>
 </section>
 <section id="extra-subplots">
 <h2>Extra Subplots<a class="headerlink" href="#extra-subplots" title="Link to this heading">#</a></h2>
@@ -590,9 +601,13 @@
 
 <span class="c1"># or per subplot</span>
 <span class="n">pp</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">eyedata</span><span class="p">,</span> <span class="n">highlight</span><span class="o">=</span><span class="p">{</span><span class="s2">"pupil"</span><span class="p">:</span> <span class="n">blinks</span><span class="p">})</span>
+
+<span class="c1"># the blinks of all eyes and variables, as returned by get_blinks()</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">eyedata</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span>
+<span class="n">pp</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">highlight</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">get_blinks</span><span class="p">())</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">highlight</span></code> is either a single <a class="reference internal" href="../api/generated/pypillometry.Intervals.html#pypillometry.Intervals" title="pypillometry.Intervals"><code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code></a> object (shown in all subplots) or a dict mapping subplot keys to <a class="reference internal" href="../api/generated/pypillometry.Intervals.html#pypillometry.Intervals" title="pypillometry.Intervals"><code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code></a>. The keys are <code class="docutils literal notranslate"><span class="pre">'pupil'</span></code>, <code class="docutils literal notranslate"><span class="pre">'x'</span></code>, <code class="docutils literal notranslate"><span class="pre">'y'</span></code> and <code class="docutils literal notranslate"><span class="pre">'extra_&lt;label&gt;'</span></code> for <code class="docutils literal notranslate"><span class="pre">extra_plots</span></code> (EyeData), or the plot labels (arrays). Intervals in time units are converted to seconds, sample-index Intervals are placed using the time vector.</p>
+<p><code class="docutils literal notranslate"><span class="pre">highlight</span></code> is either a single <a class="reference internal" href="../api/generated/pypillometry.Intervals.html#pypillometry.Intervals" title="pypillometry.Intervals"><code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code></a> object (shown in all subplots) or a dict mapping subplot keys to <a class="reference internal" href="../api/generated/pypillometry.Intervals.html#pypillometry.Intervals" title="pypillometry.Intervals"><code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code></a>. The keys are <code class="docutils literal notranslate"><span class="pre">'pupil'</span></code>, <code class="docutils literal notranslate"><span class="pre">'x'</span></code>, <code class="docutils literal notranslate"><span class="pre">'y'</span></code> and <code class="docutils literal notranslate"><span class="pre">'extra_&lt;label&gt;'</span></code> for <code class="docutils literal notranslate"><span class="pre">extra_plots</span></code> (EyeData), or the plot labels (arrays); keys like <code class="docutils literal notranslate"><span class="pre">'left_pupil'</span></code> (as from <a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.get_blinks" title="pypillometry.EyeData.get_blinks"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_blinks()</span></code></a>) go to the subplot of the variable, with the intervals of both eyes together. Keys that match no subplot are ignored with a warning. Intervals in time units are converted to seconds, sample-index Intervals are placed using the time vector.</p>
 </section>
 <section id="interactive-selection">
 <h2>Interactive Selection<a class="headerlink" href="#interactive-selection" title="Link to this heading">#</a></h2>

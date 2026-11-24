@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pypillometry.eyedata.gaze &#8212; pypillometry v2.2.3</title>
+    <title>pypillometry.eyedata.gaze &#8212; pypillometry v2.2.4</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../../_static/documentation_options.js?v=7e518144"></script>
+    <script src="../../../_static/documentation_options.js?v=b5d81189"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -414,7 +414,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.3" />
+  <meta name="docsearch:version" content="v2.2.4" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -805,11 +805,15 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.pipes</span><span class="w"> </span><span class="kn">import</span> <span class="n">step</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.eyedatadict</span><span class="w"> </span><span class="kn">import</span> <span class="n">_without_layer</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.eyedata</span><span class="w"> </span><span class="kn">import</span> <span class="n">EyeData</span>
 
 
 <div class="viewcode-block" id="GazeNamespace">
 <a class="viewcode-back" href="../../../api/generated/pypillometry.eyedata.gaze.GazeNamespace.html#pypillometry.eyedata.gaze.GazeNamespace">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">GazeNamespace</span><span class="p">(</span><span class="n">Namespace</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GazeNamespace</span><span class="p">(</span><span class="n">Namespace</span><span class="p">[</span><span class="s2">"EyeData"</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Methods for gaze data, accessed as ``d.gaze`` (e.g.,</span>
 <span class="sd">    ``d.gaze.mask_offscreen()``).</span>

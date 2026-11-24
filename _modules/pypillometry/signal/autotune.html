@@ -1,0 +1,1596 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pypillometry.signal.autotune &#8212; pypillometry v2.2.4</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx_autodoc_typehints.css?v=057ac668" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=6a604523" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=e89b0eda" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=75c7c72ae941e8b558d8"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
+
+    <script src="../../../_static/documentation_options.js?v=b5d81189"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../../../_static/design-tabs.js?v=fcb327ea"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs";
+
+
+
+
+
+const initStyles = () => {
+    const defaultStyle = document.createElement('style');
+    defaultStyle.textContent = "pre.mermaid {\n    /* Same as .mermaid-container > pre */\n    display: block;\n    width: 100%;\n}\n\npre.mermaid > svg {\n    /* Same as .mermaid-container > pre > svg */\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}";
+    document.head.appendChild(defaultStyle);
+
+    const fullscreenStyle = document.createElement('style');
+    fullscreenStyle.textContent = ".mermaid-container {\n    position: relative;\n    display: flex;\n    flex-direction: row;\n    width: 100%;\n}\n\n.mermaid-container > pre {\n    display: block;\n    width: 100%;\n}\n\n.mermaid-container > pre > svg {\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}\n\n.mermaid-fullscreen-btn {\n    position: absolute;\n    width: 28px;\n    height: 28px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.3);\n    border-radius: 4px;\n    cursor: pointer;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    transition: all 0.2s;\n    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);\n    font-size: 14px;\n    line-height: 1;\n    padding: 0;\n    color: #333;\n}\n\n.mermaid-fullscreen-btn:hover {\n    opacity: 100% !important;\n    background: rgba(255, 255, 255, 1);\n    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-btn.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.3);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-btn.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal {\n    display: none;\n    position: fixed !important;\n    top: 0 !important;\n    left: 0 !important;\n    width: 95vw;\n    height: 100vh;\n    background: rgba(255, 255, 255, 0.98);\n    z-index: 9999;\n    padding: 20px;\n    overflow: auto;\n}\n\n.mermaid-fullscreen-modal.dark-theme {\n    background: rgba(0, 0, 0, 0.98);\n}\n\n.mermaid-fullscreen-modal.active {\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen {\n    position: relative;\n    width: 95vw;\n    height: 90vh;\n    max-width: 95vw;\n    max-height: 90vh;\n    background: white;\n    border-radius: 8px;\n    padding: 20px;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);\n    overflow: auto;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen.dark-theme {\n    background: #1a1a1a;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);\n}\n\n.mermaid-container-fullscreen pre.mermaid {\n    width: 100%;\n    height: 100%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen .mermaid svg {\n    height: 100% !important;\n    width: 100% !important;\n    cursor: grab;\n}\n\n.mermaid-fullscreen-close {\n    position: fixed !important;\n    top: 20px !important;\n    right: 20px !important;\n    width: 40px;\n    height: 40px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.2);\n    border-radius: 50%;\n    cursor: pointer;\n    z-index: 10000;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);\n    transition: all 0.2s;\n    font-size: 24px;\n    line-height: 1;\n    color: #333;\n}\n\n.mermaid-fullscreen-close:hover {\n    background: white;\n    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-close.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.2);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-close.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal .mermaid-fullscreen-btn {\n    display: none !important;\n}";
+    document.head.appendChild(fullscreenStyle);
+}
+
+// Detect if page has dark background
+const isDarkTheme = () => {
+    // We use a set of heuristics:
+    // 1. Check for common dark mode classes or attributes
+    // 2. Check computed background color brightness
+    if (document.documentElement.classList.contains('dark') ||
+        document.documentElement.getAttribute('data-theme') === 'dark' ||
+        document.body.classList.contains('dark') ||
+        document.body.getAttribute('data-theme') === 'dark') {
+        // console.log("Dark theme detected via class/attribute");
+        return true;
+    }
+    if (document.documentElement.classList.contains('light') ||
+        document.documentElement.getAttribute('data-theme') === 'light' ||
+        document.body.classList.contains('light') ||
+        document.body.getAttribute('data-theme') === 'light') {
+        // console.log("Light theme detected via class/attribute");
+        return false;
+    }
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        // console.log("Dark theme detected via prefers-color-scheme");
+        return true;
+    }
+    const bgColor = window.getComputedStyle(document.body).backgroundColor;
+    const match = bgColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)/);
+    if (match) {
+        const r = parseInt(match[1]);
+        const g = parseInt(match[2]);
+        const b = parseInt(match[3]);
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        // console.log("Background color brightness:", brightness);
+        return brightness < 128;
+    }
+    // console.log("No dark or light theme detected, defaulting to light theme");
+    return false;
+};
+
+let darkTheme = isDarkTheme();
+let modal = null;
+let modalContent = null;
+let previousScrollOffset = [window.scrollX, window.scrollY];
+let _lazyObserver = null;
+let _renderQueue = Promise.resolve();
+let closeModal = () => {};
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal?.classList.contains('active')) {
+        closeModal();
+    }
+});
+
+// Apply d3 zoom to each SVG. Idempotent: an SVG already wrapped is skipped,
+// so this is safe to call both for the initial batch and for diagrams that
+// render lazily once they become visible.
+const addZoomToSvgs = (svgs) => {
+    svgs.each(function() {
+        if (this.getAttribute('data-zoom-applied') === 'true') return;
+        var svg = d3.select(this);
+        svg.html("<g class='wrapper'>" + svg.html() + "</g>");
+        var inner = svg.select("g");
+        var zoom = d3.zoom().on("zoom", function(event) {
+            inner.attr("transform", event.transform);
+        });
+        svg.call(zoom);
+        this.setAttribute('data-zoom-applied', 'true');
+    });
+};
+
+const runMermaid = async (rerun) => {
+    console.log("Running mermaid diagrams, rerun =", rerun);
+    // clear all existing mermaid charts
+    let all_mermaids = document.querySelectorAll(".mermaid");
+
+    if (rerun) {
+        // Disconnect any previous lazy rendering observer
+        if (_lazyObserver) {
+            _lazyObserver.disconnect();
+            _lazyObserver = null;
+        }
+
+        all_mermaids.forEach((el) => {
+            el.removeAttribute('data-mermaid-deferred');
+            el.removeAttribute('data-mermaid-render-failed');
+            if(!el.hasAttribute("data-original-code")) {
+                // store original code
+                // console.log(`Storing original code for first run: `, el.innerHTML);
+                el.setAttribute('data-original-code', el.innerHTML);
+            }
+            if(el.getAttribute("data-processed") === "true") {
+                // remove and restore original
+                el.removeAttribute("data-processed");
+                // console.log(`Restoring original code for re-run: `, el.getAttribute('data-original-code'));
+                el.innerHTML = el.getAttribute('data-original-code');
+            } else {
+                // store original code
+                // console.log(`Storing original code for re-run: `, el.innerHTML);
+                el.setAttribute('data-original-code', el.innerHTML);
+            }
+        });
+
+        // Separate visible and hidden elements. Mermaid's layout engine measures
+        // text dimensions via the DOM, which fails for elements hidden by a parent
+        // (e.g., Reveal.js non-active slides, sphinx-design unopened tabs),
+        // producing broken SVGs. Render visible elements now, defer hidden ones.
+        const visible = [];
+        const hidden = [];
+        all_mermaids.forEach((el) => {
+            // offsetParent is null for display:none ancestors.
+            // getClientRects().length > 0 catches position:fixed elements
+            // (which also have null offsetParent but are still visible).
+            if (el.offsetParent !== null || el.getClientRects().length > 0) {
+                visible.push(el);
+            } else {
+                hidden.push(el);
+                el.setAttribute('data-mermaid-deferred', 'true');
+            }
+        });
+
+        if (visible.length > 0) {
+            try {
+                await mermaid.run({ nodes: visible });
+            } catch (e) {
+                console.error("Mermaid rendering failed:", e);
+            }
+        }
+
+        // Lazily render hidden elements when they become visible.
+        // Uses a promise chain (_renderQueue) to serialize rendering,
+        // since IntersectionObserver may report multiple entries at once
+        // and mermaid.run() is not safe to call concurrently.
+        if (hidden.length > 0) {
+            if (typeof IntersectionObserver === 'undefined') {
+                console.warn("IntersectionObserver not available; hidden mermaid diagrams will not render.");
+            } else {
+                _renderQueue = Promise.resolve();
+                _lazyObserver = new IntersectionObserver((entries) => {
+                    for (const entry of entries) {
+                        if (entry.isIntersecting && entry.target.getAttribute("data-processed") !== "true") {
+                            _lazyObserver.unobserve(entry.target);
+                            const el = entry.target;
+                            _renderQueue = _renderQueue.then(async () => {
+                                try {
+                                    await mermaid.run({ nodes: [el] });
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    // Apply zoom to the now-rendered diagram, matching
+                                    // the decoration visible diagrams receive.
+                                    if (false) {
+                                        addZoomToSvgs(d3.selectAll("").select(function() {
+                                            return this.querySelector("svg");
+                                        }));
+                                    }
+                                } catch (e) {
+                                    console.error("Mermaid deferred rendering failed:", e);
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    el.setAttribute('data-mermaid-render-failed', 'true');
+                                }
+                            });
+                        }
+                    }
+                });
+                hidden.forEach((el) => _lazyObserver.observe(el));
+            }
+        }
+    }
+
+    all_mermaids = document.querySelectorAll(".mermaid");
+    // Exclude deferred (hidden) and render-failed elements from completion checks
+    const mermaids_active = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])");
+    const mermaids_processed = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])[data-processed='true']");
+
+    if (false) {
+        const mermaids_to_add_zoom = 0 === -1 ? mermaids_active.length : 0;
+        if(mermaids_to_add_zoom > 0) {
+            var svgs = d3.selectAll("").select(function() {
+                return this.querySelector("svg");
+            });
+            // Wait until every active (visible) diagram has rendered. Deferred
+            // diagrams are excluded, so a fixed d3_node_count that counts a
+            // hidden diagram no longer loops forever waiting for its SVG.
+            if(mermaids_active.length !== mermaids_processed.length) {
+                setTimeout(() => runMermaid(false), 200);
+                return;
+            }
+            addZoomToSvgs(svgs);
+        }
+    } else if(mermaids_active.length !== mermaids_processed.length) {
+        // Wait for mermaid to process all diagrams
+        setTimeout(() => runMermaid(false), 200);
+        return;
+    }
+
+    // Stop here if not adding fullscreen capability
+    if (!true) return;
+
+    if (modal !== null ) {
+        // Destroy existing modal
+        modal.remove();
+        modal = null;
+        modalContent = null;
+    }
+
+    modal = document.createElement('div');
+    modal.className = 'mermaid-fullscreen-modal' + (darkTheme ? ' dark-theme' : '');
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', 'Fullscreen diagram viewer');
+    modal.innerHTML = `
+        <button class="mermaid-fullscreen-close${darkTheme ? ' dark-theme' : ''}" aria-label="Close fullscreen">✕</button>
+        <div class="mermaid-container-fullscreen${darkTheme ? ' dark-theme' : ''}"></div>
+    `;
+    document.body.appendChild(modal);
+
+    modalContent = modal.querySelector('.mermaid-container-fullscreen');
+    const closeBtn = modal.querySelector('.mermaid-fullscreen-close');
+
+    closeModal = () => {
+        modal.classList.remove('active');
+        modalContent.innerHTML = '';
+        document.body.style.overflow = ''
+        window.scrollTo({left: previousScrollOffset[0], top: previousScrollOffset[1], behavior: 'instant'});
+    };
+
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+    document.querySelectorAll('.mermaid').forEach((mermaidDiv) => {
+        if (mermaidDiv.parentNode.classList.contains('mermaid-container') ||
+            mermaidDiv.closest('.mermaid-fullscreen-modal')) {
+            // Already processed, adjust button class if needed
+            const existingBtn = mermaidDiv.parentNode.querySelector('.mermaid-fullscreen-btn');
+            if (existingBtn) {
+                existingBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
+            }
+            return;
+        }
+
+        const container = document.createElement('div');
+        container.className = 'mermaid-container';
+        mermaidDiv.parentNode.insertBefore(container, mermaidDiv);
+        container.appendChild(mermaidDiv);
+
+        const fullscreenBtn = document.createElement('button');
+        fullscreenBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
+        fullscreenBtn.setAttribute('aria-label', 'View diagram in fullscreen');
+        fullscreenBtn.textContent = "\u26f6";
+        fullscreenBtn.style.opacity = "50%";
+
+        // Calculate dynamic position based on diagram's margin and padding
+        const diagramStyle = window.getComputedStyle(mermaidDiv);
+        const marginTop = parseFloat(diagramStyle.marginTop) || 0;
+        const marginRight = parseFloat(diagramStyle.marginRight) || 0;
+        const paddingTop = parseFloat(diagramStyle.paddingTop) || 0;
+        const paddingRight = parseFloat(diagramStyle.paddingRight) || 0;
+        fullscreenBtn.style.top = `${marginTop + paddingTop + 4}px`;
+        fullscreenBtn.style.right = `${marginRight + paddingRight + 4}px`;
+
+        fullscreenBtn.addEventListener('click', () => {
+            previousScrollOffset = [window.scrollX, window.scrollY];
+            const clone = mermaidDiv.cloneNode(true);
+            modalContent.innerHTML = '';
+            modalContent.appendChild(clone);
+
+            const svg = clone.querySelector('svg');
+            if (svg) {
+                svg.removeAttribute('width');
+                svg.removeAttribute('height');
+                svg.style.width = '100%';
+                svg.style.height = 'auto';
+                svg.style.maxWidth = '100%';
+                svg.style.display = 'block';
+
+                if (false) {
+                    setTimeout(() => {
+                        const g = svg.querySelector('g');
+                        if (g) {
+                            var svgD3 = d3.select(svg);
+                            svgD3.html("<g class='wrapper'>" + svgD3.html() + "</g>");
+                            var inner = svgD3.select("g");
+                            var zoom = d3.zoom().on("zoom", function(event) {
+                                inner.attr("transform", event.transform);
+                            });
+                            svgD3.call(zoom);
+                        }
+                    }, 100);
+                }
+            }
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+        container.appendChild(fullscreenBtn);
+    });
+};
+
+
+
+const load = async () => {
+    initStyles();
+
+
+    await runMermaid(true);
+
+    const reRunIfThemeChanges = async () => {
+        const newDarkTheme = isDarkTheme();
+        if (newDarkTheme !== darkTheme) {
+            darkTheme = newDarkTheme;
+            console.log("Theme change detected, re-running mermaid with", darkTheme ? "dark" : "default", "theme");
+            await mermaid.initialize(
+                {...{"startOnLoad": false},
+                ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
+                }
+            );
+            await runMermaid(true);
+        }
+    };
+
+    // Update theme classes when theme changes
+    const themeObserver = new MutationObserver(reRunIfThemeChanges);
+    themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme']
+    });
+    themeObserver.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme']
+    });
+};
+
+
+
+
+
+console.log("Initializing mermaid with", darkTheme ? "dark" : "default", "theme");
+mermaid.initialize(
+    {...{"startOnLoad": false},
+    ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
+    }
+);
+
+window.addEventListener("load", load);
+window.runMermaid = runMermaid;</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/pypillometry/signal/autotune';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../../../_static/pypillometry_logo_200x200.png"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="v2.2.4" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="light">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation" aria-expanded="false" aria-controls="pst-primary-sidebar-modal">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="../../../_static/pypillometry_logo_200x200.png" class="logo__image only-light" alt=""/>
+    <img src="../../../_static/pypillometry_logo_200x200.png" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">pypillometry</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../experimental/index.html">
+    Experimental features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../development/index.html">
+    Development
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ihrke/pypillometry" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pypillometry/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal" tabindex="-1"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../experimental/index.html">
+    Experimental features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../development/index.html">
+    Development
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ihrke/pypillometry" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pypillometry/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-house"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">pypillometry.signal.autotune</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for pypillometry.signal.autotune</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""</span>
+<span class="sd">autotune.py</span>
+<span class="sd">===========</span>
+
+<span class="sd">Tuning of the parameters of the interpolation of blinks on transplanted</span>
+<span class="sd">blinks (see :mod:`~pypillometry.signal.transplant`): blinks that were put</span>
+<span class="sd">into clean signal, where the signal without the blink is known.</span>
+
+<span class="sd">All functions work on plain numpy arrays, in samples.</span>
+<span class="sd">"""</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">replace</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.preproc</span><span class="w"> </span><span class="kn">import</span> <span class="n">blink_stretches</span><span class="p">,</span> <span class="n">interpolate_blinks_kalman</span><span class="p">,</span> <span class="n">interpolate_blinks_mahot</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.transplant</span><span class="w"> </span><span class="kn">import</span> <span class="n">BlinkTransplant</span><span class="p">,</span> <span class="n">blink_cores</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..logging</span><span class="w"> </span><span class="kn">import</span> <span class="n">_show_progress</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"transplant_error_mahot"</span><span class="p">,</span> <span class="s2">"tune_blinks_mahot"</span><span class="p">,</span> <span class="s2">"transplant_error_kalman"</span><span class="p">,</span>
+           <span class="s2">"tune_blinks_kalman"</span><span class="p">,</span> <span class="s2">"BlinkTuneResult"</span><span class="p">]</span>
+
+<span class="c1"># the tuned values: the parameters of interpolate_blinks_mahot(), with the</span>
+<span class="c1"># absolute value of vel_onset and both margins</span>
+<span class="n">_NAMES</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"smooth_winsize"</span><span class="p">,</span> <span class="s2">"vel_onset"</span><span class="p">,</span> <span class="s2">"vel_offset"</span><span class="p">,</span> <span class="s2">"margin_before"</span><span class="p">,</span> <span class="s2">"margin_after"</span><span class="p">,</span>
+          <span class="s2">"blinkwindow"</span><span class="p">)</span>
+<span class="c1"># maximum number of changes of a parameter per round of the search</span>
+<span class="n">_MAX_MOVES</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="c1"># searched on a logarithmic scale</span>
+<span class="n">_LOG</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">])</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_as_list</span><span class="p">(</span><span class="n">transplants</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">transplants</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transplants</span><span class="p">,</span> <span class="n">BlinkTransplant</span><span class="p">)</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="n">transplants</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_to_vector</span><span class="p">(</span><span class="n">params</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Values (see `_NAMES`) from parameters of interpolate_blinks_mahot()."""</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">params</span><span class="p">[</span><span class="s2">"smooth_winsize"</span><span class="p">],</span> <span class="nb">abs</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s2">"vel_onset"</span><span class="p">]),</span> <span class="nb">abs</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s2">"vel_offset"</span><span class="p">]),</span>
+                     <span class="n">params</span><span class="p">[</span><span class="s2">"margin"</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">params</span><span class="p">[</span><span class="s2">"margin"</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">params</span><span class="p">[</span><span class="s2">"blinkwindow"</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_to_params</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Valid parameters of interpolate_blinks_mahot() from values (see `_NAMES`)."""</span>
+    <span class="n">winsize</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
+    <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">smooth_winsize</span><span class="o">=</span><span class="n">winsize</span> <span class="o">+</span> <span class="p">(</span><span class="n">winsize</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">),</span>
+                <span class="n">vel_onset</span><span class="o">=-</span><span class="nb">float</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.4g</span><span class="si">}</span><span class="s2">"</span><span class="p">),</span> <span class="n">vel_offset</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">:</span><span class="s2">.4g</span><span class="si">}</span><span class="s2">"</span><span class="p">),</span>
+                <span class="n">margin</span><span class="o">=</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">3</span><span class="p">]))),</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">4</span><span class="p">])))),</span>
+                <span class="n">blinkwindow</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">5</span><span class="p">]))))</span>
+
+
+<div class="viewcode-block" id="transplant_error_mahot">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.transplant_error_mahot.html#pypillometry.signal.transplant_error_mahot">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">transplant_error_mahot</span><span class="p">(</span><span class="n">transplants</span><span class="p">,</span> <span class="n">smooth_winsize</span><span class="p">,</span> <span class="n">vel_onset</span><span class="p">,</span> <span class="n">vel_offset</span><span class="p">,</span> <span class="n">margin</span><span class="p">,</span>
+                           <span class="n">blinkwindow</span><span class="p">,</span> <span class="n">interp_type</span><span class="o">=</span><span class="s2">"cubic"</span><span class="p">,</span> <span class="n">max_duration</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                           <span class="n">per_blink</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Error of the Mahot interpolation of transplanted blinks.</span>
+
+<span class="sd">    The transplanted blinks are interpolated with</span>
+<span class="sd">    :func:`~pypillometry.signal.preproc.interpolate_blinks_mahot` and</span>
+<span class="sd">    compared to the signal without them (see</span>
+<span class="sd">    :func:`~pypillometry.signal.transplant.transplant_error`). The error is</span>
+<span class="sd">    the mean over the blinks of their root mean squared errors, which</span>
+<span class="sd">    depends less on a few blinks with a large error than the root mean</span>
+<span class="sd">    squared error over all of them.</span>
+
+<span class="sd">    As in the interpolation of a recording, the other runs of missing</span>
+<span class="sd">    samples of the signal (e.g., its own blinks; not the ones longer than</span>
+<span class="sd">    `max_duration`, which are not blinks) are interpolated together with</span>
+<span class="sd">    the transplanted blinks, so that a blink whose anchor points fall into</span>
+<span class="sd">    them is merged with them instead of being skipped. Only the error at</span>
+<span class="sd">    the transplanted blinks counts.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    transplants : BlinkTransplant or list of BlinkTransplant</span>
+<span class="sd">        signal(s) with transplanted blinks (e.g., one per eye), see</span>
+<span class="sd">        :func:`~pypillometry.signal.transplant.transplant_blinks`</span>
+<span class="sd">    smooth_winsize, vel_onset, vel_offset, margin, blinkwindow, interp_type, max_duration</span>
+<span class="sd">        parameters of the interpolation (in samples, and units per sample);</span>
+<span class="sd">        a transplanted blink that is skipped (e.g., longer than</span>
+<span class="sd">        `max_duration` after merging) is not replaced and has a large error</span>
+<span class="sd">    per_blink : bool</span>
+<span class="sd">        return the errors of all blinks instead of their mean</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float or np.ndarray</span>
+<span class="sd">        the mean error per blink, or the error of each blink</span>
+<span class="sd">    """</span>
+    <span class="n">errors</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">_as_list</span><span class="p">(</span><span class="n">transplants</span><span class="p">):</span>
+        <span class="n">filled</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">interpolate_blinks_mahot</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">signal</span><span class="p">,</span> <span class="n">_all_blinks</span><span class="p">(</span><span class="n">tr</span><span class="p">,</span> <span class="n">max_duration</span><span class="p">),</span>
+                                                <span class="n">smooth_winsize</span><span class="p">,</span>
+                                                <span class="n">vel_onset</span><span class="p">,</span> <span class="n">vel_offset</span><span class="p">,</span> <span class="n">margin</span><span class="p">,</span> <span class="n">blinkwindow</span><span class="p">,</span>
+                                                <span class="n">interp_type</span><span class="p">,</span> <span class="n">max_duration</span><span class="o">=</span><span class="n">max_duration</span><span class="p">)</span>
+        <span class="n">errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">filled</span><span class="p">,</span> <span class="n">per_site</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+    <span class="n">errors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">errors</span><span class="p">)</span> <span class="k">if</span> <span class="n">errors</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">per_blink</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">errors</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">errors</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="k">if</span> <span class="n">errors</span><span class="o">.</span><span class="n">size</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_all_blinks</span><span class="p">(</span><span class="n">tr</span><span class="p">,</span> <span class="n">max_len</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The transplanted blinks of `tr` and the other runs of missing</span>
+<span class="sd">    samples of its signal (n x 2, sorted); without the runs longer than</span>
+<span class="sd">    `max_len` (they are not blinks, e.g. breaks)."""</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tr</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">tr</span><span class="o">.</span><span class="n">blinks</span>
+    <span class="n">other</span> <span class="o">=</span> <span class="n">blink_cores</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">signal</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">max_len</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">other</span> <span class="o">=</span> <span class="n">other</span><span class="p">[</span><span class="n">other</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">other</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">max_len</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">other</span><span class="p">):</span>
+        <span class="c1"># runs that overlap a transplanted blink are part of it</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">blinks</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">other</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">side</span><span class="o">=</span><span class="s2">"left"</span><span class="p">)</span>
+        <span class="n">hit</span> <span class="o">=</span> <span class="p">(</span><span class="n">k</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">blinks</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">other</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="n">other</span> <span class="o">=</span> <span class="n">other</span><span class="p">[</span><span class="o">~</span><span class="n">hit</span><span class="p">]</span>
+    <span class="n">blinks</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">tr</span><span class="o">.</span><span class="n">blinks</span><span class="p">,</span> <span class="n">other</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">blinks</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">blinks</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">kind</span><span class="o">=</span><span class="s2">"stable"</span><span class="p">)]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_context</span><span class="p">(</span><span class="n">transplants</span><span class="p">,</span> <span class="n">hi</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Number of samples around the sites of transplanted blinks that the</span>
+<span class="sd">    Mahot interpolation can use with parameters up to `hi` (see `_NAMES`):</span>
+<span class="sd">    the search for the on-/offsets (`blinkwindow` and the margins), the</span>
+<span class="sd">    anchor points (one interpolated stretch further out) and the smoothing</span>
+<span class="sd">    window of the velocity."""</span>
+    <span class="n">core</span> <span class="o">=</span> <span class="nb">max</span><span class="p">((</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">blinks</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">tr</span><span class="o">.</span><span class="n">blinks</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]))</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">transplants</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tr</span><span class="p">)),</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">winsize</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">before</span><span class="p">,</span> <span class="n">after</span><span class="p">,</span> <span class="n">blinkwindow</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">hi</span><span class="p">)</span>
+    <span class="n">stretch</span> <span class="o">=</span> <span class="n">core</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">blinkwindow</span> <span class="o">+</span> <span class="n">before</span> <span class="o">+</span> <span class="n">after</span>
+    <span class="k">return</span> <span class="n">blinkwindow</span> <span class="o">+</span> <span class="nb">max</span><span class="p">(</span><span class="n">before</span><span class="p">,</span> <span class="n">after</span><span class="p">)</span> <span class="o">+</span> <span class="n">stretch</span> <span class="o">+</span> <span class="n">winsize</span> <span class="o">+</span> <span class="mi">10</span>   <span class="c1"># + rounding</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_crop</span><span class="p">(</span><span class="n">tr</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The transplant `tr` with only the samples within `context` of its</span>
+<span class="sd">    sites. The interpolation of the transplanted blinks and its error do not</span>
+<span class="sd">    change if `context` covers all samples it uses (see `_context`), and</span>
+<span class="sd">    are much faster for a long signal with few transplanted blinks."""</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">signal</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tr</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">tr</span>
+    <span class="n">keep</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">sites</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">context</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">sites</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">context</span><span class="p">,</span> <span class="n">n</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">keep</span> <span class="ow">and</span> <span class="n">a</span> <span class="o">&lt;=</span> <span class="n">keep</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">keep</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">keep</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">b</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">keep</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">])</span>
+    <span class="k">if</span> <span class="nb">sum</span><span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">keep</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">n</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">tr</span>
+    <span class="c1"># new index of the first sample of each kept stretch</span>
+    <span class="n">starts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">a</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">keep</span><span class="p">])</span>
+    <span class="n">shift</span> <span class="o">=</span> <span class="n">starts</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">([</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">keep</span><span class="p">])[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">move</span><span class="p">(</span><span class="n">iv</span><span class="p">):</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">starts</span><span class="p">,</span> <span class="n">iv</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">side</span><span class="o">=</span><span class="s2">"right"</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">iv</span> <span class="o">-</span> <span class="n">shift</span><span class="p">[</span><span class="n">k</span><span class="p">][:,</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="n">take</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">keep</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">replace</span><span class="p">(</span><span class="n">tr</span><span class="p">,</span> <span class="n">signal</span><span class="o">=</span><span class="n">tr</span><span class="o">.</span><span class="n">signal</span><span class="p">[</span><span class="n">take</span><span class="p">],</span> <span class="n">clean</span><span class="o">=</span><span class="n">tr</span><span class="o">.</span><span class="n">clean</span><span class="p">[</span><span class="n">take</span><span class="p">],</span> <span class="n">blinks</span><span class="o">=</span><span class="n">move</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">blinks</span><span class="p">),</span>
+                   <span class="n">windows</span><span class="o">=</span><span class="n">move</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">windows</span><span class="p">),</span> <span class="n">sites</span><span class="o">=</span><span class="n">move</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">sites</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_default_bounds</span><span class="p">(</span><span class="n">transplants</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Search ranges (lower, upper) of the values (see `_NAMES`) from the</span>
+<span class="sd">    windows of the transplanted blinks and the velocities in them."""</span>
+    <span class="n">pre</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">window</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">transplants</span><span class="p">)</span>
+    <span class="n">post</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">window</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">transplants</span><span class="p">)</span>
+    <span class="n">noise</span><span class="p">,</span> <span class="n">fastest</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">transplants</span><span class="p">:</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">),</span> <span class="p">(</span><span class="n">c0</span><span class="p">,</span> <span class="n">c1</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">windows</span><span class="p">,</span> <span class="n">tr</span><span class="o">.</span><span class="n">blinks</span><span class="p">):</span>
+            <span class="n">noise</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">clean</span><span class="p">[</span><span class="n">a</span><span class="p">:</span><span class="n">b</span><span class="p">]))</span>
+            <span class="c1"># the changes in the artifacts (not into or out of the core)</span>
+            <span class="n">fastest</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">signal</span><span class="p">[</span><span class="n">a</span><span class="p">:</span><span class="n">c0</span><span class="p">]),</span>
+                                                  <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">signal</span><span class="p">[</span><span class="n">c1</span><span class="p">:</span><span class="n">b</span><span class="p">]),</span> <span class="mi">0</span><span class="p">])))</span>
+    <span class="n">noise</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">noise</span><span class="p">)</span> <span class="k">if</span> <span class="n">noise</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">noise</span> <span class="o">=</span> <span class="mf">1.4826</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmedian</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">noise</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmedian</span><span class="p">(</span><span class="n">noise</span><span class="p">)))</span>
+    <span class="n">fastest</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">fastest</span><span class="p">,</span> <span class="mi">99</span><span class="p">)</span> <span class="k">if</span> <span class="n">fastest</span> <span class="k">else</span> <span class="mf">1.0</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">noise</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>    <span class="c1"># e.g., a signal without noise</span>
+        <span class="n">noise</span> <span class="o">=</span> <span class="n">fastest</span> <span class="o">/</span> <span class="mi">1000</span> <span class="k">if</span> <span class="n">fastest</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mf">1e-6</span>
+    <span class="n">vel</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.1</span> <span class="o">*</span> <span class="n">noise</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">fastest</span><span class="p">,</span> <span class="n">noise</span><span class="p">))</span>
+    <span class="n">winmax</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">pre</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">"smooth_winsize"</span><span class="p">:</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">winmax</span> <span class="o">+</span> <span class="p">(</span><span class="n">winmax</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)),</span>
+            <span class="s2">"vel_onset"</span><span class="p">:</span> <span class="n">vel</span><span class="p">,</span> <span class="s2">"vel_offset"</span><span class="p">:</span> <span class="n">vel</span><span class="p">,</span>
+            <span class="s2">"margin_before"</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">pre</span><span class="p">)),</span> <span class="s2">"margin_after"</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">post</span><span class="p">)),</span>
+            <span class="s2">"blinkwindow"</span><span class="p">:</span> <span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">pre</span> <span class="o">//</span> <span class="mi">20</span><span class="p">),</span> <span class="n">pre</span> <span class="o">+</span> <span class="n">post</span><span class="p">)}</span>
+
+
+<div class="viewcode-block" id="BlinkTuneResult">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.BlinkTuneResult.html#pypillometry.signal.BlinkTuneResult">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">BlinkTuneResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Result of tuning the parameters of the interpolation of blinks.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    params : dict</span>
+<span class="sd">        the parameters to use: the tuned ones (`tuned`) if they are better</span>
+<span class="sd">        than the starting ones on the blinks that were not used for tuning</span>
+<span class="sd">        (or if there are none), otherwise the starting ones (`start`)</span>
+<span class="sd">    tuned : dict</span>
+<span class="sd">        the tuned parameters</span>
+<span class="sd">    start : dict or None</span>
+<span class="sd">        the parameters the search started with</span>
+<span class="sd">    loss, loss_start : float</span>
+<span class="sd">        the error (mean error per blink, see</span>
+<span class="sd">        :func:`transplant_error_mahot`) with the tuned and the starting</span>
+<span class="sd">        parameters, on the blinks that were used for tuning (for the</span>
+<span class="sd">        search and for the refinement)</span>
+<span class="sd">    test_loss, test_loss_start : float</span>
+<span class="sd">        the same on the blinks that were not used for tuning (NaN without)</span>
+<span class="sd">    success : bool</span>
+<span class="sd">        whether the tuned parameters are used (see `params`)</span>
+<span class="sd">    bounds : dict</span>
+<span class="sd">        the search range `(lower, upper)` of each value</span>
+<span class="sd">    history : dict</span>
+<span class="sd">        all evaluated parameters: one array per value (``"smooth_winsize"``,</span>
+<span class="sd">        ``"vel_onset"``, ``"vel_offset"``, ``"margin_before"``,</span>
+<span class="sd">        ``"margin_after"``, ``"blinkwindow"``), their ``"loss"`` and the</span>
+<span class="sd">        ``"stage"`` (1: search on a set of `train`, 2: choice and</span>
+<span class="sd">        refinement; the losses are on different blinks) and the</span>
+<span class="sd">        ``"search"`` (index of the set of `train`; -1 in stage 2)</span>
+<span class="sd">    n_blinks, n_refine, n_test : int</span>
+<span class="sd">        number of transplanted blinks used for the searches (all sets), for</span>
+<span class="sd">        the refinement (in addition) and for testing</span>
+<span class="sd">    n_searches : int</span>
+<span class="sd">        number of searches (sets of `train`)</span>
+<span class="sd">    units : str</span>
+<span class="sd">        units of the parameters, the bounds and the history:</span>
+<span class="sd">        ``"samples"``, or ``"ms"`` (as the arguments of</span>
+<span class="sd">        :meth:`~pypillometry.eyedata.pupil.PupilNamespace.blinks_interpolate`)</span>
+<span class="sd">    """</span>
+    <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span>
+    <span class="n">tuned</span><span class="p">:</span> <span class="nb">dict</span>
+    <span class="n">start</span><span class="p">:</span> <span class="nb">dict</span>
+    <span class="n">loss</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">loss_start</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">test_loss</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">test_loss_start</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">success</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">bounds</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">history</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">n_blinks</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">n_refine</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">n_test</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">n_searches</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"samples"</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">fmt</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">p</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s2">"-"</span>
+            <span class="k">return</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">="</span> <span class="o">+</span> <span class="p">(</span><span class="n">v</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="s2">"(</span><span class="si">%.4g</span><span class="s2">, </span><span class="si">%.4g</span><span class="s2">)"</span> <span class="o">%</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+                                        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">ndim</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">v</span><span class="si">:</span><span class="s2">.4g</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+                             <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">p</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+        <span class="n">search</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_blinks</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_searches</span><span class="si">}</span><span class="s2"> searches"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_searches</span> <span class="o">&gt;</span> <span class="mi">1</span>
+                  <span class="k">else</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_blinks</span><span class="si">}</span><span class="s2"> for the search"</span><span class="p">)</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"BlinkTuneResult (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="si">}</span><span class="s2">; transplanted blinks: </span><span class="si">{</span><span class="n">search</span><span class="si">}</span><span class="s2">, "</span>
+                 <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_refine</span><span class="si">}</span><span class="s2"> more for refining, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_test</span><span class="si">}</span><span class="s2"> for testing)"</span><span class="p">,</span>
+                 <span class="sa">f</span><span class="s2">"  tuned : </span><span class="si">{</span><span class="n">fmt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tuned</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                 <span class="sa">f</span><span class="s2">"          error </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="si">:</span><span class="s2">.4g</span><span class="si">}</span><span class="s2">, on test blinks </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">test_loss</span><span class="si">:</span><span class="s2">.4g</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                 <span class="sa">f</span><span class="s2">"  start : </span><span class="si">{</span><span class="n">fmt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                 <span class="sa">f</span><span class="s2">"          error </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">loss_start</span><span class="si">:</span><span class="s2">.4g</span><span class="si">}</span><span class="s2">, on test blinks </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">test_loss_start</span><span class="si">:</span><span class="s2">.4g</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                 <span class="sa">f</span><span class="s2">"  params: the </span><span class="si">{</span><span class="s1">'tuned'</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">success</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">'starting'</span><span class="si">}</span><span class="s2"> parameters"</span><span class="p">]</span>
+        <span class="k">return</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span></div>
+
+
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_coordinate_search</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">best</span><span class="p">,</span> <span class="n">free</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">n_grid</span><span class="p">,</span> <span class="n">rounds</span><span class="p">,</span> <span class="n">tol</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""From `u` (with error `best`), make the best change of one parameter</span>
+<span class="sd">    at a time on a grid of `n_grid` values within `width` around it, until</span>
+<span class="sd">    no change reduces the error by more than `tol`; `rounds` times, halving</span>
+<span class="sd">    the width each time. Returns the parameters, their error and the width</span>
+<span class="sd">    after the last round."""</span>
+    <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">rounds</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">_MAX_MOVES</span><span class="p">):</span>
+            <span class="n">move</span><span class="p">,</span> <span class="n">move_loss</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">best</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">tol</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">free</span><span class="p">:</span>
+                <span class="n">grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="n">width</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">n_grid</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+                <span class="n">cands</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="kc">None</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">grid</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">cands</span><span class="p">[:,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">grid</span>
+                <span class="n">losses</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">loss</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cands</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">losses</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">move_loss</span><span class="p">:</span>
+                    <span class="n">move</span><span class="p">,</span> <span class="n">move_loss</span> <span class="o">=</span> <span class="n">cands</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">losses</span><span class="p">)],</span> <span class="n">losses</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">move</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="n">u</span><span class="p">,</span> <span class="n">best</span> <span class="o">=</span> <span class="n">move</span><span class="p">,</span> <span class="n">move_loss</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Tuning: round </span><span class="si">{</span><span class="n">r</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">best</span><span class="si">:</span><span class="s2">.4g</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">width</span> <span class="o">/=</span> <span class="mi">2</span>
+    <span class="k">return</span> <span class="n">u</span><span class="p">,</span> <span class="n">best</span><span class="p">,</span> <span class="n">width</span>
+
+
+<div class="viewcode-block" id="tune_blinks_mahot">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.tune_blinks_mahot.html#pypillometry.signal.tune_blinks_mahot">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">tune_blinks_mahot</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">test</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">refine</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fixed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                      <span class="n">n_init</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_grid</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">sweeps</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">max_duration</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                      <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Tune the parameters of the Mahot interpolation on transplanted blinks.</span>
+
+<span class="sd">    Searches for the parameters of</span>
+<span class="sd">    :func:`~pypillometry.signal.preproc.interpolate_blinks_mahot` with</span>
+<span class="sd">    the smallest error on transplanted blinks (see</span>
+<span class="sd">    :func:`transplant_error_mahot`). The error is not a smooth function of</span>
+<span class="sd">    the parameters, so they are searched without derivatives: from the</span>
+<span class="sd">    starting parameters, each parameter is tried at `n_grid` values around</span>
+<span class="sd">    its current value, and the one change that reduces the error most is</span>
+<span class="sd">    made. This is repeated until no change reduces the error by more than</span>
+<span class="sd">    `tol`, in `sweeps` rounds with finer and finer grids (the first one</span>
+<span class="sd">    covers the whole search range). Different parameters can give nearly</span>
+<span class="sd">    the same error (e.g., a lower threshold or a larger margin); with</span>
+<span class="sd">    `tol`, the search stays close to the starting parameters then.</span>
+<span class="sd">    Without starting parameters (or with `n_init`), the search starts</span>
+<span class="sd">    from the best of `n_init` parameter sets that cover the search range</span>
+<span class="sd">    evenly (a Sobol sequence).</span>
+
+<span class="sd">    The search needs many evaluations, so it can be run on a few blinks</span>
+<span class="sd">    (`train`, e.g. 10 different blinks, each transplanted a few times).</span>
+<span class="sd">    With few blinks, the result depends on which blinks they are, so the</span>
+<span class="sd">    search can be run several times on different blinks (`train` as a list</span>
+<span class="sd">    of such sets). The results (and the starting parameters) are compared</span>
+<span class="sd">    on further transplanted blinks (`refine`, or else on all sets of</span>
+<span class="sd">    `train`), and the best one is refined on its own blinks and `refine`</span>
+<span class="sd">    with one more round on the finest grid.</span>
+
+<span class="sd">    With many parameters and few blinks, the tuned parameters can fit the</span>
+<span class="sd">    blinks they were tuned on better than other blinks. If transplanted</span>
+<span class="sd">    blinks that were not used for tuning are given (`test`), the tuned</span>
+<span class="sd">    parameters are only used if they are better on those than the starting</span>
+<span class="sd">    parameters.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    train : BlinkTransplant, list of BlinkTransplant, or list of lists</span>
+<span class="sd">        signal(s) with transplanted blinks to search the parameters on (see</span>
+<span class="sd">        :func:`~pypillometry.signal.transplant.transplant_blinks`); a list</span>
+<span class="sd">        of lists (or of lists and BlinkTransplant) is several sets, with one</span>
+<span class="sd">        search on each</span>
+<span class="sd">    test : BlinkTransplant or list of BlinkTransplant, optional</span>
+<span class="sd">        signal(s) with other transplanted blinks, to check the tuned</span>
+<span class="sd">        parameters (e.g., using other blinks of the same recording, see</span>
+<span class="sd">        `cores` of :func:`~pypillometry.signal.transplant.transplant_blinks`)</span>
+<span class="sd">    refine : BlinkTransplant or list of BlinkTransplant, optional</span>
+<span class="sd">        signal(s) with further transplanted blinks, to choose the best of</span>
+<span class="sd">        the searches and refine it on (together with its `train` set)</span>
+<span class="sd">    start : dict, optional</span>
+<span class="sd">        starting parameters: `smooth_winsize`, `vel_onset`, `vel_offset`,</span>
+<span class="sd">        `margin` and `blinkwindow` (in samples, and units per sample)</span>
+<span class="sd">    bounds : dict, optional</span>
+<span class="sd">        search range `(lower, upper)` for ``"smooth_winsize"``,</span>
+<span class="sd">        ``"vel_onset"``, ``"vel_offset"`` (absolute values),</span>
+<span class="sd">        ``"margin_before"``, ``"margin_after"`` or ``"blinkwindow"``.</span>
+<span class="sd">        Default: from the data. The windows of the transplanted blinks</span>
+<span class="sd">        `(before, after)` limit the margins (up to the window), the</span>
+<span class="sd">        smoothing window (3 samples to half of `before`) and `blinkwindow`</span>
+<span class="sd">        (up to the whole window); the velocity thresholds are between a</span>
+<span class="sd">        tenth of the noise of the clean signal (the robust standard</span>
+<span class="sd">        deviation of its sample-to-sample changes) and the fastest changes</span>
+<span class="sd">        in the artifacts.</span>
+<span class="sd">    fixed : dict, optional</span>
+<span class="sd">        parameters that are not tuned, with their values (e.g.,</span>
+<span class="sd">        ``{"blinkwindow": 250}``); `margin` as `(before, after)`</span>
+<span class="sd">    n_init : int, optional</span>
+<span class="sd">        number of parameter sets (rounded up to a power of 2) to choose</span>
+<span class="sd">        the start of the search from, in addition to `start`; default: 0</span>
+<span class="sd">        with starting parameters, otherwise 64</span>
+<span class="sd">    n_grid : int</span>
+<span class="sd">        number of values per parameter and round</span>
+<span class="sd">    sweeps : int</span>
+<span class="sd">        number of rounds of the search</span>
+<span class="sd">    tol : float</span>
+<span class="sd">        minimum relative reduction of the error for changing a parameter</span>
+<span class="sd">    max_duration : int, optional</span>
+<span class="sd">        `max_duration` of the interpolation (samples; not tuned)</span>
+<span class="sd">    seed : int or np.random.Generator, optional</span>
+<span class="sd">        seed of the random numbers (only used with `n_init`)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    BlinkTuneResult</span>
+<span class="sd">        the tuned parameters (``result.params`` can be passed to</span>
+<span class="sd">        :func:`~pypillometry.signal.preproc.interpolate_blinks_mahot`),</span>
+<span class="sd">        their errors and all evaluated parameters</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from pypillometry.signal import transplant_blinks, interpolate_blinks_mahot</span>
+<span class="sd">    &gt;&gt;&gt; rng = np.random.default_rng(1)</span>
+<span class="sd">    &gt;&gt;&gt; y = 1000 + np.cumsum(rng.normal(0, 1, 20000))</span>
+<span class="sd">    &gt;&gt;&gt; for s in range(1000, 20000, 2000):       # blinks</span>
+<span class="sd">    ...     y[s-20:s] -= np.linspace(0, 500, 20)</span>
+<span class="sd">    ...     y[s+50:s+90] -= np.linspace(500, 0, 40)</span>
+<span class="sd">    ...     y[s:s+50] = np.nan</span>
+<span class="sd">    &gt;&gt;&gt; tr = transplant_blinks(y, window=(100, 150), pad=50, seed=1)</span>
+<span class="sd">    &gt;&gt;&gt; res = tune_blinks_mahot(tr, n_init=16, sweeps=1, seed=1)</span>
+<span class="sd">    &gt;&gt;&gt; filled, interpolated, _ = interpolate_blinks_mahot(tr.signal, tr.blinks, **res.params)</span>
+<span class="sd">    """</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="kn">import</span> <span class="n">qmc</span>
+    <span class="n">train</span> <span class="o">=</span> <span class="n">_as_list</span><span class="p">(</span><span class="n">train</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">train</span><span class="p">):</span>
+        <span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="n">_as_list</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">train</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">sets</span> <span class="o">=</span> <span class="p">[</span><span class="n">train</span><span class="p">]</span>
+    <span class="n">train</span> <span class="o">=</span> <span class="p">[</span><span class="n">tr</span> <span class="k">for</span> <span class="n">trs</span> <span class="ow">in</span> <span class="n">sets</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">trs</span><span class="p">]</span>
+    <span class="n">test</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">test</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">_as_list</span><span class="p">(</span><span class="n">test</span><span class="p">)</span>
+    <span class="n">refine</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">refine</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">_as_list</span><span class="p">(</span><span class="n">refine</span><span class="p">)</span>
+    <span class="n">n_blinks</span><span class="p">,</span> <span class="n">n_test</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tr</span><span class="p">)</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">train</span><span class="p">),</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tr</span><span class="p">)</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">test</span><span class="p">)</span>
+    <span class="n">n_refine</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tr</span><span class="p">)</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">refine</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">n_blinks</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"no transplanted blinks to tune the parameters on"</span><span class="p">)</span>
+    <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+
+    <span class="c1"># search ranges; fixed parameters have a range without size</span>
+    <span class="n">ranges</span> <span class="o">=</span> <span class="n">_default_bounds</span><span class="p">(</span><span class="n">train</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="n">hi</span><span class="p">)</span> <span class="ow">in</span> <span class="p">(</span><span class="n">bounds</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ranges</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"unknown parameter </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> in bounds; use </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_NAMES</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">((</span><span class="nb">abs</span><span class="p">(</span><span class="n">lo</span><span class="p">),</span> <span class="nb">abs</span><span class="p">(</span><span class="n">hi</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="n">hi</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">_LOG</span><span class="p">[</span><span class="n">_NAMES</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">name</span><span class="p">)]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"the bounds of </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> must not be 0"</span><span class="p">)</span>
+        <span class="n">ranges</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="n">hi</span><span class="p">)</span>
+    <span class="n">fixed</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">fixed</span> <span class="ow">or</span> <span class="p">{})</span>
+    <span class="k">if</span> <span class="s2">"margin"</span> <span class="ow">in</span> <span class="n">fixed</span><span class="p">:</span>
+        <span class="n">fixed</span><span class="p">[</span><span class="s2">"margin_before"</span><span class="p">],</span> <span class="n">fixed</span><span class="p">[</span><span class="s2">"margin_after"</span><span class="p">]</span> <span class="o">=</span> <span class="n">fixed</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"margin"</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">fixed</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ranges</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"unknown parameter </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> in fixed; use "</span>
+                             <span class="s2">"smooth_winsize, vel_onset, vel_offset, margin, blinkwindow"</span><span class="p">)</span>
+        <span class="n">ranges</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">value</span><span class="p">),</span> <span class="nb">abs</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+    <span class="n">lo</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">ranges</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">_NAMES</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">hi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">ranges</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">_NAMES</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">free</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">hi</span> <span class="o">&gt;</span> <span class="n">lo</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="c1"># the lower bound of a logarithmic scale must be positive</span>
+    <span class="n">lo_log</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">_LOG</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="mf">1e-12</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">hi</span><span class="p">,</span> <span class="mf">1e-300</span><span class="p">)),</span> <span class="n">lo</span><span class="p">)</span>
+
+    <span class="n">hi_log</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">hi</span><span class="p">,</span> <span class="n">lo_log</span><span class="p">)</span>
+
+    <span class="c1"># only the signal around the transplanted blinks is needed</span>
+    <span class="n">context</span> <span class="o">=</span> <span class="n">_context</span><span class="p">(</span><span class="n">train</span> <span class="o">+</span> <span class="n">refine</span> <span class="o">+</span> <span class="n">test</span><span class="p">,</span> <span class="n">hi</span><span class="p">)</span>
+    <span class="n">sets</span><span class="p">,</span> <span class="n">test</span><span class="p">,</span> <span class="n">refine</span> <span class="o">=</span> <span class="p">([[</span><span class="n">_crop</span><span class="p">(</span><span class="n">tr</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">trs</span><span class="p">]</span> <span class="k">for</span> <span class="n">trs</span> <span class="ow">in</span> <span class="n">sets</span><span class="p">],</span>
+                          <span class="p">[</span><span class="n">_crop</span><span class="p">(</span><span class="n">tr</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">test</span><span class="p">],</span>
+                          <span class="p">[</span><span class="n">_crop</span><span class="p">(</span><span class="n">tr</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">refine</span><span class="p">])</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_x</span><span class="p">(</span><span class="n">u</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""values from the unit cube"""</span>
+        <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">invalid</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">,</span> <span class="n">divide</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">):</span>
+            <span class="n">log</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">lo_log</span><span class="p">)</span> <span class="o">+</span> <span class="n">u</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">hi_log</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">lo_log</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">_LOG</span><span class="p">,</span> <span class="n">log</span><span class="p">,</span> <span class="n">lo</span> <span class="o">+</span> <span class="n">u</span> <span class="o">*</span> <span class="p">(</span><span class="n">hi</span> <span class="o">-</span> <span class="n">lo</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_u</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">lo_log</span><span class="p">,</span> <span class="n">hi_log</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">invalid</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">,</span> <span class="n">divide</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">):</span>
+            <span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">_LOG</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">lo_log</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">hi_log</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">lo_log</span><span class="p">)),</span>
+                         <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">lo</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">hi</span> <span class="o">-</span> <span class="n">lo</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">hi</span> <span class="o">&gt;</span> <span class="n">lo</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+
+    <span class="n">history</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+    <span class="n">stage2</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">n_refine</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">sets</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span>
+    <span class="n">bar</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">sets</span><span class="p">)</span> <span class="o">+</span> <span class="n">stage2</span> <span class="o">+</span> <span class="nb">bool</span><span class="p">(</span><span class="n">n_test</span><span class="p">),</span> <span class="n">desc</span><span class="o">=</span><span class="s2">"Tuning blink interpolation"</span><span class="p">,</span>
+               <span class="n">unit</span><span class="o">=</span><span class="s2">"step"</span><span class="p">,</span> <span class="n">disable</span><span class="o">=</span><span class="ow">not</span> <span class="n">_show_progress</span><span class="p">())</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">make_loss</span><span class="p">(</span><span class="n">transplants</span><span class="p">,</span> <span class="n">stage</span><span class="p">,</span> <span class="n">search</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""error on `transplants` of the parameters at a point of the unit cube"""</span>
+        <span class="n">cache</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">loss</span><span class="p">(</span><span class="n">u</span><span class="p">):</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="n">_to_params</span><span class="p">(</span><span class="n">to_x</span><span class="p">(</span><span class="n">u</span><span class="p">))</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s2">"smooth_winsize"</span><span class="p">],</span> <span class="n">params</span><span class="p">[</span><span class="s2">"vel_onset"</span><span class="p">],</span> <span class="n">params</span><span class="p">[</span><span class="s2">"vel_offset"</span><span class="p">],</span>
+                   <span class="n">params</span><span class="p">[</span><span class="s2">"margin"</span><span class="p">],</span> <span class="n">params</span><span class="p">[</span><span class="s2">"blinkwindow"</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">cache</span><span class="p">:</span>
+                <span class="n">cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">transplant_error_mahot</span><span class="p">(</span><span class="n">transplants</span><span class="p">,</span> <span class="n">max_duration</span><span class="o">=</span><span class="n">max_duration</span><span class="p">,</span>
+                                                    <span class="o">**</span><span class="n">params</span><span class="p">)</span>
+                <span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">_to_vector</span><span class="p">(</span><span class="n">params</span><span class="p">),</span> <span class="n">cache</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">stage</span><span class="p">,</span> <span class="n">search</span><span class="p">))</span>
+                <span class="n">bar</span><span class="o">.</span><span class="n">set_postfix</span><span class="p">(</span><span class="n">evaluations</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">history</span><span class="p">),</span> <span class="n">error</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="si">:</span><span class="s2">.4g</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                                <span class="n">refresh</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">loss</span>
+
+    <span class="c1"># stage 1: search on each set of `train`, from the starting parameters</span>
+    <span class="c1"># or the best of an even cover of the search range</span>
+    <span class="k">if</span> <span class="n">n_init</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">n_init</span> <span class="o">=</span> <span class="mi">64</span> <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">n_init</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"the search needs starting parameters or n_init &gt; 0"</span><span class="p">)</span>
+    <span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">_NAMES</span><span class="p">)))</span>
+    <span class="k">if</span> <span class="n">n_init</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">points</span> <span class="o">=</span> <span class="n">qmc</span><span class="o">.</span><span class="n">Sobol</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">_NAMES</span><span class="p">),</span> <span class="n">seed</span><span class="o">=</span><span class="n">rng</span><span class="p">)</span><span class="o">.</span><span class="n">random_base2</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">n_init</span><span class="p">))))</span>
+    <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">_to_params</span><span class="p">(</span><span class="n">_to_vector</span><span class="p">(</span><span class="n">start</span><span class="p">))</span>
+        <span class="n">start_u</span> <span class="o">=</span> <span class="n">to_u</span><span class="p">(</span><span class="n">_to_vector</span><span class="p">(</span><span class="n">start</span><span class="p">))</span>
+        <span class="n">start_u</span><span class="p">[</span><span class="n">hi</span> <span class="o">&lt;=</span> <span class="n">lo</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">start_u</span><span class="p">,</span> <span class="n">points</span><span class="p">])</span>
+    <span class="n">points</span><span class="p">[:,</span> <span class="n">hi</span> <span class="o">&lt;=</span> <span class="n">lo</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">found</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">trs</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sets</span><span class="p">):</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">make_loss</span><span class="p">(</span><span class="n">trs</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+        <span class="n">losses</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">loss</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">points</span><span class="p">])</span>
+        <span class="n">u</span><span class="p">,</span> <span class="n">best</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">losses</span><span class="p">)]</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">losses</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="n">u</span><span class="p">,</span> <span class="n">best</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="n">_coordinate_search</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">best</span><span class="p">,</span> <span class="n">free</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">n_grid</span><span class="p">,</span> <span class="n">sweeps</span><span class="p">,</span> <span class="n">tol</span><span class="p">)</span>
+        <span class="n">found</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Tuning: search </span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2"> of </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">sets</span><span class="p">)</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">best</span><span class="si">:</span><span class="s2">.4g</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">bar</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+
+    <span class="c1"># stage 2: the best of the searches (or the starting parameters, as the</span>
+    <span class="c1"># searches can fit their few blinks too closely) on further blinks,</span>
+    <span class="c1"># refined on them and its own blinks with one more round on the finest grid</span>
+    <span class="n">k</span><span class="p">,</span> <span class="n">best_u</span><span class="p">,</span> <span class="n">tuning</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">found</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">sets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">refine</span>
+    <span class="k">if</span> <span class="n">stage2</span><span class="p">:</span>
+        <span class="n">choose</span> <span class="o">=</span> <span class="n">make_loss</span><span class="p">(</span><span class="n">refine</span> <span class="k">if</span> <span class="n">n_refine</span> <span class="k">else</span> <span class="n">train</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">cands</span> <span class="o">=</span> <span class="n">found</span> <span class="o">+</span> <span class="p">([</span><span class="n">start_u</span><span class="p">]</span> <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[])</span>
+        <span class="n">losses</span> <span class="o">=</span> <span class="p">[</span><span class="n">choose</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">cands</span><span class="p">]</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">losses</span><span class="p">))</span>
+        <span class="n">best_u</span> <span class="o">=</span> <span class="n">cands</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">found</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Tuning: refining from the starting parameters"</span><span class="p">)</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">tuning</span> <span class="o">=</span> <span class="p">(</span><span class="n">sets</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">if</span> <span class="n">n_refine</span> <span class="k">else</span> <span class="p">[])</span> <span class="o">+</span> <span class="p">(</span><span class="n">refine</span> <span class="k">if</span> <span class="n">n_refine</span> <span class="k">else</span> <span class="n">train</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Tuning: refining on </span><span class="si">{</span><span class="nb">sum</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tr</span><span class="p">)</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">tr</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">tuning</span><span class="p">)</span><span class="si">}</span><span class="s2"> blinks"</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">make_loss</span><span class="p">(</span><span class="n">tuning</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">best_u</span><span class="p">,</span> <span class="n">best</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_coordinate_search</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">best_u</span><span class="p">,</span> <span class="n">loss</span><span class="p">(</span><span class="n">best_u</span><span class="p">),</span> <span class="n">free</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">width</span><span class="p">,</span>
+                                             <span class="n">n_grid</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">tol</span><span class="p">)</span>
+        <span class="n">bar</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+
+    <span class="n">tuned</span> <span class="o">=</span> <span class="n">_to_params</span><span class="p">(</span><span class="n">to_x</span><span class="p">(</span><span class="n">best_u</span><span class="p">))</span>
+    <span class="n">md</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">max_duration</span><span class="o">=</span><span class="n">max_duration</span><span class="p">)</span>
+    <span class="n">loss_start</span> <span class="o">=</span> <span class="n">transplant_error_mahot</span><span class="p">(</span><span class="n">tuning</span><span class="p">,</span> <span class="o">**</span><span class="n">start</span><span class="p">,</span> <span class="o">**</span><span class="n">md</span><span class="p">)</span> <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="n">test_loss</span> <span class="o">=</span> <span class="n">transplant_error_mahot</span><span class="p">(</span><span class="n">test</span><span class="p">,</span> <span class="o">**</span><span class="n">tuned</span><span class="p">,</span> <span class="o">**</span><span class="n">md</span><span class="p">)</span> <span class="k">if</span> <span class="n">n_test</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="n">test_loss_start</span> <span class="o">=</span> <span class="p">(</span><span class="n">transplant_error_mahot</span><span class="p">(</span><span class="n">test</span><span class="p">,</span> <span class="o">**</span><span class="n">start</span><span class="p">,</span> <span class="o">**</span><span class="n">md</span><span class="p">)</span>
+                       <span class="k">if</span> <span class="n">n_test</span> <span class="ow">and</span> <span class="n">start</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+    <span class="n">bar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="n">n_test</span><span class="p">))</span>
+    <span class="n">bar</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="c1"># use the tuned parameters unless they are worse on the test blinks</span>
+    <span class="n">success</span> <span class="o">=</span> <span class="ow">not</span> <span class="p">(</span><span class="n">test_loss</span> <span class="o">&gt;=</span> <span class="n">test_loss_start</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"The tuned parameters are not better than the starting parameters on "</span>
+                       <span class="sa">f</span><span class="s2">"the blinks that were not used for tuning (error </span><span class="si">{</span><span class="n">test_loss</span><span class="si">:</span><span class="s2">.4g</span><span class="si">}</span><span class="s2"> vs. "</span>
+                       <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">test_loss_start</span><span class="si">:</span><span class="s2">.4g</span><span class="si">}</span><span class="s2">): keeping the starting parameters"</span><span class="p">)</span>
+    <span class="n">hist</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">h</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">history</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">_NAMES</span><span class="p">)}</span>
+    <span class="n">hist</span><span class="p">[</span><span class="s2">"vel_onset"</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">hist</span><span class="p">[</span><span class="s2">"vel_onset"</span><span class="p">]</span>
+    <span class="n">hist</span><span class="p">[</span><span class="s2">"loss"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">h</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">history</span><span class="p">])</span>
+    <span class="n">hist</span><span class="p">[</span><span class="s2">"stage"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">h</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">history</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">hist</span><span class="p">[</span><span class="s2">"search"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">h</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">history</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">out_bounds</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lo</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">hi</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">_NAMES</span><span class="p">)}</span>
+    <span class="n">out_bounds</span><span class="p">[</span><span class="s2">"vel_onset"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="n">out_bounds</span><span class="p">[</span><span class="s2">"vel_onset"</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="o">-</span><span class="n">out_bounds</span><span class="p">[</span><span class="s2">"vel_onset"</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">BlinkTuneResult</span><span class="p">(</span><span class="n">params</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">tuned</span> <span class="k">if</span> <span class="n">success</span> <span class="k">else</span> <span class="n">start</span><span class="p">),</span> <span class="n">tuned</span><span class="o">=</span><span class="n">tuned</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
+                           <span class="n">loss</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">best</span><span class="p">),</span> <span class="n">loss_start</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">loss_start</span><span class="p">),</span>
+                           <span class="n">test_loss</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">test_loss</span><span class="p">),</span> <span class="n">test_loss_start</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">test_loss_start</span><span class="p">),</span>
+                           <span class="n">success</span><span class="o">=</span><span class="nb">bool</span><span class="p">(</span><span class="n">success</span><span class="p">),</span> <span class="n">bounds</span><span class="o">=</span><span class="n">out_bounds</span><span class="p">,</span> <span class="n">history</span><span class="o">=</span><span class="n">hist</span><span class="p">,</span>
+                           <span class="n">n_blinks</span><span class="o">=</span><span class="n">n_blinks</span><span class="p">,</span> <span class="n">n_refine</span><span class="o">=</span><span class="n">n_refine</span><span class="p">,</span> <span class="n">n_test</span><span class="o">=</span><span class="n">n_test</span><span class="p">,</span>
+                           <span class="n">n_searches</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">sets</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="transplant_error_kalman">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.transplant_error_kalman.html#pypillometry.signal.transplant_error_kalman">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">transplant_error_kalman</span><span class="p">(</span><span class="n">transplants</span><span class="p">,</span> <span class="n">margin</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">window</span><span class="p">,</span> <span class="n">per_blink</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Error of the Kalman interpolation of transplanted blinks.</span>
+
+<span class="sd">    The core of each transplanted blink with `margin` around it (see</span>
+<span class="sd">    :func:`~pypillometry.signal.preproc.blink_stretches`) is interpolated</span>
+<span class="sd">    with :func:`~pypillometry.signal.preproc.interpolate_blinks_kalman` and</span>
+<span class="sd">    compared to the signal without the blinks, as in</span>
+<span class="sd">    :func:`transplant_error_mahot`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    transplants : BlinkTransplant or list of BlinkTransplant</span>
+<span class="sd">        signal(s) with transplanted blinks</span>
+<span class="sd">    margin : tuple of int</span>
+<span class="sd">        samples `(before, after)` the core that are replaced too</span>
+<span class="sd">    fs : float</span>
+<span class="sd">        sampling rate (Hz)</span>
+<span class="sd">    window : int</span>
+<span class="sd">        samples before and after each stretch that the Kalman smoother uses</span>
+<span class="sd">    per_blink : bool</span>
+<span class="sd">        return the errors of all blinks instead of their mean</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float or np.ndarray</span>
+<span class="sd">        the mean error per blink, or the error of each blink</span>
+<span class="sd">    """</span>
+    <span class="n">errors</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">_as_list</span><span class="p">(</span><span class="n">transplants</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tr</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">stretches</span> <span class="o">=</span> <span class="n">blink_stretches</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">signal</span><span class="p">,</span> <span class="n">tr</span><span class="o">.</span><span class="n">blinks</span><span class="p">,</span> <span class="n">margin</span><span class="p">)</span>
+        <span class="n">filled</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">interpolate_blinks_kalman</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">signal</span><span class="p">,</span> <span class="n">stretches</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">window</span><span class="p">)</span>
+        <span class="n">errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">filled</span><span class="p">,</span> <span class="n">per_site</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+    <span class="n">errors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">errors</span><span class="p">)</span> <span class="k">if</span> <span class="n">errors</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">per_blink</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">errors</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">errors</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="k">if</span> <span class="n">errors</span><span class="o">.</span><span class="n">size</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span></div>
+
+
+
+<div class="viewcode-block" id="tune_blinks_kalman">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.signal.tune_blinks_kalman.html#pypillometry.signal.tune_blinks_kalman">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">tune_blinks_kalman</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">window</span><span class="p">,</span> <span class="n">test</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">refine</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                       <span class="n">n_grid</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">n_fine</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Tune the margins of the Kalman interpolation on transplanted blinks.</span>
+
+<span class="sd">    The Kalman interpolation (see</span>
+<span class="sd">    :func:`~pypillometry.signal.preproc.interpolate_blinks_kalman`) has no</span>
+<span class="sd">    parameters for finding the transients around a blink: it replaces the</span>
+<span class="sd">    core of the blink and a `margin` before and after it. The margins are</span>
+<span class="sd">    searched on a grid of `n_grid` x `n_grid` values within `bounds` (on</span>
+<span class="sd">    the blinks in `train`), and then on a finer grid of `n_fine` x `n_fine`</span>
+<span class="sd">    values around the best one (on the blinks in `train` and `refine`).</span>
+<span class="sd">    The error changes smoothly with the margins, so the grid suffices. If</span>
+<span class="sd">    `test` is given, the tuned margins are only used if they are better on</span>
+<span class="sd">    those blinks than the starting margins.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    train : BlinkTransplant or list of BlinkTransplant</span>
+<span class="sd">        signal(s) with transplanted blinks (see</span>
+<span class="sd">        :func:`~pypillometry.signal.transplant.transplant_blinks`); a list</span>
+<span class="sd">        of lists is flattened</span>
+<span class="sd">    fs : float</span>
+<span class="sd">        sampling rate (Hz)</span>
+<span class="sd">    window : int</span>
+<span class="sd">        samples before and after each blink that the Kalman smoother uses</span>
+<span class="sd">    test, refine : BlinkTransplant or list of BlinkTransplant, optional</span>
+<span class="sd">        further transplanted blinks to check the result and for the fine grid</span>
+<span class="sd">    start : tuple of int, optional</span>
+<span class="sd">        starting margins `(before, after)` (samples); default: the middle</span>
+<span class="sd">        of `bounds`</span>
+<span class="sd">    bounds : tuple of tuple, optional</span>
+<span class="sd">        search ranges `((lo, hi), (lo, hi))` of the margins before and after</span>
+<span class="sd">        the core (samples); default: from 0 to the window of the</span>
+<span class="sd">        transplanted blinks on each side</span>
+<span class="sd">    n_grid, n_fine : int</span>
+<span class="sd">        number of values per margin on the coarse and the fine grid</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    BlinkTuneResult</span>
+<span class="sd">        ``result.params`` are ``{"margin": (before, after)}`` (samples); the</span>
+<span class="sd">        history has ``"margin_before"``, ``"margin_after"``, ``"loss"`` and</span>
+<span class="sd">        ``"stage"`` (1: coarse grid, 2: fine grid)</span>
+<span class="sd">    """</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+    <span class="n">train</span> <span class="o">=</span> <span class="p">[</span><span class="n">tr</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">_as_list</span><span class="p">(</span><span class="n">train</span><span class="p">)</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="p">(</span><span class="n">t</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="k">else</span> <span class="p">[</span><span class="n">t</span><span class="p">])]</span>
+    <span class="n">test</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">test</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">_as_list</span><span class="p">(</span><span class="n">test</span><span class="p">)</span>
+    <span class="n">refine</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">refine</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">_as_list</span><span class="p">(</span><span class="n">refine</span><span class="p">)</span>
+    <span class="n">n_blinks</span><span class="p">,</span> <span class="n">n_test</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tr</span><span class="p">)</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">train</span><span class="p">),</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tr</span><span class="p">)</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">test</span><span class="p">)</span>
+    <span class="n">n_refine</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tr</span><span class="p">)</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">refine</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">n_blinks</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"no transplanted blinks to tune the margins on"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">bounds</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">pre</span><span class="p">,</span> <span class="n">post</span> <span class="o">=</span> <span class="n">train</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">window</span>
+        <span class="n">bounds</span> <span class="o">=</span> <span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">pre</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">post</span><span class="p">))</span>
+    <span class="p">(</span><span class="n">lo0</span><span class="p">,</span> <span class="n">hi0</span><span class="p">),</span> <span class="p">(</span><span class="n">lo1</span><span class="p">,</span> <span class="n">hi1</span><span class="p">)</span> <span class="o">=</span> <span class="n">bounds</span>
+    <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="p">((</span><span class="n">lo0</span> <span class="o">+</span> <span class="n">hi0</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="n">lo1</span> <span class="o">+</span> <span class="n">hi1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">start</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">start</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="n">history</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">bar</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="n">n_grid</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">n_fine</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="nb">bool</span><span class="p">(</span><span class="n">n_test</span><span class="p">),</span> <span class="n">unit</span><span class="o">=</span><span class="s2">"evaluation"</span><span class="p">,</span>
+               <span class="n">desc</span><span class="o">=</span><span class="s2">"Tuning Kalman margins"</span><span class="p">,</span> <span class="n">disable</span><span class="o">=</span><span class="ow">not</span> <span class="n">_show_progress</span><span class="p">())</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">make_loss</span><span class="p">(</span><span class="n">transplants</span><span class="p">,</span> <span class="n">stage</span><span class="p">):</span>
+        <span class="n">cache</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">loss</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="k">if</span> <span class="n">m</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">cache</span><span class="p">:</span>
+                <span class="n">cache</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">=</span> <span class="n">transplant_error_kalman</span><span class="p">(</span><span class="n">transplants</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">window</span><span class="p">)</span>
+                <span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">m</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">m</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">cache</span><span class="p">[</span><span class="n">m</span><span class="p">],</span> <span class="n">stage</span><span class="p">))</span>
+                <span class="n">bar</span><span class="o">.</span><span class="n">set_postfix</span><span class="p">(</span><span class="n">error</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">cache</span><span class="p">[</span><span class="n">m</span><span class="p">]</span><span class="si">:</span><span class="s2">.4g</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">refresh</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">bar</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">cache</span><span class="p">[</span><span class="n">m</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">loss</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">grid</span><span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="n">hi</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="n">hi</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">))</span>
+
+    <span class="c1"># coarse grid on `train`</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="n">make_loss</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">g0</span><span class="p">,</span> <span class="n">g1</span> <span class="o">=</span> <span class="n">grid</span><span class="p">(</span><span class="n">lo0</span><span class="p">,</span> <span class="n">hi0</span><span class="p">,</span> <span class="n">n_grid</span><span class="p">),</span> <span class="n">grid</span><span class="p">(</span><span class="n">lo1</span><span class="p">,</span> <span class="n">hi1</span><span class="p">,</span> <span class="n">n_grid</span><span class="p">)</span>
+    <span class="n">best</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(((</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">g0</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">g1</span><span class="p">),</span> <span class="n">key</span><span class="o">=</span><span class="n">loss</span><span class="p">)</span>
+    <span class="c1"># fine grid around the best margins, on `train` and `refine`</span>
+    <span class="n">step0</span> <span class="o">=</span> <span class="p">(</span><span class="n">g0</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">g0</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">g0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="mi">0</span>
+    <span class="n">step1</span> <span class="o">=</span> <span class="p">(</span><span class="n">g1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">g1</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">g1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="mi">0</span>
+    <span class="n">tuning</span> <span class="o">=</span> <span class="n">train</span> <span class="o">+</span> <span class="n">refine</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="n">make_loss</span><span class="p">(</span><span class="n">tuning</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">f0</span> <span class="o">=</span> <span class="n">grid</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">lo0</span><span class="p">,</span> <span class="n">best</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">step0</span><span class="p">),</span> <span class="nb">min</span><span class="p">(</span><span class="n">hi0</span><span class="p">,</span> <span class="n">best</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">step0</span><span class="p">),</span> <span class="n">n_fine</span><span class="p">)</span>
+    <span class="n">f1</span> <span class="o">=</span> <span class="n">grid</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">lo1</span><span class="p">,</span> <span class="n">best</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">step1</span><span class="p">),</span> <span class="nb">min</span><span class="p">(</span><span class="n">hi1</span><span class="p">,</span> <span class="n">best</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">step1</span><span class="p">),</span> <span class="n">n_fine</span><span class="p">)</span>
+    <span class="n">best</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(((</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">f0</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">f1</span><span class="p">),</span> <span class="n">key</span><span class="o">=</span><span class="n">loss</span><span class="p">)</span>
+    <span class="n">best_loss</span> <span class="o">=</span> <span class="n">loss</span><span class="p">(</span><span class="n">best</span><span class="p">)</span>
+
+    <span class="n">loss_start</span> <span class="o">=</span> <span class="n">transplant_error_kalman</span><span class="p">(</span><span class="n">tuning</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">window</span><span class="p">)</span>
+    <span class="n">test_loss</span> <span class="o">=</span> <span class="n">transplant_error_kalman</span><span class="p">(</span><span class="n">test</span><span class="p">,</span> <span class="n">best</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">window</span><span class="p">)</span> <span class="k">if</span> <span class="n">n_test</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="n">test_loss_start</span> <span class="o">=</span> <span class="n">transplant_error_kalman</span><span class="p">(</span><span class="n">test</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">window</span><span class="p">)</span> <span class="k">if</span> <span class="n">n_test</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="n">bar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="nb">bool</span><span class="p">(</span><span class="n">n_test</span><span class="p">))</span>
+    <span class="n">bar</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="n">success</span> <span class="o">=</span> <span class="ow">not</span> <span class="p">(</span><span class="n">test_loss</span> <span class="o">&gt;=</span> <span class="n">test_loss_start</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"The tuned margins are not better than the starting margins on the "</span>
+                       <span class="sa">f</span><span class="s2">"blinks that were not used for tuning (error </span><span class="si">{</span><span class="n">test_loss</span><span class="si">:</span><span class="s2">.4g</span><span class="si">}</span><span class="s2"> vs. "</span>
+                       <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">test_loss_start</span><span class="si">:</span><span class="s2">.4g</span><span class="si">}</span><span class="s2">): keeping the starting margins"</span><span class="p">)</span>
+    <span class="n">tuned</span><span class="p">,</span> <span class="n">start_pars</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"margin"</span><span class="p">:</span> <span class="n">best</span><span class="p">},</span> <span class="p">{</span><span class="s2">"margin"</span><span class="p">:</span> <span class="n">start</span><span class="p">}</span>
+    <span class="n">hist</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"margin_before"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">h</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">history</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+            <span class="s2">"margin_after"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">h</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">history</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+            <span class="s2">"loss"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">h</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">history</span><span class="p">]),</span>
+            <span class="s2">"stage"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">h</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">history</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)}</span>
+    <span class="n">out_bounds</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"margin_before"</span><span class="p">:</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lo0</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">hi0</span><span class="p">)),</span>
+                  <span class="s2">"margin_after"</span><span class="p">:</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lo1</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">hi1</span><span class="p">))}</span>
+    <span class="k">return</span> <span class="n">BlinkTuneResult</span><span class="p">(</span><span class="n">params</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">tuned</span> <span class="k">if</span> <span class="n">success</span> <span class="k">else</span> <span class="n">start_pars</span><span class="p">),</span> <span class="n">tuned</span><span class="o">=</span><span class="n">tuned</span><span class="p">,</span>
+                           <span class="n">start</span><span class="o">=</span><span class="n">start_pars</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">best_loss</span><span class="p">),</span> <span class="n">loss_start</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">loss_start</span><span class="p">),</span>
+                           <span class="n">test_loss</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">test_loss</span><span class="p">),</span> <span class="n">test_loss_start</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">test_loss_start</span><span class="p">),</span>
+                           <span class="n">success</span><span class="o">=</span><span class="nb">bool</span><span class="p">(</span><span class="n">success</span><span class="p">),</span> <span class="n">bounds</span><span class="o">=</span><span class="n">out_bounds</span><span class="p">,</span> <span class="n">history</span><span class="o">=</span><span class="n">hist</span><span class="p">,</span>
+                           <span class="n">n_blinks</span><span class="o">=</span><span class="n">n_blinks</span><span class="p">,</span> <span class="n">n_refine</span><span class="o">=</span><span class="n">n_refine</span><span class="p">,</span> <span class="n">n_test</span><span class="o">=</span><span class="n">n_test</span><span class="p">)</span></div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2026, Matthias Mittner.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
+  </p>
+</div>
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.24.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

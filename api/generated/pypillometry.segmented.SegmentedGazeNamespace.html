@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>SegmentedGazeNamespace &#8212; pypillometry v2.2.3</title>
+    <title>SegmentedGazeNamespace &#8212; pypillometry v2.2.4</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=7e518144"></script>
+    <script src="../../_static/documentation_options.js?v=b5d81189"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.3" />
+  <meta name="docsearch:version" content="v2.2.4" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -506,7 +506,25 @@
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.detect_blinks_velocity.html">detect_blinks_velocity</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.detect_blinks_zero.html">detect_blinks_zero</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.blink_onsets_mahot.html">blink_onsets_mahot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.interpolate_blinks_mahot.html">interpolate_blinks_mahot</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.interpolate_blinks_kalman.html">interpolate_blinks_kalman</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.blink_stretches.html">blink_stretches</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.transplant_blinks.html">transplant_blinks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.transplant_error.html">transplant_error</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.blink_cores.html">blink_cores</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.blink_donors.html">blink_donors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.extract_blink_artifacts.html">extract_blink_artifacts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.blink_artifact_profile.html">blink_artifact_profile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.shrink_blink_artifacts.html">shrink_blink_artifacts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.clean_stretches.html">clean_stretches</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.place_blink_artifacts.html">place_blink_artifacts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.insert_blink_artifacts.html">insert_blink_artifacts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.BlinkTransplant.html">BlinkTransplant</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.tune_blinks_mahot.html">tune_blinks_mahot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.transplant_error_mahot.html">transplant_error_mahot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.tune_blinks_kalman.html">tune_blinks_kalman</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.transplant_error_kalman.html">transplant_error_kalman</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.BlinkTuneResult.html">BlinkTuneResult</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_kernel.html">pupil_kernel</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_kernel_t.html">pupil_kernel_t</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_get_max_duration.html">pupil_get_max_duration</a></li>
@@ -543,6 +561,7 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../misc.html">Viewer, settings and logging</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.view.html">view</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.tweak.html">tweak</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.tweak_blink_interpolation.html">tweak_blink_interpolation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.set_default_inplace.html">set_default_inplace</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.get_default_inplace.html">get_default_inplace</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.logging_set_level.html">logging_set_level</a></li>
@@ -622,7 +641,7 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="pypillometry.segmented.SegmentedGazeNamespace">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pypillometry.segmented.</span></span><span class="sig-name descname"><span class="pre">SegmentedGazeNamespace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/segmented.html#SegmentedGazeNamespace"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.segmented.SegmentedGazeNamespace" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Namespace</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Namespace</span></code>[SegmentedEyeData]</p>
 <p>Methods for gaze segments and regions of interest (ROIs), accessed as
 <code class="docutils literal notranslate"><span class="pre">seg.gaze</span></code> (e.g., <code class="docutils literal notranslate"><span class="pre">seg.gaze.roi_hits(roi)</span></code>).</p>
 <p>The methods need the gaze position (<code class="docutils literal notranslate"><span class="pre">&lt;eye&gt;_x</span></code> and <code class="docutils literal notranslate"><span class="pre">&lt;eye&gt;_y</span></code>) of a
