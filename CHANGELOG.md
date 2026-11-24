@@ -2,22 +2,20 @@
 
 ## Unreleased
 
-- `d.pupil.blinks_optimize_parameters()`: tune the parameters of `blinks_interpolate()` for a recording on its transplanted obvious blinks (after `blinks_detect()`); with `method="kalman"`, the two margins of the Kalman interpolation
-- `pp.tweak_blink_interpolation()`: tweak the parameters of `blinks_interpolate()` on a short part of the recording; `pp.tweak(auto_update=)`
+- `d.pupil.blinks_optimize_parameters()`: autotune the parameters of `blinks_interpolate()` 
+- `pp.tweak_blink_interpolation()`: tweak the parameters of `blinks_interpolate()` 
 - `d.plot.plot_blink_clusters()`: the detected blinks in groups of similar shape, to spot bad detections
-- `pp.view(..., overlay=)`: other EyeData objects (e.g., another interpolation) on the plots of the same variables
-- `pp.view()`, `pp.tweak()`: also work with PySide6 (e.g., Qt from conda-forge); the Qt binding is the imported one, or the first installed of PyQt6, PySide6, PyQt5, PySide2
-- `pp.signal.transplant_blinks()` and related functions: transplantation of blinks for numpy arrays
-- `pp.signal.tune_blinks_mahot()`, `pp.signal.tune_blinks_kalman()`: tuning on transplanted blinks for numpy arrays
-- `pp.signal.interpolate_blinks_mahot()`, `pp.signal.blink_stretches()`: the Mahot interpolation and the stretches replaced by the Kalman interpolation for numpy arrays
+- `pp.view(..., overlay=)`: support other EyeData objects 
+- `pp.view()`, `pp.tweak()`: also work with PySide6 
+- `pp.signal.transplant_blinks()` and related functions
 
 ### Changed behaviour
 
-- `blinks_interpolate(method="kalman")`: replaces a `margin` around the core of each blink (default 50/150 ms) instead of exactly the detected blinks; `margin=None` for the old behaviour
-- `blinks_detect()`: `max_duration` (now 2 s) applies to all blinks; longer runs of missing samples (e.g., breaks) are no blinks
-- `blinks_interpolate()` (Mahot): blinks are only merged if they overlap; anchor points that would reach a neighbouring blink move to its on-/offset (with a monotone curve instead of the cubic), and the search for on- and offsets stops at the neighbours
-- `blinks_interpolate()` (Mahot): stretches longer than `max_duration` (2 s) are skipped instead of bridged with one curve
-- dependency: PySide6 instead of PyQt5 (Qt 6, LGPL, wheels for all platforms and on conda-forge)
+- `blinks_interpolate(method="kalman")`: replaces a `margin` around the core of each blink 
+- `blinks_detect()`: `max_duration` (now 2 s) applies to all blinks
+- `blinks_interpolate()` (Mahot): blinks are only merged if they overlap
+- `blinks_interpolate()` (Mahot): stretches longer than `max_duration` (2 s) are skipped
+- dependency: PySide6 instead of PyQt5 
 
 ## 2.2.3 (2026-11-19)
 

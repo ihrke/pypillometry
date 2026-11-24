@@ -866,7 +866,8 @@ class PupilNamespace(Namespace["EyeData"]):
         result (or the starting parameters) and refine it (one more round
         of the search on them and its `n_tune` blinks), and `n_test` only
         to test it; the rest are not used. If there are fewer blinks, there
-        are fewer searches, and the others are split in the same proportion. The tuned parameters are only returned if they
+        are fewer searches, and the others are split in the same proportion. 
+        The tuned parameters are only returned if they
         are better for the test blinks than the starting parameters
         (otherwise those are returned, with a warning). With at most
         `n_tune` blinks, there is no refinement, and up to half of them
