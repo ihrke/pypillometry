@@ -270,3 +270,65 @@ class TestQtBinding(unittest.TestCase):
         with mock.patch("importlib.import_module", side_effect=ImportError):
             with self.assertRaisesRegex(ImportError, "PySide6"):
                 self.q.binding()
+class TestTweakBlinkInterpolation(unittest.TestCase):
+    """pp.tweak_blink_interpolation(), with tweak() replaced (no window)"""
+
+    @classmethod
+    def setUpClass(cls):
+        import pypillometry as pp
+        cls.pp = pp
+        cls.d = pp.get_example_data("rlmw_002_short").pupil.blinks_detect()
+
+    def run_tweak(self, **kw):
+        import pypillometry.viewer as V
+        calls = {}
+
+        def fake(data, func, params, variable=None, time=None, auto_update=True):
+            calls.update(data=data, params=dict(params), variable=variable,
+                         auto_update=auto_update, result=func(data, **params))
+            out = dict(params)
+            out["margin_after"] = params["margin_after"] + 10
+            return out
+        orig = V.tweak
+        V.tweak = fake
+        try:
+            res = self.pp.tweak_blink_interpolation(self.d, **kw)
+        finally:
+            V.tweak = orig
+        return res, calls
+
+    def test_mahot(self):
+        res, calls = self.run_tweak(seed=1)
+        self.assertFalse(calls["auto_update"])
+        self.assertEqual(calls["variable"], "left_pupil")
+        self.assertEqual(set(calls["params"]), {"winsize", "vel_onset", "vel_offset",
+                                                "margin_before", "margin_after",
+                                                "blinkwindow", "max_duration"})
+        # 30 s around a blink
+        part = calls["data"]
+        self.assertAlmostEqual((part.tx[-1] - part.tx[0]) / 1000, 30, delta=0.1)
+        self.assertTrue(len(part.get_blinks("left", "pupil")["left_pupil"]) > 0)
+        self.assertTrue(calls["result"].data.get_layer("left_pupil", "interpolated").any())
+        self.assertEqual(res["method"], "mahot")
+        self.assertEqual(res["margin"], (10.0, 40.0))
+        self.assertEqual(res["interp_type"], "cubic")
+        # usable as arguments
+        self.d.pupil.blinks_interpolate(eyes="left", inplace=False, **res)
+
+    def test_kalman_from_pars_and_interval(self):
+        pars = dict(method="kalman", margin=(80, 200))
+        res, calls = self.run_tweak(pars=pars, eye="right", interval=(10, 20))
+        self.assertEqual(set(calls["params"]), {"margin_before", "margin_after", "blinkwindow"})
+        self.assertEqual(calls["variable"], "right_pupil")
+        part = calls["data"]
+        self.assertAlmostEqual((part.tx[-1] - part.tx[0]) / 1000, 10, delta=0.1)
+        self.assertEqual(res, dict(method="kalman", optimize=False, margin=(80.0, 210.0),
+                                   blinkwindow=500.0))
+
+    def test_errors(self):
+        with self.assertRaisesRegex(ValueError, "unknown parameter"):
+            self.run_tweak(pars=dict(method="kalman", vel_onset=-5))
+        with self.assertRaisesRegex(TypeError, "percent"):
+            self.run_tweak(pars=dict(vel_onset="5%"))
+        with self.assertRaisesRegex(ValueError, "detect the blinks"):
+            self.pp.tweak_blink_interpolation(self.pp.get_example_data("rlmw_002_short"))

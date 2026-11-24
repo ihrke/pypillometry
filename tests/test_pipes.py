@@ -76,7 +76,8 @@ class TestSteps:
         assert marked == set(steps.__all__) - {"pupil", "gaze", "scene"}
         for ns in (pp.pupil, pp.gaze):
             for n in type(ns)._methods():
-                if n != "fit_foreshortening":
+                # these return results, not the data
+                if n not in ("fit_foreshortening", "blinks_optimize_parameters"):
                     assert getattr(type(ns), n)._is_step, n
 
     def test_step_methods_return_data_and_take_inplace(self):

@@ -878,7 +878,7 @@ class TweakViewer:
     
     def __init__(self, canvas: TweakCanvas, params: Dict[str, Any], 
                  on_change: Callable[[Dict[str, Any]], None],
-                 title: str = 'Tweak Viewer'):
+                 title: str = 'Tweak Viewer', auto_update: bool = True):
         """Initialize the tweak viewer with embedded parameter panel.
         
         Parameters
@@ -891,6 +891,8 @@ class TweakViewer:
             Callback function called with updated params dict when values change.
         title : str
             Window title.
+        auto_update : bool
+            whether "Auto Update" is checked at the start
         """
         self.canvas = canvas
         self.canvas._viewer = self  # Link canvas to viewer for closing
@@ -898,7 +900,7 @@ class TweakViewer:
         self.initial_params = dict(params)
         self.on_change = on_change
         self.spinboxes: Dict[str, Any] = {}
-        self.auto_update = True
+        self.auto_update = bool(auto_update)
         self._pending_update = False
         self._computing = False
         
@@ -1009,14 +1011,14 @@ class TweakViewer:
         
         # Auto-update checkbox
         self.auto_update_checkbox = QCheckBox("Auto Update")
-        self.auto_update_checkbox.setChecked(True)
+        self.auto_update_checkbox.setChecked(self.auto_update)
         self.auto_update_checkbox.stateChanged.connect(self._on_auto_update_changed)
         layout.addWidget(self.auto_update_checkbox)
         
         # Update button (disabled when auto-update is on)
         self.update_btn = QPushButton("Update")
         self.update_btn.clicked.connect(self._on_update_clicked)
-        self.update_btn.setEnabled(False)
+        self.update_btn.setEnabled(not self.auto_update)
         layout.addWidget(self.update_btn)
         
         # Reset button

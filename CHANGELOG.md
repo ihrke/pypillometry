@@ -6,8 +6,14 @@
 - `pp.view(..., overlay=)`: other EyeData objects (e.g., another interpolation) on the plots of the same variables
 - `pp.view()`, `pp.tweak()`: also work with PySide6 (e.g., Qt from conda-forge); the Qt binding is the imported one, or the first installed of PyQt6, PySide6, PyQt5, PySide2
 - dependency: PySide6 instead of PyQt5 (Qt 6, LGPL, wheels for all platforms and on conda-forge)
+- `pp.tweak_blink_interpolation()`: tweak the parameters of `blinks_interpolate()` on a short part of the recording; `pp.tweak(auto_update=)`
 - fix: `blinks_detect()` applies `max_duration` (now 2 s) to all blinks; long runs of missing samples (e.g., breaks) are no blinks
 - fix: `blinks_interpolate()` (Mahot) skips stretches longer than `max_duration` (2 s), e.g. chains of merged blinks, instead of bridging them with one curve
+- `d.pupil.blinks_optimize_parameters()`: tune the parameters of `blinks_interpolate()` for a recording on its transplanted obvious blinks (after `blinks_detect()`)
+- `pp.signal.transplant_blinks()` and related functions: transplantation of blinks for numpy arrays
+- `pp.signal.tune_blinks_mahot()`: tuning on transplanted blinks for numpy arrays
+- `blinks_interpolate(method="kalman")`: `margin` around the core of each blink (default 50/150 ms), tunable with `blinks_optimize_parameters(method="kalman")`
+- `pp.signal.interpolate_blinks_mahot()`: the Mahot interpolation for numpy arrays
 
 ## 2.2.3 (2026-11-19)
 

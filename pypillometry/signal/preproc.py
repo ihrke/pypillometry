@@ -9,7 +9,8 @@ from loguru import logger
 
 __all__ = [
     "smooth_window", "velocity_savgol", "detect_blinks_velocity",
-    "detect_blinks_zero", "blink_onsets_mahot", "interpolate_blinks_kalman", "zscale",
+    "detect_blinks_zero", "blink_onsets_mahot", "interpolate_blinks_mahot",
+    "interpolate_blinks_kalman", "blink_stretches", "zscale",
 ]
 
 
@@ -302,118 +303,95 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_
         onset (and `max_blink_samples` allows it); empty array if no blinks
         were found
     """
-    n = len(sy)
-    
-    # Track NaN/zero locations (invalid data)
-    invalid_mask = np.isnan(sy) | (sy == 0)
-    
-    # Fill invalid values with linear interpolation for velocity estimation
-    # (the asymmetric Savitzky-Golay will prevent NaN from affecting edges)
-    sy_filled = sy.copy()
-    valid_indices = np.where(~invalid_mask)[0]
-    if len(valid_indices) == 0:
+    vel_backward, vel_forward, invalid = _velocity_profiles(sy, smooth_winsize)
+    if vel_backward is None:
         logger.debug("No valid samples - returning empty array")
         return np.array([])
-        
-    # Simple linear interpolation for NaN regions
-    invalid_indices = np.where(invalid_mask)[0]
-    if len(invalid_indices) > 0:
-        sy_filled[invalid_indices] = np.interp(
-            invalid_indices, valid_indices, sy[valid_indices]
-        )
-    
-    # Generate velocity profiles using asymmetric Savitzky-Golay
-    # Backward-looking velocity for onset detection (only uses past samples)
-    vel_backward = velocity_savgol(sy_filled, smooth_winsize, polyorder=2, direction="backward")
-    
-    # Forward-looking velocity for offset detection (only uses future samples)  
-    vel_forward = velocity_savgol(sy_filled, smooth_winsize, polyorder=2, direction="forward")
-    
-    # Don't detect inside invalid regions
-    vel_backward[invalid_mask] = 0
-    vel_forward[invalid_mask] = 0
-    
-    logger.debug(f"Generated asymmetric velocity profiles, length {n}")
+    onsets, _ = _threshold_runs(vel_backward <= vel_onset, min_onset_len)
+    offset_starts, offset_ends = _threshold_runs(vel_forward >= vel_offset, min_offset_len)
+    logger.debug(f"Found {len(onsets)} onsets and {len(offset_starts)} offsets")
+    blinks = _pair_velocity_blinks(onsets, offset_starts, offset_ends, invalid,
+                                   min_blink_samples, max_blink_samples)
+    logger.debug(f"Found {len(blinks)} blinks")
+    return blinks
 
-    # Find onset candidates using backward velocity (fast drop before blink)
-    onsets = np.where(vel_backward <= vel_onset)[0]
-    logger.debug(f"Found {len(onsets)} potential onset points")
-    
+
+def _velocity_profiles(sy, smooth_winsize):
+    """
+    Velocity profiles for :func:`detect_blinks_velocity`: the backward- and
+    forward-looking velocity of `sy` (invalid samples, NaN or 0, are filled
+    linearly before, and the velocity is 0 there), and the invalid samples.
+    The velocities are `None` if there are no valid samples.
+    """
+    sy = np.asarray(sy, dtype=float)
+    invalid = np.isnan(sy) | (sy == 0)
+    valid = np.where(~invalid)[0]
+    if len(valid) == 0:
+        return None, None, invalid
+    filled = sy.copy()
+    if invalid.any():
+        filled[invalid] = np.interp(np.where(invalid)[0], valid, sy[valid])
+    # backward-looking for onsets, forward-looking for offsets: the missing
+    # samples of the blink do not affect the estimate at its edges
+    vel_backward = velocity_savgol(filled, smooth_winsize, polyorder=2, direction="backward")
+    vel_forward = velocity_savgol(filled, smooth_winsize, polyorder=2, direction="forward")
+    vel_backward[invalid] = 0
+    vel_forward[invalid] = 0
+    return vel_backward, vel_forward, invalid
+
+
+def _threshold_runs(crossing, min_len):
+    """First and last sample (both inclusive) of the runs of `crossing` with
+    at least `min_len` samples."""
+    x = np.diff(np.r_[0, np.asarray(crossing, dtype=np.int8), 0])
+    starts, ends = np.where(x == 1)[0], np.where(x == -1)[0] - 1
+    keep = ends - starts + 1 >= min_len
+    return starts[keep], ends[keep]
+
+
+def _pair_velocity_blinks(onsets, offset_starts, offset_ends, invalid, min_blink_samples=1,
+                          max_blink_samples=None):
+    """
+    Pair the onsets with offset runs (see :func:`detect_blinks_velocity`):
+    the first offset run that starts after the onset and ends at least
+    `min_blink_samples` after it, unless another onset comes before it.
+    `invalid` are the invalid samples of the signal (onsets in them are
+    moved back to the last valid sample).
+    """
+    n = len(invalid)
+    onsets = np.asarray(onsets, dtype=int)
+    offset_starts = np.asarray(offset_starts, dtype=int)
+    offset_ends = np.asarray(offset_ends, dtype=int)
     if len(onsets) == 0:
-        logger.debug("No onsets found - returning empty array")
         return np.array([])
-        
-    onsets_ixx = np.r_[10, np.diff(onsets)] > 1
-    onsets_len = np.diff(np.r_[np.where(onsets_ixx)[0], onsets.size])
-    onsets = onsets[onsets_ixx]
-    onsets = onsets[onsets_len >= min_onset_len]
-    logger.debug(f"After filtering, {len(onsets)} onsets remain")
-
-    if len(onsets) == 0:
-        logger.debug("No valid onsets - returning empty array")
-        return np.array([])
-
-    # Find offset candidates using forward velocity (fast rise after blink)
-    offsets = np.where(vel_forward >= vel_offset)[0]
-    logger.debug(f"Found {len(offsets)} potential offset points")
-
-    # Without offsets, all blinks end at the last sample (see below)
-    offset_starts = offset_ends = np.array([], dtype=int)
-    if offsets.size > 0:
-        # Mark starts and ends of runs
-        offsets_start_ixx = np.r_[10, np.diff(offsets)] > 1
-        offsets_end_ixx = np.r_[np.diff(offsets), 10] > 1
-        offsets_len = np.diff(np.r_[np.where(offsets_start_ixx)[0], offsets.size])
-
-        # Filter by minimum length (applied to both starts and ends of runs)
-        valid_len_mask = offsets_len >= min_offset_len
-        offset_starts = offsets[offsets_start_ixx][valid_len_mask]
-        offset_ends = offsets[offsets_end_ixx][valid_len_mask]
-    logger.debug(f"After filtering, {len(offset_starts)} offsets remain")
-
-    # Find corresponding on- and off-sets
-    # Use offset STARTS for comparison, but offset ENDS as actual values
-    # Skip offsets that would create intervals shorter than min_blink_samples
-    blinks = []
-    on = onsets[0]
-    while on is not None:
-        # Find offset runs that START after this onset AND create long enough intervals
-        valid_offset_mask = (offset_starts > on) & (offset_ends - on >= min_blink_samples)
-        if valid_offset_mask.any():
-            # Get the first valid offset run and use its END
-            first_valid_idx = np.where(valid_offset_mask)[0][0]
-            off = offset_ends[first_valid_idx]
-            # a later onset before this offset: this onset has no offset of
-            # its own (e.g., a dip from an eye movement) and must not take
-            # the offset of the next blink
-            later = onsets[(onsets > on) & (onsets < offset_starts[first_valid_idx])
-                           & (off - onsets >= min_blink_samples)]
-            if later.size > 0:
-                on = later[0]
-                continue
-        else:
-            off = n - 1
-        if max_blink_samples is not None and off - on + 1 > max_blink_samples:
-            # no offset close enough: drop this onset, try the next one
-            ons = onsets[onsets > on]
-            on = ons[0] if ons.size > 0 else None
-            continue
-        blinks.append([on, off])
-        ons = onsets[onsets > off]
-        on = ons[0] if ons.size > 0 else None
-    logger.debug(f"Found {len(blinks)} blink pairs")
-        
-    # If onsets fall in an invalid region, grow backward until first valid sample
-    # (Don't grow offsets forward - offset_ends already mark the end of recovery)
-    blinks2 = []
-    for (on, off) in blinks:
-        while on > 0 and invalid_mask[on]:
-            on -= 1
-        blinks2.append([on, off])
-    
-    result = np.array(blinks2)
-    logger.debug(f"Returning {len(result)} blinks after invalid-region adjustment")
-    return result
+    # for each onset, the first offset run that starts after it and is far
+    # enough (or the end of the signal if there is none)
+    j = np.maximum(np.searchsorted(offset_starts, onsets, "right"),
+                   np.searchsorted(offset_ends, onsets + min_blink_samples, "left"))
+    has = j < len(offset_starts)
+    jj = np.minimum(j, max(0, len(offset_starts) - 1))
+    off = np.where(has, offset_ends[jj] if len(offset_ends) else 0, n - 1)
+    # a later onset before this offset: this onset has no offset of its own
+    # (e.g., a dip from an eye movement) and must not take the offset of
+    # the next blink
+    nxt = np.r_[onsets[1:], -1]
+    ok = ~(has & (np.arange(len(onsets)) < len(onsets) - 1)
+           & (nxt < (offset_starts[jj] if len(offset_starts) else 0))
+           & (off - nxt >= min_blink_samples))
+    if max_blink_samples is not None:
+        ok &= off - onsets + 1 <= max_blink_samples   # no offset close enough
+    # the blinks do not overlap: after a blink, the next onset after its offset
+    blinks, last = [], -1
+    for on, of in zip(onsets[ok].tolist(), off[ok].tolist()):
+        if on > last:
+            # onsets in an invalid region grow back to the first valid
+            # sample (offsets do not grow: the offset runs end with the
+            # recovery)
+            while on > 0 and invalid[on]:
+                on -= 1
+            blinks.append([on, of])
+            last = of
+    return np.array(blinks)
 
 def detect_blinks_zero(sy, min_duration, blink_val=0):
     """
@@ -482,9 +460,11 @@ def _velocity_runs(cands, max_gap, min_len):
     """
     if cands.size == 0:
         return np.zeros((0, 2), dtype=int)
-    brk = np.where(np.diff(cands) > max_gap + 1)[0]
-    runs = np.c_[cands[np.r_[0, brk + 1]], cands[np.r_[brk, cands.size - 1]]]
-    return runs[runs[:, 1] - runs[:, 0] + 1 >= min_len]
+    brk = np.flatnonzero(np.diff(cands) > max_gap + 1)
+    first = cands[np.concatenate(([0], brk + 1))]
+    last = cands[np.concatenate((brk, [cands.size - 1]))]
+    keep = last - first + 1 >= min_len
+    return np.stack((first[keep], last[keep]), axis=1)
 
 
 def blink_onsets_mahot(sy, blinks, smooth_winsize, vel_onset, vel_offset, margin, blinkwindow,
@@ -596,6 +576,160 @@ def blink_onsets_mahot(sy, blinks, smooth_winsize, vel_onset, vel_offset, margin
     return np.array(newblinks)
 
 
+def _merge_overlapping_blink_windows(blinks, n):
+    """Anchor points of the blinks, merging only blinks that overlap.
+
+    Each blink `(t2, t3)` is interpolated from the anchor points
+    ``t1 = t2-(t3-t2)`` and ``t4 = t3+(t3-t2)``. Blinks whose stretches
+    `(t2, t3)` overlap or touch are merged (the anchor points are from the
+    first and the last of them). If the anchor points of a blink would
+    reach into a neighbouring blink, they are moved closer instead: at most
+    to the on- or offset of the neighbour (which is not replaced by its
+    curve); with anchor points that close, the blink is interpolated with
+    a monotone curve instead of the cubic (see `_anchors_close`). Merging these blinks instead would replace the signal between
+    them, and the anchor points of the merged blink would reach further
+    blinks (chains of several seconds in real data).
+
+    Returns
+    -------
+    list of tuple
+        ``(t1, t2, t3, t4)`` for each (merged) blink
+    """
+    groups = []     # [t1, t2, t3, t4] before moving the anchor points
+    for on, off in sorted((int(b[0]), int(b[1])) for b in blinks):
+        t1, t4 = 2 * on - off, 2 * off - on
+        if groups and on <= groups[-1][2]:
+            groups[-1][2] = max(groups[-1][2], off)
+            groups[-1][3] = max(groups[-1][3], t4)
+            continue
+        groups.append([t1, on, off, t4])
+    out = []
+    for i, (t1, t2, t3, t4) in enumerate(groups):
+        lo = groups[i - 1][2] if i > 0 else 0
+        hi = groups[i + 1][1] if i + 1 < len(groups) else n - 1
+        out.append((max(t1, lo), t2, t3, min(t4, hi)))
+    return out
+
+def _anchors_close(t1, t2, t3, t4):
+    """Whether an anchor point of the blink `(t2, t3)` is less than half of
+    its length away from it (moved because of a neighbouring blink or the
+    end of the data, see `_merge_overlapping_blink_windows`)."""
+    return min(t2 - t1, t4 - t3) < (t3 - t2) / 2
+
+
+def _lagrange(xp, yp, x):
+    """Polynomial through the points `(xp, yp)`, evaluated at `x`."""
+    out = np.zeros(len(x))
+    for i in range(len(xp)):
+        w = np.full(len(x), float(yp[i]))
+        for j in range(len(xp)):
+            if j != i:
+                w *= (x - xp[j]) / (xp[i] - xp[j])
+        out += w
+    return out
+
+
+def interpolate_blinks_mahot(sy, blinks, smooth_winsize, vel_onset, vel_offset, margin,
+                             blinkwindow, interp_type="cubic", tx=None, missing=None,
+                             max_duration=None):
+    """
+    Interpolate blinks with the method by Mahot (2013).
+
+    The on- and offset of each blink (including the transients) are found
+    in the velocity profile (see :func:`blink_onsets_mahot`), and the samples
+    between them are replaced by a curve through four anchor points: the
+    onset `t2`, the offset `t3`, and the points one blink duration before
+    and after them (``t1 = t2-(t3-t2)``, ``t4 = t3+(t3-t2)``). Blinks that
+    are so close that the anchor points of one fall into the other are
+    merged and interpolated together. Blinks that are too short or have an
+    unusable anchor point are skipped.
+
+    Parameters
+    ----------
+    sy : np.ndarray
+        pupil data (can contain NaN or zeros for missing values)
+    blinks : np.ndarray or Intervals
+        blink start/end sample indices (nblinks x 2, end-exclusive); only
+        the core of each blink is used (see :func:`blink_onsets_mahot`)
+    smooth_winsize, vel_onset, vel_offset, margin, blinkwindow
+        see :func:`blink_onsets_mahot` (samples, and units per sample)
+    interp_type : str
+        type of interpolation accepted by :func:`scipy.interpolate.interp1d`
+    tx : np.ndarray, optional
+        time of each sample; default: the sample index
+    missing : np.ndarray of bool, optional
+        samples that cannot be used as anchor points (e.g., excluded
+        periods); NaN samples never can
+    max_duration : int, optional
+        maximum number of samples that are replaced for one blink (with its
+        margins, or after merging it with neighbouring blinks); longer ones
+        are skipped (e.g., chains of merged blinks); `None`: no limit
+
+    Returns
+    -------
+    filled : np.ndarray
+        copy of `sy` with the blinks replaced
+    interpolated : np.ndarray of bool
+        the replaced samples
+    skipped : list
+        the blinks that were not interpolated, as tuples
+        ``(index, (t1, t2, t3, t4), reason)``
+
+    References
+    ----------
+    Mahot, 2013:
+    https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001.
+    """
+    from scipy.interpolate import interp1d
+    sy = np.asarray(sy, dtype=float)
+    n = len(sy)
+    tx = np.arange(n, dtype=float) if tx is None else np.asarray(tx)
+    filled, interpolated, skipped = sy.copy(), np.zeros(n, dtype=bool), []
+    if len(blinks) == 0:
+        return filled, interpolated, skipped
+    unusable = np.isnan(sy)
+    if missing is not None:
+        unusable |= np.asarray(missing, dtype=bool)
+
+    onsets = blink_onsets_mahot(sy, blinks, smooth_winsize, vel_onset, vel_offset,
+                                margin, blinkwindow)
+    logger.debug(f"Refined {len(onsets)} blink boundaries")
+    # the anchor points of a blink must not fall into a neighbouring
+    # blink (they would be NaN), so merge blinks with overlapping windows
+    for ix, (t1, t2, t3, t4) in enumerate(_merge_overlapping_blink_windows(onsets, n)):
+        # Ensure all 4 time points are distinct and in order
+        if t1 == t2:
+            t2 += 1
+        if t3 == t4:
+            t3 -= 1
+        pts = [t1, t2, t3, t4]
+        if not (t1 < t2 < t3 < t4):
+            skipped.append((ix, tuple(pts), "blink too short to interpolate"))
+            continue
+        # e.g., several blinks merged into one long stretch: a curve through
+        # four points cannot replace it
+        if max_duration is not None and t3 - t2 > max_duration:
+            skipped.append((ix, tuple(pts), f"longer than max_duration ({t3 - t2} samples)"))
+            continue
+        # e.g., a blink that ends in an excluded period (a break)
+        if unusable[pts].any():
+            skipped.append((ix, tuple(pts), "no usable data at its anchor points"))
+            continue
+        if interp_type == "cubic" and _anchors_close(t1, t2, t3, t4):
+            # a cubic through anchor points that are close on one side and
+            # far on the other overshoots; a monotone curve cannot
+            from scipy.interpolate import PchipInterpolator
+            filled[t2:t3] = PchipInterpolator(tx[pts], sy[pts])(tx[t2:t3])
+        elif interp_type == "cubic":
+            # the cubic polynomial through the four points (what interp1d
+            # gives for them, but much faster)
+            filled[t2:t3] = _lagrange(tx[pts], sy[pts], tx[t2:t3])
+        else:
+            filled[t2:t3] = interp1d(tx[pts], sy[pts], kind=interp_type)(tx[t2:t3])
+        interpolated[t2:t3] = True
+    return filled, interpolated, skipped
+
+
 def _blink_groups(blinks, window, n):
     """
     Local windows for Kalman interpolation: blinks (`(start, end)`,
@@ -638,6 +772,57 @@ def _noise_sd(residuals):
     if d2.size < 2:
         return np.nan
     return 1.4826 * np.median(np.abs(d2 - np.median(d2))) / np.sqrt(6)
+
+
+def blink_stretches(sy, blinks, margin, blink_val=0):
+    """
+    The stretches of the signal that are replaced for the `blinks`: the
+    core of each blink (from its first to its last missing sample, as in
+    :func:`blink_onsets_mahot`; the whole blink if it has no missing
+    samples, e.g. a blink that does not close the eye completely) extended
+    by `margin` on both sides. Stretches that overlap are merged.
+
+    Parameters
+    ----------
+    sy : np.ndarray
+        pupil data
+    blinks : np.ndarray or Intervals
+        blink start/end sample indices (n x 2, end-exclusive)
+    margin : int or tuple of int
+        samples `(before, after)` the core that are replaced too (the
+        transients around it)
+    blink_val : float
+        "missing value" code in addition to NaN (default 0)
+
+    Returns
+    -------
+    np.ndarray
+        the stretches (m x 2, end-exclusive, sorted)
+
+    Examples
+    --------
+    >>> y = np.ones(100)
+    >>> y[20:30] = np.nan
+    >>> blink_stretches(y, [(18, 32), (60, 70)], (5, 10))
+    array([[15, 40],
+           [55, 80]])
+    """
+    sy = np.asarray(sy, dtype=float)
+    n = len(sy)
+    before, after = (margin, margin) if np.ndim(margin) == 0 else margin
+    missing = np.isnan(sy) if blink_val is None or np.isnan(blink_val) else \
+        np.isnan(sy) | (sy == blink_val)
+    out = []
+    for a, b in sorted((int(a), int(b)) for a, b in blinks):
+        ix = np.flatnonzero(missing[a:b])
+        if ix.size:
+            a, b = a + ix[0], a + ix[-1] + 1
+        a, b = max(0, a - int(before)), min(n, b + int(after))
+        if out and a <= out[-1][1]:
+            out[-1][1] = max(out[-1][1], b)
+        elif b > a:
+            out.append([a, b])
+    return np.array(out, dtype=int).reshape(-1, 2)
 
 
 def interpolate_blinks_kalman(sy, blinks, fs, window, missing=None, optimize=False,

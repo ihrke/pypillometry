@@ -40,6 +40,7 @@ distorted as the eyelid covers the pupil.
    EyeData.pupil.blinks_detect
    EyeData.pupil.blinks_merge_close
    EyeData.pupil.blinks_interpolate
+   EyeData.pupil.blinks_optimize_parameters
    EyeData.get_blinks
    EyeData.get_interpolated
    EyeData.blink_stats
@@ -114,6 +115,36 @@ on each side and replaced by a smooth curve (green):
    ax.set_xlim(t[0], t[-1])
    ax.legend(fontsize=8, loc="lower left", frameon=False)
    fig.tight_layout()
+
+The parameters of the default method decide how much of the signal around
+the missing samples is replaced. Instead of setting them by eye,
+:meth:`~EyeData.pupil.blinks_optimize_parameters` tunes them for a recording:
+
+.. code-block:: python
+
+    d = d.pupil.blinks_detect()
+    res = d.pupil.blinks_optimize_parameters()
+    d = d.pupil.blinks_interpolate(**res.params)
+
+It transplants the obvious blinks of the recording into its clean
+stretches, where the signal without the blink is known, and searches for
+the parameters that reconstruct it best. Obvious blinks are detected
+blinks with missing samples, a large drop of the pupil before and a large
+rise after them, and no other blinks close by; other gaps (e.g., the eye
+tracker losing the pupil, or eye movements) are not transplanted. The search runs on a few blinks and is refined
+on others; a part of the blinks is kept for testing: the result shows the
+error with the tuned and with the default parameters for them. The
+functions behind it are in ``pp.signal`` (see :ref:`api-transplant`).
+
+With ``method="kalman"``, only the margins before and after the core of the
+blinks are tuned, i.e. how far the transients reach (the Kalman
+interpolation needs no velocity thresholds); ``res.params`` includes the
+method:
+
+.. code-block:: python
+
+    res = d.pupil.blinks_optimize_parameters(method="kalman")
+    d = d.pupil.blinks_interpolate(**res.params)
 
 Blinks differ a lot between participants, and checking the result for
 each participant is worth the effort. The tutorial :doc:`/notebooks/blinks`

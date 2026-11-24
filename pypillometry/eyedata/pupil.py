@@ -6,13 +6,17 @@ Methods of :class:`~pypillometry.EyeData` for pupil data.
 """
 
 from typing import TYPE_CHECKING, Optional, Tuple, Union
+from dataclasses import replace
 from .history import keephistory
 from .namespace import Namespace
+from .eyedatadict import _without_layer
 from .pipes import step
 #from .. import convenience
 from ..signal import baseline
 from ..signal import preproc
 from ..signal import pupil
+from ..signal import transplant
+from ..signal import autotune
 from ..signal.pupil import _bridge_gaps
 #from .. import io
 from ..intervals import Intervals
@@ -38,7 +42,7 @@ if TYPE_CHECKING:
 _INTERP_DEFAULTS = {
     "mahot": dict(winsize=25, vel_onset=-5.0, vel_offset=5.0, margin=(10, 30),
                   interp_type="cubic", max_duration=2000),
-    "kalman": dict(optimize=False),
+    "kalman": dict(optimize=False, margin=(50, 150)),
 }
 
 
@@ -61,46 +65,16 @@ def _interp_params(method, kwargs):
                        f"blinks_interpolate(), not by {method!r}; ignored")
     return pars
 
-
-def _merge_overlapping_blink_windows(blinks, n):
-    """Anchor points of the blinks, merging only blinks that overlap.
-
-    Each blink `(t2, t3)` is interpolated from the anchor points
-    ``t1 = t2-(t3-t2)`` and ``t4 = t3+(t3-t2)``. Blinks whose stretches
-    `(t2, t3)` overlap or touch are merged (the anchor points are from the
-    first and the last of them). If the anchor points of a blink would
-    reach into a neighbouring blink, they are moved closer instead: at most
-    to the on- or offset of the neighbour (which is not replaced by its
-    curve); with anchor points that close, the blink is interpolated with
-    a monotone curve instead of the cubic (see `_anchors_close`). Merging these blinks instead would replace the signal between
-    them, and the anchor points of the merged blink would reach further
-    blinks (chains of several seconds in real data).
-
-    Returns
-    -------
-    list of tuple
-        ``(t1, t2, t3, t4)`` for each (merged) blink
-    """
-    groups = []     # [t1, t2, t3, t4] before moving the anchor points
-    for on, off in sorted((int(b[0]), int(b[1])) for b in blinks):
-        t1, t4 = 2 * on - off, 2 * off - on
-        if groups and on <= groups[-1][2]:
-            groups[-1][2] = max(groups[-1][2], off)
-            groups[-1][3] = max(groups[-1][3], t4)
-            continue
-        groups.append([t1, on, off, t4])
-    out = []
-    for i, (t1, t2, t3, t4) in enumerate(groups):
-        lo = groups[i - 1][2] if i > 0 else 0
-        hi = groups[i + 1][1] if i + 1 < len(groups) else n - 1
-        out.append((max(t1, lo), t2, t3, min(t4, hi)))
-    return out
-
-def _anchors_close(t1, t2, t3, t4):
-    """Whether an anchor point of the blink `(t2, t3)` is less than half of
-    its length away from it (moved because of a neighbouring blink or the
-    end of the data, see `_merge_overlapping_blink_windows`)."""
-    return min(t2 - t1, t4 - t3) < (t3 - t2) / 2
+def _spread_pick(items, m, rng):
+    """`m` of the `items` (in the order of time), spread over them: one at a
+    random place in each of `m` equal parts; returns them and the others"""
+    m = min(m, len(items))
+    if m == 0:
+        return [], list(items)
+    pick = ((np.arange(m) + rng.random(m)) * len(items) / m).astype(int)
+    chosen = set(pick.tolist())
+    return ([items[i] for i in pick],
+            [x for i, x in enumerate(items) if i not in chosen])
 
 
 class PupilNamespace(Namespace["EyeData"]):
@@ -773,13 +747,425 @@ class PupilNamespace(Namespace["EyeData"]):
             obj.set_blinks(merged_intervals, eyes=[eye], variables=[var])
         return obj
 
-    def _interpolate_kalman(self, obj, eye, blinkwindow_ix, optimize):
+    def _window(self, obj, window):
+        """`window` (ms) as `(before, after)` in samples"""
+        window_ix = obj._samples(window, rounding="up")
+        if np.ndim(window_ix) == 0:
+            window_ix = (window_ix, window_ix)
+        return tuple(window_ix)
+
+    def _other_unusable(self, obj, eye):
+        """samples of the pupil of `eye` that are unusable for other reasons
+        than missing values or blinks (other masks, excluded periods)"""
+        key = f"{eye}_pupil"
+        other = obj.data.get_policy_mask(key, _without_layer("strict", "blink"))
+        return other & ~np.isnan(obj.data[key])
+
+    def _obvious_donors(self, obj, eye, window, quantile, max_core, blink_val):
+        """cores (samples) of the detected blinks of `eye` in `obj` that are
+        obvious blinks (see :meth:`blinks_optimize_parameters`), and the
+        number of detected blinks"""
+        key = f"{eye}_pupil"
+        sy = obj.data[key]
+        pre, post = self._window(obj, window)
+        blinks = np.array([(int(a), int(b)) for a, b in
+                           obj.get_blinks(eye, "pupil", units="samples")[key]],
+                          dtype=int).reshape(-1, 2)
+        blinks = blinks[np.argsort(blinks[:, 0])]
+        # the core of each blink as in the interpolation: its first to its
+        # last missing sample (blinks without missing samples have none)
+        missing = transplant._missing(sy, blink_val)
+        cores, ok = np.zeros_like(blinks), np.zeros(len(blinks), dtype=bool)
+        for i, (a, b) in enumerate(blinks):
+            ix = np.flatnonzero(missing[a:b])
+            if ix.size:
+                cores[i], ok[i] = (a + ix[0], a + ix[-1] + 1), True
+        # not too long (e.g., loss of the pupil with transients around it)
+        if max_core is not None:
+            ok &= cores[:, 1] - cores[:, 0] <= obj._samples(max_core)
+        # no other detected blink in the window
+        before = np.r_[-np.inf, blinks[:-1, 1]] <= cores[:, 0] - pre
+        after = np.r_[blinks[1:, 0], np.inf] >= cores[:, 1] + post
+        ok &= before & after
+        if not ok.any():
+            return cores[ok], len(blinks)
+        cores = cores[ok]
+        obvious = transplant._obvious_blinks(sy, cores, (pre, post), quantile=quantile,
+                                             missing=self._other_unusable(obj, eye),
+                                             avoid=obj.data.get_layer(key, "blink"),
+                                             blink_val=blink_val)
+        logger.debug(f"{eye}: {obvious.sum()} obvious of {len(blinks)} detected blinks "
+                     f"({ok.sum()} with missing samples and no other blink nearby)")
+        return cores[obvious], len(blinks)
+
+    def _transplant(self, obj, eye, window, pad, cores, clearance=0, **kwargs):
+        """:func:`~pypillometry.signal.transplant.transplant_blinks` of the
+        `cores` (samples) of the pupil of `eye` in `obj` (parameters in ms)"""
+        # no blinks from or to samples that are unusable for other reasons
+        # (other masks, excluded periods), and none to the detected blinks
+        # (they are larger than their cores or have none) or within
+        # `clearance` of them or of missing samples
+        key = f"{eye}_pupil"
+        other = self._other_unusable(obj, eye)
+        avoid = obj.data.get_layer(key, "blink")
+        c = obj._samples(clearance, rounding="up")
+        if c > 0:
+            bad = np.r_[0, np.cumsum(avoid | other | np.isnan(obj.data[key]))]
+            i = np.arange(len(avoid))
+            avoid = bad[np.minimum(i + c + 1, len(avoid))] - bad[np.maximum(i - c, 0)] > 0
+        return transplant.transplant_blinks(
+            obj.data[key], self._window(obj, window), pad=obj._samples(pad, rounding="up"),
+            missing=other, avoid=avoid, cores=cores, **kwargs)
+
+    def blinks_optimize_parameters(self, eyes=[], method: str="mahot", window=(200, 250),
+                        n_tune: int=10, repeats: int=3, n_starts: int=3,
+                        n_refine: int=30, n_test: int=30,
+                        start=None, bounds=None, fixed=None,
+                        quantile: float=0.99, max_core: float=500, pad: float=100,
+                        clearance: float=1000,
+                        mode: str="additive", shrink: bool=True, blink_val: float=0,
+                        seed=None, **kwargs):
+        """
+        Tune the parameters of :meth:`blinks_interpolate` for this recording.
+
+        The parameters of the ``"mahot"`` method (`winsize`, `vel_onset`,
+        `vel_offset`, `margin` and `blinkwindow`) decide how much of the
+        signal around the missing samples of a blink is replaced. Instead
+        of setting them by eye, they are tuned on transplanted blinks: the
+        obvious blinks of the recording are cut out with a `window`
+        around their missing samples, a slow baseline is removed, and what remains
+        (the artifact) is added to clean stretches of the recording, where
+        the signal without the blink is known (see
+        :func:`~pypillometry.signal.transplant.transplant_blinks`). The
+        parameters that reconstruct it best are searched (see
+        :func:`~pypillometry.signal.autotune.tune_blinks_mahot`). The error
+        is the difference between the reconstructed and the clean signal in
+        the `window` around the transplanted blinks (with `pad`): the root
+        mean squared error of each blink, averaged over the blinks.
+
+        The blinks have to be detected first (:meth:`blinks_detect`), so
+        the workflow is :meth:`blinks_detect`, this method, and
+        :meth:`blinks_interpolate` with the tuned parameters. Of the
+        detected blinks, only the obvious ones are transplanted: their
+        missing samples (from the first to the last, as in the
+        interpolation) last at most `max_core`, have no other blink or
+        missing samples in the
+        `window` around them, and the drop of the pupil before and the rise
+        after them are larger than the `quantile` of the changes over the
+        same distance in the clean signal. Other blinks (e.g., loss of the
+        pupil by the eye tracker without transients, eye movements that
+        make the pupil drop and rise in steps, blinks without missing
+        samples) are not used, but no blinks are put on them.
+
+        Not all blinks are needed: the search runs on `n_tune` random
+        blinks, each transplanted `repeats` times. All sets of blinks are
+        spread over the recording (one random blink from each of equal
+        parts), as the blinks can change over time. As the result depends on
+        which blinks these are, it runs `n_starts` times, on different
+        blinks. Of the other blinks, `n_refine` are used to choose the best
+        result (or the starting parameters) and refine it (one more round
+        of the search on them and its `n_tune` blinks), and `n_test` only
+        to test it; the rest are not used. If there are fewer blinks, there
+        are fewer searches, and the others are split in the same proportion. The tuned parameters are only returned if they
+        are better for the test blinks than the starting parameters
+        (otherwise those are returned, with a warning). With at most
+        `n_tune` blinks, there is no refinement, and up to half of them
+        (at most `n_test`) are used for testing.
+
+        The blinks of all `eyes` are used together; call the method for
+        one eye at a time to get parameters for each. The object is not
+        changed. The result depends on the random choice of the blinks and
+        their places (see `seed`).
+
+        Parameters
+        ----------
+        eyes : str or list
+            eyes to use; if empty, all eyes with pupil data
+        method : str
+            method of :meth:`blinks_interpolate` to tune: ``"mahot"``
+            (default) or ``"kalman"``. For ``"kalman"``, only the `margin`
+            before and after the core of the blinks is tuned (on a grid, see
+            :func:`~pypillometry.signal.autotune.tune_blinks_kalman`; `start`
+            and `bounds` take ``"margin"`` and ``"margin_before"``/
+            ``"margin_after"``, `fixed` the ``"blinkwindow"`` it uses), and
+            the arguments for the searches (`n_starts`, ...) only decide
+            which blinks are used.
+        window : float, str, Quantity or tuple
+            time `(before, after)` the missing samples of a blink (in ms,
+            or with units) that is transplanted with it. It should include
+            the whole artifact, but not much more: everything in it that
+            differs from a straight line (e.g., slower changes of the pupil)
+            is transplanted as part of the artifact. It also limits the
+            search ranges (see `bounds`).
+        n_tune : int
+            number of different blinks for the search
+        repeats : int
+            number of times each of the `n_tune` blinks is transplanted
+            (at most as many as fit)
+        n_starts : int
+            number of searches, each on `n_tune` other blinks
+        n_refine : int
+            number of further blinks for refining the result (0: no
+            refinement)
+        n_test : int
+            number of further blinks that are only used for testing the
+            tuned parameters (0: no test)
+        start : dict, optional
+            starting parameters, as the arguments of
+            :meth:`blinks_interpolate` (e.g., ``dict(vel_onset=-10)``);
+            default: its defaults. Velocity thresholds in percent are
+            not supported. `max_duration` is not tuned, but used as in
+            :meth:`blinks_interpolate` (stretches that are longer are
+            skipped there and count with their whole error here).
+        bounds : dict, optional
+            search range `(lower, upper)` for ``"winsize"``,
+            ``"vel_onset"``, ``"vel_offset"``, ``"margin_before"``,
+            ``"margin_after"`` or ``"blinkwindow"`` (units as in
+            :meth:`blinks_interpolate`); default: from the data (see
+            :func:`~pypillometry.signal.autotune.tune_blinks_mahot`)
+        fixed : dict, optional
+            parameters that are not tuned, with their values, as the
+            arguments of :meth:`blinks_interpolate` (e.g.,
+            ``dict(blinkwindow=500)``)
+        quantile : float
+            quantile of the changes in the clean signal that the drop and
+            rise around an obvious blink must exceed (higher: fewer, more
+            obvious blinks)
+        max_core : float, str or Quantity
+            maximum duration (in ms, or with units) of the missing samples of
+            an obvious blink (longer ones are, e.g., loss of the pupil);
+            `None`: no limit
+        pad : float, str or Quantity
+            clean signal (in ms, or with units) that is kept free on each
+            side of the window of a transplanted blink; it counts for the
+            error
+        clearance : float, str or Quantity
+            minimum distance (in ms, or with units) of the transplanted
+            blinks (with `pad`) from the blinks and missing samples of the
+            recording, so that their interpolation does not depend on
+            neighbouring blinks
+        mode : str
+            ``"additive"`` (default): the difference to the baseline is
+            transplanted; ``"multiplicative"``: the ratio to the baseline
+        shrink : bool
+            remove the fluctuations of the signal around the blinks from
+            their artifacts (default; see
+            :func:`~pypillometry.signal.transplant.shrink_blink_artifacts`)
+        blink_val : float
+            "missing value" code in addition to NaN (default 0)
+        seed : int, optional
+            seed of the random numbers (choice of the blinks, their
+            places, search)
+        **kwargs
+            further arguments of
+            :func:`~pypillometry.signal.autotune.tune_blinks_mahot`
+            (`n_init`, `n_grid`, `sweeps`)
+
+        Returns
+        -------
+        BlinkTuneResult
+            ``result.params`` are the parameters to use, as arguments of
+            :meth:`blinks_interpolate` (including the `method`, e.g.
+            ``d.pupil.blinks_interpolate(**result.params)``); the result also has the errors of
+            the tuned and the starting parameters and all evaluated
+            parameters (see
+            :class:`~pypillometry.signal.autotune.BlinkTuneResult`)
+
+        Raises
+        ------
+        ValueError
+            if there are no detected blinks, none of them is obvious, no
+            blinks can be transplanted, or the pupil has interpolated
+            samples (tune before interpolating)
+
+        Examples
+        --------
+        >>> import pypillometry as pp
+        >>> d = pp.get_example_data("rlmw_002_short").pupil.blinks_detect()
+        >>> res = d.pupil.blinks_optimize_parameters(seed=1)  # doctest: +SKIP
+        >>> d = d.pupil.blinks_interpolate(**res.params)  # doctest: +SKIP
+        """
+        if method not in ("mahot", "kalman"):
+            raise ValueError(f"cannot tune method {method!r}; use 'mahot' or 'kalman'")
+        d = self._d
+        d._require("pupil")
+        eyes = d._eyes_with(eyes, "pupil")
+        if n_refine < 0 or n_test < 0:
+            raise ValueError("n_refine and n_test must not be negative")
+        if n_tune < 1 or repeats < 1 or n_starts < 1:
+            raise ValueError("n_tune, repeats and n_starts must be at least 1")
+        rng = np.random.default_rng(seed)
+        per_ms = 1000 / d.fs    # ms per sample
+
+        def in_samples(pars, what):
+            """parameters of blinks_interpolate() (ms) in samples"""
+            pars = dict(pars)
+            for name in ("vel_onset", "vel_offset"):
+                if isinstance(pars.get(name, 0), str):
+                    raise ValueError(f"{what}: {name} in percent is not supported")
+            names = {"winsize", "vel_onset", "vel_offset", "margin", "blinkwindow"}
+            if what == "bounds":
+                names = (names - {"margin"}) | {"margin_before", "margin_after"}
+            if set(pars) - names:
+                raise ValueError(f"{what}: unknown parameter(s) {', '.join(set(pars) - names)}; "
+                                 f"use {', '.join(sorted(names))}")
+            out = {}
+            for name, value in pars.items():
+                if name.startswith("vel_"):
+                    out[name] = tuple(np.asarray(value, dtype=float) * per_ms) \
+                        if np.ndim(value) else float(value) * per_ms
+                elif name == "winsize" and what != "bounds":
+                    w = d._samples(value, rounding="up")
+                    out["smooth_winsize"] = w + (w % 2 == 0)
+                else:
+                    rounding = "down" if name == "blinkwindow" and what != "bounds" else "up"
+                    out["smooth_winsize" if name == "winsize" else name] = \
+                        d._samples(value, rounding=rounding)
+            return out
+
+        def in_ms(pars):
+            """parameters in samples as arguments of blinks_interpolate()"""
+            if pars is None:
+                return None
+            out = {}
+            for name, value in pars.items():
+                factor = 1 / per_ms if name.startswith("vel_") else per_ms
+                value = tuple(float(v) for v in np.asarray(value) * factor) \
+                    if np.ndim(value) else float(value * factor)
+                out["winsize" if name == "smooth_winsize" else name] = value
+            return out
+
+        if method == "kalman":
+            unknown = set(start or {}) - {"margin"}
+            unknown |= set(fixed or {}) - {"blinkwindow"}
+            unknown |= set(bounds or {}) - {"margin_before", "margin_after"}
+            if unknown:
+                raise ValueError(f"method='kalman' only tunes the margin (start, bounds) and "
+                                 f"uses blinkwindow (fixed); got {', '.join(sorted(unknown))}")
+            kalman_margin = d._samples((start or {}).get("margin",
+                                                         _INTERP_DEFAULTS["kalman"]["margin"]),
+                                       rounding="up")
+            kalman_window = d._samples((fixed or {}).get("blinkwindow", 500))
+            start_pars, max_duration = {}, None
+        else:
+            start_pars = dict(_INTERP_DEFAULTS["mahot"], blinkwindow=500)
+            del start_pars["interp_type"]
+            start_pars.update(start or {})
+            # not tuned, but used as in the interpolation
+            max_duration = start_pars.pop("max_duration")
+            max_duration = None if max_duration is None else d._samples(max_duration)
+
+        # the blinks of all eyes: some for the searches, the others for
+        # refining and testing
+        for eye in eyes:
+            if d.data.get_layer(f"{eye}_pupil", "interpolated").any():
+                raise ValueError(f"{eye}_pupil has interpolated samples; tune the parameters "
+                                 "before interpolating the blinks")
+        targs = dict(window=window, pad=pad, mode=mode, shrink=shrink, blink_val=blink_val,
+                     clearance=clearance)
+        donors, n_detected = {}, 0
+        for eye in eyes:
+            cores, n = self._obvious_donors(d, eye, window, quantile, max_core, blink_val)
+            n_detected += n
+            donors[eye] = self._transplant(d, eye, n=0, seed=rng, cores=cores, **targs).donors
+        n_donors = sum(len(v) for v in donors.values())
+        if n_detected == 0:
+            raise ValueError("no detected blinks: detect the blinks first (blinks_detect())")
+        if n_donors == 0:
+            raise ValueError(f"none of the {n_detected} detected blinks is an obvious blink "
+                             "that can be transplanted (missing samples with a large drop "
+                             "before and rise after them, and no other blink or missing "
+                             "samples in the window)")
+        logger.info(f"{n_donors} of {n_detected} detected blinks are obvious blinks")
+        if n_donors < 2 * n_tune:
+            logger.warning(f"only {n_donors} obvious blinks: the tuning may be unreliable")
+        # in the order of time (the blinks can change over the recording)
+        pool = sorted(((eye, k) for eye in eyes for k in range(len(donors[eye]))),
+                      key=lambda ek: donors[ek[0]][ek[1], 0])
+        if len(pool) > n_tune:
+            # more searches only if there are enough blinks left for
+            # refining and testing
+            n_sets = 1
+            while (n_sets < n_starts
+                   and len(pool) - (n_sets + 1) * n_tune >= n_refine + n_test):
+                n_sets += 1
+            n_search, rest = n_sets * n_tune, len(pool) - n_sets * n_tune
+            if rest < n_refine + n_test:    # fewer: in the same proportion
+                n_test = int(round(rest * n_test / max(1, n_refine + n_test)))
+                n_refine = rest - n_test
+        else:
+            n_test, n_refine, n_sets = min(n_test, len(pool) // 2), 0, 1
+            n_search = len(pool) - n_test
+        # each part spread over the recording (from the remaining blinks)
+        sizes = [(i + 1) * n_search // n_sets - i * n_search // n_sets for i in range(n_sets)]
+        parts, rest = [], pool
+        for size in sizes + [n_test, n_refine]:
+            part, rest = _spread_pick(rest, size, rng)
+            parts.append(part)
+        searches, test_part, refine_part = parts[:n_sets], parts[-2], parts[-1]
+        logger.debug(f"{len(pool)} blinks to transplant: {n_search} for {n_sets} searches, "
+                     f"{len(refine_part)} for refining, {n_test} for testing")
+
+        def transplants(part, n_each):
+            out = []
+            for eye in eyes:
+                ix = np.sort([k for e, k in part if e == eye])
+                if len(ix) == 0:
+                    continue
+                out.append(self._transplant(d, eye, n=n_each * len(ix), seed=rng,
+                                            cores=donors[eye][ix], **targs))
+            return out
+        train = [transplants(part, repeats) for part in searches]
+        test, refine = transplants(test_part, 1), transplants(refine_part, 1)
+        train = [trs for trs in train if sum(len(tr) for tr in trs)]
+        if not train:
+            raise ValueError("no blinks could be transplanted: the recording needs clean "
+                             "stretches (longer than the window) to put them")
+
+        if method == "kalman":
+            pre, post = self._window(d, window)
+            kb = (0, pre), (0, post)
+            if bounds:
+                kb = tuple(tuple(d._samples(v, rounding="up") for v in bounds[name])
+                           if name in bounds else default
+                           for name, default in zip(("margin_before", "margin_after"), kb))
+            res = autotune.tune_blinks_kalman(train, d.fs, kalman_window, test=test,
+                                              refine=refine, start=kalman_margin, bounds=kb,
+                                              **kwargs)
+        else:
+            res = autotune.tune_blinks_mahot(
+                train, test, refine, start=in_samples(start_pars, "start"),
+                bounds=None if bounds is None else in_samples(bounds, "bounds"),
+                fixed=None if fixed is None else in_samples(fixed, "fixed"),
+                max_duration=max_duration, seed=rng, **kwargs)
+
+        # in the units of blinks_interpolate()
+        hist = {("winsize" if k == "smooth_winsize" else k):
+                (v if k in ("loss", "stage", "search") else v / per_ms if k.startswith("vel_") else v * per_ms)
+                for k, v in res.history.items()}
+        res = replace(res, params=dict(method=method, **in_ms(res.params)),
+                      tuned=in_ms(res.tuned), start=in_ms(res.start), bounds=in_ms(res.bounds),
+                      history=hist, units="ms")
+        logger.info(f"Tuned the blink interpolation on {res.n_blinks + res.n_refine} "
+                    "transplanted blinks: "
+                    f"error {res.loss_start:.4g} -> {res.loss:.4g}"
+                    + (f" ({res.test_loss_start:.4g} -> {res.test_loss:.4g} on "
+                       f"{res.n_test} test blinks)" if res.n_test else ""))
+        return res
+
+    def _interpolate_kalman(self, obj, eye, blinkwindow_ix, optimize, margin):
         """blinks of `eye` in `obj` interpolated with
         :func:`~pypillometry.signal.preproc.interpolate_blinks_kalman`;
         returns the signal and the interpolated samples"""
         bls = obj.get_blinks(eye, "pupil", units="samples")[f"{eye}_pupil"]
         excl = obj._excluded_mask()
-        blinks = Intervals.from_mask(bls.to_mask(obj).astype(bool) & ~excl).intervals
+        if margin is None:      # exactly the stored blinks
+            inblink = bls.to_mask(obj).astype(bool)
+        else:                   # their cores and the transients around them
+            margin_ix = obj._samples(margin, rounding="up")
+            stretches = preproc.blink_stretches(obj.data[eye, "pupil"], bls, margin_ix)
+            inblink = Intervals(stretches.tolist(), "samples").to_mask(obj).astype(bool)
+        blinks = Intervals.from_mask(inblink & ~excl).intervals
         # unusable samples (other masks, excluded periods) are no observations
         missing = excl | np.isnan(obj.get_values(eye, "pupil", "strict"))
         syr, interpolated, model = preproc.interpolate_blinks_kalman(
@@ -793,17 +1179,15 @@ class PupilNamespace(Namespace["EyeData"]):
 
     def _interpolate_mahot(self, obj, eye, blinkwindow_ix, winsize, vel_onset, vel_offset,
                            margin, interp_type, max_duration):
-        """blinks of `eye` in `obj` interpolated with the method by Mahot;
+        """blinks of `eye` in `obj` interpolated with
+        :func:`~pypillometry.signal.preproc.interpolate_blinks_mahot`;
         returns the signal and the interpolated samples"""
-        from scipy.interpolate import interp1d
         # parameters in sampling units (from ms)
         winsize_ix=self._d._samples(winsize, rounding="up")
         margin_ix=self._d._samples(margin, rounding="up")
         max_ix = None if max_duration is None else self._d._samples(max_duration)
         if winsize_ix % 2==0: ## ensure smoothing window is odd
             winsize_ix+=1 
-        syr=obj.data[eye,"pupil"].copy() ## interpolated signal
-        interpolated = np.zeros(len(syr), dtype=bool)  # interpolated samples
         bls = self._d.get_blinks(eye, "pupil", units="samples")[f"{eye}_pupil"]
         
         # Use raw data for velocity computation - blink_onsets_mahot handles NaN/zeros internally
@@ -815,55 +1199,13 @@ class PupilNamespace(Namespace["EyeData"]):
         vel_onset_samples, vel_offset_samples = self._convert_velocity_thresholds(
             pupil_data, winsize_ix, vel_onset, vel_offset
         )
-        blink_onsets=preproc.blink_onsets_mahot(pupil_data, bls, 
-                                                winsize_ix, 
-                                                vel_onset_samples, vel_offset_samples,
-                                                margin_ix, blinkwindow_ix)
-        logger.debug(f"Refined {len(blink_onsets)} blink boundaries")
-        # the anchor points of a blink must not fall into a neighbouring
-        # blink (they would be NaN), so merge blinks with overlapping windows
-        blink_onsets = _merge_overlapping_blink_windows(blink_onsets, len(self._d))
-
-        excl = obj._excluded_mask()
-        
-        # loop through blinks
-        for ix,(t1,t2,t3,t4) in enumerate(blink_onsets):
-            # Ensure all 4 time points are distinct and in order
-            if t1==t2:
-                t2+=1
-            if t3==t4:
-                t3-=1
-            
-            # Check if blink is too short to interpolate (need at least 4 distinct points)
-            if not (t1 < t2 < t3 < t4):
-                logger.warning(f"Skipping blink {ix} for {eye}: blink too short to interpolate (t1={t1}, t2={t2}, t3={t3}, t4={t4})")
-                continue
-            # e.g., several blinks merged into one long stretch: a curve
-            # through four points cannot replace it
-            if max_ix is not None and t3 - t2 > max_ix:
-                logger.warning(f"Skipping blink {ix} for {eye}: longer than max_duration "
-                               f"({(t3 - t2) * 1000 / self._d.fs:.0f} ms; t1={t1}, t2={t2}, "
-                               f"t3={t3}, t4={t4})")
-                continue
-            
-            txpts=[obj.tx[pt] for pt in [t1,t2,t3,t4]]
-            sypts=[obj.data[eye,"pupil"][pt] for pt in [t1,t2,t3,t4]]
-            # e.g., a blink that ends in an excluded period (a break)
-            if np.isnan(sypts).any() or excl[[t1, t2, t3, t4]].any():
-                logger.warning(f"Skipping blink {ix} for {eye}: no usable data at its "
-                               f"anchor points (t1={t1}, t2={t2}, t3={t3}, t4={t4})")
-                continue
-            if interp_type == "cubic" and _anchors_close(t1, t2, t3, t4):
-                # a cubic through anchor points that are close on one side
-                # and far on the other overshoots; a monotone curve cannot
-                from scipy.interpolate import PchipInterpolator
-                intfct = PchipInterpolator(txpts, sypts)
-            else:
-                intfct=interp1d(txpts,sypts, kind=interp_type)
-            islic=slice(t2, t3)
-            syr[islic]=intfct(obj.tx[islic])
-            # mark the interpolated datapoints
-            interpolated[islic] = True
+        syr, interpolated, skipped = preproc.interpolate_blinks_mahot(
+            pupil_data, bls, winsize_ix, vel_onset_samples, vel_offset_samples,
+            margin_ix, blinkwindow_ix, interp_type=interp_type, tx=obj.tx,
+            missing=obj._excluded_mask(), max_duration=max_ix)
+        for ix, (t1, t2, t3, t4), reason in skipped:
+            logger.warning(f"Skipping blink {ix} for {eye}: {reason} "
+                           f"(t1={t1}, t2={t2}, t3={t3}, t4={t4})")
         return syr, interpolated
 
     @step
@@ -905,9 +1247,11 @@ class PupilNamespace(Namespace["EyeData"]):
           measurement noise. The time scales of the components are fixed
           and the noise level is estimated from the data (with
           ``optimize=True``, all parameters are fitted, which is much
-          slower). Exactly the
-          stored blinks are replaced, so they should include the transients
-          around the blinks (see the `margin` of :meth:`blinks_detect`).
+          slower). Each blink is replaced from its core (its first to its
+          last missing sample; the whole blink if it has none) with `margin`
+          before and after it, which should cover the transients around the
+          blink (see :meth:`blinks_optimize_parameters`); with
+          ``margin=None``, exactly the stored blinks are replaced.
 
         Each method has its own parameters (see below), passed as keyword
         arguments. Parameters of another method are ignored with a warning,
@@ -955,7 +1299,9 @@ class PupilNamespace(Namespace["EyeData"]):
         margin : Tuple[float,float] or Quantity
             ``"mahot"``: margin that is subtracted/added to onset and offset
             (in ms, or with units, e.g. ``(10, 30) * u.ms``); default
-            ``(10, 30)``
+            ``(10, 30)``. ``"kalman"``: time before and after the core of
+            each blink that is replaced too (the transients); default
+            ``(50, 150)``; `None`: exactly the stored blinks
         interp_type : str
             ``"mahot"``: type of interpolation accepted by
             :func:`scipy.interpolate.interp1d()`; default ``"cubic"``. A
