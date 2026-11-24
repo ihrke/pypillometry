@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.2.4 (2026-11-24)
 
 - `d.pupil.blinks_optimize_parameters()`: autotune the parameters of `blinks_interpolate()` 
 - `pp.tweak_blink_interpolation()`: tweak the parameters of `blinks_interpolate()` 
