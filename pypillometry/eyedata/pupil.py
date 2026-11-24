@@ -65,6 +65,18 @@ def _interp_params(method, kwargs):
                        f"blinks_interpolate(), not by {method!r}; ignored")
     return pars
 
+def _spread_pick(items, m, rng):
+    """`m` of the `items` (in the order of time), spread over them: one at a
+    random place in each of `m` equal parts; returns them and the others"""
+    m = min(m, len(items))
+    if m == 0:
+        return [], list(items)
+    pick = ((np.arange(m) + rng.random(m)) * len(items) / m).astype(int)
+    chosen = set(pick.tolist())
+    return ([items[i] for i in pick],
+            [x for i, x in enumerate(items) if i not in chosen])
+
+
 class PupilNamespace(Namespace["EyeData"]):
     """
     Methods for pupil data, accessed as ``d.pupil`` (e.g.,
@@ -846,7 +858,9 @@ class PupilNamespace(Namespace["EyeData"]):
         samples) are not used, but no blinks are put on them.
 
         Not all blinks are needed: the search runs on `n_tune` random
-        blinks, each transplanted `repeats` times. As the result depends on
+        blinks, each transplanted `repeats` times. All sets of blinks are
+        spread over the recording (one random blink from each of equal
+        parts), as the blinks can change over time. As the result depends on
         which blinks these are, it runs `n_starts` times, on different
         blinks. Of the other blinks, `n_refine` are used to choose the best
         result (or the starting parameters) and refine it (one more round
@@ -1045,8 +1059,9 @@ class PupilNamespace(Namespace["EyeData"]):
         logger.info(f"{n_donors} of {n_detected} detected blinks are obvious blinks")
         if n_donors < 2 * n_tune:
             logger.warning(f"only {n_donors} obvious blinks: the tuning may be unreliable")
-        pool = [(eye, k) for eye in eyes for k in range(len(donors[eye]))]
-        pool = [pool[k] for k in rng.permutation(len(pool))]
+        # in the order of time (the blinks can change over the recording)
+        pool = sorted(((eye, k) for eye in eyes for k in range(len(donors[eye]))),
+                      key=lambda ek: donors[ek[0]][ek[1], 0])
         if len(pool) > n_tune:
             # more searches only if there are enough blinks left for
             # refining and testing
@@ -1061,10 +1076,13 @@ class PupilNamespace(Namespace["EyeData"]):
         else:
             n_test, n_refine, n_sets = min(n_test, len(pool) // 2), 0, 1
             n_search = len(pool) - n_test
-        searches = [pool[i * n_search // n_sets:(i + 1) * n_search // n_sets]
-                    for i in range(n_sets)]
-        test_part = pool[n_search:n_search + n_test]
-        refine_part = pool[n_search + n_test:n_search + n_test + n_refine]
+        # each part spread over the recording (from the remaining blinks)
+        sizes = [(i + 1) * n_search // n_sets - i * n_search // n_sets for i in range(n_sets)]
+        parts, rest = [], pool
+        for size in sizes + [n_test, n_refine]:
+            part, rest = _spread_pick(rest, size, rng)
+            parts.append(part)
+        searches, test_part, refine_part = parts[:n_sets], parts[-2], parts[-1]
         logger.debug(f"{len(pool)} blinks to transplant: {n_search} for {n_sets} searches, "
                      f"{len(refine_part)} for refining, {n_test} for testing")
 

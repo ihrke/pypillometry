@@ -284,3 +284,14 @@ def test_only_obvious_blinks_are_transplanted(monkeypatch):
     assert len(donors) > 0
     assert not np.isin(donors[:, 0], loss).any()
     assert np.isin(donors[:, 0], cores[:, 0]).all()
+
+
+def test_spread_pick():
+    from pypillometry.eyedata.pupil import _spread_pick
+    items = list(range(100))
+    rng = np.random.default_rng(1)
+    pick, rest = _spread_pick(items, 10, rng)
+    assert [p // 10 for p in pick] == list(range(10))      # one from each tenth
+    assert sorted(pick + rest) == items and len(rest) == 90
+    assert _spread_pick(items[:3], 5, rng)[0] == [0, 1, 2]
+    assert _spread_pick(items, 0, rng) == ([], items)
