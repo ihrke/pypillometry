@@ -786,23 +786,31 @@ class PupilNamespace(Namespace["EyeData"]):
                      f"({ok.sum()} with missing samples and no other blink nearby)")
         return cores[obvious], len(blinks)
 
-    def _transplant(self, obj, eye, window, pad, cores, **kwargs):
+    def _transplant(self, obj, eye, window, pad, cores, clearance=0, **kwargs):
         """:func:`~pypillometry.signal.transplant.transplant_blinks` of the
         `cores` (samples) of the pupil of `eye` in `obj` (parameters in ms)"""
         # no blinks from or to samples that are unusable for other reasons
         # (other masks, excluded periods), and none to the detected blinks
-        # (they are larger than their cores or have none)
+        # (they are larger than their cores or have none) or within
+        # `clearance` of them or of missing samples
         key = f"{eye}_pupil"
+        other = self._other_unusable(obj, eye)
+        avoid = obj.data.get_layer(key, "blink")
+        c = obj._samples(clearance, rounding="up")
+        if c > 0:
+            bad = np.r_[0, np.cumsum(avoid | other | np.isnan(obj.data[key]))]
+            i = np.arange(len(avoid))
+            avoid = bad[np.minimum(i + c + 1, len(avoid))] - bad[np.maximum(i - c, 0)] > 0
         return transplant.transplant_blinks(
             obj.data[key], self._window(obj, window), pad=obj._samples(pad, rounding="up"),
-            missing=self._other_unusable(obj, eye), avoid=obj.data.get_layer(key, "blink"),
-            cores=cores, **kwargs)
+            missing=other, avoid=avoid, cores=cores, **kwargs)
 
     def blinks_optimize_parameters(self, eyes=[], method: str="mahot", window=(200, 250),
                         n_tune: int=10, repeats: int=3, n_starts: int=3,
                         n_refine: int=30, n_test: int=30,
                         start=None, bounds=None, fixed=None,
                         quantile: float=0.99, max_core: float=500, pad: float=100,
+                        clearance: float=1000,
                         mode: str="additive", shrink: bool=True, blink_val: float=0,
                         seed=None, **kwargs):
         """
@@ -910,6 +918,11 @@ class PupilNamespace(Namespace["EyeData"]):
             clean signal (in ms, or with units) that is kept free on each
             side of the window of a transplanted blink; it counts for the
             error
+        clearance : float, str or Quantity
+            minimum distance (in ms, or with units) of the transplanted
+            blinks (with `pad`) from the blinks and missing samples of the
+            recording, so that their interpolation does not depend on
+            neighbouring blinks
         mode : str
             ``"additive"`` (default): the difference to the baseline is
             transplanted; ``"multiplicative"``: the ratio to the baseline
@@ -1014,7 +1027,8 @@ class PupilNamespace(Namespace["EyeData"]):
             if d.data.get_layer(f"{eye}_pupil", "interpolated").any():
                 raise ValueError(f"{eye}_pupil has interpolated samples; tune the parameters "
                                  "before interpolating the blinks")
-        targs = dict(window=window, pad=pad, mode=mode, shrink=shrink, blink_val=blink_val)
+        targs = dict(window=window, pad=pad, mode=mode, shrink=shrink, blink_val=blink_val,
+                     clearance=clearance)
         donors, n_detected = {}, 0
         for eye in eyes:
             cores, n = self._obvious_donors(d, eye, window, quantile, max_core, blink_val)

@@ -226,6 +226,16 @@ class TestBlinksOptimizeParameters:
             for iv in (tr.donors, tr.windows):
                 assert (iv[:, 0] - tr.window[0] >= 10000).all() and (iv[:, 1] + tr.window[1] <= 20000).all()
 
+    def test_clearance(self, data, monkeypatch):
+        # no blink or missing sample of the recording within `clearance` of a site
+        made = record_transplants(monkeypatch)
+        data.pupil.blinks_optimize_parameters(eyes="left", clearance=300, seed=1, **FAST)
+        c = 150                                         # 300 ms at 500 Hz
+        bad = np.isnan(data.data["left_pupil"]) | data.data.get_layer("left_pupil", "blink")
+        for tr in (tr for tr in made if len(tr)):
+            for a, b in tr.sites:
+                assert not bad[max(0, a - c):b + c].any()
+
     def test_arguments(self, data):
         res = data.pupil.blinks_optimize_parameters(eyes="left", n_test=0, n_tune=5, repeats=2,
                                          seed=1, fixed=dict(blinkwindow=300, winsize=20),
