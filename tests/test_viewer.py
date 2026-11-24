@@ -267,8 +267,26 @@ class TestQtBinding(unittest.TestCase):
     def test_none_installed(self):
         from unittest import mock
         self.q._binding = None
-        with mock.patch("importlib.import_module", side_effect=ImportError):
-            with self.assertRaisesRegex(ImportError, "PySide6"):
+        missing = lambda name: (_ for _ in ()).throw(
+            ModuleNotFoundError(f"No module named {name.split('.')[0]!r}",
+                                name=name.split(".")[0]))
+        with mock.patch("importlib.import_module", side_effect=missing):
+            with self.assertRaisesRegex(ImportError, "install one of") as cm:
+                self.q.binding()
+        self.assertNotIn("cannot be loaded", str(cm.exception))
+
+    def test_installed_but_not_loadable(self):
+        # e.g. a system library of Qt is missing: the reason is in the message
+        from unittest import mock
+
+        def load(name):
+            if name.startswith("PySide6"):
+                raise ImportError("libEGL.so.1: cannot open shared object file")
+            raise ModuleNotFoundError(f"No module named {name.split('.')[0]!r}",
+                                      name=name.split(".")[0])
+        self.q._binding = None
+        with mock.patch("importlib.import_module", side_effect=load):
+            with self.assertRaisesRegex(ImportError, "PySide6: libEGL.so.1"):
                 self.q.binding()
 class TestTweakBlinkInterpolation(unittest.TestCase):
     """pp.tweak_blink_interpolation(), with tweak() replaced (no window)"""

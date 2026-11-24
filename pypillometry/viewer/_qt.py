@@ -16,16 +16,21 @@ def binding() -> str:
     global _binding
     if _binding is None:
         imported = [b for b in _BINDINGS if b in sys.modules or f"{b}.QtCore" in sys.modules]
+        errors = []
         for name in imported + [b for b in _BINDINGS if b not in imported]:
             try:
                 importlib.import_module(f"{name}.QtWidgets")
-            except ImportError:
+            except ImportError as e:
+                if not isinstance(e, ModuleNotFoundError) or e.name not in (name, None):
+                    errors.append(f"{name}: {e}")      # installed, but does not load
                 continue
             _binding = name
             break
         else:
-            raise ImportError("the viewer needs Qt: install one of "
-                              f"{', '.join(_BINDINGS)} (e.g., PySide6)")
+            msg = f"the viewer needs Qt: install one of {', '.join(_BINDINGS)} (e.g., PySide6)"
+            if errors:
+                msg += "; installed, but cannot be loaded: " + "; ".join(errors)
+            raise ImportError(msg)
     return _binding
 
 
