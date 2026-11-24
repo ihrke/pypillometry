@@ -90,7 +90,7 @@ from . import signal
 
 # ---------------------------------------------------------------------------
 # Viewer
-from .viewer import view, tweak
+from .viewer import view, tweak, tweak_blink_interpolation
 
 # ---------------------------------------------------------------------------
 # Units, settings and logging
@@ -127,7 +127,7 @@ __all__ = [
     "get_available_datasets", "get_example_data", "get_rlmw_002",
     "get_rlmw_002_short", "get_rlmw_010_edf", "get_nback_001",
     # viewer
-    "view", "tweak",
+    "view", "tweak", "tweak_blink_interpolation",
     # units, settings and logging
     "u", "Unit", "Quantity", "parse_time", "parse_distance", "parse_angle",
     "set_default_inplace", "get_default_inplace",

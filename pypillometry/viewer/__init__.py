@@ -460,6 +460,142 @@ def _intervals_to_axis(intervals, time_seconds, sample_index=False):
     return [(float(s), float(e)) for s, e in intervals.to_units('sec', base).intervals]
 
 
+def _tweak_fields(method, pars):
+    """the numeric fields of :func:`tweak` for the parameters `pars` of
+    ``blinks_interpolate(method=...)`` (the margin as two fields), and the
+    other parameters, which are passed unchanged"""
+    from ..eyedata.pupil import _INTERP_DEFAULTS
+    if method not in _INTERP_DEFAULTS:
+        raise ValueError(f"unknown method {method!r}; use one of "
+                         f"{', '.join(map(repr, _INTERP_DEFAULTS))}")
+    allowed = set(_INTERP_DEFAULTS[method]) | {"blinkwindow"}
+    unknown = set(pars) - allowed
+    if unknown:
+        raise ValueError(f"unknown parameter(s) of method={method!r}: "
+                         f"{', '.join(sorted(unknown))}")
+    full = dict(_INTERP_DEFAULTS[method], blinkwindow=500)
+    full.update(pars)
+    fields, fixed = {}, {}
+    for name, value in full.items():
+        if name == "margin":
+            if value is None:
+                raise ValueError("margin=None (exactly the stored blinks) cannot be tweaked")
+            before, after = (value, value) if np.ndim(value) == 0 else value
+            fields["margin_before"], fields["margin_after"] = float(before), float(after)
+        elif isinstance(value, bool) or not isinstance(value, (int, float, np.number)):
+            if isinstance(value, str) and name.startswith("vel_"):
+                raise TypeError(f"{name}={value!r}: velocity thresholds in percent cannot be "
+                                "tweaked; give them in units per ms")
+            fixed[name] = value
+        else:
+            fields[name] = float(value)
+    return fields, fixed
+
+
+def _tweak_interval(data, eye, duration, rng):
+    """`(start, end)` (ms of the time vector) of `duration` ms around a
+    random blink of `eye` that is not in an excluded period"""
+    bl = data.get_blinks(eye, "pupil", units="samples")[f"{eye}_pupil"]
+    excl = data._excluded_mask()
+    cand = [(a, b) for a, b in bl if not excl[a:b].any()]
+    if not cand:
+        raise ValueError(f"no detected blinks of {eye}_pupil (outside excluded periods): "
+                         "detect the blinks first (blinks_detect())")
+    a, b = cand[rng.integers(len(cand))]
+    tx = data.tx
+    mid = (tx[a] + tx[min(b, len(tx) - 1)]) / 2
+    start = max(tx[0], min(mid - duration / 2, tx[-1] - duration))
+    return start, min(tx[-1], start + duration)
+
+
+def tweak_blink_interpolation(data, pars=None, method=None, eye=None, interval=None,
+                              duration=30, units="sec", seed=None):
+    """Tweak the parameters of the interpolation of blinks interactively.
+
+    Opens :func:`tweak` with the pupil of one eye and its interpolation by
+    :meth:`~pypillometry.eyedata.pupil.PupilNamespace.blinks_interpolate`
+    overlaid; the parameters can be changed in the panel (the margin as
+    ``margin_before`` and ``margin_after``). "Auto Update" is off, as the
+    interpolation takes a moment: press "Update" (or Enter) to see the
+    result. To keep it quick, only a short part of the recording is shown:
+    by default `duration` around a random blink outside the excluded
+    periods (another one with another `seed`), or the given `interval`.
+
+    Parameters
+    ----------
+    data : EyeData
+        data with detected blinks (see
+        :meth:`~pypillometry.eyedata.pupil.PupilNamespace.blinks_detect`)
+    pars : dict or BlinkTuneResult, optional
+        starting parameters as arguments of ``blinks_interpolate()``, e.g.
+        ``result.params`` of
+        :meth:`~pypillometry.eyedata.pupil.PupilNamespace.blinks_optimize_parameters`
+        (or the result itself); missing ones are the defaults
+    method : str, optional
+        ``"mahot"`` or ``"kalman"``; default: ``pars["method"]``, or
+        ``"mahot"``. The fields of the panel are the parameters of this
+        method.
+    eye : str, optional
+        eye to show; default: the first eye with pupil data
+    interval : tuple, optional
+        `(start, end)` of the part to show (values of the time vector, in
+        `units`); default: `duration` around a random blink
+    duration : float
+        length of the part around a random blink (in `units`)
+    units : str
+        units of `interval` and `duration` (default seconds)
+    seed : int, optional
+        seed for the choice of the blink
+
+    Returns
+    -------
+    dict
+        the final parameters, as arguments of ``blinks_interpolate()``
+        (including the `method`), e.g. for
+        ``d.pupil.blinks_interpolate(**result)``
+
+    Examples
+    --------
+    >>> d = d.pupil.blinks_detect()  # doctest: +SKIP
+    >>> res = d.pupil.blinks_optimize_parameters()  # doctest: +SKIP
+    >>> pars = pp.tweak_blink_interpolation(d, pars=res)  # doctest: +SKIP
+    >>> d = d.pupil.blinks_interpolate(**pars)  # doctest: +SKIP
+    """
+    from ..units import parse_time
+    if not (hasattr(data, "tx") and hasattr(data, "data")):
+        raise TypeError("tweak_blink_interpolation() needs an EyeData object")
+    pars = dict(getattr(pars, "params", pars) or {})
+    method = method or pars.get("method", "mahot")
+    pars.pop("method", None)
+    fields, fixed = _tweak_fields(method, pars)
+    if eye is None:
+        eye = data._eyes_with([], "pupil")[0]
+    if interval is None:
+        dur = float(parse_time(duration, to="ms", default=units))
+        start, end = _tweak_interval(data, eye, dur, np.random.default_rng(seed))
+        part = data.crop(start, end, units="ms", inplace=False)
+    else:
+        part = data.crop(interval[0], interval[1], units=units, inplace=False)
+
+    def interpolate(d, **fields):
+        kw = dict(fixed)
+        for name, value in fields.items():
+            if name not in ("margin_before", "margin_after"):
+                kw[name] = value
+        kw["margin"] = (fields["margin_before"], fields["margin_after"])
+        if "winsize" in kw:
+            kw["winsize"] = max(1.0, kw["winsize"])
+        return d.pupil.blinks_interpolate(eyes=eye, method=method, inplace=False, **kw)
+
+    final = tweak(part, interpolate, fields, variable=f"{eye}_pupil", auto_update=False)
+    out = dict(method=method, **fixed)
+    for name, value in final.items():
+        if name not in ("margin_before", "margin_after"):
+            out[name] = value
+    out["margin"] = (final["margin_before"], final["margin_after"])
+    return out
+
+
 def _overlays_from_eyedata(overlay, n, eyes=None):
     """Overlays (``{variable: {label: array}}``) from an EyeData object or a
     list of them: their pupil, x and y for each eye (of `eyes`, if given),
@@ -533,7 +669,7 @@ def _selections_to_intervals(selections, sample_index=False):
             for var_type, intervals_list in selections.items()}
 
 
-def tweak(data, func, params, variable=None, time=None):
+def tweak(data, func, params, variable=None, time=None, auto_update=True):
     """Interactively tweak function parameters while viewing the result.
     
     Opens a viewer showing the original data with the function result overlaid.
@@ -573,6 +709,9 @@ def tweak(data, func, params, variable=None, time=None):
     time : ndarray, optional
         Time vector for array data. If not provided, uses sample indices.
         For EyeData, the time vector is taken from the object.
+    auto_update : bool
+        whether "Auto Update" is on at the start (default); turn it off for
+        slow functions
     
     Returns
     -------
@@ -841,7 +980,8 @@ def tweak(data, func, params, variable=None, time=None):
         canvas=canvas,
         params=params,
         on_change=on_params_change,
-        title=f'Tweak: {func_name}'
+        title=f'Tweak: {func_name}',
+        auto_update=auto_update,
     )
     
     # Show viewer

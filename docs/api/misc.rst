@@ -15,6 +15,7 @@ See :doc:`/user_guide/interactive`.
 
    view
    tweak
+   tweak_blink_interpolation
 
 Settings
 --------
