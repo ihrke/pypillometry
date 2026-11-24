@@ -245,3 +245,28 @@ class TestOverlayEyeData(unittest.TestCase):
             self.pp.view(self.d, overlay_pupil=self.k)
         with self.assertRaisesRegex(TypeError, "only be used when viewing an EyeData"):
             self.pp.view(np.zeros(10), overlay=self.k)
+
+
+class TestQtBinding(unittest.TestCase):
+    """the Qt binding: the imported one, or the first installed one"""
+
+    def setUp(self):
+        from pypillometry.viewer import _qt
+        self.q = _qt
+        self.saved = _qt._binding
+
+    def tearDown(self):
+        self.q._binding = self.saved
+
+    def test_installed(self):
+        self.q._binding = None
+        name = self.q.binding()
+        self.assertIn(name, self.q._BINDINGS)
+        self.assertTrue(hasattr(self.q.qt("QtWidgets"), "QApplication"))
+
+    def test_none_installed(self):
+        from unittest import mock
+        self.q._binding = None
+        with mock.patch("importlib.import_module", side_effect=ImportError):
+            with self.assertRaisesRegex(ImportError, "PySide6"):
+                self.q.binding()

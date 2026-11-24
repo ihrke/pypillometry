@@ -12,6 +12,7 @@ from typing import Dict, Callable, Any, Optional, List, Union, Tuple
 
 from .visuals import _AxisWidget, LODLine, DynamicMaskRegions, HighlightRegion, _share_fonts
 from .navigation import NavigationHandler
+from . import _qt
 
 # Colors for multiple overlay lines
 OVERLAY_COLORS = [
@@ -726,15 +727,11 @@ class TweakCanvas(SceneCanvas):
     def _show_help(self):
         """Show help dialog with keybindings."""
         try:
-            from PyQt6.QtWidgets import QMessageBox
-            from PyQt6.QtCore import Qt
+            QMessageBox = _qt.qt("QtWidgets").QMessageBox
+            Qt = _qt.qt("QtCore").Qt
         except ImportError:
-            try:
-                from PyQt5.QtWidgets import QMessageBox
-                from PyQt5.QtCore import Qt
-            except ImportError:
-                print("Help: scroll=X-zoom, shift+scroll=Y-zoom, arrows=navigate, m=masks, i=intervals, q=quit")
-                return
+            print("Help: scroll=X-zoom, shift+scroll=Y-zoom, arrows=navigate, m=masks, i=intervals, q=quit")
+            return
         
         help_text = """
 <h2>Tweak Viewer - Controls</h2>
@@ -861,10 +858,8 @@ def _create_enter_key_filter(callback):
     QObject
         Event filter object to install on widgets.
     """
-    try:
-        from PyQt6.QtCore import QObject, QEvent, Qt
-    except ImportError:
-        from PyQt5.QtCore import QObject, QEvent, Qt
+    QtCore = _qt.qt("QtCore")
+    QObject, QEvent, Qt = QtCore.QObject, QtCore.QEvent, QtCore.Qt
     
     class EnterKeyFilter(QObject):
         def eventFilter(self, obj, event):
@@ -908,28 +903,16 @@ class TweakViewer:
         self._computing = False
         
         # Import Qt
-        try:
-            from PyQt6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, 
-                                         QHBoxLayout, QSplitter, QLabel, 
-                                         QDoubleSpinBox, QSpinBox, QPushButton,
-                                         QCheckBox, QFrame, QApplication)
-            from PyQt6.QtCore import Qt, QEvent
-            self.Qt = Qt
-            self.QEvent = QEvent
-            self.QDoubleSpinBox = QDoubleSpinBox
-            self.QSpinBox = QSpinBox
-            self.QApplication = QApplication
-        except ImportError:
-            from PyQt5.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, 
-                                         QHBoxLayout, QSplitter, QLabel, 
-                                         QDoubleSpinBox, QSpinBox, QPushButton,
-                                         QCheckBox, QFrame, QApplication)
-            from PyQt5.QtCore import Qt, QEvent
-            self.Qt = Qt
-            self.QEvent = QEvent
-            self.QDoubleSpinBox = QDoubleSpinBox
-            self.QSpinBox = QSpinBox
-            self.QApplication = QApplication
+        W, C = _qt.qt("QtWidgets"), _qt.qt("QtCore")
+        (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QSplitter, QLabel, QDoubleSpinBox,
+         QSpinBox, QPushButton, QCheckBox, QFrame, QApplication) = (
+            W.QMainWindow, W.QWidget, W.QVBoxLayout, W.QHBoxLayout, W.QSplitter, W.QLabel,
+            W.QDoubleSpinBox, W.QSpinBox, W.QPushButton, W.QCheckBox, W.QFrame, W.QApplication)
+        self.Qt = C.Qt
+        self.QEvent = C.QEvent
+        self.QDoubleSpinBox = QDoubleSpinBox
+        self.QSpinBox = QSpinBox
+        self.QApplication = QApplication
         
         # Create event filter for Enter key detection in spinboxes
         self._event_filter = _create_enter_key_filter(self._on_enter_pressed)

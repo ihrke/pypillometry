@@ -31,6 +31,8 @@ from typing import Dict, Optional, List, TYPE_CHECKING
 import numpy as np
 from types import SimpleNamespace
 
+from . import _qt
+
 if TYPE_CHECKING:
     from ..intervals import Intervals
 
@@ -302,22 +304,7 @@ def view(data, variables=None, eyes=None, time=None, overlay=None,
     
     # Configure vispy to use an available Qt backend
     # Detect which Qt is already imported and use that, or try in order
-    if 'PyQt6' in sys.modules or 'PyQt6.QtCore' in sys.modules:
-        vispy.use(app='pyqt6')
-    elif 'PyQt5' in sys.modules or 'PyQt5.QtCore' in sys.modules:
-        vispy.use(app='pyqt5')
-    elif 'PySide6' in sys.modules:
-        vispy.use(app='pyside6')
-    elif 'PySide2' in sys.modules:
-        vispy.use(app='pyside2')
-    else:
-        # Try PyQt6 first (more modern), then PyQt5
-        for backend in ['pyqt6', 'pyqt5', 'pyside6', 'pyside2']:
-            try:
-                vispy.use(app=backend)
-                break
-            except RuntimeError:
-                continue
+    _qt.use_vispy()
     
     from vispy import app
     
@@ -424,14 +411,10 @@ def view(data, variables=None, eyes=None, time=None, overlay=None,
     qt_app = canvas.native.parent() if hasattr(canvas.native, 'parent') else None
     if qt_app is None:
         # Get the QApplication instance
-        try:
-            from PyQt6.QtWidgets import QApplication
-        except ImportError:
-            from PyQt5.QtWidgets import QApplication
-        qt_app = QApplication.instance()
+        qt_app = _qt.qt("QtWidgets").QApplication.instance()
     
     if qt_app is not None:
-        qt_app.exec()  # PyQt6
+        qt_app.exec()
     else:
         app.run()  # Fallback
     
@@ -821,21 +804,7 @@ def tweak(data, func, params, variable=None, time=None):
         saved_lc_time = None
     
     # Configure vispy backend
-    if 'PyQt6' in sys.modules or 'PyQt6.QtCore' in sys.modules:
-        vispy.use(app='pyqt6')
-    elif 'PyQt5' in sys.modules or 'PyQt5.QtCore' in sys.modules:
-        vispy.use(app='pyqt5')
-    elif 'PySide6' in sys.modules:
-        vispy.use(app='pyside6')
-    elif 'PySide2' in sys.modules:
-        vispy.use(app='pyside2')
-    else:
-        for backend in ['pyqt6', 'pyqt5', 'pyside6', 'pyside2']:
-            try:
-                vispy.use(app=backend)
-                break
-            except RuntimeError:
-                continue
+    _qt.use_vispy()
     
     from vispy import app
     from .tweak_canvas import TweakCanvas, TweakViewer
@@ -882,12 +851,7 @@ def tweak(data, func, params, variable=None, time=None):
     canvas.app.process_events()
     
     # Run Qt event loop
-    try:
-        from PyQt6.QtWidgets import QApplication
-    except ImportError:
-        from PyQt5.QtWidgets import QApplication
-    
-    qt_app = QApplication.instance()
+    qt_app = _qt.qt("QtWidgets").QApplication.instance()
     if qt_app is not None:
         qt_app.exec()
     else:

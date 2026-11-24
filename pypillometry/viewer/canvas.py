@@ -7,6 +7,7 @@ from typing import List, Dict, Optional
 
 from .visuals import LODLine, DynamicMaskRegions, DynamicEventMarkers, SelectionRegion, HighlightRegion, _share_fonts
 from .navigation import NavigationHandler
+from . import _qt
 
 
 # Color palette for eyes - each eye gets a distinct color
@@ -1121,10 +1122,7 @@ class ViewerCanvas(SceneCanvas):
         self.selection_mode = True
         self.selection_drag_start = None
         # Change cursor to crosshair
-        try:
-            from PyQt6.QtCore import Qt
-        except ImportError:
-            from PyQt5.QtCore import Qt
+        Qt = _qt.qt("QtCore").Qt
         self.native.setCursor(Qt.CursorShape.CrossCursor)
         name = getattr(self.eyedata, "name", "Arrays") if self.eyedata else "Arrays"
         self.title = f'Viewer - {name} [SELECTION MODE - drag to select region]'
@@ -1135,10 +1133,7 @@ class ViewerCanvas(SceneCanvas):
         self.selection_drag_start = None
         self._clear_preview()
         # Restore normal cursor
-        try:
-            from PyQt6.QtCore import Qt
-        except ImportError:
-            from PyQt5.QtCore import Qt
+        Qt = _qt.qt("QtCore").Qt
         self.native.setCursor(Qt.CursorShape.ArrowCursor)
         name = getattr(self.eyedata, "name", "Arrays") if self.eyedata else "Arrays"
         self.title = f'Viewer - {name}'
@@ -1330,15 +1325,11 @@ class ViewerCanvas(SceneCanvas):
     def _show_help(self):
         """Show help dialog with keybindings."""
         try:
-            from PyQt6.QtWidgets import QMessageBox
-            from PyQt6.QtCore import Qt
+            QMessageBox = _qt.qt("QtWidgets").QMessageBox
+            Qt = _qt.qt("QtCore").Qt
         except ImportError:
-            try:
-                from PyQt5.QtWidgets import QMessageBox
-                from PyQt5.QtCore import Qt
-            except ImportError:
-                print("Help: arrows=navigate, +/-=zoom, m=masks, o=events, q=quit")
-                return
+            print("Help: arrows=navigate, +/-=zoom, m=masks, o=events, q=quit")
+            return
         
         help_text = """
 <h2>Viewer - Keyboard Controls</h2>

@@ -46,6 +46,7 @@ INTERNAL = {
     "pypillometry.state": {"to_state", "from_state", "migrate", "Field",
                            "Stateful", "VersionedState"},
     "pypillometry.hdf5": {"write_state", "read_state", "is_hdf5"},
+    "pypillometry.viewer._qt": {"binding", "qt", "use_vispy"},
     "pypillometry.viewer.canvas": {"ViewerCanvas"},
     "pypillometry.viewer.navigation": {"NavigationHandler"},
     "pypillometry.viewer.tweak_canvas": {"TweakCanvas", "TweakViewer"},
