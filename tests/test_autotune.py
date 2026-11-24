@@ -190,7 +190,9 @@ class TestBlinksOptimizeParameters:
         res = data.pupil.blinks_optimize_parameters(start=start, seed=1, **FAST)
         np.testing.assert_array_equal(data.data["left_pupil"], before)
         assert res.units == "ms" and res.success
-        assert set(res.params) == {"winsize", "vel_onset", "vel_offset", "margin", "blinkwindow"}
+        assert set(res.params) == {"method", "winsize", "vel_onset", "vel_offset", "margin",
+                                   "blinkwindow"}
+        assert res.params["method"] == "mahot"
         assert res.start == dict(winsize=26.0, vel_onset=-200.0, vel_offset=200.0,
                                  margin=(0.0, 0.0), blinkwindow=500.0)
         assert res.test_loss < 0.5 * res.test_loss_start
@@ -244,7 +246,7 @@ class TestBlinksOptimizeParameters:
         assert res.params["blinkwindow"] == 300 and res.params["winsize"] == 22
         assert res.params["margin"][1] <= 100
         with pytest.raises(ValueError):
-            data.pupil.blinks_optimize_parameters(method="kalman")
+            data.pupil.blinks_optimize_parameters(method="spline")
         with pytest.raises(ValueError):
             data.pupil.blinks_optimize_parameters(start=dict(vel_onset="5%"))
         with pytest.raises(ValueError):
@@ -295,3 +297,33 @@ def test_spread_pick():
     assert sorted(pick + rest) == items and len(rest) == 90
     assert _spread_pick(items[:3], 5, rng)[0] == [0, 1, 2]
     assert _spread_pick(items, 0, rng) == ([], items)
+
+
+class TestKalman:
+    def test_tune_margins(self, transplants):
+        from pypillometry.signal import tune_blinks_kalman, transplant_error_kalman
+        train, test = transplants
+        res = tune_blinks_kalman(train, 500, 100, test=test, start=(0, 0), n_grid=4, n_fine=3)
+        # the artifacts reach 20 samples before and 40 after the cores
+        assert res.success and res.params == res.tuned
+        b, a = res.params["margin"]
+        assert b >= 10 and a >= 25
+        assert res.test_loss < 0.5 * res.test_loss_start
+        assert np.isclose(res.loss, transplant_error_kalman(train, (b, a), 500, 100))
+        assert set(res.history) == {"margin_before", "margin_after", "loss", "stage"}
+        assert set(res.history["stage"]) == {1, 2}
+
+    def test_blinks_optimize_parameters(self, data):
+        res = data.pupil.blinks_optimize_parameters(eyes="left", method="kalman", seed=1,
+                                                    n_grid=4, n_fine=3)
+        assert res.units == "ms" and res.params["method"] == "kalman"
+        assert set(res.params) == {"method", "margin"}
+        assert res.bounds == {"margin_before": (0.0, 200.0), "margin_after": (0.0, 250.0)}
+        d = data.pupil.blinks_interpolate(eyes="left", inplace=False, **res.params)
+        assert d.data.get_layer("left_pupil", "interpolated").any()
+        res = data.pupil.blinks_optimize_parameters(
+            eyes="left", method="kalman", seed=1, n_grid=3, n_fine=3,
+            bounds=dict(margin_after=(0, 100)), start=dict(margin=(20, 40)))
+        assert res.bounds["margin_after"] == (0.0, 100.0) and res.start == {"margin": (20.0, 40.0)}
+        with pytest.raises(ValueError, match="only tunes the margin"):
+            data.pupil.blinks_optimize_parameters(method="kalman", start=dict(vel_onset=-5))

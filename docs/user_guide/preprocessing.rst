@@ -136,6 +136,16 @@ on others; a part of the blinks is kept for testing: the result shows the
 error with the tuned and with the default parameters for them. The
 functions behind it are in ``pp.signal`` (see :ref:`api-transplant`).
 
+With ``method="kalman"``, only the margins before and after the core of the
+blinks are tuned, i.e. how far the transients reach (the Kalman
+interpolation needs no velocity thresholds); ``res.params`` includes the
+method:
+
+.. code-block:: python
+
+    res = d.pupil.blinks_optimize_parameters(method="kalman")
+    d = d.pupil.blinks_interpolate(**res.params)
+
 Blinks differ a lot between participants, and checking the result for
 each participant is worth the effort. The tutorial :doc:`/notebooks/blinks`
 shows how.

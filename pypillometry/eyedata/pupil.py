@@ -882,7 +882,14 @@ class PupilNamespace(Namespace["EyeData"]):
         eyes : str or list
             eyes to use; if empty, all eyes with pupil data
         method : str
-            method of :meth:`blinks_interpolate` to tune; only ``"mahot"``
+            method of :meth:`blinks_interpolate` to tune: ``"mahot"``
+            (default) or ``"kalman"``. For ``"kalman"``, only the `margin`
+            before and after the core of the blinks is tuned (on a grid, see
+            :func:`~pypillometry.signal.autotune.tune_blinks_kalman`; `start`
+            and `bounds` take ``"margin"`` and ``"margin_before"``/
+            ``"margin_after"``, `fixed` the ``"blinkwindow"`` it uses), and
+            the arguments for the searches (`n_starts`, ...) only decide
+            which blinks are used.
         window : float, str, Quantity or tuple
             time `(before, after)` the missing samples of a blink (in ms,
             or with units) that is transplanted with it. It should include
@@ -958,7 +965,8 @@ class PupilNamespace(Namespace["EyeData"]):
         -------
         BlinkTuneResult
             ``result.params`` are the parameters to use, as arguments of
-            :meth:`blinks_interpolate`; the result also has the errors of
+            :meth:`blinks_interpolate` (including the `method`, e.g.
+            ``d.pupil.blinks_interpolate(**result.params)``); the result also has the errors of
             the tuned and the starting parameters and all evaluated
             parameters (see
             :class:`~pypillometry.signal.autotune.BlinkTuneResult`)
@@ -977,9 +985,8 @@ class PupilNamespace(Namespace["EyeData"]):
         >>> res = d.pupil.blinks_optimize_parameters(seed=1)  # doctest: +SKIP
         >>> d = d.pupil.blinks_interpolate(**res.params)  # doctest: +SKIP
         """
-        if method != "mahot":
-            raise ValueError(f"cannot tune method {method!r}; only 'mahot' has "
-                             "parameters to tune")
+        if method not in ("mahot", "kalman"):
+            raise ValueError(f"cannot tune method {method!r}; use 'mahot' or 'kalman'")
         d = self._d
         d._require("pupil")
         eyes = d._eyes_with(eyes, "pupil")
@@ -1028,15 +1035,28 @@ class PupilNamespace(Namespace["EyeData"]):
                 out["winsize" if name == "smooth_winsize" else name] = value
             return out
 
-        start_pars = dict(_INTERP_DEFAULTS["mahot"], blinkwindow=500)
-        del start_pars["interp_type"]
-        start_pars.update(start or {})
-        # not tuned, but used as in the interpolation
-        max_duration = start_pars.pop("max_duration")
-        max_duration = None if max_duration is None else d._samples(max_duration)
+        if method == "kalman":
+            unknown = set(start or {}) - {"margin"}
+            unknown |= set(fixed or {}) - {"blinkwindow"}
+            unknown |= set(bounds or {}) - {"margin_before", "margin_after"}
+            if unknown:
+                raise ValueError(f"method='kalman' only tunes the margin (start, bounds) and "
+                                 f"uses blinkwindow (fixed); got {', '.join(sorted(unknown))}")
+            kalman_margin = d._samples((start or {}).get("margin",
+                                                         _INTERP_DEFAULTS["kalman"]["margin"]),
+                                       rounding="up")
+            kalman_window = d._samples((fixed or {}).get("blinkwindow", 500))
+            start_pars, max_duration = {}, None
+        else:
+            start_pars = dict(_INTERP_DEFAULTS["mahot"], blinkwindow=500)
+            del start_pars["interp_type"]
+            start_pars.update(start or {})
+            # not tuned, but used as in the interpolation
+            max_duration = start_pars.pop("max_duration")
+            max_duration = None if max_duration is None else d._samples(max_duration)
 
-        # the blinks of all eyes, in random order: the first ones for the
-        # search, the others for refining and testing
+        # the blinks of all eyes: some for the searches, the others for
+        # refining and testing
         for eye in eyes:
             if d.data.get_layer(f"{eye}_pupil", "interpolated").any():
                 raise ValueError(f"{eye}_pupil has interpolated samples; tune the parameters "
@@ -1102,19 +1122,30 @@ class PupilNamespace(Namespace["EyeData"]):
             raise ValueError("no blinks could be transplanted: the recording needs clean "
                              "stretches (longer than the window) to put them")
 
-        res = autotune.tune_blinks_mahot(
-            train, test, refine, start=in_samples(start_pars, "start"),
-            bounds=None if bounds is None else in_samples(bounds, "bounds"),
-            fixed=None if fixed is None else in_samples(fixed, "fixed"),
-            max_duration=max_duration, seed=rng, **kwargs)
+        if method == "kalman":
+            pre, post = self._window(d, window)
+            kb = (0, pre), (0, post)
+            if bounds:
+                kb = tuple(tuple(d._samples(v, rounding="up") for v in bounds[name])
+                           if name in bounds else default
+                           for name, default in zip(("margin_before", "margin_after"), kb))
+            res = autotune.tune_blinks_kalman(train, d.fs, kalman_window, test=test,
+                                              refine=refine, start=kalman_margin, bounds=kb,
+                                              **kwargs)
+        else:
+            res = autotune.tune_blinks_mahot(
+                train, test, refine, start=in_samples(start_pars, "start"),
+                bounds=None if bounds is None else in_samples(bounds, "bounds"),
+                fixed=None if fixed is None else in_samples(fixed, "fixed"),
+                max_duration=max_duration, seed=rng, **kwargs)
 
         # in the units of blinks_interpolate()
         hist = {("winsize" if k == "smooth_winsize" else k):
                 (v if k in ("loss", "stage", "search") else v / per_ms if k.startswith("vel_") else v * per_ms)
                 for k, v in res.history.items()}
-        res = replace(res, params=in_ms(res.params), tuned=in_ms(res.tuned),
-                      start=in_ms(res.start), bounds=in_ms(res.bounds), history=hist,
-                      units="ms")
+        res = replace(res, params=dict(method=method, **in_ms(res.params)),
+                      tuned=in_ms(res.tuned), start=in_ms(res.start), bounds=in_ms(res.bounds),
+                      history=hist, units="ms")
         logger.info(f"Tuned the blink interpolation on {res.n_blinks + res.n_refine} "
                     "transplanted blinks: "
                     f"error {res.loss_start:.4g} -> {res.loss:.4g}"

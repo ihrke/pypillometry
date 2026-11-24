@@ -87,6 +87,8 @@ transplanted blinks (see
 
    tune_blinks_mahot
    transplant_error_mahot
+   tune_blinks_kalman
+   transplant_error_kalman
 
 .. autosummary::
    :toctree: generated

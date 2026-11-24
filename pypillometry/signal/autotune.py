@@ -13,11 +13,12 @@ from dataclasses import dataclass, field, replace
 import numpy as np
 from loguru import logger
 
-from .preproc import interpolate_blinks_mahot
+from .preproc import blink_stretches, interpolate_blinks_kalman, interpolate_blinks_mahot
 from .transplant import BlinkTransplant, blink_cores
 from ..logging import _show_progress
 
-__all__ = ["transplant_error_mahot", "tune_blinks_mahot", "BlinkTuneResult"]
+__all__ = ["transplant_error_mahot", "tune_blinks_mahot", "transplant_error_kalman",
+           "tune_blinks_kalman", "BlinkTuneResult"]
 
 # the tuned values: the parameters of interpolate_blinks_mahot(), with the
 # absolute value of vel_onset and both margins
@@ -247,7 +248,8 @@ class BlinkTuneResult:
         def fmt(p):
             if p is None:
                 return "-"
-            return ", ".join(f"{k}=" + ("(%.4g, %.4g)" % tuple(v) if np.ndim(v) else f"{v:.4g}")
+            return ", ".join(f"{k}=" + (v if isinstance(v, str) else "(%.4g, %.4g)" % tuple(v)
+                                        if np.ndim(v) else f"{v:.4g}")
                              for k, v in p.items())
         search = (f"{self.n_blinks} for {self.n_searches} searches" if self.n_searches > 1
                   else f"{self.n_blinks} for the search")
@@ -544,3 +546,162 @@ def tune_blinks_mahot(train, test=None, refine=None, start=None, bounds=None, fi
                            success=bool(success), bounds=out_bounds, history=hist,
                            n_blinks=n_blinks, n_refine=n_refine, n_test=n_test,
                            n_searches=len(sets))
+
+
+def transplant_error_kalman(transplants, margin, fs, window, per_blink=False):
+    """
+    Error of the Kalman interpolation of transplanted blinks.
+
+    The core of each transplanted blink with `margin` around it (see
+    :func:`~pypillometry.signal.preproc.blink_stretches`) is interpolated
+    with :func:`~pypillometry.signal.preproc.interpolate_blinks_kalman` and
+    compared to the signal without the blinks, as in
+    :func:`transplant_error_mahot`.
+
+    Parameters
+    ----------
+    transplants : BlinkTransplant or list of BlinkTransplant
+        signal(s) with transplanted blinks
+    margin : tuple of int
+        samples `(before, after)` the core that are replaced too
+    fs : float
+        sampling rate (Hz)
+    window : int
+        samples before and after each stretch that the Kalman smoother uses
+    per_blink : bool
+        return the errors of all blinks instead of their mean
+
+    Returns
+    -------
+    float or np.ndarray
+        the mean error per blink, or the error of each blink
+    """
+    errors = []
+    for tr in _as_list(transplants):
+        if len(tr) == 0:
+            continue
+        stretches = blink_stretches(tr.signal, tr.blinks, margin)
+        filled, _, _ = interpolate_blinks_kalman(tr.signal, stretches, fs, window)
+        errors.append(tr.error(filled, per_site=True))
+    errors = np.concatenate(errors) if errors else np.zeros(0)
+    if per_blink:
+        return errors
+    return float(errors.mean()) if errors.size else np.nan
+
+
+def tune_blinks_kalman(train, fs, window, test=None, refine=None, start=None, bounds=None,
+                       n_grid=6, n_fine=5):
+    """
+    Tune the margins of the Kalman interpolation on transplanted blinks.
+
+    The Kalman interpolation (see
+    :func:`~pypillometry.signal.preproc.interpolate_blinks_kalman`) has no
+    parameters for finding the transients around a blink: it replaces the
+    core of the blink and a `margin` before and after it. The margins are
+    searched on a grid of `n_grid` x `n_grid` values within `bounds` (on
+    the blinks in `train`), and then on a finer grid of `n_fine` x `n_fine`
+    values around the best one (on the blinks in `train` and `refine`).
+    The error changes smoothly with the margins, so the grid suffices. If
+    `test` is given, the tuned margins are only used if they are better on
+    those blinks than the starting margins.
+
+    Parameters
+    ----------
+    train : BlinkTransplant or list of BlinkTransplant
+        signal(s) with transplanted blinks (see
+        :func:`~pypillometry.signal.transplant.transplant_blinks`); a list
+        of lists is flattened
+    fs : float
+        sampling rate (Hz)
+    window : int
+        samples before and after each blink that the Kalman smoother uses
+    test, refine : BlinkTransplant or list of BlinkTransplant, optional
+        further transplanted blinks to check the result and for the fine grid
+    start : tuple of int, optional
+        starting margins `(before, after)` (samples); default: the middle
+        of `bounds`
+    bounds : tuple of tuple, optional
+        search ranges `((lo, hi), (lo, hi))` of the margins before and after
+        the core (samples); default: from 0 to the window of the
+        transplanted blinks on each side
+    n_grid, n_fine : int
+        number of values per margin on the coarse and the fine grid
+
+    Returns
+    -------
+    BlinkTuneResult
+        ``result.params`` are ``{"margin": (before, after)}`` (samples); the
+        history has ``"margin_before"``, ``"margin_after"``, ``"loss"`` and
+        ``"stage"`` (1: coarse grid, 2: fine grid)
+    """
+    from tqdm import tqdm
+    train = [tr for t in _as_list(train) for tr in (t if isinstance(t, (list, tuple)) else [t])]
+    test = [] if test is None else _as_list(test)
+    refine = [] if refine is None else _as_list(refine)
+    n_blinks, n_test = sum(len(tr) for tr in train), sum(len(tr) for tr in test)
+    n_refine = sum(len(tr) for tr in refine)
+    if n_blinks == 0:
+        raise ValueError("no transplanted blinks to tune the margins on")
+    if bounds is None:
+        pre, post = train[0].window
+        bounds = ((0, pre), (0, post))
+    (lo0, hi0), (lo1, hi1) = bounds
+    if start is None:
+        start = ((lo0 + hi0) // 2, (lo1 + hi1) // 2)
+    start = (int(start[0]), int(start[1]))
+    history = []
+    bar = tqdm(total=n_grid ** 2 + n_fine ** 2 + 2 * bool(n_test), unit="evaluation",
+               desc="Tuning Kalman margins", disable=not _show_progress())
+
+    def make_loss(transplants, stage):
+        cache = {}
+
+        def loss(m):
+            m = (int(m[0]), int(m[1]))
+            if m not in cache:
+                cache[m] = transplant_error_kalman(transplants, m, fs, window)
+                history.append((m[0], m[1], cache[m], stage))
+                bar.set_postfix(error=f"{cache[m]:.4g}", refresh=False)
+            bar.update()
+            return cache[m]
+        return loss
+
+    def grid(lo, hi, n):
+        return np.unique(np.round(np.linspace(lo, hi, n)).astype(int))
+
+    # coarse grid on `train`
+    loss = make_loss(train, 1)
+    g0, g1 = grid(lo0, hi0, n_grid), grid(lo1, hi1, n_grid)
+    best = min(((a, b) for a in g0 for b in g1), key=loss)
+    # fine grid around the best margins, on `train` and `refine`
+    step0 = (g0[1] - g0[0]) if len(g0) > 1 else 0
+    step1 = (g1[1] - g1[0]) if len(g1) > 1 else 0
+    tuning = train + refine
+    loss = make_loss(tuning, 2)
+    f0 = grid(max(lo0, best[0] - step0), min(hi0, best[0] + step0), n_fine)
+    f1 = grid(max(lo1, best[1] - step1), min(hi1, best[1] + step1), n_fine)
+    best = min(((a, b) for a in f0 for b in f1), key=loss)
+    best_loss = loss(best)
+
+    loss_start = transplant_error_kalman(tuning, start, fs, window)
+    test_loss = transplant_error_kalman(test, best, fs, window) if n_test else np.nan
+    test_loss_start = transplant_error_kalman(test, start, fs, window) if n_test else np.nan
+    bar.update(2 * bool(n_test))
+    bar.close()
+    success = not (test_loss >= test_loss_start)
+    if not success:
+        logger.warning("The tuned margins are not better than the starting margins on the "
+                       f"blinks that were not used for tuning (error {test_loss:.4g} vs. "
+                       f"{test_loss_start:.4g}): keeping the starting margins")
+    tuned, start_pars = {"margin": best}, {"margin": start}
+    hist = {"margin_before": np.array([h[0] for h in history], dtype=float),
+            "margin_after": np.array([h[1] for h in history], dtype=float),
+            "loss": np.array([h[2] for h in history]),
+            "stage": np.array([h[3] for h in history], dtype=int)}
+    out_bounds = {"margin_before": (float(lo0), float(hi0)),
+                  "margin_after": (float(lo1), float(hi1))}
+    return BlinkTuneResult(params=dict(tuned if success else start_pars), tuned=tuned,
+                           start=start_pars, loss=float(best_loss), loss_start=float(loss_start),
+                           test_loss=float(test_loss), test_loss_start=float(test_loss_start),
+                           success=bool(success), bounds=out_bounds, history=hist,
+                           n_blinks=n_blinks, n_refine=n_refine, n_test=n_test)

@@ -11,6 +11,7 @@
 - `d.pupil.blinks_optimize_parameters()`: tune the parameters of `blinks_interpolate()` for a recording on its transplanted obvious blinks (after `blinks_detect()`)
 - `pp.signal.transplant_blinks()` and related functions: transplantation of blinks for numpy arrays
 - `pp.signal.tune_blinks_mahot()`: tuning on transplanted blinks for numpy arrays
+- `blinks_interpolate(method="kalman")`: `margin` around the core of each blink (default 50/150 ms), tunable with `blinks_optimize_parameters(method="kalman")`
 - `pp.signal.interpolate_blinks_mahot()`: the Mahot interpolation for numpy arrays
 
 ## 2.2.3 (2026-11-19)
