@@ -145,6 +145,9 @@ def test_predict_at_original_samples(rec, model):
     assert np.std(np.diff(slow)) < 0.01 * np.std(np.diff(est))
     atom = m.predict(["30s", "mean"], scale="log%")["left"]
     assert np.allclose(atom, m.predict("slow", cutoff="30 s", scale="log%")["left"])
+    # a range of samples only: same values there, NaN elsewhere
+    part = m.predict("signal", _samples=(6100, 9003))["left"]
+    assert np.allclose(part[6100:9003], est[6100:9003]) and np.isnan(part[:6000]).all()
     with pytest.raises(ValueError, match="intervals are only"):
         m.predict("detrended", interval=0.9)
     with pytest.raises(ValueError, match="scale"):
@@ -191,6 +194,16 @@ def test_excluded_periods_are_not_interpolated(rec):
     di = m.interpolate()
     assert np.array_equal(di.data["left_pupil"][5500:7000], d.data["left_pupil"][5500:7000])
     assert (di.data["left_pupil"][:5500] > 0).all()
+    # a segment without data of an eye is not reconstructed
+    dn = d.copy()
+    dn.data["left_pupil"] = np.where(np.arange(len(d)) < 5500, 0.0, d.data["left_pupil"])
+    mn = pp.TimescaleModel(dn.exclude_intervals([(55000, 70000)]), timescales=TS)
+    assert len(mn.segments) == 2 and np.isnan(mn.y["left"][:1100]).all()
+    for eye in ("left", "right"):
+        mn._set_fit(eye, m.fits["left"])
+    est = mn.predict("signal")
+    assert np.isnan(est["left"][:7000]).all() and np.isfinite(est["left"][7000:]).all()
+    assert np.isfinite(est["right"][:5500]).all()
 
 
 def test_store(rec, model):

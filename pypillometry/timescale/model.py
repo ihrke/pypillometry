@@ -193,6 +193,12 @@ class TimescaleModel:
         for e in self.eyes:
             raw[e] = np.asarray(data.data[e, self.variable], dtype=float)
             usable[e] = self._usable(data, e)
+            strict = np.asarray(data.mask(e, self.variable, "strict"), dtype=bool)
+            if (usable[e] & strict).any():
+                logger.warning(
+                    f"{self.name}: '{e}_{self.variable}' has interpolated samples that "
+                    "the model treats as data; build the model before interpolating, "
+                    "or use policy='strict' to leave them out")
             if not usable[e].any():
                 raise ValueError(f"'{e}_{self.variable}' has no usable samples")
         self.scale = {e: float(np.median(raw[e][usable[e]])) for e in self.eyes}
@@ -222,6 +228,13 @@ class TimescaleModel:
         self.time = np.concatenate(times)
         self.y = {e: np.concatenate(ys[e]) for e in self.eyes}
         self.n = {e: np.concatenate(ns[e]) for e in self.eyes}
+        longest = max(b - a for a, b in bins) / self.fs
+        slowest = self.bank.timescales[-1] / 1000.0
+        if longest < 2 * slowest:
+            logger.warning(
+                f"{self.name}: the longest segment ({longest:.0f} s) is shorter than "
+                f"twice the slowest time scale ({slowest:g} s); the data say little "
+                "about the slowest atoms, whose variance then follows the prior")
 
     def _Y(self, unit):
         """the signal of a unit: (T,) for one eye, (T, 2) for both"""
@@ -464,24 +477,46 @@ class TimescaleModel:
                              "start differ, e.g. after cropping or downsampling)")
         return data
 
-    def _upsampled(self, eye, weights):
-        """posterior mean and variance (log-%) of parts of the signal of an
-        eye at the original samples (NaN outside the segments)"""
+    def _upsampled(self, eye, weights, samples=None):
+        """
+        Posterior mean and variance (log-%) of parts of the signal of an eye
+        at the original samples: (parts, samples of the data). NaN outside
+        the segments, in segments without data of the eye and (to save
+        time) outside the range of sample indices `samples`.
+        """
         unit, _ = self._where(eye)
         _, sres = self._smooth(unit)
         W = np.atleast_2d(weights)
-        mean, var = self.bank.upsample(self._fit(unit).theta, self.fs, sres, self.factor,
-                                       W, segments=self.segments)
+        k = self.factor
+        lo, hi = (0, self._n_samples) if samples is None else samples
+        # the blocks that cover the range, with one more on each side so
+        # that the first and last block have their real neighbours
+        todo = []
+        for (a, b), (s0, s1) in zip(self.segments, self._spans):
+            if s1 <= lo or s0 >= hi or not np.isfinite(self.y[eye][a:b]).any():
+                continue
+            ba = max(a + (max(lo, s0) - s0) // k - 1, a)
+            bb = min(a + -(-(min(hi, s1) - s0) // k) + 1, b)
+            todo.append((ba, bb, a, b, s0, s1))
         out_m = np.full((len(W), self._n_samples), np.nan)
         out_v = np.full((len(W), self._n_samples), np.nan)
-        for (a, b), (s0, s1) in zip(self.segments, self._spans):
-            i0 = a * self.factor
-            out_m[:, s0:s1] = mean[:, i0:i0 + s1 - s0]
-            out_v[:, s0:s1] = var[:, i0:i0 + s1 - s0]
+        if not todo:
+            return out_m, out_v
+        mean, var = self.bank.upsample(self._fit(unit).theta, self.fs, sres, k, W,
+                                       segments=[t[:2] for t in todo])
+        for ba, bb, a, b, s0, s1 in todo:
+            # the samples of the blocks ba..bb, without the half blocks at
+            # the ends that are not ends of the segment (they lack a neighbour)
+            first = s0 + (ba - a) * k
+            r0 = first + (k // 2 if ba > a else 0)
+            r1 = min(s0 + (bb - a) * k - (k // 2 if bb < b else 0), s1)
+            i0 = ba * k + (r0 - first)
+            out_m[:, r0:r1] = mean[:, i0:i0 + r1 - r0]
+            out_v[:, r0:r1] = var[:, i0:i0 + r1 - r0]
         return out_m, out_v
 
     def predict(self, what="signal", eyes=[], cutoff="10 s", scale="original",
-                interval=None):
+                interval=None, _samples=None):
         """
         Parts of the signal at the original samples.
 
@@ -539,10 +574,10 @@ class TimescaleModel:
                     raise ValueError("on the original scale, intervals are only "
                                      "available for parts that contain the mean "
                                      "(e.g. 'signal', 'slow'); use scale='log%'")
-                (sig, rest), _ = self._upsampled(eye, [wsig, wsig - w])
+                (sig, rest), _ = self._upsampled(eye, [wsig, wsig - w], _samples)
                 out[eye] = self.scale[eye] * (np.exp(sig / 100.0) - np.exp(rest / 100.0))
                 continue
-            (m,), (v,) = self._upsampled(eye, [w])
+            (m,), (v,) = self._upsampled(eye, [w], _samples)
             back = (lambda x: self.scale[eye] * np.exp(x / 100.0)) if scale == "original" \
                 else (lambda x: x)
             if interval is None:

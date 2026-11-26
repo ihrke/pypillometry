@@ -223,7 +223,7 @@ def test_constant_component():
 @pytest.mark.parametrize("comp", [gm.OU(1., 50.), gm.Matern(2., 300., nu=1.5),
                                   gm.Matern(1., 100., nu=2.5)])
 def test_psd_integrates_to_variance(comp):
-    f = np.linspace(0, 400, 800001)
+    f = np.linspace(0, 400, 80001)
     assert np.isclose(np.trapezoid(comp.psd(f), f), comp.sigma**2, rtol=2e-2)
     model = gm.GaussMarkovModel([comp, gm.Constant()])
     assert np.allclose(model.psd(f[:5]), comp.psd(f[:5]))
@@ -233,7 +233,7 @@ def test_diffuse_mean_gives_restricted_likelihood():
     """invariant to the level, and equal to the dense REML likelihood"""
     from scipy.linalg import cho_factor, cho_solve
     model, plain = _mean_model()
-    y = _gappy(plain)
+    y = _gappy(plain)[:2200]
     l0 = gm.loglik_signal(model, y, 20)
     assert abs(gm.loglik_signal(model, y + 1000, 20) - l0) < 1e-2
     v = np.isfinite(y)

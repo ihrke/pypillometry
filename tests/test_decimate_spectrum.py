@@ -105,3 +105,36 @@ def test_variogram_at_log_lags():
     assert len(lg.lags) == 13 and lg.lags[0] == 1 and lg.lags[-1] == 1000
     assert np.all(np.isin(lg.lags, vg.lags))
     assert len(vg.at_log_lags(per_decade=4, min_pairs=4500).lags) < 13
+
+
+def test_eyedata_spectrum_and_plot():
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    import pypillometry as pp
+    rng = np.random.default_rng(0)
+    model = gm.GaussMarkovModel([gm.Matern(5., 800.)], noise=0.2)
+    y = {eye: 1000 * np.exp(gm.simulate(model, 12000, fs=100, rng=i) / 100)
+         for i, eye in enumerate(("left", "right"))}
+    y["left"][3000:3050] = 0
+    d = pp.EyeData(left_pupil=y["left"], right_pupil=y["right"], sampling_rate=100,
+                   inplace=False).pupil.blinks_detect(strategies=["zero"])
+    sp = d.pupil.spectrum(window="20 s")
+    assert set(sp) == {"left_pupil", "right_pupil"}
+    assert sp["left_pupil"].nwindows == 11 and sp["left_pupil"].freqs[0] == 0.05
+    # log-%: independent of the units of the pupil
+    rel = d.pupil.spectrum("left", window="20 s", scale="log%")["left_pupil"]
+    d2 = d.copy()
+    d2.data.set_with_mask("left_pupil", d.data["left_pupil"] * 7, preserve_mask=True)
+    rel2 = d2.pupil.spectrum("left", window="20 s", scale="log%")["left_pupil"]
+    assert np.allclose(rel.power, rel2.power)
+    assert np.isclose(np.sum(rel.power) * rel.freqs[0], 25, rtol=0.4)
+    # windows do not cross excluded periods
+    dx = d.exclude_intervals([(50000, 70000)])
+    assert dx.pupil.spectrum("left", window="20 s")["left_pupil"].nwindows == 4 + 4
+    with pytest.raises(ValueError, match="scale"):
+        d.pupil.spectrum(scale="mm")
+    fig, ax = plt.subplots()
+    assert d.plot.plot_pupil_spectrum(ax=ax, window="20 s", title="T") is ax
+    assert len(ax.lines) == 2 and ax.get_title() == "T" and "log-%" in ax.get_ylabel()
+    plt.close(fig)

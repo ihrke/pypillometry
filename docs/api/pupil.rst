@@ -10,8 +10,9 @@ error if the object has no pupil data, change the object in place unless
 ``inplace=False`` is given, and return it. The exceptions return a result
 instead of the object:
 :meth:`~eyedata.pupil.PupilNamespace.fit_foreshortening` (the fitted
-calibration) and :meth:`~eyedata.pupil.PupilNamespace.blinks_optimize_parameters`
-(the tuned parameters of the blink interpolation).
+calibration), :meth:`~eyedata.pupil.PupilNamespace.blinks_optimize_parameters`
+(the tuned parameters of the blink interpolation) and
+:meth:`~eyedata.pupil.PupilNamespace.spectrum` (the power spectrum).
 
 As pipeline steps, the same methods are ``pp.pupil.<method>(...)`` with
 the same arguments (see :doc:`pipelines`):

@@ -12,8 +12,6 @@ import numpy as np
 from ..plot._axes import get_ax, get_axes
 from ..units import parse_time
 
-__all__ = ["TimescalePlots", "TimescaleGroupPlots"]
-
 
 def _colors(n):
     import matplotlib.pyplot as plt
@@ -106,6 +104,7 @@ class TimescalePlots:
         eye = m._eye(eye)
         parts = m.components(eye, cutoff)[eye]
         sel, t = self._range(plot_range, units)
+        own = axes is None
         fig, axes = get_axes(axes, 3, figsize=figsize)
         ax = axes[0]
         self._lines(ax, t, m.y[eye], sel, color="0.6", lw=0.6, label="data (model rate)")
@@ -137,6 +136,8 @@ class TimescalePlots:
         ax.set_ylabel("atoms (log-%)")
         ax.set_xlabel(f"time ({units})")
         ax.legend(frameon=False, loc="upper right", fontsize=8, ncol=len(colors))
+        if own:
+            fig.tight_layout()
         return fig
 
     def slow(self, eye=None, cutoffs=("3 s", "10 s", "30 s", "100 s"), plot_range=None,
@@ -350,6 +351,7 @@ class TimescalePlots:
         from scipy.stats import norm
         m = self._m
         eye = m._eye(eye)
+        own = axes is None
         fig, axes = get_axes(axes, 3, figsize=figsize, nrows=1, ncols=3)
         z = m.innovations(eye)[eye]
         zs = np.sort(z[np.isfinite(z)])
@@ -378,7 +380,8 @@ class TimescalePlots:
         ax.plot(np.arange(1, nlag + 1) / m.fs, acf, color="C0", lw=1)
         ax.axhline(0, color="k", lw=0.8)
         ax.set_xlabel("lag (s)")
-        ax.set_ylabel("autocorrelation of the innovations")
+        ax.set_ylabel("autocorrelation")
+        ax.set_title("innovations", fontsize=9)
         ax.set_ylim(-0.3, 0.3)
 
         ax = axes[2]
@@ -389,8 +392,11 @@ class TimescalePlots:
         ax.set_xscale("log")
         ax.set_ylim(0, 2)
         ax.set_xlabel("forecast horizon (s)")
-        ax.set_ylabel("sd of the standardised forecast errors")
-        fig.suptitle(f"{m.name}: checks of the model", fontsize=10)
+        ax.set_ylabel("sd of standardised errors")
+        ax.set_title("forecasts", fontsize=9)
+        if own:
+            fig.suptitle(f"{m.name}: checks of the model", fontsize=10)
+            fig.tight_layout()
         return fig
 
     def interpolation(self, eye=None, plot_range=None, units="sec", data=None,
@@ -436,8 +442,11 @@ class TimescalePlots:
         t = parse_time(data.tx[sel], to=units)
         raw = np.asarray(data.data[eye, m.variable], dtype=float)[sel]
         usable = m._usable(data, eye)[sel]
-        est, lower, upper = (v[sel] for v in m.predict("signal", eye, interval=interval)[eye])
-        slow = m.predict("slow", eye)[eye][sel]
+        idx = np.flatnonzero(sel)
+        rng = (int(idx[0]), int(idx[-1]) + 1) if len(idx) else (0, 0)
+        est, lower, upper = (v[sel] for v in m.predict("signal", eye, interval=interval,
+                                                       _samples=rng)[eye])
+        slow = m.predict("slow", eye, _samples=rng)[eye][sel]
         with np.errstate(invalid="ignore"):
             raw = np.where(raw > 0, raw, np.nan)
         ax.plot(t, np.where(usable, np.nan, raw), color="0.75", lw=0.8, label="not used")

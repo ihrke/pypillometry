@@ -40,6 +40,8 @@ INTERNAL = {
     "pypillometry.plot.pupil": {"PupilPlots"},
     "pypillometry.plot.gaze": {"GazePlots"},
     "pypillometry.plot.scene": {"ScenePlots"},
+    # used as m.plot / g.plot of the timescale models
+    "pypillometry.timescale.plots": {"TimescalePlots", "TimescaleGroupPlots"},
     "pypillometry.units": {"normalize_unit"},
     "pypillometry.signal.preproc": {"helper_merge_blinks"},
     "pypillometry.templates": {"render", "sparkline"},
