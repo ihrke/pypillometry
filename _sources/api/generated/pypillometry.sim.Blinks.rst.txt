@@ -1,0 +1,27 @@
+﻿Blinks
+======
+
+.. currentmodule:: pypillometry.sim
+
+.. autoclass:: Blinks
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~Blinks.apply
+      ~Blinks.eyes_in
+      ~Blinks.from_dict
+      ~Blinks.to_dict
+   
+   
+
+
+   .. rubric:: Details

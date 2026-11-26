@@ -1,0 +1,6 @@
+﻿semivariogram
+=============
+
+.. currentmodule:: pypillometry.signal
+
+.. autofunction:: semivariogram

@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pypillometry.eyedata.pupil &#8212; pypillometry v2.2.4</title>
+    <title>pypillometry.eyedata.pupil &#8212; pypillometry v2.3.0</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../../_static/documentation_options.js?v=b5d81189"></script>
+    <script src="../../../_static/documentation_options.js?v=387c4177"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -414,7 +414,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.4" />
+  <meta name="docsearch:version" content="v2.3.0" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -841,10 +841,27 @@ window.runMermaid = runMermaid;</script>
 
 <span class="c1">#: parameters of the methods of ``blinks_interpolate()`` and their defaults</span>
 <span class="n">_INTERP_DEFAULTS</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">"mahot"</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">winsize</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">vel_onset</span><span class="o">=-</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">vel_offset</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">margin</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">30</span><span class="p">),</span>
+    <span class="s2">"mahot"</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">winsize</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">vel_onset</span><span class="o">=</span><span class="s2">"2sd"</span><span class="p">,</span> <span class="n">vel_offset</span><span class="o">=</span><span class="s2">"2sd"</span><span class="p">,</span> <span class="n">margin</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">30</span><span class="p">),</span>
                   <span class="n">interp_type</span><span class="o">=</span><span class="s2">"cubic"</span><span class="p">,</span> <span class="n">max_duration</span><span class="o">=</span><span class="mi">2000</span><span class="p">),</span>
     <span class="s2">"kalman"</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">optimize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">margin</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">150</span><span class="p">)),</span>
 <span class="p">}</span>
+
+
+<span class="c1">#: minimal size (samples) of the Savitzky-Golay window of the velocity</span>
+<span class="n">_MIN_VELOCITY_WINDOW</span> <span class="o">=</span> <span class="mi">5</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_velocity_window</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">winsize</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Size in samples of the Savitzky-Golay window of the velocity (blink</span>
+<span class="sd">    detection and interpolation): `winsize` (ms, or with units) rounded to</span>
+<span class="sd">    the nearest odd number of samples, at least 5 (at low sampling rates, a</span>
+<span class="sd">    window of a few ms would be one or two samples and give a raw,</span>
+<span class="sd">    noisy derivative).</span>
+<span class="sd">    """</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">..units</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_time</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">parse_time</span><span class="p">(</span><span class="n">winsize</span><span class="p">,</span> <span class="n">to</span><span class="o">=</span><span class="s2">"samples"</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span>
+    <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">_MIN_VELOCITY_WINDOW</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_interp_params</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">):</span>
@@ -1224,38 +1241,56 @@ window.runMermaid = runMermaid;</script>
         <span class="k">return</span> <span class="n">obj</span></div>
 
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_velocity_thresholds_ms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eye</span><span class="p">,</span> <span class="n">winsize</span><span class="p">,</span> <span class="n">vel_onset</span><span class="p">,</span> <span class="n">vel_offset</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        The velocity thresholds of the interpolation of `eye` in pupil units</span>
+<span class="sd">        per ms (relative ones, ``"&lt;k&gt;sd"``, converted with the velocity of</span>
+<span class="sd">        the recording), e.g. as the start of a search or of tweaking.</span>
+<span class="sd">        """</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_d</span>
+        <span class="n">on</span><span class="p">,</span> <span class="n">off</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_velocity_thresholds</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span> <span class="s2">"pupil"</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span> <span class="n">_velocity_window</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">winsize</span><span class="p">),</span>
+            <span class="n">vel_onset</span><span class="p">,</span> <span class="n">vel_offset</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">on</span> <span class="o">*</span> <span class="n">d</span><span class="o">.</span><span class="n">fs</span> <span class="o">/</span> <span class="mf">1000.0</span><span class="p">,</span> <span class="n">off</span> <span class="o">*</span> <span class="n">d</span><span class="o">.</span><span class="n">fs</span> <span class="o">/</span> <span class="mf">1000.0</span>
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_convert_velocity_thresholds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pupil_data</span><span class="p">,</span> <span class="n">winsize_ix</span><span class="p">,</span> <span class="n">vel_onset</span><span class="p">,</span> <span class="n">vel_offset</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Convert velocity thresholds from per-ms or percentile to per-sample units.</span>
-<span class="sd">        </span>
+<span class="sd">        Convert velocity thresholds to per-sample units.</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        pupil_data : np.array</span>
-<span class="sd">            pupil data array (used for percentile calculation)</span>
+<span class="sd">            pupil data array (used for the thresholds relative to the velocity)</span>
 <span class="sd">        winsize_ix : int</span>
 <span class="sd">            window size in samples for velocity calculation</span>
-<span class="sd">        vel_onset : float or str</span>
-<span class="sd">            onset threshold (per-ms float or percentile string like "5%")</span>
-<span class="sd">        vel_offset : float or str</span>
-<span class="sd">            offset threshold (per-ms float or percentile string like "95%")</span>
-<span class="sd">            </span>
+<span class="sd">        vel_onset, vel_offset : float or str</span>
+<span class="sd">            onset and offset thresholds: a number (pupil units per ms) or a</span>
+<span class="sd">            multiple of the robust standard deviation of the velocity</span>
+<span class="sd">            (``"8sd"``; negative for the onset, positive for the offset)</span>
+
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        tuple (float, float)</span>
 <span class="sd">            (vel_onset_samples, vel_offset_samples) thresholds in per-sample units</span>
 <span class="sd">        """</span>
-        <span class="c1"># Helper to parse percentile string</span>
-        <span class="k">def</span><span class="w"> </span><span class="nf">parse_percentile</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">val</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">'%'</span><span class="p">):</span>
-                <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-            <span class="k">return</span> <span class="kc">None</span>
-        
-        <span class="n">onset_pct</span> <span class="o">=</span> <span class="n">parse_percentile</span><span class="p">(</span><span class="n">vel_onset</span><span class="p">)</span>
-        <span class="n">offset_pct</span> <span class="o">=</span> <span class="n">parse_percentile</span><span class="p">(</span><span class="n">vel_offset</span><span class="p">)</span>
-        
-        <span class="c1"># If either threshold is a percentile, we need to compute velocity profile</span>
-        <span class="k">if</span> <span class="n">onset_pct</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">offset_pct</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="c1"># Fill NaN/zero values with interpolation for velocity calculation</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">parse</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+<span class="w">            </span><span class="sd">"""("sd" | "abs", number)"""</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="n">val</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">text</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"sd"</span><span class="p">):</span>
+                        <span class="k">return</span> <span class="s2">"sd"</span><span class="p">,</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">text</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]))</span>
+                <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                    <span class="k">pass</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">val</span><span class="si">!r}</span><span class="s2">: give a number (pupil units per ms) or a "</span>
+                                 <span class="s2">"multiple of the robust SD of the velocity (e.g. '8sd')"</span><span class="p">)</span>
+            <span class="k">return</span> <span class="s2">"abs"</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+
+        <span class="n">specs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"vel_onset"</span><span class="p">:</span> <span class="n">parse</span><span class="p">(</span><span class="n">vel_onset</span><span class="p">,</span> <span class="s2">"vel_onset"</span><span class="p">),</span>
+                 <span class="s2">"vel_offset"</span><span class="p">:</span> <span class="n">parse</span><span class="p">(</span><span class="n">vel_offset</span><span class="p">,</span> <span class="s2">"vel_offset"</span><span class="p">)}</span>
+        <span class="n">vel_valid</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">kind</span> <span class="o">!=</span> <span class="s2">"abs"</span> <span class="k">for</span> <span class="n">kind</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">specs</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
+            <span class="c1"># velocity profile of the valid samples (NaN/0 filled linearly)</span>
             <span class="n">invalid_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">pupil_data</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">pupil_data</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
             <span class="n">pupil_filled</span> <span class="o">=</span> <span class="n">pupil_data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
             <span class="n">valid_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="o">~</span><span class="n">invalid_mask</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
@@ -1264,38 +1299,28 @@ window.runMermaid = runMermaid;</script>
                 <span class="n">pupil_filled</span><span class="p">[</span><span class="n">invalid_indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span>
                     <span class="n">invalid_indices</span><span class="p">,</span> <span class="n">valid_indices</span><span class="p">,</span> <span class="n">pupil_data</span><span class="p">[</span><span class="n">valid_indices</span><span class="p">]</span>
                 <span class="p">)</span>
-            
-            <span class="c1"># Compute velocity profile</span>
             <span class="n">vel</span> <span class="o">=</span> <span class="n">preproc</span><span class="o">.</span><span class="n">velocity_savgol</span><span class="p">(</span><span class="n">pupil_filled</span><span class="p">,</span> <span class="n">winsize_ix</span><span class="p">,</span> <span class="n">polyorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s2">"center"</span><span class="p">)</span>
-            <span class="c1"># Mask out invalid regions for percentile calculation</span>
             <span class="n">vel_valid</span> <span class="o">=</span> <span class="n">vel</span><span class="p">[</span><span class="o">~</span><span class="n">invalid_mask</span><span class="p">]</span>
-        
-        <span class="c1"># Convert onset threshold</span>
-        <span class="k">if</span> <span class="n">onset_pct</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">vel_onset_samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">vel_valid</span><span class="p">,</span> <span class="n">onset_pct</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"vel_onset </span><span class="si">{</span><span class="n">vel_onset</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">vel_onset_samples</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> (percentile)"</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># Convert from per-ms to per-sample</span>
-            <span class="n">vel_onset_samples</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">vel_onset</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1000</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_d</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"vel_onset </span><span class="si">{</span><span class="n">vel_onset</span><span class="si">}</span><span class="s2">/ms -&gt; </span><span class="si">{</span><span class="n">vel_onset_samples</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">/sample"</span><span class="p">)</span>
-        
-        <span class="c1"># Convert offset threshold</span>
-        <span class="k">if</span> <span class="n">offset_pct</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">vel_offset_samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">vel_valid</span><span class="p">,</span> <span class="n">offset_pct</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"vel_offset </span><span class="si">{</span><span class="n">vel_offset</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">vel_offset_samples</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> (percentile)"</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># Convert from per-ms to per-sample</span>
-            <span class="n">vel_offset_samples</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">vel_offset</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1000</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_d</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"vel_offset </span><span class="si">{</span><span class="n">vel_offset</span><span class="si">}</span><span class="s2">/ms -&gt; </span><span class="si">{</span><span class="n">vel_offset_samples</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">/sample"</span><span class="p">)</span>
-        
-        <span class="k">return</span> <span class="n">vel_onset_samples</span><span class="p">,</span> <span class="n">vel_offset_samples</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="p">(</span><span class="n">kind</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="ow">in</span> <span class="n">specs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">sign</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span> <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">"vel_onset"</span> <span class="k">else</span> <span class="mf">1.0</span>
+            <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="s2">"sd"</span><span class="p">:</span>
+                <span class="n">med</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">vel_valid</span><span class="p">)</span>
+                <span class="n">rsd</span> <span class="o">=</span> <span class="mf">1.4826</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">vel_valid</span> <span class="o">-</span> <span class="n">med</span><span class="p">))</span>
+                <span class="n">thr</span> <span class="o">=</span> <span class="n">sign</span> <span class="o">*</span> <span class="n">value</span> <span class="o">*</span> <span class="n">rsd</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">value</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> robust SD (</span><span class="si">{</span><span class="n">rsd</span><span class="si">:</span><span class="s2">.4g</span><span class="si">}</span><span class="s2">/sample) -&gt; </span><span class="si">{</span><span class="n">thr</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">/sample"</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">thr</span> <span class="o">=</span> <span class="n">value</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1000</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_d</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">value</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2">/ms -&gt; </span><span class="si">{</span><span class="n">thr</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">/sample"</span><span class="p">)</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">thr</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">out</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
 <div class="viewcode-block" id="PupilNamespace.blinks_detect">
 <a class="viewcode-back" href="../../../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.blinks_detect">[docs]</a>
     <span class="nd">@step</span>
     <span class="nd">@keephistory</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">blinks_detect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[],</span> <span class="n">min_duration</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">blink_val</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-                      <span class="n">winsize</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> <span class="n">vel_onset</span><span class="o">=-</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">vel_offset</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> 
+                      <span class="n">winsize</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mi">45</span><span class="p">,</span> <span class="n">vel_onset</span><span class="o">=</span><span class="s2">"25sd"</span><span class="p">,</span> <span class="n">vel_offset</span><span class="o">=</span><span class="s2">"25sd"</span><span class="p">,</span> 
                       <span class="n">vel_onset_min_duration</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">vel_offset_min_duration</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span>
                       <span class="n">max_duration</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">margin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
                       <span class="n">strategies</span><span class="p">:</span> <span class="nb">list</span><span class="o">=</span><span class="p">[</span><span class="s2">"zero"</span><span class="p">,</span><span class="s2">"velocity"</span><span class="p">],</span>
@@ -1330,7 +1355,9 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        eyes : list</span>
 <span class="sd">            list of eyes to process; if empty, all available eyes are processed</span>
 <span class="sd">        min_duration : float, str or Quantity</span>
-<span class="sd">            minimum duration (in ms, or with units) for a sequence of missing numbers to be treated as blink</span>
+<span class="sd">            minimum duration (in ms, or with units) for a sequence of missing</span>
+<span class="sd">            numbers to be treated as blink (rounded to the nearest number of</span>
+<span class="sd">            samples, at least 2 samples)</span>
 <span class="sd">        blink_val : float</span>
 <span class="sd">            "missing value" code for the "zero" strategy. Missing samples</span>
 <span class="sd">            (NaN) are always detected; samples equal to `blink_val` (default</span>
@@ -1339,17 +1366,22 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">            The "zero" strategy always uses the raw data, so regions masked</span>
 <span class="sd">            for other reasons are not detected as blinks.</span>
 <span class="sd">        winsize : float, str or Quantity</span>
-<span class="sd">            window-size for Savitzky-Golay velocity estimation (in ms, or with units)</span>
+<span class="sd">            size of the Savitzky-Golay window of the velocity (in ms, or with</span>
+<span class="sd">            units; default 45 ms), rounded to the nearest odd number of</span>
+<span class="sd">            samples, at least 5 samples</span>
 <span class="sd">        vel_onset : float or str</span>
-<span class="sd">            velocity threshold to detect blink onset (negative value).</span>
+<span class="sd">            velocity threshold to detect blink onset (the closing of the lid):</span>
 
-<span class="sd">            - If float: threshold in pupil-units per millisecond (e.g., -5.0)</span>
-<span class="sd">            - If str: percentile of velocity distribution (e.g., "5%" for bottom 5%)</span>
+<span class="sd">            - ``"&lt;k&gt;sd"`` (default ``"25sd"``): k times the robust standard</span>
+<span class="sd">              deviation (1.4826 MAD) of the velocity of the recording, as a</span>
+<span class="sd">              negative threshold; it adapts to the units and the noise of</span>
+<span class="sd">              the data</span>
+<span class="sd">            - a number: threshold in pupil units per millisecond (negative,</span>
+<span class="sd">              e.g. -5.0)</span>
 <span class="sd">        vel_offset : float or str</span>
-<span class="sd">            velocity threshold to detect blink offset (positive value).</span>
-
-<span class="sd">            - If float: threshold in pupil-units per millisecond (e.g., 5.0)</span>
-<span class="sd">            - If str: percentile of velocity distribution (e.g., "95%" for top 5%)</span>
+<span class="sd">            velocity threshold to detect blink offset (the reopening):</span>
+<span class="sd">            ``"&lt;k&gt;sd"`` (default ``"25sd"``, positive) or a number in pupil</span>
+<span class="sd">            units per millisecond (positive, e.g. 5.0)</span>
 <span class="sd">        vel_onset_min_duration : float, str or Quantity</span>
 <span class="sd">            minimum duration (in ms, or with units) that velocity must exceed threshold to detect as onset</span>
 <span class="sd">            (to avoid noise-induced false detections)</span>
@@ -1398,12 +1430,12 @@ window.runMermaid = runMermaid;</script>
         <span class="n">eyes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_d</span><span class="o">.</span><span class="n">_eyes_with</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span> <span class="s2">"pupil"</span><span class="p">)</span>
 
         <span class="c1"># Convert ms to samples</span>
-        <span class="n">winsize_ix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_d</span><span class="o">.</span><span class="n">_samples</span><span class="p">(</span><span class="n">winsize</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">winsize_ix</span> <span class="o">%</span> <span class="mi">2</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
-            <span class="n">winsize_ix</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="n">min_duration_ix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_d</span><span class="o">.</span><span class="n">_samples</span><span class="p">(</span><span class="n">min_duration</span><span class="p">)</span>
-        <span class="n">vel_onset_min_samples</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_d</span><span class="o">.</span><span class="n">_samples</span><span class="p">(</span><span class="n">vel_onset_min_duration</span><span class="p">))</span>
-        <span class="n">vel_offset_min_samples</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_d</span><span class="o">.</span><span class="n">_samples</span><span class="p">(</span><span class="n">vel_offset_min_duration</span><span class="p">))</span>
+        <span class="n">winsize_ix</span> <span class="o">=</span> <span class="n">_velocity_window</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_d</span><span class="p">,</span> <span class="n">winsize</span><span class="p">)</span>
+        <span class="n">min_duration_ix</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_d</span><span class="o">.</span><span class="n">_samples</span><span class="p">(</span><span class="n">min_duration</span><span class="p">,</span> <span class="n">rounding</span><span class="o">=</span><span class="s2">"nearest"</span><span class="p">))</span>
+        <span class="n">vel_onset_min_samples</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_d</span><span class="o">.</span><span class="n">_samples</span><span class="p">(</span><span class="n">vel_onset_min_duration</span><span class="p">,</span>
+                                                        <span class="n">rounding</span><span class="o">=</span><span class="s2">"nearest"</span><span class="p">))</span>
+        <span class="n">vel_offset_min_samples</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_d</span><span class="o">.</span><span class="n">_samples</span><span class="p">(</span><span class="n">vel_offset_min_duration</span><span class="p">,</span>
+                                                         <span class="n">rounding</span><span class="o">=</span><span class="s2">"nearest"</span><span class="p">))</span>
         <span class="n">max_duration_ix</span> <span class="o">=</span> <span class="p">(</span><span class="kc">None</span> <span class="k">if</span> <span class="n">max_duration</span> <span class="ow">is</span> <span class="kc">None</span>
                            <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_d</span><span class="o">.</span><span class="n">_samples</span><span class="p">(</span><span class="n">max_duration</span><span class="p">))</span>
         <span class="n">margin_ix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_d</span><span class="o">.</span><span class="n">_samples</span><span class="p">(</span><span class="n">margin</span><span class="p">,</span> <span class="n">rounding</span><span class="o">=</span><span class="s2">"up"</span><span class="p">)</span>
@@ -1821,9 +1853,19 @@ window.runMermaid = runMermaid;</script>
         <span class="k">def</span><span class="w"> </span><span class="nf">in_samples</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">what</span><span class="p">):</span>
 <span class="w">            </span><span class="sd">"""parameters of blinks_interpolate() (ms) in samples"""</span>
             <span class="n">pars</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">pars</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"vel_onset"</span><span class="p">,</span> <span class="s2">"vel_offset"</span><span class="p">):</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pars</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="nb">str</span><span class="p">):</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">what</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> in percent is not supported"</span><span class="p">)</span>
+            <span class="n">rel</span> <span class="o">=</span> <span class="p">[</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"vel_onset"</span><span class="p">,</span> <span class="s2">"vel_offset"</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pars</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="nb">str</span><span class="p">)]</span>
+            <span class="k">if</span> <span class="n">rel</span> <span class="ow">and</span> <span class="n">what</span> <span class="o">!=</span> <span class="s2">"start"</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">what</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">rel</span><span class="p">)</span><span class="si">}</span><span class="s2"> must be in pupil units per ms "</span>
+                                 <span class="s2">"(relative thresholds like '4sd' only for start)"</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">rel</span><span class="p">:</span>
+                <span class="c1"># relative thresholds: in units per ms of these data (mean of the eyes)</span>
+                <span class="n">conv</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">_velocity_thresholds_ms</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"winsize"</span><span class="p">,</span> <span class="mi">30</span><span class="p">),</span>
+                                                       <span class="n">pars</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"vel_onset"</span><span class="p">,</span> <span class="s2">"2sd"</span><span class="p">),</span>
+                                                       <span class="n">pars</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"vel_offset"</span><span class="p">,</span> <span class="s2">"2sd"</span><span class="p">))</span>
+                        <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">eyes</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">((</span><span class="s2">"vel_onset"</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="s2">"vel_offset"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)):</span>
+                    <span class="k">if</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">rel</span><span class="p">:</span>
+                        <span class="n">pars</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">([</span><span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">conv</span><span class="p">]))</span>
             <span class="n">names</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"winsize"</span><span class="p">,</span> <span class="s2">"vel_onset"</span><span class="p">,</span> <span class="s2">"vel_offset"</span><span class="p">,</span> <span class="s2">"margin"</span><span class="p">,</span> <span class="s2">"blinkwindow"</span><span class="p">}</span>
             <span class="k">if</span> <span class="n">what</span> <span class="o">==</span> <span class="s2">"bounds"</span><span class="p">:</span>
                 <span class="n">names</span> <span class="o">=</span> <span class="p">(</span><span class="n">names</span> <span class="o">-</span> <span class="p">{</span><span class="s2">"margin"</span><span class="p">})</span> <span class="o">|</span> <span class="p">{</span><span class="s2">"margin_before"</span><span class="p">,</span> <span class="s2">"margin_after"</span><span class="p">}</span>
@@ -2005,11 +2047,9 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        :func:`~pypillometry.signal.preproc.interpolate_blinks_mahot`;</span>
 <span class="sd">        returns the signal and the interpolated samples"""</span>
         <span class="c1"># parameters in sampling units (from ms)</span>
-        <span class="n">winsize_ix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_d</span><span class="o">.</span><span class="n">_samples</span><span class="p">(</span><span class="n">winsize</span><span class="p">,</span> <span class="n">rounding</span><span class="o">=</span><span class="s2">"up"</span><span class="p">)</span>
+        <span class="n">winsize_ix</span> <span class="o">=</span> <span class="n">_velocity_window</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_d</span><span class="p">,</span> <span class="n">winsize</span><span class="p">)</span>
         <span class="n">margin_ix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_d</span><span class="o">.</span><span class="n">_samples</span><span class="p">(</span><span class="n">margin</span><span class="p">,</span> <span class="n">rounding</span><span class="o">=</span><span class="s2">"up"</span><span class="p">)</span>
         <span class="n">max_ix</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">max_duration</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_d</span><span class="o">.</span><span class="n">_samples</span><span class="p">(</span><span class="n">max_duration</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">winsize_ix</span> <span class="o">%</span> <span class="mi">2</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span> <span class="c1">## ensure smoothing window is odd</span>
-            <span class="n">winsize_ix</span><span class="o">+=</span><span class="mi">1</span> 
         <span class="n">bls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_d</span><span class="o">.</span><span class="n">get_blinks</span><span class="p">(</span><span class="n">eye</span><span class="p">,</span> <span class="s2">"pupil"</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"samples"</span><span class="p">)[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_pupil"</span><span class="p">]</span>
         
         <span class="c1"># Use raw data for velocity computation - blink_onsets_mahot handles NaN/zeros internally</span>
@@ -2107,19 +2147,20 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        ----------------</span>
 <span class="sd">        winsize : float, str or Quantity</span>
 <span class="sd">            ``"mahot"``: size of the Savitzky-Golay window (in ms, or with</span>
-<span class="sd">            units); default 25</span>
+<span class="sd">            units; rounded to the nearest odd number of samples, at least 5);</span>
+<span class="sd">            default 30</span>
 <span class="sd">        vel_onset : float or str</span>
-<span class="sd">            ``"mahot"``: velocity threshold to detect blink onset (negative</span>
-<span class="sd">            value); default -5.0</span>
+<span class="sd">            ``"mahot"``: velocity threshold that finds the start of the</span>
+<span class="sd">            closing around each blink; default ``"2sd"``</span>
 
-<span class="sd">            - If float: threshold in pupil-units per millisecond (e.g., -5.0)</span>
-<span class="sd">            - If str: percentile of velocity distribution (e.g., "5%" for bottom 5%)</span>
+<span class="sd">            - ``"&lt;k&gt;sd"``: k robust standard deviations of the velocity of</span>
+<span class="sd">              the recording (negative; see :meth:`blinks_detect`), which</span>
+<span class="sd">              works in any units</span>
+<span class="sd">            - a number: threshold in pupil units per millisecond (e.g., -5.0)</span>
 <span class="sd">        vel_offset : float or str</span>
-<span class="sd">            ``"mahot"``: velocity threshold to detect blink offset (positive</span>
-<span class="sd">            value); default 5.0</span>
-
-<span class="sd">            - If float: threshold in pupil-units per millisecond (e.g., 5.0)</span>
-<span class="sd">            - If str: percentile of velocity distribution (e.g., "95%" for top 5%)</span>
+<span class="sd">            ``"mahot"``: velocity threshold that finds the end of the</span>
+<span class="sd">            reopening; default ``"2sd"`` (positive), or a number (units per</span>
+<span class="sd">            ms, e.g. 5.0)</span>
 <span class="sd">        margin : Tuple[float,float] or Quantity</span>
 <span class="sd">            ``"mahot"``: margin that is subtracted/added to onset and offset</span>
 <span class="sd">            (in ms, or with units, e.g. ``(10, 30) * u.ms``); default</span>
@@ -2187,6 +2228,81 @@ window.runMermaid = runMermaid;</script>
         <span class="k">return</span> <span class="n">obj</span></div>
 
             
+
+
+<div class="viewcode-block" id="PupilNamespace.spectrum">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.spectrum">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">spectrum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[],</span> <span class="n">variable</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">"pupil"</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s2">"200 s"</span><span class="p">,</span>
+                 <span class="n">overlap</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">max_missing</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">scale</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">"original"</span><span class="p">,</span>
+                 <span class="n">policy</span><span class="o">=</span><span class="s2">"default"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Power spectrum of the pupil size (Welch's method for data with gaps).</span>
+
+<span class="sd">        The signal is cut into overlapping windows within the periods that</span>
+<span class="sd">        are not excluded (see :meth:`~pypillometry.EyeData.exclude_intervals`).</span>
+<span class="sd">        Windows with too many unusable samples are skipped; the gaps in the</span>
+<span class="sd">        other windows are bridged linearly, and the periodograms of the</span>
+<span class="sd">        windows are averaged (see :func:`~pypillometry.signal.spectrum`).</span>
+<span class="sd">        Nothing has to be interpolated before, but blinks should be</span>
+<span class="sd">        detected, so that they are treated as gaps.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        eyes : str or list</span>
+<span class="sd">            eyes to process; if empty, all eyes with the variable</span>
+<span class="sd">        variable : str</span>
+<span class="sd">            variable to use (default ``"pupil"``)</span>
+<span class="sd">        window : float, str or Quantity</span>
+<span class="sd">            length of the windows (plain numbers are ms; default 200 s);</span>
+<span class="sd">            the lowest frequency is one cycle per window</span>
+<span class="sd">        overlap : float</span>
+<span class="sd">            overlap of neighbouring windows as a fraction of their length</span>
+<span class="sd">            (default 0.5)</span>
+<span class="sd">        max_missing : float</span>
+<span class="sd">            windows with a larger fraction of unusable samples are skipped</span>
+<span class="sd">            (default 0.3)</span>
+<span class="sd">        scale : {"original", "log%"}</span>
+<span class="sd">            ``"original"`` (default): spectrum of the signal in its units;</span>
+<span class="sd">            ``"log%"``: of :math:`100 \\log(x / \\mathrm{median})`, the change</span>
+<span class="sd">            relative to the median in percent, which makes recordings</span>
+<span class="sd">            with different pupil units comparable</span>
+<span class="sd">        policy : str, MaskPolicy or list of str</span>
+<span class="sd">            mask policy that decides which samples are usable (see</span>
+<span class="sd">            :meth:`~pypillometry.EyeData.mask`); default ``"default"``</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            :class:`~pypillometry.signal.Spectrum` (frequencies in Hz,</span>
+<span class="sd">            power spectral density in units squared per Hz) for each eye,</span>
+<span class="sd">            with keys like ``"left_pupil"``</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        pypillometry.plot.PlotNamespace.plot_pupil_spectrum : plot the spectra</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; d = d.pupil.blinks_detect()  # doctest: +SKIP</span>
+<span class="sd">        &gt;&gt;&gt; sp = d.pupil.spectrum(window="100 s")["left_pupil"]  # doctest: +SKIP</span>
+<span class="sd">        &gt;&gt;&gt; sp.freqs, sp.power  # doctest: +SKIP</span>
+<span class="sd">        """</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">..signal.spectral</span><span class="w"> </span><span class="kn">import</span> <span class="n">spectrum</span>
+        <span class="k">if</span> <span class="n">scale</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"original"</span><span class="p">,</span> <span class="s2">"log%"</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"scale must be 'original' or 'log%', got </span><span class="si">{</span><span class="n">scale</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_d</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">_require</span><span class="p">(</span><span class="n">variable</span><span class="p">)</span>
+        <span class="n">segments</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_included</span><span class="p">(</span><span class="s2">"samples"</span><span class="p">)</span><span class="o">.</span><span class="n">intervals</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">_eyes_with</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span> <span class="n">variable</span><span class="p">):</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_values</span><span class="p">(</span><span class="n">eye</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">policy</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">scale</span> <span class="o">==</span> <span class="s2">"log%"</span><span class="p">:</span>
+                <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">invalid</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">,</span> <span class="n">divide</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">):</span>
+                    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+                    <span class="n">x</span> <span class="o">=</span> <span class="mf">100.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmedian</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+            <span class="n">out</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">variable</span><span class="si">}</span><span class="s2">"</span><span class="p">]</span> <span class="o">=</span> <span class="n">spectrum</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="n">window</span><span class="p">,</span> <span class="n">overlap</span><span class="o">=</span><span class="n">overlap</span><span class="p">,</span>
+                                                <span class="n">max_missing</span><span class="o">=</span><span class="n">max_missing</span><span class="p">,</span> <span class="n">segments</span><span class="o">=</span><span class="n">segments</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span></div>
 
 
 <div class="viewcode-block" id="PupilNamespace.estimate_baseline">

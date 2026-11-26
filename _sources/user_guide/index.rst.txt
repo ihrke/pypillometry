@@ -96,6 +96,13 @@ If you have not used the package before, start with the
       Separate the signal into a slow baseline and event-related
       responses.
 
+   .. grid-item-card:: :fas:`flask` Simulated data
+      :link: simulation
+      :link-type: doc
+
+      Simulate recordings step by step and keep the ground truth with
+      the data.
+
    .. grid-item-card:: :fas:`folder-tree` Studies with many participants
       :link: studies
       :link-type: doc
@@ -126,5 +133,6 @@ If you have not used the package before, start with the
    plotting
    interactive
    modeling
+   simulation
    studies
    settings

@@ -1,0 +1,17 @@
+﻿BankFit
+=======
+
+.. currentmodule:: pypillometry.signal.gaussmarkov
+
+.. autoclass:: BankFit
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   
+
+
+   .. rubric:: Details

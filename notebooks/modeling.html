@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Modeling the pupillometric signal &#8212; pypillometry v2.2.4</title>
+    <title>Modeling the pupillometric signal &#8212; pypillometry v2.3.0</title>
   
   
   
@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=b5d81189"></script>
+    <script src="../_static/documentation_options.js?v=387c4177"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -57,12 +57,12 @@
     <link rel="icon" href="../_static/pypillometry_logo_200x200.png"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Example: Preprocessing of a full dataset with multiple subjects" href="preproc_example_pavlov.html" />
+    <link rel="next" title="Simulated data" href="simulation.html" />
     <link rel="prev" title="Gaze in regions of interest around events" href="rois.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.4" />
+  <meta name="docsearch:version" content="v2.3.0" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -436,6 +436,7 @@
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Modeling and complete analyses</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">Modeling the pupillometric signal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simulation.html">Simulated data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="preproc_example_pavlov.html">Example: Preprocessing of a full dataset with multiple subjects</a></li>
 <li class="toctree-l1"><a class="reference internal" href="case_study_nback.html">Case study: an N-back task</a></li>
 </ul>
@@ -542,7 +543,7 @@
 <img alt="../_images/notebooks_modeling_3_0.png" src="../_images/notebooks_modeling_3_0.png" />
 </div>
 </div>
-<p>We create 100 events with random inter-stimulus intervals between 0.6 and 1.4 seconds (a “fast” paradigm in which the responses to successive events overlap), a slowly fluctuating baseline (<code class="docutils literal notranslate"><span class="pre">pp.signal.fake_pupil_baseline()</span></code>), a response of random amplitude to each event (using the design matrix from <code class="docutils literal notranslate"><span class="pre">pp.signal.pupil_build_design_matrix()</span></code>) and some measurement noise:</p>
+<p>We create 100 events with random inter-stimulus intervals between 0.6 and 1.4 seconds (a “fast” paradigm in which the responses to successive events overlap), a slowly fluctuating baseline (simulated with <code class="docutils literal notranslate"><span class="pre">pp.sim.Simulation</span></code>, keeping only its slow components; see <a class="reference internal" href="simulation.html"><span class="doc">simulated data</span></a>), a response of random amplitude to each event (using the design matrix from <code class="docutils literal notranslate"><span class="pre">pp.signal.pupil_build_design_matrix()</span></code>) and some measurement noise:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
@@ -554,9 +555,14 @@
 <span class="n">event_onsets</span> <span class="o">=</span> <span class="mi">2000</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">600</span><span class="p">,</span> <span class="mi">1400</span><span class="p">,</span> <span class="n">ntrials</span><span class="p">))</span>  <span class="c1"># in ms</span>
 <span class="n">duration</span> <span class="o">=</span> <span class="n">event_onsets</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">5000</span>                                   <span class="c1"># in ms</span>
 
-<span class="c1"># time (ms) and baseline</span>
-<span class="n">tx</span><span class="p">,</span> <span class="n">real_baseline</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">fake_pupil_baseline</span><span class="p">(</span><span class="n">duration</span><span class="o">/</span><span class="mi">1000</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">amplitude</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
-                                              <span class="n">freq</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="c1"># slowly fluctuating baseline: the slow components of the timescale model</span>
+<span class="c1"># (time scales of 10 s and more), without the fast ones</span>
+<span class="n">base</span> <span class="o">=</span> <span class="p">(</span><span class="n">pp</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">Simulation</span><span class="p">(</span><span class="n">duration</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">pupil</span><span class="p">(</span><span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s2">"fast_sd"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">"sd_3s"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">"sd_10s"</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">,</span> <span class="s2">"sd_30s"</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">})</span>
+        <span class="o">.</span><span class="n">units</span><span class="p">(</span><span class="n">median</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">run</span><span class="p">())</span>
+<span class="n">tx</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">tx</span>                                   <span class="c1"># time (ms)</span>
+<span class="n">real_baseline</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">truth</span><span class="p">[</span><span class="s2">"left"</span><span class="p">,</span> <span class="s2">"pupil"</span><span class="p">]</span>
 <span class="n">X</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">pupil_build_design_matrix</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span> <span class="n">event_onsets</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">npar</span><span class="o">=</span><span class="mf">10.1</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="mi">930</span><span class="p">)</span>
 <span class="n">real_response_coef</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="n">ntrials</span><span class="p">)</span>
 <span class="n">real_response</span> <span class="o">=</span> <span class="n">real_response_coef</span> <span class="o">@</span> <span class="n">X</span>
@@ -607,31 +613,31 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-{&#39;left_pupil&#39;: array([ 755.3445703 ,  910.5008777 ,  932.7298659 , 1032.40897831,
-        1064.03141911, 1056.86661384, 1091.24004593, 1054.12046947,
-        1070.96222088, 1139.40891598, 1113.25888123, 1195.99348093,
-        1199.65930305, 1300.49149841, 1316.62737324, 1282.12409623,
-        1246.72110993, 1136.01067965, 1059.99835976, 1044.56272194,
-         956.21648324,  859.03635638,  903.51045264,  873.00710252,
-         876.18155969,  932.69087178,  966.2978947 ,  967.53196025,
-        1042.23556955, 1000.24557847,  958.35198931,  921.75006445,
-         990.53000669,  951.96188817,  994.59993086,  997.73060282,
-         938.00568988,  977.57391566, 1021.453641  , 1081.30504165,
-        1094.97402141, 1124.03325259, 1108.26405136, 1074.26110607,
-        1018.94383666,  949.14281559,  968.54194546,  869.84203316,
-         938.66220767, 1070.52615893, 1098.13718577, 1177.17278248,
-        1180.59678379, 1114.84777511, 1060.63578694, 1005.37472371,
-         980.93643544, 1016.52835625, 1028.4051062 , 1051.84671225,
-        1142.5630315 , 1166.94380007, 1234.42000908, 1202.93942607,
-        1164.63545442, 1153.9282239 , 1118.07155382, 1140.35593043,
-        1219.56578743, 1148.34374671, 1237.91395018, 1177.00180163,
-        1044.6882333 ,  956.96898122,  935.12733253,  969.56222201,
-        1020.253291  , 1013.06523706, 1091.89257587, 1113.22617499,
-        1156.46164584, 1189.72445557, 1153.85375071, 1144.32535071,
-        1078.47147651, 1110.182412  , 1058.94757395, 1006.90644063,
-        1025.38538538, 1005.60095871,  992.93209897,  991.09570187,
-         951.00503493, 1040.14332618,  977.77872015, 1004.7527711 ,
-        1038.7322798 , 1015.5552674 , 1097.69076972, 1020.27321193])}
+{&#39;left_pupil&#39;: array([ 983.40594049, 1073.02751207, 1054.28530197, 1115.09486095,
+        1101.77375508, 1067.86637675, 1084.26225495, 1046.99784112,
+        1066.7664561 , 1104.79388648, 1059.83331293, 1110.69354472,
+        1093.22719393, 1172.11491491, 1168.86081176, 1136.49553189,
+        1133.18576749, 1102.17153058, 1081.49839006, 1119.60101787,
+        1100.54529784, 1059.41158134, 1121.32585085, 1078.69300236,
+        1068.7299118 , 1091.40172047, 1092.17402285, 1080.75399538,
+        1162.83068594, 1137.93005504, 1119.59686818, 1087.73755229,
+        1151.31693745, 1101.82774019, 1132.41172313, 1109.51531779,
+        1035.4340185 , 1035.7982753 , 1050.39162833, 1064.87196189,
+        1044.73055113, 1043.45205191, 1017.75581678, 1008.57985804,
+        1022.784339  , 1017.55843639, 1071.20415998,  971.56887872,
+         994.88412901, 1049.09844487,  973.61272498, 1010.09162488,
+         999.9848349 ,  973.11383284,  992.16396095,  978.16484286,
+         964.01572347,  972.1855388 ,  923.47436965,  914.11751555,
+         962.18658939,  967.60519122, 1038.89570895, 1042.58016358,
+        1051.61204435, 1065.82612006, 1034.14990488, 1029.12243865,
+        1071.70200453,  984.44341607, 1073.85559524, 1051.63005279,
+        1001.13824221,  988.56656359,  989.56866218, 1010.09542213,
+        1013.0713806 ,  975.21437373, 1023.43199041, 1021.13124933,
+        1051.23446807, 1082.17987283, 1059.86260072, 1087.34238481,
+        1050.98037336, 1138.2471562 , 1138.47171095, 1116.55741653,
+        1141.35676195, 1120.17227729, 1109.34376046, 1123.73628344,
+        1088.75035547, 1183.57285853, 1119.15350759, 1134.94809781,
+        1139.72238351, 1079.37689203, 1138.12081923, 1054.82848918])}
 </pre></div></div>
 </div>
 <p>The result contains one array per eye and variable, with one value per event. We subtract the baseline from the response:</p>
@@ -659,31 +665,31 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-{&#39;left_pupil&#39;: array([ 755.92091005,  907.89529851,  930.73411829, 1031.65582806,
-        1063.32439519, 1056.42293438, 1090.89687451, 1050.88269661,
-        1069.58743809, 1139.02064069, 1111.96922201, 1195.85132123,
-        1200.58884988, 1304.19762758, 1318.58902327, 1281.16290544,
-        1247.59004759, 1133.00943923, 1059.81610238, 1045.0975211 ,
-         957.29146249,  859.37766491,  903.91447365,  872.71620589,
-         875.11773972,  935.05155369,  966.75632829,  968.71623455,
-        1042.46240916, 1001.13380517,  957.60786568,  922.57282414,
-         990.97282501,  951.78999637,  992.8116932 ,  994.68552031,
-         936.65360014,  976.94021008, 1021.28482066, 1081.64026888,
-        1097.19348532, 1123.37870692, 1109.40938278, 1073.47117931,
-        1020.16660628,  949.9561078 ,  970.5497937 ,  870.9889643 ,
-         938.98842965, 1070.78287978, 1098.14762076, 1179.25007842,
-        1180.88396895, 1116.67619587, 1058.05325367, 1006.53086871,
-         981.29214479, 1016.15942405, 1026.96828037, 1053.22477922,
-        1142.1563809 , 1166.98151226, 1235.29960898, 1203.72369645,
-        1168.51365154, 1154.16128504, 1116.87413336, 1138.41680091,
-        1216.94732524, 1146.40525942, 1237.81622373, 1179.40856231,
-        1047.62349375,  957.71144323,  934.87009215,  973.40229597,
-        1019.21802694, 1009.47026062, 1087.92048071, 1114.74169578,
-        1153.38104173, 1193.25887528, 1156.48598797, 1144.41650203,
-        1075.88090747, 1111.50299268, 1061.46855166, 1004.52165797,
-        1023.30285072, 1007.96107893,  992.75167008,  990.87522947,
-         949.595824  , 1040.70773824,  977.13194747, 1006.10751207,
-        1042.4995676 , 1013.38451585, 1097.11168414, 1022.60628766])}
+{&#39;left_pupil&#39;: array([ 984.85607784, 1070.41479332, 1052.7729249 , 1114.39801955,
+        1100.28848983, 1067.3899461 , 1084.05074451, 1044.01947555,
+        1065.47963067, 1104.69284228, 1059.05204139, 1110.48246306,
+        1094.14569942, 1175.53812631, 1169.78748565, 1135.86251998,
+        1133.61087924, 1099.12514687, 1079.12497966, 1119.55836376,
+        1102.71779755, 1058.97049688, 1121.73558291, 1078.72477171,
+        1067.66655964, 1093.53398973, 1093.71588306, 1081.67460965,
+        1163.21116648, 1139.1227206 , 1118.7194607 , 1088.55299726,
+        1152.17529793, 1101.91560401, 1130.62013841, 1106.30094244,
+        1035.30589006, 1035.92338333, 1050.16171894, 1065.52663571,
+        1047.33199239, 1042.56715264, 1018.98238901, 1007.78913356,
+        1023.99442513, 1018.75265928, 1073.21865362,  971.74632379,
+         994.43894449, 1049.80224161,  972.96337818, 1011.69352666,
+        1000.14879751,  973.97875042,  990.13033344,  978.48916346,
+         964.6161583 ,  971.48552085,  922.06659541,  914.62239028,
+         961.53119312,  967.73798077, 1039.44657875, 1043.19878507,
+        1054.68008935, 1066.35478598, 1033.03739517, 1027.11521406,
+        1068.78857886,  983.20788543, 1073.34556654, 1053.53206133,
+        1002.72583276,  989.34658986,  989.37801004, 1014.80366636,
+        1012.52244435,  973.6691392 , 1020.36428387, 1021.8451335 ,
+        1048.24704575, 1085.64946818, 1062.43699468, 1088.38722669,
+        1049.26056094, 1139.53913103, 1140.62851842, 1114.31554468,
+        1139.49138114, 1122.5928071 , 1109.15603143, 1123.46282487,
+        1087.28041022, 1184.08728484, 1118.54183513, 1135.46379766,
+        1144.53444252, 1077.25118309, 1137.07740576, 1057.10405874])}
 </pre></div></div>
 </div>
 </section>
@@ -705,15 +711,13 @@
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-<span class="ansi-green-fg">pp: 14:30:59</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">pupil_response</span>:<span class="ansi-cyan-fg">598</span> | <span class="ansi-bold">optimizing both npar and tmax, might take a while...</span>
-<span class="ansi-green-fg">pp: 14:31:01</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">601</span> | <span class="ansi-bold">npar=9.37, tmax=976.59</span>
-<span class="ansi-green-fg">pp: 14:31:02</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">601</span> | <span class="ansi-bold">npar=8.38, tmax=967.69</span>
-<span class="ansi-green-fg">pp: 14:31:02</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">601</span> | <span class="ansi-bold">npar=7.19, tmax=953.44</span>
-<span class="ansi-green-fg">pp: 14:31:02</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">601</span> | <span class="ansi-bold">npar=7.43, tmax=951.96</span>
-<span class="ansi-green-fg">pp: 14:31:02</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">601</span> | <span class="ansi-bold">npar=7.42, tmax=950.55</span>
-<span class="ansi-green-fg">pp: 14:31:02</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">601</span> | <span class="ansi-bold">npar=7.42, tmax=950.12</span>
-<span class="ansi-green-fg">pp: 14:31:02</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">601</span> | <span class="ansi-bold">npar=7.42, tmax=950.14</span>
-<span class="ansi-green-fg">pp: 14:31:04</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">601</span> | <span class="ansi-bold">npar=7.42, tmax=950.14</span>
+<span class="ansi-green-fg">pp: 16:09:30</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">pupil_response</span>:<span class="ansi-cyan-fg">598</span> | <span class="ansi-bold">optimizing both npar and tmax, might take a while...</span>
+<span class="ansi-green-fg">pp: 16:09:31</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">601</span> | <span class="ansi-bold">npar=9.65, tmax=942.31</span>
+<span class="ansi-green-fg">pp: 16:09:31</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">601</span> | <span class="ansi-bold">npar=8.97, tmax=937.36</span>
+<span class="ansi-green-fg">pp: 16:09:31</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">601</span> | <span class="ansi-bold">npar=8.84, tmax=934.68</span>
+<span class="ansi-green-fg">pp: 16:09:32</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">601</span> | <span class="ansi-bold">npar=8.85, tmax=934.29</span>
+<span class="ansi-green-fg">pp: 16:09:32</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">601</span> | <span class="ansi-bold">npar=8.85, tmax=934.25</span>
+<span class="ansi-green-fg">pp: 16:09:33</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">601</span> | <span class="ansi-bold">npar=8.85, tmax=934.25</span>
 </pre></div></div>
 </div>
 <p>Here, we allowed the two shape parameters of the response kernel, <code class="docutils literal notranslate"><span class="pre">npar</span></code> and <code class="docutils literal notranslate"><span class="pre">tmax</span></code>, to vary freely together with the amplitudes of the responses. This allows an individualized shape of the pupillary response for each subject (which appears reasonable given the results in Hoeks &amp; Levelt, 1993) but may take a long time to optimize and can result in pathological solutions. In that case, one or both of the parameters can be fixed, for example to reasonable group-level values (e.g.,
@@ -751,35 +755,35 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-{&#39;npar&#39;: np.float64(7.419572891483996),
+{&#39;npar&#39;: np.float64(8.852221331434503),
  &#39;npar_free&#39;: True,
- &#39;tmax&#39;: np.float64(950.1369225221629),
+ &#39;tmax&#39;: np.float64(934.2454594278596),
  &#39;tmax_free&#39;: True,
- &#39;coef&#39;: array([193.744047  ,  92.16115701,  80.43303273,  46.44105182,
-         75.42753942, 107.71131188,  84.59472725,  80.33207203,
-        169.24358512, 166.69821675,  44.93597522, 109.60539704,
-         88.73498694,  77.69811024,  68.99421826,  78.25120188,
-        105.48727934,  78.460932  , 125.94795596,  70.34737638,
-         61.56959673, 137.04172378,  71.32833401,  87.92876851,
-         70.04839644,  75.90038763,  95.84672487, 135.17848085,
-         73.29051777,  69.54430692,  84.76157151, 160.40977062,
-         67.58812296,  81.63076336,  74.48202521,  97.77057488,
-         78.28002102, 105.37390573,  65.0970373 , 120.52454464,
-         99.4920251 ,  67.87905048,  97.44734023, 170.44610574,
-        109.73761567, 135.65803683,  57.29611637,  93.97412199,
-        144.46540562, 102.65751152, 137.31852599,  92.51240379,
-        110.26885602, 170.53791505, 108.2674575 , 113.86897607,
-        117.90627298,  76.66667991,  72.55843982,  92.93674077,
-         89.01983199, 113.90871139,  97.23134187, 112.06719199,
-        104.30972933,  55.03553809, 118.68693931, 180.70603456,
-         52.18039743,  90.4119376 , 103.96317175,  91.17056644,
-        109.45249682,  64.1690883 , 104.61364773, 132.40671164,
-         92.5350739 ,  72.16219652,  50.94970013, 116.78813699,
-         86.61536745, 108.96219264, 103.37822668, 120.84794804,
-        156.42536309, 132.27599934, 110.44153836, 103.03401561,
-         65.63114693,  76.79274865, 119.46875603,  91.5003005 ,
-        128.46078619, 134.21257763,  24.27511847, 128.05481483,
-        192.24322407, 169.98101684,  88.21290658, 195.01221084]),
+ &#39;coef&#39;: array([182.08307275,  88.44221807,  75.92974415,  45.58632793,
+         58.62472714,  68.85235817,  71.66419859,  90.35044953,
+        145.58457558, 149.25777617,  62.60188924, 103.19045164,
+         71.26213503,  71.53058454,  80.89427548,  78.35039498,
+        113.76115268,  58.56931867,  68.192683  ,  38.64393776,
+         76.9322824 , 158.47480575,  89.93911164,  80.21506718,
+         74.04472419,  85.52750852,  81.50706121, 123.83901323,
+         81.97027786,  83.03309219,  70.84526336, 151.82051632,
+         54.73463979,  72.48830991,  73.31723428,  89.08058414,
+        100.84553303, 135.78106238,  65.83584897,  64.60019233,
+         69.95885724,  35.56780773,  60.35875418, 152.72996207,
+        101.84311547, 153.15059604,  63.89904176,  83.65064159,
+        125.36056858,  89.58711545, 108.01329613,  38.67373626,
+         67.50985896, 171.60164522,  73.11760425,  89.52005396,
+        113.41515991,  70.75747233,  82.88886461,  90.14004193,
+         59.52123767, 104.71318549,  93.83983114,  92.94271668,
+         85.798016  ,  41.64035405,  86.15208359, 152.75110222,
+         43.95937499,  83.04986233, 103.92406014, 102.47043348,
+        110.46208601,  61.22889866,  98.14956891, 105.43580783,
+         75.44216504,  67.00080995,  26.86648692,  84.39014775,
+         64.70514923,  82.8290383 ,  96.06717888, 124.16585138,
+        153.58804534,  98.39845027,  69.26268214,  89.30632603,
+         61.32853849,  48.13071188,  93.70171617,  87.50787292,
+        129.21964116, 104.83092799,   9.51854922, 106.11158983,
+        120.37232985, 132.13325068,  58.51006573, 154.02493057]),
  &#39;bounds&#39;: {&#39;npar&#39;: (1, 20), &#39;tmax&#39;: (100, 2000)},
  &#39;valid&#39;: array([1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
         1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
@@ -857,12 +861,12 @@
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Traditional method:
-Baseline: Corr(trad, real) = 0.9552897127692387
-Response: Corr(trad, real) = 0.4355020295417933
+Baseline: Corr(trad, real) = 0.8527567870321835
+Response: Corr(trad, real) = 0.6369245773867103
 
 Novel method:
-Baseline: Corr(nov, real) = 0.9807691381772498
-Response: Corr(nov, real) = 0.6860411394085331
+Baseline: Corr(nov, real) = 0.9348472764513899
+Response: Corr(nov, real) = 0.6813562713273847
 </pre></div></div>
 </div>
 <p>The correlations are higher for the novel method than for the traditional method. More detailed simulation studies are reported in <a class="reference external" href="https://doi.org/10.3758/s13428-025-02755-7">Mittner &amp; Groot (2025)</a>.</p>
@@ -891,11 +895,11 @@ Response: Corr(nov, real) = 0.6860411394085331
       </div>
     </a>
     <a class="right-next"
-       href="preproc_example_pavlov.html"
+       href="simulation.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Example: Preprocessing of a full dataset with multiple subjects</p>
+        <p class="prev-next-title">Simulated data</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

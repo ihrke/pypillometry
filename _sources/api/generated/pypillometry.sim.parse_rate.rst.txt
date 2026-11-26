@@ -1,0 +1,6 @@
+﻿parse\_rate
+===========
+
+.. currentmodule:: pypillometry.sim
+
+.. autofunction:: parse_rate

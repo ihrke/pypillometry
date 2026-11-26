@@ -1,0 +1,30 @@
+﻿Matern
+======
+
+.. currentmodule:: pypillometry.signal.gaussmarkov
+
+.. autoclass:: Matern
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~Matern.cov
+      ~Matern.discretise
+      ~Matern.get_params
+      ~Matern.psd
+      ~Matern.ss
+      ~Matern.variogram
+      ~Matern.with_params
+   
+   
+
+
+   .. rubric:: Details

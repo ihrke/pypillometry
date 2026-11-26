@@ -1,0 +1,6 @@
+﻿plot\_spectrum
+==============
+
+.. currentmodule:: pypillometry.signal
+
+.. autofunction:: plot_spectrum

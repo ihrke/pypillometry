@@ -1,0 +1,6 @@
+﻿fit\_group
+==========
+
+.. currentmodule:: pypillometry.signal.gaussmarkov
+
+.. autofunction:: fit_group

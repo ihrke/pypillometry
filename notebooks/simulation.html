@@ -1,0 +1,2442 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Simulated data &#8212; pypillometry v2.3.0</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx_autodoc_typehints.css?v=057ac668" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=6a604523" />
+    <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=e89b0eda" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=75c7c72ae941e8b558d8"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
+
+    <script src="../_static/documentation_options.js?v=387c4177"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../_static/design-tabs.js?v=fcb327ea"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'notebooks/simulation';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../_static/pypillometry_logo_200x200.png"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Example: Preprocessing of a full dataset with multiple subjects" href="preproc_example_pavlov.html" />
+    <link rel="prev" title="Modeling the pupillometric signal" href="modeling.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="v2.3.0" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="light">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation" aria-expanded="false" aria-controls="pst-primary-sidebar-modal">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="../_static/pypillometry_logo_200x200.png" class="logo__image only-light" alt=""/>
+    <img src="../_static/pypillometry_logo_200x200.png" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">pypillometry</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../experimental/index.html">
+    Experimental features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../development/index.html">
+    Development
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ihrke/pypillometry" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pypillometry/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page" aria-expanded="false" aria-controls="pst-secondary-sidebar-modal">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal" tabindex="-1"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../experimental/index.html">
+    Experimental features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../development/index.html">
+    Development
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ihrke/pypillometry" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pypillometry/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button type="button" id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">Reading data</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="importdata_edf.html">Importing data from Eyelink EDF files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="importdata_asc.html">Importing data from Eyelink ASC files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="importdata_behaviour.html">Events from a behaviour log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example_datasets.html">Example datasets included in <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code></a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Working with data objects</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="pipes.html">Pipeline-based processing in pypillometry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eyes_and_variables.html">Processing monocular and binocular data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="summary.html">Summarizing pupillometric data</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Preprocessing and plotting</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="blinks.html">Blink preprocessing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="missing_data.html">Missing data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plotting.html">Plotting pupillometric data for exploration</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Events and event-related analyses</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="events.html">Events</a></li>
+<li class="toctree-l1"><a class="reference internal" href="event_metadata.html">Event metadata</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intervals.html">Intervals</a></li>
+<li class="toctree-l1"><a class="reference internal" href="erpds.html">Event-related pupil dilations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rois.html">Gaze in regions of interest around events</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Modeling and complete analyses</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="modeling.html">Modeling the pupillometric signal</a></li>
+<li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">Simulated data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="preproc_example_pavlov.html">Example: Preprocessing of a full dataset with multiple subjects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="case_study_nback.html">Case study: an N-back task</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-house"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../tutorials/index.html" class="nav-link">Tutorials</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Simulated data</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <div class="pp-notebook-banner">
+  <span>This page was generated from a Jupyter notebook.</span>
+  <a href="https://github.com/ihrke/pypillometry/blob/master/docs/notebooks/simulation.ipynb">View on GitHub</a>
+  <a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath=docs/notebooks/simulation.ipynb">
+    <img alt="Binder badge" src="https://mybinder.org/badge_logo.svg"
+         style="vertical-align:text-bottom">
+  </a>
+</div><section id="Simulated-data">
+<h1>Simulated data<a class="headerlink" href="#Simulated-data" title="Link to this heading">#</a></h1>
+<p>Simulated recordings come with their ground truth, so methods can be checked against it. This notebook shows how to build simulations from steps, what the ground truth contains, and how to simulate new recordings from a fitted timescale model. The concepts are explained in the <a class="reference internal" href="../user_guide/simulation.html"><span class="doc">user guide</span></a>.</p>
+<div class="admonition warning">
+<p><strong>Experimental:</strong> the latent pupil size comes from the <a class="reference internal" href="../experimental/timescale_model.html"><span class="doc">timescale model</span></a>, which is experimental; the API of the simulations may still change.</p>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+
+<span class="n">pp</span><span class="o">.</span><span class="n">logging_set_level</span><span class="p">(</span><span class="s2">"WARNING"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<section id="A-first-simulation">
+<h2>A first simulation<a class="headerlink" href="#A-first-simulation" title="Link to this heading">#</a></h2>
+<p>A <code class="docutils literal notranslate"><span class="pre">Simulation</span></code> is a recipe: the duration, sampling rate, eyes and seed of the recording, and a chain of steps. Here: the latent pupil size from the timescale model with typical parameters (the centre of the general prior), the units of the tracker (a median pupil size of 800) and white noise of 0.5 log-%:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sim</span> <span class="o">=</span> <span class="p">(</span><span class="n">pp</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">Simulation</span><span class="p">(</span><span class="s2">"5 min"</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+       <span class="o">.</span><span class="n">pupil</span><span class="p">()</span>
+       <span class="o">.</span><span class="n">units</span><span class="p">(</span><span class="n">median</span><span class="o">=</span><span class="mi">800</span><span class="p">)</span>
+       <span class="o">.</span><span class="n">noise</span><span class="p">(</span><span class="mf">0.5</span><span class="p">))</span>
+<span class="n">sim</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Simulation(300 s at 500 Hz, eyes=[&#39;left&#39;], seed=1)
+  .TimescalePupil()
+  .Units(median=800)
+  .WhiteNoise(sd=0.5)
+</pre></div></div>
+</div>
+<p>Nothing is simulated yet. <code class="docutils literal notranslate"><span class="pre">run()</span></code> makes the data, a <code class="docutils literal notranslate"><span class="pre">SimEyeData</span></code> object. It is an <code class="docutils literal notranslate"><span class="pre">EyeData</span></code> object (all methods and plots work), with the ground truth in <code class="docutils literal notranslate"><span class="pre">d.truth</span></code> and the recipe in <code class="docutils literal notranslate"><span class="pre">d.simulation</span></code>:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<span class="n">d</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div style="font-family:system-ui, sans-serif; border:2px solid #f0a04b; background:#fff7ec; border-radius:6px; padding:12px; max-width: min(600px, 50vw); min-width: 300px;">
+  <h3 style="margin-top:0;">SimEyeData — <span style="color:#555;">potisoso</span>    <span style="font-size:0.6em; font-weight:700; letter-spacing:0.05em; vertical-align:middle; margin-left:6px; padding:2px 8px; border-radius:10px; background:#f6c48a; color:#6b3a00;">SIMULATED</span>  </h3>
+
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px; margin-bottom:10px;">
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Samples</div>
+      <div style="font-weight:600;">150,000</div>
+    </div>
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Sampling rate</div>
+      <div style="font-weight:600;">500.0 Hz</div>
+    </div>
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Duration</div>
+      <div style="font-weight:600;">5.00 min (start 0.00, end 5.00)</div>
+    </div>
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Eyes</div>
+      <div style="font-weight:600;">left</div>
+    </div>
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Variables</div>
+      <div style="font-weight:600;">left_pupil</div>
+    </div>
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Events</div>
+      <div style="font-weight:600;">0</div>
+    </div>
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Size</div>
+      <div style="font-weight:600;">2.9MiB</div>
+    </div>
+  </div>
+
+
+
+    <details open style="margin-bottom:8px;">
+    <summary style="cursor:pointer; font-weight:600;">Signal overview</summary>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px; margin-top:8px;">
+      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">left_pupil</div>
+        <img src="data:image/png;base64,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" alt="left_pupil sparkline" style="height:60px; width:100%; object-fit:cover;">
+      </div>
+    </div>
+  </details>
+
+
+
+
+
+  <details style="margin-bottom:8px;">
+    <summary style="cursor:pointer; font-weight:600;">Simulation and ground truth</summary>
+    <pre style="margin-top:8px; background:#f9f9f9; padding:8px; border-radius:4px;">Simulation(300 s at 500 Hz, eyes=[&#39;left&#39;], seed=1)
+  .TimescalePupil()
+  .Units(median=800)
+  .WhiteNoise(sd=0.5)</pre>
+<div style="font-size:0.9em;"><b>Truth:</b> log_size, log_fast, log_3s, log_10s, log_30s, log_100s, log_300s, log_slow, size, pupil (left)</div>  </details>
+
+  <details style="margin-top:8px;">
+    <summary style="cursor:pointer; font-weight:600;">Data glimpse</summary>
+    <pre style="margin-top:8px; background:#f9f9f9; padding:8px; border-radius:4px;">EyeDataDict(vars=1,n=150000,shape=(150000,)):
+  left_pupil (float64): 832.2373, 820.7911, 834.2614, 830.7793, 826.707...
+</pre>
+  </details>
+
+</div></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">d.plot.plot_truth()</span></code> shows the data with the true pupil (without the noise):</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mf">3.5</span><span class="p">))</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_truth</span><span class="p">(</span><span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">60</span><span class="p">,</span> <span class="mi">90</span><span class="p">));</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_simulation_7_0.png" src="../_images/notebooks_simulation_7_0.png" />
+</div>
+</div>
+</section>
+<section id="The-ground-truth">
+<h2>The ground truth<a class="headerlink" href="#The-ground-truth" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">d.truth</span></code> holds the true time series, one value per sample: the pupil without noise (<code class="docutils literal notranslate"><span class="pre">pupil</span></code>), the true size (<code class="docutils literal notranslate"><span class="pre">size</span></code>; the same here, it differs with foreshortening), and the components of the latent signal in log-% (<code class="docutils literal notranslate"><span class="pre">log_size</span></code> is their sum; <code class="docutils literal notranslate"><span class="pre">log_slow</span></code> collects the atoms with time scales of at least 10 s):</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">truth</span><span class="o">.</span><span class="n">variables</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[&#39;log_size&#39;,
+ &#39;log_fast&#39;,
+ &#39;log_3s&#39;,
+ &#39;log_10s&#39;,
+ &#39;log_30s&#39;,
+ &#39;log_100s&#39;,
+ &#39;log_300s&#39;,
+ &#39;log_slow&#39;,
+ &#39;size&#39;,
+ &#39;pupil&#39;]
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_components</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">7</span><span class="p">));</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_simulation_10_0.png" src="../_images/notebooks_simulation_10_0.png" />
+</div>
+</div>
+<p>The ground truth follows the samples: after cropping or downsampling, it still matches the data.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dd</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">downsample</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="mi">60</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="nb">len</span><span class="p">(</span><span class="n">dd</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">dd</span><span class="o">.</span><span class="n">truth</span><span class="p">[</span><span class="s2">"left"</span><span class="p">,</span> <span class="s2">"pupil"</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+(1500, 1500)
+</pre></div></div>
+</div>
+</section>
+<section id="Both-eyes">
+<h2>Both eyes<a class="headerlink" href="#Both-eyes" title="Link to this heading">#</a></h2>
+<p>With two eyes, <code class="docutils literal notranslate"><span class="pre">binocular=True</span></code> gives both eyes the same fast component and atoms (with a <code class="docutils literal notranslate"><span class="pre">gain</span></code> between them) and adds a difference between the eyes (<code class="docutils literal notranslate"><span class="pre">diff_sd</span></code>, <code class="docutils literal notranslate"><span class="pre">diff_ell</span></code>). Parameters that are not given keep their typical values. The median can be set per eye:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d2</span> <span class="o">=</span> <span class="p">(</span><span class="n">pp</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">Simulation</span><span class="p">(</span><span class="s2">"2 min"</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[</span><span class="s2">"left"</span><span class="p">,</span> <span class="s2">"right"</span><span class="p">],</span> <span class="n">seed</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+      <span class="o">.</span><span class="n">pupil</span><span class="p">(</span><span class="n">binocular</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s2">"diff_sd"</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span> <span class="s2">"gain"</span><span class="p">:</span> <span class="mf">1.1</span><span class="p">})</span>
+      <span class="o">.</span><span class="n">units</span><span class="p">(</span><span class="n">median</span><span class="o">=</span><span class="p">{</span><span class="s2">"left"</span><span class="p">:</span> <span class="mi">900</span><span class="p">,</span> <span class="s2">"right"</span><span class="p">:</span> <span class="mi">750</span><span class="p">})</span>
+      <span class="o">.</span><span class="n">noise</span><span class="p">(</span><span class="mf">0.3</span><span class="p">)</span>
+      <span class="o">.</span><span class="n">run</span><span class="p">())</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mf">3.5</span><span class="p">))</span>
+<span class="n">d2</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_truth</span><span class="p">(</span><span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">30</span><span class="p">));</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_simulation_14_0.png" src="../_images/notebooks_simulation_14_0.png" />
+</div>
+</div>
+</section>
+<section id="Varying-a-recipe">
+<h2>Varying a recipe<a class="headerlink" href="#Varying-a-recipe" title="Link to this heading">#</a></h2>
+<p>Each method of a simulation returns a new simulation, so one base recipe can be varied. Each step draws from its own random stream, so the variants share everything except what was changed: here, the same latent pupil with different amounts of noise.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">base</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">Simulation</span><span class="p">(</span><span class="s2">"5 min"</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">pupil</span><span class="p">()</span><span class="o">.</span><span class="n">units</span><span class="p">(</span><span class="mi">800</span><span class="p">)</span>
+<span class="n">noisy</span> <span class="o">=</span> <span class="p">{</span><span class="n">sd</span><span class="p">:</span> <span class="n">base</span><span class="o">.</span><span class="n">noise</span><span class="p">(</span><span class="n">sd</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span> <span class="k">for</span> <span class="n">sd</span> <span class="ow">in</span> <span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">)}</span>
+<span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">noisy</span><span class="p">[</span><span class="mf">0.2</span><span class="p">]</span><span class="o">.</span><span class="n">truth</span><span class="p">[</span><span class="s2">"left"</span><span class="p">,</span> <span class="s2">"pupil"</span><span class="p">],</span> <span class="n">noisy</span><span class="p">[</span><span class="mf">3.0</span><span class="p">]</span><span class="o">.</span><span class="n">truth</span><span class="p">[</span><span class="s2">"left"</span><span class="p">,</span> <span class="s2">"pupil"</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+True
+</pre></div></div>
+</div>
+</section>
+<section id="Checking-a-method-against-the-truth">
+<h2>Checking a method against the truth<a class="headerlink" href="#Checking-a-method-against-the-truth" title="Link to this heading">#</a></h2>
+<p>With the truth at hand, the error of a method is one line. For example, how well does a low-pass filter recover the true pupil at each noise level, for several cutoff frequencies?</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">rmse</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">filtered</span><span class="p">):</span>
+    <span class="n">true</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">truth</span><span class="p">[</span><span class="s2">"left"</span><span class="p">,</span> <span class="s2">"pupil"</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">filtered</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">])</span> <span class="o">-</span> <span class="n">true</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
+
+<span class="n">errors</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+    <span class="sa">f</span><span class="s2">"noise </span><span class="si">{</span><span class="n">sd</span><span class="si">}</span><span class="s2"> log-%"</span><span class="p">:</span> <span class="p">{</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">cutoff</span><span class="si">}</span><span class="s2"> Hz"</span><span class="p">:</span> <span class="n">rmse</span><span class="p">(</span><span class="n">dn</span><span class="p">,</span> <span class="n">dn</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">lowpass_filter</span><span class="p">(</span><span class="n">cutoff</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+                          <span class="k">for</span> <span class="n">cutoff</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">30</span><span class="p">)}</span>
+    <span class="k">for</span> <span class="n">sd</span><span class="p">,</span> <span class="n">dn</span> <span class="ow">in</span> <span class="n">noisy</span><span class="o">.</span><span class="n">items</span><span class="p">()})</span>
+<span class="n">errors</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>noise 0.2 log-%</th>
+      <th>noise 1.0 log-%</th>
+      <th>noise 3.0 log-%</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1 Hz</th>
+      <td>8.55</td>
+      <td>8.57</td>
+      <td>8.69</td>
+    </tr>
+    <tr>
+      <th>4 Hz</th>
+      <td>1.23</td>
+      <td>1.55</td>
+      <td>3.10</td>
+    </tr>
+    <tr>
+      <th>10 Hz</th>
+      <td>0.43</td>
+      <td>1.50</td>
+      <td>4.42</td>
+    </tr>
+    <tr>
+      <th>30 Hz</th>
+      <td>0.51</td>
+      <td>2.54</td>
+      <td>7.63</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+<section id="Tasks-and-events">
+<h2>Tasks and events<a class="headerlink" href="#Tasks-and-events" title="Link to this heading">#</a></h2>
+<p>A <code class="docutils literal notranslate"><span class="pre">Task</span></code> describes the design of an experiment and makes the events of the recording. It is built by chaining as well: <code class="docutils literal notranslate"><span class="pre">block()</span></code> starts a block of trials, <code class="docutils literal notranslate"><span class="pre">stimulus()</span></code> and <code class="docutils literal notranslate"><span class="pre">response()</span></code> add events to each trial, <code class="docutils literal notranslate"><span class="pre">rest()</span></code> adds a pause and <code class="docutils literal notranslate"><span class="pre">repeat()</span></code> repeats the blocks. Times are fixed or distributions, given as strings. Here, the sustained attention to response task (SART): a digit every 1150 ms, masked after 250 ms; press for every digit except 3. In a notebook, a task shows a
+schematic of its trials:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sart</span> <span class="o">=</span> <span class="p">(</span><span class="n">pp</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">Task</span><span class="p">(</span><span class="s2">"SART"</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">block</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">225</span><span class="p">,</span> <span class="n">soa</span><span class="o">=</span><span class="s2">"1150 ms"</span><span class="p">,</span> <span class="n">conditions</span><span class="o">=</span><span class="p">{</span><span class="s2">"go"</span><span class="p">:</span> <span class="mi">8</span><span class="o">/</span><span class="mi">9</span><span class="p">,</span> <span class="s2">"nogo"</span><span class="p">:</span> <span class="mi">1</span><span class="o">/</span><span class="mi">9</span><span class="p">})</span>
+        <span class="o">.</span><span class="n">stimulus</span><span class="p">(</span><span class="s2">"digit"</span><span class="p">,</span> <span class="s2">"visual"</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="s2">"250 ms"</span><span class="p">,</span>
+                  <span class="n">meta</span><span class="o">=</span><span class="p">{</span><span class="s2">"digit"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"go"</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">],</span> <span class="s2">"nogo"</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">]}})</span>
+        <span class="o">.</span><span class="n">stimulus</span><span class="p">(</span><span class="s2">"mask"</span><span class="p">,</span> <span class="s2">"visual"</span><span class="p">,</span> <span class="n">at</span><span class="o">=</span><span class="s2">"250 ms"</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="s2">"900 ms"</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">response</span><span class="p">(</span><span class="s2">"press"</span><span class="p">,</span> <span class="n">after</span><span class="o">=</span><span class="s2">"digit"</span><span class="p">,</span> <span class="n">rt</span><span class="o">=</span><span class="s2">"lognormal(350 ms, 70 ms)"</span><span class="p">,</span>
+                  <span class="n">p</span><span class="o">=</span><span class="p">{</span><span class="s2">"go"</span><span class="p">:</span> <span class="mf">0.97</span><span class="p">,</span> <span class="s2">"nogo"</span><span class="p">:</span> <span class="mf">0.3</span><span class="p">}))</span>
+<span class="n">sart</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div style="font-family:system-ui, sans-serif; border:2px solid #f0a04b; background:#fff7ec; border-radius:6px; padding:12px; max-width:min(640px, 60vw);"><h3 style="margin-top:0;">Task — <span style="color:#555;">SART</span></h3><div style="font-weight:600; margin-top:6px;">1. 225 trials, SOA 1.15 s, go 89% / nogo 11%</div><svg width="520" height="76" xmlns="http://www.w3.org/2000/svg" style="display:block; font-size:11px; font-family:system-ui, sans-serif;"><line x1="8.0" y1="0" x2="8.0" y2="58" stroke="#bbb"/><line x1="352.8" y1="0" x2="352.8" y2="58" stroke="#888" stroke-dasharray="4,3"/><rect x="8.0" y="6" width="74.9" height="8" fill="#4c72b0" opacity="0.85"/><line x1="8.0" y1="4" x2="8.0" y2="16" stroke="#4c72b0" stroke-width="2"/><text x="376" y="14" fill="#333">digit</text><rect x="82.9" y="24" width="269.8" height="8" fill="#4c72b0" opacity="0.85"/><line x1="82.9" y1="22" x2="82.9" y2="34" stroke="#4c72b0" stroke-width="2"/><text x="376" y="32" fill="#333">mask</text><rect x="87.8" y="40" width="52.8" height="12" fill="#55a868" opacity="0.2"/><polygon points="107.9,41 117.9,41 112.9,51" fill="#55a868"/><text x="376" y="50" fill="#333">press · p go 0.97 / nogo 0.3</text><text x="8.0" y="72" fill="#666">0 ms</text><text x="370.0" y="72" fill="#666" text-anchor="end">1208 ms</text></svg><div style="font-size:0.8em; color:#666; margin-top:4px;"><span style="color:#4c72b0;">■</span> visual <span style="color:#dd8452;">■</span> auditory <span style="color:#55a868;">■</span> motor; bands: 10–90% of the onsets</div></div></div>
+</div>
+<p>The same task (and the PVT, the FT-RSGT and the n-back task) is available ready-made in <code class="docutils literal notranslate"><span class="pre">pp.sim.tasks</span></code>, with arguments for its parameters. The FT-RSGT has two blocks, tapping with a beep and a thought probe, repeated for 20 minutes; <code class="docutils literal notranslate"><span class="pre">task.plot()</span></code> draws the schematic with matplotlib:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pp</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">ftrsgt</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_simulation_22_0.png" src="../_images/notebooks_simulation_22_0.png" />
+</div>
+</div>
+<p>Added to a simulation, the task makes the events of the data. Without a duration, the recording lasts until the end of the task. The events carry their metadata (trial, condition, reaction time, the digit, …), so they can be used like those of a real recording; for now, they do not change the pupil.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ds</span> <span class="o">=</span> <span class="p">(</span><span class="n">pp</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">Simulation</span><span class="p">(</span><span class="n">fs</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+      <span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">pp</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">sart</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">60</span><span class="p">),</span> <span class="n">start</span><span class="o">=</span><span class="s2">"2 s"</span><span class="p">)</span>
+      <span class="o">.</span><span class="n">pupil</span><span class="p">()</span><span class="o">.</span><span class="n">units</span><span class="p">(</span><span class="mi">800</span><span class="p">)</span><span class="o">.</span><span class="n">noise</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+      <span class="o">.</span><span class="n">run</span><span class="p">())</span>
+<span class="n">ds</span><span class="o">.</span><span class="n">events</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Onset (ms)</th>
+      <th>Label</th>
+      <th>kind</th>
+      <th>modality</th>
+      <th>trial</th>
+      <th>block</th>
+      <th>condition</th>
+      <th>duration</th>
+      <th>luminance</th>
+      <th>rt</th>
+      <th>digit</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>2000.000000</td>
+      <td>digit</td>
+      <td>stimulus</td>
+      <td>visual</td>
+      <td>0</td>
+      <td>1</td>
+      <td>go</td>
+      <td>250.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>6.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2250.000000</td>
+      <td>mask</td>
+      <td>stimulus</td>
+      <td>visual</td>
+      <td>0</td>
+      <td>1</td>
+      <td>go</td>
+      <td>900.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>2346.488905</td>
+      <td>press</td>
+      <td>response</td>
+      <td>motor</td>
+      <td>0</td>
+      <td>1</td>
+      <td>go</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>346.488905</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>3150.000000</td>
+      <td>digit</td>
+      <td>stimulus</td>
+      <td>visual</td>
+      <td>1</td>
+      <td>1</td>
+      <td>go</td>
+      <td>250.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>2.0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>3400.000000</td>
+      <td>mask</td>
+      <td>stimulus</td>
+      <td>visual</td>
+      <td>1</td>
+      <td>1</td>
+      <td>go</td>
+      <td>900.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>3472.199112</td>
+      <td>press</td>
+      <td>response</td>
+      <td>motor</td>
+      <td>1</td>
+      <td>1</td>
+      <td>go</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>322.199112</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>4300.000000</td>
+      <td>digit</td>
+      <td>stimulus</td>
+      <td>visual</td>
+      <td>2</td>
+      <td>1</td>
+      <td>go</td>
+      <td>250.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>6.0</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>4550.000000</td>
+      <td>mask</td>
+      <td>stimulus</td>
+      <td>visual</td>
+      <td>2</td>
+      <td>1</td>
+      <td>go</td>
+      <td>900.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>4645.804215</td>
+      <td>press</td>
+      <td>response</td>
+      <td>motor</td>
+      <td>2</td>
+      <td>1</td>
+      <td>go</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>345.804215</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>5450.000000</td>
+      <td>digit</td>
+      <td>stimulus</td>
+      <td>visual</td>
+      <td>3</td>
+      <td>1</td>
+      <td>go</td>
+      <td>250.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>7.0</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>5700.000000</td>
+      <td>mask</td>
+      <td>stimulus</td>
+      <td>visual</td>
+      <td>3</td>
+      <td>1</td>
+      <td>go</td>
+      <td>900.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>5805.652903</td>
+      <td>press</td>
+      <td>response</td>
+      <td>motor</td>
+      <td>3</td>
+      <td>1</td>
+      <td>go</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>355.652903</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>6600.000000</td>
+      <td>digit</td>
+      <td>stimulus</td>
+      <td>visual</td>
+      <td>4</td>
+      <td>1</td>
+      <td>go</td>
+      <td>250.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>8.0</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>6850.000000</td>
+      <td>mask</td>
+      <td>stimulus</td>
+      <td>visual</td>
+      <td>4</td>
+      <td>1</td>
+      <td>go</td>
+      <td>900.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>6957.777856</td>
+      <td>press</td>
+      <td>response</td>
+      <td>motor</td>
+      <td>4</td>
+      <td>1</td>
+      <td>go</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>357.777856</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>7750.000000</td>
+      <td>digit</td>
+      <td>stimulus</td>
+      <td>visual</td>
+      <td>5</td>
+      <td>1</td>
+      <td>go</td>
+      <td>250.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>9.0</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>8000.000000</td>
+      <td>mask</td>
+      <td>stimulus</td>
+      <td>visual</td>
+      <td>5</td>
+      <td>1</td>
+      <td>go</td>
+      <td>900.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>8221.303562</td>
+      <td>press</td>
+      <td>response</td>
+      <td>motor</td>
+      <td>5</td>
+      <td>1</td>
+      <td>go</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>471.303562</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td>8900.000000</td>
+      <td>digit</td>
+      <td>stimulus</td>
+      <td>visual</td>
+      <td>6</td>
+      <td>1</td>
+      <td>go</td>
+      <td>250.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>6.0</td>
+    </tr>
+    <tr>
+      <th>19</th>
+      <td>9150.000000</td>
+      <td>mask</td>
+      <td>stimulus</td>
+      <td>visual</td>
+      <td>6</td>
+      <td>1</td>
+      <td>go</td>
+      <td>900.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>20</th>
+      <td>9385.796957</td>
+      <td>press</td>
+      <td>response</td>
+      <td>motor</td>
+      <td>6</td>
+      <td>1</td>
+      <td>go</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>485.796957</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>21</th>
+      <td>10050.000000</td>
+      <td>digit</td>
+      <td>stimulus</td>
+      <td>visual</td>
+      <td>7</td>
+      <td>1</td>
+      <td>go</td>
+      <td>250.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>7.0</td>
+    </tr>
+    <tr>
+      <th>22</th>
+      <td>10300.000000</td>
+      <td>mask</td>
+      <td>stimulus</td>
+      <td>visual</td>
+      <td>7</td>
+      <td>1</td>
+      <td>go</td>
+      <td>900.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>23</th>
+      <td>10414.515171</td>
+      <td>press</td>
+      <td>response</td>
+      <td>motor</td>
+      <td>7</td>
+      <td>1</td>
+      <td>go</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>364.515171</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>24</th>
+      <td>11200.000000</td>
+      <td>digit</td>
+      <td>stimulus</td>
+      <td>visual</td>
+      <td>8</td>
+      <td>1</td>
+      <td>go</td>
+      <td>250.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>25</th>
+      <td>11450.000000</td>
+      <td>mask</td>
+      <td>stimulus</td>
+      <td>visual</td>
+      <td>8</td>
+      <td>1</td>
+      <td>go</td>
+      <td>900.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>26</th>
+      <td>11559.014215</td>
+      <td>press</td>
+      <td>response</td>
+      <td>motor</td>
+      <td>8</td>
+      <td>1</td>
+      <td>go</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>359.014215</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>27</th>
+      <td>12350.000000</td>
+      <td>digit</td>
+      <td>stimulus</td>
+      <td>visual</td>
+      <td>9</td>
+      <td>1</td>
+      <td>go</td>
+      <td>250.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>9.0</td>
+    </tr>
+    <tr>
+      <th>28</th>
+      <td>12600.000000</td>
+      <td>mask</td>
+      <td>stimulus</td>
+      <td>visual</td>
+      <td>9</td>
+      <td>1</td>
+      <td>go</td>
+      <td>900.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>29</th>
+      <td>12652.776592</td>
+      <td>press</td>
+      <td>response</td>
+      <td>motor</td>
+      <td>9</td>
+      <td>1</td>
+      <td>go</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>302.776592</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>144</th>
+      <td>59500.000000</td>
+      <td>digit</td>
+      <td>stimulus</td>
+      <td>visual</td>
+      <td>50</td>
+      <td>1</td>
+      <td>go</td>
+      <td>250.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>4.0</td>
+    </tr>
+    <tr>
+      <th>145</th>
+      <td>59750.000000</td>
+      <td>mask</td>
+      <td>stimulus</td>
+      <td>visual</td>
+      <td>50</td>
+      <td>1</td>
+      <td>go</td>
+      <td>900.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>146</th>
+      <td>59831.306627</td>
+      <td>press</td>
+      <td>response</td>
+      <td>motor</td>
+      <td>50</td>
+      <td>1</td>
+      <td>go</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>331.306627</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>147</th>
+      <td>60650.000000</td>
+      <td>digit</td>
+      <td>stimulus</td>
+      <td>visual</td>
+      <td>51</td>
+      <td>1</td>
+      <td>go</td>
+      <td>250.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>2.0</td>
+    </tr>
+    <tr>
+      <th>148</th>
+      <td>60900.000000</td>
+      <td>mask</td>
+      <td>stimulus</td>
+      <td>visual</td>
+      <td>51</td>
+      <td>1</td>
+      <td>go</td>
+      <td>900.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>149</th>
+      <td>60967.780436</td>
+      <td>press</td>
+      <td>response</td>
+      <td>motor</td>
+      <td>51</td>
+      <td>1</td>
+      <td>go</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>317.780436</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>150</th>
+      <td>61800.000000</td>
+      <td>digit</td>
+      <td>stimulus</td>
+      <td>visual</td>
+      <td>52</td>
+      <td>1</td>
+      <td>go</td>
+      <td>250.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>4.0</td>
+    </tr>
+    <tr>
+      <th>151</th>
+      <td>62050.000000</td>
+      <td>mask</td>
+      <td>stimulus</td>
+      <td>visual</td>
+      <td>52</td>
+      <td>1</td>
+      <td>go</td>
+      <td>900.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>152</th>
+      <td>62264.019837</td>
+      <td>press</td>
+      <td>response</td>
+      <td>motor</td>
+      <td>52</td>
+      <td>1</td>
+      <td>go</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>464.019837</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>153</th>
+      <td>62950.000000</td>
+      <td>digit</td>
+      <td>stimulus</td>
+      <td>visual</td>
+      <td>53</td>
+      <td>1</td>
+      <td>go</td>
+      <td>250.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>6.0</td>
+    </tr>
+    <tr>
+      <th>154</th>
+      <td>63200.000000</td>
+      <td>mask</td>
+      <td>stimulus</td>
+      <td>visual</td>
+      <td>53</td>
+      <td>1</td>
+      <td>go</td>
+      <td>900.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>155</th>
+      <td>63236.658724</td>
+      <td>press</td>
+      <td>response</td>
+      <td>motor</td>
+      <td>53</td>
+      <td>1</td>
+      <td>go</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>286.658724</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>156</th>
+      <td>64100.000000</td>
+      <td>digit</td>
+      <td>stimulus</td>
+      <td>visual</td>
+      <td>54</td>
+      <td>1</td>
+      <td>go</td>
+      <td>250.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>5.0</td>
+    </tr>
+    <tr>
+      <th>157</th>
+      <td>64350.000000</td>
+      <td>mask</td>
+      <td>stimulus</td>
+      <td>visual</td>
+      <td>54</td>
+      <td>1</td>
+      <td>go</td>
+      <td>900.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>158</th>
+      <td>64364.249421</td>
+      <td>press</td>
+      <td>response</td>
+      <td>motor</td>
+      <td>54</td>
+      <td>1</td>
+      <td>go</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>264.249421</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>159</th>
+      <td>65250.000000</td>
+      <td>digit</td>
+      <td>stimulus</td>
+      <td>visual</td>
+      <td>55</td>
+      <td>1</td>
+      <td>go</td>
+      <td>250.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>9.0</td>
+    </tr>
+    <tr>
+      <th>160</th>
+      <td>65500.000000</td>
+      <td>mask</td>
+      <td>stimulus</td>
+      <td>visual</td>
+      <td>55</td>
+      <td>1</td>
+      <td>go</td>
+      <td>900.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>161</th>
+      <td>65639.560136</td>
+      <td>press</td>
+      <td>response</td>
+      <td>motor</td>
+      <td>55</td>
+      <td>1</td>
+      <td>go</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>389.560136</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>162</th>
+      <td>66400.000000</td>
+      <td>digit</td>
+      <td>stimulus</td>
+      <td>visual</td>
+      <td>56</td>
+      <td>1</td>
+      <td>go</td>
+      <td>250.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>5.0</td>
+    </tr>
+    <tr>
+      <th>163</th>
+      <td>66650.000000</td>
+      <td>mask</td>
+      <td>stimulus</td>
+      <td>visual</td>
+      <td>56</td>
+      <td>1</td>
+      <td>go</td>
+      <td>900.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>164</th>
+      <td>66706.924807</td>
+      <td>press</td>
+      <td>response</td>
+      <td>motor</td>
+      <td>56</td>
+      <td>1</td>
+      <td>go</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>306.924807</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>165</th>
+      <td>67550.000000</td>
+      <td>digit</td>
+      <td>stimulus</td>
+      <td>visual</td>
+      <td>57</td>
+      <td>1</td>
+      <td>go</td>
+      <td>250.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>7.0</td>
+    </tr>
+    <tr>
+      <th>166</th>
+      <td>67800.000000</td>
+      <td>mask</td>
+      <td>stimulus</td>
+      <td>visual</td>
+      <td>57</td>
+      <td>1</td>
+      <td>go</td>
+      <td>900.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>167</th>
+      <td>67815.205606</td>
+      <td>press</td>
+      <td>response</td>
+      <td>motor</td>
+      <td>57</td>
+      <td>1</td>
+      <td>go</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>265.205606</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>168</th>
+      <td>68700.000000</td>
+      <td>digit</td>
+      <td>stimulus</td>
+      <td>visual</td>
+      <td>58</td>
+      <td>1</td>
+      <td>go</td>
+      <td>250.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>5.0</td>
+    </tr>
+    <tr>
+      <th>169</th>
+      <td>68950.000000</td>
+      <td>mask</td>
+      <td>stimulus</td>
+      <td>visual</td>
+      <td>58</td>
+      <td>1</td>
+      <td>go</td>
+      <td>900.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>170</th>
+      <td>69024.181672</td>
+      <td>press</td>
+      <td>response</td>
+      <td>motor</td>
+      <td>58</td>
+      <td>1</td>
+      <td>go</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>324.181672</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>171</th>
+      <td>69850.000000</td>
+      <td>digit</td>
+      <td>stimulus</td>
+      <td>visual</td>
+      <td>59</td>
+      <td>1</td>
+      <td>go</td>
+      <td>250.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>7.0</td>
+    </tr>
+    <tr>
+      <th>172</th>
+      <td>70100.000000</td>
+      <td>mask</td>
+      <td>stimulus</td>
+      <td>visual</td>
+      <td>59</td>
+      <td>1</td>
+      <td>go</td>
+      <td>900.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>173</th>
+      <td>70136.078110</td>
+      <td>press</td>
+      <td>response</td>
+      <td>motor</td>
+      <td>59</td>
+      <td>1</td>
+      <td>go</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>286.078110</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 174 events</p></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">))</span>
+<span class="n">ds</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_task_events</span><span class="p">(</span><span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">));</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_simulation_25_0.png" src="../_images/notebooks_simulation_25_0.png" />
+</div>
+</div>
+<p>For example, the commission errors (presses in no-go trials) and the mean reaction time in go trials:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ev</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">events</span>
+<span class="n">press</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">labels</span> <span class="o">==</span> <span class="s2">"press"</span>
+<span class="n">nogo_trials</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">"trial"</span><span class="p">][(</span><span class="n">ev</span><span class="o">.</span><span class="n">labels</span> <span class="o">==</span> <span class="s2">"digit"</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">ev</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">"condition"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"nogo"</span><span class="p">)]</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"no-go trials:"</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">nogo_trials</span><span class="p">),</span>
+      <span class="s2">"| commission errors:"</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">ev</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">"trial"</span><span class="p">][</span><span class="n">press</span><span class="p">],</span> <span class="n">nogo_trials</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span>
+      <span class="s2">"| mean RT (go):"</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">ev</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">"rt"</span><span class="p">][</span><span class="n">press</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">ev</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">"condition"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"go"</span><span class="p">)])),</span> <span class="s2">"ms"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+no-go trials: 9 | commission errors: 3 | mean RT (go): 348 ms
+</pre></div></div>
+</div>
+</section>
+<section id="From-a-fitted-model">
+<h2>From a fitted model<a class="headerlink" href="#From-a-fitted-model" title="Link to this heading">#</a></h2>
+<p>A fitted <code class="docutils literal notranslate"><span class="pre">TimescaleModel</span></code> simulates new recordings with its estimated parameters, median pupil size and noise (<code class="docutils literal notranslate"><span class="pre">m.simulate()</span></code>). Here, the model of the left eye of an example recording:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002"</span><span class="p">)</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">TimescaleModel</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="s2">"left"</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">progress</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">s</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">s</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div style="font-family:system-ui, sans-serif; border:2px solid #f0a04b; background:#fff7ec; border-radius:6px; padding:12px; max-width: min(600px, 50vw); min-width: 300px;">
+  <h3 style="margin-top:0;">SimEyeData — <span style="color:#555;">rlmw_002_sim</span>    <span style="font-size:0.6em; font-weight:700; letter-spacing:0.05em; vertical-align:middle; margin-left:6px; padding:2px 8px; border-radius:10px; background:#f6c48a; color:#6b3a00;">SIMULATED</span>  </h3>
+
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px; margin-bottom:10px;">
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Samples</div>
+      <div style="font-weight:600;">23,893</div>
+    </div>
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Sampling rate</div>
+      <div style="font-weight:600;">20.0 Hz</div>
+    </div>
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Duration</div>
+      <div style="font-weight:600;">19.91 min (start 0.00, end 19.91)</div>
+    </div>
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Eyes</div>
+      <div style="font-weight:600;">left</div>
+    </div>
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Variables</div>
+      <div style="font-weight:600;">left_pupil</div>
+    </div>
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Events</div>
+      <div style="font-weight:600;">0</div>
+    </div>
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Size</div>
+      <div style="font-weight:600;">466.9KiB</div>
+    </div>
+  </div>
+
+
+
+    <details open style="margin-bottom:8px;">
+    <summary style="cursor:pointer; font-weight:600;">Signal overview</summary>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px; margin-top:8px;">
+      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">left_pupil</div>
+        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAA8CAYAAADPLpCHAAAAOnRFWHRTb2Z0d2FyZQBNYXRwbG90bGliIHZlcnNpb24zLjExLjIsIGh0dHBzOi8vbWF0cGxvdGxpYi5vcmcvgI3uAAAAAAlwSFlzAAAPYQAAD2EBqD+naQAAEs1JREFUeJztXQl0VeW5/TLczAkhCQlDQgIJEAaZDYOioJaHWrX6rE9Lfa/ia2utXVVrtYNFxSqtbd9yaRetra3VPl21asVqQbEiCDgxSQgzJCGEzGSeB+ja3/m/c/9zcm/ITW5qcnP2Wq6bkJt7z7D//e1vf/+NQefOnTtHDhwECII/7wNw4MCfcAjtIKDgENpBQMEhtIOAgkNoBwEFh9AOAgoOoR0EFBxC9wGHSuupvL7V/3fDQb8R5AxWfEfGD/5BQUFEBWuv7v8dcOBXOArdR2C+6gxZBx8cQvcDucV1/rsTDvwCh9A+oqPrrPn1T97I889dcOA3OIT2EY2tnfy4bMooVuhOjeAOPn84hPYRDYrQaQlR/Hj/q7lUUNXk/zvjoE9wCO0j6ls7+DF1ZCQ//m3vaXpw/f6+XX0HfodD6D4Sely8odBAWIhzGQcLht2deOGjQnryn0f7bTnGKYUGwkKH3WUctAjIO3GgpI4+PF7l8Wf/yC2lzYcrfHq9V3cXU21zO39d3yIK7SZ0eGgI/TvRU/69duMhWvnsxzRcEZCE/sYLu+krz35CH5040+1naOBAyrqWDjp5polaO7oov7LR/Pkjbx6gHdpiaGzrpPte2cfNnyh0hCuYEqLDeqXQTW2dVNNkLIa+oLSuxfL9x/lnaMIPN1BxTbPHSPGZrfm04/iZYZu+DCihf7bxsOX7O1/cTVMe3EhdZ89RS3vXgLxnW2cXVTQY+yx2n6zmR5C2sKqJyVnR0Mak/PaLe+jSX2xhsl72q638PBzTczsKaeWznzARAVHmk2cMAuF34yJcFBIcZL4nzscbrnl6O8159N0+ncveohpatHYzbTtWaf7bfjXM2X2yptvz92j/VqiOd7hhQAn9x+0FdFa72Rv2l1Fb51la8+YBmrr67QF5T2TDHV3Ge0KFgZ+sz6Olv9xCJyoazcbulFK4t3JLTdKf0JS6qNr4eW2z8Rq1LcpytHZQbESo5T2F/J6QryI97P84Vt7g07mcrm0xN0MJ5L2LPBC2WqsER8p8ey9PwGL+/49PUlnd0NmINaCEbu86y4pox4a8Mn6sU2TxJz4tqKaY8FCamTrCJPShMoMQ7x0q50cQPj0x2vJ7IKpO6JYOo4LIawixG5jQLsvvNrd30ftHKqjiPDvwXtld7NO5iDdv73TbB1QZ4KhanPZzAEZGueiIj4vHE9ZuOEwPrs+j1/b4dtwB7aFF6XTEKZU5UdX9pviD0PPSR9LIqDCThKNiwvnxrf2GGgN28sFXi4IDrcoSyWugsqDasOWItBJ6+/Equu25nfTke8d6PLbffZBPG7VjADYfLqdTHq4RIKYG720ep0pZDmuqLWho7aTosBBKHRlFlcp29QcNbbKYe9cD4Hn6tlpZYAFFaDReonKCIOy9JKJ3DpT5dccavCy8Zc6EBBoR6eL3nb1mE71/xPCg+ZVNFKq8b4kq5wI8F4tvQlK0RaHFagDVze0Wy/HDK7Mtr4FFUNXYxvYCDSn8vB36ogJW/WkXe3ZPaFW/rxMaFQI4Wd1ssXNC9tgIFzesZxr73ogK2jrOWhb1+XDfK7m04PH3aPuxKnr3YDnNfHiTpeEOCEL/eH0ezXpkE5dNIVO58mToyFGq/QUQEiV5Vmq8SWj7zcgeE2tROkF9Syc/f8yICCuhtd9HWmE0hQahv3lpJt21LMv8eUldCzefYm8q6q12a+mUUZb0Ab7dOBbPhJHGuU09T8/BcT0RJ97z8mfaOXTwYkuMCaMz/UhWBLKQam2C5A1F1ca5H69ooN99cIK/xnGgSX99b3FgEFr8X35VI0WGGZ6woa3TnK4VVDXTb7ee4CYHCUh/hh5iGbKSY5jQUEvBtDFx/Jik7AegBRVMZpA8OTbc9MVv5ZZQpdYD4OZIyiGICg+xNHGdSjWRgtg/1RIdHmp6YEBeOzrM2mQKWtW1a2zTCd1B6YlqH8lrufT63tM8LLrtuU+Z0LBDidFhlgaxr5AKY6+w3uCuah20s9BIXHC+9768j+55eZ+lFxjyOfTh0gaKUoQG7liayeUdlgTx3qrnd7IirNtirGwgt7iW9hR1j6e8AU0dPGRKXLgitPumXjNrLD9eP2ec+W+Zo2KshG7poITocHKFBHEEdtdLe+lPHxaaNgQKLSooCFH2aVZaPKcBze0GYYODg7o1xLFMaDc5K9WCs6cmdh+vEwoLauroOMtiXP3GAbZVhWealEKHWxZzfxW6t817bZO1gZYESKoF7jVSk4H8YMSAElq/6IfLGsybD8RHuri85502ctXjSl2TosN4yodp37W/3kE3rPuQfu+hmfIEvEZmcgx7dBBaR6QrmAp/djVdM9Mgtn18/dDfD9CxikaKiwylCFeIGbfJRiQoLjw0CKWnHFKO546P5/QEPh3AueJGSl4dHhpsKLRmL8SSIJXxBHfS4l6YsCcJMWGUoRZZpCuE4qNc5vnHKg+N49QVEYOYH72+36Ov9wb5fVQeT4Mc+1AHlVeerxNatrrc92oupyYDmZEPKKEnagqIDFZKKADCjRkRSXmnrd16TEQoT/mufmq7+W+PbThEd2teUW8C9akepoCipiPUTQa+smA8fXl+mqmcIJeefuiAnQBJ9MwYFgZRWGltK0eRIL1Aluj0sSP4UY/+oOhIW350VTa9csciJq7VcrSak0b8OwZPer4sHlsU77kdBXy9oMI3qErz5M2zaeN3l/DX9crfJ8UYU8yfv+0ebF3xf1vppU+KeEB0vsnlQ2/k0botx1mhw9WxXfzz97kJxddShXToVQRKLMDCEiE7qrLxIavQU5VvBUrqWi3TQRB6bHwEE0SHN++Hi4sL8cWnt/F0D3h55ylOCGRqVlrXSmPVHgvxwsCaa6ezOgpkL/OKGaPpzqWZlvfBccHr12hl82uLM5iYKOlAbLh7sXx7WRatveECjgr5PGsNkja1d/K5wM9+45JMmpkaz4Ru0iyHWBIoMaoQBk9btamg7kmBR948yI8dnef4NR+9bjotm5LMfYEUv1hWaOPc/7C9gB9BxFaVWBwtb6D5j/2T9p2qJW94/qOT9MTbR7gZTYkzmmQAidGMh96hS57Y0u13ZNGlJURaFBjn26UILOeDa3v3X/b22psPGkLPGGt4vQUTEnhPAmKo8YpMoSFBJvl06L7XDiQRUCh094BEQhgR46ahm5aUAkmHINS2vVNUPD4qjO5fkU2PX3+B+TM0VVBoICcjgV771iIewqCMS6aue14slFtyxpu2QfZeNLd1seXQ93yg+kDhJG4DuYBT1S307LZ8/np/ca25qEWh4YdR0lEpAAgBVP3WRRn86AoJ5oUjxzY5xV0Z8XtYXAKkMKhs+4o9E1pXT4iIvk9FkiEcz5o3D9J/PfMRHSypt9iijMRo06oY6t5B1bZ7uulgGa3/rIQrxpAiNHzepnsuoZvmp/EKxrWCIv7gymxanJlEU0YbEZpgdpqbhL0Z0sgE8JOCaiYPPOxopSiwFg+syKYvzXZ7ZsHMcYY9EH8LSyIpCEo2PLREfPPSE/hrELNA+WP7YEUnOWwJABLV2AgtVaK5o4vL9tajlXwMIAg4joX/113FNPfRd+n6dTvMLBnXDYkJYk+cz20XTej2/lL90hKiKCoslH771XlmyZeoT68KspjskEZVCI1jAtatnGt53h93FPB1v+qpbfTZqVqqUQ2hJDDSe2AB20VKFrSnoVt/4bkb8ROgWlnJsVTZ0G4p6TfnjOevhUSCRZmJfHG8QTYbiZLIRp3DZe4//DJaKTTwLZudECA/RimdlWoQG5AERldovYJguyiaHqwBqJAdUCMQThoj6e6lGkjKIZ9LPFhaxzbghrnj6G97TjMRRimbdPOFafSXnaeY7HhfNFmwMiAmpoD6xihBkyL08mkpxnmoBYaYT+yG3ogeLes+8ECakfPYe/w13gINZPboWG6m5fjl/HTUNLebtig9wThfJEXJsRFsA+22UhYV7hvuowzaBr1CiyKJDQAitOhOlFAwSZVUOySxkGwTAFlQAuFdkefiwtkJ7Q0oozddmGa5kFHqWKG04vn0456pqod4bDvwWrpPB8Gqm9o8KjSmj8fKjYhRFjXIvHJBOmUkRtHD105nawZrMHFUtGlloHawLZ7w/KocVlG5ppLEYBHogxtRYOz1EHuBagHVzCtx/1kGHDcqnr7XW7daMiTj8wGhm9tZFJJijfONCA3h85WmHwvDvqj2FtXSrzcfpyGj0PK5O51kOFEdq784jdUMq/iy7GSPr4NUAdzDXmDBZ0WGks9Ji+em8FhFA1/kJNUQ+Qoo2wdHK5mwsokfKYxgtvLknWonn7eKJI2OsQ+6g6d2+s+BFU9uoxvnpXIKJCRHY4cKteX7y/j7i7KSqOjTIvbGUFuoNBPaS8R36eRRlu8licG5yAgdvytba3GcUEpUqmmr32EC6w256YNdbs3TBQC/J/FcVUM7vx4aZ0l7oORYALBTUOslk5I4ugXKG1r5/S4YN4I3Pn3n8kk0JBRapnK6EtvVbdXFE/iEvrd8imUCpyOIgniFQ5VFJWTgMme8kS68k1dGk1Ni2Tv3BSsXjKf9Dy9nZUMJtSs0und+3sJ0r6+hKxi2b2KRSqIC6GRE3Aj1FatjH67MTjOIcU5ZnxMVRjPnbQjT/Vhc/IgqZn5sLD7SMo6Hj5ZcWsgMomGPijSAEnECujPQh2QgLaoOxAD3AIv1pvmpFK2mqKhCujhU1rfxQr11YTonIv781Py/bVLoJrf3t7STUcoxLiTiKeA61eRhVx1eSxrLfcV1vFeir4D6CAkkgkqOC7f8/MhPV9D9/zHF62vITcagQ0bg08e6+4Qx8RG0ODORv4ZFmpgUww0coNsVYIZqXHGzp42Now9PGHm7N4W2I1bz0FBpVC+cj0z/cO2w6OwxKb7Xyert42Ug8cKJCZy8PPNBPm06UE4jo43r98svz6Inbpxl/u7irCRLpYJ6o1dBRUI/4OmTRYOe0BO1yVZvgGHEA9putv+cl0oXZSVy7otGa9fJGlYujLkFSxXp+wupIvabie97qgDywYIsNVACsdEYCRCvvbAqx/x+xjg32eGndUxKNhYqko4LMxB7tvpEaFdIMJP2UGkDWwsQXHoR9BBQUuwDsavjLTlpFKntLQnzotDIkhdOTDSrGN4jPtJNWuCrC9M5Er33C5Mp0WYFYaOwiCFauwrdzf6QIfQV05J9IvRl2SmmygQphX/xfxdy6ZJOHoMb/QbLcKO/ePWOxWbs5QtkaycUiY9H2SEdeiYOhZJPu4hS60Rac910eubWeXRhhvt1vDWFntDacZbjtac3H+cKI3FjRGgw9y4HSuotWfBTt8xhAloVWiO0ORc1gOdJDm2fzgIQHkSiWFx6c8zPVceCe4a/bTIkmkIdX18ykW1DsjZ56gm4WJ1njfJoj3WQw8KX375kgvkzbA7yFGf1BSijMsTwBeI74Q1vnOv2kHYgwTBSgVC6fGoyXTljNMd3dvz3ogx+RBqB0TtUUZ9S+oLqpnazRwl3hdD8jAT2sTohMZDB9dT7HL1K4Rrr2THECVVUPkCMY/QG3XIAsri+NGecZbvAkCE0LtSkFOsgpSdEh4WafxjRTlOkJvd8YbL5/a4Hr+h1KR5ISDoCogTHel9cb99t7L0A4Nt/c55qgGsHAmLTvC8KrQPXR5IP6WMgLvi8In62+XuXmmITpVVRPeX4xY0zudm79Q+fqtcJ4T0ymGhix5+3ph6wK7Q8F8O0P9++gAL+zxhAJXprT2BH7Jn254F7l0/mjUHnS1qgzHaLcT5gDI9i5E31PeGlry+gv991Ee1bvZy2fn+pW6GV6o5W/QfUU6+c+rHplgPXWLd1ouSyb0YaYU+A7dj+wDIzj5YNVP7G5y9rNqAbx4WBhzSHMP4bJA0o7lyaxf8NBOBFJ6XE+PRHbRZnGl5eYHpopboyH7CrpzfLwT/ThMOcrqqF0lNGD2DKKftTPO3jCUiF1vdJyMUbInweUCAR6G+KE6fsigy3ZPvsXFvz6q0pFPsjU0KpivgMJz6KdtvFhufvCRITDhShB51C//WbC3nTi5QpYHaaf9KL4Y44JRbii2XEf9UFY7wS2pNnR0KBIZcIDpKb+3rI5z01zsOG0NjMhP8EaFYG6uSHG0aYsZ1BxNsvnsgqjU/b6ECjilH1/yzKMEXFI6E97GnpLXpKRAKK0D196sVB/xBnxnbBpnf+moetqIg/e0oeJG+OcvWdPv7cYTekCO3Af4i1eej+Kr0e6fUWf749x9wzPhBwCD2MEOEK4SYPg5X+AIOjLUcqe8ydvWHJpL7vt+kNHEIPw8YwvJ9/oP3yqSnmpv/BhkEX2zkYWMxPH2nZbB9ocP7XyA4CCo5COwgoOIR2EFBwCO0goOAQ2kFAwSG0g4CCQ2gHAQWH0A4okPAv6duCrDhfnO8AAAAASUVORK5CYII=" alt="left_pupil sparkline" style="height:60px; width:100%; object-fit:cover;">
+      </div>
+    </div>
+  </details>
+
+
+
+
+
+  <details style="margin-bottom:8px;">
+    <summary style="cursor:pointer; font-weight:600;">Simulation and ground truth</summary>
+    <pre style="margin-top:8px; background:#f9f9f9; padding:8px; border-radius:4px;">Simulation(1194.65 s at 20 Hz, eyes=[&#39;left&#39;], seed=1)
+  .TimescalePupil(params={&#39;fast_sd&#39;: 4.842, &#39;fast_ell&#39;: 312.6, &#39;sd_3s&#39;: 6.182, &#39;sd_10s&#39;: 1.196, &#39;sd_30s&#39;: 0.4455, &#39;sd_100s&#39;: 2.365, &#39;sd_300s&#39;: 0.4149}, timescales=(3000, 10000, 30000, 100000, 300000), eyes=(&#39;left&#39;,))
+  .Units(median={&#39;left&#39;: 1056})
+  .WhiteNoise(sd=0.3639, eyes=(&#39;left&#39;,))</pre>
+<div style="font-size:0.9em;"><b>Truth:</b> log_size, log_fast, log_3s, log_10s, log_30s, log_100s, log_300s, log_slow, size, pupil (left)</div>  </details>
+
+  <details style="margin-top:8px;">
+    <summary style="cursor:pointer; font-weight:600;">Data glimpse</summary>
+    <pre style="margin-top:8px; background:#f9f9f9; padding:8px; border-radius:4px;">EyeDataDict(vars=1,n=23893,shape=(23893,)):
+  left_pupil (float64): 1053.668, 1038.432, 1042.3268, 1035.8, 1037.3784...
+</pre>
+  </details>
+
+</div></div>
+</div>
+<p>The simulation has the sampling rate of the model (20 Hz) and, by default, the duration of its data. Comparing the decomposition of the recording with the true components of a simulation shows whether the model produces recordings that look like the real one:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">sharey</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">time</span> <span class="o">/</span> <span class="mi">60000</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="s2">"left"</span><span class="p">],</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"0.4"</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"recording (log-%)"</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">tx</span> <span class="o">/</span> <span class="mi">60000</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">truth</span><span class="p">[</span><span class="s2">"left"</span><span class="p">,</span> <span class="s2">"log_size"</span><span class="p">],</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"C0"</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"simulation from the fitted model: latent signal (log-%)"</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"time (min)"</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_simulation_31_0.png" src="../_images/notebooks_simulation_31_0.png" />
+</div>
+</div>
+<p>Fitting the model again to simulated data shows how well its parameters can be recovered from a recording of this length. The fast component and the noise come back closely; the variances of the single atoms much less so, which is why the model uses a prior for them:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">m2</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">TimescaleModel</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">progress</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">"true (fitted to the recording)"</span><span class="p">:</span> <span class="n">m</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s2">"left"</span><span class="p">],</span>
+              <span class="s2">"estimated from the simulation"</span><span class="p">:</span> <span class="n">m2</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s2">"left"</span><span class="p">]})</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>true (fitted to the recording)</th>
+      <th>estimated from the simulation</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>fast_sd</th>
+      <td>4.84</td>
+      <td>4.86</td>
+    </tr>
+    <tr>
+      <th>fast_ell</th>
+      <td>312.59</td>
+      <td>314.81</td>
+    </tr>
+    <tr>
+      <th>noise_sd</th>
+      <td>0.36</td>
+      <td>0.37</td>
+    </tr>
+    <tr>
+      <th>sd_3s</th>
+      <td>6.18</td>
+      <td>5.64</td>
+    </tr>
+    <tr>
+      <th>sd_10s</th>
+      <td>1.20</td>
+      <td>2.94</td>
+    </tr>
+    <tr>
+      <th>sd_30s</th>
+      <td>0.45</td>
+      <td>0.68</td>
+    </tr>
+    <tr>
+      <th>sd_100s</th>
+      <td>2.37</td>
+      <td>3.28</td>
+    </tr>
+    <tr>
+      <th>sd_300s</th>
+      <td>0.41</td>
+      <td>0.49</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">m.process()</span></code> returns the latent pupil of the model as steps, to build other simulations with it, e.g. at the sampling rate of the tracker with another noise:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">s1k</span> <span class="o">=</span> <span class="p">(</span><span class="n">pp</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">Simulation</span><span class="p">(</span><span class="s2">"1 min"</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+       <span class="o">.</span><span class="n">pupil</span><span class="p">(</span><span class="o">*</span><span class="n">m</span><span class="o">.</span><span class="n">process</span><span class="p">())</span>
+       <span class="o">.</span><span class="n">units</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">scale</span><span class="p">[</span><span class="s2">"left"</span><span class="p">])</span>
+       <span class="o">.</span><span class="n">noise</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
+       <span class="o">.</span><span class="n">run</span><span class="p">())</span>
+<span class="n">s1k</span><span class="o">.</span><span class="n">simulation</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Simulation(60 s at 1000 Hz, eyes=[&#39;left&#39;], seed=4)
+  .TimescalePupil(params={&#39;fast_sd&#39;: 4.842, &#39;fast_ell&#39;: 312.6, &#39;sd_3s&#39;: 6.182, &#39;sd_10s&#39;: 1.196, &#39;sd_30s&#39;: 0.4455, &#39;sd_100s&#39;: 2.365, &#39;sd_300s&#39;: 0.4149}, timescales=(3000, 10000, 30000, 100000, 300000), eyes=(&#39;left&#39;,))
+  .Units(median=1056)
+  .WhiteNoise(sd=1)
+</pre></div></div>
+</div>
+</section>
+<section id="Gaze-and-foreshortening">
+<h2>Gaze and foreshortening<a class="headerlink" href="#Gaze-and-foreshortening" title="Link to this heading">#</a></h2>
+<p>With an experimental setup, the simulation can add gaze (fixations at random places on the screen) and the foreshortening of the pupil, which depends on where the eye looks. The true size and the foreshortening factor are part of the truth. The <a class="reference internal" href="../experimental/foreshortening.html"><span class="doc">foreshortening notebook</span></a> uses such data to fit the camera position.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">setup</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">ExperimentalSetup</span><span class="p">(</span><span class="n">screen_resolution</span><span class="o">=</span><span class="p">(</span><span class="mi">1920</span><span class="p">,</span> <span class="mi">1080</span><span class="p">),</span>
+                             <span class="n">physical_screen_size</span><span class="o">=</span><span class="p">(</span><span class="s2">"52 cm"</span><span class="p">,</span> <span class="s2">"29 cm"</span><span class="p">),</span>
+                             <span class="n">eye_to_screen_center</span><span class="o">=</span><span class="s2">"60 cm"</span><span class="p">,</span>
+                             <span class="n">camera_spherical</span><span class="o">=</span><span class="p">(</span><span class="s2">"20 deg"</span><span class="p">,</span> <span class="s2">"-90 deg"</span><span class="p">,</span> <span class="s2">"70 cm"</span><span class="p">))</span>
+<span class="n">fd</span> <span class="o">=</span> <span class="p">(</span><span class="n">pp</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">Simulation</span><span class="p">(</span><span class="s2">"1 min"</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">setup</span><span class="o">=</span><span class="n">setup</span><span class="p">)</span>
+      <span class="o">.</span><span class="n">pupil</span><span class="p">()</span><span class="o">.</span><span class="n">gaze</span><span class="p">()</span><span class="o">.</span><span class="n">foreshortening</span><span class="p">()</span><span class="o">.</span><span class="n">units</span><span class="p">(</span><span class="mi">750</span><span class="p">)</span><span class="o">.</span><span class="n">noise</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+      <span class="o">.</span><span class="n">run</span><span class="p">())</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mf">3.5</span><span class="p">))</span>
+<span class="n">fd</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_truth</span><span class="p">(</span><span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">15</span><span class="p">));</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_simulation_37_0.png" src="../_images/notebooks_simulation_37_0.png" />
+</div>
+</div>
+</section>
+<section id="Blinks-and-tracker-loss">
+<h2>Blinks and tracker loss<a class="headerlink" href="#Blinks-and-tracker-loss" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">blinks()</span></code> adds blinks: the lid covers a fraction <span class="math notranslate nohighlight">\(g(t)\)</span> of the pupil (a fast closing, a closed phase and a two-speed reopening, with parameters drawn per blink), the measured pupil is <span class="math notranslate nohighlight">\((1 - g)\)</span> times the true one, and the tracker loses the pupil while more than half of it is covered. <code class="docutils literal notranslate"><span class="pre">loss()</span></code> adds rare losses of the pupil without transient. The true blinks are shaded in <code class="docutils literal notranslate"><span class="pre">plot_truth()</span></code>:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">da</span> <span class="o">=</span> <span class="p">(</span><span class="n">pp</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">Simulation</span><span class="p">(</span><span class="s2">"5 min"</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[</span><span class="s2">"left"</span><span class="p">,</span> <span class="s2">"right"</span><span class="p">],</span> <span class="n">seed</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+      <span class="o">.</span><span class="n">pupil</span><span class="p">()</span><span class="o">.</span><span class="n">units</span><span class="p">(</span><span class="mi">800</span><span class="p">)</span>
+      <span class="o">.</span><span class="n">blinks</span><span class="p">()</span>
+      <span class="o">.</span><span class="n">noise</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)</span>
+      <span class="o">.</span><span class="n">loss</span><span class="p">(</span><span class="n">rate</span><span class="o">=</span><span class="s2">"1/min"</span><span class="p">)</span>
+      <span class="o">.</span><span class="n">run</span><span class="p">())</span>
+<span class="n">first</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">truth_events</span><span class="o">.</span><span class="n">onsets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">1000</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="n">da</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_truth</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="s2">"left"</span><span class="p">,</span> <span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">30</span><span class="p">),</span> <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">da</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_truth</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="s2">"left"</span><span class="p">,</span> <span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="n">first</span> <span class="o">-</span> <span class="mf">0.3</span><span class="p">,</span> <span class="n">first</span> <span class="o">+</span> <span class="mf">0.9</span><span class="p">),</span> <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_simulation_39_0.png" src="../_images/notebooks_simulation_39_0.png" />
+</div>
+</div>
+<p>The true artifacts are in <code class="docutils literal notranslate"><span class="pre">d.truth_events</span></code>, one event per blink (or loss) and eye, with the parameters of each blink as metadata (closed phase, time scales, amplitude, tail, duration of the missing samples):</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">te</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">truth_events</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">"onset"</span><span class="p">:</span> <span class="n">te</span><span class="o">.</span><span class="n">onsets</span><span class="p">,</span> <span class="s2">"label"</span><span class="p">:</span> <span class="n">te</span><span class="o">.</span><span class="n">labels</span><span class="p">,</span> <span class="o">**</span><span class="n">te</span><span class="o">.</span><span class="n">meta</span><span class="p">})</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>onset</th>
+      <th>label</th>
+      <th>eye</th>
+      <th>closed</th>
+      <th>tau_c</th>
+      <th>tau_o</th>
+      <th>a</th>
+      <th>w</th>
+      <th>tau_s</th>
+      <th>gap</th>
+      <th>duration</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>2661.53</td>
+      <td>blink</td>
+      <td>left</td>
+      <td>328.73</td>
+      <td>3.26</td>
+      <td>23.45</td>
+      <td>1.0</td>
+      <td>0.15</td>
+      <td>140.69</td>
+      <td>336.0</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2661.88</td>
+      <td>blink</td>
+      <td>right</td>
+      <td>328.73</td>
+      <td>3.26</td>
+      <td>23.45</td>
+      <td>1.0</td>
+      <td>0.15</td>
+      <td>140.69</td>
+      <td>338.0</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3944.87</td>
+      <td>blink</td>
+      <td>right</td>
+      <td>317.37</td>
+      <td>2.93</td>
+      <td>19.03</td>
+      <td>1.0</td>
+      <td>0.15</td>
+      <td>114.18</td>
+      <td>324.0</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>3947.99</td>
+      <td>blink</td>
+      <td>left</td>
+      <td>317.37</td>
+      <td>2.93</td>
+      <td>19.03</td>
+      <td>1.0</td>
+      <td>0.15</td>
+      <td>114.18</td>
+      <td>324.0</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>8446.55</td>
+      <td>blink</td>
+      <td>right</td>
+      <td>410.64</td>
+      <td>3.59</td>
+      <td>10.52</td>
+      <td>1.0</td>
+      <td>0.15</td>
+      <td>63.10</td>
+      <td>414.0</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>8448.04</td>
+      <td>blink</td>
+      <td>left</td>
+      <td>410.64</td>
+      <td>3.59</td>
+      <td>10.52</td>
+      <td>1.0</td>
+      <td>0.15</td>
+      <td>63.10</td>
+      <td>414.0</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>11546.30</td>
+      <td>blink</td>
+      <td>right</td>
+      <td>143.12</td>
+      <td>3.83</td>
+      <td>31.18</td>
+      <td>1.0</td>
+      <td>0.15</td>
+      <td>187.11</td>
+      <td>152.0</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>11547.34</td>
+      <td>blink</td>
+      <td>left</td>
+      <td>143.12</td>
+      <td>3.83</td>
+      <td>31.18</td>
+      <td>1.0</td>
+      <td>0.15</td>
+      <td>187.11</td>
+      <td>154.0</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>With the truth, the reconstruction of the blinks by the preprocessing can be scored exactly, e.g. the error of <code class="docutils literal notranslate"><span class="pre">blinks_detect()</span></code> and <code class="docutils literal notranslate"><span class="pre">blinks_interpolate()</span></code> over the true extent of the blinks:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">di</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_interpolate</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">inblink</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">truth</span><span class="p">[</span><span class="s2">"left"</span><span class="p">,</span> <span class="s2">"occlusion"</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.01</span>
+<span class="n">err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">di</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">])[</span><span class="n">inblink</span><span class="p">]</span> <span class="o">-</span> <span class="n">da</span><span class="o">.</span><span class="n">truth</span><span class="p">[</span><span class="s2">"left"</span><span class="p">,</span> <span class="s2">"pupil"</span><span class="p">][</span><span class="n">inblink</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="p">(</span><span class="n">da</span><span class="o">.</span><span class="n">truth_events</span><span class="o">.</span><span class="n">labels</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s1">'blink'</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="mi">2</span><span class="si">}</span><span class="s2"> blinks per eye; "</span>
+      <span class="sa">f</span><span class="s2">"RMSE of the interpolation over the true blinks: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">err</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> "</span>
+      <span class="sa">f</span><span class="s2">"(median pupil </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">da</span><span class="o">.</span><span class="n">truth</span><span class="p">[</span><span class="s1">'left'</span><span class="p">,</span><span class="w"> </span><span class="s1">'pupil'</span><span class="p">])</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+73 blinks per eye; RMSE of the interpolation over the true blinks: 44.0 (median pupil 838)
+</pre></div></div>
+</div>
+</section>
+<section id="Reproducibility-and-saving">
+<h2>Reproducibility and saving<a class="headerlink" href="#Reproducibility-and-saving" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">d.simulation</span></code> holds the recipe together with the seed, so the same data can be made again, or new data from the same recipe. Saved simulated data keep their ground truth and recipe.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">same</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">simulation</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<span class="n">new</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">simulation</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">99</span><span class="p">)</span>
+<span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">same</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">],</span> <span class="n">d</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">new</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">],</span> <span class="n">d</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+(True, False)
+</pre></div></div>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="modeling.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Modeling the pupillometric signal</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="preproc_example_pavlov.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Example: Preprocessing of a full dataset with multiple subjects</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal" tabindex="-1"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#A-first-simulation">A first simulation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#The-ground-truth">The ground truth</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Both-eyes">Both eyes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Varying-a-recipe">Varying a recipe</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Checking-a-method-against-the-truth">Checking a method against the truth</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Tasks-and-events">Tasks and events</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#From-a-fitted-model">From a fitted model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Gaze-and-foreshortening">Gaze and foreshortening</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Blinks-and-tracker-loss">Blinks and tracker loss</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Reproducibility-and-saving">Reproducibility and saving</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  
+  <div class="tocsection editthispage">
+    <a href="https://github.com/ihrke/pypillometry/edit/master/docs/notebooks/simulation.ipynb">
+      <i class="fa-solid fa-pencil"></i>
+      
+      
+        
+          Edit on GitHub
+        
+      
+    </a>
+  </div>
+</div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/notebooks/simulation.ipynb.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2026, Matthias Mittner.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
+  </p>
+</div>
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.24.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

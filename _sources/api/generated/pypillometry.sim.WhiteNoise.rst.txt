@@ -1,0 +1,27 @@
+﻿WhiteNoise
+==========
+
+.. currentmodule:: pypillometry.sim
+
+.. autoclass:: WhiteNoise
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~WhiteNoise.apply
+      ~WhiteNoise.eyes_in
+      ~WhiteNoise.from_dict
+      ~WhiteNoise.to_dict
+   
+   
+
+
+   .. rubric:: Details

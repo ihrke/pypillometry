@@ -1,0 +1,26 @@
+﻿Spectrum
+========
+
+.. currentmodule:: pypillometry.signal
+
+.. autoclass:: Spectrum
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~Spectrum.at_log_freqs
+      ~Spectrum.count
+      ~Spectrum.index
+   
+   
+
+
+   .. rubric:: Details

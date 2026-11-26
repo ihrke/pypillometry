@@ -1,0 +1,1577 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pypillometry.sim.task &#8212; pypillometry v2.3.0</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx_autodoc_typehints.css?v=057ac668" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=6a604523" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=e89b0eda" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=75c7c72ae941e8b558d8"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
+
+    <script src="../../../_static/documentation_options.js?v=387c4177"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../../../_static/design-tabs.js?v=fcb327ea"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs";
+
+
+
+
+
+const initStyles = () => {
+    const defaultStyle = document.createElement('style');
+    defaultStyle.textContent = "pre.mermaid {\n    /* Same as .mermaid-container > pre */\n    display: block;\n    width: 100%;\n}\n\npre.mermaid > svg {\n    /* Same as .mermaid-container > pre > svg */\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}";
+    document.head.appendChild(defaultStyle);
+
+    const fullscreenStyle = document.createElement('style');
+    fullscreenStyle.textContent = ".mermaid-container {\n    position: relative;\n    display: flex;\n    flex-direction: row;\n    width: 100%;\n}\n\n.mermaid-container > pre {\n    display: block;\n    width: 100%;\n}\n\n.mermaid-container > pre > svg {\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}\n\n.mermaid-fullscreen-btn {\n    position: absolute;\n    width: 28px;\n    height: 28px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.3);\n    border-radius: 4px;\n    cursor: pointer;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    transition: all 0.2s;\n    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);\n    font-size: 14px;\n    line-height: 1;\n    padding: 0;\n    color: #333;\n}\n\n.mermaid-fullscreen-btn:hover {\n    opacity: 100% !important;\n    background: rgba(255, 255, 255, 1);\n    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-btn.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.3);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-btn.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal {\n    display: none;\n    position: fixed !important;\n    top: 0 !important;\n    left: 0 !important;\n    width: 95vw;\n    height: 100vh;\n    background: rgba(255, 255, 255, 0.98);\n    z-index: 9999;\n    padding: 20px;\n    overflow: auto;\n}\n\n.mermaid-fullscreen-modal.dark-theme {\n    background: rgba(0, 0, 0, 0.98);\n}\n\n.mermaid-fullscreen-modal.active {\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen {\n    position: relative;\n    width: 95vw;\n    height: 90vh;\n    max-width: 95vw;\n    max-height: 90vh;\n    background: white;\n    border-radius: 8px;\n    padding: 20px;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);\n    overflow: auto;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen.dark-theme {\n    background: #1a1a1a;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);\n}\n\n.mermaid-container-fullscreen pre.mermaid {\n    width: 100%;\n    height: 100%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen .mermaid svg {\n    height: 100% !important;\n    width: 100% !important;\n    cursor: grab;\n}\n\n.mermaid-fullscreen-close {\n    position: fixed !important;\n    top: 20px !important;\n    right: 20px !important;\n    width: 40px;\n    height: 40px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.2);\n    border-radius: 50%;\n    cursor: pointer;\n    z-index: 10000;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);\n    transition: all 0.2s;\n    font-size: 24px;\n    line-height: 1;\n    color: #333;\n}\n\n.mermaid-fullscreen-close:hover {\n    background: white;\n    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-close.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.2);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-close.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal .mermaid-fullscreen-btn {\n    display: none !important;\n}";
+    document.head.appendChild(fullscreenStyle);
+}
+
+// Detect if page has dark background
+const isDarkTheme = () => {
+    // We use a set of heuristics:
+    // 1. Check for common dark mode classes or attributes
+    // 2. Check computed background color brightness
+    if (document.documentElement.classList.contains('dark') ||
+        document.documentElement.getAttribute('data-theme') === 'dark' ||
+        document.body.classList.contains('dark') ||
+        document.body.getAttribute('data-theme') === 'dark') {
+        // console.log("Dark theme detected via class/attribute");
+        return true;
+    }
+    if (document.documentElement.classList.contains('light') ||
+        document.documentElement.getAttribute('data-theme') === 'light' ||
+        document.body.classList.contains('light') ||
+        document.body.getAttribute('data-theme') === 'light') {
+        // console.log("Light theme detected via class/attribute");
+        return false;
+    }
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        // console.log("Dark theme detected via prefers-color-scheme");
+        return true;
+    }
+    const bgColor = window.getComputedStyle(document.body).backgroundColor;
+    const match = bgColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)/);
+    if (match) {
+        const r = parseInt(match[1]);
+        const g = parseInt(match[2]);
+        const b = parseInt(match[3]);
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        // console.log("Background color brightness:", brightness);
+        return brightness < 128;
+    }
+    // console.log("No dark or light theme detected, defaulting to light theme");
+    return false;
+};
+
+let darkTheme = isDarkTheme();
+let modal = null;
+let modalContent = null;
+let previousScrollOffset = [window.scrollX, window.scrollY];
+let _lazyObserver = null;
+let _renderQueue = Promise.resolve();
+let closeModal = () => {};
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal?.classList.contains('active')) {
+        closeModal();
+    }
+});
+
+// Apply d3 zoom to each SVG. Idempotent: an SVG already wrapped is skipped,
+// so this is safe to call both for the initial batch and for diagrams that
+// render lazily once they become visible.
+const addZoomToSvgs = (svgs) => {
+    svgs.each(function() {
+        if (this.getAttribute('data-zoom-applied') === 'true') return;
+        var svg = d3.select(this);
+        svg.html("<g class='wrapper'>" + svg.html() + "</g>");
+        var inner = svg.select("g");
+        var zoom = d3.zoom().on("zoom", function(event) {
+            inner.attr("transform", event.transform);
+        });
+        svg.call(zoom);
+        this.setAttribute('data-zoom-applied', 'true');
+    });
+};
+
+const runMermaid = async (rerun) => {
+    console.log("Running mermaid diagrams, rerun =", rerun);
+    // clear all existing mermaid charts
+    let all_mermaids = document.querySelectorAll(".mermaid");
+
+    if (rerun) {
+        // Disconnect any previous lazy rendering observer
+        if (_lazyObserver) {
+            _lazyObserver.disconnect();
+            _lazyObserver = null;
+        }
+
+        all_mermaids.forEach((el) => {
+            el.removeAttribute('data-mermaid-deferred');
+            el.removeAttribute('data-mermaid-render-failed');
+            if(!el.hasAttribute("data-original-code")) {
+                // store original code
+                // console.log(`Storing original code for first run: `, el.innerHTML);
+                el.setAttribute('data-original-code', el.innerHTML);
+            }
+            if(el.getAttribute("data-processed") === "true") {
+                // remove and restore original
+                el.removeAttribute("data-processed");
+                // console.log(`Restoring original code for re-run: `, el.getAttribute('data-original-code'));
+                el.innerHTML = el.getAttribute('data-original-code');
+            } else {
+                // store original code
+                // console.log(`Storing original code for re-run: `, el.innerHTML);
+                el.setAttribute('data-original-code', el.innerHTML);
+            }
+        });
+
+        // Separate visible and hidden elements. Mermaid's layout engine measures
+        // text dimensions via the DOM, which fails for elements hidden by a parent
+        // (e.g., Reveal.js non-active slides, sphinx-design unopened tabs),
+        // producing broken SVGs. Render visible elements now, defer hidden ones.
+        const visible = [];
+        const hidden = [];
+        all_mermaids.forEach((el) => {
+            // offsetParent is null for display:none ancestors.
+            // getClientRects().length > 0 catches position:fixed elements
+            // (which also have null offsetParent but are still visible).
+            if (el.offsetParent !== null || el.getClientRects().length > 0) {
+                visible.push(el);
+            } else {
+                hidden.push(el);
+                el.setAttribute('data-mermaid-deferred', 'true');
+            }
+        });
+
+        if (visible.length > 0) {
+            try {
+                await mermaid.run({ nodes: visible });
+            } catch (e) {
+                console.error("Mermaid rendering failed:", e);
+            }
+        }
+
+        // Lazily render hidden elements when they become visible.
+        // Uses a promise chain (_renderQueue) to serialize rendering,
+        // since IntersectionObserver may report multiple entries at once
+        // and mermaid.run() is not safe to call concurrently.
+        if (hidden.length > 0) {
+            if (typeof IntersectionObserver === 'undefined') {
+                console.warn("IntersectionObserver not available; hidden mermaid diagrams will not render.");
+            } else {
+                _renderQueue = Promise.resolve();
+                _lazyObserver = new IntersectionObserver((entries) => {
+                    for (const entry of entries) {
+                        if (entry.isIntersecting && entry.target.getAttribute("data-processed") !== "true") {
+                            _lazyObserver.unobserve(entry.target);
+                            const el = entry.target;
+                            _renderQueue = _renderQueue.then(async () => {
+                                try {
+                                    await mermaid.run({ nodes: [el] });
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    // Apply zoom to the now-rendered diagram, matching
+                                    // the decoration visible diagrams receive.
+                                    if (false) {
+                                        addZoomToSvgs(d3.selectAll("").select(function() {
+                                            return this.querySelector("svg");
+                                        }));
+                                    }
+                                } catch (e) {
+                                    console.error("Mermaid deferred rendering failed:", e);
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    el.setAttribute('data-mermaid-render-failed', 'true');
+                                }
+                            });
+                        }
+                    }
+                });
+                hidden.forEach((el) => _lazyObserver.observe(el));
+            }
+        }
+    }
+
+    all_mermaids = document.querySelectorAll(".mermaid");
+    // Exclude deferred (hidden) and render-failed elements from completion checks
+    const mermaids_active = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])");
+    const mermaids_processed = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])[data-processed='true']");
+
+    if (false) {
+        const mermaids_to_add_zoom = 0 === -1 ? mermaids_active.length : 0;
+        if(mermaids_to_add_zoom > 0) {
+            var svgs = d3.selectAll("").select(function() {
+                return this.querySelector("svg");
+            });
+            // Wait until every active (visible) diagram has rendered. Deferred
+            // diagrams are excluded, so a fixed d3_node_count that counts a
+            // hidden diagram no longer loops forever waiting for its SVG.
+            if(mermaids_active.length !== mermaids_processed.length) {
+                setTimeout(() => runMermaid(false), 200);
+                return;
+            }
+            addZoomToSvgs(svgs);
+        }
+    } else if(mermaids_active.length !== mermaids_processed.length) {
+        // Wait for mermaid to process all diagrams
+        setTimeout(() => runMermaid(false), 200);
+        return;
+    }
+
+    // Stop here if not adding fullscreen capability
+    if (!true) return;
+
+    if (modal !== null ) {
+        // Destroy existing modal
+        modal.remove();
+        modal = null;
+        modalContent = null;
+    }
+
+    modal = document.createElement('div');
+    modal.className = 'mermaid-fullscreen-modal' + (darkTheme ? ' dark-theme' : '');
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', 'Fullscreen diagram viewer');
+    modal.innerHTML = `
+        <button class="mermaid-fullscreen-close${darkTheme ? ' dark-theme' : ''}" aria-label="Close fullscreen">✕</button>
+        <div class="mermaid-container-fullscreen${darkTheme ? ' dark-theme' : ''}"></div>
+    `;
+    document.body.appendChild(modal);
+
+    modalContent = modal.querySelector('.mermaid-container-fullscreen');
+    const closeBtn = modal.querySelector('.mermaid-fullscreen-close');
+
+    closeModal = () => {
+        modal.classList.remove('active');
+        modalContent.innerHTML = '';
+        document.body.style.overflow = ''
+        window.scrollTo({left: previousScrollOffset[0], top: previousScrollOffset[1], behavior: 'instant'});
+    };
+
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+    document.querySelectorAll('.mermaid').forEach((mermaidDiv) => {
+        if (mermaidDiv.parentNode.classList.contains('mermaid-container') ||
+            mermaidDiv.closest('.mermaid-fullscreen-modal')) {
+            // Already processed, adjust button class if needed
+            const existingBtn = mermaidDiv.parentNode.querySelector('.mermaid-fullscreen-btn');
+            if (existingBtn) {
+                existingBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
+            }
+            return;
+        }
+
+        const container = document.createElement('div');
+        container.className = 'mermaid-container';
+        mermaidDiv.parentNode.insertBefore(container, mermaidDiv);
+        container.appendChild(mermaidDiv);
+
+        const fullscreenBtn = document.createElement('button');
+        fullscreenBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
+        fullscreenBtn.setAttribute('aria-label', 'View diagram in fullscreen');
+        fullscreenBtn.textContent = "\u26f6";
+        fullscreenBtn.style.opacity = "50%";
+
+        // Calculate dynamic position based on diagram's margin and padding
+        const diagramStyle = window.getComputedStyle(mermaidDiv);
+        const marginTop = parseFloat(diagramStyle.marginTop) || 0;
+        const marginRight = parseFloat(diagramStyle.marginRight) || 0;
+        const paddingTop = parseFloat(diagramStyle.paddingTop) || 0;
+        const paddingRight = parseFloat(diagramStyle.paddingRight) || 0;
+        fullscreenBtn.style.top = `${marginTop + paddingTop + 4}px`;
+        fullscreenBtn.style.right = `${marginRight + paddingRight + 4}px`;
+
+        fullscreenBtn.addEventListener('click', () => {
+            previousScrollOffset = [window.scrollX, window.scrollY];
+            const clone = mermaidDiv.cloneNode(true);
+            modalContent.innerHTML = '';
+            modalContent.appendChild(clone);
+
+            const svg = clone.querySelector('svg');
+            if (svg) {
+                svg.removeAttribute('width');
+                svg.removeAttribute('height');
+                svg.style.width = '100%';
+                svg.style.height = 'auto';
+                svg.style.maxWidth = '100%';
+                svg.style.display = 'block';
+
+                if (false) {
+                    setTimeout(() => {
+                        const g = svg.querySelector('g');
+                        if (g) {
+                            var svgD3 = d3.select(svg);
+                            svgD3.html("<g class='wrapper'>" + svgD3.html() + "</g>");
+                            var inner = svgD3.select("g");
+                            var zoom = d3.zoom().on("zoom", function(event) {
+                                inner.attr("transform", event.transform);
+                            });
+                            svgD3.call(zoom);
+                        }
+                    }, 100);
+                }
+            }
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+        container.appendChild(fullscreenBtn);
+    });
+};
+
+
+
+const load = async () => {
+    initStyles();
+
+
+    await runMermaid(true);
+
+    const reRunIfThemeChanges = async () => {
+        const newDarkTheme = isDarkTheme();
+        if (newDarkTheme !== darkTheme) {
+            darkTheme = newDarkTheme;
+            console.log("Theme change detected, re-running mermaid with", darkTheme ? "dark" : "default", "theme");
+            await mermaid.initialize(
+                {...{"startOnLoad": false},
+                ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
+                }
+            );
+            await runMermaid(true);
+        }
+    };
+
+    // Update theme classes when theme changes
+    const themeObserver = new MutationObserver(reRunIfThemeChanges);
+    themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme']
+    });
+    themeObserver.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme']
+    });
+};
+
+
+
+
+
+console.log("Initializing mermaid with", darkTheme ? "dark" : "default", "theme");
+mermaid.initialize(
+    {...{"startOnLoad": false},
+    ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
+    }
+);
+
+window.addEventListener("load", load);
+window.runMermaid = runMermaid;</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/pypillometry/sim/task';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../../../_static/pypillometry_logo_200x200.png"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="v2.3.0" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="light">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation" aria-expanded="false" aria-controls="pst-primary-sidebar-modal">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="../../../_static/pypillometry_logo_200x200.png" class="logo__image only-light" alt=""/>
+    <img src="../../../_static/pypillometry_logo_200x200.png" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">pypillometry</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../experimental/index.html">
+    Experimental features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../development/index.html">
+    Development
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ihrke/pypillometry" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pypillometry/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal" tabindex="-1"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user_guide/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../experimental/index.html">
+    Experimental features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../development/index.html">
+    Development
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ihrke/pypillometry" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pypillometry/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-house"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">pypillometry.sim.task</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for pypillometry.sim.task</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""</span>
+<span class="sd">:class:`Task`: the design of an experiment, built by chaining blocks and events.</span>
+<span class="sd">"""</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">replace</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.dist</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_dist</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.steps</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimStep</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"Task"</span><span class="p">]</span>
+
+<span class="c1">#: columns of the metadata of the simulated events (besides the user's)</span>
+<span class="n">_COLUMNS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"kind"</span><span class="p">,</span> <span class="s2">"modality"</span><span class="p">,</span> <span class="s2">"trial"</span><span class="p">,</span> <span class="s2">"block"</span><span class="p">,</span> <span class="s2">"condition"</span><span class="p">,</span> <span class="s2">"duration"</span><span class="p">,</span> <span class="s2">"luminance"</span><span class="p">,</span> <span class="s2">"rt"</span><span class="p">)</span>
+<span class="n">_MODALITY_COLORS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"visual"</span><span class="p">:</span> <span class="s2">"#4c72b0"</span><span class="p">,</span> <span class="s2">"auditory"</span><span class="p">:</span> <span class="s2">"#dd8452"</span><span class="p">,</span> <span class="s2">"motor"</span><span class="p">:</span> <span class="s2">"#55a868"</span><span class="p">}</span>
+<span class="n">UNTIL_RESPONSE</span> <span class="o">=</span> <span class="s2">"until response"</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_color</span><span class="p">(</span><span class="n">modality</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">_MODALITY_COLORS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">modality</span><span class="p">,</span> <span class="s2">"#8172b3"</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_p</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">condition</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""probability of an event in a condition (dict: 0 for conditions not given)"""</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">condition</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">))</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_fmt_p</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">" / "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">v</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">p</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">p</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2">"</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_fmt_time</span><span class="p">(</span><span class="n">spec</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">parse_dist</span><span class="p">(</span><span class="n">spec</span><span class="p">))</span>
+
+
+<div class="viewcode-block" id="Task">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.sim.Task.html#pypillometry.sim.Task">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Task</span><span class="p">(</span><span class="n">SimStep</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Design of an experiment: blocks of trials with stimuli and responses.</span>
+
+<span class="sd">    A task is built by chaining: :meth:`block` starts a block of trials,</span>
+<span class="sd">    :meth:`stimulus` and :meth:`response` add events to each trial of the</span>
+<span class="sd">    current block, :meth:`rest` adds a pause and :meth:`repeat` repeats the</span>
+<span class="sd">    blocks. Each method returns a new task. Times are fixed (``"250 ms"``,</span>
+<span class="sd">    plain numbers are ms) or distributions (``"uniform(2 s, 10 s)"``,</span>
+<span class="sd">    ``"lognormal(350 ms, 70 ms)"``, see</span>
+<span class="sd">    :func:`~pypillometry.sim.parse_dist`).</span>
+
+<span class="sd">    In a simulation (:meth:`Simulation.task</span>
+<span class="sd">    &lt;pypillometry.sim.Simulation.task&gt;`), the task makes the events of the</span>
+<span class="sd">    data, with the metadata ``kind`` (``"stimulus"`` or ``"response"``),</span>
+<span class="sd">    ``modality``, ``trial`` (numbered over the task), ``block``,</span>
+<span class="sd">    ``condition``, ``duration`` (of stimuli, ms), ``luminance``, ``rt``</span>
+<span class="sd">    (of responses: the time from the event they follow, ms) and the values</span>
+<span class="sd">    given in `meta` of the events. Ready-made tasks are in</span>
+<span class="sd">    :mod:`pypillometry.sim.tasks`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    name : str</span>
+<span class="sd">        name of the task</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import pypillometry as pp</span>
+<span class="sd">    &gt;&gt;&gt; sart = (pp.sim.Task("SART")</span>
+<span class="sd">    ...         .block(n=225, soa="1150 ms", conditions={"go": 8/9, "nogo": 1/9})</span>
+<span class="sd">    ...         .stimulus("digit", "visual", duration="250 ms")</span>
+<span class="sd">    ...         .stimulus("mask", "visual", at="250 ms", duration="900 ms")</span>
+<span class="sd">    ...         .response("press", after="digit", rt="lognormal(350 ms, 70 ms)",</span>
+<span class="sd">    ...                   p={"go": 0.97, "nogo": 0.3}))</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; ev, end = sart.generate(np.random.default_rng(1))</span>
+<span class="sd">    &gt;&gt;&gt; sorted(str(x) for x in set(ev["label"]))</span>
+<span class="sd">    ['digit', 'mask', 'press']</span>
+<span class="sd">    """</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"task"</span>
+    <span class="n">blocks</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">()</span>
+    <span class="n">repeat_n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">repeat_duration</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">start</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">stage</span> <span class="o">=</span> <span class="s2">"events"</span>
+
+    <span class="c1"># -- building ---------------------------------------------------------------</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_with</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">changes</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">replace</span><span class="p">(</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="o">**</span><span class="n">changes</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_current</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">blocks</span> <span class="ow">or</span> <span class="s2">"rest"</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">blocks</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"start a block with .block() first"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">blocks</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+<div class="viewcode-block" id="Task.block">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.sim.Task.html#pypillometry.sim.Task.block">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">block</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">soa</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">isi</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">conditions</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Start a block of trials.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n : int, optional</span>
+<span class="sd">            number of trials</span>
+<span class="sd">        duration : float, str or distribution, optional</span>
+<span class="sd">            duration of the block (trials start until it is over); `n`</span>
+<span class="sd">            and/or `duration` must be given</span>
+<span class="sd">        soa : float, str or distribution, optional</span>
+<span class="sd">            time from the start of one trial to the start of the next</span>
+<span class="sd">        isi : float, str or distribution, optional</span>
+<span class="sd">            time from the end of one trial (its last event, or the end of</span>
+<span class="sd">            the last stimulus) to the start of the next; default 0 if</span>
+<span class="sd">            neither `soa` nor `isi` is given (then a block with a</span>
+<span class="sd">            `duration` but no `n` needs trials that take time)</span>
+<span class="sd">        conditions : dict or list, optional</span>
+<span class="sd">            conditions of the trials with their probabilities (e.g.</span>
+<span class="sd">            ``{"go": 8/9, "nogo": 1/9}``; a list for equal probabilities)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Task</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">n</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">duration</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"a block needs n (trials) and/or a duration"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">soa</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">isi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"give soa or isi, not both"</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">spec</span> <span class="ow">in</span> <span class="p">(</span><span class="n">duration</span><span class="p">,</span> <span class="n">soa</span><span class="p">,</span> <span class="n">isi</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">spec</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">parse_dist</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">conditions</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+            <span class="n">conditions</span> <span class="o">=</span> <span class="p">{</span><span class="nb">str</span><span class="p">(</span><span class="n">c</span><span class="p">):</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">conditions</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">conditions</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">conditions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">conditions</span> <span class="o">=</span> <span class="p">{</span><span class="nb">str</span><span class="p">(</span><span class="n">c</span><span class="p">):</span> <span class="nb">float</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">conditions</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">p</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">conditions</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="ow">or</span> <span class="nb">sum</span><span class="p">(</span><span class="n">conditions</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"the probabilities of the conditions must be positive"</span><span class="p">)</span>
+        <span class="n">block</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"n"</span><span class="p">:</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">n</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">n</span><span class="p">),</span> <span class="s2">"duration"</span><span class="p">:</span> <span class="n">duration</span><span class="p">,</span> <span class="s2">"soa"</span><span class="p">:</span> <span class="n">soa</span><span class="p">,</span>
+                 <span class="s2">"isi"</span><span class="p">:</span> <span class="n">isi</span><span class="p">,</span> <span class="s2">"conditions"</span><span class="p">:</span> <span class="n">conditions</span><span class="p">,</span> <span class="s2">"events"</span><span class="p">:</span> <span class="p">[]}</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_with</span><span class="p">(</span><span class="n">blocks</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">blocks</span> <span class="o">+</span> <span class="p">(</span><span class="n">block</span><span class="p">,))</span></div>
+
+
+<div class="viewcode-block" id="Task.rest">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.sim.Task.html#pypillometry.sim.Task.rest">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rest</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">duration</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Add a pause without events.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        duration : float, str or distribution</span>
+<span class="sd">            duration of the pause</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Task</span>
+<span class="sd">        """</span>
+        <span class="n">parse_dist</span><span class="p">(</span><span class="n">duration</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_with</span><span class="p">(</span><span class="n">blocks</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">blocks</span> <span class="o">+</span> <span class="p">({</span><span class="s2">"rest"</span><span class="p">:</span> <span class="n">duration</span><span class="p">},))</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_add_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_with</span><span class="p">()</span>
+        <span class="n">block</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">_current</span><span class="p">()</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span><span class="p">[</span><span class="s2">"label"</span><span class="p">]</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">block</span><span class="p">[</span><span class="s2">"events"</span><span class="p">]]</span>
+        <span class="k">if</span> <span class="n">event</span><span class="p">[</span><span class="s2">"label"</span><span class="p">]</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"the block has an event </span><span class="si">{</span><span class="n">event</span><span class="p">[</span><span class="s1">'label'</span><span class="p">]</span><span class="si">!r}</span><span class="s2"> already"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">event</span><span class="p">[</span><span class="s2">"after"</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">event</span><span class="p">[</span><span class="s2">"after"</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"after=</span><span class="si">{</span><span class="n">event</span><span class="p">[</span><span class="s1">'after'</span><span class="p">]</span><span class="si">!r}</span><span class="s2">: no such event before it in the "</span>
+                             <span class="sa">f</span><span class="s2">"block (events: </span><span class="si">{</span><span class="n">labels</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
+        <span class="n">conditions</span> <span class="o">=</span> <span class="n">block</span><span class="p">[</span><span class="s2">"conditions"</span><span class="p">]</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">[</span><span class="s2">"p"</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">unknown</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">event</span><span class="p">[</span><span class="s2">"p"</span><span class="p">])</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">conditions</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">unknown</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"p: unknown conditions </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">unknown</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="n">event</span><span class="p">[</span><span class="s2">"p"</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="nb">str</span><span class="p">(</span><span class="n">c</span><span class="p">):</span> <span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">event</span><span class="p">[</span><span class="s2">"p"</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">event</span><span class="p">[</span><span class="s2">"p"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">event</span><span class="p">[</span><span class="s2">"p"</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">event</span><span class="p">[</span><span class="s2">"meta"</span><span class="p">]</span> <span class="ow">or</span> <span class="p">{}:</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">_COLUMNS</span> <span class="ow">or</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"onset"</span><span class="p">,</span> <span class="s2">"label"</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"meta: </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> is a column of the events already"</span><span class="p">)</span>
+        <span class="n">block</span><span class="p">[</span><span class="s2">"events"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span>
+
+<div class="viewcode-block" id="Task.stimulus">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.sim.Task.html#pypillometry.sim.Task.stimulus">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">stimulus</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">modality</span><span class="o">=</span><span class="s2">"visual"</span><span class="p">,</span> <span class="n">at</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">after</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">timeout</span><span class="o">=</span><span class="s2">"30 s"</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">luminance</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">meta</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Add a stimulus to each trial of the current block.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        label : str</span>
+<span class="sd">            label of the event</span>
+<span class="sd">        modality : str</span>
+<span class="sd">            ``"visual"`` (default), ``"auditory"`` or another modality</span>
+<span class="sd">        at : float, str or distribution</span>
+<span class="sd">            onset relative to the start of the trial, or to the event</span>
+<span class="sd">            `after` (default 0)</span>
+<span class="sd">        after : str, optional</span>
+<span class="sd">            label of an earlier event of the trial that `at` refers to</span>
+<span class="sd">        duration : float, str or distribution, optional</span>
+<span class="sd">            duration of the stimulus; ``"until response"``: until the first</span>
+<span class="sd">            response that follows it (or `timeout`)</span>
+<span class="sd">        timeout : float, str or distribution</span>
+<span class="sd">            duration of a stimulus ``"until response"`` without a response</span>
+<span class="sd">            (default 30 s)</span>
+<span class="sd">        p : float or dict</span>
+<span class="sd">            probability of the stimulus (per condition with a dict; 0 for</span>
+<span class="sd">            conditions that are not given)</span>
+<span class="sd">        luminance : float, optional</span>
+<span class="sd">            change of the luminance at the onset (for visual stimuli; used</span>
+<span class="sd">            by future pupil responses)</span>
+<span class="sd">        meta : dict, optional</span>
+<span class="sd">            further metadata, name -&gt; values: a value, a list (drawn with</span>
+<span class="sd">            equal probabilities), a dict value -&gt; probability, a dict</span>
+<span class="sd">            condition -&gt; one of these, or ``{"nback": k, "values": [...]}``</span>
+<span class="sd">            for the stimuli of an n-back task (in condition ``"target"``</span>
+<span class="sd">            the value of k trials before, otherwise another value)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Task</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">duration</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">duration</span> <span class="o">!=</span> <span class="n">UNTIL_RESPONSE</span><span class="p">:</span>
+            <span class="n">parse_dist</span><span class="p">(</span><span class="n">duration</span><span class="p">)</span>
+        <span class="n">parse_dist</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_event</span><span class="p">({</span><span class="s2">"label"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">label</span><span class="p">),</span> <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"stimulus"</span><span class="p">,</span> <span class="s2">"modality"</span><span class="p">:</span> <span class="n">modality</span><span class="p">,</span>
+                                <span class="s2">"at"</span><span class="p">:</span> <span class="n">at</span><span class="p">,</span> <span class="s2">"after"</span><span class="p">:</span> <span class="n">after</span><span class="p">,</span> <span class="s2">"duration"</span><span class="p">:</span> <span class="n">duration</span><span class="p">,</span>
+                                <span class="s2">"timeout"</span><span class="p">:</span> <span class="n">timeout</span><span class="p">,</span> <span class="s2">"p"</span><span class="p">:</span> <span class="n">p</span><span class="p">,</span> <span class="s2">"luminance"</span><span class="p">:</span> <span class="n">luminance</span><span class="p">,</span>
+                                <span class="s2">"meta"</span><span class="p">:</span> <span class="n">_meta_spec</span><span class="p">(</span><span class="n">meta</span><span class="p">)})</span></div>
+
+
+<div class="viewcode-block" id="Task.response">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.sim.Task.html#pypillometry.sim.Task.response">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">after</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rt</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">modality</span><span class="o">=</span><span class="s2">"motor"</span><span class="p">,</span> <span class="n">meta</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Add a response to each trial of the current block.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        label : str</span>
+<span class="sd">            label of the event</span>
+<span class="sd">        after : str, optional</span>
+<span class="sd">            label of the earlier event of the trial that it responds to; if</span>
+<span class="sd">            None, `rt` is relative to the start of the trial</span>
+<span class="sd">        rt : float, str or distribution</span>
+<span class="sd">            time from the event `after` (the reaction time; may be negative,</span>
+<span class="sd">            e.g. for taps that anticipate a tone)</span>
+<span class="sd">        p : float or dict</span>
+<span class="sd">            probability of the response (per condition with a dict; 0 for</span>
+<span class="sd">            conditions that are not given)</span>
+<span class="sd">        modality : str</span>
+<span class="sd">            default ``"motor"``</span>
+<span class="sd">        meta : dict, optional</span>
+<span class="sd">            further metadata (see :meth:`stimulus`)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Task</span>
+<span class="sd">        """</span>
+        <span class="n">parse_dist</span><span class="p">(</span><span class="n">rt</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_event</span><span class="p">({</span><span class="s2">"label"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">label</span><span class="p">),</span> <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"response"</span><span class="p">,</span> <span class="s2">"modality"</span><span class="p">:</span> <span class="n">modality</span><span class="p">,</span>
+                                <span class="s2">"at"</span><span class="p">:</span> <span class="n">rt</span><span class="p">,</span> <span class="s2">"after"</span><span class="p">:</span> <span class="n">after</span><span class="p">,</span> <span class="s2">"duration"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">"timeout"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                                <span class="s2">"p"</span><span class="p">:</span> <span class="n">p</span><span class="p">,</span> <span class="s2">"luminance"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">"meta"</span><span class="p">:</span> <span class="n">_meta_spec</span><span class="p">(</span><span class="n">meta</span><span class="p">)})</span></div>
+
+
+<div class="viewcode-block" id="Task.repeat">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.sim.Task.html#pypillometry.sim.Task.repeat">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">repeat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Repeat the blocks of the task.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n : int, optional</span>
+<span class="sd">            number of times the blocks are run</span>
+<span class="sd">        duration : float, str or distribution, optional</span>
+<span class="sd">            the blocks are run again until this duration is reached</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Task</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">n</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">duration</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"give n and/or duration"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">duration</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">parse_dist</span><span class="p">(</span><span class="n">duration</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_with</span><span class="p">(</span><span class="n">repeat_n</span><span class="o">=</span><span class="kc">None</span> <span class="k">if</span> <span class="n">n</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">n</span><span class="p">),</span> <span class="n">repeat_duration</span><span class="o">=</span><span class="n">duration</span><span class="p">)</span></div>
+
+
+    <span class="c1"># -- events -----------------------------------------------------------------</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">run</span><span class="p">,</span> <span class="n">rng</span><span class="p">):</span>
+        <span class="n">run</span><span class="o">.</span><span class="n">events</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">rng</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+<div class="viewcode-block" id="Task.generate">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.sim.Task.html#pypillometry.sim.Task.generate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rng</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Simulate the events of the task.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        rng : np.random.Generator</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        events : dict</span>
+<span class="sd">            column -&gt; array: ``onset`` (ms), ``label`` and the metadata</span>
+<span class="sd">            (see :class:`Task`), sorted by onset</span>
+<span class="sd">        end : float</span>
+<span class="sd">            end of the task (ms)</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="s2">"events"</span> <span class="ow">in</span> <span class="n">b</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">blocks</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"the task </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> has no blocks with events"</span><span class="p">)</span>
+        <span class="n">rows</span><span class="p">,</span> <span class="n">trial</span><span class="p">,</span> <span class="n">run</span> <span class="o">=</span> <span class="p">[],</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">parse_dist</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">)</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">rng</span><span class="p">))</span>
+        <span class="c1"># the duration of the repetitions counts from the start of the task</span>
+        <span class="n">until</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">repeat_duration</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> \
+            <span class="n">t</span> <span class="o">+</span> <span class="nb">float</span><span class="p">(</span><span class="n">parse_dist</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repeat_duration</span><span class="p">)</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">rng</span><span class="p">))</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">t</span>
+            <span class="k">for</span> <span class="n">b</span><span class="p">,</span> <span class="n">block</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blocks</span><span class="p">):</span>
+                <span class="k">if</span> <span class="s2">"rest"</span> <span class="ow">in</span> <span class="n">block</span><span class="p">:</span>
+                    <span class="n">t</span> <span class="o">+=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">parse_dist</span><span class="p">(</span><span class="n">block</span><span class="p">[</span><span class="s2">"rest"</span><span class="p">])</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">rng</span><span class="p">)),</span> <span class="mf">0.0</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">t</span><span class="p">,</span> <span class="n">trial</span> <span class="o">=</span> <span class="n">_run_block</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">b</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">trial</span><span class="p">,</span> <span class="n">rng</span><span class="p">,</span> <span class="n">rows</span><span class="p">)</span>
+            <span class="n">run</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">repeat_n</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">until</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">repeat_n</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">run</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repeat_n</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="k">if</span> <span class="n">until</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span><span class="n">t</span> <span class="o">&gt;=</span> <span class="n">until</span> <span class="ow">or</span> <span class="n">t</span> <span class="o">&lt;=</span> <span class="n">start</span><span class="p">):</span>
+                <span class="k">break</span>
+        <span class="k">return</span> <span class="n">_table</span><span class="p">(</span><span class="n">rows</span><span class="p">),</span> <span class="n">t</span></div>
+
+
+    <span class="c1"># -- display ----------------------------------------------------------------</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"Task(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2">): </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blocks</span><span class="p">)</span><span class="si">}</span><span class="s2"> block(s)"</span>
+                 <span class="o">+</span> <span class="p">(</span><span class="sa">f</span><span class="s2">", starts at </span><span class="si">{</span><span class="n">_fmt_time</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">!=</span> <span class="mi">0</span> <span class="k">else</span> <span class="s2">""</span><span class="p">)</span>
+                 <span class="o">+</span> <span class="p">(</span><span class="sa">f</span><span class="s2">", repeated </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">repeat_n</span><span class="si">}</span><span class="s2"> times"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">repeat_n</span> <span class="k">else</span> <span class="s2">""</span><span class="p">)</span>
+                 <span class="o">+</span> <span class="p">(</span><span class="sa">f</span><span class="s2">", repeated for </span><span class="si">{</span><span class="n">_fmt_time</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repeat_duration</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">repeat_duration</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">""</span><span class="p">)]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">block</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blocks</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">. </span><span class="si">{</span><span class="n">_block_text</span><span class="p">(</span><span class="n">block</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">block</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"events"</span><span class="p">,</span> <span class="p">[]):</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"     - </span><span class="si">{</span><span class="n">_event_text</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Task.plot">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.sim.Task.html#pypillometry.sim.Task.plot">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Schematic of the trials of each block of the task.</span>
+
+<span class="sd">        One panel per block with events: one lane per event, stimuli as</span>
+<span class="sd">        bars (coloured by modality), the onsets that vary as a band from</span>
+<span class="sd">        the 10% to the 90% quantile around the mean, the spacing of the</span>
+<span class="sd">        trials and the probabilities of the events.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        axes : sequence of Axes, optional</span>
+<span class="sd">            axes to draw on (one per block with events); default: a new</span>
+<span class="sd">            figure</span>
+<span class="sd">        figsize : tuple, optional</span>
+<span class="sd">            size of the new figure</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        matplotlib Figure</span>
+<span class="sd">        """</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">..plot._axes</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_axes</span>
+        <span class="n">blocks</span> <span class="o">=</span> <span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blocks</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="s2">"events"</span> <span class="ow">in</span> <span class="n">b</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">figsize</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="mf">0.9</span> <span class="o">+</span> <span class="mf">0.45</span> <span class="o">*</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="p">[</span><span class="s2">"events"</span><span class="p">]),</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">blocks</span><span class="p">))</span>
+        <span class="n">own</span> <span class="o">=</span> <span class="n">axes</span> <span class="ow">is</span> <span class="kc">None</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">get_axes</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">blocks</span><span class="p">),</span> <span class="n">what</span><span class="o">=</span><span class="s2">"block"</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">block</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="n">blocks</span><span class="p">):</span>
+            <span class="n">_plot_block</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">block</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: block </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> – </span><span class="si">{</span><span class="n">_block_text</span><span class="p">(</span><span class="n">block</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">own</span><span class="p">:</span>
+            <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">fig</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_repr_html_</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">'&lt;div style="font-family:system-ui, sans-serif; border:2px solid #f0a04b; '</span>
+                 <span class="sa">f</span><span class="s1">'background:#fff7ec; border-radius:6px; padding:12px; max-width:min(640px, 60vw);"&gt;'</span>
+                 <span class="sa">f</span><span class="s1">'&lt;h3 style="margin-top:0;"&gt;Task — &lt;span style="color:#555;"&gt;</span><span class="si">{</span><span class="n">_esc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="si">}</span><span class="s1">'</span>
+                 <span class="sa">f</span><span class="s1">'&lt;/span&gt;&lt;/h3&gt;'</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">repeat_n</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">repeat_duration</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">rep</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">repeat_n</span><span class="si">}</span><span class="s2"> times"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">repeat_n</span> <span class="k">else</span>
+                   <span class="sa">f</span><span class="s2">"for </span><span class="si">{</span><span class="n">_fmt_time</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repeat_duration</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">'&lt;div style="margin-bottom:6px;"&gt;blocks repeated </span><span class="si">{</span><span class="n">rep</span><span class="si">}</span><span class="s1">&lt;/div&gt;'</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">block</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blocks</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">'&lt;div style="font-weight:600; margin-top:6px;"&gt;</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">. '</span>
+                         <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">_esc</span><span class="p">(</span><span class="n">_block_text</span><span class="p">(</span><span class="n">block</span><span class="p">))</span><span class="si">}</span><span class="s1">&lt;/div&gt;'</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">block</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"events"</span><span class="p">):</span>
+                <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_block_svg</span><span class="p">(</span><span class="n">block</span><span class="p">))</span>
+        <span class="n">legend</span> <span class="o">=</span> <span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s1">'&lt;span style="color:</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s1">;"&gt;■&lt;/span&gt; </span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s1">'</span>
+                          <span class="k">for</span> <span class="n">m</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">_MODALITY_COLORS</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+        <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">'&lt;div style="font-size:0.8em; color:#666; margin-top:4px;"&gt;</span><span class="si">{</span><span class="n">legend</span><span class="si">}</span><span class="s1">; '</span>
+                     <span class="sa">f</span><span class="s1">'bands: 10–90% of the onsets&lt;/div&gt;&lt;/div&gt;'</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">""</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># -- helpers: generation --------------------------------------------------------</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_meta_spec</span><span class="p">(</span><span class="n">meta</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""metadata specification with string keys for weighted values"""</span>
+    <span class="k">if</span> <span class="n">meta</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">spec</span> <span class="ow">in</span> <span class="n">meta</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">out</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">name</span><span class="p">)]</span> <span class="o">=</span> <span class="n">_plain_spec</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">out</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_plain_spec</span><span class="p">(</span><span class="n">spec</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">"nback"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">spec</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{</span><span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">):</span> <span class="p">(</span><span class="n">_plain_spec</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="k">else</span> <span class="n">v</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">spec</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"nback"</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">spec</span><span class="p">[</span><span class="s2">"nback"</span><span class="p">]),</span> <span class="s2">"values"</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">spec</span><span class="p">[</span><span class="s2">"values"</span><span class="p">])}</span>
+    <span class="k">return</span> <span class="n">spec</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_choose</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">rng</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""one value from a value, list or dict value -&gt; probability"""</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="n">spec</span><span class="p">[</span><span class="n">rng</span><span class="o">.</span><span class="n">integers</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">spec</span><span class="p">))]</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">spec</span><span class="p">[</span><span class="n">v</span><span class="p">])</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">values</span><span class="p">[</span><span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">),</span> <span class="n">p</span><span class="o">=</span><span class="n">p</span> <span class="o">/</span> <span class="n">p</span><span class="o">.</span><span class="n">sum</span><span class="p">())]</span>
+    <span class="k">return</span> <span class="n">spec</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_meta_value</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">condition</span><span class="p">,</span> <span class="n">conditions</span><span class="p">,</span> <span class="n">rng</span><span class="p">,</span> <span class="n">history</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">"nback"</span> <span class="ow">in</span> <span class="n">spec</span><span class="p">:</span>
+        <span class="n">k</span><span class="p">,</span> <span class="n">values</span> <span class="o">=</span> <span class="n">spec</span><span class="p">[</span><span class="s2">"nback"</span><span class="p">],</span> <span class="nb">list</span><span class="p">(</span><span class="n">spec</span><span class="p">[</span><span class="s2">"values"</span><span class="p">])</span>
+        <span class="n">hist</span> <span class="o">=</span> <span class="n">history</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="k">if</span> <span class="n">condition</span> <span class="o">==</span> <span class="s2">"target"</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">hist</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">k</span><span class="p">:</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">hist</span><span class="p">[</span><span class="o">-</span><span class="n">k</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">others</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">values</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hist</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">k</span> <span class="ow">or</span> <span class="n">x</span> <span class="o">!=</span> <span class="n">hist</span><span class="p">[</span><span class="o">-</span><span class="n">k</span><span class="p">]]</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">others</span><span class="p">[</span><span class="n">rng</span><span class="o">.</span><span class="n">integers</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">others</span><span class="p">))]</span>
+        <span class="n">hist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">v</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">conditions</span> <span class="ow">and</span> <span class="nb">set</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">(</span><span class="n">conditions</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">condition</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">spec</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">spec</span> <span class="o">=</span> <span class="n">spec</span><span class="p">[</span><span class="n">condition</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">_choose</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">rng</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_run_block</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">trial</span><span class="p">,</span> <span class="n">rng</span><span class="p">,</span> <span class="n">rows</span><span class="p">):</span>
+    <span class="n">conditions</span> <span class="o">=</span> <span class="n">block</span><span class="p">[</span><span class="s2">"conditions"</span><span class="p">]</span>
+    <span class="n">names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">conditions</span><span class="p">)</span> <span class="k">if</span> <span class="n">conditions</span> <span class="k">else</span> <span class="p">[</span><span class="s2">""</span><span class="p">]</span>
+    <span class="n">probs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">conditions</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">names</span><span class="p">])</span> <span class="k">if</span> <span class="n">conditions</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">probs</span> <span class="o">=</span> <span class="n">probs</span> <span class="o">/</span> <span class="n">probs</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">nback</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">spec</span><span class="p">[</span><span class="s2">"nback"</span><span class="p">]</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">block</span><span class="p">[</span><span class="s2">"events"</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">spec</span> <span class="ow">in</span> <span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="s2">"meta"</span><span class="p">]</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">"nback"</span> <span class="ow">in</span> <span class="n">spec</span><span class="p">}</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">block</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> \
+        <span class="n">t</span> <span class="o">+</span> <span class="nb">float</span><span class="p">(</span><span class="n">parse_dist</span><span class="p">(</span><span class="n">block</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">])</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">rng</span><span class="p">))</span>
+    <span class="n">history</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">onset</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="n">t</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">block</span><span class="p">[</span><span class="s2">"n"</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">k</span> <span class="o">&lt;</span> <span class="n">block</span><span class="p">[</span><span class="s2">"n"</span><span class="p">])</span> <span class="ow">and</span> <span class="p">(</span><span class="n">end</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">onset</span> <span class="o">&lt;</span> <span class="n">end</span><span class="p">):</span>
+        <span class="n">condition</span> <span class="o">=</span> <span class="n">names</span><span class="p">[</span><span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">),</span> <span class="n">p</span><span class="o">=</span><span class="n">probs</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="n">condition</span> <span class="o">==</span> <span class="s2">"target"</span> <span class="ow">and</span> <span class="n">nback</span> <span class="ow">and</span> <span class="n">k</span> <span class="o">&lt;</span> <span class="nb">max</span><span class="p">(</span><span class="n">nback</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
+            <span class="c1"># no target before there are enough stimuli</span>
+            <span class="n">others</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">names</span> <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="s2">"target"</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">others</span><span class="p">:</span>
+                <span class="n">condition</span> <span class="o">=</span> <span class="n">others</span><span class="p">[</span><span class="n">rng</span><span class="o">.</span><span class="n">integers</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">others</span><span class="p">))]</span>
+        <span class="n">occurred</span><span class="p">,</span> <span class="n">trial_rows</span><span class="p">,</span> <span class="n">trial_start</span> <span class="o">=</span> <span class="p">{},</span> <span class="p">[],</span> <span class="n">onset</span>
+        <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">block</span><span class="p">[</span><span class="s2">"events"</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="n">_p</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="s2">"p"</span><span class="p">],</span> <span class="n">condition</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="n">ref</span> <span class="o">=</span> <span class="n">onset</span> <span class="k">if</span> <span class="n">e</span><span class="p">[</span><span class="s2">"after"</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">occurred</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="s2">"after"</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">ref</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">at</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">parse_dist</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="s2">"at"</span><span class="p">])</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">rng</span><span class="p">))</span>
+            <span class="n">row</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"onset"</span><span class="p">:</span> <span class="n">ref</span> <span class="o">+</span> <span class="n">at</span><span class="p">,</span> <span class="s2">"label"</span><span class="p">:</span> <span class="n">e</span><span class="p">[</span><span class="s2">"label"</span><span class="p">],</span> <span class="s2">"kind"</span><span class="p">:</span> <span class="n">e</span><span class="p">[</span><span class="s2">"kind"</span><span class="p">],</span>
+                   <span class="s2">"modality"</span><span class="p">:</span> <span class="n">e</span><span class="p">[</span><span class="s2">"modality"</span><span class="p">],</span> <span class="s2">"trial"</span><span class="p">:</span> <span class="n">trial</span><span class="p">,</span> <span class="s2">"block"</span><span class="p">:</span> <span class="n">b</span><span class="p">,</span>
+                   <span class="s2">"condition"</span><span class="p">:</span> <span class="n">condition</span><span class="p">,</span> <span class="s2">"duration"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+                   <span class="s2">"luminance"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> <span class="k">if</span> <span class="n">e</span><span class="p">[</span><span class="s2">"luminance"</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="s2">"luminance"</span><span class="p">]),</span>
+                   <span class="s2">"rt"</span><span class="p">:</span> <span class="n">at</span> <span class="k">if</span> <span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="s2">"kind"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"response"</span> <span class="ow">and</span> <span class="n">e</span><span class="p">[</span><span class="s2">"after"</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">}</span>
+            <span class="k">if</span> <span class="n">e</span><span class="p">[</span><span class="s2">"kind"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"stimulus"</span> <span class="ow">and</span> <span class="n">e</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> \
+                    <span class="ow">and</span> <span class="n">e</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">]</span> <span class="o">!=</span> <span class="n">UNTIL_RESPONSE</span><span class="p">:</span>
+                <span class="n">row</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">parse_dist</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">])</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">rng</span><span class="p">)),</span> <span class="mf">0.0</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">spec</span> <span class="ow">in</span> <span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="s2">"meta"</span><span class="p">]</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">row</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">_meta_value</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">condition</span><span class="p">,</span> <span class="n">conditions</span><span class="p">,</span> <span class="n">rng</span><span class="p">,</span> <span class="n">history</span><span class="p">)</span>
+            <span class="n">occurred</span><span class="p">[</span><span class="n">e</span><span class="p">[</span><span class="s2">"label"</span><span class="p">]]</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s2">"onset"</span><span class="p">]</span>
+            <span class="n">trial_rows</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">e</span><span class="p">,</span> <span class="n">row</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">e</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">trial_rows</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">e</span><span class="p">[</span><span class="s2">"kind"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"stimulus"</span> <span class="ow">and</span> <span class="n">e</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">]</span> <span class="o">==</span> <span class="n">UNTIL_RESPONSE</span><span class="p">:</span>
+                <span class="n">resp</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="s2">"onset"</span><span class="p">]</span> <span class="k">for</span> <span class="n">f</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">trial_rows</span>
+                        <span class="k">if</span> <span class="n">f</span><span class="p">[</span><span class="s2">"kind"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"response"</span> <span class="ow">and</span> <span class="n">f</span><span class="p">[</span><span class="s2">"after"</span><span class="p">]</span> <span class="o">==</span> <span class="n">e</span><span class="p">[</span><span class="s2">"label"</span><span class="p">]]</span>
+                <span class="n">row</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">resp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">row</span><span class="p">[</span><span class="s2">"onset"</span><span class="p">])</span> <span class="k">if</span> <span class="n">resp</span> <span class="k">else</span> \
+                    <span class="nb">float</span><span class="p">(</span><span class="n">parse_dist</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="s2">"timeout"</span><span class="p">])</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">rng</span><span class="p">))</span>
+        <span class="n">ends</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="s2">"onset"</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="mi">0</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">])</span> <span class="k">else</span> <span class="n">r</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">])</span>
+                <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">trial_rows</span><span class="p">]</span>
+        <span class="n">trial_end</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">ends</span> <span class="o">+</span> <span class="p">[</span><span class="n">onset</span><span class="p">])</span>
+        <span class="n">rows</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">r</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">trial_rows</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">block</span><span class="p">[</span><span class="s2">"soa"</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">onset</span> <span class="o">=</span> <span class="n">onset</span> <span class="o">+</span> <span class="nb">max</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">parse_dist</span><span class="p">(</span><span class="n">block</span><span class="p">[</span><span class="s2">"soa"</span><span class="p">])</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">rng</span><span class="p">)),</span> <span class="mf">0.0</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">gap</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="k">if</span> <span class="n">block</span><span class="p">[</span><span class="s2">"isi"</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">parse_dist</span><span class="p">(</span><span class="n">block</span><span class="p">[</span><span class="s2">"isi"</span><span class="p">])</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">rng</span><span class="p">))</span>
+            <span class="n">onset</span> <span class="o">=</span> <span class="n">trial_end</span> <span class="o">+</span> <span class="nb">max</span><span class="p">(</span><span class="n">gap</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+        <span class="n">trial</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">k</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">block</span><span class="p">[</span><span class="s2">"n"</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">onset</span> <span class="o">&lt;=</span> <span class="n">trial_start</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"block </span><span class="si">{</span><span class="n">b</span><span class="si">}</span><span class="s2">: a trial took no time, so the block would never "</span>
+                             <span class="s2">"end; give soa or isi (or n)"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">onset</span><span class="p">,</span> <span class="n">trial</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_number</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""numbers given as strings (e.g., keys of weighted metadata) as numbers"""</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">v</span>
+    <span class="k">return</span> <span class="n">v</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_table</span><span class="p">(</span><span class="n">rows</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""dict of columns from the event rows, sorted by onset"""</span>
+    <span class="n">rows</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="n">r</span><span class="p">[</span><span class="s2">"onset"</span><span class="p">])</span>
+    <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"onset"</span><span class="p">,</span> <span class="s2">"label"</span><span class="p">,</span> <span class="o">*</span><span class="n">_COLUMNS</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">r</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
+                <span class="n">names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="p">[</span><span class="n">_number</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">))</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">))</span> <span class="ow">or</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">):</span>
+            <span class="n">out</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">out</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="s2">""</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"trial"</span><span class="p">,</span> <span class="s2">"block"</span><span class="p">):</span>
+        <span class="n">out</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">out</span>
+
+
+<span class="c1"># -- helpers: display -----------------------------------------------------------</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_esc</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"&amp;"</span><span class="p">,</span> <span class="s2">"&amp;amp;"</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"&lt;"</span><span class="p">,</span> <span class="s2">"&amp;lt;"</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"&gt;"</span><span class="p">,</span> <span class="s2">"&amp;gt;"</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_block_text</span><span class="p">(</span><span class="n">block</span><span class="p">):</span>
+    <span class="k">if</span> <span class="s2">"rest"</span> <span class="ow">in</span> <span class="n">block</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"rest </span><span class="si">{</span><span class="n">_fmt_time</span><span class="p">(</span><span class="n">block</span><span class="p">[</span><span class="s1">'rest'</span><span class="p">])</span><span class="si">}</span><span class="s2">"</span>
+    <span class="n">parts</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">block</span><span class="p">[</span><span class="s2">"n"</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">block</span><span class="p">[</span><span class="s1">'n'</span><span class="p">]</span><span class="si">}</span><span class="s2"> trial</span><span class="si">{</span><span class="s1">'s'</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">block</span><span class="p">[</span><span class="s1">'n'</span><span class="p">]</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">''</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">block</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"for </span><span class="si">{</span><span class="n">_fmt_time</span><span class="p">(</span><span class="n">block</span><span class="p">[</span><span class="s1">'duration'</span><span class="p">])</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">block</span><span class="p">[</span><span class="s2">"soa"</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"SOA </span><span class="si">{</span><span class="n">_fmt_time</span><span class="p">(</span><span class="n">block</span><span class="p">[</span><span class="s1">'soa'</span><span class="p">])</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">block</span><span class="p">[</span><span class="s2">"isi"</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"ISI </span><span class="si">{</span><span class="n">_fmt_time</span><span class="p">(</span><span class="n">block</span><span class="p">[</span><span class="s1">'isi'</span><span class="p">])</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">block</span><span class="p">[</span><span class="s2">"conditions"</span><span class="p">]:</span>
+        <span class="n">total</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">block</span><span class="p">[</span><span class="s2">"conditions"</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">" / "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">p</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">total</span><span class="si">:</span><span class="s2">.0%</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">block</span><span class="p">[</span><span class="s2">"conditions"</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
+    <span class="k">return</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_event_text</span><span class="p">(</span><span class="n">e</span><span class="p">):</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="p">[</span><span class="s1">'kind'</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">e</span><span class="p">[</span><span class="s1">'label'</span><span class="p">]</span><span class="si">!r}</span><span class="s2"> (</span><span class="si">{</span><span class="n">e</span><span class="p">[</span><span class="s1">'modality'</span><span class="p">]</span><span class="si">}</span><span class="s2">)"</span>
+    <span class="n">out</span> <span class="o">+=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">" after </span><span class="si">{</span><span class="n">e</span><span class="p">[</span><span class="s1">'after'</span><span class="p">]</span><span class="si">!r}</span><span class="s2">"</span> <span class="k">if</span> <span class="n">e</span><span class="p">[</span><span class="s2">"after"</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">""</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">e</span><span class="p">[</span><span class="s2">"kind"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"response"</span> <span class="ow">and</span> <span class="n">e</span><span class="p">[</span><span class="s2">"after"</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">", rt </span><span class="si">{</span><span class="n">_fmt_time</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="s1">'at'</span><span class="p">])</span><span class="si">}</span><span class="s2">"</span>
+    <span class="k">elif</span> <span class="n">parse_dist</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="s2">"at"</span><span class="p">])</span><span class="o">.</span><span class="n">mean</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">parse_dist</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="s2">"at"</span><span class="p">])</span><span class="o">.</span><span class="n">kind</span> <span class="o">!=</span> <span class="s2">"fixed"</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">", at </span><span class="si">{</span><span class="n">_fmt_time</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="s1">'at'</span><span class="p">])</span><span class="si">}</span><span class="s2">"</span>
+    <span class="k">if</span> <span class="n">e</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">", </span><span class="si">{</span><span class="n">e</span><span class="p">[</span><span class="s1">'duration'</span><span class="p">]</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">e</span><span class="p">[</span><span class="s1">'duration'</span><span class="p">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">UNTIL_RESPONSE</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="n">_fmt_time</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="s1">'duration'</span><span class="p">])</span><span class="si">}</span><span class="s2">"</span>
+    <span class="k">if</span> <span class="n">e</span><span class="p">[</span><span class="s2">"p"</span><span class="p">]</span> <span class="o">!=</span> <span class="mf">1.0</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">", p </span><span class="si">{</span><span class="n">_fmt_p</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="s1">'p'</span><span class="p">])</span><span class="si">}</span><span class="s2">"</span>
+    <span class="k">if</span> <span class="n">e</span><span class="p">[</span><span class="s2">"luminance"</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">", luminance </span><span class="si">{</span><span class="n">e</span><span class="p">[</span><span class="s1">'luminance'</span><span class="p">]</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2">"</span>
+    <span class="k">if</span> <span class="n">e</span><span class="p">[</span><span class="s2">"meta"</span><span class="p">]:</span>
+        <span class="n">out</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">", meta </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="s1">'meta'</span><span class="p">])</span><span class="si">}</span><span class="s2">"</span>
+    <span class="k">return</span> <span class="n">out</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_layout</span><span class="p">(</span><span class="n">block</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""nominal onsets of the events of a trial: label -&gt; (lo, mean, hi, end)"""</span>
+    <span class="n">pos</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">block</span><span class="p">[</span><span class="s2">"events"</span><span class="p">]:</span>
+        <span class="n">ref</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span> <span class="k">if</span> <span class="n">e</span><span class="p">[</span><span class="s2">"after"</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">pos</span><span class="p">[</span><span class="n">e</span><span class="p">[</span><span class="s2">"after"</span><span class="p">]][:</span><span class="mi">3</span><span class="p">]</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">parse_dist</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="s2">"at"</span><span class="p">])</span>
+        <span class="n">lo</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">hi</span> <span class="o">=</span> <span class="n">ref</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">d</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="mf">0.1</span><span class="p">),</span> <span class="n">ref</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">d</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">ref</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">d</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="mf">0.9</span><span class="p">)</span>
+        <span class="n">pos</span><span class="p">[</span><span class="n">e</span><span class="p">[</span><span class="s2">"label"</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">hi</span><span class="p">,</span> <span class="n">mean</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">block</span><span class="p">[</span><span class="s2">"events"</span><span class="p">]:</span>
+        <span class="n">lo</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">hi</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">pos</span><span class="p">[</span><span class="n">e</span><span class="p">[</span><span class="s2">"label"</span><span class="p">]]</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">]</span> <span class="o">==</span> <span class="n">UNTIL_RESPONSE</span><span class="p">:</span>
+            <span class="n">resp</span> <span class="o">=</span> <span class="p">[</span><span class="n">pos</span><span class="p">[</span><span class="n">f</span><span class="p">[</span><span class="s2">"label"</span><span class="p">]][</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">block</span><span class="p">[</span><span class="s2">"events"</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">f</span><span class="p">[</span><span class="s2">"kind"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"response"</span> <span class="ow">and</span> <span class="n">f</span><span class="p">[</span><span class="s2">"after"</span><span class="p">]</span> <span class="o">==</span> <span class="n">e</span><span class="p">[</span><span class="s2">"label"</span><span class="p">]]</span>
+            <span class="n">end</span> <span class="o">=</span> <span class="n">resp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">resp</span> <span class="k">else</span> <span class="n">mean</span> <span class="o">+</span> <span class="n">parse_dist</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="s2">"timeout"</span><span class="p">])</span><span class="o">.</span><span class="n">mean</span>
+        <span class="k">elif</span> <span class="n">e</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">end</span> <span class="o">=</span> <span class="n">mean</span> <span class="o">+</span> <span class="n">parse_dist</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">])</span><span class="o">.</span><span class="n">mean</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">end</span> <span class="o">=</span> <span class="n">mean</span>
+        <span class="n">pos</span><span class="p">[</span><span class="n">e</span><span class="p">[</span><span class="s2">"label"</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">hi</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">pos</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extent</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">pos</span><span class="p">):</span>
+    <span class="n">lo</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">*</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">pos</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+    <span class="n">hi</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">*</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">pos</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+    <span class="k">if</span> <span class="n">block</span><span class="p">[</span><span class="s2">"soa"</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">hi</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">hi</span><span class="p">,</span> <span class="n">parse_dist</span><span class="p">(</span><span class="n">block</span><span class="p">[</span><span class="s2">"soa"</span><span class="p">])</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">hi</span> <span class="o">&lt;=</span> <span class="n">lo</span><span class="p">:</span>
+        <span class="n">hi</span> <span class="o">=</span> <span class="n">lo</span> <span class="o">+</span> <span class="mf">1000.0</span>
+    <span class="k">return</span> <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span> <span class="o">+</span> <span class="mf">0.05</span> <span class="o">*</span> <span class="p">(</span><span class="n">hi</span> <span class="o">-</span> <span class="n">lo</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_plot_block</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">block</span><span class="p">,</span> <span class="n">title</span><span class="p">):</span>
+    <span class="n">events</span> <span class="o">=</span> <span class="n">block</span><span class="p">[</span><span class="s2">"events"</span><span class="p">]</span>
+    <span class="n">pos</span> <span class="o">=</span> <span class="n">_layout</span><span class="p">(</span><span class="n">block</span><span class="p">)</span>
+    <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span> <span class="o">=</span> <span class="n">_extent</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">pos</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">events</span><span class="p">):</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">events</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">k</span>
+        <span class="n">elo</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">ehi</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">pos</span><span class="p">[</span><span class="n">e</span><span class="p">[</span><span class="s2">"label"</span><span class="p">]]</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">_color</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="s2">"modality"</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">ehi</span> <span class="o">&gt;</span> <span class="n">elo</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">fill_between</span><span class="p">([</span><span class="n">elo</span><span class="p">,</span> <span class="n">ehi</span><span class="p">],</span> <span class="n">y</span> <span class="o">-</span> <span class="mf">0.3</span><span class="p">,</span> <span class="n">y</span> <span class="o">+</span> <span class="mf">0.3</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">c</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">[</span><span class="s2">"kind"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"stimulus"</span> <span class="ow">and</span> <span class="n">end</span> <span class="o">&gt;</span> <span class="n">mean</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">fill_between</span><span class="p">([</span><span class="n">mean</span><span class="p">,</span> <span class="n">end</span><span class="p">],</span> <span class="n">y</span> <span class="o">-</span> <span class="mf">0.25</span><span class="p">,</span> <span class="n">y</span> <span class="o">+</span> <span class="mf">0.25</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">c</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                            <span class="n">hatch</span><span class="o">=</span><span class="s2">"//"</span> <span class="k">if</span> <span class="n">e</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">]</span> <span class="o">==</span> <span class="n">UNTIL_RESPONSE</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="n">mean</span><span class="p">],</span> <span class="p">[</span><span class="n">y</span><span class="p">],</span> <span class="n">marker</span><span class="o">=</span><span class="s2">"|"</span> <span class="k">if</span> <span class="n">e</span><span class="p">[</span><span class="s2">"kind"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"stimulus"</span> <span class="k">else</span> <span class="s2">"v"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">c</span><span class="p">,</span>
+                <span class="n">markersize</span><span class="o">=</span><span class="mi">14</span> <span class="k">if</span> <span class="n">e</span><span class="p">[</span><span class="s2">"kind"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"stimulus"</span> <span class="k">else</span> <span class="mi">9</span><span class="p">,</span> <span class="n">mew</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">note</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="p">[</span><span class="s1">'label'</span><span class="p">]</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">e</span><span class="p">[</span><span class="s1">'modality'</span><span class="p">]</span><span class="si">}</span><span class="s2">)"</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">[</span><span class="s2">"p"</span><span class="p">]</span> <span class="o">!=</span> <span class="mf">1.0</span><span class="p">:</span>
+            <span class="n">note</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"  p </span><span class="si">{</span><span class="n">_fmt_p</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="s1">'p'</span><span class="p">])</span><span class="si">}</span><span class="s2">"</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">hi</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="s2">"  "</span> <span class="o">+</span> <span class="n">note</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s2">"center"</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">block</span><span class="p">[</span><span class="s2">"soa"</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">nxt</span> <span class="o">=</span> <span class="n">parse_dist</span><span class="p">(</span><span class="n">block</span><span class="p">[</span><span class="s2">"soa"</span><span class="p">])</span><span class="o">.</span><span class="n">mean</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">nxt</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"0.5"</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">"--"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">nxt</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">events</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.4</span><span class="p">,</span> <span class="s2">" next trial"</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"0.4"</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"0.7"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="n">hi</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="o">-</span><span class="mf">0.7</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">events</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.3</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"time in the trial (ms)"</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s2">"left"</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">side</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"left"</span><span class="p">,</span> <span class="s2">"right"</span><span class="p">,</span> <span class="s2">"top"</span><span class="p">):</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="n">side</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_block_svg</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">520</span><span class="p">,</span> <span class="n">lane</span><span class="o">=</span><span class="mi">18</span><span class="p">):</span>
+    <span class="n">events</span> <span class="o">=</span> <span class="n">block</span><span class="p">[</span><span class="s2">"events"</span><span class="p">]</span>
+    <span class="n">pos</span> <span class="o">=</span> <span class="n">_layout</span><span class="p">(</span><span class="n">block</span><span class="p">)</span>
+    <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span> <span class="o">=</span> <span class="n">_extent</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">pos</span><span class="p">)</span>
+    <span class="n">label_w</span><span class="p">,</span> <span class="n">pad</span> <span class="o">=</span> <span class="mi">150</span><span class="p">,</span> <span class="mi">8</span>
+    <span class="n">plot_w</span> <span class="o">=</span> <span class="n">width</span> <span class="o">-</span> <span class="n">label_w</span> <span class="o">-</span> <span class="n">pad</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">lane</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">events</span><span class="p">)</span> <span class="o">+</span> <span class="mi">22</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">x</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">pad</span> <span class="o">+</span> <span class="p">(</span><span class="n">t</span> <span class="o">-</span> <span class="n">lo</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">hi</span> <span class="o">-</span> <span class="n">lo</span><span class="p">)</span> <span class="o">*</span> <span class="n">plot_w</span>
+
+    <span class="n">out</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">'&lt;svg width="</span><span class="si">{</span><span class="n">width</span><span class="si">}</span><span class="s1">" height="</span><span class="si">{</span><span class="n">h</span><span class="si">}</span><span class="s1">" xmlns="http://www.w3.org/2000/svg" '</span>
+           <span class="sa">f</span><span class="s1">'style="display:block; font-size:11px; font-family:system-ui, sans-serif;"&gt;'</span><span class="p">]</span>
+    <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">'&lt;line x1="</span><span class="si">{</span><span class="n">x</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">" y1="0" x2="</span><span class="si">{</span><span class="n">x</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">" y2="</span><span class="si">{</span><span class="n">h</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">18</span><span class="si">}</span><span class="s1">" stroke="#bbb"/&gt;'</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">block</span><span class="p">[</span><span class="s2">"soa"</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">xs</span> <span class="o">=</span> <span class="n">x</span><span class="p">(</span><span class="n">parse_dist</span><span class="p">(</span><span class="n">block</span><span class="p">[</span><span class="s2">"soa"</span><span class="p">])</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">'&lt;line x1="</span><span class="si">{</span><span class="n">xs</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">" y1="0" x2="</span><span class="si">{</span><span class="n">xs</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">" y2="</span><span class="si">{</span><span class="n">h</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">18</span><span class="si">}</span><span class="s1">" stroke="#888" '</span>
+                   <span class="sa">f</span><span class="s1">'stroke-dasharray="4,3"/&gt;'</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">events</span><span class="p">):</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">k</span> <span class="o">*</span> <span class="n">lane</span> <span class="o">+</span> <span class="mi">4</span>
+        <span class="n">elo</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">ehi</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">pos</span><span class="p">[</span><span class="n">e</span><span class="p">[</span><span class="s2">"label"</span><span class="p">]]</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">_color</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="s2">"modality"</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">ehi</span> <span class="o">&gt;</span> <span class="n">elo</span><span class="p">:</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">'&lt;rect x="</span><span class="si">{</span><span class="n">x</span><span class="p">(</span><span class="n">elo</span><span class="p">)</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">" y="</span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s1">" width="</span><span class="si">{</span><span class="n">x</span><span class="p">(</span><span class="n">ehi</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">x</span><span class="p">(</span><span class="n">elo</span><span class="p">)</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">" '</span>
+                       <span class="sa">f</span><span class="s1">'height="</span><span class="si">{</span><span class="n">lane</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">6</span><span class="si">}</span><span class="s1">" fill="</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s1">" opacity="0.2"/&gt;'</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">[</span><span class="s2">"kind"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"stimulus"</span> <span class="ow">and</span> <span class="n">end</span> <span class="o">&gt;</span> <span class="n">mean</span><span class="p">:</span>
+            <span class="n">dash</span> <span class="o">=</span> <span class="s1">' stroke="#333" stroke-dasharray="2,2"'</span> <span class="k">if</span> <span class="n">e</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">]</span> <span class="o">==</span> <span class="n">UNTIL_RESPONSE</span> <span class="k">else</span> <span class="s2">""</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">'&lt;rect x="</span><span class="si">{</span><span class="n">x</span><span class="p">(</span><span class="n">mean</span><span class="p">)</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">" y="</span><span class="si">{</span><span class="n">y</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="si">}</span><span class="s1">" width="</span><span class="si">{</span><span class="nb">max</span><span class="p">(</span><span class="n">x</span><span class="p">(</span><span class="n">end</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">x</span><span class="p">(</span><span class="n">mean</span><span class="p">),</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">" '</span>
+                       <span class="sa">f</span><span class="s1">'height="</span><span class="si">{</span><span class="n">lane</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">10</span><span class="si">}</span><span class="s1">" fill="</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s1">" opacity="0.85"</span><span class="si">{</span><span class="n">dash</span><span class="si">}</span><span class="s1">/&gt;'</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">[</span><span class="s2">"kind"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"response"</span><span class="p">:</span>
+            <span class="n">xm</span> <span class="o">=</span> <span class="n">x</span><span class="p">(</span><span class="n">mean</span><span class="p">)</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">'&lt;polygon points="</span><span class="si">{</span><span class="n">xm</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">5</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">,</span><span class="si">{</span><span class="n">y</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">xm</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">5</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">,</span><span class="si">{</span><span class="n">y</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">xm</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">,'</span>
+                       <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">y</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">lane</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">7</span><span class="si">}</span><span class="s1">" fill="</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s1">"/&gt;'</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">'&lt;line x1="</span><span class="si">{</span><span class="n">x</span><span class="p">(</span><span class="n">mean</span><span class="p">)</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">" y1="</span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s1">" x2="</span><span class="si">{</span><span class="n">x</span><span class="p">(</span><span class="n">mean</span><span class="p">)</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">" '</span>
+                       <span class="sa">f</span><span class="s1">'y2="</span><span class="si">{</span><span class="n">y</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">lane</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">6</span><span class="si">}</span><span class="s1">" stroke="</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s1">" stroke-width="2"/&gt;'</span><span class="p">)</span>
+        <span class="n">note</span> <span class="o">=</span> <span class="n">_esc</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="s2">"label"</span><span class="p">])</span> <span class="o">+</span> <span class="p">(</span><span class="sa">f</span><span class="s2">" · p </span><span class="si">{</span><span class="n">_esc</span><span class="p">(</span><span class="n">_fmt_p</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="s1">'p'</span><span class="p">]))</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="n">e</span><span class="p">[</span><span class="s2">"p"</span><span class="p">]</span> <span class="o">!=</span> <span class="mf">1.0</span> <span class="k">else</span> <span class="s2">""</span><span class="p">)</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">'&lt;text x="</span><span class="si">{</span><span class="n">pad</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">plot_w</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">6</span><span class="si">}</span><span class="s1">" y="</span><span class="si">{</span><span class="n">y</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">lane</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">8</span><span class="si">}</span><span class="s1">" fill="#333"&gt;</span><span class="si">{</span><span class="n">note</span><span class="si">}</span><span class="s1">&lt;/text&gt;'</span><span class="p">)</span>
+    <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">'&lt;text x="</span><span class="si">{</span><span class="n">x</span><span class="p">(</span><span class="n">lo</span><span class="p">)</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">" y="</span><span class="si">{</span><span class="n">h</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">4</span><span class="si">}</span><span class="s1">" fill="#666"&gt;</span><span class="si">{</span><span class="n">lo</span><span class="si">:</span><span class="s1">.0f</span><span class="si">}</span><span class="s1"> ms&lt;/text&gt;'</span><span class="p">)</span>
+    <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">'&lt;text x="</span><span class="si">{</span><span class="n">x</span><span class="p">(</span><span class="n">hi</span><span class="p">)</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">" y="</span><span class="si">{</span><span class="n">h</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">4</span><span class="si">}</span><span class="s1">" fill="#666" text-anchor="end"&gt;'</span>
+               <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">hi</span><span class="si">:</span><span class="s1">.0f</span><span class="si">}</span><span class="s1"> ms&lt;/text&gt;'</span><span class="p">)</span>
+    <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"&lt;/svg&gt;"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s2">""</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2026, Matthias Mittner.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
+  </p>
+</div>
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.24.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

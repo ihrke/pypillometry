@@ -1,0 +1,25 @@
+﻿VariogramCheck
+==============
+
+.. currentmodule:: pypillometry.signal.gaussmarkov
+
+.. autoclass:: VariogramCheck
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~VariogramCheck.count
+      ~VariogramCheck.index
+   
+   
+
+
+   .. rubric:: Details

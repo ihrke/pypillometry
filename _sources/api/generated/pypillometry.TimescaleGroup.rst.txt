@@ -1,0 +1,27 @@
+﻿TimescaleGroup
+==============
+
+.. currentmodule:: pypillometry
+
+.. autoclass:: TimescaleGroup
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~TimescaleGroup.fit
+      ~TimescaleGroup.from_files
+      ~TimescaleGroup.group_summary
+      ~TimescaleGroup.summary
+   
+   
+
+
+   .. rubric:: Details

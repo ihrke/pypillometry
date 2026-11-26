@@ -1,0 +1,29 @@
+﻿TimescalePupil
+==============
+
+.. currentmodule:: pypillometry.sim
+
+.. autoclass:: TimescalePupil
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~TimescalePupil.apply
+      ~TimescalePupil.bank
+      ~TimescalePupil.eyes_in
+      ~TimescalePupil.from_dict
+      ~TimescalePupil.theta
+      ~TimescalePupil.to_dict
+   
+   
+
+
+   .. rubric:: Details

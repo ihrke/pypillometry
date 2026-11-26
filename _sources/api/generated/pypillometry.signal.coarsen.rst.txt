@@ -1,0 +1,6 @@
+﻿coarsen
+=======
+
+.. currentmodule:: pypillometry.signal
+
+.. autofunction:: coarsen

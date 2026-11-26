@@ -1,0 +1,6 @@
+﻿spectrum
+========
+
+.. currentmodule:: pypillometry.signal
+
+.. autofunction:: spectrum

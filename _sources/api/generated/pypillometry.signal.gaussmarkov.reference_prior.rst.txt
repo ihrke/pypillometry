@@ -1,0 +1,6 @@
+﻿reference\_prior
+================
+
+.. currentmodule:: pypillometry.signal.gaussmarkov
+
+.. autofunction:: reference_prior

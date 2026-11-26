@@ -1,0 +1,30 @@
+﻿Constant
+========
+
+.. currentmodule:: pypillometry.signal.gaussmarkov
+
+.. autoclass:: Constant
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~Constant.cov
+      ~Constant.discretise
+      ~Constant.get_params
+      ~Constant.psd
+      ~Constant.ss
+      ~Constant.variogram
+      ~Constant.with_params
+   
+   
+
+
+   .. rubric:: Details

@@ -1,0 +1,17 @@
+﻿GroupFit
+========
+
+.. currentmodule:: pypillometry.signal.gaussmarkov
+
+.. autoclass:: GroupFit
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   
+
+
+   .. rubric:: Details

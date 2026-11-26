@@ -1,0 +1,6 @@
+﻿sart
+====
+
+.. currentmodule:: pypillometry.sim.tasks
+
+.. autofunction:: sart

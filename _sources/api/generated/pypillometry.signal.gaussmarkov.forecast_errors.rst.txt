@@ -1,0 +1,6 @@
+﻿forecast\_errors
+================
+
+.. currentmodule:: pypillometry.signal.gaussmarkov
+
+.. autofunction:: forecast_errors

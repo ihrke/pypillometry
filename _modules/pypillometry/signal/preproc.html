@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pypillometry.signal.preproc &#8212; pypillometry v2.2.4</title>
+    <title>pypillometry.signal.preproc &#8212; pypillometry v2.3.0</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../../_static/documentation_options.js?v=b5d81189"></script>
+    <script src="../../../_static/documentation_options.js?v=387c4177"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -414,7 +414,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.4" />
+  <meta name="docsearch:version" content="v2.3.0" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -1014,12 +1014,17 @@ window.runMermaid = runMermaid;</script>
     
     <span class="c1"># Get Savitzky-Golay coefficients for first derivative</span>
     <span class="n">coeffs</span> <span class="o">=</span> <span class="n">savgol_coeffs</span><span class="p">(</span><span class="n">window_len</span><span class="p">,</span> <span class="n">polyorder</span><span class="p">,</span> <span class="n">deriv</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="n">pos</span><span class="p">)</span>
-    
-    <span class="c1"># Apply filter using convolution with appropriate boundary handling</span>
-    <span class="c1"># Use 'nearest' mode to extend boundary values</span>
-    <span class="n">vel</span> <span class="o">=</span> <span class="n">convolve1d</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">coeffs</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">'nearest'</span><span class="p">)</span>
-    
-    <span class="k">return</span> <span class="n">vel</span></div>
+
+    <span class="c1"># The convolution centres the window on each sample, so the coefficients</span>
+    <span class="c1"># give the derivative at sample i + (pos - half) from the window around i.</span>
+    <span class="c1"># Evaluate the windows around i - (pos - half) instead, so that the</span>
+    <span class="c1"># window ends (backward) or starts (forward) at sample i. The signal is</span>
+    <span class="c1"># extended by its first and last values.</span>
+    <span class="n">half</span> <span class="o">=</span> <span class="n">window_len</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="n">shift</span> <span class="o">=</span> <span class="n">pos</span> <span class="o">-</span> <span class="n">half</span>
+    <span class="n">padded</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">half</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"edge"</span><span class="p">)</span>
+    <span class="n">vel</span> <span class="o">=</span> <span class="n">convolve1d</span><span class="p">(</span><span class="n">padded</span><span class="p">,</span> <span class="n">coeffs</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">'nearest'</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">vel</span><span class="p">[</span><span class="n">half</span> <span class="o">-</span> <span class="n">shift</span><span class="p">:</span><span class="n">half</span> <span class="o">-</span> <span class="n">shift</span> <span class="o">+</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">]</span></div>
 
 
 
@@ -1145,9 +1150,12 @@ window.runMermaid = runMermaid;</script>
     <span class="k">if</span> <span class="n">invalid</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
         <span class="n">filled</span><span class="p">[</span><span class="n">invalid</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">invalid</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">valid</span><span class="p">,</span> <span class="n">sy</span><span class="p">[</span><span class="n">valid</span><span class="p">])</span>
     <span class="c1"># backward-looking for onsets, forward-looking for offsets: the missing</span>
-    <span class="c1"># samples of the blink do not affect the estimate at its edges</span>
-    <span class="n">vel_backward</span> <span class="o">=</span> <span class="n">velocity_savgol</span><span class="p">(</span><span class="n">filled</span><span class="p">,</span> <span class="n">smooth_winsize</span><span class="p">,</span> <span class="n">polyorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s2">"backward"</span><span class="p">)</span>
-    <span class="n">vel_forward</span> <span class="o">=</span> <span class="n">velocity_savgol</span><span class="p">(</span><span class="n">filled</span><span class="p">,</span> <span class="n">smooth_winsize</span><span class="p">,</span> <span class="n">polyorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s2">"forward"</span><span class="p">)</span>
+    <span class="c1"># samples of the blink do not affect the estimate at its edges. The</span>
+    <span class="c1"># one-sided windows fit a line (the mean slope): a quadratic, evaluated</span>
+    <span class="c1"># at the end of its window, overshoots at kinks (e.g. at the end of the</span>
+    <span class="c1"># reopening) and would find onsets there</span>
+    <span class="n">vel_backward</span> <span class="o">=</span> <span class="n">velocity_savgol</span><span class="p">(</span><span class="n">filled</span><span class="p">,</span> <span class="n">smooth_winsize</span><span class="p">,</span> <span class="n">polyorder</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s2">"backward"</span><span class="p">)</span>
+    <span class="n">vel_forward</span> <span class="o">=</span> <span class="n">velocity_savgol</span><span class="p">(</span><span class="n">filled</span><span class="p">,</span> <span class="n">smooth_winsize</span><span class="p">,</span> <span class="n">polyorder</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s2">"forward"</span><span class="p">)</span>
     <span class="n">vel_backward</span><span class="p">[</span><span class="n">invalid</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">vel_forward</span><span class="p">[</span><span class="n">invalid</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">return</span> <span class="n">vel_backward</span><span class="p">,</span> <span class="n">vel_forward</span><span class="p">,</span> <span class="n">invalid</span>
@@ -1341,11 +1349,11 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        input blink; if no transient is found before (after) the core of a</span>
 <span class="sd">        blink, the start (end) of the core is used</span>
 <span class="sd">    """</span>
-    <span class="c1"># Generate asymmetric velocity profiles</span>
-    <span class="c1"># Backward-looking for onset detection (doesn't peek into blink)</span>
-    <span class="n">vel_backward</span> <span class="o">=</span> <span class="n">velocity_savgol</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">smooth_winsize</span><span class="p">,</span> <span class="n">polyorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s2">"backward"</span><span class="p">)</span>
-    <span class="c1"># Forward-looking for offset detection (doesn't peek into blink)</span>
-    <span class="n">vel_forward</span> <span class="o">=</span> <span class="n">velocity_savgol</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">smooth_winsize</span><span class="p">,</span> <span class="n">polyorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s2">"forward"</span><span class="p">)</span>
+    <span class="c1"># Asymmetric velocity profiles (lines fitted to one-sided windows, see</span>
+    <span class="c1"># _velocity_profiles): backward-looking for the onset, forward-looking</span>
+    <span class="c1"># for the offset (neither peeks into the blink)</span>
+    <span class="n">vel_backward</span> <span class="o">=</span> <span class="n">velocity_savgol</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">smooth_winsize</span><span class="p">,</span> <span class="n">polyorder</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s2">"backward"</span><span class="p">)</span>
+    <span class="n">vel_forward</span> <span class="o">=</span> <span class="n">velocity_savgol</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">smooth_winsize</span><span class="p">,</span> <span class="n">polyorder</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s2">"forward"</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">max_gap</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">max_gap</span> <span class="o">=</span> <span class="n">smooth_winsize</span>
     <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sy</span><span class="p">)</span>

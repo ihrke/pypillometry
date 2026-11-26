@@ -1,0 +1,40 @@
+﻿SimPlotNamespace
+================
+
+.. currentmodule:: pypillometry.sim
+
+.. autoclass:: SimPlotNamespace
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~SimPlotNamespace.plot_blink_clusters
+      ~SimPlotNamespace.plot_blinks
+      ~SimPlotNamespace.plot_calibration
+      ~SimPlotNamespace.plot_components
+      ~SimPlotNamespace.plot_experimental_setup
+      ~SimPlotNamespace.plot_heatmap
+      ~SimPlotNamespace.plot_intervals
+      ~SimPlotNamespace.plot_masked
+      ~SimPlotNamespace.plot_pupil
+      ~SimPlotNamespace.plot_pupil_foreshortening_error_surface
+      ~SimPlotNamespace.plot_pupil_segments
+      ~SimPlotNamespace.plot_pupil_spectrum
+      ~SimPlotNamespace.plot_scanpath
+      ~SimPlotNamespace.plot_task_events
+      ~SimPlotNamespace.plot_timeseries
+      ~SimPlotNamespace.plot_timeseries_segments
+      ~SimPlotNamespace.plot_truth
+   
+   
+
+
+   .. rubric:: Details

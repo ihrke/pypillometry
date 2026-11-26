@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pypillometry.viewer &#8212; pypillometry v2.2.4</title>
+    <title>pypillometry.viewer &#8212; pypillometry v2.3.0</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=b5d81189"></script>
+    <script src="../../_static/documentation_options.js?v=387c4177"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -414,7 +414,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.4" />
+  <meta name="docsearch:version" content="v2.3.0" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1288,7 +1288,7 @@ window.runMermaid = runMermaid;</script>
             <span class="n">fields</span><span class="p">[</span><span class="s2">"margin_before"</span><span class="p">],</span> <span class="n">fields</span><span class="p">[</span><span class="s2">"margin_after"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">before</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">after</span><span class="p">)</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">)):</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"vel_"</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">value</span><span class="si">!r}</span><span class="s2">: velocity thresholds in percent cannot be "</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">value</span><span class="si">!r}</span><span class="s2">: relative velocity thresholds cannot be "</span>
                                 <span class="s2">"tweaked; give them in units per ms"</span><span class="p">)</span>
             <span class="n">fixed</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1373,9 +1373,17 @@ window.runMermaid = runMermaid;</script>
     <span class="n">pars</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="s2">"params"</span><span class="p">,</span> <span class="n">pars</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{})</span>
     <span class="n">method</span> <span class="o">=</span> <span class="n">method</span> <span class="ow">or</span> <span class="n">pars</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"method"</span><span class="p">,</span> <span class="s2">"mahot"</span><span class="p">)</span>
     <span class="n">pars</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"method"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-    <span class="n">fields</span><span class="p">,</span> <span class="n">fixed</span> <span class="o">=</span> <span class="n">_tweak_fields</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="n">pars</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">eye</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">eye</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">_eyes_with</span><span class="p">([],</span> <span class="s2">"pupil"</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">"mahot"</span><span class="p">:</span>
+        <span class="c1"># relative velocity thresholds ("4sd", the default) in units per ms</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">..eyedata.pupil</span><span class="w"> </span><span class="kn">import</span> <span class="n">_INTERP_DEFAULTS</span>
+        <span class="n">full</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">_INTERP_DEFAULTS</span><span class="p">[</span><span class="s2">"mahot"</span><span class="p">],</span> <span class="o">**</span><span class="n">pars</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">full</span><span class="p">[</span><span class="n">n</span><span class="p">],</span> <span class="nb">str</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"vel_onset"</span><span class="p">,</span> <span class="s2">"vel_offset"</span><span class="p">)):</span>
+            <span class="n">on</span><span class="p">,</span> <span class="n">off</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">_velocity_thresholds_ms</span><span class="p">(</span><span class="n">eye</span><span class="p">,</span> <span class="n">full</span><span class="p">[</span><span class="s2">"winsize"</span><span class="p">],</span> <span class="n">full</span><span class="p">[</span><span class="s2">"vel_onset"</span><span class="p">],</span>
+                                                         <span class="n">full</span><span class="p">[</span><span class="s2">"vel_offset"</span><span class="p">])</span>
+            <span class="n">pars</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">vel_onset</span><span class="o">=</span><span class="nb">round</span><span class="p">(</span><span class="n">on</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">vel_offset</span><span class="o">=</span><span class="nb">round</span><span class="p">(</span><span class="n">off</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+    <span class="n">fields</span><span class="p">,</span> <span class="n">fixed</span> <span class="o">=</span> <span class="n">_tweak_fields</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="n">pars</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">interval</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">dur</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">parse_time</span><span class="p">(</span><span class="n">duration</span><span class="p">,</span> <span class="n">to</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">units</span><span class="p">))</span>
         <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">_tweak_interval</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">eye</span><span class="p">,</span> <span class="n">dur</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="p">))</span>

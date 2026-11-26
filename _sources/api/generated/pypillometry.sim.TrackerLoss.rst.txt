@@ -1,0 +1,27 @@
+﻿TrackerLoss
+===========
+
+.. currentmodule:: pypillometry.sim
+
+.. autoclass:: TrackerLoss
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~TrackerLoss.apply
+      ~TrackerLoss.eyes_in
+      ~TrackerLoss.from_dict
+      ~TrackerLoss.to_dict
+   
+   
+
+
+   .. rubric:: Details

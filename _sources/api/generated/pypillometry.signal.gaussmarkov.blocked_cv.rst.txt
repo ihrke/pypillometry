@@ -1,0 +1,6 @@
+﻿blocked\_cv
+===========
+
+.. currentmodule:: pypillometry.signal.gaussmarkov
+
+.. autofunction:: blocked_cv

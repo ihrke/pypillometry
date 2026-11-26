@@ -1,0 +1,25 @@
+﻿GaussianPrior
+=============
+
+.. currentmodule:: pypillometry.signal.gaussmarkov
+
+.. autoclass:: GaussianPrior
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~GaussianPrior.logpdf
+      ~GaussianPrior.scaled
+   
+   
+
+
+   .. rubric:: Details

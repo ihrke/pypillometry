@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Simulated data &#8212; pypillometry v2.3.0</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx_autodoc_typehints.css?v=057ac668" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=6a604523" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=e89b0eda" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=75c7c72ae941e8b558d8"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
+
+    <script src="../_static/documentation_options.js?v=387c4177"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../_static/design-tabs.js?v=fcb327ea"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user_guide/simulation';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../_static/pypillometry_logo_200x200.png"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Studies with many participants" href="studies.html" />
+    <link rel="prev" title="Modeling the pupil signal" href="modeling.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="v2.3.0" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="light">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation" aria-expanded="false" aria-controls="pst-primary-sidebar-modal">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="../_static/pypillometry_logo_200x200.png" class="logo__image only-light" alt=""/>
+    <img src="../_static/pypillometry_logo_200x200.png" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">pypillometry</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../experimental/index.html">
+    Experimental features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../development/index.html">
+    Development
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ihrke/pypillometry" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pypillometry/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page" aria-expanded="false" aria-controls="pst-secondary-sidebar-modal">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal" tabindex="-1"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../experimental/index.html">
+    Experimental features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../development/index.html">
+    Development
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ihrke/pypillometry" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pypillometry/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button type="button" id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="data_model.html">Data objects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="loading_data.html">Loading and saving data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="units.html">Units</a></li>
+<li class="toctree-l1"><a class="reference internal" href="preprocessing.html">Preprocessing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="missing_data.html">Missing data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gaze.html">Gaze data and the experimental setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rois.html">Regions of interest</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quality.html">Data quality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="events_intervals.html">Events, intervals and segments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plotting.html">Plotting</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="interactive.html">Interactive tools</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="viewer.html">GPU-Accelerated Viewer (pp.view)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tweak.html">Interactive Parameter Tweaking (pp.tweak)</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="modeling.html">Modeling the pupil signal</a></li>
+<li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">Simulated data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="studies.html">Studies with many participants</a></li>
+<li class="toctree-l1"><a class="reference internal" href="settings.html">Settings and logging</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-house"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">User guide</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Simulated data</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="simulated-data">
+<h1>Simulated data<a class="headerlink" href="#simulated-data" title="Link to this heading">#</a></h1>
+<p>Simulated recordings are useful whenever the true signal has to be known:
+to test a preprocessing method, to compare methods, or to check that a
+model finds its own parameters again. <code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry.sim</span></code> builds such
+recordings step by step and keeps the ground truth with the data.</p>
+<div class="experimental admonition">
+<p class="admonition-title">Experimental</p>
+<p>The latent pupil size is drawn from the timescale model
+(<a class="reference internal" href="../experimental/timescale_model.html"><span class="doc">Slow and fast fluctuations of the pupil: the timescale model</span></a>), which is experimental. The API
+of the simulations may still change.</p>
+</div>
+<section id="a-simulation-is-a-recipe">
+<h2>A simulation is a recipe<a class="headerlink" href="#a-simulation-is-a-recipe" title="Link to this heading">#</a></h2>
+<p>A <a class="reference internal" href="../api/generated/pypillometry.sim.Simulation.html#pypillometry.sim.Simulation" title="pypillometry.sim.Simulation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Simulation</span></code></a> describes the recording (duration, sampling rate,
+eyes, seed and, if needed, the experimental setup) and is built by chaining
+steps. Each method returns a new simulation with one more step; the
+recipe is only run by <a class="reference internal" href="../api/generated/pypillometry.sim.Simulation.html#pypillometry.sim.Simulation.run" title="pypillometry.sim.Simulation.run"><code class="xref py py-meth docutils literal notranslate"><span class="pre">run()</span></code></a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+
+<span class="n">sim</span> <span class="o">=</span> <span class="p">(</span><span class="n">pp</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">Simulation</span><span class="p">(</span><span class="s2">"5 min"</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[</span><span class="s2">"left"</span><span class="p">,</span> <span class="s2">"right"</span><span class="p">],</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+       <span class="o">.</span><span class="n">pupil</span><span class="p">(</span><span class="n">binocular</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>       <span class="c1"># latent pupil size (timescale model)</span>
+       <span class="o">.</span><span class="n">units</span><span class="p">(</span><span class="n">median</span><span class="o">=</span><span class="mi">800</span><span class="p">)</span>           <span class="c1"># units of the eye tracker</span>
+       <span class="o">.</span><span class="n">noise</span><span class="p">(</span><span class="mf">0.2</span><span class="p">))</span>                 <span class="c1"># white measurement noise (log-%)</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>                       <span class="c1"># a SimEyeData object</span>
+</pre></div>
+</div>
+<p>Because each method returns a new simulation, a base recipe can be varied
+without changing it:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">base</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">Simulation</span><span class="p">(</span><span class="s2">"5 min"</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">pupil</span><span class="p">()</span><span class="o">.</span><span class="n">units</span><span class="p">(</span><span class="mi">800</span><span class="p">)</span>
+<span class="n">clean</span><span class="p">,</span> <span class="n">noisy</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">noise</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">(),</span> <span class="n">base</span><span class="o">.</span><span class="n">noise</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The steps run in a fixed order, whatever the order in which they were
+added. The signal is in log-% (<span class="math notranslate nohighlight">\(100 \log(\text{size} /
+\text{median})\)</span>) until the units step:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 30.0%" />
+<col style="width: 50.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Stage</p></th>
+<th class="head"><p>Method (step)</p></th>
+<th class="head"><p>What it does</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>latent pupil</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">.pupil()</span></code> (<a class="reference internal" href="../api/generated/pypillometry.sim.TimescalePupil.html#pypillometry.sim.TimescalePupil" title="pypillometry.sim.TimescalePupil"><code class="xref py py-class docutils literal notranslate"><span class="pre">TimescalePupil</span></code></a>)</p></td>
+<td><p>fast component and slow components at fixed time scales, in log-%;
+with <code class="docutils literal notranslate"><span class="pre">binocular=True</span></code> common to both eyes plus a difference
+between them</p></td>
+</tr>
+<tr class="row-odd"><td><p>gaze</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">.gaze()</span></code> (<a class="reference internal" href="../api/generated/pypillometry.sim.Fixations.html#pypillometry.sim.Fixations" title="pypillometry.sim.Fixations"><code class="xref py py-class docutils literal notranslate"><span class="pre">Fixations</span></code></a>)</p></td>
+<td><p>fixations at random places on the screen</p></td>
+</tr>
+<tr class="row-even"><td><p>foreshortening</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">.foreshortening()</span></code> (<a class="reference internal" href="../api/generated/pypillometry.sim.Foreshortening.html#pypillometry.sim.Foreshortening" title="pypillometry.sim.Foreshortening"><code class="xref py py-class docutils literal notranslate"><span class="pre">Foreshortening</span></code></a>)</p></td>
+<td><p>the pupil as seen by the camera, <span class="math notranslate nohighlight">\(A_0 \cos\alpha\)</span>; needs the
+gaze and <code class="docutils literal notranslate"><span class="pre">Simulation(setup=...)</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>units</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">.units(median)</span></code> (<a class="reference internal" href="../api/generated/pypillometry.sim.Units.html#pypillometry.sim.Units" title="pypillometry.sim.Units"><code class="xref py py-class docutils literal notranslate"><span class="pre">Units</span></code></a>)</p></td>
+<td><p>from log-% to the units of the tracker (default: median 1000)</p></td>
+</tr>
+<tr class="row-even"><td><p>occlusion</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">.blinks()</span></code> (<a class="reference internal" href="../api/generated/pypillometry.sim.Blinks.html#pypillometry.sim.Blinks" title="pypillometry.sim.Blinks"><code class="xref py py-class docutils literal notranslate"><span class="pre">Blinks</span></code></a>)</p></td>
+<td><p>blinks: the lid covers the pupil; the tracker loses it while most
+of it is covered</p></td>
+</tr>
+<tr class="row-odd"><td><p>noise</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">.noise(sd)</span></code> (<a class="reference internal" href="../api/generated/pypillometry.sim.WhiteNoise.html#pypillometry.sim.WhiteNoise" title="pypillometry.sim.WhiteNoise"><code class="xref py py-class docutils literal notranslate"><span class="pre">WhiteNoise</span></code></a>)</p></td>
+<td><p>white noise, multiplicative (<code class="docutils literal notranslate"><span class="pre">sd</span></code> in log-%) or additive
+(<code class="docutils literal notranslate"><span class="pre">scale=&quot;data&quot;</span></code>)</p></td>
+</tr>
+<tr class="row-even"><td><p>missing</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">.loss()</span></code> (<a class="reference internal" href="../api/generated/pypillometry.sim.TrackerLoss.html#pypillometry.sim.TrackerLoss" title="pypillometry.sim.TrackerLoss"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrackerLoss</span></code></a>)</p></td>
+<td><p>short losses of the pupil without transient; then all samples
+without pupil are set missing (also in the gaze)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The parameters of <a class="reference internal" href="../api/generated/pypillometry.sim.TimescalePupil.html#pypillometry.sim.TimescalePupil" title="pypillometry.sim.TimescalePupil"><code class="xref py py-class docutils literal notranslate"><span class="pre">TimescalePupil</span></code></a> are those of
+<a class="reference internal" href="../api/generated/pypillometry.TimescaleModel.html#pypillometry.TimescaleModel.params" title="pypillometry.TimescaleModel.params"><code class="xref py py-attr docutils literal notranslate"><span class="pre">TimescaleModel.params</span></code></a>;
+parameters that are not given are the centre of the general prior,
+i.e. typical values from real recordings.</p>
+</section>
+<section id="the-data-and-the-ground-truth">
+<h2>The data and the ground truth<a class="headerlink" href="#the-data-and-the-ground-truth" title="Link to this heading">#</a></h2>
+<p><a class="reference internal" href="../api/generated/pypillometry.sim.Simulation.html#pypillometry.sim.Simulation.run" title="pypillometry.sim.Simulation.run"><code class="xref py py-meth docutils literal notranslate"><span class="pre">run()</span></code></a> returns a <a class="reference internal" href="../api/generated/pypillometry.sim.SimEyeData.html#pypillometry.sim.SimEyeData" title="pypillometry.sim.SimEyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">SimEyeData</span></code></a> object. It is an
+<a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData" title="pypillometry.EyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">EyeData</span></code></a> object, so all methods and plots work, with
+two additions:</p>
+<dl>
+<dt><code class="docutils literal notranslate"><span class="pre">d.truth</span></code></dt><dd><p>The true time series, one value per sample, in an
+<a class="reference internal" href="../api/generated/pypillometry.EyeDataDict.html#pypillometry.EyeDataDict" title="pypillometry.EyeDataDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">EyeDataDict</span></code></a>. They are cut, downsampled and
+saved together with the data, but the preprocessing does not change
+them:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 75.0%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">pupil</span></code></p></td>
+<td><p>the pupil as measured without noise (units of the data)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">size</span></code></p></td>
+<td><p>the true pupil size (differs from <code class="docutils literal notranslate"><span class="pre">pupil</span></code> with foreshortening)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">cosalpha</span></code></p></td>
+<td><p>the foreshortening factor</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">log_size</span></code></p></td>
+<td><p>the latent signal in log-%, the sum of the components:</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">log_fast</span></code>, <code class="docutils literal notranslate"><span class="pre">log_diff</span></code>, <code class="docutils literal notranslate"><span class="pre">log_3s</span></code>, …</p></td>
+<td><p>fast component, difference between the eyes, atoms (log-%)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">log_slow</span></code></p></td>
+<td><p>the atoms with time scales of at least the <cite>cutoff</cite> of
+<a class="reference internal" href="../api/generated/pypillometry.sim.TimescalePupil.html#pypillometry.sim.TimescalePupil" title="pypillometry.sim.TimescalePupil"><code class="xref py py-class docutils literal notranslate"><span class="pre">TimescalePupil</span></code></a> (default 10 s)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">occlusion</span></code></p></td>
+<td><p>the fraction of the pupil covered by the lid (blinks)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">d.truth_events</span></code></dt><dd><p>The true artifacts as <a class="reference internal" href="../api/generated/pypillometry.Events.html#pypillometry.Events" title="pypillometry.Events"><code class="xref py py-class docutils literal notranslate"><span class="pre">Events</span></code></a>: <code class="docutils literal notranslate"><span class="pre">&quot;blink&quot;</span></code> and
+<code class="docutils literal notranslate"><span class="pre">&quot;loss&quot;</span></code> per eye, with their parameters as metadata. They follow
+cropping and the removal of periods with the data.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">d.simulation</span></code></dt><dd><p>The recipe with the seed that was used. <code class="docutils literal notranslate"><span class="pre">d.simulation.run()</span></code> makes
+the same data again, <code class="docutils literal notranslate"><span class="pre">d.simulation.run(seed=2)</span></code> new data from the
+same recipe.</p>
+</dd>
+</dl>
+<p>The plots <code class="docutils literal notranslate"><span class="pre">d.plot.plot_truth()</span></code> (data and true pupil) and
+<code class="docutils literal notranslate"><span class="pre">d.plot.plot_components()</span></code> (the true components) show the ground truth:</p>
+<figure class="align-default">
+<img alt="../_images/simulation-1.png" class="plot-directive" src="../_images/simulation-1.png" />
+</figure>
+</section>
+<section id="tasks-and-events">
+<h2>Tasks and events<a class="headerlink" href="#tasks-and-events" title="Link to this heading">#</a></h2>
+<p>A <a class="reference internal" href="../api/generated/pypillometry.sim.Task.html#pypillometry.sim.Task" title="pypillometry.sim.Task"><code class="xref py py-class docutils literal notranslate"><span class="pre">Task</span></code></a> describes the design of an experiment and makes the events
+of the simulated recording. It is built by chaining, like the simulation:
+<a class="reference internal" href="../api/generated/pypillometry.sim.Task.html#pypillometry.sim.Task.block" title="pypillometry.sim.Task.block"><code class="xref py py-meth docutils literal notranslate"><span class="pre">block()</span></code></a> starts a block of trials, <a class="reference internal" href="../api/generated/pypillometry.sim.Task.html#pypillometry.sim.Task.stimulus" title="pypillometry.sim.Task.stimulus"><code class="xref py py-meth docutils literal notranslate"><span class="pre">stimulus()</span></code></a> and
+<a class="reference internal" href="../api/generated/pypillometry.sim.Task.html#pypillometry.sim.Task.response" title="pypillometry.sim.Task.response"><code class="xref py py-meth docutils literal notranslate"><span class="pre">response()</span></code></a> add events to each trial of the block,
+<a class="reference internal" href="../api/generated/pypillometry.sim.Task.html#pypillometry.sim.Task.rest" title="pypillometry.sim.Task.rest"><code class="xref py py-meth docutils literal notranslate"><span class="pre">rest()</span></code></a> adds a pause and <a class="reference internal" href="../api/generated/pypillometry.sim.Task.html#pypillometry.sim.Task.repeat" title="pypillometry.sim.Task.repeat"><code class="xref py py-meth docutils literal notranslate"><span class="pre">repeat()</span></code></a> repeats the blocks.
+Times are fixed (<code class="docutils literal notranslate"><span class="pre">&quot;250</span> <span class="pre">ms&quot;</span></code>) or distributions
+(<code class="docutils literal notranslate"><span class="pre">&quot;uniform(2</span> <span class="pre">s,</span> <span class="pre">10</span> <span class="pre">s)&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;normal(500</span> <span class="pre">ms,</span> <span class="pre">30</span> <span class="pre">ms)&quot;</span></code>,
+<code class="docutils literal notranslate"><span class="pre">&quot;lognormal(350</span> <span class="pre">ms,</span> <span class="pre">70</span> <span class="pre">ms)&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;exponential(1</span> <span class="pre">s)&quot;</span></code>):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sart</span> <span class="o">=</span> <span class="p">(</span><span class="n">pp</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">Task</span><span class="p">(</span><span class="s2">"SART"</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">block</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">225</span><span class="p">,</span> <span class="n">soa</span><span class="o">=</span><span class="s2">"1150 ms"</span><span class="p">,</span> <span class="n">conditions</span><span class="o">=</span><span class="p">{</span><span class="s2">"go"</span><span class="p">:</span> <span class="mi">8</span><span class="o">/</span><span class="mi">9</span><span class="p">,</span> <span class="s2">"nogo"</span><span class="p">:</span> <span class="mi">1</span><span class="o">/</span><span class="mi">9</span><span class="p">})</span>
+        <span class="o">.</span><span class="n">stimulus</span><span class="p">(</span><span class="s2">"digit"</span><span class="p">,</span> <span class="s2">"visual"</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="s2">"250 ms"</span><span class="p">,</span>
+                  <span class="n">meta</span><span class="o">=</span><span class="p">{</span><span class="s2">"digit"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"go"</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">],</span> <span class="s2">"nogo"</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">]}})</span>
+        <span class="o">.</span><span class="n">stimulus</span><span class="p">(</span><span class="s2">"mask"</span><span class="p">,</span> <span class="s2">"visual"</span><span class="p">,</span> <span class="n">at</span><span class="o">=</span><span class="s2">"250 ms"</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="s2">"900 ms"</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">response</span><span class="p">(</span><span class="s2">"press"</span><span class="p">,</span> <span class="n">after</span><span class="o">=</span><span class="s2">"digit"</span><span class="p">,</span> <span class="n">rt</span><span class="o">=</span><span class="s2">"lognormal(350 ms, 70 ms)"</span><span class="p">,</span>
+                  <span class="n">p</span><span class="o">=</span><span class="p">{</span><span class="s2">"go"</span><span class="p">:</span> <span class="mf">0.97</span><span class="p">,</span> <span class="s2">"nogo"</span><span class="p">:</span> <span class="mf">0.3</span><span class="p">}))</span>
+
+<span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">Simulation</span><span class="p">(</span><span class="n">fs</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">sart</span><span class="p">)</span><span class="o">.</span><span class="n">pupil</span><span class="p">()</span><span class="o">.</span><span class="n">units</span><span class="p">(</span><span class="mi">800</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>Trials</strong> are spaced by <code class="docutils literal notranslate"><span class="pre">soa</span></code> (from onset to onset) or <code class="docutils literal notranslate"><span class="pre">isi</span></code> (from
+the end of a trial to the next onset), for <code class="docutils literal notranslate"><span class="pre">n</span></code> trials or a
+<code class="docutils literal notranslate"><span class="pre">duration</span></code>. <code class="docutils literal notranslate"><span class="pre">conditions</span></code> are drawn per trial.</p></li>
+<li><p><strong>Events</strong> start at <code class="docutils literal notranslate"><span class="pre">at</span></code> after the start of the trial or <code class="docutils literal notranslate"><span class="pre">after</span></code>
+another event (the reaction time <code class="docutils literal notranslate"><span class="pre">rt</span></code> of responses, which can be
+negative, e.g. for taps that anticipate a tone). <code class="docutils literal notranslate"><span class="pre">p</span></code> is the
+probability of the event, per condition with a dict (errors, misses).
+Stimuli have a <code class="docutils literal notranslate"><span class="pre">modality</span></code> (visual, auditory) and a <code class="docutils literal notranslate"><span class="pre">duration</span></code>,
+which can be <code class="docutils literal notranslate"><span class="pre">&quot;until</span> <span class="pre">response&quot;</span></code>; visual stimuli can have a
+<code class="docutils literal notranslate"><span class="pre">luminance</span></code> change.</p></li>
+<li><p><strong>Metadata</strong> of the events: values, lists to draw from, values per
+condition, or the stimuli of an n-back task (<code class="docutils literal notranslate"><span class="pre">{&quot;nback&quot;:</span> <span class="pre">2,</span> <span class="pre">&quot;values&quot;:</span>
+<span class="pre">&quot;BCD...&quot;}</span></code>).</p></li>
+</ul>
+<p>Without a duration, the simulation lasts until the end of the task; with
+<code class="docutils literal notranslate"><span class="pre">.task(task,</span> <span class="pre">start=&quot;5</span> <span class="pre">s&quot;)</span></code> the task starts later. The events become the
+events of the data (<code class="docutils literal notranslate"><span class="pre">d.events</span></code>) with the metadata <code class="docutils literal notranslate"><span class="pre">kind</span></code>,
+<code class="docutils literal notranslate"><span class="pre">modality</span></code>, <code class="docutils literal notranslate"><span class="pre">trial</span></code>, <code class="docutils literal notranslate"><span class="pre">block</span></code>, <code class="docutils literal notranslate"><span class="pre">condition</span></code>, <code class="docutils literal notranslate"><span class="pre">duration</span></code>,
+<code class="docutils literal notranslate"><span class="pre">luminance</span></code>, <code class="docutils literal notranslate"><span class="pre">rt</span></code> and those of the task, so they can be selected and
+used like the events of a real recording. For now, the events do not
+change the pupil.</p>
+<p>Ready-made tasks with typical parameters are in <code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry.sim.tasks</span></code>:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 75.0%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.sim.tasks.pvt.html#pypillometry.sim.tasks.pvt" title="pypillometry.sim.tasks.pvt"><code class="xref py py-func docutils literal notranslate"><span class="pre">pvt()</span></code></a></p></td>
+<td><p>psychomotor vigilance task: a target at random intervals until the
+response</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.sim.tasks.sart.html#pypillometry.sim.tasks.sart" title="pypillometry.sim.tasks.sart"><code class="xref py py-func docutils literal notranslate"><span class="pre">sart()</span></code></a></p></td>
+<td><p>sustained attention to response task: digits with a mask, no press
+for the digit 3</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../api/generated/pypillometry.sim.tasks.ftrsgt.html#pypillometry.sim.tasks.ftrsgt" title="pypillometry.sim.tasks.ftrsgt"><code class="xref py py-func docutils literal notranslate"><span class="pre">ftrsgt()</span></code></a></p></td>
+<td><p>finger-tapping random-sequence generation task: left/right taps with
+a beep every 750 ms, thought probes every 40–80 s</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../api/generated/pypillometry.sim.tasks.nback.html#pypillometry.sim.tasks.nback" title="pypillometry.sim.tasks.nback"><code class="xref py py-func docutils literal notranslate"><span class="pre">nback()</span></code></a></p></td>
+<td><p>n-back task: a letter every 2.5 s, a response (match / no match) to
+each</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">task.plot()</span></code> draws a schematic of the trials of each block (in a
+notebook, the task shows one by itself), and
+<code class="docutils literal notranslate"><span class="pre">d.plot.plot_task_events()</span></code> the events of a simulated recording:</p>
+<figure class="align-default">
+<img alt="../_images/simulation-2.png" class="plot-directive" src="../_images/simulation-2.png" />
+</figure>
+</section>
+<section id="blinks-and-tracker-loss">
+<h2>Blinks and tracker loss<a class="headerlink" href="#blinks-and-tracker-loss" title="Link to this heading">#</a></h2>
+<p><a class="reference internal" href="../api/generated/pypillometry.sim.Blinks.html#pypillometry.sim.Blinks" title="pypillometry.sim.Blinks"><code class="xref py py-class docutils literal notranslate"><span class="pre">Blinks</span></code></a> models the fraction <span class="math notranslate nohighlight">\(g(t)\)</span> of the pupil that the lid
+covers (<a class="reference internal" href="../api/generated/pypillometry.sim.blink_occlusion.html#pypillometry.sim.blink_occlusion" title="pypillometry.sim.blink_occlusion"><code class="xref py py-func docutils literal notranslate"><span class="pre">blink_occlusion()</span></code></a>): a fast closing, a closed phase and a
+reopening in two speeds, a fast logistic and a slow exponential tail. The
+measured pupil is <span class="math notranslate nohighlight">\((1 - g)\)</span> times the true pupil, so the transients
+before and after the gap are part of the data, and the tracker loses the
+pupil while more than <cite>visibility</cite> (default half) is covered. The
+parameters are drawn for each blink; the defaults come from fits of the
+model to blinks of EyeLink recordings: closing time scale about 3 ms,
+closed phase about 220 ms, fast reopening about 22 ms, a tail of 15 % that
+fades 6 times more slowly; 2 % of the blinks are partial. With two eyes,
+the blinks are the same up to a small jitter.</p>
+<p><a class="reference internal" href="../api/generated/pypillometry.sim.TrackerLoss.html#pypillometry.sim.TrackerLoss" title="pypillometry.sim.TrackerLoss"><code class="xref py py-class docutils literal notranslate"><span class="pre">TrackerLoss</span></code></a> adds rare losses of the pupil at random times, without
+transient, in each eye separately or (<code class="docutils literal notranslate"><span class="pre">binocular=True</span></code>) in both.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="p">(</span><span class="n">pp</span><span class="o">.</span><span class="n">sim</span><span class="o">.</span><span class="n">Simulation</span><span class="p">(</span><span class="s2">"10 min"</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[</span><span class="s2">"left"</span><span class="p">,</span> <span class="s2">"right"</span><span class="p">],</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+     <span class="o">.</span><span class="n">pupil</span><span class="p">()</span><span class="o">.</span><span class="n">units</span><span class="p">(</span><span class="mi">800</span><span class="p">)</span>
+     <span class="o">.</span><span class="n">blinks</span><span class="p">(</span><span class="n">rate</span><span class="o">=</span><span class="s2">"15/min"</span><span class="p">)</span>                 <span class="c1"># defaults from the fits</span>
+     <span class="o">.</span><span class="n">noise</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)</span>
+     <span class="o">.</span><span class="n">loss</span><span class="p">(</span><span class="n">rate</span><span class="o">=</span><span class="s2">"0.5/min"</span><span class="p">)</span>
+     <span class="o">.</span><span class="n">run</span><span class="p">())</span>
+<span class="n">d</span><span class="o">.</span><span class="n">truth_events</span>                              <span class="c1"># true blinks with their parameters</span>
+</pre></div>
+</div>
+<p>The missing samples are NaN; <code class="docutils literal notranslate"><span class="pre">Simulation(missing_value=0)</span></code> codes them as
+0, as some trackers do. <code class="docutils literal notranslate"><span class="pre">d.truth[&quot;left&quot;,</span> <span class="pre">&quot;occlusion&quot;]</span></code> gives the true
+extent of every blink and <code class="docutils literal notranslate"><span class="pre">d.truth[&quot;left&quot;,</span> <span class="pre">&quot;pupil&quot;]</span></code> the pupil without
+them, so detection and interpolation can be scored exactly.</p>
+</section>
+<section id="random-numbers">
+<h2>Random numbers<a class="headerlink" href="#random-numbers" title="Link to this heading">#</a></h2>
+<p>Each step draws its random numbers from its own stream, derived from the
+seed of the simulation and the place of the step. Changing one step
+therefore leaves the others unchanged: in the example above, <code class="docutils literal notranslate"><span class="pre">clean</span></code>
+and <code class="docutils literal notranslate"><span class="pre">noisy</span></code> have the same latent pupil size and differ only in the
+noise. If a simulation has no seed, <a class="reference internal" href="../api/generated/pypillometry.sim.Simulation.html#pypillometry.sim.Simulation.run" title="pypillometry.sim.Simulation.run"><code class="xref py py-meth docutils literal notranslate"><span class="pre">run()</span></code></a> draws one and
+stores it in <code class="docutils literal notranslate"><span class="pre">d.simulation</span></code>.</p>
+</section>
+<section id="from-a-fitted-model">
+<h2>From a fitted model<a class="headerlink" href="#from-a-fitted-model" title="Link to this heading">#</a></h2>
+<p>A fitted <a class="reference internal" href="../api/generated/pypillometry.TimescaleModel.html#pypillometry.TimescaleModel" title="pypillometry.TimescaleModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">TimescaleModel</span></code></a> simulates new recordings
+with its estimated parameters, median pupil size and noise:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">m</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">TimescaleModel</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="s2">"left"</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+<span class="n">s</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="s2">"20 min"</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>           <span class="c1"># SimEyeData at the rate of the model</span>
+<span class="n">s</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="s2">"1 min"</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>   <span class="c1"># at another sampling rate</span>
+<span class="n">steps</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">process</span><span class="p">()</span>                        <span class="c1"># the latent pupil as steps</span>
+</pre></div>
+</div>
+<p>By default, the simulation has the sampling rate of the model (20 Hz).
+At other rates, the standard deviation of the noise is scaled as for white
+noise of the raw samples, which is only an approximation for real eye
+trackers. Fitting the model again to simulated data shows how well its
+parameters can be recovered from a recording of that length (see
+<a class="reference internal" href="../notebooks/simulation.html"><span class="doc">Simulated data</span></a>).</p>
+</section>
+<section id="saving">
+<h2>Saving<a class="headerlink" href="#saving" title="Link to this heading">#</a></h2>
+<p>Simulated data are saved like any other data (<code class="docutils literal notranslate"><span class="pre">d.write_file()</span></code>,
+<a class="reference internal" href="../api/generated/pypillometry.read_file.html#pypillometry.read_file" title="pypillometry.read_file"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_file()</span></code></a>), together with the ground truth and the
+recipe.</p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="modeling.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Modeling the pupil signal</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="studies.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Studies with many participants</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal" tabindex="-1"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-simulation-is-a-recipe">A simulation is a recipe</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-data-and-the-ground-truth">The data and the ground truth</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tasks-and-events">Tasks and events</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#blinks-and-tracker-loss">Blinks and tracker loss</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#random-numbers">Random numbers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#from-a-fitted-model">From a fitted model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#saving">Saving</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  
+  <div class="tocsection editthispage">
+    <a href="https://github.com/ihrke/pypillometry/edit/master/docs/user_guide/simulation.rst">
+      <i class="fa-solid fa-pencil"></i>
+      
+      
+        
+          Edit on GitHub
+        
+      
+    </a>
+  </div>
+</div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/user_guide/simulation.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2026, Matthias Mittner.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
+  </p>
+</div>
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.24.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

@@ -1,0 +1,27 @@
+﻿Units
+=====
+
+.. currentmodule:: pypillometry.sim
+
+.. autoclass:: Units
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~Units.apply
+      ~Units.eyes_in
+      ~Units.from_dict
+      ~Units.to_dict
+   
+   
+
+
+   .. rubric:: Details

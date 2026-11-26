@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>PupilNamespace &#8212; pypillometry v2.2.4</title>
+    <title>PupilNamespace &#8212; pypillometry v2.3.0</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=b5d81189"></script>
+    <script src="../../_static/documentation_options.js?v=387c4177"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.4" />
+  <meta name="docsearch:version" content="v2.3.0" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -412,7 +412,6 @@
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.MaskPolicy.html">MaskPolicy</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.HeadMountedEyeData.html">HeadMountedEyeData</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.eyedata.head_mounted.SceneNamespace.html">SceneNamespace</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.FakeEyeData.html">FakeEyeData</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.keephistory.html">keephistory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.QualityReport.html">QualityReport</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.QualityMetric.html">QualityMetric</a></li>
@@ -538,10 +537,6 @@
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupilresponse_nnls.html">pupilresponse_nnls</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_signal_quality.html">pupil_signal_quality</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_eye_offset.html">pupil_eye_offset</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.fake_pupil_baseline.html">fake_pupil_baseline</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.fake_gaze_fixations.html">fake_gaze_fixations</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.add_measurement_noise.html">add_measurement_noise</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.generate_foreshortening_data.html">generate_foreshortening_data</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../geometry.html">Geometry and gaze</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -551,6 +546,63 @@
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.ROI.html">ROI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.CircularROI.html">CircularROI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.RectangularROI.html">RectangularROI</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../timescale.html">Timescale model (experimental)</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.TimescaleModel.html">TimescaleModel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.TimescaleGroup.html">TimescaleGroup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.timescale.plots.TimescalePlots.html">TimescalePlots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.timescale.plots.TimescaleGroupPlots.html">TimescaleGroupPlots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.block_mean.html">block_mean</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.coarsen.html">coarsen</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.semivariogram.html">semivariogram</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.plot_variogram.html">plot_variogram</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.spectrum.html">spectrum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.plot_spectrum.html">plot_spectrum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.Variogram.html">Variogram</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.Spectrum.html">Spectrum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.TimescaleBank.html">TimescaleBank</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.GaussianPrior.html">GaussianPrior</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.BankFit.html">BankFit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.GroupFit.html">GroupFit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.VariogramCheck.html">VariogramCheck</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.GaussMarkovModel.html">GaussMarkovModel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.Matern.html">Matern</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.OU.html">OU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.Constant.html">Constant</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.LGSSM.html">LGSSM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.fit_bank.html">fit_bank</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.general_prior.html">general_prior</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.reference_prior.html">reference_prior</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.fit_group.html">fit_group</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.blocked_cv.html">blocked_cv</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.variogram_check.html">variogram_check</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.kalman_filter.html">kalman_filter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.kalman_loglik.html">kalman_loglik</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.rts_smoother.html">rts_smoother</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.forecast_errors.html">forecast_errors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.simulate.html">simulate</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../sim.html">Simulated data: <code class="docutils literal notranslate"><span class="pre">pp.sim</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.sim.Simulation.html">Simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.sim.SimEyeData.html">SimEyeData</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.sim.SimPlotNamespace.html">SimPlotNamespace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.sim.Task.html">Task</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.sim.parse_dist.html">parse_dist</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.sim.tasks.pvt.html">pvt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.sim.tasks.sart.html">sart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.sim.tasks.ftrsgt.html">ftrsgt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.sim.tasks.nback.html">nback</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.sim.TimescalePupil.html">TimescalePupil</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.sim.Fixations.html">Fixations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.sim.Foreshortening.html">Foreshortening</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.sim.Units.html">Units</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.sim.Blinks.html">Blinks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.sim.WhiteNoise.html">WhiteNoise</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.sim.TrackerLoss.html">TrackerLoss</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.sim.blink_occlusion.html">blink_occlusion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.sim.parse_rate.html">parse_rate</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../units.html">Units</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -686,13 +738,16 @@ The transforming methods return the data object (see
 <tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.eyedata.pupil.PupilNamespace.smooth_window" title="pypillometry.eyedata.pupil.PupilNamespace.smooth_window"><code class="xref py py-obj docutils literal notranslate"><span class="pre">smooth_window</span></code></a></p></td>
 <td><p>Apply smoothing of the signal using a moving window.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.eyedata.pupil.PupilNamespace.spectrum" title="pypillometry.eyedata.pupil.PupilNamespace.spectrum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">spectrum</span></code></a></p></td>
+<td><p>Power spectrum of the pupil size (Welch's method for data with gaps).</p></td>
+</tr>
 </tbody>
 </table>
 </div>
 <p class="rubric">Details</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.eyedata.pupil.PupilNamespace.blinks_detect">
-<span class="sig-name descname"><span class="pre">blinks_detect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_duration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blink_val</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">winsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">11</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vel_onset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vel_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vel_onset_min_duration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vel_offset_min_duration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_duration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">margin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['zero',</span> <span class="pre">'velocity']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_existing_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/eyedata/pupil.html#PupilNamespace.blinks_detect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.eyedata.pupil.PupilNamespace.blinks_detect" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">blinks_detect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_duration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blink_val</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">winsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">45</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vel_onset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'25sd'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vel_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'25sd'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vel_onset_min_duration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vel_offset_min_duration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_duration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">margin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['zero',</span> <span class="pre">'velocity']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_existing_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/eyedata/pupil.html#PupilNamespace.blinks_detect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.eyedata.pupil.PupilNamespace.blinks_detect" title="Link to this definition">#</a></dt>
 <dd><p>Detect blinks in the pupillary signal using several strategies.
 First, blinks are detected as consecutive sequence of <cite>blink_val</cite> 
 (f.eks., 0 or NaN). Second, blinks are defined as everything between
@@ -718,26 +773,31 @@ the slow parts of the transient around the blink.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>eyes</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a>) – list of eyes to process; if empty, all available eyes are processed</p></li>
-<li><p><strong>min_duration</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – minimum duration (in ms, or with units) for a sequence of missing numbers to be treated as blink</p></li>
+<li><p><strong>min_duration</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – minimum duration (in ms, or with units) for a sequence of missing
+numbers to be treated as blink (rounded to the nearest number of
+samples, at least 2 samples)</p></li>
 <li><p><strong>blink_val</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – “missing value” code for the “zero” strategy. Missing samples
 (NaN) are always detected; samples equal to <cite>blink_val</cite> (default
 0) are detected in addition. Use <cite>np.nan</cite> to detect only NaN
 (e.g., for baseline-corrected data where 0 is a valid value).
 The “zero” strategy always uses the raw data, so regions masked
 for other reasons are not detected as blinks.</p></li>
-<li><p><strong>winsize</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – window-size for Savitzky-Golay velocity estimation (in ms, or with units)</p></li>
-<li><p><strong>vel_onset</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – <p>velocity threshold to detect blink onset (negative value).</p>
+<li><p><strong>winsize</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – size of the Savitzky-Golay window of the velocity (in ms, or with
+units; default 45 ms), rounded to the nearest odd number of
+samples, at least 5 samples</p></li>
+<li><p><strong>vel_onset</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – <p>velocity threshold to detect blink onset (the closing of the lid):</p>
 <ul>
-<li><p>If float: threshold in pupil-units per millisecond (e.g., -5.0)</p></li>
-<li><p>If str: percentile of velocity distribution (e.g., “5%” for bottom 5%)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;&lt;k&gt;sd&quot;</span></code> (default <code class="docutils literal notranslate"><span class="pre">&quot;25sd&quot;</span></code>): k times the robust standard
+deviation (1.4826 MAD) of the velocity of the recording, as a
+negative threshold; it adapts to the units and the noise of
+the data</p></li>
+<li><p>a number: threshold in pupil units per millisecond (negative,
+e.g. -5.0)</p></li>
 </ul>
 </p></li>
-<li><p><strong>vel_offset</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – <p>velocity threshold to detect blink offset (positive value).</p>
-<ul>
-<li><p>If float: threshold in pupil-units per millisecond (e.g., 5.0)</p></li>
-<li><p>If str: percentile of velocity distribution (e.g., “95%” for top 5%)</p></li>
-</ul>
-</p></li>
+<li><p><strong>vel_offset</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – velocity threshold to detect blink offset (the reopening):
+<code class="docutils literal notranslate"><span class="pre">&quot;&lt;k&gt;sd&quot;</span></code> (default <code class="docutils literal notranslate"><span class="pre">&quot;25sd&quot;</span></code>, positive) or a number in pupil
+units per millisecond (positive, e.g. 5.0)</p></li>
 <li><p><strong>vel_onset_min_duration</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – minimum duration (in ms, or with units) that velocity must exceed threshold to detect as onset
 (to avoid noise-induced false detections)</p></li>
 <li><p><strong>vel_offset_min_duration</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – minimum duration (in ms, or with units) that velocity must exceed threshold to detect as offset
@@ -848,21 +908,20 @@ if <cite>None</cite>, use the object-level setting</p></li>
 <dt class="field-even">Other Parameters<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
 <li><p><strong>winsize</strong> (float, str or Quantity) – <code class="docutils literal notranslate"><span class="pre">&quot;mahot&quot;</span></code>: size of the Savitzky-Golay window (in ms, or with
-units); default 25</p></li>
-<li><p><strong>vel_onset</strong> (float or str) – <code class="docutils literal notranslate"><span class="pre">&quot;mahot&quot;</span></code>: velocity threshold to detect blink onset (negative
-value); default -5.0</p>
+units; rounded to the nearest odd number of samples, at least 5);
+default 30</p></li>
+<li><p><strong>vel_onset</strong> (float or str) – <code class="docutils literal notranslate"><span class="pre">&quot;mahot&quot;</span></code>: velocity threshold that finds the start of the
+closing around each blink; default <code class="docutils literal notranslate"><span class="pre">&quot;2sd&quot;</span></code></p>
 <ul>
-<li><p>If float: threshold in pupil-units per millisecond (e.g., -5.0)</p></li>
-<li><p>If str: percentile of velocity distribution (e.g., “5%” for bottom 5%)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;&lt;k&gt;sd&quot;</span></code>: k robust standard deviations of the velocity of
+the recording (negative; see <a class="reference internal" href="#pypillometry.eyedata.pupil.PupilNamespace.blinks_detect" title="pypillometry.eyedata.pupil.PupilNamespace.blinks_detect"><code class="xref py py-meth docutils literal notranslate"><span class="pre">blinks_detect()</span></code></a>), which
+works in any units</p></li>
+<li><p>a number: threshold in pupil units per millisecond (e.g., -5.0)</p></li>
 </ul>
 </li>
-<li><p><strong>vel_offset</strong> (float or str) – <code class="docutils literal notranslate"><span class="pre">&quot;mahot&quot;</span></code>: velocity threshold to detect blink offset (positive
-value); default 5.0</p>
-<ul>
-<li><p>If float: threshold in pupil-units per millisecond (e.g., 5.0)</p></li>
-<li><p>If str: percentile of velocity distribution (e.g., “95%” for top 5%)</p></li>
-</ul>
-</li>
+<li><p><strong>vel_offset</strong> (float or str) – <code class="docutils literal notranslate"><span class="pre">&quot;mahot&quot;</span></code>: velocity threshold that finds the end of the
+reopening; default <code class="docutils literal notranslate"><span class="pre">&quot;2sd&quot;</span></code> (positive), or a number (units per
+ms, e.g. 5.0)</p></li>
 <li><p><strong>margin</strong> (Tuple[float,float] or Quantity) – <code class="docutils literal notranslate"><span class="pre">&quot;mahot&quot;</span></code>: margin that is subtracted/added to onset and offset
 (in ms, or with units, e.g. <code class="docutils literal notranslate"><span class="pre">(10,</span> <span class="pre">30)</span> <span class="pre">*</span> <span class="pre">u.ms</span></code>); default
 <code class="docutils literal notranslate"><span class="pre">(10,</span> <span class="pre">30)</span></code>. <code class="docutils literal notranslate"><span class="pre">&quot;kalman&quot;</span></code>: time before and after the core of
@@ -1547,6 +1606,60 @@ if <cite>None</cite>, use the object-level setting</p></li>
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.eyedata.pupil.PupilNamespace.spectrum">
+<span class="sig-name descname"><span class="pre">spectrum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variable</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pupil'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'200</span> <span class="pre">s'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overlap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_missing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'original'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/eyedata/pupil.html#PupilNamespace.spectrum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.eyedata.pupil.PupilNamespace.spectrum" title="Link to this definition">#</a></dt>
+<dd><p>Power spectrum of the pupil size (Welch’s method for data with gaps).</p>
+<p>The signal is cut into overlapping windows within the periods that
+are not excluded (see <a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData.exclude_intervals" title="pypillometry.EyeData.exclude_intervals"><code class="xref py py-meth docutils literal notranslate"><span class="pre">exclude_intervals()</span></code></a>).
+Windows with too many unusable samples are skipped; the gaps in the
+other windows are bridged linearly, and the periodograms of the
+windows are averaged (see <a class="reference internal" href="pypillometry.signal.spectrum.html#pypillometry.signal.spectrum" title="pypillometry.signal.spectrum"><code class="xref py py-func docutils literal notranslate"><span class="pre">spectrum()</span></code></a>).
+Nothing has to be interpolated before, but blinks should be
+detected, so that they are treated as gaps.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>eyes</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a>) – eyes to process; if empty, all eyes with the variable</p></li>
+<li><p><strong>variable</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – variable to use (default <code class="docutils literal notranslate"><span class="pre">&quot;pupil&quot;</span></code>)</p></li>
+<li><p><strong>window</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><a class="reference internal" href="pypillometry.Quantity.html#pypillometry.Quantity" title="pypillometry.Quantity"><em>Quantity</em></a>) – length of the windows (plain numbers are ms; default 200 s);
+the lowest frequency is one cycle per window</p></li>
+<li><p><strong>overlap</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – overlap of neighbouring windows as a fraction of their length
+(default 0.5)</p></li>
+<li><p><strong>max_missing</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – windows with a larger fraction of unusable samples are skipped
+(default 0.3)</p></li>
+<li><p><strong>scale</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – <code class="docutils literal notranslate"><span class="pre">&quot;original&quot;</span></code> (default): spectrum of the signal in its units;
+<code class="docutils literal notranslate"><span class="pre">&quot;log%&quot;</span></code>: of <span class="math notranslate nohighlight">\(100 \log(x / \mathrm{median})\)</span>, the change
+relative to the median in percent, which makes recordings
+with different pupil units comparable</p></li>
+<li><p><strong>policy</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><a class="reference internal" href="pypillometry.MaskPolicy.html#pypillometry.MaskPolicy" title="pypillometry.MaskPolicy"><em>MaskPolicy</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – mask policy that decides which samples are usable (see
+<a class="reference internal" href="pypillometry.EyeData.html#pypillometry.EyeData.mask" title="pypillometry.EyeData.mask"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mask()</span></code></a>); default <code class="docutils literal notranslate"><span class="pre">&quot;default&quot;</span></code></p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pypillometry.signal.Spectrum.html#pypillometry.signal.Spectrum" title="pypillometry.signal.Spectrum"><code class="xref py py-class docutils literal notranslate"><span class="pre">Spectrum</span></code></a> (frequencies in Hz,
+power spectral density in units squared per Hz) for each eye,
+with keys like <code class="docutils literal notranslate"><span class="pre">&quot;left_pupil&quot;</span></code></p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="../plotting.html#pypillometry.plot.PlotNamespace.plot_pupil_spectrum" title="pypillometry.plot.PlotNamespace.plot_pupil_spectrum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pypillometry.plot.PlotNamespace.plot_pupil_spectrum</span></code></a></dt><dd><p>plot the spectra</p>
+</dd>
+</dl>
+</div>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sp</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">spectrum</span><span class="p">(</span><span class="n">window</span><span class="o">=</span><span class="s2">"100 s"</span><span class="p">)[</span><span class="s2">"left_pupil"</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sp</span><span class="o">.</span><span class="n">freqs</span><span class="p">,</span> <span class="n">sp</span><span class="o">.</span><span class="n">power</span>
+</pre></div>
+</div>
+</dd></dl>
+
 </dd></dl>
 
 </section>
@@ -1610,6 +1723,7 @@ if <cite>None</cite>, use the object-level setting</p></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.eyedata.pupil.PupilNamespace.lowpass_filter"><code class="docutils literal notranslate"><span class="pre">lowpass_filter()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.eyedata.pupil.PupilNamespace.merge_eyes"><code class="docutils literal notranslate"><span class="pre">merge_eyes()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.eyedata.pupil.PupilNamespace.smooth_window"><code class="docutils literal notranslate"><span class="pre">smooth_window()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.eyedata.pupil.PupilNamespace.spectrum"><code class="docutils literal notranslate"><span class="pre">spectrum()</span></code></a></li>
 </ul>
 </li>
 </ul>

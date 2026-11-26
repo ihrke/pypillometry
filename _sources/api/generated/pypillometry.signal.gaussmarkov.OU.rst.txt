@@ -1,0 +1,30 @@
+﻿OU
+==
+
+.. currentmodule:: pypillometry.signal.gaussmarkov
+
+.. autoclass:: OU
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~OU.cov
+      ~OU.discretise
+      ~OU.get_params
+      ~OU.psd
+      ~OU.ss
+      ~OU.variogram
+      ~OU.with_params
+   
+   
+
+
+   .. rubric:: Details

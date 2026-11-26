@@ -1,0 +1,6 @@
+﻿general\_prior
+==============
+
+.. currentmodule:: pypillometry.signal.gaussmarkov
+
+.. autofunction:: general_prior

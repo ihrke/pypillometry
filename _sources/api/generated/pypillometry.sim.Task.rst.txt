@@ -1,0 +1,34 @@
+﻿Task
+====
+
+.. currentmodule:: pypillometry.sim
+
+.. autoclass:: Task
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~Task.apply
+      ~Task.block
+      ~Task.eyes_in
+      ~Task.from_dict
+      ~Task.generate
+      ~Task.plot
+      ~Task.repeat
+      ~Task.response
+      ~Task.rest
+      ~Task.stimulus
+      ~Task.to_dict
+   
+   
+
+
+   .. rubric:: Details

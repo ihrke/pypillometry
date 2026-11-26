@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Data objects &#8212; pypillometry v2.2.4</title>
+    <title>Data objects &#8212; pypillometry v2.3.0</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=b5d81189"></script>
+    <script src="../_static/documentation_options.js?v=387c4177"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.4" />
+  <meta name="docsearch:version" content="v2.3.0" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -420,6 +420,7 @@
 </ul>
 </details></li>
 <li class="toctree-l1"><a class="reference internal" href="modeling.html">Modeling the pupil signal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simulation.html">Simulated data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="studies.html">Studies with many participants</a></li>
 <li class="toctree-l1"><a class="reference internal" href="settings.html">Settings and logging</a></li>
 </ul>
@@ -776,14 +777,13 @@ again to the already processed data. If you prefer copies by default, set
 <code class="docutils literal notranslate"><span class="pre">inplace=False</span></code> when creating an object or for the whole package with
 <a class="reference internal" href="../api/generated/pypillometry.set_default_inplace.html#pypillometry.set_default_inplace" title="pypillometry.set_default_inplace"><code class="xref py py-func docutils literal notranslate"><span class="pre">set_default_inplace()</span></code></a> (see <a class="reference internal" href="settings.html"><span class="doc">Settings and logging</span></a>).</p>
 </section>
-<section id="fake-data">
-<h2>Fake data<a class="headerlink" href="#fake-data" title="Link to this heading">#</a></h2>
-<p><a class="reference internal" href="../api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData" title="pypillometry.FakeEyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">FakeEyeData</span></code></a> holds simulated data together with the true values
-used to generate them, which is useful for testing preprocessing methods.
-The functions for <a class="reference internal" href="../api/signal.html#api-simulated-data"><span class="std std-ref">simulated data</span></a> generate the parts (slow
-baseline changes, fixations, measurement noise), and
-<a class="reference internal" href="../api/generated/pypillometry.signal.generate_foreshortening_data.html#pypillometry.signal.generate_foreshortening_data" title="pypillometry.signal.generate_foreshortening_data"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_foreshortening_data()</span></code></a> creates a complete dataset (see
-<a class="reference internal" href="../experimental/foreshortening.html"><span class="doc">Correcting pupil foreshortening</span></a>).</p>
+<section id="simulated-data">
+<h2>Simulated data<a class="headerlink" href="#simulated-data" title="Link to this heading">#</a></h2>
+<p><a class="reference internal" href="../api/generated/pypillometry.sim.SimEyeData.html#pypillometry.sim.SimEyeData" title="pypillometry.sim.SimEyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">SimEyeData</span></code></a> holds simulated data together with
+the true values used to generate them, which is useful for testing
+preprocessing methods. Simulations are built from steps with
+<a class="reference internal" href="../api/generated/pypillometry.sim.Simulation.html#pypillometry.sim.Simulation" title="pypillometry.sim.Simulation"><code class="xref py py-class docutils literal notranslate"><span class="pre">pp.sim.Simulation</span></code></a> (see
+<a class="reference internal" href="simulation.html"><span class="doc">Simulated data</span></a>).</p>
 </section>
 </section>
 
@@ -844,7 +844,7 @@ baseline changes, fixations, measurement noise), and
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#excluded-periods">Excluded periods</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pipelines-and-history">Pipelines and history</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#in-place-or-copy">In place or copy?</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fake-data">Fake data</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#simulated-data">Simulated data</a></li>
 </ul>
   </nav></div>
 

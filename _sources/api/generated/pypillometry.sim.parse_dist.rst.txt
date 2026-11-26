@@ -1,0 +1,6 @@
+﻿parse\_dist
+===========
+
+.. currentmodule:: pypillometry.sim
+
+.. autofunction:: parse_dist

@@ -1,0 +1,27 @@
+﻿Foreshortening
+==============
+
+.. currentmodule:: pypillometry.sim
+
+.. autoclass:: Foreshortening
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~Foreshortening.apply
+      ~Foreshortening.eyes_in
+      ~Foreshortening.from_dict
+      ~Foreshortening.to_dict
+   
+   
+
+
+   .. rubric:: Details

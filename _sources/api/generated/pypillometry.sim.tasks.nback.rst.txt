@@ -1,0 +1,6 @@
+﻿nback
+=====
+
+.. currentmodule:: pypillometry.sim.tasks
+
+.. autofunction:: nback

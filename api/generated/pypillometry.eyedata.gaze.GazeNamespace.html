@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>GazeNamespace &#8212; pypillometry v2.2.4</title>
+    <title>GazeNamespace &#8212; pypillometry v2.3.0</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=b5d81189"></script>
+    <script src="../../_static/documentation_options.js?v=387c4177"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.4" />
+  <meta name="docsearch:version" content="v2.3.0" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -410,7 +410,6 @@
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.MaskPolicy.html">MaskPolicy</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.HeadMountedEyeData.html">HeadMountedEyeData</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.eyedata.head_mounted.SceneNamespace.html">SceneNamespace</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.FakeEyeData.html">FakeEyeData</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.keephistory.html">keephistory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.QualityReport.html">QualityReport</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.QualityMetric.html">QualityMetric</a></li>
@@ -536,10 +535,6 @@
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupilresponse_nnls.html">pupilresponse_nnls</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_signal_quality.html">pupil_signal_quality</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.pupil_eye_offset.html">pupil_eye_offset</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.fake_pupil_baseline.html">fake_pupil_baseline</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.fake_gaze_fixations.html">fake_gaze_fixations</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.add_measurement_noise.html">add_measurement_noise</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.generate_foreshortening_data.html">generate_foreshortening_data</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../geometry.html">Geometry and gaze</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -549,6 +544,63 @@
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.ROI.html">ROI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.CircularROI.html">CircularROI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.RectangularROI.html">RectangularROI</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../timescale.html">Timescale model (experimental)</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.TimescaleModel.html">TimescaleModel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.TimescaleGroup.html">TimescaleGroup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.timescale.plots.TimescalePlots.html">TimescalePlots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.timescale.plots.TimescaleGroupPlots.html">TimescaleGroupPlots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.block_mean.html">block_mean</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.coarsen.html">coarsen</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.semivariogram.html">semivariogram</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.plot_variogram.html">plot_variogram</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.spectrum.html">spectrum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.plot_spectrum.html">plot_spectrum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.Variogram.html">Variogram</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.Spectrum.html">Spectrum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.TimescaleBank.html">TimescaleBank</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.GaussianPrior.html">GaussianPrior</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.BankFit.html">BankFit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.GroupFit.html">GroupFit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.VariogramCheck.html">VariogramCheck</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.GaussMarkovModel.html">GaussMarkovModel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.Matern.html">Matern</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.OU.html">OU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.Constant.html">Constant</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.LGSSM.html">LGSSM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.fit_bank.html">fit_bank</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.general_prior.html">general_prior</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.reference_prior.html">reference_prior</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.fit_group.html">fit_group</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.blocked_cv.html">blocked_cv</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.variogram_check.html">variogram_check</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.kalman_filter.html">kalman_filter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.kalman_loglik.html">kalman_loglik</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.rts_smoother.html">rts_smoother</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.forecast_errors.html">forecast_errors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.signal.gaussmarkov.simulate.html">simulate</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../sim.html">Simulated data: <code class="docutils literal notranslate"><span class="pre">pp.sim</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.sim.Simulation.html">Simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.sim.SimEyeData.html">SimEyeData</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.sim.SimPlotNamespace.html">SimPlotNamespace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.sim.Task.html">Task</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.sim.parse_dist.html">parse_dist</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.sim.tasks.pvt.html">pvt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.sim.tasks.sart.html">sart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.sim.tasks.ftrsgt.html">ftrsgt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.sim.tasks.nback.html">nback</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.sim.TimescalePupil.html">TimescalePupil</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.sim.Fixations.html">Fixations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.sim.Foreshortening.html">Foreshortening</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.sim.Units.html">Units</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.sim.Blinks.html">Blinks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.sim.WhiteNoise.html">WhiteNoise</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.sim.TrackerLoss.html">TrackerLoss</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.sim.blink_occlusion.html">blink_occlusion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.sim.parse_rate.html">parse_rate</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../units.html">Units</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>

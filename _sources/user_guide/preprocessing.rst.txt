@@ -60,61 +60,12 @@ drops in the pupil's velocity profile. The detected blinks are stored in the
 object (the ``"blink"`` layer, which masks them) and the object is
 returned (``d.pupil.blinks_detect()`` works in place). Check them with
 :meth:`~EyeData.get_blinks` (a dict with one :class:`Intervals`
-per channel, in ms); ``d.clear_layer("blink")`` removes them again.
-A drop only counts as the onset of a blink if the velocity stays beyond
-the threshold for a while (``vel_onset_min_duration``, 10 ms by default),
-so that brief changes, e.g. from eye movements, are not taken for blinks;
-``margin=`` extends the detected blinks on both sides, e.g. to include the
-whole transient around them.
-:meth:`d.plot.plot_blink_clusters() <EyeData.plot.plot_blink_clusters>`
-shows the detected blinks in a few groups of similar shape, on top of all
-blinks in grey, and the blinks without missing samples in a panel of their
-own. A group that does not look like blinks (e.g., no drop and rise, or
-steps) means that the detection finds too much: change its parameters and
-plot again.
-:meth:`~EyeData.pupil.blinks_interpolate` replaces the pupil size during
-blinks by a smooth curve (Mathôt, 2013). With ``method="kalman"``, it
-replaces them instead by their expected value given the signal around them
-(Kalman smoother); this uses all of the signal around each blink, so it is
-less affected by noise, and it has no parameters to tune. It replaces
-exactly the detected blinks, so these should include the transients around
-the blinks (``margin=`` of :meth:`~EyeData.pupil.blinks_detect`).
-Interpolated samples are used by
-all later steps (filters, segments, statistics); they keep the
-``"interpolated"`` layer, so they can be left out with
-``policy="strict"`` (see :doc:`missing_data`).
-
-One blink, before and after: the pupil size drops and is then missing
-while the eye is closed; the detected blink (red) is extended by a margin
-on each side and replaced by a smooth curve (green):
-
-.. plot::
-   :include-source: False
-
-   from pypillometry import u
-
-   raw = pp.get_example_data("rlmw_002_short")
-   d = raw | pp.pupil.blinks_detect() | pp.pupil.blinks_interpolate()
-   t0, t1 = 31800, 32900
-   sel = (raw.tx >= t0) & (raw.tx < t1)
-   t = raw.tx[sel] / 1000
-
-   fig, ax = plt.subplots(figsize=(8, 3.4))
-   for a, b in d.get_interpolated("left", "pupil")["left_pupil"].intervals:
-       if a < t1 and b > t0:
-           ax.axvspan(a / 1000, b / 1000, color="C2", alpha=0.12, lw=0)
-   for a, b in d.get_blinks("left", "pupil")["left_pupil"].intervals:
-       if a < t1 and b > t0:
-           ax.axvspan(a / 1000, b / 1000, color="C3", alpha=0.25, lw=0)
-   ax.plot(t, raw.data["left_pupil"][sel], color="0.5", lw=2.5, label="recorded")
-   ax.plot(t, d.data["left_pupil"][sel], color="C2", lw=1.2, label="after blinks_interpolate()")
-   ax.plot([], [], color="C3", alpha=0.25, lw=8, label="blink (detected)")
-   ax.plot([], [], color="C2", alpha=0.12, lw=8, label="interpolated (blink + margins)")
-   ax.set_xlabel("time (s)")
-   ax.set_ylabel("left pupil")
-   ax.set_xlim(t[0], t[-1])
-   ax.legend(fontsize=8, loc="lower left", frameon=False)
-   fig.tight_layout()
+per channel, in ms); ``d.clear_layer("blink")`` removes them again. The
+interpolation (``blinks_interpolate()``) finds the start and end of the
+transients around each blink and interpolates through them.
+Interpolated samples are used by all later steps (filters, segments, 
+statistics); they keep the ``"interpolated"`` layer, so they can be left 
+out with ``policy="strict"`` (see :doc:`missing_data`).
 
 The parameters of the default method decide how much of the signal around
 the missing samples is replaced. Instead of setting them by eye,
@@ -128,13 +79,7 @@ the missing samples is replaced. Instead of setting them by eye,
 
 It transplants the obvious blinks of the recording into its clean
 stretches, where the signal without the blink is known, and searches for
-the parameters that reconstruct it best. Obvious blinks are detected
-blinks with missing samples, a large drop of the pupil before and a large
-rise after them, and no other blinks close by; other gaps (e.g., the eye
-tracker losing the pupil, or eye movements) are not transplanted. The search runs on a few blinks and is refined
-on others; a part of the blinks is kept for testing: the result shows the
-error with the tuned and with the default parameters for them. The
-functions behind it are in ``pp.signal`` (see :ref:`api-transplant`).
+the parameters that reconstruct it best.
 
 With ``method="kalman"``, only the margins before and after the core of the
 blinks are tuned, i.e. how far the transients reach (the Kalman
@@ -209,13 +154,10 @@ A 4 Hz low-pass filter removes the fast noise:
    d = pp.get_example_data("rlmw_002_short") | pp.pupil.blinks_detect() | pp.pupil.blinks_interpolate()
    filtered = d.pupil.lowpass_filter(cutoff=4, inplace=False)
 
-   sel = (d.tx >= 12000) & (d.tx < 17000)
    fig, ax = plt.subplots(figsize=(8, 3))
-   ax.plot(d.tx[sel] / 1000, d["left_pupil"][sel], color="0.6", lw=1, label="before")
-   ax.plot(d.tx[sel] / 1000, filtered["left_pupil"][sel], color="C0", lw=1.5,
-           label="lowpass_filter(cutoff=4)")
-   ax.set(xlabel="time (s)", ylabel="left pupil")
-   ax.legend(frameon=False, fontsize=8)
+   kw = dict(eyes="left", plot_range=(12, 17), show_events=False, show_blinks=False, ax=ax)
+   d.plot.plot_pupil(label_prefix="before", style=dict(color="0.6", lw=1), **kw)
+   filtered.plot.plot_pupil(label_prefix="low-pass 4 Hz", style=dict(color="C0", lw=1.5), **kw)
    fig.tight_layout()
 
 Downsampling to 50 Hz keeps the slow changes of the pupil:
@@ -226,12 +168,9 @@ Downsampling to 50 Hz keeps the slow changes of the pupil:
    low = d.downsample(50, inplace=False)          # 500 Hz -> 50 Hz
 
    fig, ax = plt.subplots(figsize=(8, 3))
-   for obj, style, label in [(d, dict(color="0.6", lw=1), "500 Hz"),
-                             (low, dict(color="C1", marker="o", ms=3, lw=1), "downsample(50): 50 Hz")]:
-       sel = (obj.tx >= 12000) & (obj.tx < 14000)
-       ax.plot(obj.tx[sel] / 1000, obj["left_pupil"][sel], label=label, **style)
-   ax.set(xlabel="time (s)", ylabel="left pupil")
-   ax.legend(frameon=False, fontsize=8)
+   kw = dict(eyes="left", plot_range=(12, 14), show_events=False, show_blinks=False, ax=ax)
+   d.plot.plot_pupil(label_prefix="500 Hz", style=dict(color="0.6", lw=1), **kw)
+   low.plot.plot_pupil(label_prefix="50 Hz", style=dict(color="C1", marker="o", ms=3, lw=1), **kw)
    fig.tight_layout()
 
 

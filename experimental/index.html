@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Experimental features &#8212; pypillometry v2.2.4</title>
+    <title>Experimental features &#8212; pypillometry v2.3.0</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=b5d81189"></script>
+    <script src="../_static/documentation_options.js?v=387c4177"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.4" />
+  <meta name="docsearch:version" content="v2.3.0" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -408,6 +408,7 @@
 <li class="toctree-l1"><a class="reference internal" href="foreshortening_correction_algorithm.html">Foreshortening Correction for Pupil Size Measurements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="gaze_rois.html">Experimental setup and regions of interest</a></li>
 <li class="toctree-l1"><a class="reference internal" href="spatial_calibration.html">Spatial calibration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="timescale_model.html">Slow and fast fluctuations of the pupil: the timescale model</a></li>
 </ul>
 </div>
 </nav></div>
@@ -506,10 +507,20 @@ tracker.</p>
 </div>
 <a class="sd-stretched-link sd-hide-link-text reference internal" href="spatial_calibration.html"><span class="doc">Spatial calibration</span></a></div>
 </div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+<span class="fas fa-wave-square"></span> Slow and fast pupil fluctuations</div>
+<p class="sd-card-text">Model the pupil size as components at several time scales: the slow
+baseline with uncertainty, and reconstruction of missing data.</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="timescale_model.html"><span class="doc">Slow and fast fluctuations of the pupil: the timescale model</span></a></div>
+</div>
 </div>
 </div>
 <p>The related classes are listed in the API reference under
-<a class="reference internal" href="../api/geometry.html"><span class="doc">Geometry and gaze</span></a>.</p>
+<a class="reference internal" href="../api/geometry.html"><span class="doc">Geometry and gaze</span></a> and <a class="reference internal" href="../api/timescale.html"><span class="doc">Timescale model (experimental)</span></a>.</p>
 <div class="toctree-wrapper compound">
 </div>
 </section>

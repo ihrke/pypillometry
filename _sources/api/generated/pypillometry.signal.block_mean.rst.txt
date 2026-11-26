@@ -1,0 +1,6 @@
+﻿block\_mean
+===========
+
+.. currentmodule:: pypillometry.signal
+
+.. autofunction:: block_mean

@@ -1,0 +1,6 @@
+﻿kalman\_loglik
+==============
+
+.. currentmodule:: pypillometry.signal.gaussmarkov
+
+.. autofunction:: kalman_loglik

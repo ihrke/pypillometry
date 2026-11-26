@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Preprocessing &#8212; pypillometry v2.2.4</title>
+    <title>Preprocessing &#8212; pypillometry v2.3.0</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=b5d81189"></script>
+    <script src="../_static/documentation_options.js?v=387c4177"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.4" />
+  <meta name="docsearch:version" content="v2.3.0" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -420,6 +420,7 @@
 </ul>
 </details></li>
 <li class="toctree-l1"><a class="reference internal" href="modeling.html">Modeling the pupil signal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simulation.html">Simulated data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="studies.html">Studies with many participants</a></li>
 <li class="toctree-l1"><a class="reference internal" href="settings.html">Settings and logging</a></li>
 </ul>
@@ -550,35 +551,12 @@ drops in the pupil’s velocity profile. The detected blinks are stored in the
 object (the <code class="docutils literal notranslate"><span class="pre">&quot;blink&quot;</span></code> layer, which masks them) and the object is
 returned (<code class="docutils literal notranslate"><span class="pre">d.pupil.blinks_detect()</span></code> works in place). Check them with
 <a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.get_blinks" title="pypillometry.EyeData.get_blinks"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_blinks()</span></code></a> (a dict with one <a class="reference internal" href="../api/generated/pypillometry.Intervals.html#pypillometry.Intervals" title="pypillometry.Intervals"><code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code></a>
-per channel, in ms); <code class="docutils literal notranslate"><span class="pre">d.clear_layer(&quot;blink&quot;)</span></code> removes them again.
-A drop only counts as the onset of a blink if the velocity stays beyond
-the threshold for a while (<code class="docutils literal notranslate"><span class="pre">vel_onset_min_duration</span></code>, 10 ms by default),
-so that brief changes, e.g. from eye movements, are not taken for blinks;
-<code class="docutils literal notranslate"><span class="pre">margin=</span></code> extends the detected blinks on both sides, e.g. to include the
-whole transient around them.
-<a class="reference internal" href="../api/plotting.html#pypillometry.plot.PlotNamespace.plot_blink_clusters" title="pypillometry.plot.PlotNamespace.plot_blink_clusters"><code class="xref py py-meth docutils literal notranslate"><span class="pre">d.plot.plot_blink_clusters()</span></code></a>
-shows the detected blinks in a few groups of similar shape, on top of all
-blinks in grey, and the blinks without missing samples in a panel of their
-own. A group that does not look like blinks (e.g., no drop and rise, or
-steps) means that the detection finds too much: change its parameters and
-plot again.
-<a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.blinks_interpolate" title="pypillometry.eyedata.pupil.PupilNamespace.blinks_interpolate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">blinks_interpolate()</span></code></a> replaces the pupil size during
-blinks by a smooth curve (Mathôt, 2013). With <code class="docutils literal notranslate"><span class="pre">method=&quot;kalman&quot;</span></code>, it
-replaces them instead by their expected value given the signal around them
-(Kalman smoother); this uses all of the signal around each blink, so it is
-less affected by noise, and it has no parameters to tune. It replaces
-exactly the detected blinks, so these should include the transients around
-the blinks (<code class="docutils literal notranslate"><span class="pre">margin=</span></code> of <a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.blinks_detect" title="pypillometry.eyedata.pupil.PupilNamespace.blinks_detect"><code class="xref py py-meth docutils literal notranslate"><span class="pre">blinks_detect()</span></code></a>).
-Interpolated samples are used by
-all later steps (filters, segments, statistics); they keep the
-<code class="docutils literal notranslate"><span class="pre">&quot;interpolated&quot;</span></code> layer, so they can be left out with
-<code class="docutils literal notranslate"><span class="pre">policy=&quot;strict&quot;</span></code> (see <a class="reference internal" href="missing_data.html"><span class="doc">Missing data</span></a>).</p>
-<p>One blink, before and after: the pupil size drops and is then missing
-while the eye is closed; the detected blink (red) is extended by a margin
-on each side and replaced by a smooth curve (green):</p>
-<figure class="align-default">
-<img alt="../_images/preprocessing-1.png" class="plot-directive" src="../_images/preprocessing-1.png" />
-</figure>
+per channel, in ms); <code class="docutils literal notranslate"><span class="pre">d.clear_layer(&quot;blink&quot;)</span></code> removes them again. The
+interpolation (<code class="docutils literal notranslate"><span class="pre">blinks_interpolate()</span></code>) finds the start and end of the
+transients around each blink and interpolates through them.
+Interpolated samples are used by all later steps (filters, segments,
+statistics); they keep the <code class="docutils literal notranslate"><span class="pre">&quot;interpolated&quot;</span></code> layer, so they can be left
+out with <code class="docutils literal notranslate"><span class="pre">policy=&quot;strict&quot;</span></code> (see <a class="reference internal" href="missing_data.html"><span class="doc">Missing data</span></a>).</p>
 <p>The parameters of the default method decide how much of the signal around
 the missing samples is replaced. Instead of setting them by eye,
 <a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.blinks_optimize_parameters" title="pypillometry.eyedata.pupil.PupilNamespace.blinks_optimize_parameters"><code class="xref py py-meth docutils literal notranslate"><span class="pre">blinks_optimize_parameters()</span></code></a> tunes them for a recording:</p>
@@ -589,13 +567,7 @@ the missing samples is replaced. Instead of setting them by eye,
 </div>
 <p>It transplants the obvious blinks of the recording into its clean
 stretches, where the signal without the blink is known, and searches for
-the parameters that reconstruct it best. Obvious blinks are detected
-blinks with missing samples, a large drop of the pupil before and a large
-rise after them, and no other blinks close by; other gaps (e.g., the eye
-tracker losing the pupil, or eye movements) are not transplanted. The search runs on a few blinks and is refined
-on others; a part of the blinks is kept for testing: the result shows the
-error with the tuned and with the default parameters for them. The
-functions behind it are in <code class="docutils literal notranslate"><span class="pre">pp.signal</span></code> (see <a class="reference internal" href="../api/signal.html#api-transplant"><span class="std std-ref">Transplantation of blinks</span></a>).</p>
+the parameters that reconstruct it best.</p>
 <p>With <code class="docutils literal notranslate"><span class="pre">method=&quot;kalman&quot;</span></code>, only the margins before and after the core of the
 blinks are tuned, i.e. how far the transients reach (the Kalman
 interpolation needs no velocity thresholds); <code class="docutils literal notranslate"><span class="pre">res.params</span></code> includes the
@@ -676,35 +648,29 @@ downsampling to a rate close to the frequencies of interest.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002_short"</span><span class="p">)</span> <span class="o">|</span> <span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span> <span class="o">|</span> <span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_interpolate</span><span class="p">()</span>
 <span class="n">filtered</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">lowpass_filter</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
-<span class="n">sel</span> <span class="o">=</span> <span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">tx</span> <span class="o">&gt;=</span> <span class="mi">12000</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">tx</span> <span class="o">&lt;</span> <span class="mi">17000</span><span class="p">)</span>
 <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">sel</span><span class="p">]</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">d</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">][</span><span class="n">sel</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">"0.6"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"before"</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">sel</span><span class="p">]</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">filtered</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">][</span><span class="n">sel</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">"C0"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span>
-        <span class="n">label</span><span class="o">=</span><span class="s2">"lowpass_filter(cutoff=4)"</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s2">"time (s)"</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">"left pupil"</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="n">kw</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="s2">"left"</span><span class="p">,</span> <span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">17</span><span class="p">),</span> <span class="n">show_events</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">show_blinks</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_pupil</span><span class="p">(</span><span class="n">label_prefix</span><span class="o">=</span><span class="s2">"before"</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"0.6"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
+<span class="n">filtered</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_pupil</span><span class="p">(</span><span class="n">label_prefix</span><span class="o">=</span><span class="s2">"low-pass 4 Hz"</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"C0"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.5</span><span class="p">),</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
 <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
 </pre></div>
 </div>
 <figure class="align-default">
-<img alt="../_images/preprocessing-2.png" class="plot-directive" src="../_images/preprocessing-2.png" />
+<img alt="../_images/preprocessing-1.png" class="plot-directive" src="../_images/preprocessing-1.png" />
 </figure>
 <p>Downsampling to 50 Hz keeps the slow changes of the pupil:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002_short"</span><span class="p">)</span> <span class="o">|</span> <span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span> <span class="o">|</span> <span class="n">pp</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_interpolate</span><span class="p">()</span>
 <span class="n">low</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">downsample</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>          <span class="c1"># 500 Hz -&gt; 50 Hz</span>
 
 <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
-<span class="k">for</span> <span class="n">obj</span><span class="p">,</span> <span class="n">style</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="p">[(</span><span class="n">d</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"0.6"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="s2">"500 Hz"</span><span class="p">),</span>
-                          <span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"C1"</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">"o"</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="s2">"downsample(50): 50 Hz"</span><span class="p">)]:</span>
-    <span class="n">sel</span> <span class="o">=</span> <span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span> <span class="o">&gt;=</span> <span class="mi">12000</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span> <span class="o">&lt;</span> <span class="mi">14000</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">sel</span><span class="p">]</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">obj</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">][</span><span class="n">sel</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="o">**</span><span class="n">style</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s2">"time (s)"</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">"left pupil"</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="n">kw</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="s2">"left"</span><span class="p">,</span> <span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">14</span><span class="p">),</span> <span class="n">show_events</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">show_blinks</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_pupil</span><span class="p">(</span><span class="n">label_prefix</span><span class="o">=</span><span class="s2">"500 Hz"</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"0.6"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
+<span class="n">low</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_pupil</span><span class="p">(</span><span class="n">label_prefix</span><span class="o">=</span><span class="s2">"50 Hz"</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"C1"</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">"o"</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
 <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
 </pre></div>
 </div>
 <figure class="align-default">
-<img alt="../_images/preprocessing-3.png" class="plot-directive" src="../_images/preprocessing-3.png" />
+<img alt="../_images/preprocessing-2.png" class="plot-directive" src="../_images/preprocessing-2.png" />
 </figure>
 </section>
 <section id="scaling">
@@ -752,7 +718,7 @@ y-axes):</p>
 </pre></div>
 </div>
 <figure class="align-default">
-<img alt="../_images/preprocessing-4.png" class="plot-directive" src="../_images/preprocessing-4.png" />
+<img alt="../_images/preprocessing-3.png" class="plot-directive" src="../_images/preprocessing-3.png" />
 </figure>
 </section>
 <section id="combining-the-eyes">
@@ -796,7 +762,7 @@ has no jump and no gap:</p>
 </pre></div>
 </div>
 <figure class="align-default">
-<img alt="../_images/preprocessing-5.png" class="plot-directive" src="../_images/preprocessing-5.png" />
+<img alt="../_images/preprocessing-4.png" class="plot-directive" src="../_images/preprocessing-4.png" />
 </figure>
 </section>
 <section id="selecting-and-cleaning-up-data">

@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Plotting (d.plot) &#8212; pypillometry v2.2.4</title>
+    <title>Plotting (d.plot) &#8212; pypillometry v2.3.0</title>
   
   
   
@@ -42,13 +42,15 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=b5d81189"></script>
+    <script src="../_static/documentation_options.js?v=387c4177"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
     <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../_static/design-tabs.js?v=fcb327ea"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'api/plotting';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../_static/pypillometry_logo_200x200.png"/>
@@ -59,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.4" />
+  <meta name="docsearch:version" content="v2.3.0" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -410,7 +412,6 @@
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.MaskPolicy.html">MaskPolicy</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.HeadMountedEyeData.html">HeadMountedEyeData</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.eyedata.head_mounted.SceneNamespace.html">SceneNamespace</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.FakeEyeData.html">FakeEyeData</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.keephistory.html">keephistory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.QualityReport.html">QualityReport</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.QualityMetric.html">QualityMetric</a></li>
@@ -536,10 +537,6 @@
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.pupilresponse_nnls.html">pupilresponse_nnls</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.pupil_signal_quality.html">pupil_signal_quality</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.pupil_eye_offset.html">pupil_eye_offset</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.fake_pupil_baseline.html">fake_pupil_baseline</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.fake_gaze_fixations.html">fake_gaze_fixations</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.add_measurement_noise.html">add_measurement_noise</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.generate_foreshortening_data.html">generate_foreshortening_data</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="geometry.html">Geometry and gaze</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -549,6 +546,63 @@
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.ROI.html">ROI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.CircularROI.html">CircularROI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.RectangularROI.html">RectangularROI</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="timescale.html">Timescale model (experimental)</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.TimescaleModel.html">TimescaleModel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.TimescaleGroup.html">TimescaleGroup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.timescale.plots.TimescalePlots.html">TimescalePlots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.timescale.plots.TimescaleGroupPlots.html">TimescaleGroupPlots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.block_mean.html">block_mean</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.coarsen.html">coarsen</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.semivariogram.html">semivariogram</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.plot_variogram.html">plot_variogram</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.spectrum.html">spectrum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.plot_spectrum.html">plot_spectrum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.Variogram.html">Variogram</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.Spectrum.html">Spectrum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.gaussmarkov.TimescaleBank.html">TimescaleBank</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.gaussmarkov.GaussianPrior.html">GaussianPrior</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.gaussmarkov.BankFit.html">BankFit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.gaussmarkov.GroupFit.html">GroupFit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.gaussmarkov.VariogramCheck.html">VariogramCheck</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.gaussmarkov.GaussMarkovModel.html">GaussMarkovModel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.gaussmarkov.Matern.html">Matern</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.gaussmarkov.OU.html">OU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.gaussmarkov.Constant.html">Constant</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.gaussmarkov.LGSSM.html">LGSSM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.gaussmarkov.fit_bank.html">fit_bank</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.gaussmarkov.general_prior.html">general_prior</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.gaussmarkov.reference_prior.html">reference_prior</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.gaussmarkov.fit_group.html">fit_group</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.gaussmarkov.blocked_cv.html">blocked_cv</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.gaussmarkov.variogram_check.html">variogram_check</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.gaussmarkov.kalman_filter.html">kalman_filter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.gaussmarkov.kalman_loglik.html">kalman_loglik</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.gaussmarkov.rts_smoother.html">rts_smoother</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.gaussmarkov.forecast_errors.html">forecast_errors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.signal.gaussmarkov.simulate.html">simulate</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="sim.html">Simulated data: <code class="docutils literal notranslate"><span class="pre">pp.sim</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.sim.Simulation.html">Simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.sim.SimEyeData.html">SimEyeData</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.sim.SimPlotNamespace.html">SimPlotNamespace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.sim.Task.html">Task</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.sim.parse_dist.html">parse_dist</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.sim.tasks.pvt.html">pvt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.sim.tasks.sart.html">sart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.sim.tasks.ftrsgt.html">ftrsgt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.sim.tasks.nback.html">nback</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.sim.TimescalePupil.html">TimescalePupil</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.sim.Fixations.html">Fixations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.sim.Foreshortening.html">Foreshortening</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.sim.Units.html">Units</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.sim.Blinks.html">Blinks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.sim.WhiteNoise.html">WhiteNoise</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.sim.TrackerLoss.html">TrackerLoss</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.sim.blink_occlusion.html">blink_occlusion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/pypillometry.sim.parse_rate.html">parse_rate</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="units.html">Units</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -653,7 +707,10 @@ one).</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.plot.PlotNamespace.plot_pupil_segments" title="pypillometry.plot.PlotNamespace.plot_pupil_segments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot.PlotNamespace.plot_pupil_segments</span></code></a></p></td>
 <td><p>Plot the whole dataset chunked up into segments (usually to a PDF file).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.plot.PlotNamespace.plot_timeseries_segments" title="pypillometry.plot.PlotNamespace.plot_timeseries_segments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot.PlotNamespace.plot_timeseries_segments</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.plot.PlotNamespace.plot_pupil_spectrum" title="pypillometry.plot.PlotNamespace.plot_pupil_spectrum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot.PlotNamespace.plot_pupil_spectrum</span></code></a></p></td>
+<td><p>Plot the power spectrum of the pupil size on logarithmic axes.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.plot.PlotNamespace.plot_timeseries_segments" title="pypillometry.plot.PlotNamespace.plot_timeseries_segments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot.PlotNamespace.plot_timeseries_segments</span></code></a></p></td>
 <td><p>Plot the whole dataset chunked up into segments (usually to a PDF file).</p></td>
 </tr>
 </tbody>
@@ -1350,6 +1407,49 @@ instead.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.plot.PlotNamespace.plot_pupil_spectrum">
+<span class="sig-name descname"><span class="pre">plot_pupil_spectrum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variable</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pupil'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'200</span> <span class="pre">s'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'log%'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">per_decade</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.plot.PlotNamespace.plot_pupil_spectrum" title="Link to this definition">#</a></dt>
+<dd><p>Plot the power spectrum of the pupil size on logarithmic axes.</p>
+<p>The spectra come from
+<a class="reference internal" href="generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.spectrum" title="pypillometry.eyedata.pupil.PupilNamespace.spectrum"><code class="xref py py-meth docutils literal notranslate"><span class="pre">d.pupil.spectrum()</span></code></a>
+(Welch’s method; windows with many unusable samples are skipped)
+and are averaged in log-spaced frequency bands. A power law
+(e.g., 1/f) is a straight line; responses that are locked to a
+fixed rhythm of the trials show up as narrow peaks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>eyes</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a></span>) – eyes to plot; if empty, all eyes with the variable</p></li>
+<li><p><strong>variable</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – variable to use (default <code class="docutils literal notranslate"><span class="pre">&quot;pupil&quot;</span></code>)</p></li>
+<li><p><strong>window</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em> or </em><a class="reference internal" href="generated/pypillometry.Quantity.html#pypillometry.Quantity" title="pypillometry.Quantity"><em>Quantity</em></a>) – length of the windows (plain numbers are ms; default 200 s)</p></li>
+<li><p><strong>scale</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – <code class="docutils literal notranslate"><span class="pre">&quot;log%&quot;</span></code> (default): spectrum of the change relative to the
+median in percent, <span class="math notranslate nohighlight">\(100 \log(x / \mathrm{median})\)</span>;
+<code class="docutils literal notranslate"><span class="pre">&quot;original&quot;</span></code>: of the signal in its units</p></li>
+<li><p><strong>per_decade</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – number of frequency bands per factor of 10 (default 20); None:
+all frequencies</p></li>
+<li><p><strong>policy</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><a class="reference internal" href="generated/pypillometry.MaskPolicy.html#pypillometry.MaskPolicy" title="pypillometry.MaskPolicy"><em>MaskPolicy</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – mask policy that decides which samples are usable; default
+<code class="docutils literal notranslate"><span class="pre">&quot;default&quot;</span></code></p></li>
+<li><p><strong>ax</strong> (<em>matplotlib Axes</em><em>, </em><em>optional</em>) – axes to draw on; default: the current axes</p></li>
+<li><p><strong>title</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span></span>) – title of the plot</p></li>
+<li><p><strong>**kwargs</strong> – passed to <code class="docutils literal notranslate"><span class="pre">ax.plot</span></code></p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>matplotlib Axes</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002"</span><span class="p">)</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ax</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_pupil_spectrum</span><span class="p">(</span><span class="n">window</span><span class="o">=</span><span class="s2">"100 s"</span><span class="p">)</span>
+</pre></div>
+</div>
+<figure class="align-default">
+<img alt="../_images/plotting-11.png" class="plot-directive" src="../_images/plotting-11.png" />
+</figure>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.plot.PlotNamespace.plot_scanpath">
 <span class="sig-name descname"><span class="pre">plot_scanpath</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plot_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(-inf,</span> <span class="pre">inf)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_screen</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rois</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">roi_style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_onsets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sec'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.plot.PlotNamespace.plot_scanpath" title="Link to this definition">#</a></dt>
 <dd><p>Plot EyeData as a scanpath. Typically used for single trials
@@ -1410,7 +1510,7 @@ onset. Plotted only for the first eye. Default is True.</p></li>
 </pre></div>
 </div>
 <figure class="align-default">
-<img alt="../_images/plotting-11.png" class="plot-directive" src="../_images/plotting-11.png" />
+<img alt="../_images/plotting-12.png" class="plot-directive" src="../_images/plotting-12.png" />
 </figure>
 </dd></dl>
 
@@ -1484,7 +1584,7 @@ contain one axes per variable</p>
 </pre></div>
 </div>
 <figure class="align-default">
-<img alt="../_images/plotting-12.png" class="plot-directive" src="../_images/plotting-12.png" />
+<img alt="../_images/plotting-13.png" class="plot-directive" src="../_images/plotting-13.png" />
 </figure>
 <p>The first second after each stimulus, shaded in all subplots:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
@@ -1497,7 +1597,7 @@ contain one axes per variable</p>
 </pre></div>
 </div>
 <figure class="align-default">
-<img alt="../_images/plotting-13.png" class="plot-directive" src="../_images/plotting-13.png" />
+<img alt="../_images/plotting-14.png" class="plot-directive" src="../_images/plotting-14.png" />
 </figure>
 </dd></dl>
 
@@ -1543,7 +1643,7 @@ only the first is shown):</p>
 </pre></div>
 </div>
 <figure class="align-default">
-<img alt="../_images/plotting-14.png" class="plot-directive" src="../_images/plotting-14.png" />
+<img alt="../_images/plotting-15.png" class="plot-directive" src="../_images/plotting-15.png" />
 </figure>
 <p>With <code class="docutils literal notranslate"><span class="pre">pdf_file=&quot;segments.pdf&quot;</span></code>, the figures are written to a PDF file
 instead.</p>
@@ -1624,6 +1724,7 @@ instead.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.plot.PlotNamespace.plot_pupil"><code class="docutils literal notranslate"><span class="pre">plot_pupil()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.plot.PlotNamespace.plot_pupil_foreshortening_error_surface"><code class="docutils literal notranslate"><span class="pre">plot_pupil_foreshortening_error_surface()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.plot.PlotNamespace.plot_pupil_segments"><code class="docutils literal notranslate"><span class="pre">plot_pupil_segments()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.plot.PlotNamespace.plot_pupil_spectrum"><code class="docutils literal notranslate"><span class="pre">plot_pupil_spectrum()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.plot.PlotNamespace.plot_scanpath"><code class="docutils literal notranslate"><span class="pre">plot_scanpath()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.plot.PlotNamespace.plot_timeseries"><code class="docutils literal notranslate"><span class="pre">plot_timeseries()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.plot.PlotNamespace.plot_timeseries_segments"><code class="docutils literal notranslate"><span class="pre">plot_timeseries_segments()</span></code></a></li>

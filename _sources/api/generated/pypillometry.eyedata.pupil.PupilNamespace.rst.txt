@@ -27,6 +27,7 @@
       ~PupilNamespace.lowpass_filter
       ~PupilNamespace.merge_eyes
       ~PupilNamespace.smooth_window
+      ~PupilNamespace.spectrum
    
    
 

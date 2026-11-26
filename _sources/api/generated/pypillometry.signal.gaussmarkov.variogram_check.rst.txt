@@ -1,0 +1,6 @@
+﻿variogram\_check
+================
+
+.. currentmodule:: pypillometry.signal.gaussmarkov
+
+.. autofunction:: variogram_check

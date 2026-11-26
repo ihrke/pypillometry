@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pypillometry.eyedata.eyedata &#8212; pypillometry v2.2.4</title>
+    <title>pypillometry.eyedata.eyedata &#8212; pypillometry v2.3.0</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../../_static/documentation_options.js?v=b5d81189"></script>
+    <script src="../../../_static/documentation_options.js?v=387c4177"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -414,7 +414,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="v2.2.4" />
+  <meta name="docsearch:version" content="v2.3.0" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -1010,7 +1010,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">experimental_setup</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ExperimentalSetup</span><span class="p">]</span> <span class="c1">## geometry of the setup (or None)</span>
     <span class="n">calibration</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="c1">## SpatialCalibration per eye (or None)</span>
 
-    <span class="c1"># state (see pypillometry.state); subclasses (FakeEyeData) add their own fields</span>
+    <span class="c1"># state (see pypillometry.state); subclasses (e.g., SimEyeData) add their own fields</span>
     <span class="n">_STATE_FIELDS</span> <span class="o">=</span> <span class="p">(</span>
         <span class="s2">"name"</span><span class="p">,</span> <span class="s2">"fs"</span><span class="p">,</span> <span class="s2">"tx"</span><span class="p">,</span> <span class="p">(</span><span class="s2">"data"</span><span class="p">,</span> <span class="s2">"EyeDataDict"</span><span class="p">),</span> <span class="p">(</span><span class="s2">"events"</span><span class="p">,</span> <span class="s2">"Events"</span><span class="p">,</span> <span class="s2">"_events"</span><span class="p">),</span>
         <span class="s2">"params"</span><span class="p">,</span> <span class="s2">"history"</span><span class="p">,</span> <span class="s2">"inplace"</span><span class="p">,</span> <span class="s2">"info"</span><span class="p">,</span> <span class="p">(</span><span class="s2">"original"</span><span class="p">,</span> <span class="s2">"versioned"</span><span class="p">),</span>
@@ -1019,6 +1019,9 @@ window.runMermaid = runMermaid;</script>
     <span class="c1"># EyeDataDicts with one value per sample; the operations that change</span>
     <span class="c1"># the samples (_keep_samples, _decimate, _insert_samples) apply to all</span>
     <span class="n">_SAMPLE_ALIGNED</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"data"</span><span class="p">,)</span>
+    <span class="c1"># further Events (besides the events of the data) that follow the clock</span>
+    <span class="c1"># of the data: they are shifted by reset_time() and cut like the samples</span>
+    <span class="n">_TIME_ALIGNED</span> <span class="o">=</span> <span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
                     <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -2134,6 +2137,10 @@ window.runMermaid = runMermaid;</script>
             <span class="n">t0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">obj</span><span class="o">.</span><span class="n">_set_timebase</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="o">-</span><span class="n">t0</span><span class="p">)</span>
         <span class="n">obj</span><span class="o">.</span><span class="n">_events</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_events</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="o">-</span><span class="n">t0</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">_TIME_ALIGNED</span><span class="p">:</span>
+            <span class="n">ev</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ev</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">ev</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="o">-</span><span class="n">t0</span><span class="p">))</span>
         <span class="c1"># the original time of remove_intervals moves with the clock</span>
         <span class="k">if</span> <span class="s2">"removed_intervals"</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">params</span><span class="p">:</span>
             <span class="n">obj</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s2">"removed_intervals"</span><span class="p">]</span> <span class="o">=</span> <span class="p">[(</span><span class="n">a</span> <span class="o">-</span> <span class="n">t0</span><span class="p">,</span> <span class="n">b</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span>
@@ -2234,6 +2241,15 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        """</span>
         <span class="n">keep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">keep</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
         <span class="n">old_tx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tx</span>
+        <span class="c1"># further Events (_TIME_ALIGNED): kept if they fall on a kept sample</span>
+        <span class="n">aligned</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_TIME_ALIGNED</span><span class="p">:</span>
+            <span class="n">ev</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ev</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">ev</span><span class="p">):</span>
+                <span class="n">on</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">ev</span><span class="o">.</span><span class="n">onsets</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+                <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">old_tx</span><span class="p">,</span> <span class="n">on</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">old_tx</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">k</span> <span class="o">=</span> <span class="n">keep</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">on</span> <span class="o">&gt;=</span> <span class="n">old_tx</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">on</span> <span class="o">&lt;=</span> <span class="n">old_tx</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">aligned</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">keep</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">if</span> <span class="n">time_map</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">ev</span><span class="o">.</span><span class="n">keep</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="n">time_map</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_map_sample_aligned</span><span class="p">(</span><span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="n">d</span><span class="o">.</span><span class="n">_take</span><span class="p">(</span><span class="n">keep</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_timebase</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span> <span class="k">if</span> <span class="n">time_map</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">time_map</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">))[</span><span class="n">keep</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">time_map</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -2242,6 +2258,8 @@ window.runMermaid = runMermaid;</script>
             <span class="bp">self</span><span class="o">.</span><span class="n">_events</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_events</span><span class="o">.</span><span class="n">keep</span><span class="p">(</span><span class="n">keep_events</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">time_map</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_events</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_events</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="n">time_map</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">aligned</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">ev</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span>
 
 <div class="viewcode-block" id="EyeData.crop">

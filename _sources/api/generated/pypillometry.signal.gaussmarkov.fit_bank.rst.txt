@@ -1,0 +1,6 @@
+﻿fit\_bank
+=========
+
+.. currentmodule:: pypillometry.signal.gaussmarkov
+
+.. autofunction:: fit_bank

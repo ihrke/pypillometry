@@ -53,15 +53,11 @@ for the scene video in the namespace ``d.scene`` (as pipeline steps:
    HeadMountedEyeData
    eyedata.head_mounted.SceneNamespace
 
-Simulated data and history
---------------------------
+History
+-------
 
-.. autosummary::
-   :toctree: generated
-   :template: class.rst
-   :nosignatures:
-
-   FakeEyeData
+Simulated data (:class:`~pypillometry.sim.SimEyeData`) are listed under
+:doc:`sim`.
 
 .. autosummary::
    :toctree: generated

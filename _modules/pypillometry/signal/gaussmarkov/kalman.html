@@ -1,0 +1,1788 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pypillometry.signal.gaussmarkov.kalman &#8212; pypillometry v2.3.0</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../_static/styles/theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx_autodoc_typehints.css?v=057ac668" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=6a604523" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/custom.css?v=e89b0eda" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../../_static/scripts/fontawesome.js?digest=75c7c72ae941e8b558d8"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
+
+    <script src="../../../../_static/documentation_options.js?v=387c4177"></script>
+    <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../_static/copybutton.js?v=f281be69"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../../../../_static/design-tabs.js?v=fcb327ea"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs";
+
+
+
+
+
+const initStyles = () => {
+    const defaultStyle = document.createElement('style');
+    defaultStyle.textContent = "pre.mermaid {\n    /* Same as .mermaid-container > pre */\n    display: block;\n    width: 100%;\n}\n\npre.mermaid > svg {\n    /* Same as .mermaid-container > pre > svg */\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}";
+    document.head.appendChild(defaultStyle);
+
+    const fullscreenStyle = document.createElement('style');
+    fullscreenStyle.textContent = ".mermaid-container {\n    position: relative;\n    display: flex;\n    flex-direction: row;\n    width: 100%;\n}\n\n.mermaid-container > pre {\n    display: block;\n    width: 100%;\n}\n\n.mermaid-container > pre > svg {\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}\n\n.mermaid-fullscreen-btn {\n    position: absolute;\n    width: 28px;\n    height: 28px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.3);\n    border-radius: 4px;\n    cursor: pointer;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    transition: all 0.2s;\n    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);\n    font-size: 14px;\n    line-height: 1;\n    padding: 0;\n    color: #333;\n}\n\n.mermaid-fullscreen-btn:hover {\n    opacity: 100% !important;\n    background: rgba(255, 255, 255, 1);\n    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-btn.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.3);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-btn.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal {\n    display: none;\n    position: fixed !important;\n    top: 0 !important;\n    left: 0 !important;\n    width: 95vw;\n    height: 100vh;\n    background: rgba(255, 255, 255, 0.98);\n    z-index: 9999;\n    padding: 20px;\n    overflow: auto;\n}\n\n.mermaid-fullscreen-modal.dark-theme {\n    background: rgba(0, 0, 0, 0.98);\n}\n\n.mermaid-fullscreen-modal.active {\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen {\n    position: relative;\n    width: 95vw;\n    height: 90vh;\n    max-width: 95vw;\n    max-height: 90vh;\n    background: white;\n    border-radius: 8px;\n    padding: 20px;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);\n    overflow: auto;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen.dark-theme {\n    background: #1a1a1a;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);\n}\n\n.mermaid-container-fullscreen pre.mermaid {\n    width: 100%;\n    height: 100%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen .mermaid svg {\n    height: 100% !important;\n    width: 100% !important;\n    cursor: grab;\n}\n\n.mermaid-fullscreen-close {\n    position: fixed !important;\n    top: 20px !important;\n    right: 20px !important;\n    width: 40px;\n    height: 40px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.2);\n    border-radius: 50%;\n    cursor: pointer;\n    z-index: 10000;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);\n    transition: all 0.2s;\n    font-size: 24px;\n    line-height: 1;\n    color: #333;\n}\n\n.mermaid-fullscreen-close:hover {\n    background: white;\n    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-close.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.2);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-close.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal .mermaid-fullscreen-btn {\n    display: none !important;\n}";
+    document.head.appendChild(fullscreenStyle);
+}
+
+// Detect if page has dark background
+const isDarkTheme = () => {
+    // We use a set of heuristics:
+    // 1. Check for common dark mode classes or attributes
+    // 2. Check computed background color brightness
+    if (document.documentElement.classList.contains('dark') ||
+        document.documentElement.getAttribute('data-theme') === 'dark' ||
+        document.body.classList.contains('dark') ||
+        document.body.getAttribute('data-theme') === 'dark') {
+        // console.log("Dark theme detected via class/attribute");
+        return true;
+    }
+    if (document.documentElement.classList.contains('light') ||
+        document.documentElement.getAttribute('data-theme') === 'light' ||
+        document.body.classList.contains('light') ||
+        document.body.getAttribute('data-theme') === 'light') {
+        // console.log("Light theme detected via class/attribute");
+        return false;
+    }
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        // console.log("Dark theme detected via prefers-color-scheme");
+        return true;
+    }
+    const bgColor = window.getComputedStyle(document.body).backgroundColor;
+    const match = bgColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)/);
+    if (match) {
+        const r = parseInt(match[1]);
+        const g = parseInt(match[2]);
+        const b = parseInt(match[3]);
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        // console.log("Background color brightness:", brightness);
+        return brightness < 128;
+    }
+    // console.log("No dark or light theme detected, defaulting to light theme");
+    return false;
+};
+
+let darkTheme = isDarkTheme();
+let modal = null;
+let modalContent = null;
+let previousScrollOffset = [window.scrollX, window.scrollY];
+let _lazyObserver = null;
+let _renderQueue = Promise.resolve();
+let closeModal = () => {};
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal?.classList.contains('active')) {
+        closeModal();
+    }
+});
+
+// Apply d3 zoom to each SVG. Idempotent: an SVG already wrapped is skipped,
+// so this is safe to call both for the initial batch and for diagrams that
+// render lazily once they become visible.
+const addZoomToSvgs = (svgs) => {
+    svgs.each(function() {
+        if (this.getAttribute('data-zoom-applied') === 'true') return;
+        var svg = d3.select(this);
+        svg.html("<g class='wrapper'>" + svg.html() + "</g>");
+        var inner = svg.select("g");
+        var zoom = d3.zoom().on("zoom", function(event) {
+            inner.attr("transform", event.transform);
+        });
+        svg.call(zoom);
+        this.setAttribute('data-zoom-applied', 'true');
+    });
+};
+
+const runMermaid = async (rerun) => {
+    console.log("Running mermaid diagrams, rerun =", rerun);
+    // clear all existing mermaid charts
+    let all_mermaids = document.querySelectorAll(".mermaid");
+
+    if (rerun) {
+        // Disconnect any previous lazy rendering observer
+        if (_lazyObserver) {
+            _lazyObserver.disconnect();
+            _lazyObserver = null;
+        }
+
+        all_mermaids.forEach((el) => {
+            el.removeAttribute('data-mermaid-deferred');
+            el.removeAttribute('data-mermaid-render-failed');
+            if(!el.hasAttribute("data-original-code")) {
+                // store original code
+                // console.log(`Storing original code for first run: `, el.innerHTML);
+                el.setAttribute('data-original-code', el.innerHTML);
+            }
+            if(el.getAttribute("data-processed") === "true") {
+                // remove and restore original
+                el.removeAttribute("data-processed");
+                // console.log(`Restoring original code for re-run: `, el.getAttribute('data-original-code'));
+                el.innerHTML = el.getAttribute('data-original-code');
+            } else {
+                // store original code
+                // console.log(`Storing original code for re-run: `, el.innerHTML);
+                el.setAttribute('data-original-code', el.innerHTML);
+            }
+        });
+
+        // Separate visible and hidden elements. Mermaid's layout engine measures
+        // text dimensions via the DOM, which fails for elements hidden by a parent
+        // (e.g., Reveal.js non-active slides, sphinx-design unopened tabs),
+        // producing broken SVGs. Render visible elements now, defer hidden ones.
+        const visible = [];
+        const hidden = [];
+        all_mermaids.forEach((el) => {
+            // offsetParent is null for display:none ancestors.
+            // getClientRects().length > 0 catches position:fixed elements
+            // (which also have null offsetParent but are still visible).
+            if (el.offsetParent !== null || el.getClientRects().length > 0) {
+                visible.push(el);
+            } else {
+                hidden.push(el);
+                el.setAttribute('data-mermaid-deferred', 'true');
+            }
+        });
+
+        if (visible.length > 0) {
+            try {
+                await mermaid.run({ nodes: visible });
+            } catch (e) {
+                console.error("Mermaid rendering failed:", e);
+            }
+        }
+
+        // Lazily render hidden elements when they become visible.
+        // Uses a promise chain (_renderQueue) to serialize rendering,
+        // since IntersectionObserver may report multiple entries at once
+        // and mermaid.run() is not safe to call concurrently.
+        if (hidden.length > 0) {
+            if (typeof IntersectionObserver === 'undefined') {
+                console.warn("IntersectionObserver not available; hidden mermaid diagrams will not render.");
+            } else {
+                _renderQueue = Promise.resolve();
+                _lazyObserver = new IntersectionObserver((entries) => {
+                    for (const entry of entries) {
+                        if (entry.isIntersecting && entry.target.getAttribute("data-processed") !== "true") {
+                            _lazyObserver.unobserve(entry.target);
+                            const el = entry.target;
+                            _renderQueue = _renderQueue.then(async () => {
+                                try {
+                                    await mermaid.run({ nodes: [el] });
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    // Apply zoom to the now-rendered diagram, matching
+                                    // the decoration visible diagrams receive.
+                                    if (false) {
+                                        addZoomToSvgs(d3.selectAll("").select(function() {
+                                            return this.querySelector("svg");
+                                        }));
+                                    }
+                                } catch (e) {
+                                    console.error("Mermaid deferred rendering failed:", e);
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    el.setAttribute('data-mermaid-render-failed', 'true');
+                                }
+                            });
+                        }
+                    }
+                });
+                hidden.forEach((el) => _lazyObserver.observe(el));
+            }
+        }
+    }
+
+    all_mermaids = document.querySelectorAll(".mermaid");
+    // Exclude deferred (hidden) and render-failed elements from completion checks
+    const mermaids_active = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])");
+    const mermaids_processed = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])[data-processed='true']");
+
+    if (false) {
+        const mermaids_to_add_zoom = 0 === -1 ? mermaids_active.length : 0;
+        if(mermaids_to_add_zoom > 0) {
+            var svgs = d3.selectAll("").select(function() {
+                return this.querySelector("svg");
+            });
+            // Wait until every active (visible) diagram has rendered. Deferred
+            // diagrams are excluded, so a fixed d3_node_count that counts a
+            // hidden diagram no longer loops forever waiting for its SVG.
+            if(mermaids_active.length !== mermaids_processed.length) {
+                setTimeout(() => runMermaid(false), 200);
+                return;
+            }
+            addZoomToSvgs(svgs);
+        }
+    } else if(mermaids_active.length !== mermaids_processed.length) {
+        // Wait for mermaid to process all diagrams
+        setTimeout(() => runMermaid(false), 200);
+        return;
+    }
+
+    // Stop here if not adding fullscreen capability
+    if (!true) return;
+
+    if (modal !== null ) {
+        // Destroy existing modal
+        modal.remove();
+        modal = null;
+        modalContent = null;
+    }
+
+    modal = document.createElement('div');
+    modal.className = 'mermaid-fullscreen-modal' + (darkTheme ? ' dark-theme' : '');
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', 'Fullscreen diagram viewer');
+    modal.innerHTML = `
+        <button class="mermaid-fullscreen-close${darkTheme ? ' dark-theme' : ''}" aria-label="Close fullscreen">✕</button>
+        <div class="mermaid-container-fullscreen${darkTheme ? ' dark-theme' : ''}"></div>
+    `;
+    document.body.appendChild(modal);
+
+    modalContent = modal.querySelector('.mermaid-container-fullscreen');
+    const closeBtn = modal.querySelector('.mermaid-fullscreen-close');
+
+    closeModal = () => {
+        modal.classList.remove('active');
+        modalContent.innerHTML = '';
+        document.body.style.overflow = ''
+        window.scrollTo({left: previousScrollOffset[0], top: previousScrollOffset[1], behavior: 'instant'});
+    };
+
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+    document.querySelectorAll('.mermaid').forEach((mermaidDiv) => {
+        if (mermaidDiv.parentNode.classList.contains('mermaid-container') ||
+            mermaidDiv.closest('.mermaid-fullscreen-modal')) {
+            // Already processed, adjust button class if needed
+            const existingBtn = mermaidDiv.parentNode.querySelector('.mermaid-fullscreen-btn');
+            if (existingBtn) {
+                existingBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
+            }
+            return;
+        }
+
+        const container = document.createElement('div');
+        container.className = 'mermaid-container';
+        mermaidDiv.parentNode.insertBefore(container, mermaidDiv);
+        container.appendChild(mermaidDiv);
+
+        const fullscreenBtn = document.createElement('button');
+        fullscreenBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
+        fullscreenBtn.setAttribute('aria-label', 'View diagram in fullscreen');
+        fullscreenBtn.textContent = "\u26f6";
+        fullscreenBtn.style.opacity = "50%";
+
+        // Calculate dynamic position based on diagram's margin and padding
+        const diagramStyle = window.getComputedStyle(mermaidDiv);
+        const marginTop = parseFloat(diagramStyle.marginTop) || 0;
+        const marginRight = parseFloat(diagramStyle.marginRight) || 0;
+        const paddingTop = parseFloat(diagramStyle.paddingTop) || 0;
+        const paddingRight = parseFloat(diagramStyle.paddingRight) || 0;
+        fullscreenBtn.style.top = `${marginTop + paddingTop + 4}px`;
+        fullscreenBtn.style.right = `${marginRight + paddingRight + 4}px`;
+
+        fullscreenBtn.addEventListener('click', () => {
+            previousScrollOffset = [window.scrollX, window.scrollY];
+            const clone = mermaidDiv.cloneNode(true);
+            modalContent.innerHTML = '';
+            modalContent.appendChild(clone);
+
+            const svg = clone.querySelector('svg');
+            if (svg) {
+                svg.removeAttribute('width');
+                svg.removeAttribute('height');
+                svg.style.width = '100%';
+                svg.style.height = 'auto';
+                svg.style.maxWidth = '100%';
+                svg.style.display = 'block';
+
+                if (false) {
+                    setTimeout(() => {
+                        const g = svg.querySelector('g');
+                        if (g) {
+                            var svgD3 = d3.select(svg);
+                            svgD3.html("<g class='wrapper'>" + svgD3.html() + "</g>");
+                            var inner = svgD3.select("g");
+                            var zoom = d3.zoom().on("zoom", function(event) {
+                                inner.attr("transform", event.transform);
+                            });
+                            svgD3.call(zoom);
+                        }
+                    }, 100);
+                }
+            }
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+        container.appendChild(fullscreenBtn);
+    });
+};
+
+
+
+const load = async () => {
+    initStyles();
+
+
+    await runMermaid(true);
+
+    const reRunIfThemeChanges = async () => {
+        const newDarkTheme = isDarkTheme();
+        if (newDarkTheme !== darkTheme) {
+            darkTheme = newDarkTheme;
+            console.log("Theme change detected, re-running mermaid with", darkTheme ? "dark" : "default", "theme");
+            await mermaid.initialize(
+                {...{"startOnLoad": false},
+                ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
+                }
+            );
+            await runMermaid(true);
+        }
+    };
+
+    // Update theme classes when theme changes
+    const themeObserver = new MutationObserver(reRunIfThemeChanges);
+    themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme']
+    });
+    themeObserver.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme']
+    });
+};
+
+
+
+
+
+console.log("Initializing mermaid with", darkTheme ? "dark" : "default", "theme");
+mermaid.initialize(
+    {...{"startOnLoad": false},
+    ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
+    }
+);
+
+window.addEventListener("load", load);
+window.runMermaid = runMermaid;</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/pypillometry/signal/gaussmarkov/kalman';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../../../../_static/pypillometry_logo_200x200.png"/>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="v2.3.0" />
+  
+    
+    <script src="../../../../_static/searchtools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <script src="../../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="light">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation" aria-expanded="false" aria-controls="pst-primary-sidebar-modal">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="../../../../_static/pypillometry_logo_200x200.png" class="logo__image only-light" alt=""/>
+    <img src="../../../../_static/pypillometry_logo_200x200.png" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">pypillometry</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../user_guide/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../experimental/index.html">
+    Experimental features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../development/index.html">
+    Development
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ihrke/pypillometry" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pypillometry/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal" tabindex="-1"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../user_guide/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../experimental/index.html">
+    Experimental features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../development/index.html">
+    Development
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ihrke/pypillometry" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pypillometry/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-house"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">pypillometry.signal.gaussmarkov.kalman</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for pypillometry.signal.gaussmarkov.kalman</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""</span>
+<span class="sd">kalman.py</span>
+<span class="sd">=========</span>
+
+<span class="sd">Kalman filter, Rauch-Tung-Striebel smoother and simulation for a general</span>
+<span class="sd">linear-Gaussian state-space model (:class:`LGSSM`)</span>
+
+<span class="sd">.. math::</span>
+
+<span class="sd">    x_0 \\sim N(m_0, P_0), \\quad</span>
+<span class="sd">    x_t = A_t x_{t-1} + w_t,\\ w_t \\sim N(0, Q_t), \\quad</span>
+<span class="sd">    y_t = H x_t + e_t,\\ e_t \\sim N(0, R).</span>
+
+<span class="sd">The functions know nothing about OU or Matérn processes; any stack of</span>
+<span class="sd">components (see :meth:`GaussMarkovModel.to_lgssm`) works. Missing observations (NaN) are</span>
+<span class="sd">skipped in the update, so gaps are handled exactly; with several observed</span>
+<span class="sd">channels, each one can be missing on its own.</span>
+
+<span class="sd">Three optional arguments of :func:`kalman_filter` and :func:`kalman_loglik`</span>
+<span class="sd">extend the model (they need a diagonal ``R``, i.e. independent noise of the</span>
+<span class="sd">channels, which are then processed one after the other):</span>
+
+<span class="sd">- ``obs_var``: a noise variance for each sample instead of the constant</span>
+<span class="sd">  ``R`` (e.g., for means of different numbers of raw samples)</span>
+<span class="sd">- ``segments``: independent stretches of the data; the state restarts from</span>
+<span class="sd">  ``(m0, P0)`` at the start of each</span>
+<span class="sd">- ``n_diffuse``: the number of observations at the start of each segment</span>
+<span class="sd">  that only determine states with a diffuse prior (a very large variance in</span>
+<span class="sd">  ``P0``, e.g. an unknown mean) and are left out of the likelihood, which</span>
+<span class="sd">  is then the restricted likelihood (REML) of the other parameters</span>
+
+<span class="sd">The inner loops are compiled with numba if it is installed (``pip install</span>
+<span class="sd">numba``); otherwise they run as (slow) plain Python.</span>
+<span class="sd">"""</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"LGSSM"</span><span class="p">,</span> <span class="s2">"FilterResult"</span><span class="p">,</span> <span class="s2">"SmootherResult"</span><span class="p">,</span> <span class="s2">"kalman_filter"</span><span class="p">,</span>
+           <span class="s2">"kalman_loglik"</span><span class="p">,</span> <span class="s2">"rts_smoother"</span><span class="p">,</span> <span class="s2">"component_states"</span><span class="p">,</span> <span class="s2">"simulate"</span><span class="p">,</span>
+           <span class="s2">"forecast_errors"</span><span class="p">]</span>
+
+<span class="n">_LOG2PI</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span>
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># kernels (plain numpy; compiled with numba when available)</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_filter_kernel</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">m0</span><span class="p">,</span> <span class="n">P0</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">store</span><span class="p">,</span>
+                   <span class="n">mp</span><span class="p">,</span> <span class="n">Pp</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">Pf</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">llt</span><span class="p">):</span>
+    <span class="n">T</span><span class="p">,</span> <span class="n">m</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">m0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">m0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">P</span> <span class="o">=</span> <span class="n">P0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">ll</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">T</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">t</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">A</span> <span class="o">@</span> <span class="n">x</span>
+            <span class="n">P</span> <span class="o">=</span> <span class="n">A</span> <span class="o">@</span> <span class="n">P</span> <span class="o">@</span> <span class="n">A</span><span class="o">.</span><span class="n">T</span> <span class="o">+</span> <span class="n">Q</span>
+            <span class="n">P</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">P</span> <span class="o">+</span> <span class="n">P</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">store</span><span class="p">:</span>
+            <span class="n">mp</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span>
+            <span class="n">Pp</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">P</span>
+        <span class="n">nv</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">j</span><span class="p">]):</span>
+                <span class="n">nv</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">lt</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">if</span> <span class="n">m</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">nv</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># scalar update (single channel): no linear-algebra calls</span>
+            <span class="n">h</span> <span class="o">=</span> <span class="n">H</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">ph</span> <span class="o">=</span> <span class="n">P</span> <span class="o">@</span> <span class="n">h</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">h</span> <span class="o">@</span> <span class="n">ph</span> <span class="o">+</span> <span class="n">R</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+            <span class="n">vt</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">h</span> <span class="o">@</span> <span class="n">x</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="n">ph</span> <span class="o">/</span> <span class="n">s</span>
+            <span class="n">lt</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">_LOG2PI</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">+</span> <span class="n">vt</span> <span class="o">*</span> <span class="n">vt</span> <span class="o">/</span> <span class="n">s</span><span class="p">)</span>
+            <span class="n">ll</span> <span class="o">+=</span> <span class="n">lt</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">k</span> <span class="o">*</span> <span class="n">vt</span>
+            <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+                    <span class="n">P</span><span class="p">[</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">]</span> <span class="o">-=</span> <span class="n">k</span><span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="o">*</span> <span class="n">ph</span><span class="p">[</span><span class="n">b</span><span class="p">]</span>
+            <span class="n">P</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">P</span> <span class="o">+</span> <span class="n">P</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">store</span><span class="p">:</span>
+                <span class="n">v</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">vt</span>
+                <span class="n">K</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">k</span>
+        <span class="k">elif</span> <span class="n">nv</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">nv</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">j</span><span class="p">]):</span>
+                    <span class="n">idx</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">j</span>
+                    <span class="n">c</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">Hs</span> <span class="o">=</span> <span class="n">H</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+            <span class="n">Rs</span> <span class="o">=</span> <span class="n">R</span><span class="p">[</span><span class="n">idx</span><span class="p">][:,</span> <span class="n">idx</span><span class="p">]</span>
+            <span class="n">yt</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">t</span><span class="p">]</span>
+            <span class="n">vs</span> <span class="o">=</span> <span class="n">yt</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">-</span> <span class="n">Hs</span> <span class="o">@</span> <span class="n">x</span>
+            <span class="n">PHt</span> <span class="o">=</span> <span class="n">P</span> <span class="o">@</span> <span class="n">Hs</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">Ss</span> <span class="o">=</span> <span class="n">Hs</span> <span class="o">@</span> <span class="n">PHt</span> <span class="o">+</span> <span class="n">Rs</span>
+            <span class="n">Ss</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">Ss</span> <span class="o">+</span> <span class="n">Ss</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+            <span class="n">Lc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">cholesky</span><span class="p">(</span><span class="n">Ss</span><span class="p">)</span>
+            <span class="n">Ks</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">Ss</span><span class="p">,</span> <span class="n">PHt</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">Ss</span><span class="p">,</span> <span class="n">vs</span><span class="p">)</span>
+            <span class="n">logdet</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">Lc</span><span class="p">)))</span>
+            <span class="n">lt</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">nv</span> <span class="o">*</span> <span class="n">_LOG2PI</span> <span class="o">+</span> <span class="n">logdet</span> <span class="o">+</span> <span class="n">vs</span> <span class="o">@</span> <span class="n">alpha</span><span class="p">)</span>
+            <span class="n">ll</span> <span class="o">+=</span> <span class="n">lt</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">Ks</span> <span class="o">@</span> <span class="n">vs</span>
+            <span class="n">P</span> <span class="o">=</span> <span class="n">P</span> <span class="o">-</span> <span class="n">Ks</span> <span class="o">@</span> <span class="n">Ss</span> <span class="o">@</span> <span class="n">Ks</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">P</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">P</span> <span class="o">+</span> <span class="n">P</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">store</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nv</span><span class="p">):</span>
+                    <span class="n">v</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">idx</span><span class="p">[</span><span class="n">a</span><span class="p">]]</span> <span class="o">=</span> <span class="n">vs</span><span class="p">[</span><span class="n">a</span><span class="p">]</span>
+                    <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+                        <span class="n">K</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">idx</span><span class="p">[</span><span class="n">a</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Ks</span><span class="p">[</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">store</span><span class="p">:</span>
+            <span class="n">S</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">H</span> <span class="o">@</span> <span class="n">Pp</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">@</span> <span class="n">H</span><span class="o">.</span><span class="n">T</span> <span class="o">+</span> <span class="n">R</span>
+            <span class="n">mf</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span>
+            <span class="n">Pf</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">P</span>
+            <span class="n">llt</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">lt</span>
+    <span class="k">return</span> <span class="n">ll</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_seq_loglik_kernel</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">m0</span><span class="p">,</span> <span class="n">P0</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">restart</span><span class="p">,</span> <span class="n">skip</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Log-likelihood with the channels processed one after the other (needs</span>
+<span class="sd">    independent noise of the channels): noise variance `r[t, j]` per sample,</span>
+<span class="sd">    restart from (m0, P0) where `restart[t]`, and the first `skip[j]` valid</span>
+<span class="sd">    observations of channel j after each restart left out of the sum</span>
+<span class="sd">    (diffuse states).</span>
+
+<span class="sd">    Written for speed: no temporary arrays, only the band of non-zero</span>
+<span class="sd">    entries in each row of A (block-diagonal models) and the non-zero</span>
+<span class="sd">    entries of H are used, and the inner loops run along rows.</span>
+<span class="sd">    """</span>
+    <span class="n">T</span><span class="p">,</span> <span class="n">m</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">m0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">lo</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+    <span class="n">hi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="n">a</span> <span class="o">&lt;</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">a</span><span class="p">]</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="n">a</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">n</span>
+        <span class="k">while</span> <span class="n">b</span> <span class="o">&gt;</span> <span class="n">a</span> <span class="o">+</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">b</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="n">b</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="n">lo</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span>
+        <span class="n">hi</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">b</span>
+    <span class="n">nnz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+    <span class="n">hidx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">H</span><span class="p">[</span><span class="n">c</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">!=</span> <span class="mf">0.0</span><span class="p">:</span>
+                <span class="n">hidx</span><span class="p">[</span><span class="n">c</span><span class="p">,</span> <span class="n">nnz</span><span class="p">[</span><span class="n">c</span><span class="p">]]</span> <span class="o">=</span> <span class="n">j</span>
+                <span class="n">nnz</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">m0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">P</span> <span class="o">=</span> <span class="n">P0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">x2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+    <span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
+    <span class="n">WT</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
+    <span class="n">ph</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+    <span class="n">seen</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+    <span class="n">ll</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">T</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">restart</span><span class="p">[</span><span class="n">t</span><span class="p">]:</span>
+            <span class="n">x</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">m0</span>
+            <span class="n">P</span><span class="p">[:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">P0</span>
+            <span class="n">seen</span><span class="p">[:]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">elif</span> <span class="n">t</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+                <span class="n">acc</span> <span class="o">=</span> <span class="mf">0.0</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">lo</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">hi</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
+                    <span class="n">acc</span> <span class="o">+=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+                <span class="n">x2</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">acc</span>
+            <span class="n">x</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">x2</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>          <span class="c1"># W = A P</span>
+                <span class="n">Wi</span> <span class="o">=</span> <span class="n">W</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="n">a</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">lo</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+                <span class="n">Pl</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="n">lo</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+                    <span class="n">Wi</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span> <span class="o">*</span> <span class="n">Pl</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">lo</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">hi</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
+                    <span class="n">a</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">l</span><span class="p">]</span>
+                    <span class="n">Pl</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="n">l</span><span class="p">]</span>
+                    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+                        <span class="n">Wi</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">+=</span> <span class="n">a</span> <span class="o">*</span> <span class="n">Pl</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+                    <span class="n">WT</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">W</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>          <span class="c1"># P = A W' + Q</span>
+                <span class="n">Pi</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="n">Qi</span> <span class="o">=</span> <span class="n">Q</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+                    <span class="n">Pi</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">Qi</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">lo</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">hi</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
+                    <span class="n">a</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">l</span><span class="p">]</span>
+                    <span class="n">Wl</span> <span class="o">=</span> <span class="n">WT</span><span class="p">[</span><span class="n">l</span><span class="p">]</span>
+                    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+                        <span class="n">Pi</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">+=</span> <span class="n">a</span> <span class="o">*</span> <span class="n">Wl</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+            <span class="n">yt</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">yt</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+                <span class="n">ph</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="n">pred</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nnz</span><span class="p">[</span><span class="n">c</span><span class="p">]):</span>     <span class="c1"># ph = P h (P is symmetric)</span>
+                <span class="n">j</span> <span class="o">=</span> <span class="n">hidx</span><span class="p">[</span><span class="n">c</span><span class="p">,</span> <span class="n">q</span><span class="p">]</span>
+                <span class="n">h</span> <span class="o">=</span> <span class="n">H</span><span class="p">[</span><span class="n">c</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span>
+                <span class="n">pred</span> <span class="o">+=</span> <span class="n">h</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+                <span class="n">Pj</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+                    <span class="n">ph</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">h</span> <span class="o">*</span> <span class="n">Pj</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nnz</span><span class="p">[</span><span class="n">c</span><span class="p">]):</span>
+                <span class="n">j</span> <span class="o">=</span> <span class="n">hidx</span><span class="p">[</span><span class="n">c</span><span class="p">,</span> <span class="n">q</span><span class="p">]</span>
+                <span class="n">s</span> <span class="o">+=</span> <span class="n">H</span><span class="p">[</span><span class="n">c</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">*</span> <span class="n">ph</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">yt</span> <span class="o">-</span> <span class="n">pred</span>
+            <span class="k">if</span> <span class="n">seen</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">skip</span><span class="p">[</span><span class="n">c</span><span class="p">]:</span>
+                <span class="n">ll</span> <span class="o">+=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">_LOG2PI</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">+</span> <span class="n">v</span> <span class="o">*</span> <span class="n">v</span> <span class="o">/</span> <span class="n">s</span><span class="p">)</span>
+            <span class="n">seen</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">g</span> <span class="o">=</span> <span class="n">v</span> <span class="o">/</span> <span class="n">s</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+                <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">ph</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">g</span>
+                <span class="n">a</span> <span class="o">=</span> <span class="n">ph</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">s</span>
+                <span class="n">Pi</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+                    <span class="n">Pi</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">-=</span> <span class="n">a</span> <span class="o">*</span> <span class="n">ph</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>          <span class="c1"># keep P exactly symmetric</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+                    <span class="n">P</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">ll</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_seq_filter_kernel</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">m0</span><span class="p">,</span> <span class="n">P0</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">restart</span><span class="p">,</span> <span class="n">skip</span><span class="p">,</span>
+                       <span class="n">mp</span><span class="p">,</span> <span class="n">Pp</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">Pf</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">llt</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Like :func:`_seq_loglik_kernel`, but everything is stored. `v[t, j]`</span>
+<span class="sd">    and `S[t, j]` are the innovation of channel j and its variance given the</span>
+<span class="sd">    channels before it at the same sample (S is also set where y is missing)."""</span>
+    <span class="n">T</span><span class="p">,</span> <span class="n">m</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">m0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">m0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">P</span> <span class="o">=</span> <span class="n">P0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">seen</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+    <span class="n">ll</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">T</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">restart</span><span class="p">[</span><span class="n">t</span><span class="p">]:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">m0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">P</span> <span class="o">=</span> <span class="n">P0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">seen</span><span class="p">[:]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">elif</span> <span class="n">t</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">A</span> <span class="o">@</span> <span class="n">x</span>
+            <span class="n">P</span> <span class="o">=</span> <span class="n">A</span> <span class="o">@</span> <span class="n">P</span> <span class="o">@</span> <span class="n">A</span><span class="o">.</span><span class="n">T</span> <span class="o">+</span> <span class="n">Q</span>
+            <span class="n">P</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">P</span> <span class="o">+</span> <span class="n">P</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="n">mp</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="n">Pp</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">P</span>
+        <span class="n">lt</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+            <span class="n">h</span> <span class="o">=</span> <span class="n">H</span><span class="p">[</span><span class="n">c</span><span class="p">]</span>
+            <span class="n">ph</span> <span class="o">=</span> <span class="n">P</span> <span class="o">@</span> <span class="n">h</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">h</span> <span class="o">@</span> <span class="n">ph</span> <span class="o">+</span> <span class="n">r</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span>
+            <span class="n">S</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">s</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">c</span><span class="p">]):</span>
+                <span class="k">continue</span>
+            <span class="n">vt</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span> <span class="o">-</span> <span class="n">h</span> <span class="o">@</span> <span class="n">x</span>
+            <span class="n">v</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">vt</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="n">ph</span> <span class="o">/</span> <span class="n">s</span>
+            <span class="k">if</span> <span class="n">seen</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">skip</span><span class="p">[</span><span class="n">c</span><span class="p">]:</span>
+                <span class="n">lt</span> <span class="o">+=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">_LOG2PI</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">+</span> <span class="n">vt</span> <span class="o">*</span> <span class="n">vt</span> <span class="o">/</span> <span class="n">s</span><span class="p">)</span>
+            <span class="n">seen</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">k</span> <span class="o">*</span> <span class="n">vt</span>
+            <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+                    <span class="n">P</span><span class="p">[</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">]</span> <span class="o">-=</span> <span class="n">k</span><span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="o">*</span> <span class="n">ph</span><span class="p">[</span><span class="n">b</span><span class="p">]</span>
+            <span class="n">P</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">P</span> <span class="o">+</span> <span class="n">P</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+            <span class="n">K</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="p">:,</span> <span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">k</span>
+        <span class="n">ll</span> <span class="o">+=</span> <span class="n">lt</span>
+        <span class="n">llt</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">lt</span>
+        <span class="n">mf</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="n">Pf</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">P</span>
+    <span class="k">return</span> <span class="n">ll</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_forecast_kernel</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">m0</span><span class="p">,</span> <span class="n">P0</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">restart</span><span class="p">,</span> <span class="n">horizons</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="n">Z</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Errors `E[o, j, c]` and standardised errors `Z[o, j, c]` of the</span>
+<span class="sd">    forecasts of channel c made `horizons[j]` samples ahead from the</span>
+<span class="sd">    filtered state at every `step`-th sample (the origins o); NaN where the</span>
+<span class="sd">    origin or the target is missing or they are in different segments."""</span>
+    <span class="n">T</span><span class="p">,</span> <span class="n">m</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">m0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">nh</span> <span class="o">=</span> <span class="n">horizons</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">hmax</span> <span class="o">=</span> <span class="n">horizons</span><span class="p">[</span><span class="n">nh</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">m0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">P</span> <span class="o">=</span> <span class="n">P0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">T</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">restart</span><span class="p">[</span><span class="n">t</span><span class="p">]:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">m0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">P</span> <span class="o">=</span> <span class="n">P0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">t</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">A</span> <span class="o">@</span> <span class="n">x</span>
+            <span class="n">P</span> <span class="o">=</span> <span class="n">A</span> <span class="o">@</span> <span class="n">P</span> <span class="o">@</span> <span class="n">A</span><span class="o">.</span><span class="n">T</span> <span class="o">+</span> <span class="n">Q</span>
+        <span class="n">nv</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">c</span><span class="p">]):</span>
+                <span class="k">continue</span>
+            <span class="n">nv</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">h</span> <span class="o">=</span> <span class="n">H</span><span class="p">[</span><span class="n">c</span><span class="p">]</span>
+            <span class="n">ph</span> <span class="o">=</span> <span class="n">P</span> <span class="o">@</span> <span class="n">h</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">h</span> <span class="o">@</span> <span class="n">ph</span> <span class="o">+</span> <span class="n">r</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="n">ph</span> <span class="o">/</span> <span class="n">s</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">k</span> <span class="o">*</span> <span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span> <span class="o">-</span> <span class="n">h</span> <span class="o">@</span> <span class="n">x</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+                    <span class="n">P</span><span class="p">[</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">]</span> <span class="o">-=</span> <span class="n">k</span><span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="o">*</span> <span class="n">ph</span><span class="p">[</span><span class="n">b</span><span class="p">]</span>
+            <span class="n">P</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">P</span> <span class="o">+</span> <span class="n">P</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">t</span> <span class="o">%</span> <span class="n">step</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">nv</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">xx</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">PP</span> <span class="o">=</span> <span class="n">P</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">hmax</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">t</span> <span class="o">+</span> <span class="n">d</span> <span class="o">&gt;=</span> <span class="n">T</span> <span class="ow">or</span> <span class="n">restart</span><span class="p">[</span><span class="n">t</span> <span class="o">+</span> <span class="n">d</span><span class="p">]:</span>
+                    <span class="k">break</span>
+                <span class="n">xx</span> <span class="o">=</span> <span class="n">A</span> <span class="o">@</span> <span class="n">xx</span>
+                <span class="n">PP</span> <span class="o">=</span> <span class="n">A</span> <span class="o">@</span> <span class="n">PP</span> <span class="o">@</span> <span class="n">A</span><span class="o">.</span><span class="n">T</span> <span class="o">+</span> <span class="n">Q</span>
+                <span class="k">if</span> <span class="n">d</span> <span class="o">==</span> <span class="n">horizons</span><span class="p">[</span><span class="n">j</span><span class="p">]:</span>
+                    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">t</span> <span class="o">+</span> <span class="n">d</span><span class="p">,</span> <span class="n">c</span><span class="p">]):</span>
+                            <span class="n">h</span> <span class="o">=</span> <span class="n">H</span><span class="p">[</span><span class="n">c</span><span class="p">]</span>
+                            <span class="n">e</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">t</span> <span class="o">+</span> <span class="n">d</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span> <span class="o">-</span> <span class="n">h</span> <span class="o">@</span> <span class="n">xx</span>
+                            <span class="n">E</span><span class="p">[</span><span class="n">t</span> <span class="o">//</span> <span class="n">step</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span>
+                            <span class="n">Z</span><span class="p">[</span><span class="n">t</span> <span class="o">//</span> <span class="n">step</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">h</span> <span class="o">@</span> <span class="n">PP</span> <span class="o">@</span> <span class="n">h</span> <span class="o">+</span> <span class="n">r</span><span class="p">[</span><span class="n">t</span> <span class="o">+</span> <span class="n">d</span><span class="p">,</span> <span class="n">c</span><span class="p">])</span>
+                    <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_smoother_kernel</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">mp</span><span class="p">,</span> <span class="n">Pp</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">Pf</span><span class="p">,</span> <span class="n">restart</span><span class="p">,</span> <span class="n">ms</span><span class="p">,</span> <span class="n">Ps</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="n">Plag</span><span class="p">):</span>
+    <span class="n">T</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">mf</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">ms</span><span class="p">[</span><span class="n">T</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">mf</span><span class="p">[</span><span class="n">T</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">Ps</span><span class="p">[</span><span class="n">T</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">Pf</span><span class="p">[</span><span class="n">T</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">T</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">restart</span><span class="p">[</span><span class="n">t</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]:</span>      <span class="c1"># end of an independent segment</span>
+            <span class="n">ms</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">mf</span><span class="p">[</span><span class="n">t</span><span class="p">]</span>
+            <span class="n">Ps</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">Pf</span><span class="p">[</span><span class="n">t</span><span class="p">]</span>
+            <span class="k">continue</span>
+        <span class="c1"># solve with the correlation matrix of the prediction: states of very</span>
+        <span class="c1"># different size (or without variance) do not make it singular</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">Pp</span><span class="p">[</span><span class="n">t</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]))</span>
+        <span class="n">C</span> <span class="o">=</span> <span class="n">Pp</span><span class="p">[</span><span class="n">t</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">:</span>
+                <span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+                <span class="n">C</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="n">C</span> <span class="o">=</span> <span class="n">C</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+        <span class="n">APf</span> <span class="o">=</span> <span class="n">A</span> <span class="o">@</span> <span class="n">Pf</span><span class="p">[</span><span class="n">t</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="n">APf</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/=</span> <span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">Gt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="n">APf</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="n">Gt</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">/=</span> <span class="n">d</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">ms</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">mf</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">+</span> <span class="n">Gt</span> <span class="o">@</span> <span class="p">(</span><span class="n">ms</span><span class="p">[</span><span class="n">t</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">mp</span><span class="p">[</span><span class="n">t</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="n">Pt</span> <span class="o">=</span> <span class="n">Pf</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">+</span> <span class="n">Gt</span> <span class="o">@</span> <span class="p">(</span><span class="n">Ps</span><span class="p">[</span><span class="n">t</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">Pp</span><span class="p">[</span><span class="n">t</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span> <span class="o">@</span> <span class="n">Gt</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">Ps</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">Pt</span> <span class="o">+</span> <span class="n">Pt</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="n">G</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">Gt</span>
+        <span class="n">Plag</span><span class="p">[</span><span class="n">t</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">Ps</span><span class="p">[</span><span class="n">t</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">@</span> <span class="n">Gt</span><span class="o">.</span><span class="n">T</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_simulate_kernel</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">Qsqrt</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">Rsqrt</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">ex</span><span class="p">,</span> <span class="n">ey</span><span class="p">,</span> <span class="n">xs</span><span class="p">,</span> <span class="n">ys</span><span class="p">):</span>
+    <span class="n">T</span> <span class="o">=</span> <span class="n">ex</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">x0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">T</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">t</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">A</span> <span class="o">@</span> <span class="n">x</span> <span class="o">+</span> <span class="n">Qsqrt</span> <span class="o">@</span> <span class="n">ex</span><span class="p">[</span><span class="n">t</span><span class="p">]</span>
+        <span class="n">xs</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="n">ys</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">H</span> <span class="o">@</span> <span class="n">x</span> <span class="o">+</span> <span class="n">Rsqrt</span> <span class="o">@</span> <span class="n">ey</span><span class="p">[</span><span class="n">t</span><span class="p">]</span>
+
+
+<span class="n">_KERNELS</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">_JIT</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_kernels</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    The kernels (filter, smoother, simulation, sequential log-likelihood,</span>
+<span class="sd">    sequential filter, forecasts), compiled with numba on first use if it</span>
+<span class="sd">    is installed.</span>
+<span class="sd">    """</span>
+    <span class="k">global</span> <span class="n">_KERNELS</span><span class="p">,</span> <span class="n">_JIT</span>
+    <span class="k">if</span> <span class="n">_KERNELS</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">plain</span> <span class="o">=</span> <span class="p">(</span><span class="n">_filter_kernel</span><span class="p">,</span> <span class="n">_smoother_kernel</span><span class="p">,</span> <span class="n">_simulate_kernel</span><span class="p">,</span>
+                 <span class="n">_seq_loglik_kernel</span><span class="p">,</span> <span class="n">_seq_filter_kernel</span><span class="p">,</span> <span class="n">_forecast_kernel</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">numba</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"numba is not installed: the Kalman filter runs as "</span>
+                           <span class="s2">"plain Python and is slow for long signals"</span><span class="p">)</span>
+            <span class="n">_KERNELS</span> <span class="o">=</span> <span class="n">plain</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># without the GIL, so that threads can run them in parallel</span>
+            <span class="n">jit</span> <span class="o">=</span> <span class="n">numba</span><span class="o">.</span><span class="n">njit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nogil</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">_KERNELS</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">jit</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">plain</span><span class="p">)</span>
+            <span class="n">_JIT</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="n">_KERNELS</span>
+
+
+<span class="c1"># rough cost per step and squared state dimension (s, with numba; measured)</span>
+<span class="n">_SEC_PER_STEP</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"kalman_loglik"</span><span class="p">:</span> <span class="mf">1e-7</span><span class="p">,</span> <span class="s2">"kalman_filter"</span><span class="p">:</span> <span class="mf">2e-7</span><span class="p">,</span> <span class="s2">"rts_smoother"</span><span class="p">:</span> <span class="mf">4e-7</span><span class="p">}</span>
+<span class="n">_FLOATS_PER_STEP</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"kalman_loglik"</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                    <span class="s2">"kalman_filter"</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">:</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">n</span> <span class="o">*</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">n</span> <span class="o">+</span> <span class="n">n</span> <span class="o">*</span> <span class="n">m</span> <span class="o">+</span> <span class="n">m</span> <span class="o">*</span> <span class="n">m</span> <span class="o">+</span> <span class="n">m</span><span class="p">,</span>
+                    <span class="s2">"rts_smoother"</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">:</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">n</span> <span class="o">*</span> <span class="n">n</span> <span class="o">+</span> <span class="n">n</span><span class="p">}</span>
+<span class="n">_MAX_SEC</span><span class="p">,</span> <span class="n">_MAX_BYTES</span> <span class="o">=</span> <span class="mf">30.0</span><span class="p">,</span> <span class="mf">2e9</span>
+<span class="n">_WARNED</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_cost</span><span class="p">(</span><span class="n">what</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""warn (once per call signature) if a run will be slow or use much memory"""</span>
+    <span class="n">sec</span> <span class="o">=</span> <span class="n">_SEC_PER_STEP</span><span class="p">[</span><span class="n">what</span><span class="p">]</span> <span class="o">*</span> <span class="n">T</span> <span class="o">*</span> <span class="n">n</span> <span class="o">*</span> <span class="n">n</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="k">if</span> <span class="n">_JIT</span> <span class="k">else</span> <span class="mi">30</span><span class="p">)</span>
+    <span class="n">mem</span> <span class="o">=</span> <span class="mf">8.0</span> <span class="o">*</span> <span class="n">T</span> <span class="o">*</span> <span class="n">_FLOATS_PER_STEP</span><span class="p">[</span><span class="n">what</span><span class="p">](</span><span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">sec</span> <span class="o">&gt;</span> <span class="n">_MAX_SEC</span> <span class="ow">or</span> <span class="n">mem</span> <span class="o">&gt;</span> <span class="n">_MAX_BYTES</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">what</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_WARNED</span><span class="p">:</span>
+        <span class="n">_WARNED</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">what</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">what</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">T</span><span class="si">}</span><span class="s2"> samples with a </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">-dim state will take "</span>
+                       <span class="sa">f</span><span class="s2">"~</span><span class="si">{</span><span class="n">sec</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2"> s and ~</span><span class="si">{</span><span class="n">mem</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e9</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> GB "</span>
+                       <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">''</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">_JIT</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">'(numba not installed) '</span><span class="si">}</span><span class="s2">"</span>
+                       <span class="s2">"- consider downsampling or a shorter segment"</span><span class="p">)</span>
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># model and results</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="LGSSM">
+<a class="viewcode-back" href="../../../../api/generated/pypillometry.signal.gaussmarkov.LGSSM.html#pypillometry.signal.gaussmarkov.LGSSM">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">LGSSM</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Linear-Gaussian state-space model.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    A : (n, n)</span>
+<span class="sd">        transition matrix from one sample to the next</span>
+<span class="sd">    Q : (n, n)</span>
+<span class="sd">        process-noise covariance</span>
+<span class="sd">    H : (m, n)</span>
+<span class="sd">        observation matrix</span>
+<span class="sd">    R : (m, m)</span>
+<span class="sd">        measurement-noise covariance</span>
+<span class="sd">    m0 : (n,)</span>
+<span class="sd">        mean of the state at the first sample</span>
+<span class="sd">    P0 : (n, n)</span>
+<span class="sd">        covariance of the state at the first sample</span>
+<span class="sd">    """</span>
+    <span class="n">A</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">Q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">H</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">R</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">m0</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">P0</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">dim_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">m0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">dim_obs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">H</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_arrays</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""float64 C-contiguous arrays for the kernels"""</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">A</span><span class="p">,</span> <span class="n">Q</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">),</span> <span class="n">f</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Q</span><span class="p">)</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim_state</span>
+        <span class="k">if</span> <span class="n">A</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span> <span class="ow">or</span> <span class="n">Q</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"A and Q must be (</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">), got </span><span class="si">{</span><span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="n">Q</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">H</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">H</span><span class="p">))</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">R</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">A</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">f</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m0</span><span class="p">),</span> <span class="n">f</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">P0</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_signal_mean</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""H m for each t: (T,) for one channel, else (T, m)"""</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">m</span> <span class="o">@</span> <span class="n">H</span><span class="o">.</span><span class="n">T</span>
+    <span class="k">return</span> <span class="n">f</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">H</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">f</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_signal_var</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">P</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""diag(H P H') for each t: (T,) for one channel, else (T, m)"""</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">"ij,tjk,ik-&gt;ti"</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">H</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">v</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">H</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">v</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_obs</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""observations as a (T, m) float array with NaN where missing"""</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">MaskedArray</span><span class="p">):</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">getmaskarray</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">))</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">y</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">y</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">2</span> <span class="ow">or</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">m</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"y must have shape (T,) or (T, </span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s2">), got </span><span class="si">{</span><span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">y</span><span class="p">[</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">y</span><span class="p">)]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="n">y</span><span class="p">[</span><span class="n">mask</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">mask</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">FilterResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Result of :func:`kalman_filter`.</span>
+
+<span class="sd">    ``m_pred[t], P_pred[t]``: state at t given ``y[:t]`` (``m_pred[0] = m0``);</span>
+<span class="sd">    ``m_filt[t], P_filt[t]``: state at t given ``y[:t+1]``.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    m_pred, m_filt : (T, n)</span>
+<span class="sd">    P_pred, P_filt : (T, n, n)</span>
+<span class="sd">    innov : (T, m)</span>
+<span class="sd">        innovations ``y[t] - H m_pred[t]`` (NaN where y is missing)</span>
+<span class="sd">    innov_var : (T, m, m)</span>
+<span class="sd">        their covariance ``H P_pred[t] H' + R``</span>
+<span class="sd">    gain : (T, n, m)</span>
+<span class="sd">        Kalman gain (0 for missing observations)</span>
+<span class="sd">    loglik_t : (T,)</span>
+<span class="sd">        log-likelihood contribution of each sample (0 where missing)</span>
+<span class="sd">    loglik : float</span>
+<span class="sd">        total log-likelihood</span>
+<span class="sd">    valid : (T, m)</span>
+<span class="sd">        True where y was observed</span>
+<span class="sd">    H : (m, n)</span>
+<span class="sd">        observation matrix of the model (for :attr:`signal`)</span>
+<span class="sd">    restart : (T,)</span>
+<span class="sd">        True at the first sample of each independent segment</span>
+<span class="sd">    """</span>
+    <span class="n">m_pred</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">P_pred</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">m_filt</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">P_filt</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">innov</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">innov_var</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">gain</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">loglik_t</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">loglik</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">valid</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">H</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">restart</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">signal</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Filtered mean of the noise-free signal, ``H m_filt[t]``: (T,) for</span>
+<span class="sd">        one channel, (T, m) for several.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">_signal_mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">H</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">m_filt</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">signal_var</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Its variance, ``diag(H P_filt[t] H')``; shaped like :attr:`signal`."""</span>
+        <span class="k">return</span> <span class="n">_signal_var</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">H</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">P_filt</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">std_innov</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Standardised innovations, (T, m): N(0, I) and white if the model is</span>
+<span class="sd">        right. Each channel is divided by its own predictive standard</span>
+<span class="sd">        deviation (NaN where missing).</span>
+<span class="sd">        """</span>
+        <span class="n">sd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diagonal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">innov_var</span><span class="p">,</span> <span class="n">axis1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">axis2</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">innov</span> <span class="o">/</span> <span class="n">sd</span>
+
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SmootherResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Result of :func:`rts_smoother`.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    m_smooth : (T, n)</span>
+<span class="sd">        mean of the state given all data</span>
+<span class="sd">    P_smooth : (T, n, n)</span>
+<span class="sd">        its covariance</span>
+<span class="sd">    G : (T, n, n)</span>
+<span class="sd">        smoother gains (0 at the last sample of each segment)</span>
+<span class="sd">    P_lag1 : (T, n, n)</span>
+<span class="sd">        ``Cov(x[t], x[t-1] | all data)`` (0 at the first sample of each</span>
+<span class="sd">        segment); needed for EM</span>
+<span class="sd">    H : (m, n)</span>
+<span class="sd">        observation matrix of the model (for :attr:`signal`)</span>
+<span class="sd">    """</span>
+    <span class="n">m_smooth</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">P_smooth</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">G</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">P_lag1</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">H</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">signal</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Smoothed mean of the noise-free signal, ``H m_smooth[t]``: (T,) for</span>
+<span class="sd">        one channel, (T, m) for several.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">_signal_mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">H</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">m_smooth</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">signal_var</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Its variance, ``diag(H P_smooth[t] H')``; shaped like :attr:`signal`."""</span>
+        <span class="k">return</span> <span class="n">_signal_var</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">H</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">P_smooth</span><span class="p">)</span>
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># public functions</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_restart</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">segments</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Boolean array that is True at the first sample of each segment, and the</span>
+<span class="sd">    samples outside the segments (None: one segment, no sample outside).</span>
+<span class="sd">    """</span>
+    <span class="n">restart</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">segments</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">restart</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="n">restart</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="n">outside</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">((</span><span class="nb">int</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">b</span><span class="p">))</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">segments</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">end</span> <span class="o">&lt;=</span> <span class="n">a</span> <span class="o">&lt;</span> <span class="n">b</span> <span class="o">&lt;=</span> <span class="n">T</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"segments must be (start, stop) sample indices "</span>
+                             <span class="sa">f</span><span class="s2">"that do not overlap, within 0 and </span><span class="si">{</span><span class="n">T</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">restart</span><span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">outside</span><span class="p">[</span><span class="n">a</span><span class="p">:</span><span class="n">b</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">b</span>
+    <span class="k">if</span> <span class="n">end</span> <span class="o">&lt;</span> <span class="n">T</span><span class="p">:</span>     <span class="c1"># the samples after the last segment do not belong to it</span>
+        <span class="n">restart</span><span class="p">[</span><span class="n">end</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="n">restart</span><span class="p">,</span> <span class="n">outside</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_seq_args</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">obs_var</span><span class="p">,</span> <span class="n">n_diffuse</span><span class="p">,</span> <span class="n">segments</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""arguments of the sequential kernels (see :func:`kalman_filter`)"""</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">_obs</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">dim_obs</span><span class="p">)</span>
+    <span class="n">T</span><span class="p">,</span> <span class="n">m</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">A</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">m0</span><span class="p">,</span> <span class="n">P0</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">_arrays</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">R</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">R</span><span class="p">)))</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"obs_var, n_diffuse and segments need independent noise "</span>
+                         <span class="s2">"of the channels (a diagonal R)"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">obs_var</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">R</span><span class="p">),</span> <span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">obs_var</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">r</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">r</span>
+        <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"obs_var must have shape (</span><span class="si">{</span><span class="n">T</span><span class="si">}</span><span class="s2">,) or (</span><span class="si">{</span><span class="n">T</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s2">), got </span><span class="si">{</span><span class="n">r</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">y</span><span class="p">)]</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"obs_var must be &gt;= 0 for all observed samples"</span><span class="p">)</span>
+    <span class="n">skip</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">n_diffuse</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">),</span> <span class="p">(</span><span class="n">m</span><span class="p">,))</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">restart</span><span class="p">,</span> <span class="n">outside</span> <span class="o">=</span> <span class="n">_restart</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">segments</span><span class="p">)</span>
+    <span class="n">y</span><span class="p">[</span><span class="n">outside</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="k">return</span> <span class="n">A</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">r</span><span class="p">),</span> <span class="n">m0</span><span class="p">,</span> <span class="n">P0</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">restart</span><span class="p">,</span> <span class="n">skip</span>
+
+
+<div class="viewcode-block" id="kalman_filter">
+<a class="viewcode-back" href="../../../../api/generated/pypillometry.signal.gaussmarkov.kalman_filter.html#pypillometry.signal.gaussmarkov.kalman_filter">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">kalman_filter</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">obs_var</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_diffuse</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">segments</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Run the Kalman filter and keep everything.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : LGSSM</span>
+<span class="sd">    y : array, (T,) or (T, m)</span>
+<span class="sd">        observations; NaN, inf and masked values are missing</span>
+<span class="sd">    mask : array of bool, optional</span>
+<span class="sd">        True for additional missing samples</span>
+<span class="sd">    obs_var : array, (T,) or (T, m), optional</span>
+<span class="sd">        noise variance of each sample, instead of the diagonal of ``R``</span>
+<span class="sd">    n_diffuse : int or sequence of int, optional</span>
+<span class="sd">        number of valid observations (of each channel) at the start of each</span>
+<span class="sd">        segment that are left out of the likelihood, because they only</span>
+<span class="sd">        determine states with a diffuse prior (a very large variance in</span>
+<span class="sd">        ``P0``); default 0</span>
+<span class="sd">    segments : list of (start, stop), optional</span>
+<span class="sd">        sample indices of independent segments: the state restarts from</span>
+<span class="sd">        ``(m0, P0)`` at each start; samples outside the segments are</span>
+<span class="sd">        missing. Default: the whole signal is one segment.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    FilterResult</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Stores O(T n^2) numbers; use :func:`kalman_loglik` when only the</span>
+<span class="sd">    likelihood is needed. With `obs_var`, `n_diffuse` or `segments`, the</span>
+<span class="sd">    channels are processed one after the other (they need a diagonal ``R``):</span>
+<span class="sd">    the innovation of a channel and its variance are then conditional on the</span>
+<span class="sd">    channels before it at the same sample, and ``innov_var`` is diagonal.</span>
+<span class="sd">    """</span>
+    <span class="n">kern</span> <span class="o">=</span> <span class="n">_kernels</span><span class="p">()</span>
+    <span class="n">T</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+    <span class="n">n</span><span class="p">,</span> <span class="n">m</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">dim_state</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">dim_obs</span>
+    <span class="n">_check_cost</span><span class="p">(</span><span class="s2">"kalman_filter"</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span>
+    <span class="n">mp</span><span class="p">,</span> <span class="n">mf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">T</span><span class="p">,</span> <span class="n">n</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">T</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
+    <span class="n">Pp</span><span class="p">,</span> <span class="n">Pf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">T</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">T</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">T</span><span class="p">,</span> <span class="n">m</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+    <span class="n">S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">T</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">m</span><span class="p">))</span>
+    <span class="n">K</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">T</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">))</span>
+    <span class="n">llt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">T</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">obs_var</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">segments</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">n_diffuse</span><span class="p">):</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">_obs</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span>
+        <span class="n">A</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">m0</span><span class="p">,</span> <span class="n">P0</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">_arrays</span><span class="p">()</span>
+        <span class="n">ll</span> <span class="o">=</span> <span class="n">kern</span><span class="p">[</span><span class="mi">0</span><span class="p">](</span><span class="n">A</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">m0</span><span class="p">,</span> <span class="n">P0</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">mp</span><span class="p">,</span> <span class="n">Pp</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">Pf</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">llt</span><span class="p">)</span>
+        <span class="n">restart</span> <span class="o">=</span> <span class="n">_restart</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="kc">None</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">A</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">m0</span><span class="p">,</span> <span class="n">P0</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">restart</span><span class="p">,</span> <span class="n">skip</span> <span class="o">=</span> <span class="n">_seq_args</span><span class="p">(</span>
+            <span class="n">model</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">obs_var</span><span class="p">,</span> <span class="n">n_diffuse</span><span class="p">,</span> <span class="n">segments</span><span class="p">)</span>
+        <span class="n">Sd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">T</span><span class="p">,</span> <span class="n">m</span><span class="p">))</span>
+        <span class="n">ll</span> <span class="o">=</span> <span class="n">kern</span><span class="p">[</span><span class="mi">4</span><span class="p">](</span><span class="n">A</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">m0</span><span class="p">,</span> <span class="n">P0</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">restart</span><span class="p">,</span> <span class="n">skip</span><span class="p">,</span>
+                     <span class="n">mp</span><span class="p">,</span> <span class="n">Pp</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">Pf</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">Sd</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">llt</span><span class="p">)</span>
+        <span class="n">S</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">m</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">m</span><span class="p">)]</span> <span class="o">=</span> <span class="n">Sd</span>
+    <span class="k">return</span> <span class="n">FilterResult</span><span class="p">(</span><span class="n">mp</span><span class="p">,</span> <span class="n">Pp</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">Pf</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">llt</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">ll</span><span class="p">),</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="n">H</span><span class="p">,</span>
+                        <span class="n">restart</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="kalman_loglik">
+<a class="viewcode-back" href="../../../../api/generated/pypillometry.signal.gaussmarkov.kalman_loglik.html#pypillometry.signal.gaussmarkov.kalman_loglik">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">kalman_loglik</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">obs_var</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_diffuse</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">segments</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Log-likelihood of `y` under `model` (Kalman filter without storage).</span>
+
+<span class="sd">    Parameters are as in :func:`kalman_filter`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">    """</span>
+    <span class="n">kern</span> <span class="o">=</span> <span class="n">_kernels</span><span class="p">()</span>
+    <span class="n">n</span><span class="p">,</span> <span class="n">m</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">dim_state</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">dim_obs</span>
+    <span class="n">_check_cost</span><span class="p">(</span><span class="s2">"kalman_loglik"</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">obs_var</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">segments</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">n_diffuse</span><span class="p">):</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">_obs</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span>
+        <span class="n">A</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">m0</span><span class="p">,</span> <span class="n">P0</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">_arrays</span><span class="p">()</span>
+        <span class="n">d2</span><span class="p">,</span> <span class="n">d3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">kern</span><span class="p">[</span><span class="mi">0</span><span class="p">](</span><span class="n">A</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">m0</span><span class="p">,</span> <span class="n">P0</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">d2</span><span class="p">,</span> <span class="n">d3</span><span class="p">,</span> <span class="n">d2</span><span class="p">,</span> <span class="n">d3</span><span class="p">,</span>
+                             <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">m</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">m</span><span class="p">)),</span>
+                             <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">kern</span><span class="p">[</span><span class="mi">3</span><span class="p">](</span><span class="o">*</span><span class="n">_seq_args</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">obs_var</span><span class="p">,</span> <span class="n">n_diffuse</span><span class="p">,</span> <span class="n">segments</span><span class="p">)))</span></div>
+
+
+
+<div class="viewcode-block" id="rts_smoother">
+<a class="viewcode-back" href="../../../../api/generated/pypillometry.signal.gaussmarkov.rts_smoother.html#pypillometry.signal.gaussmarkov.rts_smoother">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">rts_smoother</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">fres</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Rauch-Tung-Striebel smoother.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : LGSSM</span>
+<span class="sd">        the model that produced `fres`</span>
+<span class="sd">    fres : FilterResult</span>
+<span class="sd">        output of :func:`kalman_filter`; its segments are smoothed</span>
+<span class="sd">        independently of each other</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    SmootherResult</span>
+<span class="sd">    """</span>
+    <span class="n">smo</span> <span class="o">=</span> <span class="n">_kernels</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">T</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">fres</span><span class="o">.</span><span class="n">m_filt</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">_check_cost</span><span class="p">(</span><span class="s2">"rts_smoother"</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">fres</span><span class="o">.</span><span class="n">innov</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">A</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">_arrays</span><span class="p">()</span>
+    <span class="n">restart</span> <span class="o">=</span> <span class="n">fres</span><span class="o">.</span><span class="n">restart</span> <span class="k">if</span> <span class="n">fres</span><span class="o">.</span><span class="n">restart</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">_restart</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="kc">None</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">ms</span><span class="p">,</span> <span class="n">Ps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">T</span><span class="p">,</span> <span class="n">n</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">T</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
+    <span class="n">G</span><span class="p">,</span> <span class="n">Plag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">T</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">T</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
+    <span class="n">smo</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">fres</span><span class="o">.</span><span class="n">m_pred</span><span class="p">,</span> <span class="n">fres</span><span class="o">.</span><span class="n">P_pred</span><span class="p">,</span> <span class="n">fres</span><span class="o">.</span><span class="n">m_filt</span><span class="p">,</span> <span class="n">fres</span><span class="o">.</span><span class="n">P_filt</span><span class="p">,</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">restart</span><span class="p">),</span> <span class="n">ms</span><span class="p">,</span> <span class="n">Ps</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="n">Plag</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">SmootherResult</span><span class="p">(</span><span class="n">ms</span><span class="p">,</span> <span class="n">Ps</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="n">Plag</span><span class="p">,</span> <span class="n">H</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="forecast_errors">
+<a class="viewcode-back" href="../../../../api/generated/pypillometry.signal.gaussmarkov.forecast_errors.html#pypillometry.signal.gaussmarkov.forecast_errors">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">forecast_errors</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">horizons</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">obs_var</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">segments</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Errors of forecasts several samples ahead.</span>
+
+<span class="sd">    From the filtered state at every `step`-th sample (given the data up to</span>
+<span class="sd">    that sample), the model predicts the observations ``horizons`` samples</span>
+<span class="sd">    later. The errors measure the accuracy of the forecasts; the errors</span>
+<span class="sd">    divided by their predicted standard deviation should have variance 1</span>
+<span class="sd">    if the model describes the dependence over that horizon (below 1: the</span>
+<span class="sd">    model expects more variability than there is).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : LGSSM</span>
+<span class="sd">        needs independent noise of the channels (a diagonal ``R``)</span>
+<span class="sd">    y : array, (T,) or (T, m)</span>
+<span class="sd">        observations; NaN, inf and masked values are missing</span>
+<span class="sd">    horizons : sequence of int</span>
+<span class="sd">        how many samples ahead to predict (positive)</span>
+<span class="sd">    step : int, optional</span>
+<span class="sd">        forecasts are made from every `step`-th sample (default 1)</span>
+<span class="sd">    mask, obs_var, segments</span>
+<span class="sd">        see :func:`kalman_filter`; forecasts do not cross the border of a</span>
+<span class="sd">        segment</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    err : np.ndarray, (n_origins, n_horizons, m)</span>
+<span class="sd">        forecast errors (NaN where the origin or the target is missing)</span>
+<span class="sd">    std_err : np.ndarray, (n_origins, n_horizons, m)</span>
+<span class="sd">        errors divided by their predicted standard deviation</span>
+<span class="sd">    """</span>
+    <span class="n">kern</span> <span class="o">=</span> <span class="n">_kernels</span><span class="p">()[</span><span class="mi">5</span><span class="p">]</span>
+    <span class="n">horizons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">horizons</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">))</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">horizons</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">horizons</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"horizons must be positive numbers of samples"</span><span class="p">)</span>
+    <span class="n">A</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">m0</span><span class="p">,</span> <span class="n">P0</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">restart</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_seq_args</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">obs_var</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">segments</span><span class="p">)</span>
+    <span class="n">T</span><span class="p">,</span> <span class="n">m</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="p">((</span><span class="n">T</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="nb">int</span><span class="p">(</span><span class="n">step</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">horizons</span><span class="p">),</span> <span class="n">m</span><span class="p">)</span>
+    <span class="n">E</span><span class="p">,</span> <span class="n">Z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+    <span class="n">kern</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">m0</span><span class="p">,</span> <span class="n">P0</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">restart</span><span class="p">,</span> <span class="n">horizons</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">step</span><span class="p">),</span> <span class="n">E</span><span class="p">,</span> <span class="n">Z</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">E</span><span class="p">,</span> <span class="n">Z</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">component_states</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Split the latent signal into the contributions of the components.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : GaussMarkovModel</span>
+<span class="sd">    m : (T, n) array, SmootherResult or FilterResult</span>
+<span class="sd">        state means; for a result object the smoothed (or filtered) mean and</span>
+<span class="sd">        covariance are used and `P` is ignored</span>
+<span class="sd">    P : (T, n, n) array, optional</span>
+<span class="sd">        state covariances</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        name of component -&gt; (mean, var) of its output, each (T,)</span>
+<span class="sd">        (var is None if no covariance was given)</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">SmootherResult</span><span class="p">):</span>
+        <span class="n">m</span><span class="p">,</span> <span class="n">P</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">m_smooth</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">P_smooth</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">FilterResult</span><span class="p">):</span>
+        <span class="n">m</span><span class="p">,</span> <span class="n">P</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">m_filt</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">P_filt</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">sl</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">slices</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">h</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">ss</span><span class="p">()</span><span class="o">.</span><span class="n">H</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">mean</span> <span class="o">=</span> <span class="n">m</span><span class="p">[:,</span> <span class="n">sl</span><span class="p">]</span> <span class="o">@</span> <span class="n">h</span>
+        <span class="n">var</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">P</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">"i,tij,j-&gt;t"</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">P</span><span class="p">[:,</span> <span class="n">sl</span><span class="p">,</span> <span class="n">sl</span><span class="p">],</span> <span class="n">h</span><span class="p">)</span>
+        <span class="n">out</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">var</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">out</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_sqrtm_psd</span><span class="p">(</span><span class="n">M</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""symmetric square root of a PSD matrix (negative eigenvalues clipped)"""</span>
+    <span class="n">w</span><span class="p">,</span> <span class="n">V</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigh</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">M</span> <span class="o">+</span> <span class="n">M</span><span class="o">.</span><span class="n">T</span><span class="p">))</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">V</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">)))</span> <span class="o">@</span> <span class="n">V</span><span class="o">.</span><span class="n">T</span>
+
+
+<div class="viewcode-block" id="simulate">
+<a class="viewcode-back" href="../../../../api/generated/pypillometry.signal.gaussmarkov.simulate.html#pypillometry.signal.gaussmarkov.simulate">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">simulate</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_states</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Simulate from a state-space model.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : LGSSM or GaussMarkovModel</span>
+<span class="sd">        a :class:`GaussMarkovModel` is discretised at `fs`</span>
+<span class="sd">    n : int</span>
+<span class="sd">        number of samples</span>
+<span class="sd">    fs : float, optional</span>
+<span class="sd">        sampling rate in Hz (needed for a GaussMarkovModel)</span>
+<span class="sd">    rng : np.random.Generator or int, optional</span>
+<span class="sd">    return_states : bool, optional</span>
+<span class="sd">        also return the states</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    y : (n,) or (n, m) array</span>
+<span class="sd">        observations ((n,) for a single channel)</span>
+<span class="sd">    x : (n, dim) array</span>
+<span class="sd">        states (if `return_states`)</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from pypillometry.signal.gaussmarkov import OU, GaussMarkovModel</span>
+<span class="sd">    &gt;&gt;&gt; y = simulate(GaussMarkovModel([OU(1., 50.)], noise=0.1), 1000, fs=1000, rng=0)</span>
+<span class="sd">    &gt;&gt;&gt; y.shape</span>
+<span class="sd">    (1000,)</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">LGSSM</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">fs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"fs is needed to simulate from a GaussMarkovModel"</span><span class="p">)</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to_lgssm</span><span class="p">(</span><span class="n">fs</span><span class="p">)</span>
+    <span class="n">sim</span> <span class="o">=</span> <span class="n">_kernels</span><span class="p">()[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">rng</span><span class="p">)</span>
+    <span class="n">A</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">m0</span><span class="p">,</span> <span class="n">P0</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">_arrays</span><span class="p">()</span>
+    <span class="n">Qsqrt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">_sqrtm_psd</span><span class="p">(</span><span class="n">Q</span><span class="p">))</span>
+    <span class="n">Rsqrt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">_sqrtm_psd</span><span class="p">(</span><span class="n">R</span><span class="p">))</span>
+    <span class="n">d</span><span class="p">,</span> <span class="n">m</span> <span class="o">=</span> <span class="n">m0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">H</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">x0</span> <span class="o">=</span> <span class="n">m0</span> <span class="o">+</span> <span class="n">_sqrtm_psd</span><span class="p">(</span><span class="n">P0</span><span class="p">)</span> <span class="o">@</span> <span class="n">rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+    <span class="n">ex</span><span class="p">,</span> <span class="n">ey</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">d</span><span class="p">)),</span> <span class="n">rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">))</span>
+    <span class="n">xs</span><span class="p">,</span> <span class="n">ys</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">d</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">))</span>
+    <span class="n">sim</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">Qsqrt</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">Rsqrt</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">ex</span><span class="p">,</span> <span class="n">ey</span><span class="p">,</span> <span class="n">xs</span><span class="p">,</span> <span class="n">ys</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">ys</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">m</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">ys</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">xs</span><span class="p">)</span> <span class="k">if</span> <span class="n">return_states</span> <span class="k">else</span> <span class="n">y</span></div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8"></script>
+<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2026, Matthias Mittner.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
+  </p>
+</div>
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.24.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

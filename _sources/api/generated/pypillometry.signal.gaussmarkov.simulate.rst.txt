@@ -1,0 +1,6 @@
+﻿simulate
+========
+
+.. currentmodule:: pypillometry.signal.gaussmarkov
+
+.. autofunction:: simulate

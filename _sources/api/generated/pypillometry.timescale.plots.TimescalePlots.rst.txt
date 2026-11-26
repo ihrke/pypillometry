@@ -1,0 +1,30 @@
+﻿TimescalePlots
+==============
+
+.. currentmodule:: pypillometry.timescale.plots
+
+.. autoclass:: TimescalePlots
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~TimescalePlots.decomposition
+      ~TimescalePlots.diagnostics
+      ~TimescalePlots.interpolation
+      ~TimescalePlots.slow
+      ~TimescalePlots.spectrum
+      ~TimescalePlots.timescales
+      ~TimescalePlots.variogram
+   
+   
+
+
+   .. rubric:: Details

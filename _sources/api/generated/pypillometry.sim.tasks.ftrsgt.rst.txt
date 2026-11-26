@@ -1,0 +1,6 @@
+﻿ftrsgt
+======
+
+.. currentmodule:: pypillometry.sim.tasks
+
+.. autofunction:: ftrsgt

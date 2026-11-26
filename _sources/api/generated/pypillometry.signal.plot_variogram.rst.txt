@@ -1,0 +1,6 @@
+﻿plot\_variogram
+===============
+
+.. currentmodule:: pypillometry.signal
+
+.. autofunction:: plot_variogram

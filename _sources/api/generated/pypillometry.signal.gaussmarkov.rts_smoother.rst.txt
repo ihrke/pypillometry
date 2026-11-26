@@ -1,0 +1,6 @@
+﻿rts\_smoother
+=============
+
+.. currentmodule:: pypillometry.signal.gaussmarkov
+
+.. autofunction:: rts_smoother

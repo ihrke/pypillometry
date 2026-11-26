@@ -1,0 +1,27 @@
+﻿Fixations
+=========
+
+.. currentmodule:: pypillometry.sim
+
+.. autoclass:: Fixations
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~Fixations.apply
+      ~Fixations.eyes_in
+      ~Fixations.from_dict
+      ~Fixations.to_dict
+   
+   
+
+
+   .. rubric:: Details

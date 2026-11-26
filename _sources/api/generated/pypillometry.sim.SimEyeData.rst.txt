@@ -1,0 +1,71 @@
+﻿SimEyeData
+==========
+
+.. currentmodule:: pypillometry.sim
+
+.. autoclass:: SimEyeData
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~SimEyeData.add_events
+      ~SimEyeData.add_to_history
+      ~SimEyeData.blink_stats
+      ~SimEyeData.clear_layer
+      ~SimEyeData.copy
+      ~SimEyeData.crop
+      ~SimEyeData.downsample
+      ~SimEyeData.drop_data
+      ~SimEyeData.drop_original
+      ~SimEyeData.exclude_intervals
+      ~SimEyeData.excluded_duration
+      ~SimEyeData.fill_time_discontinuities
+      ~SimEyeData.from_eyelink
+      ~SimEyeData.from_file
+      ~SimEyeData.from_gazepoint
+      ~SimEyeData.get_blinks
+      ~SimEyeData.get_duration
+      ~SimEyeData.get_epochs
+      ~SimEyeData.get_excluded
+      ~SimEyeData.get_included
+      ~SimEyeData.get_interpolated
+      ~SimEyeData.get_intervals
+      ~SimEyeData.get_layer_intervals
+      ~SimEyeData.get_segments
+      ~SimEyeData.get_size
+      ~SimEyeData.get_values
+      ~SimEyeData.interpolate_intervals
+      ~SimEyeData.keep_intervals
+      ~SimEyeData.layer_stats
+      ~SimEyeData.mask
+      ~SimEyeData.mask_as_intervals
+      ~SimEyeData.mask_intervals
+      ~SimEyeData.merge_eyes
+      ~SimEyeData.merge_masks
+      ~SimEyeData.nevents
+      ~SimEyeData.print_history
+      ~SimEyeData.quality_report
+      ~SimEyeData.remove_intervals
+      ~SimEyeData.reset_time
+      ~SimEyeData.scale
+      ~SimEyeData.set_blinks
+      ~SimEyeData.set_events
+      ~SimEyeData.set_experimental_setup
+      ~SimEyeData.split_excluded
+      ~SimEyeData.stat_per_event
+      ~SimEyeData.summary
+      ~SimEyeData.unscale
+      ~SimEyeData.write_file
+   
+   
+
+
+   .. rubric:: Details

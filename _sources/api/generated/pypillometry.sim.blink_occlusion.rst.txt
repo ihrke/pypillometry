@@ -1,0 +1,6 @@
+﻿blink\_occlusion
+================
+
+.. currentmodule:: pypillometry.sim
+
+.. autofunction:: blink_occlusion

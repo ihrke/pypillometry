@@ -1,0 +1,26 @@
+﻿Variogram
+=========
+
+.. currentmodule:: pypillometry.signal
+
+.. autoclass:: Variogram
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~Variogram.at_log_lags
+      ~Variogram.count
+      ~Variogram.index
+   
+   
+
+
+   .. rubric:: Details

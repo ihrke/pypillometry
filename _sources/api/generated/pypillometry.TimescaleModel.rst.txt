@@ -1,0 +1,38 @@
+﻿TimescaleModel
+==============
+
+.. currentmodule:: pypillometry
+
+.. autoclass:: TimescaleModel
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~TimescaleModel.components
+      ~TimescaleModel.cross_validate
+      ~TimescaleModel.fit
+      ~TimescaleModel.forecast_calibration
+      ~TimescaleModel.innovations
+      ~TimescaleModel.interpolate
+      ~TimescaleModel.predict
+      ~TimescaleModel.process
+      ~TimescaleModel.simulate
+      ~TimescaleModel.slow_sd
+      ~TimescaleModel.spectrum
+      ~TimescaleModel.store
+      ~TimescaleModel.summary
+      ~TimescaleModel.variogram
+      ~TimescaleModel.variogram_check
+   
+   
+
+
+   .. rubric:: Details

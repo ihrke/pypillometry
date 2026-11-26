@@ -1,0 +1,33 @@
+﻿Simulation
+==========
+
+.. currentmodule:: pypillometry.sim
+
+.. autoclass:: Simulation
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~Simulation.add
+      ~Simulation.blinks
+      ~Simulation.foreshortening
+      ~Simulation.gaze
+      ~Simulation.loss
+      ~Simulation.noise
+      ~Simulation.pupil
+      ~Simulation.run
+      ~Simulation.task
+      ~Simulation.units
+   
+   
+
+
+   .. rubric:: Details

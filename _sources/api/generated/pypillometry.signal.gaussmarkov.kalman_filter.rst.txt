@@ -1,0 +1,6 @@
+﻿kalman\_filter
+==============
+
+.. currentmodule:: pypillometry.signal.gaussmarkov
+
+.. autofunction:: kalman_filter

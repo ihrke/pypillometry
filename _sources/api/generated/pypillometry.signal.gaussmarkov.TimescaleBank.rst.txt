@@ -1,0 +1,41 @@
+﻿TimescaleBank
+=============
+
+.. currentmodule:: pypillometry.signal.gaussmarkov
+
+.. autoclass:: TimescaleBank
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~TimescaleBank.atom_var
+      ~TimescaleBank.bounds
+      ~TimescaleBank.filter
+      ~TimescaleBank.forecast_errors
+      ~TimescaleBank.gains
+      ~TimescaleBank.lgssm
+      ~TimescaleBank.loglik
+      ~TimescaleBank.obs_matrix
+      ~TimescaleBank.params
+      ~TimescaleBank.psd
+      ~TimescaleBank.select
+      ~TimescaleBank.simulate
+      ~TimescaleBank.slow_sd
+      ~TimescaleBank.smooth
+      ~TimescaleBank.start
+      ~TimescaleBank.theta
+      ~TimescaleBank.upsample
+      ~TimescaleBank.variogram
+   
+   
+
+
+   .. rubric:: Details

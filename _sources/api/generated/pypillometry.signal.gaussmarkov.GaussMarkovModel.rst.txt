@@ -1,0 +1,31 @@
+﻿GaussMarkovModel
+================
+
+.. currentmodule:: pypillometry.signal.gaussmarkov
+
+.. autoclass:: GaussMarkovModel
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~GaussMarkovModel.cov
+      ~GaussMarkovModel.fix
+      ~GaussMarkovModel.from_theta
+      ~GaussMarkovModel.psd
+      ~GaussMarkovModel.to_lgssm
+      ~GaussMarkovModel.unfix
+      ~GaussMarkovModel.variogram
+      ~GaussMarkovModel.with_params
+   
+   
+
+
+   .. rubric:: Details

@@ -1,0 +1,2268 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Slow and fast fluctuations of the pupil: the timescale model &#8212; pypillometry v2.3.0</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx_autodoc_typehints.css?v=057ac668" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=6a604523" />
+    <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=e89b0eda" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=75c7c72ae941e8b558d8"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
+
+    <script src="../_static/documentation_options.js?v=387c4177"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../_static/design-tabs.js?v=fcb327ea"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'experimental/timescale_model';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../_static/pypillometry_logo_200x200.png"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Development" href="../development/index.html" />
+    <link rel="prev" title="Spatial calibration" href="spatial_calibration.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="v2.3.0" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="light">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation" aria-expanded="false" aria-controls="pst-primary-sidebar-modal">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="../_static/pypillometry_logo_200x200.png" class="logo__image only-light" alt=""/>
+    <img src="../_static/pypillometry_logo_200x200.png" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">pypillometry</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Experimental features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../development/index.html">
+    Development
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ihrke/pypillometry" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pypillometry/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page" aria-expanded="false" aria-controls="pst-secondary-sidebar-modal">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal" tabindex="-1"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Experimental features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../development/index.html">
+    Development
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ihrke/pypillometry" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pypillometry/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button type="button" id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="foreshortening.html">Correcting pupil foreshortening</a></li>
+<li class="toctree-l1"><a class="reference internal" href="foreshortening_correction_algorithm.html">Foreshortening Correction for Pupil Size Measurements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gaze_rois.html">Experimental setup and regions of interest</a></li>
+<li class="toctree-l1"><a class="reference internal" href="spatial_calibration.html">Spatial calibration</a></li>
+<li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">Slow and fast fluctuations of the pupil: the timescale model</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-house"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Experimental features</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Slow and fast fluctuations of the pupil: the timescale model</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <div class="pp-notebook-banner">
+  <span>This page was generated from a Jupyter notebook.</span>
+  <a href="https://github.com/ihrke/pypillometry/blob/master/docs/experimental/timescale_model.ipynb">View on GitHub</a>
+  <a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath=docs/experimental/timescale_model.ipynb">
+    <img alt="Binder badge" src="https://mybinder.org/badge_logo.svg"
+         style="vertical-align:text-bottom">
+  </a>
+</div><section id="Slow-and-fast-fluctuations-of-the-pupil:-the-timescale-model">
+<h1>Slow and fast fluctuations of the pupil: the timescale model<a class="headerlink" href="#Slow-and-fast-fluctuations-of-the-pupil:-the-timescale-model" title="Link to this heading">#</a></h1>
+<p><strong>Experimental.</strong> The API may change.</p>
+<p>The pupil size fluctuates on many time scales at once: fast responses and hippus within a second, and slower changes over tens of seconds and minutes that are often called the tonic or baseline pupil size. <code class="docutils literal notranslate"><span class="pre">pp.TimescaleModel</span></code> describes a recording as a sum of such parts:</p>
+<div class="math notranslate nohighlight">
+\[y_t = \mu_s + f(t) + \sum_{k=1}^{K} a_k(t) + \varepsilon_t\]</div>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(y_t\)</span> is the pupil size in log-%, <span class="math notranslate nohighlight">\(100 \log(\text{pupil}/\text{median})\)</span>, at about 20 Hz</p></li>
+<li><p><span class="math notranslate nohighlight">\(\mu_s\)</span> is the mean of segment <span class="math notranslate nohighlight">\(s\)</span> of the recording (e.g., a block)</p></li>
+<li><p><span class="math notranslate nohighlight">\(f\)</span> is one <strong>fast component</strong> with a free standard deviation and time scale (typically 0.3–1 s)</p></li>
+<li><p><span class="math notranslate nohighlight">\(a_k\)</span> are <strong>slow components (“atoms”) at fixed time scales</strong> (3, 10, 30, 100 and 300 s by default); their variances are estimated</p></li>
+<li><p><span class="math notranslate nohighlight">\(\varepsilon_t\)</span> is white measurement noise</p></li>
+</ul>
+<p>All components are Matérn-3/2 processes (smooth random functions with one time scale each). “Which slow components does this participant have” is then the question “how much variance is there at each time scale”. The model is fitted with a Kalman filter, which handles missing data exactly: blinks and artifacts are simply not observed, nothing is interpolated before the fit.</p>
+<p>What you get from a fitted model:</p>
+<ul class="simple">
+<li><p>how much the pupil varies at each time scale</p></li>
+<li><p>the slow part of the signal (the baseline) with its uncertainty</p></li>
+<li><p>the signal reconstructed where it is missing, for the whole recording in one go</p></li>
+<li><p>checks whether the model describes the data</p></li>
+</ul>
+<p>This notebook goes through these steps on an example recording.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">u</span>
+
+<span class="n">pp</span><span class="o">.</span><span class="n">logging_set_level</span><span class="p">(</span><span class="s2">"WARNING"</span><span class="p">)</span>
+<span class="n">pp</span><span class="o">.</span><span class="n">set_default_inplace</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>   <span class="c1"># methods return changed copies</span>
+</pre></div>
+</div>
+</div>
+<section id="Data:-mask-the-blinks-first">
+<h2>Data: mask the blinks first<a class="headerlink" href="#Data:-mask-the-blinks-first" title="Link to this heading">#</a></h2>
+<p>The model uses every sample that is not masked, so blinks and artifacts have to be detected before. Check the detection for your data: the default velocity thresholds of <code class="docutils literal notranslate"><span class="pre">blinks_detect()</span></code> are in pupil units per ms and do not suit every eye tracker and participant (see the notebook on blink preprocessing and <code class="docutils literal notranslate"><span class="pre">d.plot.plot_blinks()</span></code>). For the slow components, the exact borders of a blink do not matter: the model leaves out 100 ms before and 200 ms after every masked stretch anyway (argument
+<code class="docutils literal notranslate"><span class="pre">margin</span></code>), so that no part of the blink transients stays in the data.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002"</span><span class="p">)</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">blink_stats</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">))</span><span class="o">.</span><span class="n">T</span><span class="p">[[</span><span class="s2">"n"</span><span class="p">,</span> <span class="s2">"mean"</span><span class="p">,</span> <span class="s2">"max"</span><span class="p">]]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>n</th>
+      <th>mean</th>
+      <th>max</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>left_pupil</th>
+      <td>264</td>
+      <td>202.295455</td>
+      <td>514.0</td>
+    </tr>
+    <tr>
+      <th>right_pupil</th>
+      <td>250</td>
+      <td>166.008</td>
+      <td>476.0</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_pupil</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">units</span><span class="o">=</span><span class="s2">"min"</span><span class="p">,</span> <span class="n">show_events</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"whole recording"</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_pupil</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">60</span><span class="p">,</span> <span class="mi">90</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">sec</span><span class="p">,</span> <span class="n">show_events</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"30 seconds"</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/experimental_timescale_model_4_0.png" src="../_images/experimental_timescale_model_4_0.png" />
+</div>
+</div>
+</section>
+<section id="A-first-look:-the-spectrum">
+<h2>A first look: the spectrum<a class="headerlink" href="#A-first-look:-the-spectrum" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">d.pupil.spectrum()</span></code> computes the power spectrum without interpolating the gaps (windows with many masked samples are skipped) and <code class="docutils literal notranslate"><span class="pre">d.plot.plot_pupil_spectrum()</span></code> plots it. On logarithmic axes the spectrum is close to a straight line (about <span class="math notranslate nohighlight">\(1/f\)</span>) below 0.5 Hz and falls steeply above 1 Hz. There is no single slow time scale; the slow part is a continuum. This is why the model uses a bank of time scales. The narrow peaks are responses that are locked to the rhythm of the trials.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mf">4.5</span><span class="p">))</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_pupil_spectrum</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s2">"200 s"</span><span class="p">)</span>
+<span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">])</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="mi">12</span> <span class="o">/</span> <span class="n">f</span><span class="p">,</span> <span class="s2">"k--"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"1/f"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/experimental_timescale_model_6_0.png" src="../_images/experimental_timescale_model_6_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sp</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">spectrum</span><span class="p">(</span><span class="n">window</span><span class="o">=</span><span class="s2">"200 s"</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="s2">"log%"</span><span class="p">)[</span><span class="s2">"left_pupil"</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">sp</span><span class="o">.</span><span class="n">nwindows</span><span class="si">}</span><span class="s2"> windows of </span><span class="si">{</span><span class="n">sp</span><span class="o">.</span><span class="n">window</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">1000</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> s, frequencies </span><span class="si">{</span><span class="n">sp</span><span class="o">.</span><span class="n">freqs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">sp</span><span class="o">.</span><span class="n">freqs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> Hz"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+10 windows of 200 s, frequencies 0.005 to 250 Hz
+</pre></div></div>
+</div>
+</section>
+<section id="Building-and-fitting-the-model">
+<h2>Building and fitting the model<a class="headerlink" href="#Building-and-fitting-the-model" title="Link to this heading">#</a></h2>
+<p>The model object is created from the <code class="docutils literal notranslate"><span class="pre">EyeData</span></code> object. The constructor prepares the data and keeps the bookkeeping that is needed to get back to the original samples later:</p>
+<ol class="arabic simple">
+<li><p>unusable samples (mask policy of the data, plus the margin) are left out</p></li>
+<li><p>the signal is reduced to 20 Hz by means of the valid samples in blocks of 50 ms (a block is used if at least half of its samples are valid)</p></li>
+<li><p>it is converted to log-%</p></li>
+<li><p>it is cut into segments with a mean each (here one segment; see below)</p></li>
+</ol>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">m</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">TimescaleModel</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="s2">"left"</span><span class="p">)</span>
+<span class="n">m</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+TimescaleModel(&#39;rlmw_002&#39;, eyes=[&#39;left&#39;], timescales=(3s, 10s, 30s, 100s, 300s), 1 segment(s), 19.9 min at 20 Hz, valid: left 89%; not fitted)
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">time</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="s2">"left"</span><span class="p">],</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"k"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="mi">60</span><span class="p">,</span> <span class="mi">90</span><span class="p">),</span> <span class="n">xlabel</span><span class="o">=</span><span class="s2">"time (s)"</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">"log-%"</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"data of the model: 20 Hz, log-%, gaps where the data are masked"</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/experimental_timescale_model_10_0.png" src="../_images/experimental_timescale_model_10_0.png" />
+</div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">fit()</span></code> estimates the parameters (about ten seconds for 20 minutes of data; the likelihood is evaluated in parallel threads, <code class="docutils literal notranslate"><span class="pre">n_jobs=</span></code> sets their number, and with the logging level “INFO” a progress bar shows the iterations). By default it uses a general prior of medium strength (more on priors below).</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">time</span> m.fit()
+<span class="n">m</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span><span class="o">.</span><span class="n">T</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CPU times: user 41.3 s, sys: 490 ms, total: 41.8 s
+Wall time: 11.9 s
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>left</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>fast_sd</th>
+      <td>4.840200</td>
+    </tr>
+    <tr>
+      <th>fast_ell</th>
+      <td>312.788098</td>
+    </tr>
+    <tr>
+      <th>noise_sd</th>
+      <td>0.314007</td>
+    </tr>
+    <tr>
+      <th>sd_3s</th>
+      <td>6.221740</td>
+    </tr>
+    <tr>
+      <th>sd_10s</th>
+      <td>1.237606</td>
+    </tr>
+    <tr>
+      <th>sd_30s</th>
+      <td>1.148202</td>
+    </tr>
+    <tr>
+      <th>sd_100s</th>
+      <td>2.088032</td>
+    </tr>
+    <tr>
+      <th>sd_300s</th>
+      <td>1.091348</td>
+    </tr>
+    <tr>
+      <th>slow_sd</th>
+      <td>2.898439</td>
+    </tr>
+    <tr>
+      <th>n_obs</th>
+      <td>21285.000000</td>
+    </tr>
+    <tr>
+      <th>loglik</th>
+      <td>-32344.858403</td>
+    </tr>
+    <tr>
+      <th>aic</th>
+      <td>64705.716807</td>
+    </tr>
+    <tr>
+      <th>bic</th>
+      <td>64769.442494</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>The fast component of this recording has a standard deviation of <code class="docutils literal notranslate"><span class="pre">fast_sd</span></code> log-% (roughly percent of the pupil size) and a time scale <code class="docutils literal notranslate"><span class="pre">fast_ell</span></code> in ms. <code class="docutils literal notranslate"><span class="pre">sd_3s</span></code> … <code class="docutils literal notranslate"><span class="pre">sd_300s</span></code> are the standard deviations of the atoms and <code class="docutils literal notranslate"><span class="pre">slow_sd</span></code> is the total standard deviation of all atoms from 10 s on. <code class="docutils literal notranslate"><span class="pre">loglik</span></code> is the restricted log-likelihood (the means are integrated out), <code class="docutils literal notranslate"><span class="pre">aic</span></code> and <code class="docutils literal notranslate"><span class="pre">bic</span></code> are computed from it.</p>
+</section>
+<section id="What-the-model-found">
+<h2>What the model found<a class="headerlink" href="#What-the-model-found" title="Link to this heading">#</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">m</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">decomposition</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/experimental_timescale_model_14_0.png" src="../_images/experimental_timescale_model_14_0.png" />
+</div>
+</div>
+<p>Top: the data and the slow part (the mean plus all atoms with a time scale of at least 10 s) with two posterior standard deviations. Middle: the fast component. Bottom: the atoms.</p>
+<p>How the variance is spread over the time scales:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">m</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">timescales</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"total slow sd (time scales &gt;= 10 s):"</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">slow_sd</span><span class="p">(</span><span class="s2">"10 s"</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+total slow sd (time scales &gt;= 10 s): {&#39;left&#39;: 2.898439465891542}
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/experimental_timescale_model_16_1.png" src="../_images/experimental_timescale_model_16_1.png" />
+</div>
+</div>
+<p>The intervals of single atoms are wide. One recording of 20 minutes determines how much slow variance there is in total, but not well how it is divided between neighbouring atoms, which are a factor of 3 apart. For a single participant, interpret the slow time course and <code class="docutils literal notranslate"><span class="pre">slow_sd()</span></code>; the variances of single atoms are a matter for groups (see the end of this notebook).</p>
+<p>The cut-off between “slow” and the rest can be chosen after the fit, because all atoms are estimated:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">m</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">slow</span><span class="p">(</span><span class="n">cutoffs</span><span class="o">=</span><span class="p">(</span><span class="s2">"3 s"</span><span class="p">,</span> <span class="s2">"10 s"</span><span class="p">,</span> <span class="s2">"30 s"</span><span class="p">,</span> <span class="s2">"100 s"</span><span class="p">),</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/experimental_timescale_model_18_0.png" src="../_images/experimental_timescale_model_18_0.png" />
+</div>
+</div>
+</section>
+<section id="Does-the-model-describe-the-data?">
+<h2>Does the model describe the data?<a class="headerlink" href="#Does-the-model-describe-the-data?" title="Link to this heading">#</a></h2>
+<p>The likelihood is made of predictions over 50 ms, so it is dominated by the fast dynamics. These checks look at the slow part too:</p>
+<ul class="simple">
+<li><p><strong>Variogram</strong>: the typical size of a change of the signal over a lag, for the data and the model. With <code class="docutils literal notranslate"><span class="pre">check=True</span></code>, the band shows where the variograms of signals simulated from the fitted model (with the gaps of the data) fall.</p></li>
+<li><p><strong>Spectrum</strong> of the data and of the model with its components.</p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">m</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">variogram</span><span class="p">(</span><span class="n">check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">m</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">spectrum</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/experimental_timescale_model_20_0.png" src="../_images/experimental_timescale_model_20_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">m</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">diagnostics</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/experimental_timescale_model_21_0.png" src="../_images/experimental_timescale_model_21_0.png" />
+</div>
+</div>
+<p>Left: the one-step prediction errors have heavier tails than a normal distribution (fast dilations and remaining artifacts). Middle: they are nearly uncorrelated. Right: forecasts over 50 ms to 60 s are calibrated if the standard deviation of their standardised errors is 1; below 1, the model expects more variability over that horizon than there is. The numbers behind the last panel:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">m</span><span class="o">.</span><span class="n">forecast_calibration</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>eye</th>
+      <th>horizon</th>
+      <th>rmse</th>
+      <th>z_sd</th>
+      <th>n</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>left</td>
+      <td>0.05</td>
+      <td>1.102221</td>
+      <td>1.016607</td>
+      <td>1052</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>left</td>
+      <td>0.20</td>
+      <td>3.609661</td>
+      <td>1.038667</td>
+      <td>1016</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>left</td>
+      <td>1.00</td>
+      <td>6.334486</td>
+      <td>0.976470</td>
+      <td>935</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>left</td>
+      <td>5.00</td>
+      <td>7.539896</td>
+      <td>0.926334</td>
+      <td>930</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>left</td>
+      <td>20.00</td>
+      <td>7.787727</td>
+      <td>0.932058</td>
+      <td>915</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>left</td>
+      <td>60.00</td>
+      <td>8.018451</td>
+      <td>0.945363</td>
+      <td>885</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>In this recording the checks show a weakness: at lags above a few seconds, the variogram of the model lies above that of the data, and the forecasts over 5 s and more are a little too uncertain. The single fast component cannot describe the rise of the variogram between 0.3 and 3 s exactly; the likelihood, which is dominated by these short lags, makes up for it with a large 3-s atom, which then adds too much variance at longer lags. The section on comparing models below shows how to test another
+bank.</p>
+</section>
+<section id="Back-to-the-original-samples">
+<h2>Back to the original samples<a class="headerlink" href="#Back-to-the-original-samples" title="Link to this heading">#</a></h2>
+<p>The model works at 20 Hz in log-%, but its components are defined in continuous time. <code class="docutils literal notranslate"><span class="pre">predict()</span></code> evaluates them at the original samples and in the units of the data, also where the data are missing:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">signal</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">"signal"</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mf">0.95</span><span class="p">)[</span><span class="s2">"left"</span><span class="p">]</span>     <span class="c1"># one value per sample of d</span>
+<span class="n">slow</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">"slow"</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="s2">"10 s"</span><span class="p">)[</span><span class="s2">"left"</span><span class="p">]</span>
+<span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">),</span> <span class="n">signal</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">slow</span><span class="o">.</span><span class="n">shape</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+(597301, (597301,), (597301,))
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">7</span><span class="p">))</span>
+<span class="n">m</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">interpolation</span><span class="p">(</span><span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">130</span><span class="p">),</span> <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">m</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">interpolation</span><span class="p">(</span><span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mf">13.2</span><span class="p">,</span> <span class="mf">13.7</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">"min"</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/experimental_timescale_model_26_0.png" src="../_images/experimental_timescale_model_26_0.png" />
+</div>
+</div>
+<p>Black: the samples the model used; grey: the samples it did not use (blinks with their margins); red: the expected signal with its 95 % interval, which opens up in the gaps; blue: the slow part.</p>
+<p><code class="docutils literal notranslate"><span class="pre">interpolate()</span></code> replaces all unusable samples of the recording by the expected signal and marks them as interpolated. It returns the <code class="docutils literal notranslate"><span class="pre">EyeData</span></code> object. Other than <code class="docutils literal notranslate"><span class="pre">d.pupil.blinks_interpolate()</span></code>, it uses one model for the whole recording and also bridges long gaps.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">di</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">interpolate</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"unusable samples before: </span><span class="si">%.1f</span><span class="s2"> </span><span class="si">%%</span><span class="s2">, after: </span><span class="si">%.1f</span><span class="s2"> </span><span class="si">%%</span><span class="s2">"</span> <span class="o">%</span> <span class="p">(</span>
+    <span class="mi">100</span> <span class="o">*</span> <span class="n">d</span><span class="o">.</span><span class="n">mask</span><span class="p">(</span><span class="s2">"left"</span><span class="p">,</span> <span class="s2">"pupil"</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">di</span><span class="o">.</span><span class="n">mask</span><span class="p">(</span><span class="s2">"left"</span><span class="p">,</span> <span class="s2">"pupil"</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()))</span>
+<span class="n">di</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="s2">"slow"</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">di</span><span class="p">)</span>             <span class="c1"># variable "pupilslow"</span>
+<span class="n">di</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="s2">"signal"</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">di</span><span class="p">)</span>           <span class="c1"># the smoothed signal, "pupilsmooth"</span>
+<span class="n">di</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="s2">"detrended"</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">di</span><span class="p">)</span>        <span class="c1"># signal minus slow part, "pupildetrended"</span>
+<span class="n">di</span><span class="o">.</span><span class="n">print_history</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+unusable samples before: 4.5 %, after: 0.0 %
+* rlmw_002
+└ reset_time()
+ └ pupil.blinks_detect()
+  └ TimescaleModel.interpolate(eyes=[&#39;left&#39;],store_as=&#39;pupil&#39;)
+   └ TimescaleModel.store(&#39;slow&#39;,store_as=&#39;pupilslow&#39;,eyes=[&#39;left&#39;],cutoff=&#39;10 s&#39;)
+    └ TimescaleModel.store(&#39;signal&#39;,store_as=&#39;pupilsmooth&#39;,eyes=[&#39;left&#39;],cutoff=&#39;10 s&#39;)
+     └ TimescaleModel.store(&#39;detrended&#39;,store_as=&#39;pupildetrended&#39;,eyes=[&#39;left&#39;],cutoff=&#39;10 s&#39;)
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">di</span><span class="o">.</span><span class="n">tx</span> <span class="o">/</span> <span class="mi">60000</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">di</span><span class="p">[</span><span class="s2">"left"</span><span class="p">,</span> <span class="s2">"pupil"</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">"0.6"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"pupil, interpolated"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">di</span><span class="p">[</span><span class="s2">"left"</span><span class="p">,</span> <span class="s2">"pupilslow"</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">"C3"</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"pupilslow"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s2">"time (min)"</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">"pupil size"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/experimental_timescale_model_29_0.png" src="../_images/experimental_timescale_model_29_0.png" />
+</div>
+</div>
+</section>
+<section id="Priors">
+<h2>Priors<a class="headerlink" href="#Priors" title="Link to this heading">#</a></h2>
+<p>A single recording cannot say much about an atom that carries little variance: the likelihood is flat towards zero variance. The fit therefore uses a prior on the parameters. The general priors describe how the parameters vary between recordings: they were derived from 155 recordings of four experiments (desk-mounted and portable EyeLink systems, tasks of 20 to 47 minutes). They come in three strengths:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;medium&quot;</span></code> (default): the distribution over these recordings</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;strong&quot;</span></code>: half the standard deviations</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;weak&quot;</span></code>: twice the standard deviations</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">prior=None</span></code> gives the maximum-likelihood fit, and a prior from your own group of recordings is described below. The fast component and the noise vary little between recordings, the variances of the atoms a lot, so even the medium prior is wide for the atoms: it mainly keeps them away from zero and from very large values. The priors are normal distributions on the log of the standard deviations and of the fast time scale, and on <span class="math notranslate nohighlight">\(u_k = \log(v_k + v_0)\)</span> for the variance <span class="math notranslate nohighlight">\(v_k\)</span> of
+atom <span class="math notranslate nohighlight">\(k\)</span> (with <span class="math notranslate nohighlight">\(v_0 = 0.25\)</span>, so that an atom without variance has a finite value).</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">gm</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">gaussmarkov</span>
+<span class="n">gm</span><span class="o">.</span><span class="n">general_prior</span><span class="p">(</span><span class="n">strength</span><span class="o">=</span><span class="s2">"medium"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+GaussianPrior(general, medium; mean ± sd)
+  log_fast_sd             2.090 ± 0.360
+  log_fast_ell            6.520 ± 0.300
+  log_noise_sd           -1.680 ± 0.530
+  u_3s                    2.420 ± 1.910
+  u_10s                   3.240 ± 1.890
+  u_30s                   1.460 ± 1.820
+  u_100s                  1.610 ± 2.340
+  u_300s                  2.620 ± 2.660
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fits</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"medium"</span><span class="p">:</span> <span class="n">m</span><span class="p">}</span>
+<span class="k">for</span> <span class="n">prior</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"weak"</span><span class="p">,</span> <span class="s2">"strong"</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="n">fits</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">prior</span><span class="p">)]</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">TimescaleModel</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="s2">"left"</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">prior</span><span class="o">=</span><span class="n">prior</span><span class="p">)</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">({</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s2">"left"</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">fits</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>medium</th>
+      <th>weak</th>
+      <th>strong</th>
+      <th>None</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>fast_sd</th>
+      <td>4.84</td>
+      <td>4.82</td>
+      <td>4.92</td>
+      <td>4.81</td>
+    </tr>
+    <tr>
+      <th>fast_ell</th>
+      <td>312.79</td>
+      <td>311.55</td>
+      <td>317.14</td>
+      <td>311.25</td>
+    </tr>
+    <tr>
+      <th>noise_sd</th>
+      <td>0.31</td>
+      <td>0.31</td>
+      <td>0.32</td>
+      <td>0.31</td>
+    </tr>
+    <tr>
+      <th>sd_3s</th>
+      <td>6.22</td>
+      <td>6.30</td>
+      <td>5.98</td>
+      <td>6.32</td>
+    </tr>
+    <tr>
+      <th>sd_10s</th>
+      <td>1.24</td>
+      <td>0.77</td>
+      <td>2.05</td>
+      <td>0.00</td>
+    </tr>
+    <tr>
+      <th>sd_30s</th>
+      <td>1.15</td>
+      <td>0.31</td>
+      <td>1.85</td>
+      <td>0.23</td>
+    </tr>
+    <tr>
+      <th>sd_100s</th>
+      <td>2.09</td>
+      <td>2.26</td>
+      <td>2.03</td>
+      <td>2.61</td>
+    </tr>
+    <tr>
+      <th>sd_300s</th>
+      <td>1.09</td>
+      <td>0.32</td>
+      <td>1.57</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <th>slow_sd</th>
+      <td>2.90</td>
+      <td>2.43</td>
+      <td>3.77</td>
+      <td>2.63</td>
+    </tr>
+    <tr>
+      <th>n_obs</th>
+      <td>21285.00</td>
+      <td>21285.00</td>
+      <td>21285.00</td>
+      <td>21285.00</td>
+    </tr>
+    <tr>
+      <th>loglik</th>
+      <td>-32344.86</td>
+      <td>-32344.21</td>
+      <td>-32347.06</td>
+      <td>-32343.93</td>
+    </tr>
+    <tr>
+      <th>aic</th>
+      <td>64705.72</td>
+      <td>64704.42</td>
+      <td>64710.12</td>
+      <td>64703.86</td>
+    </tr>
+    <tr>
+      <th>bic</th>
+      <td>64769.44</td>
+      <td>64768.15</td>
+      <td>64773.85</td>
+      <td>64767.58</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>The fast component and the noise are determined by the data and do not depend on the prior. The atoms do: without a prior, some atoms get no variance at all and their neighbours take it; the stronger the prior, the more evenly the slow variance is spread. The slow part of the signal changes little:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">mod</span><span class="p">),</span> <span class="n">color</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">fits</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="p">(</span><span class="s2">"C3"</span><span class="p">,</span> <span class="s2">"C0"</span><span class="p">,</span> <span class="s2">"C2"</span><span class="p">,</span> <span class="s2">"k"</span><span class="p">)):</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">mod</span><span class="o">.</span><span class="n">time</span> <span class="o">/</span> <span class="mi">60000</span><span class="p">,</span> <span class="n">mod</span><span class="o">.</span><span class="n">components</span><span class="p">()[</span><span class="s2">"left"</span><span class="p">][</span><span class="s2">"slow"</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s2">"time (min)"</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">"log-%"</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"slow part (time scales ≥ 10 s) under different priors"</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="mi">4</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/experimental_timescale_model_34_0.png" src="../_images/experimental_timescale_model_34_0.png" />
+</div>
+</div>
+</section>
+<section id="Comparing-models:-AIC,-BIC-and-cross-validation">
+<h2>Comparing models: AIC, BIC and cross-validation<a class="headerlink" href="#Comparing-models:-AIC,-BIC-and-cross-validation" title="Link to this heading">#</a></h2>
+<p>Models of the same data can be compared with <code class="docutils literal notranslate"><span class="pre">m.aic</span></code>, <code class="docutils literal notranslate"><span class="pre">m.bic</span></code> and <code class="docutils literal notranslate"><span class="pre">m.cross_validate()</span></code>. The cross-validation holds out blocks of one minute and scores how well they are predicted from the rest of the recording; a held-out minute has to be bridged by the slow components, so this score is more sensitive to them than the likelihood. <code class="docutils literal notranslate"><span class="pre">m.variogram_check()</span></code> gives the fraction of lags at which the variogram of the data is outside the range of the simulations.</p>
+<p>The time scales of the atoms are an argument of the model. Here the default bank is compared with a bank that has one more atom at 1 s, and with a bank of three atoms a decade apart.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">grids</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"3-300 s (default)"</span><span class="p">:</span> <span class="n">m</span><span class="p">,</span>
+         <span class="s2">"1-300 s"</span><span class="p">:</span> <span class="n">pp</span><span class="o">.</span><span class="n">TimescaleModel</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="s2">"left"</span><span class="p">,</span> <span class="n">timescales</span><span class="o">=</span><span class="p">(</span><span class="s2">"1 s"</span><span class="p">,</span> <span class="s2">"3 s"</span><span class="p">,</span> <span class="s2">"10 s"</span><span class="p">,</span> <span class="s2">"30 s"</span><span class="p">,</span> <span class="s2">"100 s"</span><span class="p">,</span> <span class="s2">"300 s"</span><span class="p">))</span><span class="o">.</span><span class="n">fit</span><span class="p">(),</span>
+         <span class="s2">"3, 30, 300 s"</span><span class="p">:</span> <span class="n">pp</span><span class="o">.</span><span class="n">TimescaleModel</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="s2">"left"</span><span class="p">,</span> <span class="n">timescales</span><span class="o">=</span><span class="p">(</span><span class="s2">"3 s"</span><span class="p">,</span> <span class="s2">"30 s"</span><span class="p">,</span> <span class="s2">"300 s"</span><span class="p">))</span><span class="o">.</span><span class="n">fit</span><span class="p">()}</span>
+<span class="n">rows</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">mod</span> <span class="ow">in</span> <span class="n">grids</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">rows</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">n_params</span><span class="o">=</span><span class="n">mod</span><span class="o">.</span><span class="n">fits</span><span class="p">[</span><span class="s2">"left"</span><span class="p">]</span><span class="o">.</span><span class="n">n_params</span><span class="p">,</span> <span class="n">loglik</span><span class="o">=</span><span class="n">mod</span><span class="o">.</span><span class="n">loglik</span><span class="p">[</span><span class="s2">"left"</span><span class="p">],</span> <span class="n">aic</span><span class="o">=</span><span class="n">mod</span><span class="o">.</span><span class="n">aic</span><span class="p">[</span><span class="s2">"left"</span><span class="p">],</span>
+                      <span class="n">bic</span><span class="o">=</span><span class="n">mod</span><span class="o">.</span><span class="n">bic</span><span class="p">[</span><span class="s2">"left"</span><span class="p">],</span> <span class="n">cv</span><span class="o">=</span><span class="n">mod</span><span class="o">.</span><span class="n">cross_validate</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="s2">"60 s"</span><span class="p">)[</span><span class="s2">"left"</span><span class="p">],</span>
+                      <span class="n">slow_sd</span><span class="o">=</span><span class="n">mod</span><span class="o">.</span><span class="n">slow_sd</span><span class="p">(</span><span class="s2">"10 s"</span><span class="p">)[</span><span class="s2">"left"</span><span class="p">],</span>
+                      <span class="n">variogram_outside</span><span class="o">=</span><span class="n">mod</span><span class="o">.</span><span class="n">variogram_check</span><span class="p">(</span><span class="n">rng</span><span class="o">=</span><span class="mi">1</span><span class="p">)[</span><span class="s2">"left"</span><span class="p">]</span><span class="o">.</span><span class="n">outside</span><span class="p">)</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>n_params</th>
+      <th>loglik</th>
+      <th>aic</th>
+      <th>bic</th>
+      <th>cv</th>
+      <th>slow_sd</th>
+      <th>variogram_outside</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>3-300 s (default)</th>
+      <td>8.0</td>
+      <td>-32344.86</td>
+      <td>64705.72</td>
+      <td>64769.44</td>
+      <td>-32317.80</td>
+      <td>2.90</td>
+      <td>0.55</td>
+    </tr>
+    <tr>
+      <th>1-300 s</th>
+      <td>9.0</td>
+      <td>-32311.89</td>
+      <td>64641.79</td>
+      <td>64713.48</td>
+      <td>-32287.96</td>
+      <td>3.84</td>
+      <td>0.23</td>
+    </tr>
+    <tr>
+      <th>3, 30, 300 s</th>
+      <td>6.0</td>
+      <td>-32345.02</td>
+      <td>64702.05</td>
+      <td>64749.84</td>
+      <td>-32318.23</td>
+      <td>2.96</td>
+      <td>0.58</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mf">4.5</span><span class="p">),</span> <span class="n">sharey</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">mod</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axs</span><span class="p">,</span> <span class="n">grids</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+    <span class="n">mod</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">variogram</span><span class="p">(</span><span class="n">check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/experimental_timescale_model_37_0.png" src="../_images/experimental_timescale_model_37_0.png" />
+</div>
+</div>
+<p>Lower AIC and BIC and a higher cross-validation score are better. For this recording, the atom at 1 s improves the criteria and brings the variogram of the model back to the data. This recording is an exception, though: in 40 recordings of four experiments, the additional atom did not improve the AIC (median change +2). One recording is not enough to choose a structure; to do that for a study, sum the scores over its recordings and use the same structure for all of them, so that the parameters
+stay comparable.</p>
+</section>
+<section id="Segments">
+<h2>Segments<a class="headerlink" href="#Segments" title="Link to this heading">#</a></h2>
+<p>Many recordings consist of blocks with breaks, and the level of the pupil can differ between blocks. The model treats the periods that are not excluded as independent segments with a mean each. Exclude breaks with <code class="docutils literal notranslate"><span class="pre">d.exclude_intervals()</span></code> or keep the task with <code class="docutils literal notranslate"><span class="pre">d.keep_intervals()</span></code> (e.g., with intervals from <code class="docutils literal notranslate"><span class="pre">d.get_intervals()</span></code>); to split the data without excluding anything, pass <code class="docutils literal notranslate"><span class="pre">segments=</span></code> to the model.</p>
+<p>As an illustration, we exclude a “break” of two minutes:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dseg</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">exclude_intervals</span><span class="p">([(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">min</span><span class="p">)])</span>
+<span class="n">mseg</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">TimescaleModel</span><span class="p">(</span><span class="n">dseg</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="s2">"left"</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">mseg</span><span class="p">)</span>
+<span class="n">mseg</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">decomposition</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">7</span><span class="p">));</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+TimescaleModel(&#39;rlmw_002&#39;, eyes=[&#39;left&#39;], timescales=(3s, 10s, 30s, 100s, 300s), 2 segment(s), 17.9 min at 20 Hz, valid: left 89%; fitted)
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/experimental_timescale_model_39_1.png" src="../_images/experimental_timescale_model_39_1.png" />
+</div>
+</div>
+<p>Excluded periods are neither used nor reconstructed: <code class="docutils literal notranslate"><span class="pre">predict()</span></code> returns NaN there and <code class="docutils literal notranslate"><span class="pre">interpolate()</span></code> leaves them as they are.</p>
+</section>
+<section id="Both-eyes">
+<h2>Both eyes<a class="headerlink" href="#Both-eyes" title="Link to this heading">#</a></h2>
+<p>By default, each eye gets its own model:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">m2</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">TimescaleModel</span><span class="p">(</span><span class="n">d</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+<span class="n">m2</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>fast_sd</th>
+      <th>fast_ell</th>
+      <th>noise_sd</th>
+      <th>sd_3s</th>
+      <th>sd_10s</th>
+      <th>sd_30s</th>
+      <th>sd_100s</th>
+      <th>sd_300s</th>
+      <th>slow_sd</th>
+      <th>n_obs</th>
+      <th>loglik</th>
+      <th>aic</th>
+      <th>bic</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>left</th>
+      <td>4.84</td>
+      <td>312.79</td>
+      <td>0.31</td>
+      <td>6.22</td>
+      <td>1.24</td>
+      <td>1.15</td>
+      <td>2.09</td>
+      <td>1.09</td>
+      <td>2.90</td>
+      <td>21285</td>
+      <td>-32344.86</td>
+      <td>64705.72</td>
+      <td>64769.44</td>
+    </tr>
+    <tr>
+      <th>right</th>
+      <td>6.80</td>
+      <td>419.28</td>
+      <td>0.39</td>
+      <td>6.62</td>
+      <td>1.95</td>
+      <td>1.38</td>
+      <td>2.29</td>
+      <td>2.04</td>
+      <td>3.88</td>
+      <td>21580</td>
+      <td>-34218.47</td>
+      <td>68452.94</td>
+      <td>68516.78</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>With <code class="docutils literal notranslate"><span class="pre">binocular=True</span></code>, one model describes both eyes: the fast component and the atoms are common, each eye has its own mean and noise, and one more component describes the difference between the eyes (<code class="docutils literal notranslate"><span class="pre">diff_sd</span></code>, <code class="docutils literal notranslate"><span class="pre">diff_ell</span></code>). Where one eye is missing, the other one carries the reconstruction.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mb</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">TimescaleModel</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">binocular</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+<span class="n">mb</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>both</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>fast_sd</th>
+      <td>4.83</td>
+    </tr>
+    <tr>
+      <th>fast_ell</th>
+      <td>285.65</td>
+    </tr>
+    <tr>
+      <th>noise_sd_left</th>
+      <td>0.26</td>
+    </tr>
+    <tr>
+      <th>noise_sd_right</th>
+      <td>0.26</td>
+    </tr>
+    <tr>
+      <th>diff_sd</th>
+      <td>2.88</td>
+    </tr>
+    <tr>
+      <th>diff_ell</th>
+      <td>351.93</td>
+    </tr>
+    <tr>
+      <th>gain</th>
+      <td>1.09</td>
+    </tr>
+    <tr>
+      <th>sd_3s</th>
+      <td>8.52</td>
+    </tr>
+    <tr>
+      <th>sd_10s</th>
+      <td>1.03</td>
+    </tr>
+    <tr>
+      <th>sd_30s</th>
+      <td>0.56</td>
+    </tr>
+    <tr>
+      <th>sd_100s</th>
+      <td>2.08</td>
+    </tr>
+    <tr>
+      <th>sd_300s</th>
+      <td>0.47</td>
+    </tr>
+    <tr>
+      <th>slow_sd</th>
+      <td>2.43</td>
+    </tr>
+    <tr>
+      <th>n_obs</th>
+      <td>42865.00</td>
+    </tr>
+    <tr>
+      <th>loglik</th>
+      <td>-57532.13</td>
+    </tr>
+    <tr>
+      <th>aic</th>
+      <td>115088.27</td>
+    </tr>
+    <tr>
+      <th>bic</th>
+      <td>115192.26</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">7</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">mod</span><span class="p">,</span> <span class="n">color</span> <span class="ow">in</span> <span class="p">((</span><span class="s2">"left eye alone"</span><span class="p">,</span> <span class="n">m2</span><span class="p">,</span> <span class="s2">"C0"</span><span class="p">),</span> <span class="p">(</span><span class="s2">"binocular"</span><span class="p">,</span> <span class="n">mb</span><span class="p">,</span> <span class="s2">"C3"</span><span class="p">)):</span>
+    <span class="n">mean</span><span class="p">,</span> <span class="n">sd</span> <span class="o">=</span> <span class="n">mod</span><span class="o">.</span><span class="n">components</span><span class="p">(</span><span class="s2">"left"</span><span class="p">)[</span><span class="s2">"left"</span><span class="p">][</span><span class="s2">"slow"</span><span class="p">]</span>
+    <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">mod</span><span class="o">.</span><span class="n">time</span> <span class="o">/</span> <span class="mi">60000</span><span class="p">,</span> <span class="n">mean</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">sd</span><span class="p">,</span> <span class="n">mean</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">sd</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">mod</span><span class="o">.</span><span class="n">time</span> <span class="o">/</span> <span class="mi">60000</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s2">"time (min)"</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">"log-%"</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"slow part of the left eye"</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">mb</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">interpolation</span><span class="p">(</span><span class="n">eye</span><span class="o">=</span><span class="s2">"left"</span><span class="p">,</span> <span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">130</span><span class="p">),</span> <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/experimental_timescale_model_44_0.png" src="../_images/experimental_timescale_model_44_0.png" />
+</div>
+</div>
+</section>
+<section id="Simulating-from-the-fitted-model">
+<h2>Simulating from the fitted model<a class="headerlink" href="#Simulating-from-the-fitted-model" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">m.simulate()</span></code> draws a new recording from the fitted model: the latent pupil with the estimated parameters, scaled to the median of the recording, plus white noise of the estimated size. The result is a <code class="docutils literal notranslate"><span class="pre">SimEyeData</span></code> object, which holds the true components next to the data (see the <a class="reference internal" href="../notebooks/simulation.html"><span class="doc">simulated data</span></a> notebook). Comparing a simulation with the recording shows what the model captures, and fitting the model again to simulations shows how well its parameters can be
+recovered from a recording of this length:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">s</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">sharey</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">time</span> <span class="o">/</span> <span class="mi">60000</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="s2">"left"</span><span class="p">],</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"k"</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ylabel</span><span class="o">=</span><span class="s2">"log-%"</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"recording (model rate)"</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">tx</span> <span class="o">/</span> <span class="mi">60000</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">truth</span><span class="p">[</span><span class="s2">"left"</span><span class="p">,</span> <span class="s2">"log_size"</span><span class="p">],</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"C0"</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s2">"time (min)"</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">"log-%"</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"simulation from the fitted model (latent signal)"</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/experimental_timescale_model_46_0.png" src="../_images/experimental_timescale_model_46_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">refit</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="n">seed</span><span class="p">:</span> <span class="n">pp</span><span class="o">.</span><span class="n">TimescaleModel</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">),</span> <span class="n">eyes</span><span class="o">=</span><span class="s2">"left"</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">hessian</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s2">"left"</span><span class="p">]</span>
+                      <span class="k">for</span> <span class="n">seed</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">)})</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">"fitted to the recording"</span><span class="p">:</span> <span class="n">m</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s2">"left"</span><span class="p">],</span>
+              <span class="s2">"refit to 5 simulations: median"</span><span class="p">:</span> <span class="n">refit</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+              <span class="s2">"min"</span><span class="p">:</span> <span class="n">refit</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="s2">"max"</span><span class="p">:</span> <span class="n">refit</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)})</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>fitted to the recording</th>
+      <th>refit to 5 simulations: median</th>
+      <th>min</th>
+      <th>max</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>fast_sd</th>
+      <td>4.84</td>
+      <td>4.85</td>
+      <td>4.69</td>
+      <td>4.93</td>
+    </tr>
+    <tr>
+      <th>fast_ell</th>
+      <td>312.79</td>
+      <td>314.46</td>
+      <td>307.51</td>
+      <td>319.73</td>
+    </tr>
+    <tr>
+      <th>noise_sd</th>
+      <td>0.31</td>
+      <td>0.32</td>
+      <td>0.32</td>
+      <td>0.32</td>
+    </tr>
+    <tr>
+      <th>sd_3s</th>
+      <td>6.22</td>
+      <td>5.95</td>
+      <td>5.71</td>
+      <td>6.51</td>
+    </tr>
+    <tr>
+      <th>sd_10s</th>
+      <td>1.24</td>
+      <td>2.74</td>
+      <td>1.71</td>
+      <td>3.32</td>
+    </tr>
+    <tr>
+      <th>sd_30s</th>
+      <td>1.15</td>
+      <td>1.31</td>
+      <td>0.39</td>
+      <td>2.62</td>
+    </tr>
+    <tr>
+      <th>sd_100s</th>
+      <td>2.09</td>
+      <td>1.51</td>
+      <td>0.92</td>
+      <td>2.85</td>
+    </tr>
+    <tr>
+      <th>sd_300s</th>
+      <td>1.09</td>
+      <td>1.64</td>
+      <td>0.77</td>
+      <td>3.30</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>The fast component and the noise come back closely; the standard deviations of single atoms vary between simulations of the same model, as their wide intervals above suggest.</p>
+</section>
+<section id="Groups-of-recordings">
+<h2>Groups of recordings<a class="headerlink" href="#Groups-of-recordings" title="Link to this heading">#</a></h2>
+<p>For a study, <code class="docutils literal notranslate"><span class="pre">pp.TimescaleGroup</span></code> estimates the models of all recordings together. The parameters of the recordings are treated as draws from a group distribution, whose mean and spread are estimated with them (empirical Bayes). The group mean is the typical mix of time scales; the estimate of each recording is shrunk towards it where the recording itself is uninformative.</p>
+<p>The group takes a dict (or list) of <code class="docutils literal notranslate"><span class="pre">EyeData</span></code> objects or of <code class="docutils literal notranslate"><span class="pre">TimescaleModel</span></code> objects. <code class="docutils literal notranslate"><span class="pre">pp.TimescaleGroup.from_files(files,</span> <span class="pre">preprocess=...)</span></code> reads the files one at a time, so that only the reduced data stay in memory.</p>
+<p>The example datasets of the package only contain three recordings, so the following shows the mechanics only: a group should have many more members, and they should be recordings of the same kind. We use both eyes of the three recordings as six members (20 minutes each). The n-back recording is used as it is, with the breaks between its blocks, which gives it far more slow variance than the other two.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">recordings</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"rlmw_002"</span><span class="p">:</span> <span class="n">d</span><span class="p">,</span>
+              <span class="s2">"rlmw_010"</span><span class="p">:</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_010_edf"</span><span class="p">)</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">(),</span>
+              <span class="s2">"nback_001"</span><span class="p">:</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"nback_001"</span><span class="p">)</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"min"</span><span class="p">)</span><span class="o">.</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()}</span>
+<span class="n">g</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">TimescaleGroup</span><span class="p">(</span><span class="n">recordings</span><span class="p">)</span>
+<span class="n">g</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+TimescaleGroup(3 recordings, 6 members, TimescaleBank(timescales=(3s, 10s, 30s, 100s, 300s), nu=1.5, v0=0.25); not fitted)
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[31]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">time</span> g.fit(n_iter=3)
+<span class="nb">print</span><span class="p">(</span><span class="s2">"converged:"</span><span class="p">,</span> <span class="n">g</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">converged</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">group_summary</span><span class="p">()</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CPU times: user 59.1 ms, sys: 32 ms, total: 91.1 ms
+Wall time: 1min 18s
+converged: False
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[31]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>parameter</th>
+      <th>mean</th>
+      <th>sd</th>
+      <th>typical</th>
+      <th>low</th>
+      <th>high</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>fast_sd</th>
+      <td>log_fast_sd</td>
+      <td>1.72</td>
+      <td>0.10</td>
+      <td>5.59</td>
+      <td>5.03</td>
+      <td>6.20</td>
+    </tr>
+    <tr>
+      <th>fast_ell</th>
+      <td>log_fast_ell</td>
+      <td>5.86</td>
+      <td>0.16</td>
+      <td>352.11</td>
+      <td>298.73</td>
+      <td>415.02</td>
+    </tr>
+    <tr>
+      <th>noise_sd</th>
+      <td>log_noise_sd</td>
+      <td>-0.92</td>
+      <td>0.15</td>
+      <td>0.40</td>
+      <td>0.34</td>
+      <td>0.46</td>
+    </tr>
+    <tr>
+      <th>sd_3s</th>
+      <td>u_3s</td>
+      <td>3.54</td>
+      <td>0.54</td>
+      <td>5.84</td>
+      <td>4.44</td>
+      <td>7.67</td>
+    </tr>
+    <tr>
+      <th>sd_10s</th>
+      <td>u_10s</td>
+      <td>-0.06</td>
+      <td>0.52</td>
+      <td>0.83</td>
+      <td>0.56</td>
+      <td>1.15</td>
+    </tr>
+    <tr>
+      <th>sd_30s</th>
+      <td>u_30s</td>
+      <td>2.01</td>
+      <td>2.31</td>
+      <td>2.69</td>
+      <td>0.70</td>
+      <td>8.69</td>
+    </tr>
+    <tr>
+      <th>sd_100s</th>
+      <td>u_100s</td>
+      <td>2.80</td>
+      <td>2.15</td>
+      <td>4.02</td>
+      <td>1.29</td>
+      <td>11.83</td>
+    </tr>
+    <tr>
+      <th>sd_300s</th>
+      <td>u_300s</td>
+      <td>1.96</td>
+      <td>1.64</td>
+      <td>2.62</td>
+      <td>1.06</td>
+      <td>6.04</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">mean</span></code> and <code class="docutils literal notranslate"><span class="pre">sd</span></code> describe the group distribution of the entries of the parameter vector (logs); <code class="docutils literal notranslate"><span class="pre">typical</span></code>, <code class="docutils literal notranslate"><span class="pre">low</span></code> and <code class="docutils literal notranslate"><span class="pre">high</span></code> are the group mean and the mean minus/plus one standard deviation on the natural scale (standard deviations in log-%, <code class="docutils literal notranslate"><span class="pre">fast_ell</span></code> in ms).</p>
+<p>After the three iterations used here, the group mean was still changing (<code class="docutils literal notranslate"><span class="pre">g.group.converged</span></code> is False); with real data, use more iterations (<code class="docutils literal notranslate"><span class="pre">n_iter</span></code>) and check that it is True.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">g</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th></th>
+      <th>fast_sd</th>
+      <th>fast_ell</th>
+      <th>noise_sd</th>
+      <th>sd_3s</th>
+      <th>sd_10s</th>
+      <th>sd_30s</th>
+      <th>sd_100s</th>
+      <th>sd_300s</th>
+      <th>slow_sd</th>
+      <th>n_obs</th>
+      <th>loglik</th>
+    </tr>
+    <tr>
+      <th>recording</th>
+      <th>unit</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="2" valign="top">rlmw_002</th>
+      <th>left</th>
+      <td>4.85</td>
+      <td>313.76</td>
+      <td>0.32</td>
+      <td>6.21</td>
+      <td>0.80</td>
+      <td>1.06</td>
+      <td>2.23</td>
+      <td>1.81</td>
+      <td>3.17</td>
+      <td>21285</td>
+      <td>-32344.63</td>
+    </tr>
+    <tr>
+      <th>right</th>
+      <td>6.70</td>
+      <td>414.36</td>
+      <td>0.39</td>
+      <td>6.83</td>
+      <td>0.81</td>
+      <td>1.54</td>
+      <td>2.62</td>
+      <td>1.50</td>
+      <td>3.48</td>
+      <td>21580</td>
+      <td>-34218.17</td>
+    </tr>
+    <tr>
+      <th rowspan="2" valign="top">rlmw_010</th>
+      <th>left</th>
+      <td>5.79</td>
+      <td>277.08</td>
+      <td>0.37</td>
+      <td>4.14</td>
+      <td>0.84</td>
+      <td>1.29</td>
+      <td>1.71</td>
+      <td>5.58</td>
+      <td>6.04</td>
+      <td>20343</td>
+      <td>-36453.93</td>
+    </tr>
+    <tr>
+      <th>right</th>
+      <td>5.24</td>
+      <td>319.30</td>
+      <td>0.49</td>
+      <td>3.98</td>
+      <td>0.84</td>
+      <td>1.11</td>
+      <td>1.90</td>
+      <td>5.84</td>
+      <td>6.30</td>
+      <td>20350</td>
+      <td>-34760.75</td>
+    </tr>
+    <tr>
+      <th rowspan="2" valign="top">nback_001</th>
+      <th>left</th>
+      <td>5.31</td>
+      <td>378.24</td>
+      <td>0.47</td>
+      <td>7.84</td>
+      <td>0.85</td>
+      <td>11.37</td>
+      <td>13.96</td>
+      <td>1.84</td>
+      <td>18.12</td>
+      <td>17715</td>
+      <td>-28903.84</td>
+    </tr>
+    <tr>
+      <th>right</th>
+      <td>5.79</td>
+      <td>438.03</td>
+      <td>0.39</td>
+      <td>7.19</td>
+      <td>0.85</td>
+      <td>11.61</td>
+      <td>14.82</td>
+      <td>1.86</td>
+      <td>18.94</td>
+      <td>17675</td>
+      <td>-26605.75</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">13</span><span class="p">,</span> <span class="mf">4.5</span><span class="p">))</span>
+<span class="n">g</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">params</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">g</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">shrinkage</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/experimental_timescale_model_54_0.png" src="../_images/experimental_timescale_model_54_0.png" />
+</div>
+</div>
+<p>The models of the group are ordinary <code class="docutils literal notranslate"><span class="pre">TimescaleModel</span></code> objects with the shrunk estimates (the estimates without pooling are kept in <code class="docutils literal notranslate"><span class="pre">model.individual</span></code>):</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[34]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">g</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="s2">"rlmw_010"</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">decomposition</span><span class="p">(</span><span class="n">eye</span><span class="o">=</span><span class="s2">"right"</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">7</span><span class="p">));</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/experimental_timescale_model_56_0.png" src="../_images/experimental_timescale_model_56_0.png" />
+</div>
+</div>
+<p>The group distribution can be used as the prior of other recordings of the same kind:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">new</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">TimescaleModel</span><span class="p">(</span><span class="n">d_new</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">prior</span><span class="o">=</span><span class="n">g</span><span class="o">.</span><span class="n">prior</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="Summary-of-the-API">
+<h2>Summary of the API<a class="headerlink" href="#Summary-of-the-API" title="Link to this heading">#</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">m</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">TimescaleModel</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[],</span> <span class="n">binocular</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">timescales</span><span class="o">=...</span><span class="p">,</span> <span class="n">segments</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">m</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">prior</span><span class="o">=</span><span class="s2">"medium"</span><span class="p">)</span>                 <span class="c1"># "weak" | "medium" | "strong" | GaussianPrior | None</span>
+<span class="n">m</span><span class="o">.</span><span class="n">summary</span><span class="p">();</span> <span class="n">m</span><span class="o">.</span><span class="n">params</span><span class="p">;</span> <span class="n">m</span><span class="o">.</span><span class="n">slow_sd</span><span class="p">(</span><span class="s2">"10 s"</span><span class="p">);</span> <span class="n">m</span><span class="o">.</span><span class="n">loglik</span><span class="p">;</span> <span class="n">m</span><span class="o">.</span><span class="n">aic</span><span class="p">;</span> <span class="n">m</span><span class="o">.</span><span class="n">bic</span>
+<span class="n">m</span><span class="o">.</span><span class="n">cross_validate</span><span class="p">();</span> <span class="n">m</span><span class="o">.</span><span class="n">forecast_calibration</span><span class="p">();</span> <span class="n">m</span><span class="o">.</span><span class="n">variogram_check</span><span class="p">()</span>
+<span class="n">m</span><span class="o">.</span><span class="n">components</span><span class="p">()</span>                        <span class="c1"># smoothed parts at the rate of the model (log-%)</span>
+<span class="n">m</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">"signal"</span> <span class="o">|</span> <span class="s2">"slow"</span> <span class="o">|</span> <span class="s2">"detrended"</span> <span class="o">|</span> <span class="o">&lt;</span><span class="n">component</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mf">0.95</span><span class="p">)</span>   <span class="c1"># original samples and units</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">interpolate</span><span class="p">();</span> <span class="n">d</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="s2">"slow"</span><span class="p">)</span>
+<span class="n">m</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">decomposition</span><span class="p">();</span> <span class="n">m</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">slow</span><span class="p">();</span> <span class="n">m</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">timescales</span><span class="p">();</span> <span class="n">m</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">variogram</span><span class="p">()</span>
+<span class="n">m</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">spectrum</span><span class="p">();</span> <span class="n">m</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">diagnostics</span><span class="p">();</span> <span class="n">m</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">interpolation</span><span class="p">()</span>
+
+<span class="n">g</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">TimescaleGroup</span><span class="p">(</span><span class="n">recordings</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+<span class="n">g</span><span class="o">.</span><span class="n">group_summary</span><span class="p">();</span> <span class="n">g</span><span class="o">.</span><span class="n">summary</span><span class="p">();</span> <span class="n">g</span><span class="o">.</span><span class="n">prior</span><span class="p">;</span> <span class="n">g</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="n">name</span><span class="p">];</span> <span class="n">g</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">params</span><span class="p">();</span> <span class="n">g</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">shrinkage</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The functions behind these classes work on plain arrays and are in <code class="docutils literal notranslate"><span class="pre">pp.signal.gaussmarkov</span></code> (<code class="docutils literal notranslate"><span class="pre">TimescaleBank</span></code>, <code class="docutils literal notranslate"><span class="pre">fit_bank</span></code>, <code class="docutils literal notranslate"><span class="pre">fit_group</span></code>, …).</p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="spatial_calibration.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Spatial calibration</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../development/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Development</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal" tabindex="-1"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Data:-mask-the-blinks-first">Data: mask the blinks first</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#A-first-look:-the-spectrum">A first look: the spectrum</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Building-and-fitting-the-model">Building and fitting the model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#What-the-model-found">What the model found</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Does-the-model-describe-the-data?">Does the model describe the data?</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Back-to-the-original-samples">Back to the original samples</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Priors">Priors</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Comparing-models:-AIC,-BIC-and-cross-validation">Comparing models: AIC, BIC and cross-validation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Segments">Segments</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Both-eyes">Both eyes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Simulating-from-the-fitted-model">Simulating from the fitted model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Groups-of-recordings">Groups of recordings</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Summary-of-the-API">Summary of the API</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  
+  <div class="tocsection editthispage">
+    <a href="https://github.com/ihrke/pypillometry/edit/master/docs/experimental/timescale_model.ipynb">
+      <i class="fa-solid fa-pencil"></i>
+      
+      
+        
+          Edit on GitHub
+        
+      
+    </a>
+  </div>
+</div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/experimental/timescale_model.ipynb.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2026, Matthias Mittner.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
+  </p>
+</div>
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.24.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
