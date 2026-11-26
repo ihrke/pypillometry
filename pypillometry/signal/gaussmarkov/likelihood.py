@@ -43,7 +43,8 @@ def check_zero_mean(signal, mask=None, tol=0.05):
                          "the models have mean 0, subtract the mean first")
 
 
-def loglik_signal(model, signal, fs, mask=None, mean_tol=0.05):
+def loglik_signal(model, signal, fs, mask=None, mean_tol=0.05, obs_var=None,
+                  segments=None):
     """
     Exact Gaussian log-likelihood of a signal under `model` (Kalman filter).
 
@@ -51,22 +52,33 @@ def loglik_signal(model, signal, fs, mask=None, mean_tol=0.05):
     ----------
     model : GaussMarkovModel
     signal : array or masked array
-        the zero-mean signal; masked, NaN and inf samples are missing (gaps
-        are handled exactly, not interpolated)
+        the signal; masked, NaN and inf samples are missing (gaps are
+        handled exactly, not interpolated). It has to be zero-mean unless
+        the model has a :class:`~pypillometry.signal.gaussmarkov.Constant`
+        component, which makes the result the restricted likelihood (it
+        does not depend on the mean).
     fs : float
         sampling rate of `signal` in Hz
     mask : array of bool, optional
         True for additional invalid samples
     mean_tol : float or None, optional
-        tolerance of :func:`check_zero_mean`; None skips the check
+        tolerance of :func:`check_zero_mean`; None skips the check (it is
+        also skipped for a model with a Constant component)
+    obs_var : array, optional
+        noise variance of each sample (instead of ``model.noise**2``)
+    segments : list of (start, stop), optional
+        sample indices of independent segments (with a mean each, if the
+        model has a Constant component)
 
     Returns
     -------
     float
     """
-    if mean_tol is not None:
+    n_diffuse = model.n_diffuse
+    if mean_tol is not None and not n_diffuse:
         check_zero_mean(signal, mask, tol=mean_tol)
-    return kalman_loglik(model.to_lgssm(fs), signal, mask)
+    return kalman_loglik(model.to_lgssm(fs), signal, mask, obs_var=obs_var,
+                         n_diffuse=n_diffuse, segments=segments)
 
 
 def _vg_select(vg, min_pairs, max_lag):
@@ -227,7 +239,7 @@ def fit(model, signal=None, fs=None, vg=None, which="signal", method="L-BFGS-B",
     options : dict, optional
         passed to :func:`scipy.optimize.minimize`
     **kw
-        passed to :func:`loglik_signal` (mask, mean_tol) or
+        passed to :func:`loglik_signal` (mask, mean_tol, obs_var, segments) or
         :func:`loglik_variogram` (min_pairs, max_lag, method -> use
         ``vg_method``, neff_scale)
 
@@ -243,7 +255,7 @@ def fit(model, signal=None, fs=None, vg=None, which="signal", method="L-BFGS-B",
         n_obs = int(_valid_data(signal, kw.get("mask"))[1].sum())
         # check once here, not in every evaluation
         mean_tol = kw.pop("mean_tol", 0.05)
-        if mean_tol is not None:
+        if mean_tol is not None and not model.n_diffuse:
             check_zero_mean(signal, kw.get("mask"), tol=mean_tol)
         kw["mean_tol"] = None
     elif which == "variogram":

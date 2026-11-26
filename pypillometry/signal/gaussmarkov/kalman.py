@@ -16,6 +16,19 @@ components (see :meth:`GaussMarkovModel.to_lgssm`) works. Missing observations (
 skipped in the update, so gaps are handled exactly; with several observed
 channels, each one can be missing on its own.
 
+Three optional arguments of :func:`kalman_filter` and :func:`kalman_loglik`
+extend the model (they need a diagonal ``R``, i.e. independent noise of the
+channels, which are then processed one after the other):
+
+- ``obs_var``: a noise variance for each sample instead of the constant
+  ``R`` (e.g., for means of different numbers of raw samples)
+- ``segments``: independent stretches of the data; the state restarts from
+  ``(m0, P0)`` at the start of each
+- ``n_diffuse``: the number of observations at the start of each segment
+  that only determine states with a diffuse prior (a very large variance in
+  ``P0``, e.g. an unknown mean) and are left out of the likelihood, which
+  is then the restricted likelihood (REML) of the other parameters
+
 The inner loops are compiled with numba if it is installed (``pip install
 numba``); otherwise they run as (slow) plain Python.
 """
@@ -106,11 +119,147 @@ def _filter_kernel(A, Q, H, R, m0, P0, y, store,
     return ll
 
 
-def _smoother_kernel(A, mp, Pp, mf, Pf, ms, Ps, G, Plag):
+def _seq_loglik_kernel(A, Q, H, r, m0, P0, y, restart, skip):
+    """
+    Log-likelihood with the channels processed one after the other (needs
+    independent noise of the channels): noise variance `r[t, j]` per sample,
+    restart from (m0, P0) where `restart[t]`, and the first `skip[j]` valid
+    observations of channel j after each restart left out of the sum
+    (diffuse states). Explicit loops without temporary arrays; uses the
+    band of non-zero entries in each row of A (block-diagonal models).
+    """
+    T, m = y.shape
+    n = m0.shape[0]
+    lo = np.zeros(n, np.int64)
+    hi = np.zeros(n, np.int64)
+    for i in range(n):
+        a = 0
+        while a < n and A[i, a] == 0.0:
+            a += 1
+        b = n
+        while b > a and A[i, b - 1] == 0.0:
+            b -= 1
+        lo[i] = a
+        hi[i] = b
+    x = m0.copy()
+    P = P0.copy()
+    x2 = np.zeros(n)
+    W = np.zeros((n, n))
+    ph = np.zeros(n)
+    seen = np.zeros(m, np.int64)
+    ll = 0.0
+    for t in range(T):
+        if restart[t]:
+            for i in range(n):
+                x[i] = m0[i]
+                for j in range(n):
+                    P[i, j] = P0[i, j]
+            for j in range(m):
+                seen[j] = 0
+        elif t > 0:
+            for i in range(n):
+                acc = 0.0
+                for j in range(lo[i], hi[i]):
+                    acc += A[i, j] * x[j]
+                x2[i] = acc
+            for i in range(n):
+                x[i] = x2[i]
+            for i in range(n):          # W = A P
+                for j in range(n):
+                    acc = 0.0
+                    for l in range(lo[i], hi[i]):
+                        acc += A[i, l] * P[l, j]
+                    W[i, j] = acc
+            for i in range(n):          # P = W A' + Q
+                for j in range(i, n):
+                    acc = Q[i, j]
+                    for l in range(lo[j], hi[j]):
+                        acc += W[i, l] * A[j, l]
+                    P[i, j] = acc
+                    P[j, i] = acc
+        for c in range(m):
+            yt = y[t, c]
+            if np.isnan(yt):
+                continue
+            s = r[t, c]
+            pred = 0.0
+            for i in range(n):
+                acc = 0.0
+                for j in range(n):
+                    acc += P[i, j] * H[c, j]
+                ph[i] = acc
+                s += H[c, i] * acc
+                pred += H[c, i] * x[i]
+            v = yt - pred
+            if seen[c] >= skip[c]:
+                ll += -0.5 * (_LOG2PI + np.log(s) + v * v / s)
+            seen[c] += 1
+            for i in range(n):
+                x[i] += ph[i] * v / s
+                for j in range(i, n):
+                    P[i, j] -= ph[i] * ph[j] / s
+                    P[j, i] = P[i, j]
+    return ll
+
+
+def _seq_filter_kernel(A, Q, H, r, m0, P0, y, restart, skip,
+                       mp, Pp, mf, Pf, v, S, K, llt):
+    """Like :func:`_seq_loglik_kernel`, but everything is stored. `v[t, j]`
+    and `S[t, j]` are the innovation of channel j and its variance given the
+    channels before it at the same sample (S is also set where y is missing)."""
+    T, m = y.shape
+    n = m0.shape[0]
+    x = m0.copy()
+    P = P0.copy()
+    seen = np.zeros(m, np.int64)
+    ll = 0.0
+    for t in range(T):
+        if restart[t]:
+            x = m0.copy()
+            P = P0.copy()
+            seen[:] = 0
+        elif t > 0:
+            x = A @ x
+            P = A @ P @ A.T + Q
+            P = 0.5 * (P + P.T)
+        mp[t] = x
+        Pp[t] = P
+        lt = 0.0
+        for c in range(m):
+            h = H[c]
+            ph = P @ h
+            s = h @ ph + r[t, c]
+            S[t, c] = s
+            if np.isnan(y[t, c]):
+                continue
+            vt = y[t, c] - h @ x
+            v[t, c] = vt
+            k = ph / s
+            if seen[c] >= skip[c]:
+                lt += -0.5 * (_LOG2PI + np.log(s) + vt * vt / s)
+            seen[c] += 1
+            x = x + k * vt
+            for a in range(n):
+                for b in range(n):
+                    P[a, b] -= k[a] * ph[b]
+            P = 0.5 * (P + P.T)
+            K[t, :, c] = k
+        ll += lt
+        llt[t] = lt
+        mf[t] = x
+        Pf[t] = P
+    return ll
+
+
+def _smoother_kernel(A, mp, Pp, mf, Pf, restart, ms, Ps, G, Plag):
     T = mf.shape[0]
     ms[T - 1] = mf[T - 1]
     Ps[T - 1] = Pf[T - 1]
     for t in range(T - 2, -1, -1):
+        if restart[t + 1]:      # end of an independent segment
+            ms[t] = mf[t]
+            Ps[t] = Pf[t]
+            continue
         Gt = np.linalg.solve(Pp[t + 1], A @ Pf[t]).T
         ms[t] = mf[t] + Gt @ (ms[t + 1] - mp[t + 1])
         Pt = Pf[t] + Gt @ (Ps[t + 1] - Pp[t + 1]) @ Gt.T
@@ -134,19 +283,23 @@ _JIT = False
 
 
 def _kernels():
-    """the kernels, compiled with numba on first use if it is installed"""
+    """
+    The kernels (filter, smoother, simulation, sequential log-likelihood,
+    sequential filter), compiled with numba on first use if it is installed.
+    """
     global _KERNELS, _JIT
     if _KERNELS is None:
+        plain = (_filter_kernel, _smoother_kernel, _simulate_kernel,
+                 _seq_loglik_kernel, _seq_filter_kernel)
         try:
             import numba
         except ImportError:
             logger.warning("numba is not installed: the Kalman filter runs as "
                            "plain Python and is slow for long signals")
-            _KERNELS = (_filter_kernel, _smoother_kernel, _simulate_kernel)
+            _KERNELS = plain
         else:
             jit = numba.njit(cache=True)
-            _KERNELS = (jit(_filter_kernel), jit(_smoother_kernel),
-                        jit(_simulate_kernel))
+            _KERNELS = tuple(jit(k) for k in plain)
             _JIT = True
     return _KERNELS
 
@@ -276,6 +429,8 @@ class FilterResult:
         True where y was observed
     H : (m, n)
         observation matrix of the model (for :attr:`signal`)
+    restart : (T,)
+        True at the first sample of each independent segment
     """
     m_pred: np.ndarray
     P_pred: np.ndarray
@@ -288,6 +443,7 @@ class FilterResult:
     loglik: float
     valid: np.ndarray
     H: np.ndarray
+    restart: np.ndarray = None
 
     @property
     def signal(self):
@@ -325,9 +481,10 @@ class SmootherResult:
     P_smooth : (T, n, n)
         its covariance
     G : (T, n, n)
-        smoother gains (``G[T-1]`` is 0)
+        smoother gains (0 at the last sample of each segment)
     P_lag1 : (T, n, n)
-        ``Cov(x[t], x[t-1] | all data)`` (``P_lag1[0]`` is 0); needed for EM
+        ``Cov(x[t], x[t-1] | all data)`` (0 at the first sample of each
+        segment); needed for EM
     H : (m, n)
         observation matrix of the model (for :attr:`signal`)
     """
@@ -354,7 +511,53 @@ class SmootherResult:
 # ---------------------------------------------------------------------------
 # public functions
 # ---------------------------------------------------------------------------
-def kalman_filter(model, y, mask=None):
+def _restart(T, segments):
+    """
+    Boolean array that is True at the first sample of each segment, and the
+    samples outside the segments (None: one segment, no sample outside).
+    """
+    restart = np.zeros(T, dtype=bool)
+    if segments is None:
+        restart[:1] = True
+        return restart, np.zeros(T, dtype=bool)
+    outside = np.ones(T, dtype=bool)
+    end = 0
+    for a, b in sorted((int(a), int(b)) for a, b in segments):
+        if not (end <= a < b <= T):
+            raise ValueError("segments must be (start, stop) sample indices "
+                             f"that do not overlap, within 0 and {T}")
+        restart[a] = True
+        outside[a:b] = False
+        end = b
+    if end < T:     # the samples after the last segment do not belong to it
+        restart[end] = True
+    return restart, outside
+
+
+def _seq_args(model, y, mask, obs_var, n_diffuse, segments):
+    """arguments of the sequential kernels (see :func:`kalman_filter`)"""
+    y = _obs(y, mask, model.dim_obs)
+    T, m = y.shape
+    A, Q, H, R, m0, P0 = model._arrays()
+    if np.any(np.abs(R - np.diag(np.diag(R))) > 0):
+        raise ValueError("obs_var, n_diffuse and segments need independent noise "
+                         "of the channels (a diagonal R)")
+    if obs_var is None:
+        r = np.tile(np.diag(R), (T, 1))
+    else:
+        r = np.asarray(obs_var, dtype=np.float64)
+        r = r[:, None] if r.ndim == 1 else r
+        if r.shape != (T, m):
+            raise ValueError(f"obs_var must have shape ({T},) or ({T}, {m}), got {r.shape}")
+        if not np.all(r[~np.isnan(y)] >= 0):
+            raise ValueError("obs_var must be >= 0 for all observed samples")
+    skip = np.broadcast_to(np.asarray(n_diffuse, dtype=np.int64), (m,)).copy()
+    restart, outside = _restart(T, segments)
+    y[outside] = np.nan
+    return A, Q, H, np.ascontiguousarray(r), m0, P0, y, restart, skip
+
+
+def kalman_filter(model, y, mask=None, obs_var=None, n_diffuse=0, segments=None):
     """
     Run the Kalman filter and keep everything.
 
@@ -365,6 +568,17 @@ def kalman_filter(model, y, mask=None):
         observations; NaN, inf and masked values are missing
     mask : array of bool, optional
         True for additional missing samples
+    obs_var : array, (T,) or (T, m), optional
+        noise variance of each sample, instead of the diagonal of ``R``
+    n_diffuse : int or sequence of int, optional
+        number of valid observations (of each channel) at the start of each
+        segment that are left out of the likelihood, because they only
+        determine states with a diffuse prior (a very large variance in
+        ``P0``); default 0
+    segments : list of (start, stop), optional
+        sample indices of independent segments: the state restarts from
+        ``(m0, P0)`` at each start; samples outside the segments are
+        missing. Default: the whole signal is one segment.
 
     Returns
     -------
@@ -373,13 +587,14 @@ def kalman_filter(model, y, mask=None):
     Notes
     -----
     Stores O(T n^2) numbers; use :func:`kalman_loglik` when only the
-    likelihood is needed.
+    likelihood is needed. With `obs_var`, `n_diffuse` or `segments`, the
+    channels are processed one after the other (they need a diagonal ``R``):
+    the innovation of a channel and its variance are then conditional on the
+    channels before it at the same sample, and ``innov_var`` is diagonal.
     """
-    flt, _, _ = _kernels()
-    y = _obs(y, mask, model.dim_obs)
-    T, m = y.shape
-    A, Q, H, R, m0, P0 = model._arrays()
-    n = m0.shape[0]
+    kern = _kernels()
+    T = len(y)
+    n, m = model.dim_state, model.dim_obs
     _check_cost("kalman_filter", T, n, m)
     mp, mf = np.zeros((T, n)), np.zeros((T, n))
     Pp, Pf = np.zeros((T, n, n)), np.zeros((T, n, n))
@@ -387,11 +602,23 @@ def kalman_filter(model, y, mask=None):
     S = np.zeros((T, m, m))
     K = np.zeros((T, n, m))
     llt = np.zeros(T)
-    ll = flt(A, Q, H, R, m0, P0, y, True, mp, Pp, mf, Pf, v, S, K, llt)
-    return FilterResult(mp, Pp, mf, Pf, v, S, K, llt, float(ll), ~np.isnan(y), H)
+    if obs_var is None and segments is None and not np.any(n_diffuse):
+        y = _obs(y, mask, m)
+        A, Q, H, R, m0, P0 = model._arrays()
+        ll = kern[0](A, Q, H, R, m0, P0, y, True, mp, Pp, mf, Pf, v, S, K, llt)
+        restart = _restart(T, None)[0]
+    else:
+        A, Q, H, r, m0, P0, y, restart, skip = _seq_args(
+            model, y, mask, obs_var, n_diffuse, segments)
+        Sd = np.zeros((T, m))
+        ll = kern[4](A, Q, H, r, m0, P0, y, restart, skip,
+                     mp, Pp, mf, Pf, v, Sd, K, llt)
+        S[:, np.arange(m), np.arange(m)] = Sd
+    return FilterResult(mp, Pp, mf, Pf, v, S, K, llt, float(ll), ~np.isnan(y), H,
+                        restart)
 
 
-def kalman_loglik(model, y, mask=None):
+def kalman_loglik(model, y, mask=None, obs_var=None, n_diffuse=0, segments=None):
     """
     Log-likelihood of `y` under `model` (Kalman filter without storage).
 
@@ -401,16 +628,17 @@ def kalman_loglik(model, y, mask=None):
     -------
     float
     """
-    flt, _, _ = _kernels()
-    y = _obs(y, mask, model.dim_obs)
-    T, m = y.shape
-    A, Q, H, R, m0, P0 = model._arrays()
-    n = m0.shape[0]
-    _check_cost("kalman_loglik", T, n, m)
-    d2, d3 = np.zeros((1, n)), np.zeros((1, n, n))
-    return float(flt(A, Q, H, R, m0, P0, y, False, d2, d3, d2, d3,
-                     np.zeros((1, m)), np.zeros((1, m, m)), np.zeros((1, n, m)),
-                     np.zeros(1)))
+    kern = _kernels()
+    n, m = model.dim_state, model.dim_obs
+    _check_cost("kalman_loglik", len(y), n, m)
+    if obs_var is None and segments is None and not np.any(n_diffuse):
+        y = _obs(y, mask, m)
+        A, Q, H, R, m0, P0 = model._arrays()
+        d2, d3 = np.zeros((1, n)), np.zeros((1, n, n))
+        return float(kern[0](A, Q, H, R, m0, P0, y, False, d2, d3, d2, d3,
+                             np.zeros((1, m)), np.zeros((1, m, m)),
+                             np.zeros((1, n, m)), np.zeros(1)))
+    return float(kern[3](*_seq_args(model, y, mask, obs_var, n_diffuse, segments)))
 
 
 def rts_smoother(model, fres):
@@ -422,19 +650,22 @@ def rts_smoother(model, fres):
     model : LGSSM
         the model that produced `fres`
     fres : FilterResult
-        output of :func:`kalman_filter`
+        output of :func:`kalman_filter`; its segments are smoothed
+        independently of each other
 
     Returns
     -------
     SmootherResult
     """
-    _, smo, _ = _kernels()
+    smo = _kernels()[1]
     T, n = fres.m_filt.shape
     _check_cost("rts_smoother", T, n, fres.innov.shape[1])
     A, _, H, *_ = model._arrays()
+    restart = fres.restart if fres.restart is not None else _restart(T, None)[0]
     ms, Ps = np.zeros((T, n)), np.zeros((T, n, n))
     G, Plag = np.zeros((T, n, n)), np.zeros((T, n, n))
-    smo(A, fres.m_pred, fres.P_pred, fres.m_filt, fres.P_filt, ms, Ps, G, Plag)
+    smo(A, fres.m_pred, fres.P_pred, fres.m_filt, fres.P_filt,
+        np.ascontiguousarray(restart), ms, Ps, G, Plag)
     return SmootherResult(ms, Ps, G, Plag, H)
 
 
@@ -510,7 +741,7 @@ def simulate(model, n, fs=None, rng=None, return_states=False):
         if fs is None:
             raise ValueError("fs is needed to simulate from a GaussMarkovModel")
         model = model.to_lgssm(fs)
-    _, _, sim = _kernels()
+    sim = _kernels()[2]
     rng = np.random.default_rng(rng)
     A, Q, H, R, m0, P0 = model._arrays()
     Qsqrt = np.ascontiguousarray(_sqrtm_psd(Q))
