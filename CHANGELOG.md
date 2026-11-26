@@ -6,44 +6,43 @@
 
 Timescale model (experimental):
 
-- `pp.TimescaleModel`: state-space model of the pupil size with a fast component and slow components at fixed time scales; slow baseline with uncertainty, checks, AIC/BIC and cross-validation
-- `TimescaleModel.interpolate()`, `.predict()`, `.store()`: reconstruction of missing data of the whole recording and the slow part at the original samples
-- `pp.TimescaleModel(d, binocular=True)`: one model for both eyes
-- `TimescaleModel.fit(n_jobs=, progress=)`: likelihood evaluations of the gradient and the Hessian in parallel threads (about 2.5x faster for one eye, 4x for both); progress bar
-- `TimescaleModel.simulate()`, `.process()`: new recordings from a fitted model
-- `pp.TimescaleGroup`: group-level fit of several recordings with shrinkage; `g.prior` for new recordings
+- `pp.TimescaleModel`: state-space model of the pupil 
+- `TimescaleModel.interpolate()`, `.predict()`, `.store()`
+- `pp.TimescaleModel(d, binocular=True)`
+- `TimescaleModel.fit(n_jobs=, progress=)`
+- `TimescaleModel.simulate()`, `.process()`
+- `pp.TimescaleGroup`: group-level fit
 
-Simulated data (experimental):
+Simulated data:
 
-- `pp.sim`: simulated recordings with ground truth, built by chaining steps (`pp.sim.Simulation("5 min").pupil().gaze().foreshortening().units(800).noise(0.2).run()`); `SimEyeData` with `d.truth` (true time series, follow cropping and downsampling), `d.simulation` (the recipe and seed), the plots `plot_truth()` and `plot_components()`, and an HTML display that marks the data as simulated
-- `pp.sim.Task`: task designs built by chaining (`.block()`, `.stimulus()`, `.response()`, `.rest()`, `.repeat()`; times as distributions like `"uniform(2 s, 10 s)"`), whose events go into simulated recordings (`Simulation.task()`) with their metadata; ready-made tasks `pp.sim.tasks.pvt()`, `sart()`, `ftrsgt()`, `nback()`; `task.plot()`, a schematic in notebooks and `d.plot.plot_task_events()`
-- `pp.sim.Blinks` (occlusion model of the lid with a two-speed reopening, partial blinks, visibility threshold) and `pp.sim.TrackerLoss`; the true artifacts with their parameters in `d.truth_events`, the occluded fraction in `d.truth`; `Simulation(missing_value=0)`
+- `pp.sim`: simulated recordings (slow and fast components using `TimeScaleModel`)
+- `pp.sim.Task`: task designs 
+- `pp.sim.Blinks` (occlusion model) 
+- `pp.sim.TrackerLoss`
 
 Reading data:
 
-- `EyeData.from_gazepoint()`, `read_gazepoint()`: read recordings of GazePoint eye trackers (Open Gaze API columns); blinks hidden as repeated values are masked
+- `EyeData.from_gazepoint()`, `read_gazepoint()`: read recordings of GazePoint eye trackers
 
 Signal processing:
 
-- `d.pupil.spectrum()`, `d.plot.plot_pupil_spectrum()`: power spectrum without interpolating the gaps
-- `pp.signal.spectrum()`, `pp.signal.block_mean()`, `pp.signal.coarsen()`
-- `pp.signal.semivariogram(segments=)`, `Variogram.at_log_lags()`
+- `d.pupil.spectrum()`, `d.plot.plot_pupil_spectrum()`
 - `pp.signal.gaussmarkov`: `TimescaleBank`, `fit_bank()`, `fit_group()`, `general_prior()`, `Constant` component, noise variance per sample, segments and diffuse states in the Kalman filter
 
 ### Fixed
 
-- `fill_time_discontinuities()` left out one sample in some gaps (rounding)
-- `pp.signal.velocity_savgol(direction="backward"/"forward")` evaluated the derivative half a window ahead (backward) or behind (forward), so the one-sided velocities of `pupil.blinks_detect()` (velocity strategy) and of the `"mahot"` interpolation looked into the blink; the one-sided velocities of both are now the slope of a line fitted to the window (a quadratic overshoots at the end of its window, e.g. after the reopening). Detected blink onsets come slightly later, offsets slightly earlier (by up to half the window)
+- `fill_time_discontinuities()` left out one sample in some gaps
+- `pp.signal.velocity_savgol(direction="backward"/"forward")` fixed
 
 ### Changed behaviour
 
-- `pupil.blinks_detect()`: the default velocity thresholds are relative to the noise of the velocity (`vel_onset="25sd"`, `vel_offset="25sd"`: 25 robust standard deviations), instead of +-5 pupil units per ms, so that they work in any units (mm, pixels, arbitrary units) and with noisy trackers; the window of the velocity is 45 ms (was 11 ms). The detected blinks usually cover more of the slow transients. In a simulation study with real blinks and tracker noise of six datasets, this transferred best between recordings (vs. raw units, percentiles or thresholds relative to the pupil size). Numbers (units per ms) work as before; the percentile form (`"5%"`) was removed.
-- `pupil.blinks_interpolate(method="mahot")`: default thresholds `"2sd"` and window 30 ms (were +-5 units per ms and 25 ms); on real blinks transplanted into clean data, the error of the interpolation drops by about a third. `blinks_optimize_parameters()` and `tweak_blink_interpolation()` start from these, converted to units per ms.
-- the windows of the velocity (detection and interpolation) are rounded to the nearest odd number of samples and have at least 5 samples (at low sampling rates, e.g. 60 Hz, the window was 1-3 samples); the minimal durations of `blinks_detect()` are rounded to the nearest sample, and a blink has at least 2 samples
+- `pupil.blinks_detect()`: better default velocity thresholds 
+- `pupil.blinks_interpolate(method="mahot")`: better default thresholds
 
 ### Breaking changes
 
-- `FakeEyeData` and `pp.signal.fake` (`fake_pupil_baseline()`, `fake_gaze_fixations()`, `add_measurement_noise()`, `generate_foreshortening_data()`) were removed, use `pp.sim`; saved `FakeEyeData` objects can no longer be read
+- `FakeEyeData` and `pp.signal.fake` were removed
+
 
 ## 2.2.4 (2026-11-24)
 
