@@ -68,7 +68,7 @@ together, see the :doc:`/user_guide/index`.
       :link-type: doc
 
       Low-level functions on numpy arrays: filtering, blinks, baseline and
-      response models, simulated data.
+      response models.
 
    .. grid-item-card:: Geometry and gaze (experimental)
       :link: geometry
@@ -76,6 +76,19 @@ together, see the :doc:`/user_guide/index`.
 
       Experimental setup, calibration, foreshortening and regions of
       interest.
+
+   .. grid-item-card:: Timescale model (experimental)
+      :link: timescale
+      :link-type: doc
+
+      State-space model of the slow and fast fluctuations of the pupil
+      size.
+
+   .. grid-item-card:: Simulated data
+      :link: sim
+      :link-type: doc
+
+      ``pp.sim``: simulated recordings with their ground truth.
 
    .. grid-item-card:: Units
       :link: units
@@ -102,5 +115,7 @@ together, see the :doc:`/user_guide/index`.
    io
    signal
    geometry
+   timescale
+   sim
    units
    misc

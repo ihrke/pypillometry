@@ -207,7 +207,7 @@ class EyeData(state.VersionedState):
     experimental_setup: Optional[ExperimentalSetup] ## geometry of the setup (or None)
     calibration: Optional[dict] ## SpatialCalibration per eye (or None)
 
-    # state (see pypillometry.state); subclasses (FakeEyeData) add their own fields
+    # state (see pypillometry.state); subclasses (e.g., SimEyeData) add their own fields
     _STATE_FIELDS = (
         "name", "fs", "tx", ("data", "EyeDataDict"), ("events", "Events", "_events"),
         "params", "history", "inplace", "info", ("original", "versioned"),
@@ -216,6 +216,9 @@ class EyeData(state.VersionedState):
     # EyeDataDicts with one value per sample; the operations that change
     # the samples (_keep_samples, _decimate, _insert_samples) apply to all
     _SAMPLE_ALIGNED = ("data",)
+    # further Events (besides the events of the data) that follow the clock
+    # of the data: they are shifted by reset_time() and cut like the samples
+    _TIME_ALIGNED = ()
 
     def __init__(self, 
                     time: np.ndarray = None,
@@ -1281,6 +1284,10 @@ class EyeData(state.VersionedState):
             t0 = self.tx[0]
         obj._set_timebase(self.tx-t0)
         obj._events = self._events.shift(-t0)
+        for name in obj._TIME_ALIGNED:
+            ev = getattr(obj, name, None)
+            if ev is not None:
+                setattr(obj, name, ev.shift(-t0))
         # the original time of remove_intervals moves with the clock
         if "removed_intervals" in obj.params:
             obj.params["removed_intervals"] = [(a - t0, b - t0)
@@ -1380,6 +1387,15 @@ class EyeData(state.VersionedState):
         """
         keep = np.asarray(keep, dtype=bool)
         old_tx = self.tx
+        # further Events (_TIME_ALIGNED): kept if they fall on a kept sample
+        aligned = {}
+        for name in self._TIME_ALIGNED:
+            ev = getattr(self, name, None)
+            if ev is not None and len(ev):
+                on = np.asarray(ev.onsets, dtype=float)
+                idx = np.clip(np.searchsorted(old_tx, on), 0, len(old_tx) - 1)
+                k = keep[idx] & (on >= old_tx[0]) & (on <= old_tx[-1])
+                aligned[name] = ev.keep(k) if time_map is None else ev.keep(k).shift(time_map)
         self._map_sample_aligned(lambda d: d._take(keep))
         self._set_timebase((self.tx if time_map is None else time_map(self.tx))[keep])
         if time_map is not None:
@@ -1388,6 +1404,8 @@ class EyeData(state.VersionedState):
             self._events = self._events.keep(keep_events)
         if time_map is not None:
             self._events = self._events.shift(time_map)
+        for name, ev in aligned.items():
+            setattr(self, name, ev)
         return self
 
     @step

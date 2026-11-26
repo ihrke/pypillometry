@@ -10,6 +10,12 @@ Low-level machinery on numpy arrays; experimental, the API may change.
   smoother and simulation (compiled with numba if installed)
 - :mod:`~pypillometry.signal.gaussmarkov.likelihood`: log-likelihood of a
   signal or of its semivariogram, fitting
+- :mod:`~pypillometry.signal.gaussmarkov.bank`: timescale-bank model (a fast
+  component and slow components at fixed time scales), priors and fitting
+- :mod:`~pypillometry.signal.gaussmarkov.hierarchical`: group-level
+  estimation (empirical Bayes) of the bank model
+- :mod:`~pypillometry.signal.gaussmarkov.check`: cross-validation and
+  variogram check of a fitted bank model
 
 Examples
 --------
@@ -26,9 +32,13 @@ Examples
 >>> bool(np.isclose(fres.loglik, gm.loglik_signal(model, y, fs=500, mean_tol=None)))
 True
 """
-from . import components, kalman, likelihood
+from . import components, kalman, likelihood, bank, hierarchical, check
 from .components import *
 from .kalman import *
 from .likelihood import *
+from .bank import *
+from .hierarchical import *
+from .check import *
 
-__all__ = components.__all__ + kalman.__all__ + likelihood.__all__
+__all__ = (components.__all__ + kalman.__all__ + likelihood.__all__ + bank.__all__
+           + hierarchical.__all__ + check.__all__)

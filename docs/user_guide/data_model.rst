@@ -350,12 +350,11 @@ again to the already processed data. If you prefer copies by default, set
 :func:`set_default_inplace` (see :doc:`settings`).
 
 
-Fake data
----------
+Simulated data
+--------------
 
-:class:`FakeEyeData` holds simulated data together with the true values
-used to generate them, which is useful for testing preprocessing methods.
-The functions for :ref:`simulated data <api-simulated-data>` generate the parts (slow
-baseline changes, fixations, measurement noise), and
-:func:`~signal.generate_foreshortening_data` creates a complete dataset (see
-:doc:`/experimental/foreshortening`).
+:class:`~pypillometry.sim.SimEyeData` holds simulated data together with
+the true values used to generate them, which is useful for testing
+preprocessing methods. Simulations are built from steps with
+:class:`pp.sim.Simulation <pypillometry.sim.Simulation>` (see
+:doc:`simulation`).

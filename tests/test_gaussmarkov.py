@@ -192,3 +192,120 @@ def test_heavy_computation_warns(monkeypatch):
     gm.kalman_loglik(ssm, np.zeros(10))
     gm.kalman_loglik(ssm, np.zeros(10))
     assert len(messages) == 1 and "kalman_loglik" in messages[0]
+
+
+# -- diffuse mean, segments, noise variance per sample ------------------------
+
+def _mean_model():
+    comps = {"f": gm.Matern(3., 800.), "s": gm.Matern(2., 20000.)}
+    plain = gm.GaussMarkovModel(comps, noise=0.3)
+    return gm.GaussMarkovModel({"mean": gm.Constant(), **comps}, noise=0.3), plain
+
+
+def _gappy(plain, n=3000, fs=20):
+    y = gm.simulate(plain, n, fs=fs, rng=1)
+    y[500:700] = np.nan
+    y[1900:2500] = np.nan
+    y[np.random.default_rng(0).random(n) < 0.1] = np.nan
+    return y
+
+
+def test_constant_component():
+    c = gm.Constant()
+    assert c.dim == 1 and c.param_names == ()
+    assert np.all(c.variogram([10., 100.]) == 0)
+    model, plain = _mean_model()
+    assert model.n_diffuse == 1 and plain.n_diffuse == 0
+    assert model.free_names == plain.free_names
+    assert np.allclose(model.variogram([50., 500.]), plain.variogram([50., 500.]))
+
+
+@pytest.mark.parametrize("comp", [gm.OU(1., 50.), gm.Matern(2., 300., nu=1.5),
+                                  gm.Matern(1., 100., nu=2.5)])
+def test_psd_integrates_to_variance(comp):
+    f = np.linspace(0, 400, 80001)
+    assert np.isclose(np.trapezoid(comp.psd(f), f), comp.sigma**2, rtol=2e-2)
+    model = gm.GaussMarkovModel([comp, gm.Constant()])
+    assert np.allclose(model.psd(f[:5]), comp.psd(f[:5]))
+
+
+def test_diffuse_mean_gives_restricted_likelihood():
+    """invariant to the level, and equal to the dense REML likelihood"""
+    from scipy.linalg import cho_factor, cho_solve
+    model, plain = _mean_model()
+    y = _gappy(plain)[:2200]
+    l0 = gm.loglik_signal(model, y, 20)
+    assert abs(gm.loglik_signal(model, y + 1000, 20) - l0) < 1e-2
+    v = np.isfinite(y)
+    t = np.arange(len(y))[v] * 50.
+    for pars in ({}, {"f.sigma": 4., "s.ell": 9000., "noise": 0.5}):
+        c = cho_factor(plain.with_params(pars).cov(t[:, None] - t[None, :]))
+        X = np.ones(v.sum())
+        xkx = X @ cho_solve(c, X)
+        r = y[v] - X * (X @ cho_solve(c, y[v])) / xkx
+        reml = -0.5 * (2 * np.sum(np.log(np.diag(c[0]))) + np.log(xkx)
+                       + r @ cho_solve(c, r) + (v.sum() - 1) * np.log(2 * np.pi))
+        assert np.isclose(gm.loglik_signal(model.with_params(pars), y, 20), reml,
+                          atol=1e-4)
+
+
+def test_segments_are_independent():
+    model, plain = _mean_model()
+    y = _gappy(plain)
+    segs = [(0, 1500), (1700, 2900)]
+    parts = sum(gm.loglik_signal(model, y[a:b], 20) for a, b in segs)
+    assert np.isclose(gm.loglik_signal(model, y, 20, segments=segs), parts)
+    ssm = model.to_lgssm(20)
+    fres = gm.kalman_filter(ssm, y, n_diffuse=1, segments=segs)
+    assert np.isclose(fres.loglik, parts)
+    assert not fres.valid[1500:1700].any() and not fres.valid[2900:].any()
+    sres = gm.rts_smoother(ssm, fres)
+    for a, b in segs:   # same as smoothing the segment alone
+        alone = gm.rts_smoother(ssm, gm.kalman_filter(ssm, y[a:b], n_diffuse=1))
+        assert np.allclose(sres.m_smooth[a:b], alone.m_smooth)
+        assert np.allclose(sres.P_smooth[a:b], alone.P_smooth)
+    # the mean is a constant within a segment and differs between them
+    mu = sres.m_smooth[:, 0]
+    assert np.ptp(mu[:1500]) < 1e-6 and np.ptp(mu[1700:2900]) < 1e-6
+    with pytest.raises(ValueError, match="segments"):
+        gm.kalman_loglik(ssm, y, segments=[(0, 100), (50, 200)])
+
+
+def test_obs_var_per_sample():
+    model, plain = _mean_model()
+    y = _gappy(plain)
+    ssm, pssm = model.to_lgssm(20), plain.to_lgssm(20)
+    const = np.full(len(y), plain.noise**2)
+    # constant obs_var is R; sequential and general kernel agree
+    assert np.isclose(gm.kalman_loglik(pssm, y, obs_var=const), gm.kalman_loglik(pssm, y))
+    f1, f2 = gm.kalman_filter(pssm, y, obs_var=const), gm.kalman_filter(pssm, y)
+    assert np.allclose(f1.m_filt, f2.m_filt) and np.allclose(f1.P_filt, f2.P_filt)
+    assert np.allclose(f1.std_innov, f2.std_innov, equal_nan=True)
+    # a sample with a huge noise variance is as good as missing
+    big = const.copy()
+    big[100] = 1e12
+    y2 = y.copy()
+    y2[100] = np.nan
+    m1 = gm.kalman_filter(ssm, y, obs_var=big, n_diffuse=1).m_filt
+    assert np.allclose(m1, gm.kalman_filter(ssm, y2, n_diffuse=1).m_filt, atol=1e-6)
+    with pytest.raises(ValueError, match="obs_var"):
+        gm.kalman_loglik(pssm, y, obs_var=const[:10])
+
+
+def test_sequential_kernel_two_channels():
+    """two channels with independent noise: same as the joint update"""
+    comp = gm.Matern(2., 1000.)
+    s = comp.ss()
+    A, Q = comp.discretise(50.)
+    ssm = gm.LGSSM(A=A, Q=Q, H=np.vstack([s.H, s.H]), R=np.diag([0.1, 0.4]),
+                   m0=np.zeros(2), P0=s.Pinf)
+    y = gm.simulate(ssm, 500, rng=3)
+    y[100:150, 0] = np.nan
+    y[130:200, 1] = np.nan
+    r = np.tile([0.1, 0.4], (500, 1))
+    assert np.isclose(gm.kalman_loglik(ssm, y, obs_var=r), gm.kalman_loglik(ssm, y))
+    f1, f2 = gm.kalman_filter(ssm, y, obs_var=r), gm.kalman_filter(ssm, y)
+    assert np.allclose(f1.m_filt, f2.m_filt) and np.allclose(f1.P_filt, f2.P_filt)
+    ssm.R = np.array([[0.1, 0.05], [0.05, 0.4]])
+    with pytest.raises(ValueError, match="diagonal"):
+        gm.kalman_loglik(ssm, y, n_diffuse=1)

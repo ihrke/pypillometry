@@ -1,6 +1,13 @@
 {% import "repr_macros.html" as m %}
-<div style="font-family:system-ui, sans-serif; border:1px solid #ddd; border-radius:6px; padding:12px; max-width: min(600px, 50vw); min-width: 300px;">
-  <h3 style="margin-top:0;">{{ class_name }} — <span style="color:#555;">{{ name }}</span></h3>
+{#- `accent` (optional): dict with the colours of a highlighted display
+    (border, background, badge, badge_text) and the text of its badge (label),
+    e.g. for simulated data -#}
+<div style="font-family:system-ui, sans-serif; border:{% if accent %}2px solid {{ accent.border }}; background:{{ accent.background }}{% else %}1px solid #ddd{% endif %}; border-radius:6px; padding:12px; max-width: min(600px, 50vw); min-width: 300px;">
+  <h3 style="margin-top:0;">{{ class_name }} — <span style="color:#555;">{{ name }}</span>
+    {%- if accent %}
+    <span style="font-size:0.6em; font-weight:700; letter-spacing:0.05em; vertical-align:middle; margin-left:6px; padding:2px 8px; border-radius:10px; background:{{ accent.badge }}; color:{{ accent.badge_text }};">{{ accent.label }}</span>
+    {%- endif %}
+  </h3>
 
   {{ m.overview_grid(overview) }}
 
@@ -38,6 +45,14 @@
         {% endfor %}
       </tbody>
     </table>
+  </details>
+  {% endif %}
+
+  {% if simulation %}
+  <details style="margin-bottom:8px;">
+    <summary style="cursor:pointer; font-weight:600;">Simulation and ground truth</summary>
+    <pre style="margin-top:8px; background:#f9f9f9; padding:8px; border-radius:4px;">{{ simulation }}</pre>
+    {% if truth %}<div style="font-size:0.9em;"><b>Truth:</b> {{ truth }}</div>{% endif %}
   </details>
   {% endif %}
 

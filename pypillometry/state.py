@@ -1,8 +1,8 @@
 """
 Versioned state of the objects that can be saved to a file.
 
-The eyedata objects (:class:`~pypillometry.EyeData`,
-:class:`~pypillometry.FakeEyeData`) and the
+The eyedata objects (:class:`~pypillometry.EyeData` and its subclasses,
+e.g. :class:`~pypillometry.sim.SimEyeData`) and the
 segmented data (:class:`~pypillometry.SegmentedEyeData`, ...) define their
 content as a *state*: a dict that contains only numbers, strings, None,
 lists, tuples, dicts and numpy arrays (plus whatever the user stored in
@@ -61,7 +61,6 @@ Version history
 """
 
 import contextlib
-import importlib
 import pickle
 from collections import namedtuple
 
@@ -193,7 +192,7 @@ def _find_class(name: str):
     from .eyedata.eyedata import EyeData
     from .segmented import SegmentedEyeData
     # importing the package registers all its classes as subclasses
-    from . import eyedata, segmented  # noqa: F401
+    from . import eyedata, segmented, sim  # noqa: F401
     todo = [EyeData, SegmentedEyeData]
     while todo:
         cls = todo.pop()
@@ -201,28 +200,6 @@ def _find_class(name: str):
             return cls
         todo.extend(cls.__subclasses__())
     raise ValueError(f"unknown class {name!r}")
-
-
-def _function_name(fct):
-    """``"module:qualname"`` of a function (to import it again), or None."""
-    if fct is None:
-        return None
-    return f"{fct.__module__}:{fct.__qualname__}"
-
-
-def _import_function(name):
-    """The function called `name` (``"module:qualname"``), or None."""
-    if name is None:
-        return None
-    module, _, qualname = name.partition(":")
-    try:
-        obj = importlib.import_module(module)
-        for part in qualname.split("."):
-            obj = getattr(obj, part)
-        return obj
-    except (ImportError, AttributeError):
-        logger.warning(f"Could not import function {name}; set to None")
-        return None
 
 
 class _Unpickler(pickle.Unpickler):
@@ -316,8 +293,9 @@ def _nested_class(name):
     from .eyedata.spatial_calibration import SpatialCalibration
     from .events import Events
     from .epochs import Epochs
+    from .sim.simulation import Simulation
     return {"Intervals": Intervals, "EyeDataDict": EyeDataDict, "Events": Events,
-            "Epochs": Epochs,
+            "Epochs": Epochs, "Simulation": Simulation,
             "ExperimentalSetup": ExperimentalSetup,
             "SpatialCalibration": SpatialCalibration}[name]
 
@@ -339,6 +317,15 @@ def _tagged_from_state(st):
     return _nested_class(st.pop("class"))._from_state(st)
 
 
+def _steps_to_state(steps):
+    return [s.to_dict() for s in steps]
+
+
+def _steps_from_state(lst):
+    from .sim.steps import SimStep
+    return [SimStep.from_dict(d) for d in lst]
+
+
 def _masked_to_state(arr):
     return {"values": np.ma.getdata(arr), "mask": np.ma.getmaskarray(arr)}
 
@@ -355,8 +342,8 @@ _KINDS = {
     "pairs": (_pairs_to_state, _pairs_from_state),
     # masked array <-> {"values": ..., "mask": ...}
     "masked": (_masked_to_state, _masked_from_state),
-    # function <-> "module:qualname"
-    "function": (_function_name, _import_function),
+    # steps of a Simulation <-> list of {"step": name, "params": dict}
+    "simsteps": (_steps_to_state, _steps_from_state),
     # object of one of the classes in _nested_class() <-> its state with
     # its class name in "class" (for attributes that can hold several classes)
     "tagged": (_tagged_to_state, _tagged_from_state),
@@ -480,11 +467,6 @@ def _migrate_0_to_1(raw, class_name):
             _v0_dict(raw.get("experimental_setup")))
         state["calibration"] = None if cal is None else {
             eye: _v0_calibration(vars(c)) for eye, c in cal.items()}
-    if "sim_data" in raw:  # FakeEyeData
-        state["sim_fct"] = _function_name(raw.get("sim_fct"))
-        state["sim_fct_name"] = raw.get("sim_fct_name")
-        state["sim_params"] = raw.get("sim_params", {})
-        state["sim_data"] = _v0_eyedatadict(vars(raw["sim_data"]))
     return state
 
 
@@ -690,8 +672,6 @@ def _v2_eyedata_layers(state):
             layers.set(None, "excluded", excl)
             for key in values:
                 layers.clear(key, "user", excl)
-    if state.get("sim_data") is not None:  # FakeEyeData
-        state["sim_data"] = _v2_eyedatadict(state["sim_data"])[0]
 
 
 def _by_channel(values):

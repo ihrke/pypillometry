@@ -28,6 +28,12 @@ read_eyelink, read_tobii_prolab, read_gazepoint, read_file, load_study_local, ge
     Reading and writing data.
 Events, Intervals, Epochs
     Event markers, time intervals and event-related segments.
+TimescaleModel, TimescaleGroup
+    State-space model of the slow and fast fluctuations of the pupil size
+    (experimental).
+sim
+    Simulated data with ground truth (``pp.sim.Simulation``,
+    ``pp.sim.SimEyeData``).
 signal
     Signal-processing functions that work on plain numpy arrays.
 u
@@ -45,7 +51,7 @@ import os.path
 # ---------------------------------------------------------------------------
 # Data classes
 from .eyedata import (
-    EyeData, FakeEyeData, HeadMountedEyeData,
+    EyeData, HeadMountedEyeData,
     EyeDataDict, MaskPolicy, ExperimentalSetup, SpatialCalibration,
     ForeshorteningCalibration, keephistory,
 )
@@ -89,6 +95,14 @@ from .example_data import (
 from . import signal
 
 # ---------------------------------------------------------------------------
+# Models of the pupil size (experimental)
+from .timescale import TimescaleModel, TimescaleGroup
+
+# ---------------------------------------------------------------------------
+# Simulated data with ground truth: pp.sim.Simulation(...).pupil()...run()
+from . import sim
+
+# ---------------------------------------------------------------------------
 # Viewer
 from .viewer import view, tweak, tweak_blink_interpolation
 
@@ -104,7 +118,7 @@ from loguru import logger  # available as pp.logger, not part of __all__
 
 __all__ = [
     # data classes
-    "EyeData", "FakeEyeData", "HeadMountedEyeData",
+    "EyeData", "HeadMountedEyeData",
     "EyeDataDict", "MaskPolicy", "ExperimentalSetup", "SpatialCalibration",
     "ForeshorteningCalibration", "keephistory", "Step", "Pipeline",
     # pipeline steps
@@ -126,6 +140,8 @@ __all__ = [
     "load_study_local", "load_study_osf", "get_osf_project_files",
     "get_available_datasets", "get_example_data", "get_rlmw_002",
     "get_rlmw_002_short", "get_rlmw_010_edf", "get_nback_001",
+    # models and simulation
+    "TimescaleModel", "TimescaleGroup",
     # viewer
     "view", "tweak", "tweak_blink_interpolation",
     # units, settings and logging

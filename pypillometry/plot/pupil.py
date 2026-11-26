@@ -406,6 +406,67 @@ class PupilPlots(GenericPlots):
         return self.plot_intervals(intervals, eyes, variables,
                                   pdf_file, nrow, ncol, figsize, show_index=show_index)
 
+    def plot_pupil_spectrum(self, eyes: str|list = [], variable: str = "pupil",
+                            window="200 s", scale: str = "log%", per_decade: int = 20,
+                            policy="default", ax=None, title: str|None = None, **kwargs):
+        """
+        Plot the power spectrum of the pupil size on logarithmic axes.
+
+        The spectra come from
+        :meth:`d.pupil.spectrum() <pypillometry.eyedata.pupil.PupilNamespace.spectrum>`
+        (Welch's method; windows with many unusable samples are skipped)
+        and are averaged in log-spaced frequency bands. A power law
+        (e.g., 1/f) is a straight line; responses that are locked to a
+        fixed rhythm of the trials show up as narrow peaks.
+
+        Parameters
+        ----------
+        eyes : str or list
+            eyes to plot; if empty, all eyes with the variable
+        variable : str
+            variable to use (default ``"pupil"``)
+        window : float, str or Quantity
+            length of the windows (plain numbers are ms; default 200 s)
+        scale : {"log%", "original"}
+            ``"log%"`` (default): spectrum of the change relative to the
+            median in percent, :math:`100 \\log(x / \\mathrm{median})`;
+            ``"original"``: of the signal in its units
+        per_decade : int or None
+            number of frequency bands per factor of 10 (default 20); None:
+            all frequencies
+        policy : str, MaskPolicy or list of str
+            mask policy that decides which samples are usable; default
+            ``"default"``
+        ax : matplotlib Axes, optional
+            axes to draw on; default: the current axes
+        title : str, optional
+            title of the plot
+        **kwargs
+            passed to ``ax.plot``
+
+        Returns
+        -------
+        matplotlib Axes
+
+        Examples
+        --------
+        .. plot::
+
+           >>> import pypillometry as pp
+           >>> d = pp.get_example_data("rlmw_002").pupil.blinks_detect()
+           >>> ax = d.plot.plot_pupil_spectrum(window="100 s")
+        """
+        from ..signal.spectral import plot_spectrum
+        ax = get_ax(ax)
+        spectra = self._d.pupil.spectrum(eyes, variable, window=window, scale=scale,
+                                         policy=policy)
+        plot_spectrum(spectra, ax=ax, per_decade=per_decade, **kwargs)
+        unit = "log-%" if scale == "log%" else "units"
+        ax.set_ylabel(f"power spectral density ({unit}$^2$/Hz)")
+        if title is not None:
+            ax.set_title(title)
+        return ax
+
     def plot_blink_clusters(self, eyes: str|list = [], window=(200, 500),
                             n_clusters: int = 3, min_size: float = 0.02,
                             figsize: tuple = None, title: str = None, axes=None,

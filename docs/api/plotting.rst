@@ -17,6 +17,7 @@ Time series
    plot.PlotNamespace.plot_pupil
    plot.PlotNamespace.plot_timeseries
    plot.PlotNamespace.plot_pupil_segments
+   plot.PlotNamespace.plot_pupil_spectrum
    plot.PlotNamespace.plot_timeseries_segments
 
 Blinks, masks and intervals

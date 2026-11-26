@@ -1406,6 +1406,78 @@ class PupilNamespace(Namespace["EyeData"]):
             
 
 
+    def spectrum(self, eyes=[], variable: str="pupil", window="200 s",
+                 overlap: float=0.5, max_missing: float=0.3, scale: str="original",
+                 policy="default") -> dict:
+        """
+        Power spectrum of the pupil size (Welch's method for data with gaps).
+
+        The signal is cut into overlapping windows within the periods that
+        are not excluded (see :meth:`~pypillometry.EyeData.exclude_intervals`).
+        Windows with too many unusable samples are skipped; the gaps in the
+        other windows are bridged linearly, and the periodograms of the
+        windows are averaged (see :func:`~pypillometry.signal.spectrum`).
+        Nothing has to be interpolated before, but blinks should be
+        detected, so that they are treated as gaps.
+
+        Parameters
+        ----------
+        eyes : str or list
+            eyes to process; if empty, all eyes with the variable
+        variable : str
+            variable to use (default ``"pupil"``)
+        window : float, str or Quantity
+            length of the windows (plain numbers are ms; default 200 s);
+            the lowest frequency is one cycle per window
+        overlap : float
+            overlap of neighbouring windows as a fraction of their length
+            (default 0.5)
+        max_missing : float
+            windows with a larger fraction of unusable samples are skipped
+            (default 0.3)
+        scale : {"original", "log%"}
+            ``"original"`` (default): spectrum of the signal in its units;
+            ``"log%"``: of :math:`100 \\log(x / \\mathrm{median})`, the change
+            relative to the median in percent, which makes recordings
+            with different pupil units comparable
+        policy : str, MaskPolicy or list of str
+            mask policy that decides which samples are usable (see
+            :meth:`~pypillometry.EyeData.mask`); default ``"default"``
+
+        Returns
+        -------
+        dict
+            :class:`~pypillometry.signal.Spectrum` (frequencies in Hz,
+            power spectral density in units squared per Hz) for each eye,
+            with keys like ``"left_pupil"``
+
+        See Also
+        --------
+        pypillometry.plot.PlotNamespace.plot_pupil_spectrum : plot the spectra
+
+        Examples
+        --------
+        >>> d = d.pupil.blinks_detect()  # doctest: +SKIP
+        >>> sp = d.pupil.spectrum(window="100 s")["left_pupil"]  # doctest: +SKIP
+        >>> sp.freqs, sp.power  # doctest: +SKIP
+        """
+        from ..signal.spectral import spectrum
+        if scale not in ("original", "log%"):
+            raise ValueError(f"scale must be 'original' or 'log%', got {scale!r}")
+        d = self._d
+        d._require(variable)
+        segments = d.get_included("samples").intervals
+        out = {}
+        for eye in d._eyes_with(eyes, variable):
+            x = d.get_values(eye, variable, policy)
+            if scale == "log%":
+                with np.errstate(invalid="ignore", divide="ignore"):
+                    x = np.where(x > 0, x, np.nan)
+                    x = 100.0 * np.log(x / np.nanmedian(x))
+            out[f"{eye}_{variable}"] = spectrum(x, d.fs, window=window, overlap=overlap,
+                                                max_missing=max_missing, segments=segments)
+        return out
+
     @step
     @keephistory
     def estimate_baseline(self, eyes=[], variable="pupil",

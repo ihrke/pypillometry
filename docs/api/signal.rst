@@ -116,17 +116,3 @@ Pupil response
    pupil_signal_quality
    pupil_eye_offset
 
-.. _api-simulated-data:
-
-Simulated data
---------------
-
-.. autosummary::
-   :toctree: generated
-   :template: function.rst
-   :nosignatures:
-
-   fake_pupil_baseline
-   fake_gaze_fixations
-   add_measurement_noise
-   generate_foreshortening_data

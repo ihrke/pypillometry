@@ -40,6 +40,11 @@ INTERNAL = {
     "pypillometry.plot.pupil": {"PupilPlots"},
     "pypillometry.plot.gaze": {"GazePlots"},
     "pypillometry.plot.scene": {"ScenePlots"},
+    # used as m.plot / g.plot of the timescale models
+    "pypillometry.timescale.plots": {"TimescalePlots", "TimescaleGroupPlots"},
+    # base class of the simulation steps
+    "pypillometry.sim.steps": {"SimStep"},
+    "pypillometry.sim.dist": {"Dist"},
     "pypillometry.units": {"normalize_unit"},
     "pypillometry.signal.preproc": {"helper_merge_blinks"},
     "pypillometry.templates": {"render", "sparkline"},
@@ -67,7 +72,9 @@ SHADOWED = {
 # Modules whose public names are only in a namespace submodule, not at the
 # top level (pp.signal.smooth_window, not pp.smooth_window). The longest
 # matching prefix wins (pp.signal.gaussmarkov.OU, not pp.signal.OU).
-SUBMODULE_API = {"pypillometry.signal": "pypillometry.signal",
+SUBMODULE_API = {"pypillometry.sim": "pypillometry.sim",
+                 "pypillometry.sim.tasks": "pypillometry.sim.tasks",
+                 "pypillometry.signal": "pypillometry.signal",
                  "pypillometry.signal.gaussmarkov": "pypillometry.signal.gaussmarkov"}
 
 # Modules that are not imported by the package (legacy code).

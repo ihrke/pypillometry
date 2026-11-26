@@ -24,7 +24,8 @@ from typing import NamedTuple
 
 import numpy as np
 
-__all__ = ["ContinuousSS", "Component", "OU", "Matern", "GaussMarkovModel"]
+__all__ = ["ContinuousSS", "Component", "OU", "Matern", "Constant",
+           "GaussMarkovModel"]
 
 
 class ContinuousSS(NamedTuple):
@@ -102,6 +103,28 @@ class Component:
         """Semivariogram gamma(tau) = k(0) - k(tau) of the output (ms)."""
         tau = np.asarray(tau, dtype=float)
         return self.cov(0.0) - self.cov(tau)
+
+    def psd(self, freq):
+        """
+        One-sided power spectral density of the output at frequencies
+        `freq` (Hz), in signal units squared per Hz; its integral over all
+        frequencies is the variance.
+
+        .. math::
+
+            S(f) = \\frac{2}{1000} H (i\\omega - F)^{-1} Q_n
+                   (-i\\omega - F^\\top)^{-1} H^\\top, \\qquad
+                   \\omega = 2\\pi f / 1000
+        """
+        s = self.ss()
+        freq = np.asarray(freq, dtype=float)
+        w = 2 * np.pi * freq.ravel() / 1000.0        # rad per ms
+        eye = np.eye(s.F.shape[0])
+        G = np.linalg.solve(1j * w[:, None, None] * eye - s.F,
+                            np.broadcast_to(eye, (len(w),) + eye.shape))
+        hG = (s.H @ G)[:, 0, :]
+        out = np.einsum("wi,ij,wj->w", hG, s.Qn, hG.conj()).real
+        return (out / 500.0).reshape(freq.shape)
 
     def get_params(self):
         """dict of the parameters"""
@@ -219,7 +242,51 @@ class OU(Component):
         return self._matern().cov(tau)
 
 
-_PREFIX = {"OU": "ou", "Matern": "matern"}
+@dataclass(frozen=True)
+class Constant(Component):
+    """
+    Unknown constant (e.g., the mean of the signal) with a diffuse prior.
+
+    A state that does not change, with a prior variance `kappa` that is
+    very large against the signal. Used with ``n_diffuse=1`` in
+    :func:`~pypillometry.signal.gaussmarkov.kalman_loglik`, the likelihood
+    of the other parameters does not depend on the level of the signal (the
+    restricted likelihood, REML), and the smoother returns the posterior of
+    the constant with the other components.
+
+    Parameters
+    ----------
+    kappa : float
+        prior variance (signal units squared); default 1e7. Not a fitted
+        parameter.
+
+    Examples
+    --------
+    >>> c = Constant()
+    >>> c.discretise(50.)
+    (array([[1.]]), array([[0.]]))
+    >>> c.param_names
+    ()
+    """
+    kappa: float = 1e7
+    param_names = ()
+
+    def ss(self):
+        return ContinuousSS(np.zeros((1, 1)), np.zeros((1, 1)), np.ones((1, 1)),
+                            np.array([[float(self.kappa)]]))
+
+    def discretise(self, dt):
+        return np.eye(1), np.zeros((1, 1))
+
+    def cov(self, tau):
+        """0: the constant does not enter the covariance and the variogram."""
+        return np.zeros(np.shape(tau))
+
+    def psd(self, freq):
+        return np.zeros(np.shape(freq))
+
+
+_PREFIX = {"OU": "ou", "Matern": "matern", "Constant": "const"}
 
 
 class GaussMarkovModel:
@@ -377,6 +444,19 @@ class GaussMarkovModel:
         tau = np.asarray(tau, dtype=float)
         g = sum(c.variogram(tau) for _, c in self._items)
         return g + self.noise**2 * (tau != 0)
+
+    def psd(self, freq):
+        """
+        One-sided power spectral density of the observations at frequencies
+        `freq` (Hz), in signal units squared per Hz, without the noise
+        (white noise sampled at ``fs`` adds ``noise^2 / (fs / 2)``).
+        """
+        return sum(c.psd(freq) for _, c in self._items)
+
+    @property
+    def n_diffuse(self):
+        """number of components with a diffuse prior (:class:`Constant`)"""
+        return sum(isinstance(c, Constant) for _, c in self._items)
 
     # -- discrete model ------------------------------------------------------
     def to_lgssm(self, fs):

@@ -150,6 +150,13 @@ Modeling and complete analyses
 
       Separate the signal into tonic baseline and phasic responses.
 
+   .. grid-item-card:: Simulated data
+      :link: /notebooks/simulation
+      :link-type: doc
+
+      Simulate recordings with ground truth, from a recipe or from a
+      fitted model, and check a method against the truth.
+
    .. grid-item-card:: A complete study
       :link: /notebooks/preproc_example_pavlov
       :link-type: doc
@@ -206,5 +213,6 @@ More examples for the experimental features are in
    :caption: Modeling and complete analyses
 
    /notebooks/modeling
+   /notebooks/simulation
    /notebooks/preproc_example_pavlov
    /notebooks/case_study_nback

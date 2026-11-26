@@ -10,8 +10,8 @@ import numpy as np
 
 import pypillometry as pp
 from pypillometry import hdf5, state
-from pypillometry.signal.fake import generate_foreshortening_data
 
+from tests.test_sim import artifact_sim, foreshortening_sim
 from tests.test_state import DATA, assert_state_equal, make_eyedata
 
 
@@ -55,9 +55,14 @@ class TestObjects(HDF5TestCase):
         self.roundtrip(d.drop_data(variables=["x", "y"], inplace=False))
         self.roundtrip(d.drop_data(variables=["pupil"], inplace=False))
 
-    def test_fakeeyedata(self):
-        f2 = self.roundtrip(generate_foreshortening_data(duration=1, fs=100, seed=1))
-        self.assertIs(f2.sim_fct, generate_foreshortening_data)
+    def test_simeyedata(self):
+        a = artifact_sim(missing_value=0).run()
+        a2 = self.roundtrip(a)
+        assert a2.simulation.missing_value == 0
+        np.testing.assert_array_equal(a2.truth_events.meta["tau_o"], a.truth_events.meta["tau_o"])
+        f = foreshortening_sim().run()
+        f2 = self.roundtrip(f)
+        np.testing.assert_array_equal(f2.simulation.run()["left_pupil"], f["left_pupil"])
 
     def test_segmented(self):
         d = make_eyedata(keep_orig=False)
@@ -103,7 +108,7 @@ class TestFixtures(HDF5TestCase):
     """Files written by earlier versions keep loading."""
 
     def test_v0_pickles_to_hdf5(self):
-        for name in ["eyedata", "pupildata", "gazedata", "fakeeyedata",
+        for name in ["eyedata", "pupildata", "gazedata",
                      "segmented"]:
             with self.subTest(name=name):
                 obj = pp.read_file(os.path.join(DATA, f"{name}_v0.pkl"))
