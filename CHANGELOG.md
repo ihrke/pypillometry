@@ -1,5 +1,9 @@
 # Changelog
 
+## unreleased
+
+- `EyeData.from_gazepoint()`, `read_gazepoint()`: read recordings of GazePoint eye trackers (Open Gaze API columns); blinks hidden as repeated values are masked
+
 ## 2.2.4 (2026-11-24)
 
 - `d.pupil.blinks_optimize_parameters()`: autotune the parameters of `blinks_interpolate()` 

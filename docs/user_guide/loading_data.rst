@@ -91,6 +91,33 @@ Excel files need the package `openpyxl`, the scene video the package `av`
 is slow; save the result (see below).
 
 
+GazePoint
+---------
+
+Recordings of GazePoint eye trackers (e.g., GP3) are tables with the
+columns of the GazePoint Open Gaze API (``TIME``, ``LPUPILD``, ``LPV``,
+..., ``USER``), as written by programs that record the data stream of the
+eye tracker. They are read with :meth:`EyeData.from_gazepoint`:
+
+.. code-block:: python
+
+    d = pp.EyeData.from_gazepoint("rec.tsv", gaze=False)          # pupil in mm
+    d = pp.EyeData.from_gazepoint("rec.tsv", pupil="px")          # pixels of the camera
+    d = pp.EyeData.from_gazepoint("rec.tsv", screen_resolution=(1920, 1080))
+
+During blinks, GazePoint often repeats the last pupil size and marks it as
+valid in ``LPUPILV``; only ``LPV`` (pupil found in the camera image) shows
+that the pupil was lost. Samples are therefore kept only where both are
+valid, and blinks become gaps that :meth:`~EyeData.pupil.blinks_detect`
+finds. The pupil size in mm is stored in steps of 0.01 mm; the size in
+pixels (``pupil="px"``) is finer but not corrected for the distance of the
+eye from the camera. The gaze position is a fraction of the screen unless
+the screen resolution is given.
+
+Each change of the label in the column ``USER`` (sent by the experiment)
+is an event; ``label_prefix=`` removes a prefix from the labels.
+
+
 Text files and your own arrays
 ------------------------------
 
