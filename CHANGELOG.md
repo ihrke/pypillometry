@@ -8,6 +8,7 @@
 - `pp.TimescaleModel` (experimental): state-space model of the pupil size with a fast component and slow components at fixed time scales; slow baseline with uncertainty, checks, AIC/BIC and cross-validation
 - `TimescaleModel.interpolate()`, `.predict()`, `.store()`: reconstruction of missing data of the whole recording and the slow part at the original samples
 - `pp.TimescaleModel(d, binocular=True)`: one model for both eyes
+- `TimescaleModel.fit(n_jobs=, progress=)`: likelihood evaluations of the gradient and the Hessian in parallel threads (about 2.5x faster for one eye, 4x for both); progress bar
 - `pp.TimescaleGroup` (experimental): group-level fit of several recordings with shrinkage; `g.prior` for new recordings
 - `d.pupil.spectrum()`, `d.plot.plot_pupil_spectrum()`: power spectrum without interpolating the gaps
 - `pp.signal.spectrum()`, `pp.signal.block_mean()`, `pp.signal.coarsen()`

@@ -393,7 +393,8 @@ def _kernels():
                            "plain Python and is slow for long signals")
             _KERNELS = plain
         else:
-            jit = numba.njit(cache=True)
+            # without the GIL, so that threads can run them in parallel
+            jit = numba.njit(cache=True, nogil=True)
             _KERNELS = tuple(jit(k) for k in plain)
             _JIT = True
     return _KERNELS

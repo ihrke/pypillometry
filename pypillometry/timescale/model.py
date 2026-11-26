@@ -10,6 +10,7 @@ import numpy as np
 from loguru import logger
 
 from ..signal import block_mean, semivariogram, spectrum
+from ..logging import _show_progress
 from ..signal import gaussmarkov as gm
 from ..signal.gaussmarkov.bank import DEFAULT_TIMESCALES
 from ..units import parse_time
@@ -274,7 +275,7 @@ class TimescaleModel:
                 f"{dur:.1f} min at {self.fs:g} Hz, valid: {valid}; {state})")
 
     # -- fitting -------------------------------------------------------------
-    def fit(self, prior="medium", hessian=True, maxiter=400):
+    def fit(self, prior="medium", hessian=True, maxiter=400, n_jobs=None, progress=None):
         """
         Estimate the parameters of the model.
 
@@ -299,18 +300,29 @@ class TimescaleModel:
             default True
         maxiter : int
             maximum number of iterations of the optimiser
+        n_jobs : int or None
+            number of threads for the likelihood evaluations of the
+            optimiser and the Hessian (at most one per parameter); None
+            (default): all cores but one
+        progress : bool or None
+            show a progress bar; None (default): if the logging level is
+            "INFO" or "DEBUG"
 
         Returns
         -------
         TimescaleModel
             the model itself (fitted)
         """
+        if progress is None:
+            progress = _show_progress()
         for unit in self.units:
             logger.info(f"{self.name}: fitting the timescale model of {unit} "
                         f"({np.isfinite(self._Y(unit)).sum()} valid samples at "
                         f"{self.fs:g} Hz)")
             fit = gm.fit_bank(self.bank, self._Y(unit), self.fs, segments=self.segments,
-                              prior=prior, hessian=hessian, maxiter=maxiter)
+                              prior=prior, hessian=hessian, maxiter=maxiter,
+                              n_jobs=n_jobs, progress=progress,
+                              desc=f"{self.name}, {unit}")
             if not fit.success:
                 logger.warning(f"{self.name}, {unit}: the optimiser did not converge "
                                f"({fit.message})")

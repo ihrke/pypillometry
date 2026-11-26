@@ -871,25 +871,42 @@ def _as_prior(prior, bank):
 # ---------------------------------------------------------------------------
 # fitting
 # ---------------------------------------------------------------------------
-def numerical_hessian(f, x, eps=0.02):
+def numerical_hessian(f, x, eps=0.02, mapper=map, callback=None):
     """
     Hessian of `f` at `x` by finite differences with step `eps`.
 
     The default step suits log-parameters of a Kalman likelihood (with much
-    smaller steps, rounding errors dominate).
+    smaller steps, rounding errors dominate). The :math:`1 + 2p + p(p-1)/2`
+    evaluations of `f` go through `mapper` (e.g., the ``map`` of a pool of
+    threads); `callback` is called after each of them.
     """
     x = np.asarray(x, dtype=float)
     p = len(x)
     E = np.eye(p) * eps
-    f0 = f(x)
-    fp = [f(x + E[i]) for i in range(p)]
-    fm = [f(x - E[i]) for i in range(p)]
+    pairs = [(i, j) for i in range(p) for j in range(i + 1, p)]
+    points = ([x] + [x + E[i] for i in range(p)] + [x - E[i] for i in range(p)]
+              + [x + E[i] + E[j] for i, j in pairs])
+    values = []
+    for v in mapper(f, points):
+        values.append(v)
+        if callback is not None:
+            callback()
+    f0, fp, fm = values[0], values[1:p + 1], values[p + 1:2 * p + 1]
     H = np.zeros((p, p))
     for i in range(p):
         H[i, i] = (fp[i] - 2 * f0 + fm[i]) / eps**2
-        for j in range(i + 1, p):
-            H[i, j] = H[j, i] = (f(x + E[i] + E[j]) - fp[i] - fp[j] + f0) / eps**2
+    for (i, j), fij in zip(pairs, values[2 * p + 1:]):
+        H[i, j] = H[j, i] = (fij - fp[i] - fp[j] + f0) / eps**2
     return H
+
+
+def _n_threads(n_jobs, n_params):
+    """number of threads for a fit: one per parameter at most (the points
+    of a finite-difference gradient); None means all cores but one"""
+    import os
+    if n_jobs is None:
+        n_jobs = max((os.cpu_count() or 2) - 1, 1)
+    return max(min(int(n_jobs), n_params), 1)
 
 
 def _psd(H):
@@ -997,7 +1014,7 @@ class BankFit:
 
 
 def fit_bank(bank, y, fs, segments=None, prior="medium", theta0=None, hessian=True,
-             maxiter=400):
+             maxiter=400, n_jobs=1, progress=False, desc="fit"):
     """
     Fit a timescale-bank model to a signal.
 
@@ -1028,6 +1045,16 @@ def fit_bank(bank, y, fs, segments=None, prior="medium", theta0=None, hessian=Tr
         (for standard errors and group fits); default True
     maxiter : int
         maximum number of iterations of the optimiser
+    n_jobs : int or None
+        number of threads that evaluate the likelihood at the points of the
+        finite-difference gradient and of the Hessian (at most one per
+        parameter); None: all cores but one. Default 1 (e.g., inside
+        parallel processes).
+    progress : bool
+        show a progress bar (iterations and the negative log posterior,
+        then the evaluations of the Hessian); default False
+    desc : str
+        label of the progress bar
 
     Returns
     -------
@@ -1070,10 +1097,41 @@ def fit_bank(bank, y, fs, segments=None, prior="medium", theta0=None, hessian=Tr
             theta0 = bank.start(semivariogram(y.mean(axis=1), **kw),
                                 semivariogram(y[:, 0] - y[:, 1], **kw))
     theta0 = np.clip(np.asarray(theta0, dtype=float), lo, hi)
-    opt = minimize(neg, theta0, method="L-BFGS-B", bounds=list(zip(lo, hi)),
-                   options=dict(maxiter=maxiter))
-    theta = np.clip(opt.x, lo, hi)
-    H = numerical_hessian(lambda th: -loglik(th), theta) if hessian else None
+    n_threads = _n_threads(n_jobs, bank.n_params)
+    pool = bar = None
+    try:
+        options = dict(maxiter=maxiter)
+        if n_threads > 1:
+            from concurrent.futures import ThreadPoolExecutor
+            pool = ThreadPoolExecutor(max_workers=n_threads)
+            options["workers"] = pool.map
+        callback = None
+        if progress:
+            from tqdm import tqdm
+            bar = tqdm(desc=desc, unit=" it", leave=False)
+
+            def callback(intermediate_result):
+                bar.update()
+                bar.set_postfix_str(f"-logpost={intermediate_result.fun:.2f}",
+                                    refresh=False)
+        opt = minimize(neg, theta0, method="L-BFGS-B", bounds=list(zip(lo, hi)),
+                       options=options, callback=callback)
+        theta = np.clip(opt.x, lo, hi)
+        H = None
+        if hessian:
+            p = bank.n_params
+            if bar is not None:
+                bar.set_description(f"{desc}: Hessian")
+                bar.unit = " evaluations"
+                bar.reset(total=1 + 2 * p + p * (p - 1) // 2)
+            H = numerical_hessian(lambda th: -loglik(th), theta,
+                                  mapper=map if pool is None else pool.map,
+                                  callback=None if bar is None else bar.update)
+    finally:
+        if pool is not None:
+            pool.shutdown()
+        if bar is not None:
+            bar.close()
     if H is not None and not np.all(np.isfinite(H)):
         H = None
     return BankFit(bank, theta, float(loglik(theta)), n_obs, len(segments), prior, H,
