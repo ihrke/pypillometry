@@ -12,7 +12,7 @@ import numpy as np
 import pypillometry as pp
 from pypillometry import state
 from pypillometry.eyedata.spatial_calibration import SpatialCalibration
-from pypillometry.signal.fake import generate_foreshortening_data
+from tests.test_sim import foreshortening_sim
 
 DATA = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "state")
 
@@ -101,11 +101,12 @@ class TestPickleRoundTrip(unittest.TestCase):
         self.roundtrip(d.drop_data(variables=["x", "y"], inplace=False))
         self.roundtrip(d.drop_data(variables=["pupil"], inplace=False))
 
-    def test_fakeeyedata(self):
-        f = generate_foreshortening_data(duration=1, fs=100, seed=1)
+    def test_simeyedata(self):
+        f = foreshortening_sim().run()
         f2 = self.roundtrip(f)
-        self.assertIs(f2.sim_fct, generate_foreshortening_data)
-        self.assertEqual(list(f2.sim_data.keys()), list(f.sim_data.keys()))
+        self.assertEqual(list(f2.truth.keys()), list(f.truth.keys()))
+        self.assertEqual(repr(f2.simulation), repr(f.simulation))
+        np.testing.assert_array_equal(f2.simulation.run()["left_pupil"], f["left_pupil"])
 
     def test_segmented(self):
         d = make_eyedata(keep_orig=False)
@@ -156,7 +157,7 @@ class TestStateCoverage(unittest.TestCase):
             d, d.drop_data(variables=["x", "y"], inplace=False), d.drop_data(variables=["pupil"], inplace=False),
             pp.EyeData(left_pupil=np.ones(10), sampling_rate=10),
             pp.EyeData(left_x=np.ones(10), left_y=np.ones(10), sampling_rate=10),
-            generate_foreshortening_data(duration=1, fs=100, seed=1),
+            foreshortening_sim().run(),
             pp.HeadMountedEyeData(left_pupil=np.ones(10), sampling_rate=10,
                                   aux={"gyro_x": np.ones(10)}),
             seg, pp.group_segments([seg, seg]),
@@ -236,11 +237,6 @@ class TestFormatVersion0(unittest.TestCase):
         self.assertIs(type(g), pp.EyeData)
         self.assertEqual(g.calibration["left"].eye, "left")
 
-    def test_fakeeyedata(self):
-        f = self.load("fakeeyedata_v0.pkl")
-        self.assertIs(f.sim_fct, generate_foreshortening_data)
-        self.assertIn("left_A0", f.sim_data)
-
     def test_segmented(self):
         s = self.load("segmented_v0.pkl")
         self.assertIsInstance(s, pp.SegmentedEyeData)
@@ -299,8 +295,8 @@ class TestMigrate(unittest.TestCase):
         self.assertIs(state.migrate(st, "EyeData"), st)
 
     def test_from_state_finds_class(self):
-        st = state.to_state(generate_foreshortening_data(duration=1, fs=100, seed=1))
-        self.assertIsInstance(state.from_state(st), pp.FakeEyeData)
+        st = state.to_state(foreshortening_sim().run())
+        self.assertIsInstance(state.from_state(st), pp.sim.SimEyeData)
         st["class"] = "NoSuchClass"
         with self.assertRaisesRegex(ValueError, "unknown class"):
             state.from_state(st)

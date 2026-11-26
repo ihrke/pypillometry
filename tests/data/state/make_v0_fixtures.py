@@ -9,7 +9,6 @@ import datetime, sys
 import numpy as np
 import pypillometry as pp
 from pypillometry.eyedata.spatial_calibration import SpatialCalibration
-from pypillometry.signal.fake import generate_foreshortening_data
 
 out = sys.argv[1]
 src = pp.get_example_data("rlmw_002_short").sub_slice(4.5, 8.5, units="sec")
@@ -43,10 +42,6 @@ pp.write_pickle(p, f"{out}/pupildata_v0.pkl")
 g = d.to_gazedata()
 g.name = "fixture_gazedata"
 pp.write_pickle(g, f"{out}/gazedata_v0.pkl")
-
-f = generate_foreshortening_data(duration=2, fs=100, seed=1)
-f.name = "fixture_fake"
-pp.write_pickle(f, f"{out}/fakeeyedata_v0.pkl")
 
 iv = d.get_intervals("F_", interval=(-200, 800), units="ms")
 seg = d.get_segments(iv, "left_pupil")

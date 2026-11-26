@@ -207,7 +207,7 @@ class EyeData(state.VersionedState):
     experimental_setup: Optional[ExperimentalSetup] ## geometry of the setup (or None)
     calibration: Optional[dict] ## SpatialCalibration per eye (or None)
 
-    # state (see pypillometry.state); subclasses (FakeEyeData) add their own fields
+    # state (see pypillometry.state); subclasses (e.g., SimEyeData) add their own fields
     _STATE_FIELDS = (
         "name", "fs", "tx", ("data", "EyeDataDict"), ("events", "Events", "_events"),
         "params", "history", "inplace", "info", ("original", "versioned"),
