@@ -18,10 +18,8 @@ from ..convenience import requires_package
 from ..events import Events
 from ..logging import _show_progress
 from ..plot import HeadMountedPlotNamespace
-from ..templates import sparkline
 from ..units import parse_time
 from .eyedata import EyeData
-from .eyedatadict import EyeDataDict
 from .history import keephistory
 from .namespace import Namespace, accessor
 from .pipes import step
@@ -535,16 +533,12 @@ class HeadMountedEyeData(EyeData):
     scene = accessor(SceneNamespace)
     plot = accessor(HeadMountedPlotNamespace)
 
-    aux: EyeDataDict  ## channels that do not belong to an eye
     scene_video: Optional[str]  ## filename of the scene video
     scene_video_offset: float  ## time of the first video frame (ms)
     scene_size: Optional[tuple]  ## (width, height) of the scene video (pixels)
 
     # state (see pypillometry.state): adds to that of EyeData
-    _STATE_FIELDS = (("aux", "EyeDataDict"), "scene_video", "scene_video_offset",
-                     "scene_size")
-    # the additional channels follow crop, downsample etc. with the data
-    _SAMPLE_ALIGNED = ("data", "aux")
+    _STATE_FIELDS = ("scene_video", "scene_video_offset", "scene_size")
 
     def __init__(self, time=None,
                  left_x=None, left_y=None, left_pupil=None,
@@ -557,38 +551,21 @@ class HeadMountedEyeData(EyeData):
         """Constructor for the HeadMountedEyeData class."""
         if (both_x is None) != (both_y is None):
             raise ValueError("both_x and both_y must be provided together")
-        self.aux = EyeDataDict()
         self.scene_video = None if scene_video is None else str(scene_video)
         self.scene_video_offset = float(scene_video_offset)
         self.scene_size = None if scene_size is None else tuple(int(v) for v in scene_size)
         # gaps are filled in after all channels are there
         super().__init__(time=time, left_x=left_x, left_y=left_y, left_pupil=left_pupil,
                          right_x=right_x, right_y=right_y, right_pupil=right_pupil,
-                         fill_time_discontinuities=False, keep_orig=False, **kwargs)
+                         fill_time_discontinuities=False, keep_orig=False, aux=aux,
+                         **kwargs)
         if both_x is not None:
             self.data["both_x"] = both_x
             self.data["both_y"] = both_y
-        for key, values in (aux or {}).items():
-            self._set_aux(key, values)
         if fill_time_discontinuities:
             inspect.unwrap(type(self).fill_time_discontinuities)(self, inplace=True)
         if keep_orig:
             self.original = self.copy()
-
-    def _set_aux(self, key: str, values):
-        """Store `values` (one per sample) as channel `key` in `aux`."""
-        values = np.asarray(values, dtype=float)
-        if values.shape != (len(self),):
-            raise ValueError(f"aux channel '{key}' must have one value per sample "
-                             f"({len(self)}), got shape {values.shape}")
-        self.aux[key] = values
-
-    def _require_aux(self, *keys):
-        """Raise a ValueError if one of the channels `keys` is not in `aux`."""
-        missing = [k for k in keys if k not in self.aux]
-        if missing:
-            raise ValueError(f"no channel(s) {', '.join(missing)} in aux "
-                             f"(available: {', '.join(self.aux.keys()) or 'none'})")
 
     def _scene_video_file(self) -> str:
         """Filename of the scene video (ValueError if there is none)."""
@@ -601,15 +578,13 @@ class HeadMountedEyeData(EyeData):
         return self.scene_video
 
     def _html_context(self) -> dict:
-        """Adds the channels in `aux`, the scene video and one of its frames."""
+        """Adds the scene video and one of its frames."""
         context = super()._html_context()
-        rows = [("Aux channels", ", ".join(self.aux.keys()) or "none")]
+        rows = []
         if self.scene_video is not None:
             size = "" if self.scene_size is None else " ({}x{})".format(*self.scene_size)
             rows.append(("Scene video", os.path.basename(self.scene_video) + size))
         context["overview"] = context["overview"] + rows
-        context["aux_sparklines"] = [
-            {"label": key, "image": sparkline(self.aux[key])} for key in self.aux.keys()]
         context["image"] = self._scene_frame_html()
         return context
 
@@ -635,9 +610,8 @@ class HeadMountedEyeData(EyeData):
                 "caption": f"Scene video at {t / 1000.:.1f} s (middle of the data)"}
 
     def __repr__(self):
-        """String-representation with the additional channels and the scene video."""
-        scene = (f" Scene: video={self.scene_video}, size={self.scene_size}, "
-                 f"aux={list(self.aux.keys())}\n")
+        """String-representation with the scene video."""
+        scene = f" Scene: video={self.scene_video}, size={self.scene_size}\n"
         head, sep, history = super().__repr__().partition(" History:")
         return head + scene + sep + history
 

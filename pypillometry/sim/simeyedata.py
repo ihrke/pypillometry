@@ -250,7 +250,7 @@ class SimEyeData(EyeData):
     _STATE_FIELDS = (("truth", "EyeDataDict"), ("simulation", "Simulation"),
                      ("truth_events", "Events"))
     # the ground truth follows crop, downsample etc. with the data
-    _SAMPLE_ALIGNED = ("data", "truth")
+    _SAMPLE_ALIGNED = EyeData._SAMPLE_ALIGNED + ("truth",)
     _TIME_ALIGNED = ("truth_events",)
 
     def __init__(self, *, truth=None, simulation=None, truth_events=None, **kwargs):

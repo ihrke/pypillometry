@@ -58,6 +58,9 @@ Version history
     event-locked, Intervals, with the class name in ``epochs["class"]``,
     and `valid_share` (channel -> share of usable trials of each value, for
     averages)
+4
+    all eyedata objects have additional channels (`aux`, an EyeDataDict
+    state; before, only HeadMountedEyeData had them)
 """
 
 import contextlib
@@ -70,7 +73,7 @@ from loguru import logger
 __all__ = []
 
 #: version of the state written by this version of pypillometry
-FORMAT_VERSION = 3
+FORMAT_VERSION = 4
 
 # classes that moved: (old module, old name) -> (new module, new name),
 # used when reading pickle files (see _Unpickler) and states (see _find_class)
@@ -748,5 +751,14 @@ def _migrate_2_to_3(state, class_name):
     return state
 
 
-_MIGRATIONS = [_migrate_0_to_1, _migrate_1_to_2, _migrate_2_to_3]
+def _migrate_3_to_4(state, class_name):
+    """Version 3 -> 4: all eyedata objects have additional channels (`aux`,
+    an EyeDataDict state; empty for the classes that had none)."""
+    state = dict(state)
+    if class_name not in _SEGMENTED_CLASSES and "aux" not in state:
+        state["aux"] = {"values": {}, "layers": {}, "layer_names": [], "rec_layers": None}
+    return state
+
+
+_MIGRATIONS = [_migrate_0_to_1, _migrate_1_to_2, _migrate_2_to_3, _migrate_3_to_4]
 assert len(_MIGRATIONS) == FORMAT_VERSION

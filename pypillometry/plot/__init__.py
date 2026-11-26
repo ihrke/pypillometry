@@ -4,24 +4,27 @@ not have to be imported directly: the plots are called through ``d.plot``,
 e.g. ``d.plot.plot_timeseries()``.
 
 The plots are written in one module per domain (:mod:`.generic`,
-:mod:`.pupil`, :mod:`.gaze`); :class:`PlotNamespace` combines them.
+:mod:`.pupil`, :mod:`.gaze`, :mod:`.aux` for the additional channels in
+``d.aux``); :class:`PlotNamespace` combines them.
 :class:`HeadMountedPlotNamespace` adds the plots with the scene video of
 head-mounted eye trackers (:mod:`.scene`).
 """
+from .aux import AuxPlots
 from .pupil import PupilPlots
 from .gaze import GazePlots
 from .scene import ScenePlots
 
 
-class PlotNamespace(PupilPlots, GazePlots):
+class PlotNamespace(AuxPlots, PupilPlots, GazePlots):
     """
     Plotting methods of an :class:`~pypillometry.EyeData` object, used as
     ``d.plot`` (e.g., ``d.plot.plot_timeseries()``).
 
     Like ``d.pupil`` and ``d.gaze``, it is a view on the data object with no
     state of its own (see :class:`~pypillometry.eyedata.namespace.Namespace`).
-    It combines the generic plots, the pupil plots and the gaze plots, which
-    are written in separate modules. Plots that need channels the object does
+    It combines the generic plots, the pupil plots, the gaze plots and the
+    plots of the additional channels (``d.aux``), which are written in
+    separate modules. Plots that need channels the object does
     not have raise a ValueError.
     """
     _name = "plot"

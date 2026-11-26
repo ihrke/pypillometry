@@ -40,6 +40,7 @@ INTERNAL = {
     "pypillometry.plot.pupil": {"PupilPlots"},
     "pypillometry.plot.gaze": {"GazePlots"},
     "pypillometry.plot.scene": {"ScenePlots"},
+    "pypillometry.plot.aux": {"AuxPlots"},
     # used as m.plot / g.plot of the timescale models
     "pypillometry.timescale.plots": {"TimescalePlots", "TimescaleGroupPlots"},
     # base class of the simulation steps

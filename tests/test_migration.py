@@ -1,5 +1,6 @@
 """
-Migration of saved states from format 2 to 3 (`state._migrate_2_to_3`).
+Migration of saved states from format 2 to 3 (`state._migrate_2_to_3`) and
+on to the current format (3 to 4: `state._migrate_3_to_4`).
 
 The fixture files in ``tests/data/format2`` were written by pypillometry
 before the 2.2 refactor; ``tests/test_format2_fixtures.py`` checks the loaded
@@ -65,14 +66,15 @@ EYEDATA_FILES = ["pupildata", "gazedata", "eyedata"]
 
 
 class TestMigratedState:
-    """Layout of the migrated (format-3) states."""
+    """Layout of the migrated states (format 2 -> current)."""
 
     @pytest.mark.parametrize("name", EYEDATA_FILES)
     def test_eyedata_layout(self, name):
         old = format2_state(f"{name}.h5")
         st = state.migrate(format2_state(f"{name}.h5"), old["class"])
-        assert st["format_version"] == state.FORMAT_VERSION == 3
+        assert st["format_version"] == state.FORMAT_VERSION
         assert st["class"] == old["class"]  # classes are merged in a later version
+        assert st["aux"]["values"] == {}  # no additional channels (format 4)
         for key in ("event_onsets", "event_labels", "event_meta", "blinks",
                     "interpolated_blinks", "excluded"):
             assert key not in st
@@ -181,7 +183,7 @@ class TestMigratedState:
         d = state.from_state(format2_state("eyedata.h5"))
         assert isinstance(d.original, pp.EyeData)
         st = state.to_state(d)
-        assert st["original"]["format_version"] == 3
+        assert st["original"]["format_version"] == state.FORMAT_VERSION
         assert "event_onsets" not in st["original"]
 
     def test_segments_epochs(self):
@@ -231,7 +233,8 @@ def manifest_files():
 
 
 class TestFormat3RoundTrip:
-    """Migrated objects saved as format 3 load unchanged (pickle and HDF5)."""
+    """Migrated objects saved in the current format load unchanged (pickle
+    and HDF5)."""
 
     @pytest.mark.parametrize("fname", manifest_files())
     @pytest.mark.parametrize("ext", ["pypil", "h5"])
@@ -243,7 +246,7 @@ class TestFormat3RoundTrip:
         out = str(tmp_path / f"out.{ext}")
         pp.write_file(obj, out)
         if ext == "h5":
-            assert hdf5.read_state(out)["format_version"] == 3
+            assert hdf5.read_state(out)["format_version"] == state.FORMAT_VERSION
         obj2 = pp.read_file(out)
         if isinstance(obj, dict):
             assert set(obj2) == set(obj)
@@ -271,7 +274,7 @@ class TestFormat3RoundTrip:
         stored = []
         with patch.object(pp.EyeData, "__setstate__", lambda self, st: stored.append(st)):
             pickle.loads(pickle.dumps(obj))
-        assert stored[0]["format_version"] == 3 and "events" in stored[0]
+        assert stored[0]["format_version"] == state.FORMAT_VERSION and "events" in stored[0]
 
     @pytest.mark.parametrize("fname", ["eyedata_v0.pkl", "pupildata_v0.pkl", "gazedata_v0.pkl",
                                        "segmented_v0.pkl",
@@ -284,6 +287,36 @@ class TestFormat3RoundTrip:
         out = str(tmp_path / f"out.{ext}")
         pp.write_file(obj, out)
         assert_same_state(obj, pp.read_file(out))
+
+
+class TestMigrate3To4:
+    """Format 3 -> 4: all eyedata objects have additional channels (`aux`)."""
+
+    def format3(self, obj):
+        """The state of `obj` as written by format 3 (without `aux`)."""
+        st = state.to_state(obj)
+        st["format_version"] = 3
+        if type(obj) is not pp.HeadMountedEyeData:
+            del st["aux"]
+        return st
+
+    def test_eyedata_gets_empty_aux(self):
+        d = pp.EyeData(left_pupil=np.ones(10), sampling_rate=10)
+        d2 = state.from_state(self.format3(d))
+        assert len(d2.aux.keys()) == 0
+        d2.crop(0, 500)  # the empty aux follows the samples
+        assert len(d2) == 6
+
+    def test_head_mounted_keeps_aux(self):
+        d = pp.HeadMountedEyeData(left_pupil=np.ones(10), sampling_rate=10,
+                                  aux={"gyro_x": np.arange(10.)})
+        d2 = state.from_state(self.format3(d))
+        np.testing.assert_array_equal(d2.aux["gyro_x"], np.arange(10.))
+
+    def test_input_not_changed(self):
+        st = self.format3(pp.EyeData(left_pupil=np.ones(10), sampling_rate=10))
+        state.migrate(st, "EyeData")
+        assert "aux" not in st and st["format_version"] == 3
 
 
 class TestRecordingVersions:

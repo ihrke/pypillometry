@@ -135,6 +135,12 @@ class EyeData(state.VersionedState):
     ``d | pp.pupil.blinks_detect() | pp.crop(0, "10 min")`` (see
     :class:`~pypillometry.Pipeline`).
 
+    Further channels with one value per sample that are not data of the eyes
+    as such (e.g., other signals recorded by the eye tracker or covariates)
+    can be stored in `aux`. They are cut, downsampled and saved with the
+    data, but no method processes them unless it is asked for them (e.g.,
+    ``d.plot.plot_timeseries(variables=["pupil", "<channel>"])``).
+
     Parameters
     ----------
     time : np.ndarray or None
@@ -178,6 +184,10 @@ class EyeData(state.VersionedState):
         object in place; if False, they return a modified copy; if None (default),
         use the package-level setting (see :func:`~pypillometry.set_default_inplace`,
         initially True). The method-level `inplace` argument overrides this.
+    aux : dict or None
+        additional channels (name -> array with one value per sample),
+        stored in member `aux`; the names have the form ``<group>_<name>``
+        (e.g., ``"gyro_x"``)
 
     Examples
     --------
@@ -206,16 +216,17 @@ class EyeData(state.VersionedState):
     params: dict ## parameters 
     experimental_setup: Optional[ExperimentalSetup] ## geometry of the setup (or None)
     calibration: Optional[dict] ## SpatialCalibration per eye (or None)
+    aux: EyeDataDict ## additional channels (one value per sample), see `_set_aux`
 
     # state (see pypillometry.state); subclasses (e.g., SimEyeData) add their own fields
     _STATE_FIELDS = (
         "name", "fs", "tx", ("data", "EyeDataDict"), ("events", "Events", "_events"),
         "params", "history", "inplace", "info", ("original", "versioned"),
         ("experimental_setup", "ExperimentalSetup"),
-        ("calibration", "dict:SpatialCalibration"))
+        ("calibration", "dict:SpatialCalibration"), ("aux", "EyeDataDict"))
     # EyeDataDicts with one value per sample; the operations that change
     # the samples (_keep_samples, _decimate, _insert_samples) apply to all
-    _SAMPLE_ALIGNED = ("data",)
+    _SAMPLE_ALIGNED = ("data", "aux")
     # further Events (besides the events of the data) that follow the clock
     # of the data: they are shifted by reset_time() and cut like the samples
     _TIME_ALIGNED = ()
@@ -238,7 +249,8 @@ class EyeData(state.VersionedState):
                     fill_time_discontinuities: bool = True,
                     keep_orig: bool = False, 
                     info: dict = None,
-                    inplace: Optional[bool] = None):
+                    inplace: Optional[bool] = None,
+                    aux: Optional[dict] = None):
         """Constructor for the EyeData class.
         """
         logger.debug("Creating EyeData object")
@@ -250,6 +262,7 @@ class EyeData(state.VersionedState):
                 raise ValueError(f"{eye}_x and {eye}_y must be provided together")
         self.data = EyeDataDict(left_x=left_x, left_y=left_y, left_pupil=left_pupil,
                                 right_x=right_x, right_y=right_y, right_pupil=right_pupil)
+        self.aux = EyeDataDict()
 
         if events is not None and (event_onsets is not None or event_labels is not None):
             raise ValueError("give either events or event_onsets/event_labels, not both")
@@ -266,6 +279,8 @@ class EyeData(state.VersionedState):
         if sampling_rate is None:
             sampling_rate = np.round(1000. / np.median(np.diff(tx)))
         self._set_timebase(tx, sampling_rate)
+        for key, values in (aux or {}).items():
+            self._set_aux(key, values)
 
         if events is None:
             if event_onsets is None:
@@ -291,6 +306,25 @@ class EyeData(state.VersionedState):
         self.original = None
         if keep_orig:
             self.original = self.copy()
+
+    def _set_aux(self, key: str, values):
+        """Store `values` (one per sample) as channel `key` in `aux`; `key`
+        has the form ``<group>_<name>`` (e.g., ``"gyro_x"`` or ``"left_camx"``)."""
+        if not isinstance(key, str) or "_" not in key.strip("_"):
+            raise ValueError(f"aux channel '{key}': the name must have the form "
+                             "'<group>_<name>' (e.g., 'gyro_x' or 'left_camx')")
+        values = np.asarray(values, dtype=float)
+        if values.shape != (len(self),):
+            raise ValueError(f"aux channel '{key}' must have one value per sample "
+                             f"({len(self)}), got shape {values.shape}")
+        self.aux[key] = values
+
+    def _require_aux(self, *keys):
+        """Raise a ValueError if one of the channels `keys` is not in `aux`."""
+        missing = [k for k in keys if k not in self.aux]
+        if missing:
+            raise ValueError(f"no channel(s) {', '.join(missing)} in aux "
+                             f"(available: {', '.join(self.aux.keys()) or 'none'})")
 
     def _set_timebase(self, tx, fs=None):
         """
@@ -1815,6 +1849,8 @@ class EyeData(state.VersionedState):
             end_min=self.tx.max()/1000./60.,
             params=copy.deepcopy(self.params)
         )
+        if len(self.aux.keys()):
+            summary["aux"] = list(self.aux.keys())
         if self._excluded_mask().any():
             summary["excluded_minutes"] = self.excluded_duration("min")
         if "blink" in self.data.layer_names and "pupil" in self.variables:
@@ -1913,10 +1949,20 @@ class EyeData(state.VersionedState):
             if image is not None:
                 sparklines.append({"label": label, "image": image})
 
+        if "aux" in summary:
+            pos = [k for k, _ in overview].index("Variables") + 1
+            overview.insert(pos, ("Aux channels", ", ".join(summary["aux"])))
+        aux_sparklines = []
+        for key in self.aux.keys():
+            image = sparkline(self.aux[key])
+            if image is not None:
+                aux_sparklines.append({"label": key, "image": image})
+
         return {
             "class_name": self.__class__.__name__,
             "name": summary["name"],
             "overview": overview,
+            "aux_sparklines": aux_sparklines,
             "glimpse": repr(self.data),
             "blink_stats": blink_stats,
             "history": history_items,
@@ -3068,8 +3114,8 @@ class EyeData(state.VersionedState):
         # Get size of the data dictionary
         data_size = self.data.get_size()
         
-        # Calculate size of other attributes
-        other_size = 0
+        # Calculate size of other attributes (including the additional channels)
+        other_size = int(self.aux.get_size())
         
         # Time vector and event arrays
         other_size += self.tx.nbytes
