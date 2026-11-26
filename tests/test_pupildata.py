@@ -197,7 +197,7 @@ class TestPupilData(unittest.TestCase):
         """close blinks are merged, so no NaN anchor points are used"""
         t = np.arange(6000)
         p = 5000 + 200*np.sin(t/800)
-        for a, b in [(2000, 2200), (2300, 2400)]:
+        for a, b in [(2000, 2200), (2260, 2400)]:      # the transients touch
             p[a-30:a] = np.linspace(p[a-30], 1000, 30)
             p[b:b+30] = np.linspace(1000, p[b+30], 30)
             p[a:b] = np.nan
