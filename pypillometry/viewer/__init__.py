@@ -567,9 +567,17 @@ def tweak_blink_interpolation(data, pars=None, method=None, eye=None, interval=N
     pars = dict(getattr(pars, "params", pars) or {})
     method = method or pars.get("method", "mahot")
     pars.pop("method", None)
-    fields, fixed = _tweak_fields(method, pars)
     if eye is None:
         eye = data._eyes_with([], "pupil")[0]
+    if method == "mahot":
+        # relative velocity thresholds ("4sd", the default) in units per ms
+        from ..eyedata.pupil import _INTERP_DEFAULTS
+        full = dict(_INTERP_DEFAULTS["mahot"], **pars)
+        if any(isinstance(full[n], str) for n in ("vel_onset", "vel_offset")):
+            on, off = data.pupil._velocity_thresholds_ms(eye, full["winsize"], full["vel_onset"],
+                                                         full["vel_offset"])
+            pars.update(vel_onset=round(on, 4), vel_offset=round(off, 4))
+    fields, fixed = _tweak_fields(method, pars)
     if interval is None:
         dur = float(parse_time(duration, to="ms", default=units))
         start, end = _tweak_interval(data, eye, dur, np.random.default_rng(seed))
