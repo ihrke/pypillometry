@@ -830,8 +830,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">  ``P0``, e.g. an unknown mean) and are left out of the likelihood, which</span>
 <span class="sd">  is then the restricted likelihood (REML) of the other parameters</span>
 
-<span class="sd">The inner loops are compiled with numba if it is installed (``pip install</span>
-<span class="sd">numba``); otherwise they run as (slow) plain Python.</span>
+<span class="sd">The inner loops are compiled with numba (on first use).</span>
 <span class="sd">"""</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
 
@@ -846,7 +845,7 @@ window.runMermaid = runMermaid;</script>
 
 
 <span class="c1"># ---------------------------------------------------------------------------</span>
-<span class="c1"># kernels (plain numpy; compiled with numba when available)</span>
+<span class="c1"># kernels (plain numpy; compiled with numba on first use)</span>
 <span class="c1"># ---------------------------------------------------------------------------</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">_filter_kernel</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">m0</span><span class="p">,</span> <span class="n">P0</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">store</span><span class="p">,</span>
                    <span class="n">mp</span><span class="p">,</span> <span class="n">Pp</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">Pf</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">llt</span><span class="p">):</span>
@@ -1174,30 +1173,22 @@ window.runMermaid = runMermaid;</script>
 
 
 <span class="n">_KERNELS</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="n">_JIT</span> <span class="o">=</span> <span class="kc">False</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_kernels</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    The kernels (filter, smoother, simulation, sequential log-likelihood,</span>
-<span class="sd">    sequential filter, forecasts), compiled with numba on first use if it</span>
-<span class="sd">    is installed.</span>
+<span class="sd">    sequential filter, forecasts), compiled with numba on first use</span>
+<span class="sd">    (imported here, so that importing the package does not load numba).</span>
 <span class="sd">    """</span>
-    <span class="k">global</span> <span class="n">_KERNELS</span><span class="p">,</span> <span class="n">_JIT</span>
+    <span class="k">global</span> <span class="n">_KERNELS</span>
     <span class="k">if</span> <span class="n">_KERNELS</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">numba</span>
         <span class="n">plain</span> <span class="o">=</span> <span class="p">(</span><span class="n">_filter_kernel</span><span class="p">,</span> <span class="n">_smoother_kernel</span><span class="p">,</span> <span class="n">_simulate_kernel</span><span class="p">,</span>
                  <span class="n">_seq_loglik_kernel</span><span class="p">,</span> <span class="n">_seq_filter_kernel</span><span class="p">,</span> <span class="n">_forecast_kernel</span><span class="p">)</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="kn">import</span><span class="w"> </span><span class="nn">numba</span>
-        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"numba is not installed: the Kalman filter runs as "</span>
-                           <span class="s2">"plain Python and is slow for long signals"</span><span class="p">)</span>
-            <span class="n">_KERNELS</span> <span class="o">=</span> <span class="n">plain</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># without the GIL, so that threads can run them in parallel</span>
-            <span class="n">jit</span> <span class="o">=</span> <span class="n">numba</span><span class="o">.</span><span class="n">njit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nogil</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">_KERNELS</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">jit</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">plain</span><span class="p">)</span>
-            <span class="n">_JIT</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="c1"># without the GIL, so that threads can run them in parallel</span>
+        <span class="n">jit</span> <span class="o">=</span> <span class="n">numba</span><span class="o">.</span><span class="n">njit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nogil</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">_KERNELS</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">jit</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">plain</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">_KERNELS</span>
 
 
@@ -1212,13 +1203,12 @@ window.runMermaid = runMermaid;</script>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_check_cost</span><span class="p">(</span><span class="n">what</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""warn (once per call signature) if a run will be slow or use much memory"""</span>
-    <span class="n">sec</span> <span class="o">=</span> <span class="n">_SEC_PER_STEP</span><span class="p">[</span><span class="n">what</span><span class="p">]</span> <span class="o">*</span> <span class="n">T</span> <span class="o">*</span> <span class="n">n</span> <span class="o">*</span> <span class="n">n</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="k">if</span> <span class="n">_JIT</span> <span class="k">else</span> <span class="mi">30</span><span class="p">)</span>
+    <span class="n">sec</span> <span class="o">=</span> <span class="n">_SEC_PER_STEP</span><span class="p">[</span><span class="n">what</span><span class="p">]</span> <span class="o">*</span> <span class="n">T</span> <span class="o">*</span> <span class="n">n</span> <span class="o">*</span> <span class="n">n</span>
     <span class="n">mem</span> <span class="o">=</span> <span class="mf">8.0</span> <span class="o">*</span> <span class="n">T</span> <span class="o">*</span> <span class="n">_FLOATS_PER_STEP</span><span class="p">[</span><span class="n">what</span><span class="p">](</span><span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">sec</span> <span class="o">&gt;</span> <span class="n">_MAX_SEC</span> <span class="ow">or</span> <span class="n">mem</span> <span class="o">&gt;</span> <span class="n">_MAX_BYTES</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">what</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_WARNED</span><span class="p">:</span>
         <span class="n">_WARNED</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">what</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">))</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">what</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">T</span><span class="si">}</span><span class="s2"> samples with a </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">-dim state will take "</span>
                        <span class="sa">f</span><span class="s2">"~</span><span class="si">{</span><span class="n">sec</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2"> s and ~</span><span class="si">{</span><span class="n">mem</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e9</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> GB "</span>
-                       <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">''</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">_JIT</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">'(numba not installed) '</span><span class="si">}</span><span class="s2">"</span>
                        <span class="s2">"- consider downsampling or a shorter segment"</span><span class="p">)</span>
 
 
