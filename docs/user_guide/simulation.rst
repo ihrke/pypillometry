@@ -125,6 +125,80 @@ The plots ``d.plot.plot_truth()`` (data and true pupil) and
    fig = d.plot.plot_components(figsize=(9, 6))
 
 
+Tasks and events
+----------------
+
+A :class:`Task` describes the design of an experiment and makes the events
+of the simulated recording. It is built by chaining, like the simulation:
+:meth:`~Task.block` starts a block of trials, :meth:`~Task.stimulus` and
+:meth:`~Task.response` add events to each trial of the block,
+:meth:`~Task.rest` adds a pause and :meth:`~Task.repeat` repeats the blocks.
+Times are fixed (``"250 ms"``) or distributions
+(``"uniform(2 s, 10 s)"``, ``"normal(500 ms, 30 ms)"``,
+``"lognormal(350 ms, 70 ms)"``, ``"exponential(1 s)"``):
+
+.. code-block:: python
+
+    sart = (pp.sim.Task("SART")
+            .block(n=225, soa="1150 ms", conditions={"go": 8/9, "nogo": 1/9})
+            .stimulus("digit", "visual", duration="250 ms",
+                      meta={"digit": {"go": [1, 2, 4, 5, 6, 7, 8, 9], "nogo": [3]}})
+            .stimulus("mask", "visual", at="250 ms", duration="900 ms")
+            .response("press", after="digit", rt="lognormal(350 ms, 70 ms)",
+                      p={"go": 0.97, "nogo": 0.3}))
+
+    d = pp.sim.Simulation(fs=500, seed=1).task(sart).pupil().units(800).run()
+
+- **Trials** are spaced by ``soa`` (from onset to onset) or ``isi`` (from
+  the end of a trial to the next onset), for ``n`` trials or a
+  ``duration``. ``conditions`` are drawn per trial.
+- **Events** start at ``at`` after the start of the trial or ``after``
+  another event (the reaction time ``rt`` of responses, which can be
+  negative, e.g. for taps that anticipate a tone). ``p`` is the
+  probability of the event, per condition with a dict (errors, misses).
+  Stimuli have a ``modality`` (visual, auditory) and a ``duration``,
+  which can be ``"until response"``; visual stimuli can have a
+  ``luminance`` change.
+- **Metadata** of the events: values, lists to draw from, values per
+  condition, or the stimuli of an n-back task (``{"nback": 2, "values":
+  "BCD..."}``).
+
+Without a duration, the simulation lasts until the end of the task; with
+``.task(task, start="5 s")`` the task starts later. The events become the
+events of the data (``d.events``) with the metadata ``kind``,
+``modality``, ``trial``, ``block``, ``condition``, ``duration``,
+``luminance``, ``rt`` and those of the task, so they can be selected and
+used like the events of a real recording. For now, the events do not
+change the pupil.
+
+Ready-made tasks with typical parameters are in :mod:`pypillometry.sim.tasks`:
+
+.. list-table::
+   :widths: 25 75
+
+   * - :func:`~tasks.pvt`
+     - psychomotor vigilance task: a target at random intervals until the
+       response
+   * - :func:`~tasks.sart`
+     - sustained attention to response task: digits with a mask, no press
+       for the digit 3
+   * - :func:`~tasks.ftrsgt`
+     - finger-tapping random-sequence generation task: left/right taps with
+       a beep every 750 ms, thought probes every 40–80 s
+   * - :func:`~tasks.nback`
+     - n-back task: a letter every 2.5 s, a response (match / no match) to
+       each
+
+``task.plot()`` draws a schematic of the trials of each block (in a
+notebook, the task shows one by itself), and
+``d.plot.plot_task_events()`` the events of a simulated recording:
+
+.. plot::
+   :include-source: False
+
+   fig = pp.sim.tasks.ftrsgt().plot(figsize=(8, 3.6))
+
+
 Random numbers
 --------------
 

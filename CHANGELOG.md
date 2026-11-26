@@ -16,6 +16,7 @@
 - `pp.signal.gaussmarkov`: `TimescaleBank`, `fit_bank()`, `fit_group()`, `general_prior()`, `Constant` component, noise variance per sample, segments and diffuse states in the Kalman filter
 - `pp.sim` (experimental): simulated data with ground truth, built by chaining steps (`pp.sim.Simulation("5 min").pupil().gaze().foreshortening().units(800).noise(0.2).run()`); `SimEyeData` with `d.truth` (true time series, follow cropping and downsampling), `d.simulation` (the recipe and seed) and the plots `plot_truth()` and `plot_components()`
 - `TimescaleModel.simulate()`, `.process()`: new recordings from a fitted model
+- `pp.sim.Task`: task designs built by chaining (`.block()`, `.stimulus()`, `.response()`, `.rest()`, `.repeat()`; times as distributions like `"uniform(2 s, 10 s)"`), whose events go into simulated recordings (`Simulation.task()`) with their metadata; ready-made tasks `pp.sim.tasks.pvt()`, `sart()`, `ftrsgt()`, `nback()`; `task.plot()`, a schematic in notebooks and `d.plot.plot_task_events()`
 
 ### Breaking changes
 
