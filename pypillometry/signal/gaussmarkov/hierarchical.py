@@ -37,7 +37,7 @@ from dataclasses import dataclass, field
 import numpy as np
 from loguru import logger
 
-from .bank import GaussianPrior, BankFit, fit_bank, _as_prior, _psd
+from .bank import GaussianPrior, fit_bank, _as_prior, _psd
 
 __all__ = ["GroupFit", "fit_group", "reference_prior"]
 
@@ -132,14 +132,14 @@ def _fit_job(args):
 
 def _map(fct, jobs, n_jobs, what):
     """results of fct for the jobs, in parallel processes if n_jobs != 1"""
-    from tqdm.auto import tqdm
+    logger.info(f"fit_group: {what} ({len(jobs)} recordings)")
     if n_jobs == 1 or len(jobs) == 1:
-        return [fct(j) for j in tqdm(jobs, desc=what, leave=False)]
+        return [fct(j) for j in jobs]
     from concurrent.futures import ProcessPoolExecutor
     import os
     workers = min(n_jobs or max((os.cpu_count() or 2) - 1, 1), len(jobs))
     with ProcessPoolExecutor(max_workers=workers) as ex:
-        return list(tqdm(ex.map(fct, jobs), total=len(jobs), desc=what, leave=False))
+        return list(ex.map(fct, jobs))
 
 
 def _post_cov(fit, precision):

@@ -9,10 +9,9 @@ recording with a fast component and slow components at fixed time scales
 import numpy as np
 from loguru import logger
 
-from ..intervals import Intervals
 from ..signal import block_mean, semivariogram, spectrum
 from ..signal import gaussmarkov as gm
-from ..signal.gaussmarkov.bank import DEFAULT_TIMESCALES, _as_prior
+from ..signal.gaussmarkov.bank import DEFAULT_TIMESCALES
 from ..units import parse_time
 from .plots import TimescalePlots
 

@@ -40,7 +40,7 @@ Times are in ms.
 
 Experimental: the API may change.
 """
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 import numpy as np
 from loguru import logger

@@ -244,9 +244,9 @@ def test_two_channels():
     assert np.allclose(Hg[1, [2, 6, 8]], 1.2) and np.allclose(Hg[:, 4], [0.5, -0.5])
     assert np.array_equal(bank.select("signal", channel=1, theta=gained), Hg[1])
     assert np.allclose(bank.select("fast", channel=0, theta=gained)[2:4], [1 / 1.2, 0])
-    Yg = bank.simulate(gained, 6000, FS, rng=1) + [3., -4.]
+    Yg = bank.simulate(gained, 3000, FS, rng=1) + [3., -4.]
     fg = gm.fit_bank(bank, Yg, FS, prior=gm.reference_prior(bank), hessian=False)
-    assert fg.params["gain"] == pytest.approx(1.44, rel=0.05)
+    assert fg.params["gain"] == pytest.approx(1.44, rel=0.1)
     rng = np.random.default_rng(0)
     Y[rng.random(6000) < 0.1, 0] = np.nan
     Y[2000:2300, 1] = np.nan

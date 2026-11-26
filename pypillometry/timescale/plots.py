@@ -234,7 +234,7 @@ class TimescalePlots:
         ax.set_xlabel("lag (s)")
         ax.set_ylabel("sqrt of semivariance (log-%)")
         ax.set_title(f"{m.name}, {eye}: variogram")
-        ax.legend(frameon=False, fontsize=7, ncol=2)
+        ax.legend(frameon=False, fontsize=7, ncol=2, loc="lower right")
         return ax
 
     def spectrum(self, eye=None, window="200 s", ax=None):
@@ -280,7 +280,7 @@ class TimescalePlots:
         ax.set_xlabel("frequency (Hz)")
         ax.set_ylabel("power spectral density (log-%$^2$/Hz)")
         ax.set_title(f"{m.name}, {eye}: spectrum")
-        ax.legend(frameon=False, fontsize=7, ncol=2)
+        ax.legend(frameon=False, fontsize=7, ncol=2, loc="lower left")
         return ax
 
     def timescales(self, ax=None):
