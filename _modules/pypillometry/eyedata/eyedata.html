@@ -938,6 +938,12 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    ``d | pp.pupil.blinks_detect() | pp.crop(0, "10 min")`` (see</span>
 <span class="sd">    :class:`~pypillometry.Pipeline`).</span>
 
+<span class="sd">    Further channels with one value per sample that are not data of the eyes</span>
+<span class="sd">    as such (e.g., other signals recorded by the eye tracker or covariates)</span>
+<span class="sd">    can be stored in `aux`. They are cut, downsampled and saved with the</span>
+<span class="sd">    data, but no method processes them unless it is asked for them (e.g.,</span>
+<span class="sd">    ``d.plot.plot_timeseries(variables=["pupil", "&lt;channel&gt;"])``).</span>
+
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    time : np.ndarray or None</span>
@@ -981,6 +987,10 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        object in place; if False, they return a modified copy; if None (default),</span>
 <span class="sd">        use the package-level setting (see :func:`~pypillometry.set_default_inplace`,</span>
 <span class="sd">        initially True). The method-level `inplace` argument overrides this.</span>
+<span class="sd">    aux : dict or None</span>
+<span class="sd">        additional channels (name -&gt; array with one value per sample),</span>
+<span class="sd">        stored in member `aux`; the names have the form ``&lt;group&gt;_&lt;name&gt;``</span>
+<span class="sd">        (e.g., ``"gyro_x"``)</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -1009,16 +1019,17 @@ window.runMermaid = runMermaid;</script>
     <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span> <span class="c1">## parameters </span>
     <span class="n">experimental_setup</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ExperimentalSetup</span><span class="p">]</span> <span class="c1">## geometry of the setup (or None)</span>
     <span class="n">calibration</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="c1">## SpatialCalibration per eye (or None)</span>
+    <span class="n">aux</span><span class="p">:</span> <span class="n">EyeDataDict</span> <span class="c1">## additional channels (one value per sample), see `_set_aux`</span>
 
     <span class="c1"># state (see pypillometry.state); subclasses (e.g., SimEyeData) add their own fields</span>
     <span class="n">_STATE_FIELDS</span> <span class="o">=</span> <span class="p">(</span>
         <span class="s2">"name"</span><span class="p">,</span> <span class="s2">"fs"</span><span class="p">,</span> <span class="s2">"tx"</span><span class="p">,</span> <span class="p">(</span><span class="s2">"data"</span><span class="p">,</span> <span class="s2">"EyeDataDict"</span><span class="p">),</span> <span class="p">(</span><span class="s2">"events"</span><span class="p">,</span> <span class="s2">"Events"</span><span class="p">,</span> <span class="s2">"_events"</span><span class="p">),</span>
         <span class="s2">"params"</span><span class="p">,</span> <span class="s2">"history"</span><span class="p">,</span> <span class="s2">"inplace"</span><span class="p">,</span> <span class="s2">"info"</span><span class="p">,</span> <span class="p">(</span><span class="s2">"original"</span><span class="p">,</span> <span class="s2">"versioned"</span><span class="p">),</span>
         <span class="p">(</span><span class="s2">"experimental_setup"</span><span class="p">,</span> <span class="s2">"ExperimentalSetup"</span><span class="p">),</span>
-        <span class="p">(</span><span class="s2">"calibration"</span><span class="p">,</span> <span class="s2">"dict:SpatialCalibration"</span><span class="p">))</span>
+        <span class="p">(</span><span class="s2">"calibration"</span><span class="p">,</span> <span class="s2">"dict:SpatialCalibration"</span><span class="p">),</span> <span class="p">(</span><span class="s2">"aux"</span><span class="p">,</span> <span class="s2">"EyeDataDict"</span><span class="p">))</span>
     <span class="c1"># EyeDataDicts with one value per sample; the operations that change</span>
     <span class="c1"># the samples (_keep_samples, _decimate, _insert_samples) apply to all</span>
-    <span class="n">_SAMPLE_ALIGNED</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"data"</span><span class="p">,)</span>
+    <span class="n">_SAMPLE_ALIGNED</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"data"</span><span class="p">,</span> <span class="s2">"aux"</span><span class="p">)</span>
     <span class="c1"># further Events (besides the events of the data) that follow the clock</span>
     <span class="c1"># of the data: they are shifted by reset_time() and cut like the samples</span>
     <span class="n">_TIME_ALIGNED</span> <span class="o">=</span> <span class="p">()</span>
@@ -1041,7 +1052,8 @@ window.runMermaid = runMermaid;</script>
                     <span class="n">fill_time_discontinuities</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                     <span class="n">keep_orig</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> 
                     <span class="n">info</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                    <span class="n">inplace</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+                    <span class="n">inplace</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">aux</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Constructor for the EyeData class.</span>
 <span class="sd">        """</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Creating EyeData object"</span><span class="p">)</span>
@@ -1053,6 +1065,7 @@ window.runMermaid = runMermaid;</script>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_x and </span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_y must be provided together"</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">EyeDataDict</span><span class="p">(</span><span class="n">left_x</span><span class="o">=</span><span class="n">left_x</span><span class="p">,</span> <span class="n">left_y</span><span class="o">=</span><span class="n">left_y</span><span class="p">,</span> <span class="n">left_pupil</span><span class="o">=</span><span class="n">left_pupil</span><span class="p">,</span>
                                 <span class="n">right_x</span><span class="o">=</span><span class="n">right_x</span><span class="p">,</span> <span class="n">right_y</span><span class="o">=</span><span class="n">right_y</span><span class="p">,</span> <span class="n">right_pupil</span><span class="o">=</span><span class="n">right_pupil</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aux</span> <span class="o">=</span> <span class="n">EyeDataDict</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="n">events</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span><span class="n">event_onsets</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">event_labels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"give either events or event_onsets/event_labels, not both"</span><span class="p">)</span>
@@ -1069,6 +1082,8 @@ window.runMermaid = runMermaid;</script>
         <span class="k">if</span> <span class="n">sampling_rate</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">sampling_rate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mf">1000.</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">tx</span><span class="p">)))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_timebase</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="p">(</span><span class="n">aux</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_aux</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">events</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">event_onsets</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1094,6 +1109,25 @@ window.runMermaid = runMermaid;</script>
         <span class="bp">self</span><span class="o">.</span><span class="n">original</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">keep_orig</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">original</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_aux</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Store `values` (one per sample) as channel `key` in `aux`; `key`</span>
+<span class="sd">        has the form ``&lt;group&gt;_&lt;name&gt;`` (e.g., ``"gyro_x"`` or ``"left_camx"``)."""</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">"_"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">key</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">"_"</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"aux channel '</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">': the name must have the form "</span>
+                             <span class="s2">"'&lt;group&gt;_&lt;name&gt;' (e.g., 'gyro_x' or 'left_camx')"</span><span class="p">)</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">values</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">),):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"aux channel '</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">' must have one value per sample "</span>
+                             <span class="sa">f</span><span class="s2">"(</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="si">}</span><span class="s2">), got shape </span><span class="si">{</span><span class="n">values</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aux</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">values</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_require_aux</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">keys</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Raise a ValueError if one of the channels `keys` is not in `aux`."""</span>
+        <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">aux</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"no channel(s) </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">missing</span><span class="p">)</span><span class="si">}</span><span class="s2"> in aux "</span>
+                             <span class="sa">f</span><span class="s2">"(available: </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aux</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">'none'</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_set_timebase</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tx</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
@@ -2533,6 +2567,7 @@ window.runMermaid = runMermaid;</script>
 <a class="viewcode-back" href="../../../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.from_gazepoint">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">from_gazepoint</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">fname</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">pupil</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"mm"</span><span class="p">,</span> <span class="n">gaze</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                       <span class="n">camera</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                        <span class="n">screen_resolution</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                        <span class="n">label_prefix</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                        <span class="n">keep_initial_label</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -2543,6 +2578,10 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        table with the columns of the GazePoint Open Gaze API). Each change</span>
 <span class="sd">        of the label in the column ``USER`` is an event.</span>
 
+<span class="sd">        The time of the samples comes from the sample counter ``CNT`` (see</span>
+<span class="sd">        :func:`~pypillometry.io.read_gazepoint`); samples that the eye</span>
+<span class="sd">        tracker lost (gaps in ``CNT``) are NaN (masked).</span>
+
 <span class="sd">        GazePoint marks samples without a pupil in two ways: ``LPV``/``RPV``</span>
 <span class="sd">        is 0 if the pupil was not found in the camera image (e.g., during a</span>
 <span class="sd">        blink), ``LPUPILV``/``RPUPILV`` is 0 if the pupil size in mm could</span>
@@ -2551,7 +2590,24 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        instead of gaps. Pupil samples are therefore only kept where both</span>
 <span class="sd">        flags are 1 (``pupil="px"``: where ``LPV`` is 1); all other samples</span>
 <span class="sd">        are NaN (masked). Gaze samples are kept where ``LPOGV``/``RPOGV``</span>
-<span class="sd">        is 1. Gaps in the time stamps are filled with NaN.</span>
+<span class="sd">        is 1.</span>
+
+<span class="sd">        With `camera` (default), the measurements of the camera are stored</span>
+<span class="sd">        in `aux` for each eye (e.g., for ``left``), where the pupil was</span>
+<span class="sd">        found in the camera image (``LPV`` is 1):</span>
+
+<span class="sd">        - ``left_camx``, ``left_camy``: position of the pupil centre in the</span>
+<span class="sd">          camera image (``LPCX``, ``LPCY``; fraction of the image, 0-1).</span>
+<span class="sd">          The eye tracker sometimes follows another dark spot (e.g., the</span>
+<span class="sd">          frame of glasses) or the other eye; the pupil is then far from</span>
+<span class="sd">          its usual position.</span>
+<span class="sd">        - ``left_pupilpx`` (with ``pupil="mm"``) or ``left_pupilmm`` (with</span>
+<span class="sd">          ``pupil="px"``): the pupil size in the other unit. In clean data,</span>
+<span class="sd">          the size in mm is the size in pixels times a factor that is</span>
+<span class="sd">          nearly constant over a recording; a change of the ratio indicates</span>
+<span class="sd">          artifacts.</span>
+<span class="sd">        - ``left_distance``: distance of the eye from the camera (mm,</span>
+<span class="sd">          ``LEYEZ``).</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -2559,14 +2615,15 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">            filename of the recording</span>
 <span class="sd">        pupil : str, optional</span>
 <span class="sd">            ``"mm"`` (default): pupil diameter in mm (``LPUPILD``,</span>
-<span class="sd">            ``RPUPILD``; GazePoint corrects it for the distance of the eye</span>
-<span class="sd">            from the camera); ``"px"``: pupil diameter in pixels of the</span>
-<span class="sd">            camera image (``LPD``, ``RPD``; not corrected for the distance,</span>
-<span class="sd">            but with a finer resolution: ``LPUPILD`` is stored in m with five</span>
-<span class="sd">            decimals, i.e. in steps of 0.01 mm)</span>
+<span class="sd">            ``RPUPILD``; in steps of 0.01 mm, the resolution of the file);</span>
+<span class="sd">            ``"px"``: pupil diameter in pixels of the camera image (``LPD``,</span>
+<span class="sd">            ``RPD``; finer, but the scale differs between participants)</span>
 <span class="sd">        gaze : bool, optional</span>
 <span class="sd">            if True (default), read the gaze position of each eye</span>
 <span class="sd">            (``LPOGX``, ``LPOGY``, ...)</span>
+<span class="sd">        camera : bool, optional</span>
+<span class="sd">            if True (default), store the measurements of the camera in</span>
+<span class="sd">            `aux` (see above)</span>
 <span class="sd">        screen_resolution : tuple, optional</span>
 <span class="sd">            screen resolution (width, height) in pixels; if given, the gaze</span>
 <span class="sd">            position is converted to pixels and the resolution is stored in</span>
@@ -2579,8 +2636,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">            (it was sent before the recording started)</span>
 <span class="sd">        **kwargs</span>
 <span class="sd">            additional arguments passed to the constructor (e.g., `name`,</span>
-<span class="sd">            `sampling_rate`, `keep_orig`); the default sampling rate is</span>
-<span class="sd">            estimated from the median step of the time stamps</span>
+<span class="sd">            `keep_orig`)</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -2591,6 +2647,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        --------</span>
 <span class="sd">        &gt;&gt;&gt; import pypillometry as pp</span>
 <span class="sd">        &gt;&gt;&gt; d = pp.EyeData.from_gazepoint("rec.tsv", gaze=False)  # doctest: +SKIP</span>
+<span class="sd">        &gt;&gt;&gt; d.aux["left_camx"]  # doctest: +SKIP</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="n">pupil</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"mm"</span><span class="p">,</span> <span class="s2">"px"</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"pupil must be 'mm' or 'px', got </span><span class="si">{</span><span class="n">pupil</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
@@ -2598,31 +2655,57 @@ window.runMermaid = runMermaid;</script>
         <span class="n">tab</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="s2">"samples"</span><span class="p">]</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tab</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2">' has fewer than two samples"</span><span class="p">)</span>
-        <span class="n">tx</span> <span class="o">=</span> <span class="n">tab</span><span class="p">[</span><span class="s2">"time"</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">tab</span><span class="p">[</span><span class="s2">"time"</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">res</span><span class="p">[</span><span class="s2">"info"</span><span class="p">][</span><span class="s2">"time_base"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"CNT"</span><span class="p">:</span>
+            <span class="c1"># one sample per value of CNT: lost samples become gaps</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="p">(</span><span class="n">tab</span><span class="p">[</span><span class="s2">"CNT"</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span> <span class="o">-</span> <span class="n">tab</span><span class="p">[</span><span class="s2">"CNT"</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">step</span> <span class="o">=</span> <span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">pos</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">tx</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">step</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">pos</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tab</span><span class="p">))</span>
+            <span class="n">tx</span> <span class="o">=</span> <span class="n">t</span>
 
         <span class="k">def</span><span class="w"> </span><span class="nf">col</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">tab</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tx</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+            <span class="n">out</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="o">=</span> <span class="n">tab</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">out</span>
 
         <span class="k">def</span><span class="w"> </span><span class="nf">flag</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">col</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">tab</span><span class="o">.</span><span class="n">columns</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tab</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">col</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">tab</span><span class="o">.</span><span class="n">columns</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tx</span><span class="p">)),</span> <span class="n">pos</span><span class="p">)</span>
 
-        <span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">has</span><span class="p">(</span><span class="o">*</span><span class="n">names</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">all</span><span class="p">(</span><span class="n">n</span> <span class="ow">in</span> <span class="n">tab</span><span class="o">.</span><span class="n">columns</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">names</span><span class="p">)</span>
+
+        <span class="n">d</span><span class="p">,</span> <span class="n">aux</span> <span class="o">=</span> <span class="p">{},</span> <span class="p">{}</span>
         <span class="n">distance</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">eye</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="p">((</span><span class="s2">"left"</span><span class="p">,</span> <span class="s2">"L"</span><span class="p">),</span> <span class="p">(</span><span class="s2">"right"</span><span class="p">,</span> <span class="s2">"R"</span><span class="p">)):</span>
-            <span class="n">vcol</span><span class="p">,</span> <span class="n">mcol</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">PUPILD"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">PUPILV"</span><span class="p">)</span> <span class="k">if</span> <span class="n">pupil</span> <span class="o">==</span> <span class="s2">"mm"</span> <span class="k">else</span> <span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">PD"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">vcol</span> <span class="ow">in</span> <span class="n">tab</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
-                <span class="n">x</span> <span class="o">=</span> <span class="n">col</span><span class="p">(</span><span class="n">vcol</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1000.</span> <span class="k">if</span> <span class="n">pupil</span> <span class="o">==</span> <span class="s2">"mm"</span> <span class="k">else</span> <span class="mf">1.</span><span class="p">)</span>
-                <span class="n">valid</span> <span class="o">=</span> <span class="n">flag</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">PV"</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">mcol</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">valid</span> <span class="o">&amp;=</span> <span class="n">flag</span><span class="p">(</span><span class="n">mcol</span><span class="p">)</span>
-                <span class="n">d</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_pupil"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">valid</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
-                <span class="k">if</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">EYEZ"</span> <span class="ow">in</span> <span class="n">tab</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
-                    <span class="n">distance</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">EYEZ"</span><span class="p">)[</span><span class="n">valid</span><span class="p">])</span>
-            <span class="k">if</span> <span class="n">gaze</span> <span class="ow">and</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">POGX"</span> <span class="ow">in</span> <span class="n">tab</span><span class="o">.</span><span class="n">columns</span> <span class="ow">and</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">POGY"</span> <span class="ow">in</span> <span class="n">tab</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="n">found</span> <span class="o">=</span> <span class="n">flag</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">PV"</span><span class="p">)</span>  <span class="c1"># pupil found in the camera image</span>
+            <span class="n">size</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">if</span> <span class="n">has</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">PUPILD"</span><span class="p">):</span>
+                <span class="n">mm</span> <span class="o">=</span> <span class="n">col</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">PUPILD"</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1000.</span>
+                <span class="n">size</span><span class="p">[</span><span class="s2">"mm"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">found</span> <span class="o">&amp;</span> <span class="n">flag</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">PUPILV"</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">mm</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">),</span> <span class="n">mm</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">has</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">PD"</span><span class="p">):</span>
+                <span class="n">px</span> <span class="o">=</span> <span class="n">col</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">PD"</span><span class="p">)</span>
+                <span class="n">size</span><span class="p">[</span><span class="s2">"px"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">found</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">px</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">),</span> <span class="n">px</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">pupil</span> <span class="ow">in</span> <span class="n">size</span><span class="p">:</span>
+                <span class="n">d</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_pupil"</span><span class="p">]</span> <span class="o">=</span> <span class="n">size</span><span class="p">[</span><span class="n">pupil</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">has</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">EYEZ"</span><span class="p">):</span>
+                    <span class="n">distance</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">EYEZ"</span><span class="p">)[</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">size</span><span class="p">[</span><span class="n">pupil</span><span class="p">])])</span>
+            <span class="k">if</span> <span class="n">gaze</span> <span class="ow">and</span> <span class="n">has</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">POGX"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">POGY"</span><span class="p">):</span>
                 <span class="n">valid</span> <span class="o">=</span> <span class="n">flag</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">POGV"</span><span class="p">)</span>
                 <span class="n">w</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">screen_resolution</span> <span class="k">if</span> <span class="n">screen_resolution</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">(</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
                 <span class="n">d</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_x"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">valid</span><span class="p">,</span> <span class="n">col</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">POGX"</span><span class="p">)</span> <span class="o">*</span> <span class="n">w</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
                 <span class="n">d</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_y"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">valid</span><span class="p">,</span> <span class="n">col</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">POGY"</span><span class="p">)</span> <span class="o">*</span> <span class="n">h</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">camera</span> <span class="ow">and</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_pupil"</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">has</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">PCX"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">PCY"</span><span class="p">):</span>
+                    <span class="n">aux</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_camx"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">found</span><span class="p">,</span> <span class="n">col</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">PCX"</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+                    <span class="n">aux</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_camy"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">found</span><span class="p">,</span> <span class="n">col</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">PCY"</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+                <span class="n">other</span> <span class="o">=</span> <span class="s2">"px"</span> <span class="k">if</span> <span class="n">pupil</span> <span class="o">==</span> <span class="s2">"mm"</span> <span class="k">else</span> <span class="s2">"mm"</span>
+                <span class="k">if</span> <span class="n">other</span> <span class="ow">in</span> <span class="n">size</span><span class="p">:</span>
+                    <span class="n">aux</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_pupil</span><span class="si">{</span><span class="n">other</span><span class="si">}</span><span class="s2">"</span><span class="p">]</span> <span class="o">=</span> <span class="n">size</span><span class="p">[</span><span class="n">other</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">has</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">EYEZ"</span><span class="p">):</span>
+                    <span class="n">z</span> <span class="o">=</span> <span class="n">col</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">EYEZ"</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1000.</span>
+                    <span class="n">aux</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_distance"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">found</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">z</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">),</span> <span class="n">z</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">d</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2">' has no pupil or gaze data"</span><span class="p">)</span>
 
@@ -2645,7 +2728,7 @@ window.runMermaid = runMermaid;</script>
         <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">"sampling_rate"</span><span class="p">,</span> <span class="mf">1000.</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">tx</span><span class="p">)))</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">tx</span><span class="p">,</span> <span class="o">**</span><span class="n">d</span><span class="p">,</span> <span class="n">events</span><span class="o">=</span><span class="n">Events</span><span class="p">(</span><span class="n">events</span><span class="p">[</span><span class="s2">"time"</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span> <span class="n">labels</span><span class="p">,</span>
                                                <span class="n">units</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">),</span>
-                   <span class="n">experimental_setup</span><span class="o">=</span><span class="n">setup</span><span class="p">,</span> <span class="n">info</span><span class="o">=</span><span class="n">info</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+                   <span class="n">experimental_setup</span><span class="o">=</span><span class="n">setup</span><span class="p">,</span> <span class="n">info</span><span class="o">=</span><span class="n">info</span><span class="p">,</span> <span class="n">aux</span><span class="o">=</span><span class="n">aux</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="EyeData.summary">
@@ -2686,6 +2769,8 @@ window.runMermaid = runMermaid;</script>
             <span class="n">end_min</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">/</span><span class="mf">1000.</span><span class="o">/</span><span class="mf">60.</span><span class="p">,</span>
             <span class="n">params</span><span class="o">=</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
         <span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aux</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="n">summary</span><span class="p">[</span><span class="s2">"aux"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aux</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_excluded_mask</span><span class="p">()</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
             <span class="n">summary</span><span class="p">[</span><span class="s2">"excluded_minutes"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">excluded_duration</span><span class="p">(</span><span class="s2">"min"</span><span class="p">)</span>
         <span class="k">if</span> <span class="s2">"blink"</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">layer_names</span> <span class="ow">and</span> <span class="s2">"pupil"</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
@@ -2785,10 +2870,20 @@ window.runMermaid = runMermaid;</script>
             <span class="k">if</span> <span class="n">image</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">sparklines</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">"label"</span><span class="p">:</span> <span class="n">label</span><span class="p">,</span> <span class="s2">"image"</span><span class="p">:</span> <span class="n">image</span><span class="p">})</span>
 
+        <span class="k">if</span> <span class="s2">"aux"</span> <span class="ow">in</span> <span class="n">summary</span><span class="p">:</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">overview</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">"Variables"</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">overview</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="p">(</span><span class="s2">"Aux channels"</span><span class="p">,</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">summary</span><span class="p">[</span><span class="s2">"aux"</span><span class="p">])))</span>
+        <span class="n">aux_sparklines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">aux</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">image</span> <span class="o">=</span> <span class="n">sparkline</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aux</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">image</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">aux_sparklines</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">"label"</span><span class="p">:</span> <span class="n">key</span><span class="p">,</span> <span class="s2">"image"</span><span class="p">:</span> <span class="n">image</span><span class="p">})</span>
+
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">"class_name"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
             <span class="s2">"name"</span><span class="p">:</span> <span class="n">summary</span><span class="p">[</span><span class="s2">"name"</span><span class="p">],</span>
             <span class="s2">"overview"</span><span class="p">:</span> <span class="n">overview</span><span class="p">,</span>
+            <span class="s2">"aux_sparklines"</span><span class="p">:</span> <span class="n">aux_sparklines</span><span class="p">,</span>
             <span class="s2">"glimpse"</span><span class="p">:</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">),</span>
             <span class="s2">"blink_stats"</span><span class="p">:</span> <span class="n">blink_stats</span><span class="p">,</span>
             <span class="s2">"history"</span><span class="p">:</span> <span class="n">history_items</span><span class="p">,</span>
@@ -3984,8 +4079,8 @@ window.runMermaid = runMermaid;</script>
         <span class="c1"># Get size of the data dictionary</span>
         <span class="n">data_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get_size</span><span class="p">()</span>
         
-        <span class="c1"># Calculate size of other attributes</span>
-        <span class="n">other_size</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># Calculate size of other attributes (including the additional channels)</span>
+        <span class="n">other_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aux</span><span class="o">.</span><span class="n">get_size</span><span class="p">())</span>
         
         <span class="c1"># Time vector and event arrays</span>
         <span class="n">other_size</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="o">.</span><span class="n">nbytes</span>

@@ -73,6 +73,22 @@ same time axis:
    axes[-1].set_xlabel("time (s): d.tx, shared by all channels")
    fig.tight_layout(h_pad=0.3)
 
+Further channels with one value per sample that are not data of the eyes
+(e.g., other signals recorded by the eye tracker, or covariates such as
+the luminance of the screen) are stored in ``d.aux``, another
+:class:`EyeDataDict` with names of the form ``<group>_<name>`` (e.g.,
+``gyro_x``). They stay aligned with the data like the channels in
+``d.data``, but the methods for the data of the eyes do not touch them.
+They can be plotted with ``d.plot.plot_timeseries(variables=["pupil",
+"gyro"])`` (``"gyro"`` stands for all channels ``gyro_*``) and against
+the pupil size with :meth:`d.plot.plot_pupil_covariate()
+<plot.PlotNamespace.plot_pupil_covariate>`:
+
+.. code-block:: python
+
+    d = pp.EyeData(time=tx, left_pupil=lp, aux={"screen_luminance": lum})
+    d.aux["screen_luminance"]
+
 Assigning to a channel (``d["left_pupil"] = ...``) replaces its mask
 layers as well; to change only the values, see
 :ref:`missing-data-changing-values`.

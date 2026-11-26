@@ -574,9 +574,22 @@ valid in <code class="docutils literal notranslate"><span class="pre">LPUPILV</s
 that the pupil was lost. Samples are therefore kept only where both are
 valid, and blinks become gaps that <a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.blinks_detect" title="pypillometry.eyedata.pupil.PupilNamespace.blinks_detect"><code class="xref py py-meth docutils literal notranslate"><span class="pre">blinks_detect()</span></code></a>
 finds. The pupil size in mm is stored in steps of 0.01 mm; the size in
-pixels (<code class="docutils literal notranslate"><span class="pre">pupil=&quot;px&quot;</span></code>) is finer but not corrected for the distance of the
-eye from the camera. The gaze position is a fraction of the screen unless
-the screen resolution is given.</p>
+pixels (<code class="docutils literal notranslate"><span class="pre">pupil=&quot;px&quot;</span></code>) is finer, but its scale differs between
+participants. The gaze position is a fraction of the screen unless the
+screen resolution is given.</p>
+<p>The time of the samples is taken from the sample counter <code class="docutils literal notranslate"><span class="pre">CNT</span></code>: the
+column <code class="docutils literal notranslate"><span class="pre">TIME</span></code> holds the time at which the recording program received a
+sample, which jitters by several ms (and is rounded to steps of 7.8 ms on
+some computers), so that it looks as if samples were missing.</p>
+<p>By default, the measurements of the camera are stored in <code class="docutils literal notranslate"><span class="pre">d.aux</span></code> for
+each eye: the position of the pupil in the camera image (<code class="docutils literal notranslate"><span class="pre">left_camx</span></code>,
+<code class="docutils literal notranslate"><span class="pre">left_camy</span></code>), the pupil size in the other unit (<code class="docutils literal notranslate"><span class="pre">left_pupilpx</span></code> or
+<code class="docutils literal notranslate"><span class="pre">left_pupilmm</span></code>) and the distance of the eye from the camera
+(<code class="docutils literal notranslate"><span class="pre">left_distance</span></code>, mm). They help to find artifacts: the eye tracker
+sometimes follows another dark spot (e.g., the frame of glasses) or the
+other eye, and the pupil is then far from its usual position in the
+image; in clean data, the ratio of the sizes in mm and in pixels is nearly
+constant. <code class="docutils literal notranslate"><span class="pre">camera=False</span></code> leaves them out.</p>
 <p>Each change of the label in the column <code class="docutils literal notranslate"><span class="pre">USER</span></code> (sent by the experiment)
 is an event; <code class="docutils literal notranslate"><span class="pre">label_prefix=</span></code> removes a prefix from the labels.</p>
 </section>

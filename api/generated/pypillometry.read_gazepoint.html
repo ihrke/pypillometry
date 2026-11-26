@@ -704,6 +704,13 @@ that record the data stream of the eye tracker: <code class="docutils literal no
 the eye tracker (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;TRIAL</span> <span class="pre">3&quot;</span></code>). It is repeated on every sample
 until the next label; each change of the label is an event at that
 sample.</p>
+<p>The time of the samples is taken from the sample counter <code class="docutils literal notranslate"><span class="pre">CNT</span></code> of the
+eye tracker: <code class="docutils literal notranslate"><span class="pre">TIME</span></code> is the time at which the recording program
+received the sample, which jitters by several ms (and is rounded to
+steps of 7.8 ms on some computers), so that it looks as if samples were
+missing. The time is the straight line in <code class="docutils literal notranslate"><span class="pre">CNT</span></code> that fits <code class="docutils literal notranslate"><span class="pre">TIME</span></code>
+best; samples that are really missing are gaps in <code class="docutils literal notranslate"><span class="pre">CNT</span></code>. Files
+without <code class="docutils literal notranslate"><span class="pre">CNT</span></code> (or with repeated values of it) use <code class="docutils literal notranslate"><span class="pre">TIME</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -719,10 +726,13 @@ earlier recording)</p></li>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p><ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">&quot;samples&quot;</span></code>: <a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code></a> with <code class="docutils literal notranslate"><span class="pre">time</span></code> (ms) and
-the other columns of the file under their original names, sorted
-by time; samples with the time of an earlier sample are dropped</p></li>
+the columns of the file under their original names, sorted by
+<code class="docutils literal notranslate"><span class="pre">CNT</span></code> (or by time; then samples with the time of an earlier
+sample are dropped)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">&quot;events&quot;</span></code>: DataFrame with <code class="docutils literal notranslate"><span class="pre">time</span></code> (ms) and <code class="docutils literal notranslate"><span class="pre">label</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">&quot;info&quot;</span></code>: dict with <code class="docutils literal notranslate"><span class="pre">&quot;format&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;source&quot;</span></code> and
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;info&quot;</span></code>: dict with <code class="docutils literal notranslate"><span class="pre">&quot;format&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;source&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;time_base&quot;</span></code>
+(<code class="docutils literal notranslate"><span class="pre">&quot;CNT&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;TIME&quot;</span></code>), <code class="docutils literal notranslate"><span class="pre">&quot;sampling_rate&quot;</span></code> (Hz, from the time
+of the samples), <code class="docutils literal notranslate"><span class="pre">&quot;lost_samples&quot;</span></code> (gaps in <code class="docutils literal notranslate"><span class="pre">CNT</span></code>) and
 <code class="docutils literal notranslate"><span class="pre">&quot;duplicate_times&quot;</span></code> (number of dropped samples)</p></li>
 </ul>
 </p>

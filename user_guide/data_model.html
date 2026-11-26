@@ -533,6 +533,19 @@ same time axis:</p>
 <figure class="align-default">
 <img alt="../_images/data_model-1.png" class="plot-directive" src="../_images/data_model-1.png" />
 </figure>
+<p>Further channels with one value per sample that are not data of the eyes
+(e.g., other signals recorded by the eye tracker, or covariates such as
+the luminance of the screen) are stored in <code class="docutils literal notranslate"><span class="pre">d.aux</span></code>, another
+<a class="reference internal" href="../api/generated/pypillometry.EyeDataDict.html#pypillometry.EyeDataDict" title="pypillometry.EyeDataDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">EyeDataDict</span></code></a> with names of the form <code class="docutils literal notranslate"><span class="pre">&lt;group&gt;_&lt;name&gt;</span></code> (e.g.,
+<code class="docutils literal notranslate"><span class="pre">gyro_x</span></code>). They stay aligned with the data like the channels in
+<code class="docutils literal notranslate"><span class="pre">d.data</span></code>, but the methods for the data of the eyes do not touch them.
+They can be plotted with <code class="docutils literal notranslate"><span class="pre">d.plot.plot_timeseries(variables=[&quot;pupil&quot;,</span>
+<span class="pre">&quot;gyro&quot;])</span></code> (<code class="docutils literal notranslate"><span class="pre">&quot;gyro&quot;</span></code> stands for all channels <code class="docutils literal notranslate"><span class="pre">gyro_*</span></code>) and against
+the pupil size with <a class="reference internal" href="../api/plotting.html#pypillometry.plot.PlotNamespace.plot_pupil_covariate" title="pypillometry.plot.PlotNamespace.plot_pupil_covariate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">d.plot.plot_pupil_covariate()</span></code></a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">tx</span><span class="p">,</span> <span class="n">left_pupil</span><span class="o">=</span><span class="n">lp</span><span class="p">,</span> <span class="n">aux</span><span class="o">=</span><span class="p">{</span><span class="s2">"screen_luminance"</span><span class="p">:</span> <span class="n">lum</span><span class="p">})</span>
+<span class="n">d</span><span class="o">.</span><span class="n">aux</span><span class="p">[</span><span class="s2">"screen_luminance"</span><span class="p">]</span>
+</pre></div>
+</div>
 <p>Assigning to a channel (<code class="docutils literal notranslate"><span class="pre">d[&quot;left_pupil&quot;]</span> <span class="pre">=</span> <span class="pre">...</span></code>) replaces its mask
 layers as well; to change only the values, see
 <a class="reference internal" href="missing_data.html#missing-data-changing-values"><span class="std std-ref">Changing values</span></a>.</p>

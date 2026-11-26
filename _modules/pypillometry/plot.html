@@ -805,10 +805,12 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">e.g. ``d.plot.plot_timeseries()``.</span>
 
 <span class="sd">The plots are written in one module per domain (:mod:`.generic`,</span>
-<span class="sd">:mod:`.pupil`, :mod:`.gaze`); :class:`PlotNamespace` combines them.</span>
+<span class="sd">:mod:`.pupil`, :mod:`.gaze`, :mod:`.aux` for the additional channels in</span>
+<span class="sd">``d.aux``); :class:`PlotNamespace` combines them.</span>
 <span class="sd">:class:`HeadMountedPlotNamespace` adds the plots with the scene video of</span>
 <span class="sd">head-mounted eye trackers (:mod:`.scene`).</span>
 <span class="sd">"""</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.aux</span><span class="w"> </span><span class="kn">import</span> <span class="n">AuxPlots</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.pupil</span><span class="w"> </span><span class="kn">import</span> <span class="n">PupilPlots</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.gaze</span><span class="w"> </span><span class="kn">import</span> <span class="n">GazePlots</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.scene</span><span class="w"> </span><span class="kn">import</span> <span class="n">ScenePlots</span>
@@ -816,15 +818,16 @@ window.runMermaid = runMermaid;</script>
 
 <div class="viewcode-block" id="PlotNamespace">
 <a class="viewcode-back" href="../../api/plotting.html#pypillometry.plot.PlotNamespace">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">PlotNamespace</span><span class="p">(</span><span class="n">PupilPlots</span><span class="p">,</span> <span class="n">GazePlots</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PlotNamespace</span><span class="p">(</span><span class="n">AuxPlots</span><span class="p">,</span> <span class="n">PupilPlots</span><span class="p">,</span> <span class="n">GazePlots</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Plotting methods of an :class:`~pypillometry.EyeData` object, used as</span>
 <span class="sd">    ``d.plot`` (e.g., ``d.plot.plot_timeseries()``).</span>
 
 <span class="sd">    Like ``d.pupil`` and ``d.gaze``, it is a view on the data object with no</span>
 <span class="sd">    state of its own (see :class:`~pypillometry.eyedata.namespace.Namespace`).</span>
-<span class="sd">    It combines the generic plots, the pupil plots and the gaze plots, which</span>
-<span class="sd">    are written in separate modules. Plots that need channels the object does</span>
+<span class="sd">    It combines the generic plots, the pupil plots, the gaze plots and the</span>
+<span class="sd">    plots of the additional channels (``d.aux``), which are written in</span>
+<span class="sd">    separate modules. Plots that need channels the object does</span>
 <span class="sd">    not have raise a ValueError.</span>
 <span class="sd">    """</span>
     <span class="n">_name</span> <span class="o">=</span> <span class="s2">"plot"</span></div>

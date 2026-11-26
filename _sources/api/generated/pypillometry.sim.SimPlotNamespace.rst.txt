@@ -25,6 +25,7 @@
       ~SimPlotNamespace.plot_intervals
       ~SimPlotNamespace.plot_masked
       ~SimPlotNamespace.plot_pupil
+      ~SimPlotNamespace.plot_pupil_covariate
       ~SimPlotNamespace.plot_pupil_foreshortening_error_surface
       ~SimPlotNamespace.plot_pupil_segments
       ~SimPlotNamespace.plot_pupil_spectrum
