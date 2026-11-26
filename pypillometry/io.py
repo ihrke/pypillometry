@@ -1020,6 +1020,14 @@ def read_gazepoint(fname: str, keep_initial_label: bool = False) -> dict:
     until the next label; each change of the label is an event at that
     sample.
 
+    The time of the samples is taken from the sample counter ``CNT`` of the
+    eye tracker: ``TIME`` is the time at which the recording program
+    received the sample, which jitters by several ms (and is rounded to
+    steps of 7.8 ms on some computers), so that it looks as if samples were
+    missing. The time is the straight line in ``CNT`` that fits ``TIME``
+    best; samples that are really missing are gaps in ``CNT``. Files
+    without ``CNT`` (or with repeated values of it) use ``TIME``.
+
     Parameters
     ----------
     fname : str
@@ -1033,10 +1041,13 @@ def read_gazepoint(fname: str, keep_initial_label: bool = False) -> dict:
     -------
     dict
         - ``"samples"``: :class:`pandas.DataFrame` with ``time`` (ms) and
-          the other columns of the file under their original names, sorted
-          by time; samples with the time of an earlier sample are dropped
+          the columns of the file under their original names, sorted by
+          ``CNT`` (or by time; then samples with the time of an earlier
+          sample are dropped)
         - ``"events"``: DataFrame with ``time`` (ms) and ``label``
-        - ``"info"``: dict with ``"format"``, ``"source"`` and
+        - ``"info"``: dict with ``"format"``, ``"source"``, ``"time_base"``
+          (``"CNT"`` or ``"TIME"``), ``"sampling_rate"`` (Hz, from the time
+          of the samples), ``"lost_samples"`` (gaps in ``CNT``) and
           ``"duplicate_times"`` (number of dropped samples)
 
     See Also
@@ -1052,12 +1063,29 @@ def read_gazepoint(fname: str, keep_initial_label: bool = False) -> dict:
     tab.columns = [str(c).strip() for c in tab.columns]
     if "TIME" not in tab.columns:
         raise ValueError(f"'{fname}' is not a GazePoint recording: no column 'TIME'")
-    tab = tab.sort_values("TIME", kind="stable")
-    ndup = int(tab["TIME"].duplicated().sum())
-    if ndup:
-        logger.warning(f"{fname}: {ndup} samples with the time of an earlier sample are dropped")
-    tab = tab.drop_duplicates("TIME").reset_index(drop=True)
-    time = tab.pop("TIME").to_numpy(dtype=float) * 1000.
+    ndup, lost = 0, 0
+    use_cnt = "CNT" in tab.columns and len(tab) > 1 and not tab["CNT"].duplicated().any()
+    if use_cnt:
+        tab = tab.sort_values("CNT", kind="stable").reset_index(drop=True)
+        cnt = tab["CNT"].to_numpy(dtype=float)
+        step, offset = np.polyfit(cnt - cnt[0], tab["TIME"].to_numpy(dtype=float) * 1000., 1)
+        if not step > 0:
+            raise ValueError(f"{fname}: TIME does not increase with CNT")
+        time = offset + step * (cnt - cnt[0])
+        lost = int(cnt[-1] - cnt[0] + 1 - len(cnt))
+        if lost:
+            logger.info(f"{fname}: {lost} samples are missing (gaps in CNT)")
+    else:
+        if "CNT" in tab.columns:
+            logger.warning(f"{fname}: CNT has repeated values; the time is taken from TIME")
+        tab = tab.sort_values("TIME", kind="stable")
+        ndup = int(tab["TIME"].duplicated().sum())
+        if ndup:
+            logger.warning(f"{fname}: {ndup} samples with the time of an earlier sample "
+                           "are dropped")
+        tab = tab.drop_duplicates("TIME").reset_index(drop=True)
+        time = tab["TIME"].to_numpy(dtype=float) * 1000.
+        step = np.median(np.diff(time)) if len(time) > 1 else np.nan
     tab.insert(0, "time", time)
 
     events = pd.DataFrame({"time": np.array([], dtype=float), "label": np.array([], dtype=str)})
@@ -1067,7 +1095,9 @@ def read_gazepoint(fname: str, keep_initial_label: bool = False) -> dict:
         change[0] = keep_initial_label
         events = pd.DataFrame({"time": time[change], "label": user[change].to_numpy(dtype=str)})
         events = events[events["label"] != ""].reset_index(drop=True)
-    info = dict(format="GazePoint (Open Gaze API)", source=str(fname), duplicate_times=ndup)
+    info = dict(format="GazePoint (Open Gaze API)", source=str(fname),
+                time_base="CNT" if use_cnt else "TIME", sampling_rate=float(1000. / step),
+                lost_samples=lost, duplicate_times=ndup)
     return {"samples": tab, "events": events, "info": info}
 
 

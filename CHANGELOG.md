@@ -6,10 +6,12 @@
 
 - `EyeData.aux`: additional channels for all data objects (was only `HeadMountedEyeData`); `EyeData(..., aux=...)`
 - `d.plot.plot_timeseries()` and `d.plot.plot_pupil_covariate()` plot channels in `d.aux` for all data objects
+- `EyeData.from_gazepoint(camera=True)`: position of the pupil in the camera image, pupil size in the other unit and distance of the eye in `d.aux`
 
 ### Changed behaviour
 
 - file format 4 (adds `aux`): older files are upgraded when loaded; files written now cannot be read by pypillometry <= 2.3.0
+- `read_gazepoint()`, `EyeData.from_gazepoint()`: the time comes from the sample counter `CNT` (`TIME` jitters, which looked like missing samples)
 
 ## 2.3.0 (2026-11-26)
 
