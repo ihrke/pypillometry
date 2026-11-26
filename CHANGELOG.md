@@ -14,6 +14,12 @@
 - `pp.signal.spectrum()`, `pp.signal.block_mean()`, `pp.signal.coarsen()`
 - `pp.signal.semivariogram(segments=)`, `Variogram.at_log_lags()`
 - `pp.signal.gaussmarkov`: `TimescaleBank`, `fit_bank()`, `fit_group()`, `general_prior()`, `Constant` component, noise variance per sample, segments and diffuse states in the Kalman filter
+- `pp.sim` (experimental): simulated data with ground truth, built by chaining steps (`pp.sim.Simulation("5 min").pupil().gaze().foreshortening().units(800).noise(0.2).run()`); `SimEyeData` with `d.truth` (true time series, follow cropping and downsampling), `d.simulation` (the recipe and seed) and the plots `plot_truth()` and `plot_components()`
+- `TimescaleModel.simulate()`, `.process()`: new recordings from a fitted model
+
+### Breaking changes
+
+- `FakeEyeData` and `pp.signal.fake` (`fake_pupil_baseline()`, `fake_gaze_fixations()`, `add_measurement_noise()`, `generate_foreshortening_data()`) were removed, use `pp.sim`; saved `FakeEyeData` objects can no longer be read
 
 ### Changed behaviour
 
