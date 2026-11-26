@@ -38,7 +38,8 @@ import numpy as np
 from loguru import logger
 
 __all__ = ["LGSSM", "FilterResult", "SmootherResult", "kalman_filter",
-           "kalman_loglik", "rts_smoother", "component_states", "simulate"]
+           "kalman_loglik", "rts_smoother", "component_states", "simulate",
+           "forecast_errors"]
 
 _LOG2PI = float(np.log(2 * np.pi))
 
@@ -251,8 +252,59 @@ def _seq_filter_kernel(A, Q, H, r, m0, P0, y, restart, skip,
     return ll
 
 
+def _forecast_kernel(A, Q, H, r, m0, P0, y, restart, horizons, step, E, Z):
+    """Errors `E[o, j, c]` and standardised errors `Z[o, j, c]` of the
+    forecasts of channel c made `horizons[j]` samples ahead from the
+    filtered state at every `step`-th sample (the origins o); NaN where the
+    origin or the target is missing or they are in different segments."""
+    T, m = y.shape
+    n = m0.shape[0]
+    nh = horizons.shape[0]
+    hmax = horizons[nh - 1]
+    x = m0.copy()
+    P = P0.copy()
+    for t in range(T):
+        if restart[t]:
+            x = m0.copy()
+            P = P0.copy()
+        elif t > 0:
+            x = A @ x
+            P = A @ P @ A.T + Q
+        nv = 0
+        for c in range(m):
+            if np.isnan(y[t, c]):
+                continue
+            nv += 1
+            h = H[c]
+            ph = P @ h
+            s = h @ ph + r[t, c]
+            k = ph / s
+            x = x + k * (y[t, c] - h @ x)
+            for a in range(n):
+                for b in range(n):
+                    P[a, b] -= k[a] * ph[b]
+            P = 0.5 * (P + P.T)
+        if t % step == 0 and nv > 0:
+            xx = x.copy()
+            PP = P.copy()
+            j = 0
+            for d in range(1, hmax + 1):
+                if t + d >= T or restart[t + d]:
+                    break
+                xx = A @ xx
+                PP = A @ PP @ A.T + Q
+                if d == horizons[j]:
+                    for c in range(m):
+                        if not np.isnan(y[t + d, c]):
+                            h = H[c]
+                            e = y[t + d, c] - h @ xx
+                            E[t // step, j, c] = e
+                            Z[t // step, j, c] = e / np.sqrt(h @ PP @ h + r[t + d, c])
+                    j += 1
+
+
 def _smoother_kernel(A, mp, Pp, mf, Pf, restart, ms, Ps, G, Plag):
-    T = mf.shape[0]
+    T, n = mf.shape
     ms[T - 1] = mf[T - 1]
     Ps[T - 1] = Pf[T - 1]
     for t in range(T - 2, -1, -1):
@@ -260,7 +312,21 @@ def _smoother_kernel(A, mp, Pp, mf, Pf, restart, ms, Ps, G, Plag):
             ms[t] = mf[t]
             Ps[t] = Pf[t]
             continue
-        Gt = np.linalg.solve(Pp[t + 1], A @ Pf[t]).T
+        # solve with the correlation matrix of the prediction: states of very
+        # different size (or without variance) do not make it singular
+        d = np.sqrt(np.diag(Pp[t + 1]))
+        C = Pp[t + 1].copy()
+        for i in range(n):
+            if d[i] <= 0.0:
+                d[i] = 1.0
+                C[i, i] = 1.0
+        C = C / np.outer(d, d)
+        APf = A @ Pf[t]
+        for i in range(n):
+            APf[i] /= d[i]
+        Gt = np.linalg.solve(C, APf).T
+        for i in range(n):
+            Gt[:, i] /= d[i]
         ms[t] = mf[t] + Gt @ (ms[t + 1] - mp[t + 1])
         Pt = Pf[t] + Gt @ (Ps[t + 1] - Pp[t + 1]) @ Gt.T
         Ps[t] = 0.5 * (Pt + Pt.T)
@@ -285,12 +351,13 @@ _JIT = False
 def _kernels():
     """
     The kernels (filter, smoother, simulation, sequential log-likelihood,
-    sequential filter), compiled with numba on first use if it is installed.
+    sequential filter, forecasts), compiled with numba on first use if it
+    is installed.
     """
     global _KERNELS, _JIT
     if _KERNELS is None:
         plain = (_filter_kernel, _smoother_kernel, _simulate_kernel,
-                 _seq_loglik_kernel, _seq_filter_kernel)
+                 _seq_loglik_kernel, _seq_filter_kernel, _forecast_kernel)
         try:
             import numba
         except ImportError:
@@ -667,6 +734,51 @@ def rts_smoother(model, fres):
     smo(A, fres.m_pred, fres.P_pred, fres.m_filt, fres.P_filt,
         np.ascontiguousarray(restart), ms, Ps, G, Plag)
     return SmootherResult(ms, Ps, G, Plag, H)
+
+
+def forecast_errors(model, y, horizons, step=1, mask=None, obs_var=None,
+                    segments=None):
+    """
+    Errors of forecasts several samples ahead.
+
+    From the filtered state at every `step`-th sample (given the data up to
+    that sample), the model predicts the observations ``horizons`` samples
+    later. The errors measure the accuracy of the forecasts; the errors
+    divided by their predicted standard deviation should have variance 1
+    if the model describes the dependence over that horizon (below 1: the
+    model expects more variability than there is).
+
+    Parameters
+    ----------
+    model : LGSSM
+        needs independent noise of the channels (a diagonal ``R``)
+    y : array, (T,) or (T, m)
+        observations; NaN, inf and masked values are missing
+    horizons : sequence of int
+        how many samples ahead to predict (positive)
+    step : int, optional
+        forecasts are made from every `step`-th sample (default 1)
+    mask, obs_var, segments
+        see :func:`kalman_filter`; forecasts do not cross the border of a
+        segment
+
+    Returns
+    -------
+    err : np.ndarray, (n_origins, n_horizons, m)
+        forecast errors (NaN where the origin or the target is missing)
+    std_err : np.ndarray, (n_origins, n_horizons, m)
+        errors divided by their predicted standard deviation
+    """
+    kern = _kernels()[5]
+    horizons = np.unique(np.asarray(horizons, dtype=np.int64))
+    if len(horizons) == 0 or horizons[0] < 1:
+        raise ValueError("horizons must be positive numbers of samples")
+    A, Q, H, r, m0, P0, y, restart, _ = _seq_args(model, y, mask, obs_var, 0, segments)
+    T, m = y.shape
+    shape = ((T - 1) // int(step) + 1, len(horizons), m)
+    E, Z = np.full(shape, np.nan), np.full(shape, np.nan)
+    kern(A, Q, H, r, m0, P0, y, restart, horizons, int(step), E, Z)
+    return E, Z
 
 
 def component_states(model, m, P=None):
