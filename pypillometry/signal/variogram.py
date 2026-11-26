@@ -49,6 +49,41 @@ class Variogram(NamedTuple):
     npairs: np.ndarray
     variance: float
 
+    def at_log_lags(self, per_decade=12, min_pairs=200):
+        """
+        The variogram at about log-spaced lags.
+
+        Picks `per_decade` of the lags per factor of 10 (all lags where
+        they are further apart than that), so that fits and plots are not
+        dominated by the many long lags.
+
+        Parameters
+        ----------
+        per_decade : int, optional
+            number of lags per decade (default 12)
+        min_pairs : int, optional
+            lags with fewer pairs of valid samples are left out (default 200)
+
+        Returns
+        -------
+        Variogram
+
+        Examples
+        --------
+        >>> x = np.random.default_rng(0).normal(size=5000)
+        >>> vg = semivariogram(x, fs=1000, max_lag=1000).at_log_lags(per_decade=4)
+        >>> vg.lags
+        array([   1.,    2.,    3.,    6.,   10.,   18.,   32.,   56.,  100.,
+                178.,  316.,  562., 1000.])
+        """
+        nlag = len(self.lags)
+        idx = np.round(np.logspace(0, np.log10(nlag),
+                                   int(per_decade * np.log10(nlag)) + 1))
+        idx = np.unique(idx.astype(int)) - 1
+        idx = idx[(self.npairs[idx] >= min_pairs) & np.isfinite(self.gamma[idx])]
+        return Variogram(self.lags[idx], self.gamma[idx], self.npairs[idx],
+                         self.variance)
+
 
 def _valid_data(signal, mask):
     """Data (float, 0 where invalid) and the boolean validity of each sample."""
@@ -101,7 +136,7 @@ def _variogram_fft(x, v, nlag):
     return np.maximum(ssd, 0.0), npairs
 
 
-def semivariogram(signal, fs, mask=None, max_lag=2000, method="fft"):
+def semivariogram(signal, fs, mask=None, max_lag=2000, method="fft", segments=None):
     """
     Empirical semivariogram of a signal with missing samples.
 
@@ -126,6 +161,12 @@ def semivariogram(signal, fs, mask=None, max_lag=2000, method="fft"):
         "fft" (default) computes all lags at once in O(n log n); "direct"
         loops over the lags in O(n * lags) and is exact (used to check
         the FFT version).
+    segments : list of (start, stop), optional
+        sample indices of segments (e.g., blocks of an experiment): only
+        pairs of samples within the same segment are used, each segment
+        around its own mean, and the sums are pooled over the segments.
+        This keeps changes of the level between the segments out of the
+        variogram. Samples outside the segments are not used.
 
     Returns
     -------
@@ -149,25 +190,40 @@ def semivariogram(signal, fs, mask=None, max_lag=2000, method="fft"):
         raise ValueError(f"method must be 'fft' or 'direct', got '{method}'")
     x, v = _valid_data(signal, mask)
     n = len(x)
+    if segments is None:
+        segments = [(0, n)]
+    else:
+        segments = [(max(int(a), 0), min(int(b), n)) for a, b in segments]
+        segments = [(a, b) for a, b in segments if b > a]
+    longest = max([b - a for a, b in segments], default=1)
     nlag = int(round(parse_time(max_lag, to="samples", fs=fs)))
-    nlag = min(max(nlag, 1), max(n - 1, 1))
+    nlag = min(max(nlag, 1), max(longest - 1, 1))
     lags = np.arange(1, nlag + 1) / fs * 1000.
 
-    if not v.any():
+    used = np.zeros(n, dtype=bool)
+    for a, b in segments:
+        used[a:b] = v[a:b]
+    if not used.any():
         logger.warning("No valid samples: variogram is all NaN")
         nan = np.full(nlag, np.nan)
         return Variogram(lags, nan, np.zeros(nlag), np.nan)
 
-    # the variogram does not depend on the mean; removing it keeps the
-    # FFT sums small (less cancellation)
-    mean = x[v].mean()
-    x = np.where(v, x - mean, 0.0)
-    variance = float(np.mean(x[v]**2))
-
-    if method == "fft":
-        ssd, npairs = _variogram_fft(x, v, nlag)
-    else:
-        ssd, npairs = _variogram_direct(x, v, nlag)
+    fct = _variogram_fft if method == "fft" else _variogram_direct
+    ssd, npairs, ss = np.zeros(nlag), np.zeros(nlag), 0.0
+    for a, b in segments:
+        xs, vs = x[a:b], v[a:b]
+        if not vs.any():
+            continue
+        # the variogram does not depend on the mean; removing it keeps the
+        # FFT sums small (less cancellation)
+        xs = np.where(vs, xs - xs[vs].mean(), 0.0)
+        ss += float(np.sum(xs**2))
+        m = min(nlag, b - a - 1)
+        if m > 0:
+            s_, n_ = fct(xs, vs, m)
+            ssd[:m] += s_
+            npairs[:m] += n_
+    variance = ss / used.sum()
 
     with np.errstate(invalid="ignore", divide="ignore"):
         gamma = np.where(npairs > 0, ssd / (2 * npairs), np.nan)
