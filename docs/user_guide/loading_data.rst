@@ -110,9 +110,24 @@ valid in ``LPUPILV``; only ``LPV`` (pupil found in the camera image) shows
 that the pupil was lost. Samples are therefore kept only where both are
 valid, and blinks become gaps that :meth:`~EyeData.pupil.blinks_detect`
 finds. The pupil size in mm is stored in steps of 0.01 mm; the size in
-pixels (``pupil="px"``) is finer but not corrected for the distance of the
-eye from the camera. The gaze position is a fraction of the screen unless
-the screen resolution is given.
+pixels (``pupil="px"``) is finer, but its scale differs between
+participants. The gaze position is a fraction of the screen unless the
+screen resolution is given.
+
+The time of the samples is taken from the sample counter ``CNT``: the
+column ``TIME`` holds the time at which the recording program received a
+sample, which jitters by several ms (and is rounded to steps of 7.8 ms on
+some computers), so that it looks as if samples were missing.
+
+By default, the measurements of the camera are stored in ``d.aux`` for
+each eye: the position of the pupil in the camera image (``left_camx``,
+``left_camy``), the pupil size in the other unit (``left_pupilpx`` or
+``left_pupilmm``) and the distance of the eye from the camera
+(``left_distance``, mm). They help to find artifacts: the eye tracker
+sometimes follows another dark spot (e.g., the frame of glasses) or the
+other eye, and the pupil is then far from its usual position in the
+image; in clean data, the ratio of the sizes in mm and in pixels is nearly
+constant. ``camera=False`` leaves them out.
 
 Each change of the label in the column ``USER`` (sent by the experiment)
 is an event; ``label_prefix=`` removes a prefix from the labels.
