@@ -50,7 +50,8 @@ def reference_prior(bank):
 
     Fast standard deviation 10 (give or take a factor of 7.4), fast length
     scale 800 ms (factor 2.7), noise 0.2 (factor 7.4), standard deviation
-    of each atom 2 (:math:`u \\sim N(\\log(4 + v_0), 3^2)`).
+    of each atom 2 (:math:`u \\sim N(\\log(4 + v_0), 3^2)`); with two
+    channels, a gain between them of 1 (factor 1.6).
 
     Parameters
     ----------
@@ -62,7 +63,7 @@ def reference_prior(bank):
     """
     head = {"log_fast_sd": (np.log(10.), 2.), "log_fast_ell": (np.log(800.), 1.),
             "log_noise_sd": (np.log(0.2), 2.), "log_diff_sd": (np.log(3.), 2.),
-            "log_diff_ell": (np.log(800.), 1.)}
+            "log_diff_ell": (np.log(800.), 1.), "log_gain": (0., 0.5)}
     mean, sd = [], []
     for name in bank.names:
         if name.startswith("u_"):

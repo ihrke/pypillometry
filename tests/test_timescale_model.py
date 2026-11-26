@@ -17,7 +17,7 @@ def recording(seed=1, minutes=5, name="rec", inplace=False, gaps=True):
     the data and the true noise-free pupil size of each eye."""
     bank = gm.TimescaleBank(timescales=(3000., 30000.), channels=("left", "right"))
     theta = bank.theta(fast_sd=8., fast_ell=700., noise_sd_left=0.01, noise_sd_right=0.01,
-                       diff_sd=2., diff_ell=600., sd_3s=3., sd_30s=5.)
+                       diff_sd=2., diff_ell=600., gain=1., sd_3s=3., sd_30s=5.)
     n = int(minutes * 60 * FS)
     _, x = bank.simulate(theta, n, FS, rng=seed, return_states=True)
     rng = np.random.default_rng(seed)
@@ -249,11 +249,11 @@ def test_binocular(rec):
     m = pp.TimescaleModel(d, binocular=True, timescales=TS).fit(hessian=False, maxiter=15)
     assert m.units == ["both"] and m.eyes == ["left", "right"]
     p = m.params["both"]
-    assert {"noise_sd_left", "noise_sd_right", "diff_sd", "diff_ell"} <= set(p)
+    assert {"noise_sd_left", "noise_sd_right", "diff_sd", "diff_ell", "gain"} <= set(p)
     assert 0.5 < p["diff_sd"] < 6 and set(m.summary().index) == {"both"}
     # the parameters of the simulation (recovery is tested on arrays)
     truth_theta = m.bank.theta(fast_sd=8., fast_ell=700., noise_sd_left=0.2, noise_sd_right=0.2,
-                               diff_sd=2., diff_ell=600., sd_3s=3., sd_30s=5.)
+                               diff_sd=2., diff_ell=600., gain=1., sd_3s=3., sd_30s=5.)
     assert m.loglik["both"] > m.bank.loglik(truth_theta, m._Y("both"), m.fs, m.segments) - 300
     m._set_fit("both", gm.BankFit(m.bank, truth_theta, 0.0, 1))
     est = m.predict("signal")

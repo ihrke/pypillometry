@@ -71,8 +71,9 @@ class TimescaleModel:
     binocular : bool
         if False (default), each eye gets its own model; if True, one model
         for both eyes: the fast component and the atoms are common to the
-        eyes, each eye has its own mean and noise, and one more component
-        describes the difference between the eyes
+        eyes (with a gain between the eyes, which can differ in
+        amplitude), each eye has its own mean and noise, and one more
+        component describes the difference between the eyes
     timescales : sequence of float, str or Quantity
         time scales of the atoms (plain numbers are ms); default 3, 10, 30,
         100 and 300 s
@@ -434,7 +435,7 @@ class TimescaleModel:
                 + self.bank.atom_names + ["slow", "detrended", "signal"]
             parts = {}
             for name in names:
-                w = self.bank.select(name, cutoff, channel=ch)
+                w = self.bank.select(name, cutoff, channel=ch, theta=self._fit(unit).theta)
                 var = np.einsum("i,tij,j->t", w, sres.P_smooth, w)
                 parts[name] = (sres.m_smooth @ w, np.sqrt(np.maximum(var, 0.0)))
             out[eye] = parts
@@ -566,8 +567,9 @@ class TimescaleModel:
         out = {}
         for eye in self._eyes(eyes):
             unit, ch = self._where(eye)
-            w = self.bank.select(what, cutoff, channel=ch)
-            wsig = self.bank.select("signal", cutoff, channel=ch)
+            theta = self._fit(unit).theta
+            w = self.bank.select(what, cutoff, channel=ch, theta=theta)
+            wsig = self.bank.select("signal", cutoff, channel=ch, theta=theta)
             has_mean = w[ch] != 0
             if scale == "original" and not has_mean:
                 if interval is not None:

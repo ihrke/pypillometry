@@ -168,7 +168,8 @@ def test_general_prior():
     assert other.mean[5] == medium.mean[7]
     # two channels: the noise prior for both, and one for the difference
     two = gm.general_prior(gm.TimescaleBank(channels=("left", "right")))
-    assert len(two.mean) == 11 and two.mean[2] == two.mean[3] == medium.mean[2]
+    assert len(two.mean) == 12 and two.mean[2] == two.mean[3] == medium.mean[2]
+    assert two.names[6] == "log_gain" and two.mean[6] == 0
     with pytest.raises(ValueError):
         gm.general_prior(bank, "huge")
     assert "log_fast_sd" in repr(medium)
@@ -218,11 +219,12 @@ def test_upsample_with_atom_without_variance(bank, sim):
 
 def test_two_channels():
     bank = gm.TimescaleBank(timescales=(3000., 30000.), channels=("left", "right"))
-    assert bank.names[2:6] == ["log_noise_sd_left", "log_noise_sd_right",
-                               "log_diff_sd", "log_diff_ell"]
+    assert bank.names[2:7] == ["log_noise_sd_left", "log_noise_sd_right",
+                               "log_diff_sd", "log_diff_ell", "log_gain"]
     assert bank.component_names == ["mean_left", "mean_right", "fast", "diff", "3s", "30s"]
-    theta = bank.theta(fast_sd=8., fast_ell=700., noise_sd_left=0.2, noise_sd_right=0.4,
-                       diff_sd=2.5, diff_ell=600., sd_3s=3., sd_30s=5.)
+    pars = dict(fast_sd=8., fast_ell=700., noise_sd_left=0.2, noise_sd_right=0.4,
+                diff_sd=2.5, diff_ell=600., sd_3s=3., sd_30s=5.)
+    theta = bank.theta(gain=1., **pars)
     Y, X = bank.simulate(theta, 6000, FS, rng=1, return_states=True)
     Y = Y + [3., -4.]
     # the channels differ by the difference component and the noise
@@ -232,6 +234,19 @@ def test_two_channels():
         64 + 9 + 25 + 2.5**2 / 4 + 0.04)
     assert bank.variogram(theta, [1e7], channel=1)[0] == pytest.approx(
         64 + 9 + 25 + 2.5**2 / 4 + 0.16)
+    # a gain between the channels: the common part is larger in the second
+    gained = bank.theta(gain=1.44, **pars)
+    assert np.allclose(bank.gains(gained), [1 / 1.2, 1.2]) and np.all(bank.gains() == 1)
+    assert bank.variogram(gained, [1e7], channel=1)[0] == pytest.approx(
+        1.44 * (64 + 9 + 25) + 2.5**2 / 4 + 0.16)
+    assert bank.psd(gained, [0.1], channel=0)[0] < bank.psd(theta, [0.1], channel=0)[0]
+    Hg = bank.obs_matrix(gained)
+    assert np.allclose(Hg[1, [2, 6, 8]], 1.2) and np.allclose(Hg[:, 4], [0.5, -0.5])
+    assert np.array_equal(bank.select("signal", channel=1, theta=gained), Hg[1])
+    assert np.allclose(bank.select("fast", channel=0, theta=gained)[2:4], [1 / 1.2, 0])
+    Yg = bank.simulate(gained, 6000, FS, rng=1) + [3., -4.]
+    fg = gm.fit_bank(bank, Yg, FS, prior=gm.reference_prior(bank), hessian=False)
+    assert fg.params["gain"] == pytest.approx(1.44, rel=0.05)
     rng = np.random.default_rng(0)
     Y[rng.random(6000) < 0.1, 0] = np.nan
     Y[2000:2300, 1] = np.nan
@@ -244,7 +259,7 @@ def test_two_channels():
     assert p["diff_sd"] == pytest.approx(2.5, rel=0.2)
     # an eye is reconstructed from the other where it is missing
     fres, sres = bank.smooth(fit.theta, Y, FS)
-    est = sres.m_smooth @ bank.select("signal", channel=1)
+    est = sres.m_smooth @ bank.select("signal", channel=1, theta=fit.theta)
     truth = X @ bank.H[1] - 4.0
     gap = slice(2000, 2300)
     assert np.sqrt(np.mean((est - truth)[gap]**2)) < 3.0     # sd of the signal: 10

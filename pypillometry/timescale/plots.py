@@ -219,7 +219,7 @@ class TimescalePlots:
                             color="C3", alpha=0.2, lw=0,
                             label=f"95 % of simulations ({chk.outside:.0%} of lags outside)")
         colors = _atom_colors(m.bank.atom_names)
-        for name, comp, w in m.bank._components(theta):
+        for name, comp, w in m.bank._components(theta, ch):
             if comp.sigma > 0:
                 ax.plot(lags, np.sqrt(w * comp.variogram(vg.lags)), lw=0.9,
                         ls="--", color=colors.get(name, "C0" if name == "fast" else "C1"),
@@ -266,7 +266,7 @@ class TimescalePlots:
         ax = get_ax(ax)
         sp = m.spectrum(eye, window=window)[eye].at_log_freqs(20)
         colors = _atom_colors(m.bank.atom_names)
-        for name, comp, w in m.bank._components(theta):
+        for name, comp, w in m.bank._components(theta, ch):
             if comp.sigma > 0:
                 ax.plot(sp.freqs, w * comp.psd(sp.freqs), lw=0.9, ls="--",
                         color=colors.get(name, "C0" if name == "fast" else "C1"), label=name)

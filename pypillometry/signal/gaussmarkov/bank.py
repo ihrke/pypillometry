@@ -23,10 +23,18 @@ The variances of the atoms are estimated as :math:`u_k = \\log(v_k + v_0)`
 with a small offset :math:`v_0`, so that an atom without variance sits at
 the finite value :math:`\\log v_0` (and not at minus infinity).
 
-With two channels (e.g., the two eyes), all components are common to both;
-each channel has its own mean and noise, and one more Matérn-3/2 process
-:math:`d(t)` (the difference between the channels) enters as
-:math:`+d/2` and :math:`-d/2`.
+With two channels (e.g., the two eyes), the fast component and the atoms
+are common to both. Each channel has its own mean and noise; the common
+part enters with a gain :math:`g^{-1/2}` in the first and :math:`g^{1/2}`
+in the second channel (the channels can differ in amplitude), and one more
+Matérn-3/2 process :math:`d(t)` (the difference between the channels)
+enters as :math:`+d/2` and :math:`-d/2`:
+
+.. math::
+
+    y_{1,t} = \\mu_{1,s} + g^{-1/2} c(t) + d(t)/2 + \\varepsilon_{1,t}, \\qquad
+    y_{2,t} = \\mu_{2,s} + g^{1/2} c(t) - d(t)/2 + \\varepsilon_{2,t},
+    \\qquad c = f + \\sum_k a_k
 
 Times are in ms.
 
@@ -95,8 +103,8 @@ class TimescaleBank:
     {'fast_sd': 8.0, 'fast_ell': 700.0, 'noise_sd': 0.2, 'sd_3s': 0.0, 'sd_10s': 0.0, 'sd_30s': 4.0, 'sd_100s': 0.0, 'sd_300s': 0.0}
     >>> bank.lgssm(theta, fs=20).dim_state
     13
-    >>> TimescaleBank(channels=("left", "right")).names[2:6]
-    ['log_noise_sd_left', 'log_noise_sd_right', 'log_diff_sd', 'log_diff_ell']
+    >>> TimescaleBank(channels=("left", "right")).names[2:7]
+    ['log_noise_sd_left', 'log_noise_sd_right', 'log_diff_sd', 'log_diff_ell', 'log_gain']
     """
 
     def __init__(self, timescales=DEFAULT_TIMESCALES, nu=1.5, v0=0.25, channels=1,
@@ -158,7 +166,7 @@ class TimescaleBank:
         out = ["log_fast_sd", "log_fast_ell"]
         out += [f"log_noise_sd{s}" for s in self._suffix]
         if self.n_channels == 2:
-            out += ["log_diff_sd", "log_diff_ell"]
+            out += ["log_diff_sd", "log_diff_ell", "log_gain"]
         return out + [f"u_{a}" for a in self.atom_names]
 
     @property
@@ -198,22 +206,41 @@ class TimescaleBank:
         """dimension of the state"""
         return self.n_channels + 2 + 2 * (self.n_channels == 2) + self.K * self._atoms[0].dim
 
-    @property
-    def H(self):
-        """observation matrix, (channels, dim)"""
+    def gains(self, theta=None):
+        """
+        Gain of the common components in each channel: 1 for one channel,
+        :math:`(g^{-1/2}, g^{1/2})` for two (1 without `theta`).
+        """
+        if self.n_channels == 1 or theta is None:
+            return np.ones(self.n_channels)
+        half = 0.5 * float(np.asarray(theta, dtype=float)[6])
+        return np.exp([-half, half])
+
+    def obs_matrix(self, theta=None):
+        """
+        Observation matrix, (channels, dim). With two channels it depends
+        on the gain between them (parameter vector `theta`; a gain of 1
+        without it).
+        """
         sl, m = self.slices, self.n_channels
+        gains = self.gains(theta)
         H = np.zeros((m, self.dim))
         for c, s in enumerate(self._suffix):
             H[c, sl[f"mean{s}"].start] = 1.0
-            H[c, sl["fast"].start] = 1.0
+            H[c, sl["fast"].start] = gains[c]
             for a in self.atom_names:
-                H[c, sl[a].start] = 1.0
+                H[c, sl[a].start] = gains[c]
         if m == 2:
             H[0, sl["diff"].start] = 0.5
             H[1, sl["diff"].start] = -0.5
         return H
 
-    def select(self, what="signal", cutoff=10000., channel=0):
+    @property
+    def H(self):
+        """observation matrix for a gain of 1 (see :meth:`obs_matrix`)"""
+        return self.obs_matrix()
+
+    def select(self, what="signal", cutoff=10000., channel=0, theta=None):
         """
         Weights of the state for a part of the signal of one channel.
 
@@ -233,13 +260,16 @@ class TimescaleBank:
             time scale in ms from which on the atoms are "slow" (default 10 s)
         channel : int
             index of the channel (default 0)
+        theta : array, optional
+            parameter vector; needed with two channels for the gain
+            between them (a gain of 1 without it)
 
         Returns
         -------
         np.ndarray
             vector w, so that the part of the signal is ``state @ w``
         """
-        H, sl = self.H[channel], self.slices
+        H, sl = self.obs_matrix(theta)[channel], self.slices
         mean = f"mean{self._suffix[channel]}"
         slow = [mean] + [a for a, t in zip(self.atom_names, self.timescales)
                          if t >= cutoff]
@@ -276,9 +306,9 @@ class TimescaleBank:
         -------
         dict
             ``fast_sd``, ``fast_ell`` (ms), ``noise_sd`` (per channel:
-            ``noise_sd_<channel>``), with two channels ``diff_sd`` and
-            ``diff_ell``, and the standard deviation of each atom
-            (``sd_3s``, ...)
+            ``noise_sd_<channel>``), with two channels ``diff_sd``,
+            ``diff_ell`` and ``gain``, and the standard deviation of each
+            atom (``sd_3s``, ...)
         """
         theta = np.asarray(theta, dtype=float)
         if theta.shape != (self.n_params,):
@@ -318,18 +348,20 @@ class TimescaleBank:
         sd, ell = (np.log(1e-2), np.log(1e3)), (np.log(100.), np.log(2500.))
         b = [sd, ell] + [(np.log(1e-3), np.log(50.))] * self.n_channels
         if self.n_channels == 2:
-            b += [(np.log(1e-3), np.log(1e3)), (np.log(100.), np.log(20000.))]
+            b += [(np.log(1e-3), np.log(1e3)), (np.log(100.), np.log(20000.)),
+                  (np.log(0.25), np.log(4.0))]
         return b + [(np.log(self.v0), np.log(1e5))] * self.K
 
     # -- second-order properties ----------------------------------------------
-    def _components(self, theta):
-        """(name, component, weight of its variance in one channel)"""
+    def _components(self, theta, channel=0):
+        """(name, component, weight of its variance in the channel)"""
         p = self.params(theta)
-        out = [("fast", Matern(p["fast_sd"], p["fast_ell"], nu=1.5), 1.0)]
+        g2 = float(self.gains(theta)[channel])**2
+        out = [("fast", Matern(p["fast_sd"], p["fast_ell"], nu=1.5), g2)]
         if self.n_channels == 2:
             out.append(("diff", Matern(p["diff_sd"], p["diff_ell"], nu=1.5), 0.25))
         for a, t in zip(self.atom_names, self.timescales):
-            out.append((a, Matern(p[f"sd_{a}"], t, nu=self.nu), 1.0))
+            out.append((a, Matern(p[f"sd_{a}"], t, nu=self.nu), g2))
         return out
 
     def _noise_var(self, theta):
@@ -342,7 +374,7 @@ class TimescaleBank:
         (the mean does not enter).
         """
         lags = np.asarray(lags, dtype=float)
-        g = sum(w * c.variogram(lags) for _, c, w in self._components(theta))
+        g = sum(w * c.variogram(lags) for _, c, w in self._components(theta, channel))
         return g + self._noise_var(theta)[channel] * (lags != 0)
 
     def psd(self, theta, freq, fs=None, channel=0):
@@ -351,7 +383,7 @@ class TimescaleBank:
         (Hz), in signal units squared per Hz. With the sampling rate `fs`
         (Hz), the white noise of the samples is included.
         """
-        s = sum(w * c.psd(freq) for _, c, w in self._components(theta))
+        s = sum(w * c.psd(freq) for _, c, w in self._components(theta, channel))
         if fs is not None:
             s = s + self._noise_var(theta)[channel] / (fs / 2.0)
         return s
@@ -400,7 +432,7 @@ class TimescaleBank:
         As += list(uA)
         Qs += [vk * Q for vk, Q in zip(v, uQ)]
         Ps += [vk * P for vk, P in zip(v, uP)]
-        return LGSSM(A=block_diag(*As), Q=block_diag(*Qs), H=self.H,
+        return LGSSM(A=block_diag(*As), Q=block_diag(*Qs), H=self.obs_matrix(theta),
                      R=np.diag(self._noise_var(theta)), m0=np.zeros(self.dim),
                      P0=block_diag(*Ps))
 
@@ -448,7 +480,8 @@ class TimescaleBank:
         Returns
         -------
         FilterResult, SmootherResult
-            use ``sres.m_smooth @ bank.select(...)`` for parts of the signal
+            use ``sres.m_smooth @ bank.select(..., theta=theta)`` for parts
+            of the signal
         """
         ssm = self.lgssm(theta, fs)
         fres = kalman_filter(ssm, self._y(y), n_diffuse=1, segments=segments)
@@ -536,7 +569,7 @@ class TimescaleBank:
                     vg_diff = vg_diff.at_log_lags()
                 cd, gd = decompose(vg_diff, fasts)
                 vd, elld = fast_part(cd[1:], gd)
-            head += [0.5 * np.log(vd), np.log(elld)]
+            head += [0.5 * np.log(vd), np.log(elld), 0.0]
         theta = np.array(head + list(np.log(vs + self.v0)))
         lo, hi = np.array(self.bounds()).T
         return np.clip(theta, lo, hi)
@@ -590,7 +623,7 @@ class TimescaleBank:
             number of fine samples per sample
         weights : array, (dim,) or (q, dim)
             weights of the state for the part(s) of the signal (see
-            :meth:`select`)
+            :meth:`select`; with two channels, pass `theta` to it)
         segments : list of (start, stop), optional
             the segments used in :meth:`smooth`; outside of them the result
             is NaN
@@ -732,7 +765,8 @@ class GaussianPrior:
 _PRIOR_TAUS = (3000., 10000., 30000., 100000., 300000.)
 _PRIOR_HEAD = {"log_fast_sd": (np.log(8.0), 0.35), "log_fast_ell": (np.log(700.0), 0.25),
                "log_noise_sd": (np.log(0.2), 0.6),
-               "log_diff_sd": (np.log(2.5), 0.5), "log_diff_ell": (np.log(700.0), 0.5)}
+               "log_diff_sd": (np.log(2.5), 0.5), "log_diff_ell": (np.log(700.0), 0.5),
+               "log_gain": (0.0, 0.2)}
 _PRIOR_U = ((2.5, 2.3, 1.5, 1.2, 2.5), (1.0, 1.0, 1.0, 1.0, 1.0))
 #: standard deviations of the general priors relative to the distribution
 #: over recordings
