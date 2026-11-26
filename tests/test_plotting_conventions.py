@@ -150,6 +150,9 @@ class TestPlotRange(ConventionTest):
             if name.startswith("_") or not callable(fct):
                 continue
             params = list(inspect.signature(fct).parameters)
+            # the channel to plot against comes first (released this way)
+            if name == "plot_pupil_covariate":
+                params.remove("channel")
             if "plot_range" in params:
                 with self.subTest(name):
                     self.assertEqual(params[0], "plot_range")

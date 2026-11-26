@@ -10,6 +10,7 @@ from unittest.mock import patch
 import numpy as np
 
 import pypillometry as pp
+from pypillometry.state import FORMAT_VERSION
 from pypillometry.cli import (pypilview_main, edf2pypil_main, pypilinfo_main,
                               pypil_upgrade_main, _default_output, _format_size)
 
@@ -395,7 +396,7 @@ class TestPypilUpgrade(CLITestCase):
         status, out, _ = self.run_main(["-n", "-r", self.src])
         self.assertEqual(status, 0)
         self.assertEqual(self.snapshot(), before)
-        self.assertIn("eyedata.h5: would convert, format 2 -> 3 (EyeData, hdf5)", out)
+        self.assertIn(f"eyedata.h5: would convert, format 2 -> {FORMAT_VERSION} (EyeData, hdf5)", out)
         self.assertIn("test.edf: skipped (not a pickle or HDF5 file)", out)
         self.assertIn("8 file(s): 6 would be converted, 0 up to date, 2 skipped, 0 failed",
                       out)
@@ -413,7 +414,7 @@ class TestPypilUpgrade(CLITestCase):
         self.assertIn("5 converted, 0 up to date, 2 skipped", out)
         for name in self.FILES:
             obj, versions = self.versions(os.path.join(self.src, name))
-            self.assertEqual(versions, {3}, name)
+            self.assertEqual(versions, {FORMAT_VERSION}, name)
         # not recursive: the file in the subfolder is unchanged
         self.assertEqual(self.versions(os.path.join(self.src, "sub", "segmented.h5"))[1], {2})
         with open(os.path.join(self.src, "test.edf"), "rb") as f:
@@ -452,7 +453,8 @@ class TestPypilUpgrade(CLITestCase):
         # the input files are unchanged; skipped files are not copied
         self.assertEqual({k: v for k, v in self.snapshot().items() if k in before}, before)
         self.assertEqual(sorted(os.listdir(out_dir)), sorted(self.FILES + ["sub"]))
-        self.assertEqual(self.versions(os.path.join(out_dir, "sub", "segmented.h5"))[1], {3})
+        self.assertEqual(self.versions(os.path.join(out_dir, "sub", "segmented.h5"))[1],
+                         {FORMAT_VERSION})
         # existing output files: only with -f
         status, _, err = self.run_main(["-o", out_dir, os.path.join(self.src, "eyedata.h5")])
         self.assertEqual(status, 1)

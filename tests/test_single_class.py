@@ -156,7 +156,7 @@ class TestOldClassesLoad(unittest.TestCase):
         self.assertEqual({type(v) for v in objs.values()}, {pp.EyeData})
 
     def test_pypil_upgrade(self):
-        from pypillometry import hdf5
+        from pypillometry import hdf5, state
         from pypillometry.cli import pypil_upgrade_main
         with tempfile.TemporaryDirectory() as tmp:
             src = os.path.join(tmp, "p.h5")
@@ -164,4 +164,4 @@ class TestOldClassesLoad(unittest.TestCase):
             with pp.nologging():
                 pypil_upgrade_main(["-q", "-i", src])
             self.assertEqual(hdf5.read_state(src)["class"], "EyeData")
-            self.assertEqual(hdf5.read_state(src)["format_version"], 3)
+            self.assertEqual(hdf5.read_state(src)["format_version"], state.FORMAT_VERSION)
