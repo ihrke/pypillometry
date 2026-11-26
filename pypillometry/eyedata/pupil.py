@@ -414,36 +414,46 @@ class PupilNamespace(Namespace["EyeData"]):
 
     def _convert_velocity_thresholds(self, pupil_data, winsize_ix, vel_onset, vel_offset):
         """
-        Convert velocity thresholds from per-ms or percentile to per-sample units.
-        
+        Convert velocity thresholds to per-sample units.
+
         Parameters
         ----------
         pupil_data : np.array
-            pupil data array (used for percentile calculation)
+            pupil data array (used for the thresholds relative to the velocity)
         winsize_ix : int
             window size in samples for velocity calculation
-        vel_onset : float or str
-            onset threshold (per-ms float or percentile string like "5%")
-        vel_offset : float or str
-            offset threshold (per-ms float or percentile string like "95%")
-            
+        vel_onset, vel_offset : float or str
+            onset and offset thresholds: a number (pupil units per ms), a
+            multiple of the robust standard deviation of the velocity
+            (``"8sd"``; negative for the onset, positive for the offset) or
+            a percentile of the velocity (``"5%"``)
+
         Returns
         -------
         tuple (float, float)
             (vel_onset_samples, vel_offset_samples) thresholds in per-sample units
         """
-        # Helper to parse percentile string
-        def parse_percentile(val):
-            if isinstance(val, str) and val.endswith('%'):
-                return float(val[:-1])
-            return None
-        
-        onset_pct = parse_percentile(vel_onset)
-        offset_pct = parse_percentile(vel_offset)
-        
-        # If either threshold is a percentile, we need to compute velocity profile
-        if onset_pct is not None or offset_pct is not None:
-            # Fill NaN/zero values with interpolation for velocity calculation
+        def parse(val, name):
+            """("sd" | "pct" | "abs", number)"""
+            if isinstance(val, str):
+                text = val.strip().lower()
+                try:
+                    if text.endswith("sd"):
+                        return "sd", abs(float(text[:-2]))
+                    if text.endswith("%"):
+                        return "pct", float(text[:-1])
+                except ValueError:
+                    pass
+                raise ValueError(f"{name}={val!r}: give a number (pupil units per ms), "
+                                 "a multiple of the robust SD of the velocity (e.g. '8sd') "
+                                 "or a percentile (e.g. '5%')")
+            return "abs", float(val)
+
+        specs = {"vel_onset": parse(vel_onset, "vel_onset"),
+                 "vel_offset": parse(vel_offset, "vel_offset")}
+        vel_valid = None
+        if any(kind != "abs" for kind, _ in specs.values()):
+            # velocity profile of the valid samples (NaN/0 filled linearly)
             invalid_mask = np.isnan(pupil_data) | (pupil_data == 0)
             pupil_filled = pupil_data.copy()
             valid_indices = np.where(~invalid_mask)[0]
@@ -452,36 +462,29 @@ class PupilNamespace(Namespace["EyeData"]):
                 pupil_filled[invalid_indices] = np.interp(
                     invalid_indices, valid_indices, pupil_data[valid_indices]
                 )
-            
-            # Compute velocity profile
             vel = preproc.velocity_savgol(pupil_filled, winsize_ix, polyorder=2, direction="center")
-            # Mask out invalid regions for percentile calculation
             vel_valid = vel[~invalid_mask]
-        
-        # Convert onset threshold
-        if onset_pct is not None:
-            vel_onset_samples = np.percentile(vel_valid, onset_pct)
-            logger.debug(f"vel_onset {vel_onset} -> {vel_onset_samples:.4f} (percentile)")
-        else:
-            # Convert from per-ms to per-sample
-            vel_onset_samples = float(vel_onset) * (1000 / self._d.fs)
-            logger.debug(f"vel_onset {vel_onset}/ms -> {vel_onset_samples:.4f}/sample")
-        
-        # Convert offset threshold
-        if offset_pct is not None:
-            vel_offset_samples = np.percentile(vel_valid, offset_pct)
-            logger.debug(f"vel_offset {vel_offset} -> {vel_offset_samples:.4f} (percentile)")
-        else:
-            # Convert from per-ms to per-sample
-            vel_offset_samples = float(vel_offset) * (1000 / self._d.fs)
-            logger.debug(f"vel_offset {vel_offset}/ms -> {vel_offset_samples:.4f}/sample")
-        
-        return vel_onset_samples, vel_offset_samples
+        out = []
+        for name, (kind, value) in specs.items():
+            sign = -1.0 if name == "vel_onset" else 1.0
+            if kind == "sd":
+                med = np.median(vel_valid)
+                rsd = 1.4826 * np.median(np.abs(vel_valid - med))
+                thr = sign * value * rsd
+                logger.debug(f"{name} {value:g} robust SD ({rsd:.4g}/sample) -> {thr:.4f}/sample")
+            elif kind == "pct":
+                thr = np.percentile(vel_valid, value)
+                logger.debug(f"{name} {value:g}% -> {thr:.4f}/sample (percentile)")
+            else:
+                thr = value * (1000 / self._d.fs)
+                logger.debug(f"{name} {value:g}/ms -> {thr:.4f}/sample")
+            out.append(float(thr))
+        return out[0], out[1]
 
     @step
     @keephistory
     def blinks_detect(self, eyes=[], min_duration:float=20, blink_val:float=0,
-                      winsize: float=11, vel_onset=-5.0, vel_offset=5.0, 
+                      winsize: float=11, vel_onset="8sd", vel_offset="8sd", 
                       vel_onset_min_duration: float=10.0, vel_offset_min_duration: float=10.0,
                       max_duration: float=2000, margin=0,
                       strategies: list=["zero","velocity"],
@@ -527,15 +530,20 @@ class PupilNamespace(Namespace["EyeData"]):
         winsize : float, str or Quantity
             window-size for Savitzky-Golay velocity estimation (in ms, or with units)
         vel_onset : float or str
-            velocity threshold to detect blink onset (negative value).
+            velocity threshold to detect blink onset (the closing of the lid):
 
-            - If float: threshold in pupil-units per millisecond (e.g., -5.0)
-            - If str: percentile of velocity distribution (e.g., "5%" for bottom 5%)
+            - ``"<k>sd"`` (default ``"8sd"``): k times the robust standard
+              deviation (1.4826 MAD) of the velocity of the recording, as a
+              negative threshold; it adapts to the units and the noise of
+              the data
+            - a number: threshold in pupil units per millisecond (negative,
+              e.g. -5.0)
+            - ``"<q>%"``: the q-th percentile of the velocity (e.g., "5%")
         vel_offset : float or str
-            velocity threshold to detect blink offset (positive value).
-
-            - If float: threshold in pupil-units per millisecond (e.g., 5.0)
-            - If str: percentile of velocity distribution (e.g., "95%" for top 5%)
+            velocity threshold to detect blink offset (the reopening):
+            ``"<k>sd"`` (default ``"8sd"``, positive), a number in pupil
+            units per millisecond (positive, e.g. 5.0) or a percentile
+            (e.g., "95%")
         vel_onset_min_duration : float, str or Quantity
             minimum duration (in ms, or with units) that velocity must exceed threshold to detect as onset
             (to avoid noise-induced false detections)

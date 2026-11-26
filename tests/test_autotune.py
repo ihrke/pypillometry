@@ -172,8 +172,10 @@ def data():
     """Binocular pupil, 60 s at 500 Hz, with detected blinks."""
     left, _, _ = make_signal(n=30000, nblinks=20, seed=1)
     right, _, _ = make_signal(n=30000, nblinks=20, seed=2)
+    # fixed velocity thresholds: the tests count the transplantable blinks, which
+    # depends on how long the detected blinks are
     return pp.EyeData(left_pupil=left, right_pupil=right, sampling_rate=500, name="blinks",
-                      inplace=False).pupil.blinks_detect()
+                      inplace=False).pupil.blinks_detect(vel_onset=-5.0, vel_offset=5.0)
 
 
 def record_transplants(monkeypatch):
@@ -261,8 +263,11 @@ class TestBlinksOptimizeParameters:
         for s in range(1000, 29000, 1000):
             loss[s:s + 60] = np.nan
         with pytest.raises(ValueError, match="obvious"):
+            # fixed thresholds: the blink transients are still in `loss` (only
+            # their gaps are filled), the default would find them
             pp.EyeData(left_pupil=loss, sampling_rate=500, inplace=False) \
-                .pupil.blinks_detect().pupil.blinks_optimize_parameters()
+                .pupil.blinks_detect(vel_onset=-5.0, vel_offset=5.0) \
+                .pupil.blinks_optimize_parameters()
         with pytest.raises(ValueError, match="obvious"):     # cores of 120 ms
             data.pupil.blinks_optimize_parameters(max_core=100)
         with pytest.raises(ValueError):
