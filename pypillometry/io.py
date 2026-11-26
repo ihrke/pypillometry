@@ -6,6 +6,8 @@ Reading and writing data.
 - data exports of Tobii Pro Lab (Tobii Pro Glasses):
   :func:`read_tobii_prolab` (usually used through
   :meth:`~pypillometry.HeadMountedEyeData.from_tobii_prolab`)
+- GazePoint recordings (Open Gaze API): :func:`read_gazepoint` (usually
+  used through :meth:`~pypillometry.EyeData.from_gazepoint`)
 - saved objects: :func:`write_file` and :func:`read_file` (pickle or
   HDF5 files; usually used through :meth:`~pypillometry.EyeData.write_file`
   and :meth:`~pypillometry.EyeData.from_file`)
@@ -1001,6 +1003,72 @@ def read_tobii_prolab(fname: str) -> dict:
     res["events"] = events.rename(columns={"Event": "label"}).reset_index(drop=True)
     res["info"] = info
     return res
+
+
+def read_gazepoint(fname: str, keep_initial_label: bool = False) -> dict:
+    """
+    Read a recording of a GazePoint eye tracker (e.g., GP3).
+
+    The file is a table (tab- or comma-separated) with one row per sample
+    and the columns of the GazePoint Open Gaze API, as written by programs
+    that record the data stream of the eye tracker: ``CNT``, ``TIME`` (s),
+    ``LPOGX``, ..., ``LPD``, ``LPV``, ``LEYEZ``, ``LPUPILD``,
+    ``LPUPILV``, ..., ``USER``.
+
+    The column ``USER`` holds the last label that the experiment sent to
+    the eye tracker (e.g., ``"TRIAL 3"``). It is repeated on every sample
+    until the next label; each change of the label is an event at that
+    sample.
+
+    Parameters
+    ----------
+    fname : str
+        filename of the recording
+    keep_initial_label : bool, optional
+        if False (default), the label of the first sample is not an event:
+        it was sent before the recording started (often left over from an
+        earlier recording)
+
+    Returns
+    -------
+    dict
+        - ``"samples"``: :class:`pandas.DataFrame` with ``time`` (ms) and
+          the other columns of the file under their original names, sorted
+          by time; samples with the time of an earlier sample are dropped
+        - ``"events"``: DataFrame with ``time`` (ms) and ``label``
+        - ``"info"``: dict with ``"format"``, ``"source"`` and
+          ``"duplicate_times"`` (number of dropped samples)
+
+    See Also
+    --------
+    pypillometry.EyeData.from_gazepoint : create an eyedata object from the file
+    """
+    import numpy as np
+    import pandas as pd
+    with open(fname) as f:
+        header = f.readline()
+    sep = "\t" if "\t" in header else ","
+    tab = pd.read_csv(fname, sep=sep, dtype={"USER": str}, low_memory=False)
+    tab.columns = [str(c).strip() for c in tab.columns]
+    if "TIME" not in tab.columns:
+        raise ValueError(f"'{fname}' is not a GazePoint recording: no column 'TIME'")
+    tab = tab.sort_values("TIME", kind="stable")
+    ndup = int(tab["TIME"].duplicated().sum())
+    if ndup:
+        logger.warning(f"{fname}: {ndup} samples with the time of an earlier sample are dropped")
+    tab = tab.drop_duplicates("TIME").reset_index(drop=True)
+    time = tab.pop("TIME").to_numpy(dtype=float) * 1000.
+    tab.insert(0, "time", time)
+
+    events = pd.DataFrame({"time": np.array([], dtype=float), "label": np.array([], dtype=str)})
+    if "USER" in tab.columns and len(tab) > 0:
+        user = tab["USER"].fillna("").astype(str).str.strip()
+        change = (user != user.shift()).to_numpy(copy=True)
+        change[0] = keep_initial_label
+        events = pd.DataFrame({"time": time[change], "label": user[change].to_numpy(dtype=str)})
+        events = events[events["label"] != ""].reset_index(drop=True)
+    info = dict(format="GazePoint (Open Gaze API)", source=str(fname), duplicate_times=ndup)
+    return {"samples": tab, "events": events, "info": info}
 
 
 @contextmanager

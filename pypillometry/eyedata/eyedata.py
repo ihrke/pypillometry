@@ -12,6 +12,7 @@ decorator is in :mod:`pypillometry.eyedata.history`.
 import copy
 import inspect
 import numbers
+import os
 import sys
 from collections.abc import Iterable
 from random import choice
@@ -1643,6 +1644,122 @@ class EyeData(state.VersionedState):
             return obj, edf
         else:
             return obj
+
+    @classmethod
+    def from_gazepoint(cls, fname: str, pupil: str = "mm", gaze: bool = True,
+                       screen_resolution: Optional[Tuple[int, int]] = None,
+                       label_prefix: Optional[str] = None,
+                       keep_initial_label: bool = False, **kwargs):
+        """
+        Read a recording of a GazePoint eye tracker (e.g., GP3).
+
+        The file is read with :func:`pypillometry.io.read_gazepoint` (a
+        table with the columns of the GazePoint Open Gaze API). Each change
+        of the label in the column ``USER`` is an event.
+
+        GazePoint marks samples without a pupil in two ways: ``LPV``/``RPV``
+        is 0 if the pupil was not found in the camera image (e.g., during a
+        blink), ``LPUPILV``/``RPUPILV`` is 0 if the pupil size in mm could
+        not be computed. During blinks, ``LPUPILV`` often stays 1 and the
+        last pupil size is repeated, so that blinks look like flat stretches
+        instead of gaps. Pupil samples are therefore only kept where both
+        flags are 1 (``pupil="px"``: where ``LPV`` is 1); all other samples
+        are NaN (masked). Gaze samples are kept where ``LPOGV``/``RPOGV``
+        is 1. Gaps in the time stamps are filled with NaN.
+
+        Parameters
+        ----------
+        fname : str
+            filename of the recording
+        pupil : str, optional
+            ``"mm"`` (default): pupil diameter in mm (``LPUPILD``,
+            ``RPUPILD``; GazePoint corrects it for the distance of the eye
+            from the camera); ``"px"``: pupil diameter in pixels of the
+            camera image (``LPD``, ``RPD``; not corrected for the distance,
+            but with a finer resolution: ``LPUPILD`` is stored in m with five
+            decimals, i.e. in steps of 0.01 mm)
+        gaze : bool, optional
+            if True (default), read the gaze position of each eye
+            (``LPOGX``, ``LPOGY``, ...)
+        screen_resolution : tuple, optional
+            screen resolution (width, height) in pixels; if given, the gaze
+            position is converted to pixels and the resolution is stored in
+            the experimental setup. Otherwise, the gaze position is a
+            fraction of the screen (0-1, as in the file)
+        label_prefix : str, optional
+            prefix that is removed from the event labels (e.g., ``"VAR "``)
+        keep_initial_label : bool, optional
+            if False (default), the label of the first sample is not an event
+            (it was sent before the recording started)
+        **kwargs
+            additional arguments passed to the constructor (e.g., `name`,
+            `sampling_rate`, `keep_orig`); the default sampling rate is
+            estimated from the median step of the time stamps
+
+        Returns
+        -------
+        :class:`~pypillometry.EyeData`
+            object of the class this method is called on
+
+        Examples
+        --------
+        >>> import pypillometry as pp
+        >>> d = pp.EyeData.from_gazepoint("rec.tsv", gaze=False)  # doctest: +SKIP
+        """
+        if pupil not in ("mm", "px"):
+            raise ValueError(f"pupil must be 'mm' or 'px', got {pupil!r}")
+        res = io.read_gazepoint(fname, keep_initial_label=keep_initial_label)
+        tab = res["samples"]
+        if len(tab) < 2:
+            raise ValueError(f"'{fname}' has fewer than two samples")
+        tx = tab["time"].to_numpy(dtype=float)
+
+        def col(name):
+            return tab[name].to_numpy(dtype=float)
+
+        def flag(name):
+            return col(name) == 1 if name in tab.columns else np.ones(len(tab), dtype=bool)
+
+        d = {}
+        distance = []
+        for eye, e in (("left", "L"), ("right", "R")):
+            vcol, mcol = (f"{e}PUPILD", f"{e}PUPILV") if pupil == "mm" else (f"{e}PD", None)
+            if vcol in tab.columns:
+                x = col(vcol) * (1000. if pupil == "mm" else 1.)
+                valid = flag(f"{e}PV") & np.isfinite(x) & (x > 0)
+                if mcol is not None:
+                    valid &= flag(mcol)
+                d[f"{eye}_pupil"] = np.where(valid, x, np.nan)
+                if f"{e}EYEZ" in tab.columns:
+                    distance.append(col(f"{e}EYEZ")[valid])
+            if gaze and f"{e}POGX" in tab.columns and f"{e}POGY" in tab.columns:
+                valid = flag(f"{e}POGV")
+                w, h = screen_resolution if screen_resolution is not None else (1., 1.)
+                d[f"{eye}_x"] = np.where(valid, col(f"{e}POGX") * w, np.nan)
+                d[f"{eye}_y"] = np.where(valid, col(f"{e}POGY") * h, np.nan)
+        if not d:
+            raise ValueError(f"'{fname}' has no pupil or gaze data")
+
+        info = dict(res["info"], pupil_units=pupil,
+                    gaze_units="px" if screen_resolution is not None else "fraction of the screen")
+        dist = np.concatenate(distance) if distance else np.array([])
+        dist = dist[np.isfinite(dist) & (dist > 0)]
+        if len(dist):
+            # LEYEZ/REYEZ: distance of the eye from the camera (m)
+            info["eye_distance_mm"] = float(np.median(dist) * 1000.)
+
+        events = res["events"]
+        labels = events["label"].to_numpy(dtype=str)
+        if label_prefix:
+            labels = np.array([s.removeprefix(label_prefix) for s in labels], dtype=str)
+        setup = None
+        if screen_resolution is not None:
+            setup = ExperimentalSetup(screen_resolution=tuple(screen_resolution))
+        kwargs.setdefault("name", os.path.splitext(os.path.basename(str(fname)))[0])
+        kwargs.setdefault("sampling_rate", 1000. / np.median(np.diff(tx)))
+        return cls(time=tx, **d, events=Events(events["time"].to_numpy(dtype=float), labels,
+                                               units="ms"),
+                   experimental_setup=setup, info=info, **kwargs)
 
     def summary(self):
         """Return a summary of the dataset as a dictionary.
