@@ -31,6 +31,7 @@ dependencies = [
     "requests",
     "loguru",
     "tqdm",
+    "numba",
     "h5py",
     "eyelinkio",
     "PySide6",
@@ -40,7 +41,6 @@ dependencies = [
 
 [project.optional-dependencies]
 test = ["pytest", "pytest-cov"]
-fast = ["numba"]
 
 [project.scripts]
 pypilview = "pypillometry.cli:pypilview_main"

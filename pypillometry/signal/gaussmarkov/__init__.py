@@ -7,7 +7,7 @@ Low-level machinery on numpy arrays; experimental, the API may change.
 - :mod:`~pypillometry.signal.gaussmarkov.components`: components and
   their sum (:class:`GaussMarkovModel`)
 - :mod:`~pypillometry.signal.gaussmarkov.kalman`: general Kalman filter,
-  smoother and simulation (compiled with numba if installed)
+  smoother and simulation (compiled with numba)
 - :mod:`~pypillometry.signal.gaussmarkov.likelihood`: log-likelihood of a
   signal or of its semivariogram, fitting
 - :mod:`~pypillometry.signal.gaussmarkov.bank`: timescale-bank model (a fast

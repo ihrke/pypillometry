@@ -29,8 +29,7 @@ channels, which are then processed one after the other):
   ``P0``, e.g. an unknown mean) and are left out of the likelihood, which
   is then the restricted likelihood (REML) of the other parameters
 
-The inner loops are compiled with numba if it is installed (``pip install
-numba``); otherwise they run as (slow) plain Python.
+The inner loops are compiled with numba (on first use).
 """
 from dataclasses import dataclass
 
@@ -45,7 +44,7 @@ _LOG2PI = float(np.log(2 * np.pi))
 
 
 # ---------------------------------------------------------------------------
-# kernels (plain numpy; compiled with numba when available)
+# kernels (plain numpy; compiled with numba on first use)
 # ---------------------------------------------------------------------------
 def _filter_kernel(A, Q, H, R, m0, P0, y, store,
                    mp, Pp, mf, Pf, v, S, K, llt):
@@ -373,30 +372,22 @@ def _simulate_kernel(A, Qsqrt, H, Rsqrt, x0, ex, ey, xs, ys):
 
 
 _KERNELS = None
-_JIT = False
 
 
 def _kernels():
     """
     The kernels (filter, smoother, simulation, sequential log-likelihood,
-    sequential filter, forecasts), compiled with numba on first use if it
-    is installed.
+    sequential filter, forecasts), compiled with numba on first use
+    (imported here, so that importing the package does not load numba).
     """
-    global _KERNELS, _JIT
+    global _KERNELS
     if _KERNELS is None:
+        import numba
         plain = (_filter_kernel, _smoother_kernel, _simulate_kernel,
                  _seq_loglik_kernel, _seq_filter_kernel, _forecast_kernel)
-        try:
-            import numba
-        except ImportError:
-            logger.warning("numba is not installed: the Kalman filter runs as "
-                           "plain Python and is slow for long signals")
-            _KERNELS = plain
-        else:
-            # without the GIL, so that threads can run them in parallel
-            jit = numba.njit(cache=True, nogil=True)
-            _KERNELS = tuple(jit(k) for k in plain)
-            _JIT = True
+        # without the GIL, so that threads can run them in parallel
+        jit = numba.njit(cache=True, nogil=True)
+        _KERNELS = tuple(jit(k) for k in plain)
     return _KERNELS
 
 
@@ -411,13 +402,12 @@ _WARNED = set()
 
 def _check_cost(what, T, n, m):
     """warn (once per call signature) if a run will be slow or use much memory"""
-    sec = _SEC_PER_STEP[what] * T * n * n * (1 if _JIT else 30)
+    sec = _SEC_PER_STEP[what] * T * n * n
     mem = 8.0 * T * _FLOATS_PER_STEP[what](n, m)
     if (sec > _MAX_SEC or mem > _MAX_BYTES) and (what, T, n, m) not in _WARNED:
         _WARNED.add((what, T, n, m))
         logger.warning(f"{what}: {T} samples with a {n}-dim state will take "
                        f"~{sec:.0f} s and ~{mem / 1e9:.1f} GB "
-                       f"{'' if _JIT else '(numba not installed) '}"
                        "- consider downsampling or a shorter segment")
 
 
