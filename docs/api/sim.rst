@@ -55,7 +55,8 @@ Steps
 -----
 
 The steps run in a fixed order of stages: events of the task, latent
-pupil size (log-%), gaze, foreshortening, units of the tracker, noise.
+pupil size (log-%), gaze, foreshortening, units of the tracker, blinks
+(occlusion), noise, losses of the tracker (missing samples).
 
 .. autosummary::
    :toctree: generated
@@ -66,7 +67,17 @@ pupil size (log-%), gaze, foreshortening, units of the tracker, noise.
    Fixations
    Foreshortening
    Units
+   Blinks
    WhiteNoise
+   TrackerLoss
+
+.. autosummary::
+   :toctree: generated
+   :template: function.rst
+   :nosignatures:
+
+   blink_occlusion
+   parse_rate
 
 From a fitted model
 -------------------

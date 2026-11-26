@@ -68,10 +68,18 @@ added. The signal is in log-% (:math:`100 \log(\text{size} /
    * - units
      - ``.units(median)`` (:class:`Units`)
      - from log-% to the units of the tracker (default: median 1000)
+   * - occlusion
+     - ``.blinks()`` (:class:`Blinks`)
+     - blinks: the lid covers the pupil; the tracker loses it while most
+       of it is covered
    * - noise
      - ``.noise(sd)`` (:class:`WhiteNoise`)
      - white noise, multiplicative (``sd`` in log-%) or additive
        (``scale="data"``)
+   * - missing
+     - ``.loss()`` (:class:`TrackerLoss`)
+     - short losses of the pupil without transient; then all samples
+       without pupil are set missing (also in the gaze)
 
 The parameters of :class:`TimescalePupil` are those of
 :attr:`TimescaleModel.params <pypillometry.TimescaleModel.params>`;
@@ -108,6 +116,13 @@ two additions:
        * - ``log_slow``
          - the atoms with time scales of at least the `cutoff` of
            :class:`TimescalePupil` (default 10 s)
+       * - ``occlusion``
+         - the fraction of the pupil covered by the lid (blinks)
+
+``d.truth_events``
+    The true artifacts as :class:`~pypillometry.Events`: ``"blink"`` and
+    ``"loss"`` per eye, with their parameters as metadata. They follow
+    cropping and the removal of periods with the data.
 
 ``d.simulation``
     The recipe with the seed that was used. ``d.simulation.run()`` makes
@@ -197,6 +212,40 @@ notebook, the task shows one by itself), and
    :include-source: False
 
    fig = pp.sim.tasks.ftrsgt().plot(figsize=(8, 3.6))
+
+
+Blinks and tracker loss
+-----------------------
+
+:class:`Blinks` models the fraction :math:`g(t)` of the pupil that the lid
+covers (:func:`blink_occlusion`): a fast closing, a closed phase and a
+reopening in two speeds, a fast logistic and a slow exponential tail. The
+measured pupil is :math:`(1 - g)` times the true pupil, so the transients
+before and after the gap are part of the data, and the tracker loses the
+pupil while more than `visibility` (default half) is covered. The
+parameters are drawn for each blink; the defaults come from fits of the
+model to blinks of EyeLink recordings: closing time scale about 3 ms,
+closed phase about 220 ms, fast reopening about 22 ms, a tail of 15 % that
+fades 6 times more slowly; 2 % of the blinks are partial. With two eyes,
+the blinks are the same up to a small jitter.
+
+:class:`TrackerLoss` adds rare losses of the pupil at random times, without
+transient, in each eye separately or (``binocular=True``) in both.
+
+.. code-block:: python
+
+    d = (pp.sim.Simulation("10 min", fs=500, eyes=["left", "right"], seed=1)
+         .pupil().units(800)
+         .blinks(rate="15/min")                 # defaults from the fits
+         .noise(0.2)
+         .loss(rate="0.5/min")
+         .run())
+    d.truth_events                              # true blinks with their parameters
+
+The missing samples are NaN; ``Simulation(missing_value=0)`` codes them as
+0, as some trackers do. ``d.truth["left", "occlusion"]`` gives the true
+extent of every blink and ``d.truth["left", "pupil"]`` the pupil without
+them, so detection and interpolation can be scored exactly.
 
 
 Random numbers
