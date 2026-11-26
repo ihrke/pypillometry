@@ -813,6 +813,7 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numbers</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">random</span><span class="w"> </span><span class="kn">import</span> <span class="n">choice</span>
@@ -2510,6 +2511,125 @@ window.runMermaid = runMermaid;</script>
             <span class="k">return</span> <span class="n">obj</span></div>
 
 
+<div class="viewcode-block" id="EyeData.from_gazepoint">
+<a class="viewcode-back" href="../../../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.from_gazepoint">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_gazepoint</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">fname</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">pupil</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"mm"</span><span class="p">,</span> <span class="n">gaze</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                       <span class="n">screen_resolution</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                       <span class="n">label_prefix</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                       <span class="n">keep_initial_label</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Read a recording of a GazePoint eye tracker (e.g., GP3).</span>
+
+<span class="sd">        The file is read with :func:`pypillometry.io.read_gazepoint` (a</span>
+<span class="sd">        table with the columns of the GazePoint Open Gaze API). Each change</span>
+<span class="sd">        of the label in the column ``USER`` is an event.</span>
+
+<span class="sd">        GazePoint marks samples without a pupil in two ways: ``LPV``/``RPV``</span>
+<span class="sd">        is 0 if the pupil was not found in the camera image (e.g., during a</span>
+<span class="sd">        blink), ``LPUPILV``/``RPUPILV`` is 0 if the pupil size in mm could</span>
+<span class="sd">        not be computed. During blinks, ``LPUPILV`` often stays 1 and the</span>
+<span class="sd">        last pupil size is repeated, so that blinks look like flat stretches</span>
+<span class="sd">        instead of gaps. Pupil samples are therefore only kept where both</span>
+<span class="sd">        flags are 1 (``pupil="px"``: where ``LPV`` is 1); all other samples</span>
+<span class="sd">        are NaN (masked). Gaze samples are kept where ``LPOGV``/``RPOGV``</span>
+<span class="sd">        is 1. Gaps in the time stamps are filled with NaN.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        fname : str</span>
+<span class="sd">            filename of the recording</span>
+<span class="sd">        pupil : str, optional</span>
+<span class="sd">            ``"mm"`` (default): pupil diameter in mm (``LPUPILD``,</span>
+<span class="sd">            ``RPUPILD``; GazePoint corrects it for the distance of the eye</span>
+<span class="sd">            from the camera); ``"px"``: pupil diameter in pixels of the</span>
+<span class="sd">            camera image (``LPD``, ``RPD``; not corrected for the distance,</span>
+<span class="sd">            but with a finer resolution: ``LPUPILD`` is stored in m with five</span>
+<span class="sd">            decimals, i.e. in steps of 0.01 mm)</span>
+<span class="sd">        gaze : bool, optional</span>
+<span class="sd">            if True (default), read the gaze position of each eye</span>
+<span class="sd">            (``LPOGX``, ``LPOGY``, ...)</span>
+<span class="sd">        screen_resolution : tuple, optional</span>
+<span class="sd">            screen resolution (width, height) in pixels; if given, the gaze</span>
+<span class="sd">            position is converted to pixels and the resolution is stored in</span>
+<span class="sd">            the experimental setup. Otherwise, the gaze position is a</span>
+<span class="sd">            fraction of the screen (0-1, as in the file)</span>
+<span class="sd">        label_prefix : str, optional</span>
+<span class="sd">            prefix that is removed from the event labels (e.g., ``"VAR "``)</span>
+<span class="sd">        keep_initial_label : bool, optional</span>
+<span class="sd">            if False (default), the label of the first sample is not an event</span>
+<span class="sd">            (it was sent before the recording started)</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            additional arguments passed to the constructor (e.g., `name`,</span>
+<span class="sd">            `sampling_rate`, `keep_orig`); the default sampling rate is</span>
+<span class="sd">            estimated from the median step of the time stamps</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        :class:`~pypillometry.EyeData`</span>
+<span class="sd">            object of the class this method is called on</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; import pypillometry as pp</span>
+<span class="sd">        &gt;&gt;&gt; d = pp.EyeData.from_gazepoint("rec.tsv", gaze=False)  # doctest: +SKIP</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">pupil</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"mm"</span><span class="p">,</span> <span class="s2">"px"</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"pupil must be 'mm' or 'px', got </span><span class="si">{</span><span class="n">pupil</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">read_gazepoint</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">keep_initial_label</span><span class="o">=</span><span class="n">keep_initial_label</span><span class="p">)</span>
+        <span class="n">tab</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="s2">"samples"</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tab</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2">' has fewer than two samples"</span><span class="p">)</span>
+        <span class="n">tx</span> <span class="o">=</span> <span class="n">tab</span><span class="p">[</span><span class="s2">"time"</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">col</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">tab</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">flag</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">col</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">tab</span><span class="o">.</span><span class="n">columns</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tab</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+
+        <span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">distance</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">eye</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="p">((</span><span class="s2">"left"</span><span class="p">,</span> <span class="s2">"L"</span><span class="p">),</span> <span class="p">(</span><span class="s2">"right"</span><span class="p">,</span> <span class="s2">"R"</span><span class="p">)):</span>
+            <span class="n">vcol</span><span class="p">,</span> <span class="n">mcol</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">PUPILD"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">PUPILV"</span><span class="p">)</span> <span class="k">if</span> <span class="n">pupil</span> <span class="o">==</span> <span class="s2">"mm"</span> <span class="k">else</span> <span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">PD"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">vcol</span> <span class="ow">in</span> <span class="n">tab</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="n">col</span><span class="p">(</span><span class="n">vcol</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1000.</span> <span class="k">if</span> <span class="n">pupil</span> <span class="o">==</span> <span class="s2">"mm"</span> <span class="k">else</span> <span class="mf">1.</span><span class="p">)</span>
+                <span class="n">valid</span> <span class="o">=</span> <span class="n">flag</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">PV"</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">mcol</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">valid</span> <span class="o">&amp;=</span> <span class="n">flag</span><span class="p">(</span><span class="n">mcol</span><span class="p">)</span>
+                <span class="n">d</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_pupil"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">valid</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+                <span class="k">if</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">EYEZ"</span> <span class="ow">in</span> <span class="n">tab</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                    <span class="n">distance</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">EYEZ"</span><span class="p">)[</span><span class="n">valid</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">gaze</span> <span class="ow">and</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">POGX"</span> <span class="ow">in</span> <span class="n">tab</span><span class="o">.</span><span class="n">columns</span> <span class="ow">and</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">POGY"</span> <span class="ow">in</span> <span class="n">tab</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                <span class="n">valid</span> <span class="o">=</span> <span class="n">flag</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">POGV"</span><span class="p">)</span>
+                <span class="n">w</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">screen_resolution</span> <span class="k">if</span> <span class="n">screen_resolution</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">(</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+                <span class="n">d</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_x"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">valid</span><span class="p">,</span> <span class="n">col</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">POGX"</span><span class="p">)</span> <span class="o">*</span> <span class="n">w</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+                <span class="n">d</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_y"</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">valid</span><span class="p">,</span> <span class="n">col</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">POGY"</span><span class="p">)</span> <span class="o">*</span> <span class="n">h</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">d</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2">' has no pupil or gaze data"</span><span class="p">)</span>
+
+        <span class="n">info</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s2">"info"</span><span class="p">],</span> <span class="n">pupil_units</span><span class="o">=</span><span class="n">pupil</span><span class="p">,</span>
+                    <span class="n">gaze_units</span><span class="o">=</span><span class="s2">"px"</span> <span class="k">if</span> <span class="n">screen_resolution</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">"fraction of the screen"</span><span class="p">)</span>
+        <span class="n">dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">distance</span><span class="p">)</span> <span class="k">if</span> <span class="n">distance</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+        <span class="n">dist</span> <span class="o">=</span> <span class="n">dist</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">dist</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">dist</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dist</span><span class="p">):</span>
+            <span class="c1"># LEYEZ/REYEZ: distance of the eye from the camera (m)</span>
+            <span class="n">info</span><span class="p">[</span><span class="s2">"eye_distance_mm"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">dist</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1000.</span><span class="p">)</span>
+
+        <span class="n">events</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="s2">"events"</span><span class="p">]</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">events</span><span class="p">[</span><span class="s2">"label"</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">label_prefix</span><span class="p">:</span>
+            <span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">s</span><span class="o">.</span><span class="n">removeprefix</span><span class="p">(</span><span class="n">label_prefix</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+        <span class="n">setup</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">screen_resolution</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">setup</span> <span class="o">=</span> <span class="n">ExperimentalSetup</span><span class="p">(</span><span class="n">screen_resolution</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">screen_resolution</span><span class="p">))</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">"name"</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">fname</span><span class="p">)))[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">"sampling_rate"</span><span class="p">,</span> <span class="mf">1000.</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">tx</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">tx</span><span class="p">,</span> <span class="o">**</span><span class="n">d</span><span class="p">,</span> <span class="n">events</span><span class="o">=</span><span class="n">Events</span><span class="p">(</span><span class="n">events</span><span class="p">[</span><span class="s2">"time"</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span> <span class="n">labels</span><span class="p">,</span>
+                                               <span class="n">units</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">),</span>
+                   <span class="n">experimental_setup</span><span class="o">=</span><span class="n">setup</span><span class="p">,</span> <span class="n">info</span><span class="o">=</span><span class="n">info</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="EyeData.summary">
 <a class="viewcode-back" href="../../../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.summary">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">summary</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -3036,7 +3156,7 @@ window.runMermaid = runMermaid;</script>
                 <span class="n">ntx</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">tx</span><span class="p">[</span><span class="n">bounds</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span><span class="n">bounds</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]]</span> <span class="p">)</span>
                 <span class="k">if</span> <span class="n">i</span><span class="o">&lt;</span><span class="n">ngaps</span><span class="p">:</span>
                     <span class="n">start</span><span class="p">,</span><span class="n">end</span><span class="o">=</span><span class="n">gaps_start_ix</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">gaps_end_ix</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-                    <span class="n">nfill</span><span class="o">=</span><span class="nb">int</span><span class="p">((</span><span class="n">tx</span><span class="p">[</span><span class="n">end</span><span class="p">]</span><span class="o">-</span><span class="n">tx</span><span class="p">[</span><span class="n">start</span><span class="p">])</span><span class="o">/</span><span class="n">stepsize</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span>
+                    <span class="n">nfill</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">((</span><span class="n">tx</span><span class="p">[</span><span class="n">end</span><span class="p">]</span><span class="o">-</span><span class="n">tx</span><span class="p">[</span><span class="n">start</span><span class="p">])</span><span class="o">/</span><span class="n">stepsize</span><span class="p">))</span><span class="o">-</span><span class="mi">1</span>
                     <span class="n">ntx</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">tx</span><span class="p">[</span><span class="n">start</span><span class="p">]</span><span class="o">+</span><span class="n">stepsize</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nfill</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="p">)</span>
             <span class="c1"># new position of each original sample (ntx alternates kept</span>
             <span class="c1"># segments and filled gaps)</span>

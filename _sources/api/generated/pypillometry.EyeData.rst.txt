@@ -30,6 +30,7 @@
       ~EyeData.fill_time_discontinuities
       ~EyeData.from_eyelink
       ~EyeData.from_file
+      ~EyeData.from_gazepoint
       ~EyeData.get_blinks
       ~EyeData.get_duration
       ~EyeData.get_epochs

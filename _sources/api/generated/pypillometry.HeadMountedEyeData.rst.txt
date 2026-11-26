@@ -30,6 +30,7 @@
       ~HeadMountedEyeData.fill_time_discontinuities
       ~HeadMountedEyeData.from_eyelink
       ~HeadMountedEyeData.from_file
+      ~HeadMountedEyeData.from_gazepoint
       ~HeadMountedEyeData.from_tobii_prolab
       ~HeadMountedEyeData.get_blinks
       ~HeadMountedEyeData.get_duration

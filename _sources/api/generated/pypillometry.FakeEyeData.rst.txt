@@ -30,6 +30,7 @@
       ~FakeEyeData.fill_time_discontinuities
       ~FakeEyeData.from_eyelink
       ~FakeEyeData.from_file
+      ~FakeEyeData.from_gazepoint
       ~FakeEyeData.get_blinks
       ~FakeEyeData.get_duration
       ~FakeEyeData.get_epochs

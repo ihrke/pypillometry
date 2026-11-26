@@ -472,6 +472,7 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../io.html">Reading and writing data</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.read_eyelink.html">read_eyelink</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.read_tobii_prolab.html">read_tobii_prolab</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pypillometry.read_gazepoint.html">read_gazepoint</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.read_file.html">read_file</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.write_file.html">write_file</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pypillometry.download.html">download</a></li>
@@ -752,103 +753,106 @@ initially True). The method-level <cite>inplace</cite> argument overrides this.<
 <tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeData.from_file" title="pypillometry.EyeData.from_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_file</span></code></a></p></td>
 <td><p>Reads a <a class="reference internal" href="#pypillometry.EyeData" title="pypillometry.EyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">EyeData</span></code></a> object from a pickle or HDF5 file (see <a class="reference internal" href="pypillometry.write_file.html#pypillometry.write_file" title="pypillometry.write_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">write_file()</span></code></a>).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeData.get_blinks" title="pypillometry.EyeData.get_blinks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_blinks</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeData.from_gazepoint" title="pypillometry.EyeData.from_gazepoint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_gazepoint</span></code></a></p></td>
+<td><p>Read a recording of a GazePoint eye tracker (e.g., GP3).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeData.get_blinks" title="pypillometry.EyeData.get_blinks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_blinks</span></code></a></p></td>
 <td><p>Get blinks as a dict of Intervals (one per eye/variable).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeData.get_duration" title="pypillometry.EyeData.get_duration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_duration</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeData.get_duration" title="pypillometry.EyeData.get_duration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_duration</span></code></a></p></td>
 <td><p>Return duration of the dataset in units specified.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeData.get_epochs" title="pypillometry.EyeData.get_epochs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_epochs</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeData.get_epochs" title="pypillometry.EyeData.get_epochs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_epochs</span></code></a></p></td>
 <td><p>Return the time windows around events (Epochs).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeData.get_excluded" title="pypillometry.EyeData.get_excluded"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_excluded</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeData.get_excluded" title="pypillometry.EyeData.get_excluded"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_excluded</span></code></a></p></td>
 <td><p>Return the excluded periods (see <a class="reference internal" href="pypillometry.exclude_intervals.html#pypillometry.exclude_intervals" title="pypillometry.exclude_intervals"><code class="xref py py-meth docutils literal notranslate"><span class="pre">exclude_intervals()</span></code></a>).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeData.get_included" title="pypillometry.EyeData.get_included"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_included</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeData.get_included" title="pypillometry.EyeData.get_included"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_included</span></code></a></p></td>
 <td><p>Return the periods that are not excluded (see <a class="reference internal" href="pypillometry.exclude_intervals.html#pypillometry.exclude_intervals" title="pypillometry.exclude_intervals"><code class="xref py py-meth docutils literal notranslate"><span class="pre">exclude_intervals()</span></code></a>).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeData.get_interpolated" title="pypillometry.EyeData.get_interpolated"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_interpolated</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeData.get_interpolated" title="pypillometry.EyeData.get_interpolated"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_interpolated</span></code></a></p></td>
 <td><p>Get the interpolated stretches as a dict of Intervals (one per eye/variable).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeData.get_intervals" title="pypillometry.EyeData.get_intervals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_intervals</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeData.get_intervals" title="pypillometry.EyeData.get_intervals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_intervals</span></code></a></p></td>
 <td><p>Return the spans between two kinds of events (Intervals).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeData.get_layer_intervals" title="pypillometry.EyeData.get_layer_intervals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_layer_intervals</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeData.get_layer_intervals" title="pypillometry.EyeData.get_layer_intervals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_layer_intervals</span></code></a></p></td>
 <td><p>Get the runs of a mask layer (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;offscreen&quot;</span></code>) as a dict of Intervals.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeData.get_segments" title="pypillometry.EyeData.get_segments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_segments</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeData.get_segments" title="pypillometry.EyeData.get_segments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_segments</span></code></a></p></td>
 <td><p>Cut the data around events into segments of equal length.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeData.get_size" title="pypillometry.EyeData.get_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_size</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeData.get_size" title="pypillometry.EyeData.get_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_size</span></code></a></p></td>
 <td><p>Return the size of the object in bytes.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeData.get_values" title="pypillometry.EyeData.get_values"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_values</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeData.get_values" title="pypillometry.EyeData.get_values"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_values</span></code></a></p></td>
 <td><p>Values of a channel with NaN where the sample is unusable under <cite>policy</cite>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeData.interpolate_intervals" title="pypillometry.EyeData.interpolate_intervals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolate_intervals</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeData.interpolate_intervals" title="pypillometry.EyeData.interpolate_intervals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolate_intervals</span></code></a></p></td>
 <td><p>Interpolate data within specified intervals.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeData.keep_intervals" title="pypillometry.EyeData.keep_intervals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">keep_intervals</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeData.keep_intervals" title="pypillometry.EyeData.keep_intervals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">keep_intervals</span></code></a></p></td>
 <td><p>Exclude everything outside the given periods (e.g., keep only the task blocks or the fMRI run).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeData.layer_stats" title="pypillometry.EyeData.layer_stats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">layer_stats</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeData.layer_stats" title="pypillometry.EyeData.layer_stats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">layer_stats</span></code></a></p></td>
 <td><p>Statistics of the mask layers: how often and how long each channel is marked by each layer.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeData.mask" title="pypillometry.EyeData.mask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mask</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeData.mask" title="pypillometry.EyeData.mask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mask</span></code></a></p></td>
 <td><p>Mask of a channel under a mask policy (True: unusable sample).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeData.mask_as_intervals" title="pypillometry.EyeData.mask_as_intervals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mask_as_intervals</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeData.mask_as_intervals" title="pypillometry.EyeData.mask_as_intervals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mask_as_intervals</span></code></a></p></td>
 <td><p>Convert masks to Intervals objects.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeData.mask_intervals" title="pypillometry.EyeData.mask_intervals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mask_intervals</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeData.mask_intervals" title="pypillometry.EyeData.mask_intervals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mask_intervals</span></code></a></p></td>
 <td><p>Apply Intervals as masks to selected data.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeData.merge_eyes" title="pypillometry.EyeData.merge_eyes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">merge_eyes</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeData.merge_eyes" title="pypillometry.EyeData.merge_eyes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">merge_eyes</span></code></a></p></td>
 <td><p>Merge data from both eyes into a single variable.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeData.merge_masks" title="pypillometry.EyeData.merge_masks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">merge_masks</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeData.merge_masks" title="pypillometry.EyeData.merge_masks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">merge_masks</span></code></a></p></td>
 <td><p>Merge masks of all variables into a single joint mask.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeData.nevents" title="pypillometry.EyeData.nevents"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nevents</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeData.nevents" title="pypillometry.EyeData.nevents"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nevents</span></code></a></p></td>
 <td><p>Return number of events in data.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeData.print_history" title="pypillometry.EyeData.print_history"><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_history</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeData.print_history" title="pypillometry.EyeData.print_history"><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_history</span></code></a></p></td>
 <td><p>Pretty-print the history of the current dataset (which manipulations where done on it).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeData.quality_report" title="pypillometry.EyeData.quality_report"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quality_report</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeData.quality_report" title="pypillometry.EyeData.quality_report"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quality_report</span></code></a></p></td>
 <td><p>Report the quality of the data.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeData.remove_intervals" title="pypillometry.EyeData.remove_intervals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_intervals</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeData.remove_intervals" title="pypillometry.EyeData.remove_intervals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_intervals</span></code></a></p></td>
 <td><p>Remove the data in the given periods (e.g., breaks) and join the rest.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeData.reset_time" title="pypillometry.EyeData.reset_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_time</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeData.reset_time" title="pypillometry.EyeData.reset_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_time</span></code></a></p></td>
 <td><p>Resets time so that time <cite>t0</cite> becomes time zero.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeData.scale" title="pypillometry.EyeData.scale"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeData.scale" title="pypillometry.EyeData.scale"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale</span></code></a></p></td>
 <td><p>Scale the signal: subtract <cite>center</cite> and divide by <cite>scale</cite>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeData.set_blinks" title="pypillometry.EyeData.set_blinks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_blinks</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeData.set_blinks" title="pypillometry.EyeData.set_blinks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_blinks</span></code></a></p></td>
 <td><p>Set blinks for specified eyes and variables (in-place).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeData.set_events" title="pypillometry.EyeData.set_events"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_events</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeData.set_events" title="pypillometry.EyeData.set_events"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_events</span></code></a></p></td>
 <td><p>Replace the events of the dataset (in-place).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeData.set_experimental_setup" title="pypillometry.EyeData.set_experimental_setup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_experimental_setup</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeData.set_experimental_setup" title="pypillometry.EyeData.set_experimental_setup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_experimental_setup</span></code></a></p></td>
 <td><p>Set or update the experimental setup geometry (in-place).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeData.split_excluded" title="pypillometry.EyeData.split_excluded"><code class="xref py py-obj docutils literal notranslate"><span class="pre">split_excluded</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeData.split_excluded" title="pypillometry.EyeData.split_excluded"><code class="xref py py-obj docutils literal notranslate"><span class="pre">split_excluded</span></code></a></p></td>
 <td><p>Split the data at the excluded periods (see <a class="reference internal" href="pypillometry.exclude_intervals.html#pypillometry.exclude_intervals" title="pypillometry.exclude_intervals"><code class="xref py py-meth docutils literal notranslate"><span class="pre">exclude_intervals()</span></code></a>).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeData.stat_per_event" title="pypillometry.EyeData.stat_per_event"><code class="xref py py-obj docutils literal notranslate"><span class="pre">stat_per_event</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeData.stat_per_event" title="pypillometry.EyeData.stat_per_event"><code class="xref py py-obj docutils literal notranslate"><span class="pre">stat_per_event</span></code></a></p></td>
 <td><p>Return result of applying a statistical function to data in a given interval relative to event-onsets.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeData.summary" title="pypillometry.EyeData.summary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">summary</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeData.summary" title="pypillometry.EyeData.summary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">summary</span></code></a></p></td>
 <td><p>Return a summary of the dataset as a dictionary.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeData.unscale" title="pypillometry.EyeData.unscale"><code class="xref py py-obj docutils literal notranslate"><span class="pre">unscale</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeData.unscale" title="pypillometry.EyeData.unscale"><code class="xref py py-obj docutils literal notranslate"><span class="pre">unscale</span></code></a></p></td>
 <td><p>Scale back to original values using either values provided as arguments or the values stored in <cite>params[&quot;scale&quot;]</cite> by <a class="reference internal" href="pypillometry.scale.html#pypillometry.scale" title="pypillometry.scale"><code class="xref py py-meth docutils literal notranslate"><span class="pre">scale()</span></code></a>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeData.write_file" title="pypillometry.EyeData.write_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_file</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeData.write_file" title="pypillometry.EyeData.write_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_file</span></code></a></p></td>
 <td><p>Save to file (using <a class="reference internal" href="pypillometry.write_file.html#pypillometry.write_file" title="pypillometry.write_file"><code class="xref py py-func docutils literal notranslate"><span class="pre">write_file()</span></code></a>).</p></td>
 </tr>
 </tbody>
@@ -954,6 +958,60 @@ them from sources you trust (HDF5 files do not run code).</p>
 stored, independent of the class this method is called on)</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.EyeData.from_gazepoint">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_gazepoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pupil</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mm'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gaze</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">screen_resolution</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_initial_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/eyedata/eyedata.html#EyeData.from_gazepoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.EyeData.from_gazepoint" title="Link to this definition">#</a></dt>
+<dd><p>Read a recording of a GazePoint eye tracker (e.g., GP3).</p>
+<p>The file is read with <a class="reference internal" href="pypillometry.read_gazepoint.html#pypillometry.read_gazepoint" title="pypillometry.read_gazepoint"><code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.io.read_gazepoint()</span></code></a> (a
+table with the columns of the GazePoint Open Gaze API). Each change
+of the label in the column <code class="docutils literal notranslate"><span class="pre">USER</span></code> is an event.</p>
+<p>GazePoint marks samples without a pupil in two ways: <code class="docutils literal notranslate"><span class="pre">LPV</span></code>/<code class="docutils literal notranslate"><span class="pre">RPV</span></code>
+is 0 if the pupil was not found in the camera image (e.g., during a
+blink), <code class="docutils literal notranslate"><span class="pre">LPUPILV</span></code>/<code class="docutils literal notranslate"><span class="pre">RPUPILV</span></code> is 0 if the pupil size in mm could
+not be computed. During blinks, <code class="docutils literal notranslate"><span class="pre">LPUPILV</span></code> often stays 1 and the
+last pupil size is repeated, so that blinks look like flat stretches
+instead of gaps. Pupil samples are therefore only kept where both
+flags are 1 (<code class="docutils literal notranslate"><span class="pre">pupil=&quot;px&quot;</span></code>: where <code class="docutils literal notranslate"><span class="pre">LPV</span></code> is 1); all other samples
+are NaN (masked). Gaze samples are kept where <code class="docutils literal notranslate"><span class="pre">LPOGV</span></code>/<code class="docutils literal notranslate"><span class="pre">RPOGV</span></code>
+is 1. Gaps in the time stamps are filled with NaN.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fname</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – filename of the recording</p></li>
+<li><p><strong>pupil</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – <code class="docutils literal notranslate"><span class="pre">&quot;mm&quot;</span></code> (default): pupil diameter in mm (<code class="docutils literal notranslate"><span class="pre">LPUPILD</span></code>,
+<code class="docutils literal notranslate"><span class="pre">RPUPILD</span></code>; GazePoint corrects it for the distance of the eye
+from the camera); <code class="docutils literal notranslate"><span class="pre">&quot;px&quot;</span></code>: pupil diameter in pixels of the
+camera image (<code class="docutils literal notranslate"><span class="pre">LPD</span></code>, <code class="docutils literal notranslate"><span class="pre">RPD</span></code>; not corrected for the distance,
+but with a finer resolution: <code class="docutils literal notranslate"><span class="pre">LPUPILD</span></code> is stored in m with five
+decimals, i.e. in steps of 0.01 mm)</p></li>
+<li><p><strong>gaze</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – if True (default), read the gaze position of each eye
+(<code class="docutils literal notranslate"><span class="pre">LPOGX</span></code>, <code class="docutils literal notranslate"><span class="pre">LPOGY</span></code>, …)</p></li>
+<li><p><strong>screen_resolution</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]]</span>) – screen resolution (width, height) in pixels; if given, the gaze
+position is converted to pixels and the resolution is stored in
+the experimental setup. Otherwise, the gaze position is a
+fraction of the screen (0-1, as in the file)</p></li>
+<li><p><strong>label_prefix</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span>) – prefix that is removed from the event labels (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;VAR</span> <span class="pre">&quot;</span></code>)</p></li>
+<li><p><strong>keep_initial_label</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – if False (default), the label of the first sample is not an event
+(it was sent before the recording started)</p></li>
+<li><p><strong>**kwargs</strong> – additional arguments passed to the constructor (e.g., <cite>name</cite>,
+<cite>sampling_rate</cite>, <cite>keep_orig</cite>); the default sampling rate is
+estimated from the median step of the time stamps</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#pypillometry.EyeData" title="pypillometry.EyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">EyeData</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>object of the class this method is called on</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">from_gazepoint</span><span class="p">(</span><span class="s2">"rec.tsv"</span><span class="p">,</span> <span class="n">gaze</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -2770,6 +2828,7 @@ change the time (e.g., <a class="reference internal" href="pypillometry.crop.htm
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.EyeData.pupil"><code class="docutils literal notranslate"><span class="pre">pupil</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.EyeData.from_eyelink"><code class="docutils literal notranslate"><span class="pre">from_eyelink()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.EyeData.from_file"><code class="docutils literal notranslate"><span class="pre">from_file()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.EyeData.from_gazepoint"><code class="docutils literal notranslate"><span class="pre">from_gazepoint()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.EyeData.add_events"><code class="docutils literal notranslate"><span class="pre">add_events()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.EyeData.add_to_history"><code class="docutils literal notranslate"><span class="pre">add_to_history()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.EyeData.blink_stats"><code class="docutils literal notranslate"><span class="pre">blink_stats()</span></code></a></li>

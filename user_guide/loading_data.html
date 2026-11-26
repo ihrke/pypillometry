@@ -557,6 +557,28 @@ can be plotted with <code class="docutils literal notranslate"><span class="pre"
 (both are optional: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">openpyxl</span> <span class="pre">av</span></code>). Reading the Excel file
 is slow; save the result (see below).</p>
 </section>
+<section id="gazepoint">
+<h2>GazePoint<a class="headerlink" href="#gazepoint" title="Link to this heading">#</a></h2>
+<p>Recordings of GazePoint eye trackers (e.g., GP3) are tables with the
+columns of the GazePoint Open Gaze API (<code class="docutils literal notranslate"><span class="pre">TIME</span></code>, <code class="docutils literal notranslate"><span class="pre">LPUPILD</span></code>, <code class="docutils literal notranslate"><span class="pre">LPV</span></code>,
+…, <code class="docutils literal notranslate"><span class="pre">USER</span></code>), as written by programs that record the data stream of the
+eye tracker. They are read with <a class="reference internal" href="../api/generated/pypillometry.EyeData.html#pypillometry.EyeData.from_gazepoint" title="pypillometry.EyeData.from_gazepoint"><code class="xref py py-meth docutils literal notranslate"><span class="pre">EyeData.from_gazepoint()</span></code></a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">from_gazepoint</span><span class="p">(</span><span class="s2">"rec.tsv"</span><span class="p">,</span> <span class="n">gaze</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>          <span class="c1"># pupil in mm</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">from_gazepoint</span><span class="p">(</span><span class="s2">"rec.tsv"</span><span class="p">,</span> <span class="n">pupil</span><span class="o">=</span><span class="s2">"px"</span><span class="p">)</span>          <span class="c1"># pixels of the camera</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">from_gazepoint</span><span class="p">(</span><span class="s2">"rec.tsv"</span><span class="p">,</span> <span class="n">screen_resolution</span><span class="o">=</span><span class="p">(</span><span class="mi">1920</span><span class="p">,</span> <span class="mi">1080</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>During blinks, GazePoint often repeats the last pupil size and marks it as
+valid in <code class="docutils literal notranslate"><span class="pre">LPUPILV</span></code>; only <code class="docutils literal notranslate"><span class="pre">LPV</span></code> (pupil found in the camera image) shows
+that the pupil was lost. Samples are therefore kept only where both are
+valid, and blinks become gaps that <a class="reference internal" href="../api/generated/pypillometry.eyedata.pupil.PupilNamespace.html#pypillometry.eyedata.pupil.PupilNamespace.blinks_detect" title="pypillometry.eyedata.pupil.PupilNamespace.blinks_detect"><code class="xref py py-meth docutils literal notranslate"><span class="pre">blinks_detect()</span></code></a>
+finds. The pupil size in mm is stored in steps of 0.01 mm; the size in
+pixels (<code class="docutils literal notranslate"><span class="pre">pupil=&quot;px&quot;</span></code>) is finer but not corrected for the distance of the
+eye from the camera. The gaze position is a fraction of the screen unless
+the screen resolution is given.</p>
+<p>Each change of the label in the column <code class="docutils literal notranslate"><span class="pre">USER</span></code> (sent by the experiment)
+is an event; <code class="docutils literal notranslate"><span class="pre">label_prefix=</span></code> removes a prefix from the labels.</p>
+</section>
 <section id="text-files-and-your-own-arrays">
 <h2>Text files and your own arrays<a class="headerlink" href="#text-files-and-your-own-arrays" title="Link to this heading">#</a></h2>
 <p>Data from other eye trackers, or exported as text (e.g., Eyelink’s ASC
@@ -689,6 +711,7 @@ where the raw data are and how to read them. <a class="reference internal" href=
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#eyelink-edf-files">Eyelink EDF files</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tobii-pro-glasses-tobii-pro-lab-exports">Tobii Pro Glasses (Tobii Pro Lab exports)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gazepoint">GazePoint</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#text-files-and-your-own-arrays">Text files and your own arrays</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-datasets">Example datasets</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#saving-and-loading-objects">Saving and loading objects</a></li>

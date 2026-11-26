@@ -17,6 +17,7 @@ Files and URLs
 
    read_eyelink
    read_tobii_prolab
+   read_gazepoint
    read_file
    write_file
    download

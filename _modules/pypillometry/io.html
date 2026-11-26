@@ -807,6 +807,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">- data exports of Tobii Pro Lab (Tobii Pro Glasses):</span>
 <span class="sd">  :func:`read_tobii_prolab` (usually used through</span>
 <span class="sd">  :meth:`~pypillometry.HeadMountedEyeData.from_tobii_prolab`)</span>
+<span class="sd">- GazePoint recordings (Open Gaze API): :func:`read_gazepoint` (usually</span>
+<span class="sd">  used through :meth:`~pypillometry.EyeData.from_gazepoint`)</span>
 <span class="sd">- saved objects: :func:`write_file` and :func:`read_file` (pickle or</span>
 <span class="sd">  HDF5 files; usually used through :meth:`~pypillometry.EyeData.write_file`</span>
 <span class="sd">  and :meth:`~pypillometry.EyeData.from_file`)</span>
@@ -1831,6 +1833,75 @@ window.runMermaid = runMermaid;</script>
     <span class="n">res</span><span class="p">[</span><span class="s2">"events"</span><span class="p">]</span> <span class="o">=</span> <span class="n">events</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">"Event"</span><span class="p">:</span> <span class="s2">"label"</span><span class="p">})</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">res</span><span class="p">[</span><span class="s2">"info"</span><span class="p">]</span> <span class="o">=</span> <span class="n">info</span>
     <span class="k">return</span> <span class="n">res</span></div>
+
+
+
+<div class="viewcode-block" id="read_gazepoint">
+<a class="viewcode-back" href="../../api/generated/pypillometry.read_gazepoint.html#pypillometry.read_gazepoint">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">read_gazepoint</span><span class="p">(</span><span class="n">fname</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">keep_initial_label</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Read a recording of a GazePoint eye tracker (e.g., GP3).</span>
+
+<span class="sd">    The file is a table (tab- or comma-separated) with one row per sample</span>
+<span class="sd">    and the columns of the GazePoint Open Gaze API, as written by programs</span>
+<span class="sd">    that record the data stream of the eye tracker: ``CNT``, ``TIME`` (s),</span>
+<span class="sd">    ``LPOGX``, ..., ``LPD``, ``LPV``, ``LEYEZ``, ``LPUPILD``,</span>
+<span class="sd">    ``LPUPILV``, ..., ``USER``.</span>
+
+<span class="sd">    The column ``USER`` holds the last label that the experiment sent to</span>
+<span class="sd">    the eye tracker (e.g., ``"TRIAL 3"``). It is repeated on every sample</span>
+<span class="sd">    until the next label; each change of the label is an event at that</span>
+<span class="sd">    sample.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    fname : str</span>
+<span class="sd">        filename of the recording</span>
+<span class="sd">    keep_initial_label : bool, optional</span>
+<span class="sd">        if False (default), the label of the first sample is not an event:</span>
+<span class="sd">        it was sent before the recording started (often left over from an</span>
+<span class="sd">        earlier recording)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        - ``"samples"``: :class:`pandas.DataFrame` with ``time`` (ms) and</span>
+<span class="sd">          the other columns of the file under their original names, sorted</span>
+<span class="sd">          by time; samples with the time of an earlier sample are dropped</span>
+<span class="sd">        - ``"events"``: DataFrame with ``time`` (ms) and ``label``</span>
+<span class="sd">        - ``"info"``: dict with ``"format"``, ``"source"`` and</span>
+<span class="sd">          ``"duplicate_times"`` (number of dropped samples)</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    pypillometry.EyeData.from_gazepoint : create an eyedata object from the file</span>
+<span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">header</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+    <span class="n">sep</span> <span class="o">=</span> <span class="s2">"</span><span class="se">\t</span><span class="s2">"</span> <span class="k">if</span> <span class="s2">"</span><span class="se">\t</span><span class="s2">"</span> <span class="ow">in</span> <span class="n">header</span> <span class="k">else</span> <span class="s2">","</span>
+    <span class="n">tab</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="p">{</span><span class="s2">"USER"</span><span class="p">:</span> <span class="nb">str</span><span class="p">},</span> <span class="n">low_memory</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">tab</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">tab</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
+    <span class="k">if</span> <span class="s2">"TIME"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">tab</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2">' is not a GazePoint recording: no column 'TIME'"</span><span class="p">)</span>
+    <span class="n">tab</span> <span class="o">=</span> <span class="n">tab</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">"TIME"</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">"stable"</span><span class="p">)</span>
+    <span class="n">ndup</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tab</span><span class="p">[</span><span class="s2">"TIME"</span><span class="p">]</span><span class="o">.</span><span class="n">duplicated</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+    <span class="k">if</span> <span class="n">ndup</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">ndup</span><span class="si">}</span><span class="s2"> samples with the time of an earlier sample are dropped"</span><span class="p">)</span>
+    <span class="n">tab</span> <span class="o">=</span> <span class="n">tab</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">(</span><span class="s2">"TIME"</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">time</span> <span class="o">=</span> <span class="n">tab</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"TIME"</span><span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1000.</span>
+    <span class="n">tab</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s2">"time"</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span>
+
+    <span class="n">events</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">"time"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span> <span class="s2">"label"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">str</span><span class="p">)})</span>
+    <span class="k">if</span> <span class="s2">"USER"</span> <span class="ow">in</span> <span class="n">tab</span><span class="o">.</span><span class="n">columns</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">tab</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="n">tab</span><span class="p">[</span><span class="s2">"USER"</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">change</span> <span class="o">=</span> <span class="p">(</span><span class="n">user</span> <span class="o">!=</span> <span class="n">user</span><span class="o">.</span><span class="n">shift</span><span class="p">())</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">copy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">change</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">keep_initial_label</span>
+        <span class="n">events</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">"time"</span><span class="p">:</span> <span class="n">time</span><span class="p">[</span><span class="n">change</span><span class="p">],</span> <span class="s2">"label"</span><span class="p">:</span> <span class="n">user</span><span class="p">[</span><span class="n">change</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="nb">str</span><span class="p">)})</span>
+        <span class="n">events</span> <span class="o">=</span> <span class="n">events</span><span class="p">[</span><span class="n">events</span><span class="p">[</span><span class="s2">"label"</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">""</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">info</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">format</span><span class="o">=</span><span class="s2">"GazePoint (Open Gaze API)"</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">fname</span><span class="p">),</span> <span class="n">duplicate_times</span><span class="o">=</span><span class="n">ndup</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">"samples"</span><span class="p">:</span> <span class="n">tab</span><span class="p">,</span> <span class="s2">"events"</span><span class="p">:</span> <span class="n">events</span><span class="p">,</span> <span class="s2">"info"</span><span class="p">:</span> <span class="n">info</span><span class="p">}</span></div>
 
 
 
