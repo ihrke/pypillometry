@@ -484,7 +484,7 @@ def _tweak_fields(method, pars):
             fields["margin_before"], fields["margin_after"] = float(before), float(after)
         elif isinstance(value, bool) or not isinstance(value, (int, float, np.number)):
             if isinstance(value, str) and name.startswith("vel_"):
-                raise TypeError(f"{name}={value!r}: velocity thresholds in percent cannot be "
+                raise TypeError(f"{name}={value!r}: relative velocity thresholds cannot be "
                                 "tweaked; give them in units per ms")
             fixed[name] = value
         else:

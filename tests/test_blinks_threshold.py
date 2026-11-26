@@ -38,7 +38,6 @@ def test_threshold_forms(signal):
     y, _ = signal
     assert blinks(y, vel_onset="8sd", vel_offset="8sd") == blinks(y)
     assert blinks(y, vel_onset="-8sd", vel_offset="8SD") == blinks(y)    # sign and case
-    assert len(blinks(y, vel_onset="5%", vel_offset="95%")) > 0
-    for bad in ("8 std", "eight sd", "sd"):
+    for bad in ("8 std", "eight sd", "sd", "5%"):
         with pytest.raises(ValueError, match="robust SD"):
             blinks(y, vel_onset=bad)

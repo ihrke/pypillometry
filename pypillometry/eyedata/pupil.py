@@ -423,10 +423,9 @@ class PupilNamespace(Namespace["EyeData"]):
         winsize_ix : int
             window size in samples for velocity calculation
         vel_onset, vel_offset : float or str
-            onset and offset thresholds: a number (pupil units per ms), a
+            onset and offset thresholds: a number (pupil units per ms) or a
             multiple of the robust standard deviation of the velocity
-            (``"8sd"``; negative for the onset, positive for the offset) or
-            a percentile of the velocity (``"5%"``)
+            (``"8sd"``; negative for the onset, positive for the offset)
 
         Returns
         -------
@@ -434,19 +433,16 @@ class PupilNamespace(Namespace["EyeData"]):
             (vel_onset_samples, vel_offset_samples) thresholds in per-sample units
         """
         def parse(val, name):
-            """("sd" | "pct" | "abs", number)"""
+            """("sd" | "abs", number)"""
             if isinstance(val, str):
                 text = val.strip().lower()
                 try:
                     if text.endswith("sd"):
                         return "sd", abs(float(text[:-2]))
-                    if text.endswith("%"):
-                        return "pct", float(text[:-1])
                 except ValueError:
                     pass
-                raise ValueError(f"{name}={val!r}: give a number (pupil units per ms), "
-                                 "a multiple of the robust SD of the velocity (e.g. '8sd') "
-                                 "or a percentile (e.g. '5%')")
+                raise ValueError(f"{name}={val!r}: give a number (pupil units per ms) or a "
+                                 "multiple of the robust SD of the velocity (e.g. '8sd')")
             return "abs", float(val)
 
         specs = {"vel_onset": parse(vel_onset, "vel_onset"),
@@ -472,9 +468,6 @@ class PupilNamespace(Namespace["EyeData"]):
                 rsd = 1.4826 * np.median(np.abs(vel_valid - med))
                 thr = sign * value * rsd
                 logger.debug(f"{name} {value:g} robust SD ({rsd:.4g}/sample) -> {thr:.4f}/sample")
-            elif kind == "pct":
-                thr = np.percentile(vel_valid, value)
-                logger.debug(f"{name} {value:g}% -> {thr:.4f}/sample (percentile)")
             else:
                 thr = value * (1000 / self._d.fs)
                 logger.debug(f"{name} {value:g}/ms -> {thr:.4f}/sample")
@@ -538,12 +531,10 @@ class PupilNamespace(Namespace["EyeData"]):
               the data
             - a number: threshold in pupil units per millisecond (negative,
               e.g. -5.0)
-            - ``"<q>%"``: the q-th percentile of the velocity (e.g., "5%")
         vel_offset : float or str
             velocity threshold to detect blink offset (the reopening):
-            ``"<k>sd"`` (default ``"8sd"``, positive), a number in pupil
-            units per millisecond (positive, e.g. 5.0) or a percentile
-            (e.g., "95%")
+            ``"<k>sd"`` (default ``"8sd"``, positive) or a number in pupil
+            units per millisecond (positive, e.g. 5.0)
         vel_onset_min_duration : float, str or Quantity
             minimum duration (in ms, or with units) that velocity must exceed threshold to detect as onset
             (to avoid noise-induced false detections)
@@ -1297,14 +1288,12 @@ class PupilNamespace(Namespace["EyeData"]):
             ``"mahot"``: velocity threshold to detect blink onset (negative
             value); default -5.0
 
-            - If float: threshold in pupil-units per millisecond (e.g., -5.0)
-            - If str: percentile of velocity distribution (e.g., "5%" for bottom 5%)
+            - a number: threshold in pupil units per millisecond (e.g., -5.0)
+            - ``"<k>sd"``: k robust standard deviations of the velocity
+              (e.g., "8sd"; see :meth:`blinks_detect`)
         vel_offset : float or str
             ``"mahot"``: velocity threshold to detect blink offset (positive
-            value); default 5.0
-
-            - If float: threshold in pupil-units per millisecond (e.g., 5.0)
-            - If str: percentile of velocity distribution (e.g., "95%" for top 5%)
+            value); default 5.0, a number (units per ms) or ``"<k>sd"``
         margin : Tuple[float,float] or Quantity
             ``"mahot"``: margin that is subtracted/added to onset and offset
             (in ms, or with units, e.g. ``(10, 30) * u.ms``); default

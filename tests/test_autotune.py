@@ -252,7 +252,7 @@ class TestBlinksOptimizeParameters:
         with pytest.raises(ValueError):
             data.pupil.blinks_optimize_parameters(method="spline")
         with pytest.raises(ValueError):
-            data.pupil.blinks_optimize_parameters(start=dict(vel_onset="5%"))
+            data.pupil.blinks_optimize_parameters(start=dict(vel_onset="8sd"))
         with pytest.raises(ValueError):
             data.pupil.blinks_optimize_parameters(fixed=dict(interp_type="linear"))
         with pytest.raises(ValueError, match="detect the blinks"):

@@ -64,8 +64,7 @@ per channel, in ms); ``d.clear_layer("blink")`` removes them again.
 The velocity thresholds (``vel_onset``, ``vel_offset``) are by default 8
 robust standard deviations of the velocity of the recording (``"8sd"``),
 so they work in any units and adapt to the noise of the tracker; a number
-gives a threshold in pupil units per ms, a string like ``"5%"`` a
-percentile of the velocity.
+gives a threshold in pupil units per ms.
 A drop only counts as the onset of a blink if the velocity stays beyond
 the threshold for a while (``vel_onset_min_duration``, 10 ms by default),
 so that brief changes, e.g. from eye movements, are not taken for blinks;

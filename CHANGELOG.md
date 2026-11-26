@@ -8,7 +8,7 @@
 
 ### Changed behaviour
 
-- `pupil.blinks_detect()`: the default velocity thresholds are relative to the noise of the velocity (`vel_onset="8sd"`, `vel_offset="8sd"`: 8 robust standard deviations), instead of +-5 pupil units per ms, so that they work in any units (mm, pixels, arbitrary units) and with noisy trackers; the detected blinks usually cover more of the slow transients. Numbers (units per ms) and percentiles (`"5%"`) work as before. In a simulation study across six datasets, this rule transferred best between recordings (vs. raw units, percentiles or thresholds relative to the pupil size).
+- `pupil.blinks_detect()`: the default velocity thresholds are relative to the noise of the velocity (`vel_onset="8sd"`, `vel_offset="8sd"`: 8 robust standard deviations), instead of +-5 pupil units per ms, so that they work in any units (mm, pixels, arbitrary units) and with noisy trackers; the detected blinks usually cover more of the slow transients. Numbers (units per ms) work as before; the same `"<k>sd"` form works for the `"mahot"` interpolation. The percentile form (`"5%"`) was removed. In a simulation study across six datasets, this rule transferred best between recordings (vs. raw units, percentiles or thresholds relative to the pupil size).
 
 ## 2.2.4 (2026-11-24)
 
