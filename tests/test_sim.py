@@ -337,3 +337,91 @@ def test_task_displays():
     assert d.plot.plot_task_events(plot_range=(0, 10)) is ax and ax.has_data()
     with pytest.raises(ValueError, match="no events of a task"):
         Simulation("1 s", fs=50).units().run().plot.plot_task_events()
+
+
+# -- artifacts ------------------------------------------------------------------
+from pypillometry.sim import Blinks, TrackerLoss, blink_occlusion, parse_rate
+
+
+def artifact_sim(seed=1, **kw):
+    return (Simulation("2 min", fs=250, eyes=["left", "right"], seed=seed, setup=setup(), **kw)
+            .pupil().gaze().units(800).blinks().loss(rate="3/min").noise(0.2))
+
+
+def test_rates():
+    assert parse_rate("15/min") * 60000 == pytest.approx(15)
+    assert parse_rate("0.5/s") * 1000 == pytest.approx(0.5)
+    assert parse_rate(30) * 60000 == pytest.approx(30)
+    with pytest.raises(ValueError):
+        parse_rate("15")
+
+
+def test_blink_occlusion_shape():
+    t = np.arange(-200, 1200.0)
+    g = blink_occlusion(t, tc=0, tau_c=3, to=200, tau_o=20, a=1.0, w=0.2, tau_s=150)
+    assert g[t == -100][0] < 1e-6 and g[t == 100][0] > 0.99
+    # two speeds: fast part gone 100 ms after the reopening, the tail not
+    assert 0.1 < g[t == 300][0] < 0.2 and g[t == 1100][0] < 0.01
+    assert np.all(blink_occlusion(t, 0, 3, 200, 20, a=0.3) <= 0.3)
+
+
+def test_blinks():
+    d = Simulation("10 min", fs=250, eyes=["left", "right"], seed=2).pupil().units(800) \
+        .blinks(rate="20/min", p_partial=0.2).run()
+    te = d.truth_events
+    left = (te.labels == "blink") & (te.meta["eye"] == "left")
+    right = (te.labels == "blink") & (te.meta["eye"] == "right")
+    assert 150 < left.sum() < 250 and left.sum() == right.sum()
+    # the same blinks in both eyes, up to the jitter
+    assert np.abs(te.onsets[left] - te.onsets[right]).max() < 20
+    assert np.min(np.diff(te.onsets[left])) >= 500
+    g = d.truth["left", "occlusion"]
+    miss = np.isnan(d.data["left_pupil"])
+    np.testing.assert_array_equal(miss, g > 0.5)
+    ok = ~miss
+    np.testing.assert_allclose(d.data["left_pupil"][ok],
+                               (d.truth["left", "pupil"] * (1 - g))[ok])
+    # partial blinks below the visibility have no gap
+    a, gap = te.meta["a"][left], te.meta["gap"][left]
+    assert (a < 1).sum() > 10 and np.all(gap[a < 0.5] == 0) and np.all(gap[a == 1] > 0)
+    assert 150 < np.median(gap[a == 1]) < 350
+
+
+def test_tracker_loss():
+    sim = Simulation("10 min", fs=100, eyes=["left", "right"], seed=3).pupil().units()
+    ind = sim.loss(rate="5/min").run()
+    both = sim.loss(rate="5/min", binocular=True).run()
+    te = ind.truth_events
+    assert set(te.labels) == {"loss"} and 25 < (te.meta["eye"] == "left").sum() < 80
+    assert not np.array_equal(np.isnan(ind.data["left_pupil"]), np.isnan(ind.data["right_pupil"]))
+    np.testing.assert_array_equal(np.isnan(both.data["left_pupil"]),
+                                  np.isnan(both.data["right_pupil"]))
+    tb = both.truth_events
+    assert np.isnan(both.data["left_pupil"]).sum() * 10 == pytest.approx(
+        tb.meta["duration"][tb.meta["eye"] == "left"].sum(), rel=0.05)
+
+
+def test_artifacts_in_gaze_and_missing_value():
+    d = artifact_sim().run()
+    miss = np.isnan(d.data["left_pupil"])
+    assert miss.any()
+    np.testing.assert_array_equal(np.isnan(d.data["left_x"]), miss)
+    z = artifact_sim(missing_value=0).run()
+    np.testing.assert_array_equal(z.data["left_pupil"] == 0, miss)
+    assert "Blinks()" in repr(d.simulation) and "true events:" in repr(d)
+    # the blink detection finds the gaps
+    found = d.pupil.blinks_detect(inplace=False).get_blinks()["left_pupil"]
+    assert len(found) >= (d.truth_events.meta["eye"] == "left").sum() * 0.8
+
+
+def test_truth_events_follow_the_data():
+    d = artifact_sim().run()
+    on = d.truth_events.onsets
+    c = d.crop(30000, 90000, inplace=False)
+    assert len(c.truth_events) == ((on >= 30000) & (on <= 90000)).sum()
+    r = c.reset_time(inplace=False)
+    np.testing.assert_allclose(r.truth_events.onsets, c.truth_events.onsets - c.tx[0])
+    x = d.remove_intervals([(10000, 20000)], inplace=False)
+    late = on > 20000
+    np.testing.assert_allclose(x.truth_events.onsets[-late.sum():], on[late] - 10000, atol=5)
+    assert len(x.truth_events) == len(on) - ((on >= 10000) & (on < 20000)).sum()

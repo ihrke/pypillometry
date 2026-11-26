@@ -8,8 +8,8 @@ import numpy as np
 from ..eyedata.eyedatadict import EyeDataDict
 from ..state import Stateful
 from ..units import parse_time
-from .steps import (STAGE_KEYS, STAGES, Fixations, Foreshortening, SimStep, TimescalePupil,
-                    Units, WhiteNoise)
+from .steps import (STAGE_KEYS, STAGES, Blinks, Fixations, Foreshortening, SimStep,
+                    TimescalePupil, TrackerLoss, Units, WhiteNoise)
 from .task import Task
 
 __all__ = ["Simulation"]
@@ -27,7 +27,13 @@ class _Run:
         self.x, self.y = {}, {}
         self.events = None       # columns of the events of the task
         self.truth = EyeDataDict()
+        self.truth_events = []   # rows (dicts) of the true events (blinks, losses)
+        self.missing = {}        # eye -> samples without pupil
         self._has_pupil = set()
+
+    def lost(self, eye, mask):
+        """mark the samples `mask` of `eye` as missing"""
+        self.missing[eye] = self.missing.get(eye, np.zeros(self.n, dtype=bool)) | mask
 
     def set_pupil(self, eye, values):
         if eye in self._has_pupil:
@@ -74,6 +80,9 @@ class Simulation(Stateful):
         screen size is used by :meth:`gaze`)
     name : str, optional
         name of the data (default: a random name)
+    missing_value : float, optional
+        value of the samples without pupil (blinks, losses): NaN (default)
+        or, e.g., 0 like some trackers
 
     Attributes
     ----------
@@ -92,10 +101,10 @@ class Simulation(Stateful):
     True
     """
     _STATE_FIELDS = ("duration", "fs", "eyes", "seed", ("setup", "ExperimentalSetup"),
-                     ("steps", "simsteps"), "name")
+                     ("steps", "simsteps"), "name", "missing_value")
 
     def __init__(self, duration=None, fs=1000.0, eyes="left", seed=None, setup=None,
-                 name=None):
+                 name=None, missing_value=None):
         self.duration = None if duration is None else float(parse_time(duration, to="ms"))
         if self.duration is not None and self.duration <= 0:
             raise ValueError("duration must be positive")
@@ -109,6 +118,8 @@ class Simulation(Stateful):
         self.seed = None if seed is None else int(seed)
         self.setup = setup
         self.name = name
+        self.missing_value = None if missing_value is None or np.isnan(missing_value) \
+            else float(missing_value)
         self.steps = []
 
     def __repr__(self):
@@ -179,6 +190,29 @@ class Simulation(Stateful):
         if any(s.stage == "events" for s in self.steps):
             raise ValueError("the simulation has a task already")
         return self.add(task if start is None else task._with(start=start))
+
+    def blinks(self, step=None, **kwargs):
+        """
+        Add blinks: `step`, or :class:`~pypillometry.sim.steps.Blinks` with
+        the keyword arguments (e.g., ``rate="20/min"``).
+
+        Returns
+        -------
+        Simulation
+        """
+        return self.add(step if step is not None else Blinks(**kwargs))
+
+    def loss(self, step=None, **kwargs):
+        """
+        Add losses of the pupil by the tracker: `step`, or
+        :class:`~pypillometry.sim.steps.TrackerLoss` with the keyword
+        arguments (e.g., ``rate="1/min"``).
+
+        Returns
+        -------
+        Simulation
+        """
+        return self.add(step if step is not None else TrackerLoss(**kwargs))
 
     def gaze(self, step=None, **kwargs):
         """
@@ -296,11 +330,14 @@ class Simulation(Stateful):
             k = count.get(step.stage, 0)
             count[step.stage] = k + 1
             step.apply(run, rng_of(step, k))
+        mv = np.nan if sim.missing_value is None else sim.missing_value
         channels = {}
         for e in sim.eyes:
-            channels[f"{e}_pupil"] = run.pupil[e]
+            miss = run.missing.get(e)
+            channels[f"{e}_pupil"] = run.pupil[e] if miss is None else np.where(miss, mv, run.pupil[e])
             if e in run.x:
-                channels[f"{e}_x"], channels[f"{e}_y"] = run.x[e], run.y[e]
+                for v, arr in (("x", run.x[e]), ("y", run.y[e])):
+                    channels[f"{e}_{v}"] = arr if miss is None else np.where(miss, mv, arr)
         kwargs = {}
         if run.events is not None:
             from ..events import Events
@@ -309,6 +346,24 @@ class Simulation(Stateful):
             kwargs["events"] = Events(ev["onset"][keep], ev["label"][keep], units="ms",
                                       meta={k: v[keep] for k, v in ev.items()
                                             if k not in ("onset", "label")})
+        kwargs["truth_events"] = _truth_events(run.truth_events)
         return SimEyeData(sampling_rate=sim.fs, **channels, truth=run.truth,
                           simulation=sim, experimental_setup=copy.deepcopy(sim.setup),
                           name=sim.name, **kwargs)
+
+
+def _truth_events(rows):
+    """Events from the rows of the true events (metadata: union of the keys)"""
+    from ..events import Events
+    if not rows:
+        return None
+    rows = sorted(rows, key=lambda r: r["onset"])
+    names = list(dict.fromkeys(k for r in rows for k in r if k not in ("onset", "label")))
+    meta = {}
+    for k in names:
+        values = [r.get(k) for r in rows]
+        if all(isinstance(v, str) or v is None for v in values):
+            meta[k] = np.array(["" if v is None else v for v in values])
+        else:
+            meta[k] = np.array([np.nan if v is None else float(v) for v in values])
+    return Events([r["onset"] for r in rows], [r["label"] for r in rows], units="ms", meta=meta)

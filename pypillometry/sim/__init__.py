@@ -23,12 +23,14 @@ time series (``d.truth``) and the recipe that made them
   :class:`WhiteNoise`)
 - :class:`SimEyeData`: the simulated data
 """
-from .steps import TimescalePupil, Fixations, Foreshortening, Units, WhiteNoise
-from .dist import parse_dist
+from .steps import (TimescalePupil, Fixations, Foreshortening, Units, WhiteNoise, Blinks,
+                    TrackerLoss, blink_occlusion)
+from .dist import parse_dist, parse_rate
 from .task import Task
 from .simulation import Simulation
 from .simeyedata import SimEyeData, SimPlotNamespace
 from . import tasks
 
-__all__ = ["Simulation", "SimEyeData", "SimPlotNamespace", "Task", "parse_dist",
-           "TimescalePupil", "Fixations", "Foreshortening", "Units", "WhiteNoise"]
+__all__ = ["Simulation", "SimEyeData", "SimPlotNamespace", "Task", "parse_dist", "parse_rate",
+           "TimescalePupil", "Fixations", "Foreshortening", "Units", "WhiteNoise", "Blinks",
+           "TrackerLoss", "blink_occlusion"]

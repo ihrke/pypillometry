@@ -19,7 +19,7 @@ import numpy as np
 
 from ..units import parse_time
 
-__all__ = ["parse_dist"]
+__all__ = ["parse_dist", "parse_rate"]
 
 _FORM = re.compile(r"^\s*([a-z]+)\s*\((.*)\)\s*$")
 _ARGS = {"uniform": 2, "normal": 2, "lognormal": 2, "exponential": 1}
@@ -146,3 +146,26 @@ def parse_dist(spec):
                 kind, args = "fixed", args[:1]
             return Dist(kind, args, spec)
     return Dist("fixed", [float(parse_time(spec, to="ms"))], spec)
+
+
+def parse_rate(spec):
+    """
+    Rate of events per ms from ``"15/min"``, ``"0.5/s"``, ``"2/h"`` or a
+    plain number (per minute).
+
+    Examples
+    --------
+    >>> parse_rate("15/min") * 60000
+    15.0
+    """
+    if isinstance(spec, str):
+        count, sep, unit = spec.partition("/")
+        if not sep:
+            raise ValueError(f"rate {spec!r}: give it as count/unit, e.g. '15/min'")
+        per = float(parse_time(f"1 {unit.strip()}", to="ms"))
+        rate = float(count) / per
+    else:
+        rate = float(spec) / 60000.0
+    if rate < 0:
+        raise ValueError(f"rate {spec!r} is negative")
+    return rate

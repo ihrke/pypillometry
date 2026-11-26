@@ -12,7 +12,7 @@ import numpy as np
 import pypillometry as pp
 from pypillometry import state
 from pypillometry.eyedata.spatial_calibration import SpatialCalibration
-from tests.test_sim import foreshortening_sim
+from tests.test_sim import artifact_sim, foreshortening_sim
 
 DATA = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "state")
 
@@ -102,6 +102,9 @@ class TestPickleRoundTrip(unittest.TestCase):
         self.roundtrip(d.drop_data(variables=["pupil"], inplace=False))
 
     def test_simeyedata(self):
+        a = artifact_sim().run()
+        a2 = self.roundtrip(a)
+        np.testing.assert_array_equal(a2.truth_events.onsets, a.truth_events.onsets)
         f = foreshortening_sim().run()
         f2 = self.roundtrip(f)
         self.assertEqual(list(f2.truth.keys()), list(f.truth.keys()))
@@ -157,7 +160,7 @@ class TestStateCoverage(unittest.TestCase):
             d, d.drop_data(variables=["x", "y"], inplace=False), d.drop_data(variables=["pupil"], inplace=False),
             pp.EyeData(left_pupil=np.ones(10), sampling_rate=10),
             pp.EyeData(left_x=np.ones(10), left_y=np.ones(10), sampling_rate=10),
-            foreshortening_sim().run(),
+            foreshortening_sim().run(), artifact_sim().run(),
             pp.HeadMountedEyeData(left_pupil=np.ones(10), sampling_rate=10,
                                   aux={"gyro_x": np.ones(10)}),
             seg, pp.group_segments([seg, seg]),

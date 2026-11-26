@@ -12,7 +12,11 @@ stages, whatever the order in which they were added:
 4. ``"foreshortening"``: the apparent pupil size as seen by the camera
    (:class:`Foreshortening`)
 5. ``"units"``: from log-% to the units of the tracker (:class:`Units`)
-6. ``"noise"``: measurement noise (:class:`WhiteNoise`)
+6. ``"occlusion"``: blinks, the lid covers the pupil (:class:`Blinks`)
+7. ``"noise"``: measurement noise (:class:`WhiteNoise`)
+8. ``"missing"``: losses of the pupil by the tracker (:class:`TrackerLoss`);
+   then the samples without pupil (in blinks and losses) are set missing,
+   in the pupil and the gaze
 
 Each step draws from its own random stream (derived from the seed of the
 simulation, its stage and its position in the stage), so that changing one
@@ -24,14 +28,16 @@ import numpy as np
 
 from ..units import parse_time
 
-__all__ = ["TimescalePupil", "Fixations", "Foreshortening", "Units", "WhiteNoise"]
+__all__ = ["TimescalePupil", "Fixations", "Foreshortening", "Units", "WhiteNoise", "Blinks",
+           "TrackerLoss"]
 
 #: order in which the stages are run
-STAGES = ("events", "pupil", "gaze", "foreshortening", "units", "noise")
+STAGES = ("events", "pupil", "gaze", "foreshortening", "units", "occlusion", "noise",
+          "missing")
 #: key of the random stream of each stage (fixed, so that adding stages does
 #: not change the random numbers of the others)
 STAGE_KEYS = {"pupil": 0, "gaze": 1, "foreshortening": 2, "units": 3, "noise": 4,
-              "events": 5}
+              "events": 5, "occlusion": 6, "missing": 7}
 
 
 def _eyes(eyes):
@@ -93,7 +99,7 @@ class SimStep:
         """the step from :meth:`to_dict`"""
         from .task import Task
         cls = {c.__name__: c for c in (TimescalePupil, Fixations, Foreshortening, Units,
-                                       WhiteNoise, Task)}.get(d["step"])
+                                       WhiteNoise, Task, Blinks, TrackerLoss)}.get(d["step"])
         if cls is None:
             raise ValueError(f"unknown simulation step {d['step']!r}")
         return cls(**d["params"])
@@ -349,3 +355,215 @@ class WhiteNoise(SimStep):
                 run.pupil[eye] = run.pupil[eye] * np.exp(e / 100.0)
             else:
                 run.pupil[eye] = run.pupil[eye] + e
+
+
+def _event_times(rate, min_interval, total, rng):
+    """onsets (ms) of events at `rate` (per ms) with a minimal interval"""
+    if rate <= 0:
+        return np.zeros(0)
+    mean = 1.0 / rate
+    extra = max(mean - min_interval, 1e-9)
+    out, t = [], rng.exponential(mean)
+    while t < total:
+        out.append(t)
+        t += min_interval + rng.exponential(extra)
+    return np.array(out)
+
+
+def blink_occlusion(t, tc, tau_c, to, tau_o, a=1.0, w=0.0, tau_s=1.0):
+    """
+    Occluded fraction of the pupil during a blink (0: open, 1: covered).
+
+    :math:`g(t) = a\\,\\sigma((t - t_c)/\\tau_c)\\,[(1 - w)\\,\\sigma((t_o -
+    t)/\\tau_o) + w\\,e^{-\\max(t - t_o, 0)/\\tau_s}]`: the lid closes
+    (logistic around :math:`t_c`), and reopens in two speeds: a fast
+    logistic around :math:`t_o` and a slow exponential tail with weight
+    `w`.
+
+    Parameters
+    ----------
+    t : array
+        times (ms)
+    tc, tau_c : float
+        midpoint and time scale of the closing (ms)
+    to, tau_o : float
+        midpoint and time scale of the reopening (ms)
+    a : float
+        amplitude (1: full blink, < 1: partial)
+    w, tau_s : float
+        weight and time constant (ms) of the slow tail of the reopening
+
+    Returns
+    -------
+    np.ndarray
+    """
+    from scipy.special import expit
+    t = np.asarray(t, dtype=float)
+    close = expit((t - tc) / tau_c)
+    fast = expit((to - t) / tau_o)
+    tail = np.exp(-np.clip(t - to, 0, None) / tau_s)
+    return a * close * ((1 - w) * fast + w * tail)
+
+
+@dataclass(repr=False)
+class Blinks(SimStep):
+    """
+    Blinks: the lid covers the pupil, which the tracker loses while the
+    covered fraction is above `visibility`.
+
+    The covered fraction :math:`g(t)` of each blink follows
+    :func:`blink_occlusion`: a fast closing, a closed phase and a reopening
+    with a fast part and a slow tail. The measured pupil is :math:`(1 -
+    g)` times the pupil; the samples with :math:`g >` `visibility` are
+    missing (with the gaze). The parameters are drawn for each blink; the
+    defaults come from fits of the model to blinks of EyeLink recordings
+    (grey screen). With several eyes, the blinks are the same in all eyes
+    up to a small `jitter`.
+
+    Parameters
+    ----------
+    rate : str or float
+        mean rate (``"15/min"``; plain numbers per minute)
+    min_interval : float, str or Quantity
+        minimal time between two blinks (default 500 ms); the intervals are
+        this plus an exponential time
+    closed : float, str or distribution
+        time from the closing to the reopening (:math:`t_o - t_c`)
+    tau_c, tau_o : float, str or distribution
+        time scales of the closing and of the fast reopening
+    w : float or distribution
+        weight of the slow tail of the reopening
+    rho : float or distribution
+        time constant of the tail relative to :math:`\\tau_o`
+    p_partial : float
+        share of partial blinks
+    partial : float or distribution
+        amplitude of partial blinks (covered fraction at most); partial
+        blinks with an amplitude below `visibility` have no missing samples
+    visibility : float
+        the tracker loses the pupil when more than this fraction is covered
+    jitter : float, str or distribution
+        shift of each blink in each eye (several eyes)
+    eyes : str or list, optional
+        eyes (default: all eyes of the simulation)
+
+    Notes
+    -----
+    Ground truth: ``occlusion`` per eye (the covered fraction :math:`g`),
+    and one true event ``"blink"`` per blink and eye in ``d.truth_events``
+    (onset :math:`t_c`, with the metadata ``eye``, ``closed``, ``tau_c``,
+    ``tau_o``, ``a``, ``w``, ``tau_s`` and ``gap``, the duration of the
+    missing samples).
+    """
+    rate: str = "15/min"
+    min_interval: str = "500 ms"
+    closed: str = "lognormal(220 ms, 80 ms)"
+    tau_c: str = "lognormal(3 ms, 1 ms)"
+    tau_o: str = "lognormal(22 ms, 8 ms)"
+    w: float = 0.15
+    rho: float = 6.0
+    p_partial: float = 0.02
+    partial: str = "uniform(0.1, 0.4)"
+    visibility: float = 0.5
+    jitter: str = "normal(0 ms, 2 ms)"
+    eyes: tuple = None
+    stage = "occlusion"
+
+    def __post_init__(self):
+        super().__post_init__()
+        from .dist import parse_dist, parse_rate
+        parse_rate(self.rate)
+        for spec in (self.min_interval, self.closed, self.tau_c, self.tau_o, self.w,
+                     self.rho, self.partial, self.jitter):
+            parse_dist(spec)
+        if not 0 < self.visibility < 1:
+            raise ValueError("visibility must be between 0 and 1")
+        if not 0 <= self.p_partial <= 1:
+            raise ValueError("p_partial must be between 0 and 1")
+
+    def apply(self, run, rng):
+        from .dist import parse_dist, parse_rate
+        eyes = self.eyes_in(run)
+        dt = 1000.0 / run.fs
+        t = np.arange(run.n) * dt
+        times = _event_times(parse_rate(self.rate), float(parse_dist(self.min_interval).mean),
+                             run.n * dt, rng)
+        g = {e: np.zeros(run.n) for e in eyes}
+        D = {k: parse_dist(getattr(self, k)) for k in
+             ("closed", "tau_c", "tau_o", "w", "rho", "partial", "jitter")}
+        for tc0 in times:
+            p = {k: float(D[k].sample(rng)) for k in ("closed", "tau_c", "tau_o", "w", "rho")}
+            p["tau_c"], p["tau_o"] = max(p["tau_c"], 0.1), max(p["tau_o"], 0.1)
+            p["closed"], p["rho"] = max(p["closed"], 0.0), max(p["rho"], 1.0)
+            p["w"] = min(max(p["w"], 0.0), 1.0)
+            partial = rng.random() < self.p_partial
+            a = min(max(float(D["partial"].sample(rng)), 0.0), 1.0) if partial else 1.0
+            for e in eyes:
+                tc = tc0 + (float(D["jitter"].sample(rng)) if len(eyes) > 1 else 0.0)
+                to, tau_s = tc + p["closed"], p["rho"] * p["tau_o"]
+                lo = np.searchsorted(t, tc - 20 * p["tau_c"] - 20)
+                hi = np.searchsorted(t, to + max(10 * p["tau_o"], 8 * tau_s) + 20)
+                gk = blink_occlusion(t[lo:hi], tc, p["tau_c"], to, p["tau_o"], a, p["w"], tau_s)
+                g[e][lo:hi] = 1 - (1 - g[e][lo:hi]) * (1 - gk)
+                run.truth_events.append(dict(
+                    onset=tc, label="blink", eye=e, closed=p["closed"], tau_c=p["tau_c"],
+                    tau_o=p["tau_o"], a=a, w=p["w"], tau_s=tau_s,
+                    gap=float((gk > self.visibility).sum() * dt)))
+        for e in eyes:
+            run.pupil[e] = run.pupil[e] * (1 - g[e])
+            run.truth[e, "occlusion"] = g[e]
+            run.lost(e, g[e] > self.visibility)
+
+
+@dataclass(repr=False)
+class TrackerLoss(SimStep):
+    """
+    Losses of the pupil by the tracker: stretches of missing samples at
+    random times, without a transient.
+
+    Parameters
+    ----------
+    rate : str or float
+        mean rate (``"0.5/min"``; plain numbers per minute)
+    duration : float, str or distribution
+        duration of a loss
+    binocular : bool
+        if True, the losses are the same in all eyes; if False (default),
+        each eye has its own
+    eyes : str or list, optional
+        eyes (default: all eyes of the simulation)
+
+    Notes
+    -----
+    Ground truth: one true event ``"loss"`` per loss and eye in
+    ``d.truth_events`` (with the metadata ``eye`` and ``duration``).
+    """
+    rate: str = "0.5/min"
+    duration: str = "lognormal(150 ms, 200 ms)"
+    binocular: bool = False
+    eyes: tuple = None
+    stage = "missing"
+
+    def __post_init__(self):
+        super().__post_init__()
+        from .dist import parse_dist, parse_rate
+        parse_rate(self.rate)
+        parse_dist(self.duration)
+
+    def apply(self, run, rng):
+        from .dist import parse_dist, parse_rate
+        eyes = self.eyes_in(run)
+        dt = 1000.0 / run.fs
+        groups = [eyes] if self.binocular else [(e,) for e in eyes]
+        dur = parse_dist(self.duration)
+        for group in groups:
+            for t0 in _event_times(parse_rate(self.rate), 0.0, run.n * dt, rng):
+                length = max(float(dur.sample(rng)), dt)
+                a = int(np.ceil(t0 / dt))
+                b = min(int(np.ceil((t0 + length) / dt)), run.n)
+                for e in group:
+                    mask = np.zeros(run.n, dtype=bool)
+                    mask[a:b] = True
+                    run.lost(e, mask)
+                    run.truth_events.append(dict(onset=a * dt, label="loss", eye=e,
+                                                 duration=(b - a) * dt))

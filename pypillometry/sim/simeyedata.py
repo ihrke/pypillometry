@@ -31,7 +31,9 @@ class SimPlotNamespace(PlotNamespace):
     def plot_truth(self, eyes=[], plot_range=None, units="sec", ax=None):
         """
         The pupil data with the true pupil: as measured without noise and,
-        if they differ (e.g., by foreshortening), the true pupil size.
+        if they differ (e.g., by foreshortening), the true pupil size. The
+        true extent of the blinks (where the lid covers more than 1% of
+        the pupil) is shaded.
 
         Parameters
         ----------
@@ -59,6 +61,11 @@ class SimPlotNamespace(PlotNamespace):
             if f"{eye}_pupil" in d.truth:
                 ax.plot(t, d.truth[eye, "pupil"][sel], color=f"C{i}", lw=1.2,
                         label=f"{lab}true (without noise)")
+            if f"{eye}_occlusion" in d.truth:
+                occ = d.truth[eye, "occlusion"][sel] > 0.01
+                ax.fill_between(t, 0, 1, where=occ, color=f"C{i}", alpha=0.12, lw=0,
+                                transform=ax.get_xaxis_transform(),
+                                label=f"{lab}true blinks" if occ.any() else None)
             if f"{eye}_size" in d.truth and f"{eye}_pupil" in d.truth and \
                     not np.allclose(d.truth[eye, "size"], d.truth[eye, "pupil"]):
                 ax.plot(t, d.truth[eye, "size"][sel], color=f"C{i}", lw=1.2, ls="--",
@@ -213,6 +220,11 @@ class SimEyeData(EyeData):
       (the pupil without noise), ``"size"`` (the true size) and the
       components of the latent signal in log-% (``"log_size"``,
       ``"log_fast"``, ``"log_slow"``, ...).
+    - `truth_events`: an :class:`~pypillometry.Events` object (or None)
+      with the true artifacts, e.g. ``"blink"`` and ``"loss"`` with their
+      parameters as metadata (see :class:`~pypillometry.sim.Blinks`,
+      :class:`~pypillometry.sim.TrackerLoss`); they follow cropping and
+      the removal of periods with the data
     - `simulation`: the :class:`~pypillometry.sim.Simulation` that made the
       data, with its seed (``d.simulation.run()`` makes the same data
       again; ``d.simulation.run(seed=2)`` new data from the same recipe)
@@ -235,14 +247,17 @@ class SimEyeData(EyeData):
     """
     plot = accessor(SimPlotNamespace)
 
-    _STATE_FIELDS = (("truth", "EyeDataDict"), ("simulation", "Simulation"))
+    _STATE_FIELDS = (("truth", "EyeDataDict"), ("simulation", "Simulation"),
+                     ("truth_events", "Events"))
     # the ground truth follows crop, downsample etc. with the data
     _SAMPLE_ALIGNED = ("data", "truth")
+    _TIME_ALIGNED = ("truth_events",)
 
-    def __init__(self, *, truth=None, simulation=None, **kwargs):
+    def __init__(self, *, truth=None, simulation=None, truth_events=None, **kwargs):
         # set before the constructor, which may fill in time discontinuities
         self.truth = truth if truth is not None else EyeDataDict()
         self.simulation = simulation
+        self.truth_events = truth_events
         super().__init__(**kwargs)
         if len(self.truth) and self.truth.length != len(self):
             raise ValueError(f"the truth has {self.truth.length} samples, the data {len(self)}")
@@ -257,11 +272,21 @@ class SimEyeData(EyeData):
         context["simulation"] = repr(self.simulation) if self.simulation else None
         context["truth"] = (f"{', '.join(self.truth.variables)} ({', '.join(self.truth.eyes)})"
                             if len(self.truth) else None)
+        if context["truth"]:
+            context["truth"] += self._truth_events_text()
         return context
+
+    def _truth_events_text(self):
+        ev = self.truth_events
+        if ev is None or not len(ev):
+            return ""
+        labels, counts = np.unique(ev.labels, return_counts=True)
+        return "; true events: " + ", ".join(f"{c} {lab}" for lab, c in zip(labels, counts))
 
     def __repr__(self):
         head, sep, history = super().__repr__().partition(" History:")
         sim = repr(self.simulation).replace("\n", "\n   ") if self.simulation else "-"
         truth = (f"{', '.join(self.truth.variables)} ({', '.join(self.truth.eyes)})"
                  if len(self.truth) else "-")
+        truth += self._truth_events_text()
         return head + f" Simulation: {sim}\n Truth: {truth}\n" + sep + history
