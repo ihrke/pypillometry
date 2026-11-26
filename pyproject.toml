@@ -23,7 +23,7 @@ classifiers = [
 ]
 dependencies = [
     "numpy",
-    "scipy",
+    "scipy>=1.16",    # L-BFGS-B workers= (parallel fits)
     "cmdstanpy",
     "matplotlib",
     "pandas",

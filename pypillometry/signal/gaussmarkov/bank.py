@@ -906,6 +906,8 @@ def _n_threads(n_jobs, n_params):
     import os
     if n_jobs is None:
         n_jobs = max((os.cpu_count() or 2) - 1, 1)
+    elif n_jobs < 0:          # joblib convention: -1 all cores, -2 all but one, ...
+        n_jobs = max((os.cpu_count() or 1) + 1 + int(n_jobs), 1)
     return max(min(int(n_jobs), n_params), 1)
 
 
@@ -1048,8 +1050,8 @@ def fit_bank(bank, y, fs, segments=None, prior="medium", theta0=None, hessian=Tr
     n_jobs : int or None
         number of threads that evaluate the likelihood at the points of the
         finite-difference gradient and of the Hessian (at most one per
-        parameter); None: all cores but one. Default 1 (e.g., inside
-        parallel processes).
+        parameter); None: all cores but one; negative as in joblib (-1: all
+        cores). Default 1 (e.g., inside parallel processes).
     progress : bool
         show a progress bar (iterations and the negative log posterior,
         then the evaluations of the Hessian); default False

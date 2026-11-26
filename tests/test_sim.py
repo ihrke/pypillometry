@@ -425,3 +425,38 @@ def test_truth_events_follow_the_data():
     late = on > 20000
     np.testing.assert_allclose(x.truth_events.onsets[-late.sum():], on[late] - 10000, atol=5)
     assert len(x.truth_events) == len(on) - ((on >= 10000) & (on < 20000)).sum()
+
+
+def test_task_generation_edge_cases():
+    rng = np.random.default_rng(0)
+    # trials without time in a block that only ends by duration: an error, not a hang
+    for t in (Task("t").block(duration="10 s").stimulus("s"),
+              Task("t").block(duration="10 s").response("r"),
+              Task("t").block(duration="60 s").stimulus("s", duration="1 s", p=0.5)):
+        with pytest.raises(ValueError, match="took no time"):
+            t.generate(rng)
+    # with an isi, trials without events are fine
+    ev, _ = Task("t").block(duration="60 s", isi="1 s").stimulus("s", duration="1 s",
+                                                                  p=0.5).generate(rng)
+    assert 10 < len(ev["onset"]) < 25
+    # n trials without time are allowed (all at the same time)
+    ev, _ = Task("t").block(n=3).stimulus("s").generate(rng)
+    assert len(ev["onset"]) == 3
+    # repeat(duration=) counts from the start of the task
+    t = Task("t").block(n=5, soa="1 s").stimulus("s").repeat(duration="10 s")
+    for start in (0, "8 s"):
+        ev, end = t._with(start=start).generate(rng)
+        assert len(ev["onset"]) == 10
+    # numbers as keys of weighted metadata stay numbers
+    ev, _ = Task("t").block(n=20, soa="1 s").stimulus(
+        "s", meta={"rating": {1: 0.5, 2: 0.5}}).generate(rng)
+    assert set(ev["rating"]) <= {1.0, 2.0}
+
+
+def test_truth_events_inside_the_recording():
+    for seed in range(5):
+        d = Simulation("20 s", fs=50, eyes=["left", "right"], seed=seed).pupil().units() \
+            .blinks(rate="60/min").loss(rate="30/min").run()
+        on = d.truth_events.onsets
+        assert on.min() >= 0 and on.max() <= d.tx[-1]
+        assert np.all(d.truth_events.meta["duration"][d.truth_events.labels == "loss"] > 0)

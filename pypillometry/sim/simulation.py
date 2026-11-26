@@ -346,7 +346,9 @@ class Simulation(Stateful):
             kwargs["events"] = Events(ev["onset"][keep], ev["label"][keep], units="ms",
                                       meta={k: v[keep] for k, v in ev.items()
                                             if k not in ("onset", "label")})
-        kwargs["truth_events"] = _truth_events(run.truth_events)
+        end = (n - 1) * 1000.0 / sim.fs
+        kwargs["truth_events"] = _truth_events([r for r in run.truth_events
+                                                if 0 <= r["onset"] <= end])
         return SimEyeData(sampling_rate=sim.fs, **channels, truth=run.truth,
                           simulation=sim, experimental_setup=copy.deepcopy(sim.setup),
                           name=sim.name, **kwargs)

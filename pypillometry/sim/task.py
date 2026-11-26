@@ -111,7 +111,8 @@ class Task(SimStep):
         isi : float, str or distribution, optional
             time from the end of one trial (its last event, or the end of
             the last stimulus) to the start of the next; default 0 if
-            neither `soa` nor `isi` is given
+            neither `soa` nor `isi` is given (then a block with a
+            `duration` but no `n` needs trials that take time)
         conditions : dict or list, optional
             conditions of the trials with their probabilities (e.g.
             ``{"go": 8/9, "nogo": 1/9}``; a list for equal probabilities)
@@ -299,8 +300,9 @@ class Task(SimStep):
             raise ValueError(f"the task {self.name!r} has no blocks with events")
         rows, trial, run = [], 0, 0
         t = float(parse_dist(self.start).sample(rng))
+        # the duration of the repetitions counts from the start of the task
         until = None if self.repeat_duration is None else \
-            float(parse_dist(self.repeat_duration).sample(rng))
+            t + float(parse_dist(self.repeat_duration).sample(rng))
         while True:
             start = t
             for b, block in enumerate(self.blocks):
@@ -453,7 +455,7 @@ def _run_block(block, b, t, trial, rng, rows):
             others = [c for c in names if c != "target"]
             if others:
                 condition = others[rng.integers(len(others))]
-        occurred, trial_rows = {}, []
+        occurred, trial_rows, trial_start = {}, [], onset
         for e in block["events"]:
             if rng.random() >= _p(e["p"], condition):
                 continue
@@ -490,9 +492,20 @@ def _run_block(block, b, t, trial, rng, rows):
             onset = trial_end + max(gap, 0.0)
         trial += 1
         k += 1
-        if block["soa"] is None and block["isi"] is None and onset <= trial_end and not trial_rows:
-            break       # nothing happens and no time passes
+        if block["n"] is None and onset <= trial_start:
+            raise ValueError(f"block {b}: a trial took no time, so the block would never "
+                             "end; give soa or isi (or n)")
     return onset, trial
+
+
+def _number(v):
+    """numbers given as strings (e.g., keys of weighted metadata) as numbers"""
+    if isinstance(v, str):
+        try:
+            return float(v)
+        except ValueError:
+            return v
+    return v
 
 
 def _table(rows):
@@ -505,7 +518,7 @@ def _table(rows):
                 names.append(k)
     out = {}
     for name in names:
-        values = [r.get(name) for r in rows]
+        values = [_number(r.get(name)) for r in rows]
         if all(isinstance(v, (int, float, np.integer, np.floating)) or v is None for v in values):
             out[name] = np.array([np.nan if v is None else float(v) for v in values])
         else:

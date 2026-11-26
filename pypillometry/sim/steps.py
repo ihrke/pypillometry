@@ -561,6 +561,8 @@ class TrackerLoss(SimStep):
                 length = max(float(dur.sample(rng)), dt)
                 a = int(np.ceil(t0 / dt))
                 b = min(int(np.ceil((t0 + length) / dt)), run.n)
+                if b <= a:
+                    continue
                 for e in group:
                     mask = np.zeros(run.n, dtype=bool)
                     mask[a:b] = True
