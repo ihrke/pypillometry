@@ -126,8 +126,11 @@ def _seq_loglik_kernel(A, Q, H, r, m0, P0, y, restart, skip):
     independent noise of the channels): noise variance `r[t, j]` per sample,
     restart from (m0, P0) where `restart[t]`, and the first `skip[j]` valid
     observations of channel j after each restart left out of the sum
-    (diffuse states). Explicit loops without temporary arrays; uses the
-    band of non-zero entries in each row of A (block-diagonal models).
+    (diffuse states).
+
+    Written for speed: no temporary arrays, only the band of non-zero
+    entries in each row of A (block-diagonal models) and the non-zero
+    entries of H are used, and the inner loops run along rows.
     """
     T, m = y.shape
     n = m0.shape[0]
@@ -135,70 +138,95 @@ def _seq_loglik_kernel(A, Q, H, r, m0, P0, y, restart, skip):
     hi = np.zeros(n, np.int64)
     for i in range(n):
         a = 0
-        while a < n and A[i, a] == 0.0:
+        while a < n - 1 and A[i, a] == 0.0:
             a += 1
         b = n
-        while b > a and A[i, b - 1] == 0.0:
+        while b > a + 1 and A[i, b - 1] == 0.0:
             b -= 1
         lo[i] = a
         hi[i] = b
+    nnz = np.zeros(m, np.int64)
+    hidx = np.zeros((m, n), np.int64)
+    for c in range(m):
+        for j in range(n):
+            if H[c, j] != 0.0:
+                hidx[c, nnz[c]] = j
+                nnz[c] += 1
     x = m0.copy()
     P = P0.copy()
     x2 = np.zeros(n)
     W = np.zeros((n, n))
+    WT = np.zeros((n, n))
     ph = np.zeros(n)
     seen = np.zeros(m, np.int64)
     ll = 0.0
     for t in range(T):
         if restart[t]:
-            for i in range(n):
-                x[i] = m0[i]
-                for j in range(n):
-                    P[i, j] = P0[i, j]
-            for j in range(m):
-                seen[j] = 0
+            x[:] = m0
+            P[:, :] = P0
+            seen[:] = 0
         elif t > 0:
             for i in range(n):
                 acc = 0.0
                 for j in range(lo[i], hi[i]):
                     acc += A[i, j] * x[j]
                 x2[i] = acc
-            for i in range(n):
-                x[i] = x2[i]
+            x[:] = x2
             for i in range(n):          # W = A P
+                Wi = W[i]
+                a = A[i, lo[i]]
+                Pl = P[lo[i]]
                 for j in range(n):
-                    acc = 0.0
-                    for l in range(lo[i], hi[i]):
-                        acc += A[i, l] * P[l, j]
-                    W[i, j] = acc
-            for i in range(n):          # P = W A' + Q
-                for j in range(i, n):
-                    acc = Q[i, j]
-                    for l in range(lo[j], hi[j]):
-                        acc += W[i, l] * A[j, l]
-                    P[i, j] = acc
-                    P[j, i] = acc
+                    Wi[j] = a * Pl[j]
+                for l in range(lo[i] + 1, hi[i]):
+                    a = A[i, l]
+                    Pl = P[l]
+                    for j in range(n):
+                        Wi[j] += a * Pl[j]
+            for i in range(n):
+                for j in range(n):
+                    WT[i, j] = W[j, i]
+            for i in range(n):          # P = A W' + Q
+                Pi = P[i]
+                Qi = Q[i]
+                for j in range(n):
+                    Pi[j] = Qi[j]
+                for l in range(lo[i], hi[i]):
+                    a = A[i, l]
+                    Wl = WT[l]
+                    for j in range(n):
+                        Pi[j] += a * Wl[j]
         for c in range(m):
             yt = y[t, c]
             if np.isnan(yt):
                 continue
-            s = r[t, c]
-            pred = 0.0
             for i in range(n):
-                acc = 0.0
-                for j in range(n):
-                    acc += P[i, j] * H[c, j]
-                ph[i] = acc
-                s += H[c, i] * acc
-                pred += H[c, i] * x[i]
+                ph[i] = 0.0
+            pred = 0.0
+            for q in range(nnz[c]):     # ph = P h (P is symmetric)
+                j = hidx[c, q]
+                h = H[c, j]
+                pred += h * x[j]
+                Pj = P[j]
+                for i in range(n):
+                    ph[i] += h * Pj[i]
+            s = r[t, c]
+            for q in range(nnz[c]):
+                j = hidx[c, q]
+                s += H[c, j] * ph[j]
             v = yt - pred
             if seen[c] >= skip[c]:
                 ll += -0.5 * (_LOG2PI + np.log(s) + v * v / s)
             seen[c] += 1
+            g = v / s
             for i in range(n):
-                x[i] += ph[i] * v / s
-                for j in range(i, n):
-                    P[i, j] -= ph[i] * ph[j] / s
+                x[i] += ph[i] * g
+                a = ph[i] / s
+                Pi = P[i]
+                for j in range(n):
+                    Pi[j] -= a * ph[j]
+            for i in range(n):          # keep P exactly symmetric
+                for j in range(i + 1, n):
                     P[j, i] = P[i, j]
     return ll
 

@@ -205,6 +205,7 @@ def _mean_model():
 def _gappy(plain, n=3000, fs=20):
     y = gm.simulate(plain, n, fs=fs, rng=1)
     y[500:700] = np.nan
+    y[1900:2500] = np.nan
     y[np.random.default_rng(0).random(n) < 0.1] = np.nan
     return y
 
