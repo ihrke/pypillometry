@@ -3,6 +3,7 @@
 ## unreleased
 
 - `EyeData.from_gazepoint()`, `read_gazepoint()`: read recordings of GazePoint eye trackers (Open Gaze API columns); blinks hidden as repeated values are masked
+- fix: `fill_time_discontinuities()` left out one sample in some gaps (rounding)
 
 ## 2.2.4 (2026-11-24)
 
