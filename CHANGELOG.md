@@ -42,6 +42,7 @@ Signal processing:
 ### Breaking changes
 
 - `FakeEyeData` and `pp.signal.fake` were removed
+- `numba` is a dependency (the Kalman filter of the timescale model is about 400 times slower without it); the extra `pypillometry[fast]` was removed
 
 
 ## 2.2.4 (2026-11-24)
