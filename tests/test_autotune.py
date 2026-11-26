@@ -197,7 +197,7 @@ class TestBlinksOptimizeParameters:
         assert set(res.params) == {"method", "winsize", "vel_onset", "vel_offset", "margin",
                                    "blinkwindow"}
         assert res.params["method"] == "mahot"
-        assert res.start == dict(winsize=26.0, vel_onset=-10.0, vel_offset=10.0,
+        assert res.start == dict(winsize=30.0, vel_onset=-10.0, vel_offset=10.0,
                                  margin=(0.0, 0.0), blinkwindow=500.0)
         assert res.test_loss < 0.5 * res.test_loss_start
         assert res.n_test > 0 and res.n_refine > 0
@@ -251,8 +251,11 @@ class TestBlinksOptimizeParameters:
         assert res.params["margin"][1] <= 100
         with pytest.raises(ValueError):
             data.pupil.blinks_optimize_parameters(method="spline")
-        with pytest.raises(ValueError):
-            data.pupil.blinks_optimize_parameters(start=dict(vel_onset="8sd"))
+        # relative thresholds only as the start (converted to units per ms)
+        with pytest.raises(ValueError, match="only for start"):
+            data.pupil.blinks_optimize_parameters(fixed=dict(vel_onset="8sd"))
+        with pytest.raises(ValueError, match="robust SD"):
+            data.pupil.blinks_optimize_parameters(start=dict(vel_onset="5%"))
         with pytest.raises(ValueError):
             data.pupil.blinks_optimize_parameters(fixed=dict(interp_type="linear"))
         with pytest.raises(ValueError, match="detect the blinks"):

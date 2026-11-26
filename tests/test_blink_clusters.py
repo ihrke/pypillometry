@@ -83,7 +83,9 @@ class TestPlot:
         d = pp.EyeData(left_pupil=y, sampling_rate=500, inplace=False).pupil.blinks_detect()
         # a dip without missing samples, found by the velocity
         y[30300:30320] -= np.r_[np.linspace(0, 300, 10), np.linspace(300, 0, 10)]
-        d = pp.EyeData(left_pupil=y, sampling_rate=500, inplace=False).pupil.blinks_detect()
+        # fixed thresholds: the dip is smaller than the defaults look for
+        d = pp.EyeData(left_pupil=y, sampling_rate=500, inplace=False).pupil.blinks_detect(
+            winsize=11, vel_onset=-5.0, vel_offset=5.0)
         fig = d.plot.plot_blink_clusters(n_clusters=2, window=(200, 500))
         axs, hists = fig.axes[:4], fig.axes[4:]   # the panels, then the histograms below them
         assert len(axs) == 4 and len(hists) == 4
