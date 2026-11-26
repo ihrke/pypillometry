@@ -205,12 +205,17 @@ def velocity_savgol(x, window_len=11, polyorder=2, direction='center'):
     
     # Get Savitzky-Golay coefficients for first derivative
     coeffs = savgol_coeffs(window_len, polyorder, deriv=1, pos=pos)
-    
-    # Apply filter using convolution with appropriate boundary handling
-    # Use 'nearest' mode to extend boundary values
-    vel = convolve1d(x, coeffs, mode='nearest')
-    
-    return vel
+
+    # The convolution centres the window on each sample, so the coefficients
+    # give the derivative at sample i + (pos - half) from the window around i.
+    # Evaluate the windows around i - (pos - half) instead, so that the
+    # window ends (backward) or starts (forward) at sample i. The signal is
+    # extended by its first and last values.
+    half = window_len // 2
+    shift = pos - half
+    padded = np.pad(x, half, mode="edge")
+    vel = convolve1d(padded, coeffs, mode='nearest')
+    return vel[half - shift:half - shift + x.size]
 
 
 def helper_merge_blinks(b1,b2):
@@ -332,9 +337,12 @@ def _velocity_profiles(sy, smooth_winsize):
     if invalid.any():
         filled[invalid] = np.interp(np.where(invalid)[0], valid, sy[valid])
     # backward-looking for onsets, forward-looking for offsets: the missing
-    # samples of the blink do not affect the estimate at its edges
-    vel_backward = velocity_savgol(filled, smooth_winsize, polyorder=2, direction="backward")
-    vel_forward = velocity_savgol(filled, smooth_winsize, polyorder=2, direction="forward")
+    # samples of the blink do not affect the estimate at its edges. The
+    # one-sided windows fit a line (the mean slope): a quadratic, evaluated
+    # at the end of its window, overshoots at kinks (e.g. at the end of the
+    # reopening) and would find onsets there
+    vel_backward = velocity_savgol(filled, smooth_winsize, polyorder=1, direction="backward")
+    vel_forward = velocity_savgol(filled, smooth_winsize, polyorder=1, direction="forward")
     vel_backward[invalid] = 0
     vel_forward[invalid] = 0
     return vel_backward, vel_forward, invalid
@@ -523,11 +531,11 @@ def blink_onsets_mahot(sy, blinks, smooth_winsize, vel_onset, vel_offset, margin
         input blink; if no transient is found before (after) the core of a
         blink, the start (end) of the core is used
     """
-    # Generate asymmetric velocity profiles
-    # Backward-looking for onset detection (doesn't peek into blink)
-    vel_backward = velocity_savgol(sy, smooth_winsize, polyorder=2, direction="backward")
-    # Forward-looking for offset detection (doesn't peek into blink)
-    vel_forward = velocity_savgol(sy, smooth_winsize, polyorder=2, direction="forward")
+    # Asymmetric velocity profiles (lines fitted to one-sided windows, see
+    # _velocity_profiles): backward-looking for the onset, forward-looking
+    # for the offset (neither peeks into the blink)
+    vel_backward = velocity_savgol(sy, smooth_winsize, polyorder=1, direction="backward")
+    vel_forward = velocity_savgol(sy, smooth_winsize, polyorder=1, direction="forward")
     if max_gap is None:
         max_gap = smooth_winsize
     n = len(sy)
