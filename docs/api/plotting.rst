@@ -19,6 +19,7 @@ Time series
    plot.PlotNamespace.plot_pupil_segments
    plot.PlotNamespace.plot_pupil_spectrum
    plot.PlotNamespace.plot_timeseries_segments
+   plot.PlotNamespace.plot_pupil_covariate
 
 Blinks, masks and intervals
 ---------------------------
@@ -48,8 +49,6 @@ Scene video (:class:`HeadMountedEyeData`)
    :nosignatures:
 
    plot.HeadMountedPlotNamespace.plot_scene_scanpath
-   plot.HeadMountedPlotNamespace.plot_timeseries
-   plot.HeadMountedPlotNamespace.plot_pupil_covariate
 
 Experimental setup and foreshortening
 -------------------------------------
