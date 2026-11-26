@@ -135,6 +135,28 @@ class TestVelocitySavgol(unittest.TestCase):
         middle = result[20:80]
         np.testing.assert_array_almost_equal(middle, np.ones_like(middle), decimal=5)
     
+    def test_one_sided_windows(self):
+        """the backward window ends at the sample, the forward one starts there"""
+        n, w = 200, 11
+        up = np.r_[np.zeros(100), np.arange(100, dtype=float)]     # ramp from sample 100
+        back = velocity_savgol(up, window_len=w, direction="backward")
+        fwd = velocity_savgol(up, window_len=w, direction="forward")
+        # backward: nothing before the ramp, the full slope once the window is in it
+        np.testing.assert_allclose(back[:101], 0, atol=1e-12)
+        np.testing.assert_allclose(back[100 + w:n - 1], 1)
+        # forward: sees the ramp coming (within one window before it)
+        assert np.all(np.abs(fwd[100 - w + 2:100]) > 0.01)
+        np.testing.assert_allclose(fwd[:100 - w], 0, atol=1e-12)
+        np.testing.assert_allclose(fwd[100:n - w], 1)
+        # the same for the end of a ramp, mirrored
+        down = np.r_[np.arange(100, dtype=float), np.full(100, 99.0)]
+        np.testing.assert_allclose(velocity_savgol(down, w, direction="forward")[99:],
+                                   0, atol=1e-12)
+        np.testing.assert_allclose(velocity_savgol(down, w, direction="backward")[w:100], 1)
+        # centred: symmetric around the kink
+        c = velocity_savgol(up, w)
+        np.testing.assert_allclose(c[100 - 3] + c[100 + 3], 1, atol=1e-9)
+
     def test_backward_differs_from_center(self):
         """Backward velocity should differ from center at transitions"""
         # Create signal with a step change from flat to ramp
@@ -258,8 +280,9 @@ class TestDetectBlinksVelocity(unittest.TestCase):
         signal[55:80] = 100
         signal[80:90] = np.linspace(100, 1000, 10)
         kw = dict(smooth_winsize=5, vel_onset=-50, vel_offset=50)
-        n_on = np.sum(velocity_savgol(signal, 5, polyorder=2, direction="backward") <= -50)
-        n_off = np.sum(velocity_savgol(signal, 5, polyorder=2, direction="forward") >= 50)
+        # the one-sided velocities of the detection are lines (polyorder 1)
+        n_on = np.sum(velocity_savgol(signal, 5, polyorder=1, direction="backward") <= -50)
+        n_off = np.sum(velocity_savgol(signal, 5, polyorder=1, direction="forward") >= 50)
         self.assertGreater(n_on, 1)
         self.assertGreater(n_off, 1)
         self.assertEqual(len(detect_blinks_velocity(
@@ -448,8 +471,8 @@ class TestBlinkOnsetsMahot(unittest.TestCase):
         """a transient that briefly slows down is found as a whole"""
         p = np.full(3000, 5000.0)
         p[940:970] = np.linspace(5000, 3000, 30)
-        p[970:976] = 3000.0          # pause in the drop
-        p[976:1000] = np.linspace(3000, 1000, 24)
+        p[970:986] = 3000.0          # pause in the drop (longer than the window)
+        p[986:1000] = np.linspace(3000, 1000, 14)
         p[1000:1500] = np.nan
         p[1500:1530] = np.linspace(1000, 5000, 30)
         out = blink_onsets_mahot(p, [(1000, 1500)], 11, -5, 5, (0, 0), 500)
@@ -573,7 +596,8 @@ class TestInterpolateBlinksMahot(unittest.TestCase):
         filled, interp, skipped = interpolate_blinks_mahot(p, [(1000, 1100)], 11, -5, 5, (5, 5), 500)
         self.assertEqual(skipped, [])
         self.assertFalse(np.isnan(filled).any())
-        self.assertTrue(interp[965:1130].all())          # transients (30 samples) included
+        # transients (30 samples, the drop starts at 971) and margins included
+        self.assertTrue(interp[966:1130].all())
         np.testing.assert_allclose(filled[interp], 5000)
         np.testing.assert_array_equal(filled[~interp], p[~interp])
 

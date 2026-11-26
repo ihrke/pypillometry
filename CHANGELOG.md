@@ -4,6 +4,7 @@
 
 - `EyeData.from_gazepoint()`, `read_gazepoint()`: read recordings of GazePoint eye trackers (Open Gaze API columns); blinks hidden as repeated values are masked
 - fix: `fill_time_discontinuities()` left out one sample in some gaps (rounding)
+- fix: `pp.signal.velocity_savgol(direction="backward"/"forward")` evaluated the derivative half a window ahead (backward) or behind (forward), so the one-sided velocities of `pupil.blinks_detect()` (velocity strategy) and of the `"mahot"` interpolation looked into the blink; the one-sided velocities of both are now the slope of a line fitted to the window (a quadratic overshoots at the end of its window, e.g. after the reopening). Detected blink onsets come slightly later, offsets slightly earlier (by up to half the window)
 
 ## 2.2.4 (2026-11-24)
 

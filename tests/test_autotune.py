@@ -8,7 +8,9 @@ from pypillometry.signal import (interpolate_blinks_mahot, transplant_blinks,
 from tests.test_transplant import make_signal
 
 # far too short margins and too high thresholds: the artifacts stay in
-BAD = dict(smooth_winsize=11, vel_onset=-400, vel_offset=400, margin=(0, 0), blinkwindow=100)
+# bad, but not so extreme that no single parameter change helps (with thresholds
+# beyond the fastest change of the transients, changing one of them is not enough)
+BAD = dict(smooth_winsize=11, vel_onset=-20, vel_offset=20, margin=(0, 0), blinkwindow=100)
 FAST = dict(n_grid=5, sweeps=2)
 
 
@@ -186,14 +188,14 @@ def record_transplants(monkeypatch):
 class TestBlinksOptimizeParameters:
     def test_tunes_in_ms(self, data):
         before = data.data["left_pupil"].copy()
-        start = dict(vel_onset=-200, vel_offset=200, margin=(0, 0))
+        start = dict(vel_onset=-10, vel_offset=10, margin=(0, 0))
         res = data.pupil.blinks_optimize_parameters(start=start, seed=1, **FAST)
         np.testing.assert_array_equal(data.data["left_pupil"], before)
         assert res.units == "ms" and res.success
         assert set(res.params) == {"method", "winsize", "vel_onset", "vel_offset", "margin",
                                    "blinkwindow"}
         assert res.params["method"] == "mahot"
-        assert res.start == dict(winsize=26.0, vel_onset=-200.0, vel_offset=200.0,
+        assert res.start == dict(winsize=26.0, vel_onset=-10.0, vel_offset=10.0,
                                  margin=(0.0, 0.0), blinkwindow=500.0)
         assert res.test_loss < 0.5 * res.test_loss_start
         assert res.n_test > 0 and res.n_refine > 0
