@@ -346,7 +346,7 @@ class TestTweakBlinkInterpolation(unittest.TestCase):
     def test_errors(self):
         with self.assertRaisesRegex(ValueError, "unknown parameter"):
             self.run_tweak(pars=dict(method="kalman", vel_onset=-5))
-        with self.assertRaisesRegex(TypeError, "percent"):
+        with self.assertRaisesRegex(ValueError, "robust SD"):
             self.run_tweak(pars=dict(vel_onset="5%"))
         with self.assertRaisesRegex(ValueError, "detect the blinks"):
             self.pp.tweak_blink_interpolation(self.pp.get_example_data("rlmw_002_short"))

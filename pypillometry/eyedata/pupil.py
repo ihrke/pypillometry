@@ -40,10 +40,27 @@ if TYPE_CHECKING:
 
 #: parameters of the methods of ``blinks_interpolate()`` and their defaults
 _INTERP_DEFAULTS = {
-    "mahot": dict(winsize=25, vel_onset=-5.0, vel_offset=5.0, margin=(10, 30),
+    "mahot": dict(winsize=30, vel_onset="2sd", vel_offset="2sd", margin=(10, 30),
                   interp_type="cubic", max_duration=2000),
     "kalman": dict(optimize=False, margin=(50, 150)),
 }
+
+
+#: minimal size (samples) of the Savitzky-Golay window of the velocity
+_MIN_VELOCITY_WINDOW = 5
+
+
+def _velocity_window(d, winsize):
+    """
+    Size in samples of the Savitzky-Golay window of the velocity (blink
+    detection and interpolation): `winsize` (ms, or with units) rounded to
+    the nearest odd number of samples, at least 5 (at low sampling rates, a
+    window of a few ms would be one or two samples and give a raw,
+    noisy derivative).
+    """
+    from ..units import parse_time
+    x = float(parse_time(winsize, to="samples", default="ms", fs=d.fs))
+    return max(_MIN_VELOCITY_WINDOW, int(2 * np.floor((x - 1) / 2 + 0.5) + 1))
 
 
 def _interp_params(method, kwargs):
@@ -412,38 +429,56 @@ class PupilNamespace(Namespace["EyeData"]):
         
         return obj
 
+    def _velocity_thresholds_ms(self, eye, winsize, vel_onset, vel_offset):
+        """
+        The velocity thresholds of the interpolation of `eye` in pupil units
+        per ms (relative ones, ``"<k>sd"``, converted with the velocity of
+        the recording), e.g. as the start of a search or of tweaking.
+        """
+        d = self._d
+        on, off = self._convert_velocity_thresholds(
+            np.asarray(d.data[eye, "pupil"], dtype=float), _velocity_window(d, winsize),
+            vel_onset, vel_offset)
+        return on * d.fs / 1000.0, off * d.fs / 1000.0
+
     def _convert_velocity_thresholds(self, pupil_data, winsize_ix, vel_onset, vel_offset):
         """
-        Convert velocity thresholds from per-ms or percentile to per-sample units.
-        
+        Convert velocity thresholds to per-sample units.
+
         Parameters
         ----------
         pupil_data : np.array
-            pupil data array (used for percentile calculation)
+            pupil data array (used for the thresholds relative to the velocity)
         winsize_ix : int
             window size in samples for velocity calculation
-        vel_onset : float or str
-            onset threshold (per-ms float or percentile string like "5%")
-        vel_offset : float or str
-            offset threshold (per-ms float or percentile string like "95%")
-            
+        vel_onset, vel_offset : float or str
+            onset and offset thresholds: a number (pupil units per ms) or a
+            multiple of the robust standard deviation of the velocity
+            (``"8sd"``; negative for the onset, positive for the offset)
+
         Returns
         -------
         tuple (float, float)
             (vel_onset_samples, vel_offset_samples) thresholds in per-sample units
         """
-        # Helper to parse percentile string
-        def parse_percentile(val):
-            if isinstance(val, str) and val.endswith('%'):
-                return float(val[:-1])
-            return None
-        
-        onset_pct = parse_percentile(vel_onset)
-        offset_pct = parse_percentile(vel_offset)
-        
-        # If either threshold is a percentile, we need to compute velocity profile
-        if onset_pct is not None or offset_pct is not None:
-            # Fill NaN/zero values with interpolation for velocity calculation
+        def parse(val, name):
+            """("sd" | "abs", number)"""
+            if isinstance(val, str):
+                text = val.strip().lower()
+                try:
+                    if text.endswith("sd"):
+                        return "sd", abs(float(text[:-2]))
+                except ValueError:
+                    pass
+                raise ValueError(f"{name}={val!r}: give a number (pupil units per ms) or a "
+                                 "multiple of the robust SD of the velocity (e.g. '8sd')")
+            return "abs", float(val)
+
+        specs = {"vel_onset": parse(vel_onset, "vel_onset"),
+                 "vel_offset": parse(vel_offset, "vel_offset")}
+        vel_valid = None
+        if any(kind != "abs" for kind, _ in specs.values()):
+            # velocity profile of the valid samples (NaN/0 filled linearly)
             invalid_mask = np.isnan(pupil_data) | (pupil_data == 0)
             pupil_filled = pupil_data.copy()
             valid_indices = np.where(~invalid_mask)[0]
@@ -452,36 +487,26 @@ class PupilNamespace(Namespace["EyeData"]):
                 pupil_filled[invalid_indices] = np.interp(
                     invalid_indices, valid_indices, pupil_data[valid_indices]
                 )
-            
-            # Compute velocity profile
             vel = preproc.velocity_savgol(pupil_filled, winsize_ix, polyorder=2, direction="center")
-            # Mask out invalid regions for percentile calculation
             vel_valid = vel[~invalid_mask]
-        
-        # Convert onset threshold
-        if onset_pct is not None:
-            vel_onset_samples = np.percentile(vel_valid, onset_pct)
-            logger.debug(f"vel_onset {vel_onset} -> {vel_onset_samples:.4f} (percentile)")
-        else:
-            # Convert from per-ms to per-sample
-            vel_onset_samples = float(vel_onset) * (1000 / self._d.fs)
-            logger.debug(f"vel_onset {vel_onset}/ms -> {vel_onset_samples:.4f}/sample")
-        
-        # Convert offset threshold
-        if offset_pct is not None:
-            vel_offset_samples = np.percentile(vel_valid, offset_pct)
-            logger.debug(f"vel_offset {vel_offset} -> {vel_offset_samples:.4f} (percentile)")
-        else:
-            # Convert from per-ms to per-sample
-            vel_offset_samples = float(vel_offset) * (1000 / self._d.fs)
-            logger.debug(f"vel_offset {vel_offset}/ms -> {vel_offset_samples:.4f}/sample")
-        
-        return vel_onset_samples, vel_offset_samples
+        out = []
+        for name, (kind, value) in specs.items():
+            sign = -1.0 if name == "vel_onset" else 1.0
+            if kind == "sd":
+                med = np.median(vel_valid)
+                rsd = 1.4826 * np.median(np.abs(vel_valid - med))
+                thr = sign * value * rsd
+                logger.debug(f"{name} {value:g} robust SD ({rsd:.4g}/sample) -> {thr:.4f}/sample")
+            else:
+                thr = value * (1000 / self._d.fs)
+                logger.debug(f"{name} {value:g}/ms -> {thr:.4f}/sample")
+            out.append(float(thr))
+        return out[0], out[1]
 
     @step
     @keephistory
     def blinks_detect(self, eyes=[], min_duration:float=20, blink_val:float=0,
-                      winsize: float=11, vel_onset=-5.0, vel_offset=5.0, 
+                      winsize: float=45, vel_onset="25sd", vel_offset="25sd", 
                       vel_onset_min_duration: float=10.0, vel_offset_min_duration: float=10.0,
                       max_duration: float=2000, margin=0,
                       strategies: list=["zero","velocity"],
@@ -516,7 +541,9 @@ class PupilNamespace(Namespace["EyeData"]):
         eyes : list
             list of eyes to process; if empty, all available eyes are processed
         min_duration : float, str or Quantity
-            minimum duration (in ms, or with units) for a sequence of missing numbers to be treated as blink
+            minimum duration (in ms, or with units) for a sequence of missing
+            numbers to be treated as blink (rounded to the nearest number of
+            samples, at least 2 samples)
         blink_val : float
             "missing value" code for the "zero" strategy. Missing samples
             (NaN) are always detected; samples equal to `blink_val` (default
@@ -525,17 +552,22 @@ class PupilNamespace(Namespace["EyeData"]):
             The "zero" strategy always uses the raw data, so regions masked
             for other reasons are not detected as blinks.
         winsize : float, str or Quantity
-            window-size for Savitzky-Golay velocity estimation (in ms, or with units)
+            size of the Savitzky-Golay window of the velocity (in ms, or with
+            units; default 45 ms), rounded to the nearest odd number of
+            samples, at least 5 samples
         vel_onset : float or str
-            velocity threshold to detect blink onset (negative value).
+            velocity threshold to detect blink onset (the closing of the lid):
 
-            - If float: threshold in pupil-units per millisecond (e.g., -5.0)
-            - If str: percentile of velocity distribution (e.g., "5%" for bottom 5%)
+            - ``"<k>sd"`` (default ``"25sd"``): k times the robust standard
+              deviation (1.4826 MAD) of the velocity of the recording, as a
+              negative threshold; it adapts to the units and the noise of
+              the data
+            - a number: threshold in pupil units per millisecond (negative,
+              e.g. -5.0)
         vel_offset : float or str
-            velocity threshold to detect blink offset (positive value).
-
-            - If float: threshold in pupil-units per millisecond (e.g., 5.0)
-            - If str: percentile of velocity distribution (e.g., "95%" for top 5%)
+            velocity threshold to detect blink offset (the reopening):
+            ``"<k>sd"`` (default ``"25sd"``, positive) or a number in pupil
+            units per millisecond (positive, e.g. 5.0)
         vel_onset_min_duration : float, str or Quantity
             minimum duration (in ms, or with units) that velocity must exceed threshold to detect as onset
             (to avoid noise-induced false detections)
@@ -584,12 +616,12 @@ class PupilNamespace(Namespace["EyeData"]):
         eyes=self._d._eyes_with(eyes, "pupil")
 
         # Convert ms to samples
-        winsize_ix=self._d._samples(winsize)
-        if winsize_ix % 2==0:
-            winsize_ix += 1
-        min_duration_ix=self._d._samples(min_duration)
-        vel_onset_min_samples = max(1, self._d._samples(vel_onset_min_duration))
-        vel_offset_min_samples = max(1, self._d._samples(vel_offset_min_duration))
+        winsize_ix = _velocity_window(self._d, winsize)
+        min_duration_ix = max(2, self._d._samples(min_duration, rounding="nearest"))
+        vel_onset_min_samples = max(1, self._d._samples(vel_onset_min_duration,
+                                                        rounding="nearest"))
+        vel_offset_min_samples = max(1, self._d._samples(vel_offset_min_duration,
+                                                         rounding="nearest"))
         max_duration_ix = (None if max_duration is None
                            else self._d._samples(max_duration))
         margin_ix = self._d._samples(margin, rounding="up")
@@ -1001,9 +1033,19 @@ class PupilNamespace(Namespace["EyeData"]):
         def in_samples(pars, what):
             """parameters of blinks_interpolate() (ms) in samples"""
             pars = dict(pars)
-            for name in ("vel_onset", "vel_offset"):
-                if isinstance(pars.get(name, 0), str):
-                    raise ValueError(f"{what}: {name} in percent is not supported")
+            rel = [n for n in ("vel_onset", "vel_offset") if isinstance(pars.get(n, 0), str)]
+            if rel and what != "start":
+                raise ValueError(f"{what}: {', '.join(rel)} must be in pupil units per ms "
+                                 "(relative thresholds like '4sd' only for start)")
+            if rel:
+                # relative thresholds: in units per ms of these data (mean of the eyes)
+                conv = [d.pupil._velocity_thresholds_ms(e, pars.get("winsize", 30),
+                                                       pars.get("vel_onset", "2sd"),
+                                                       pars.get("vel_offset", "2sd"))
+                        for e in eyes]
+                for n, i in (("vel_onset", 0), ("vel_offset", 1)):
+                    if n in rel:
+                        pars[n] = float(np.mean([c[i] for c in conv]))
             names = {"winsize", "vel_onset", "vel_offset", "margin", "blinkwindow"}
             if what == "bounds":
                 names = (names - {"margin"}) | {"margin_before", "margin_after"}
@@ -1184,11 +1226,9 @@ class PupilNamespace(Namespace["EyeData"]):
         :func:`~pypillometry.signal.preproc.interpolate_blinks_mahot`;
         returns the signal and the interpolated samples"""
         # parameters in sampling units (from ms)
-        winsize_ix=self._d._samples(winsize, rounding="up")
+        winsize_ix = _velocity_window(self._d, winsize)
         margin_ix=self._d._samples(margin, rounding="up")
         max_ix = None if max_duration is None else self._d._samples(max_duration)
-        if winsize_ix % 2==0: ## ensure smoothing window is odd
-            winsize_ix+=1 
         bls = self._d.get_blinks(eye, "pupil", units="samples")[f"{eye}_pupil"]
         
         # Use raw data for velocity computation - blink_onsets_mahot handles NaN/zeros internally
@@ -1284,19 +1324,20 @@ class PupilNamespace(Namespace["EyeData"]):
         ----------------
         winsize : float, str or Quantity
             ``"mahot"``: size of the Savitzky-Golay window (in ms, or with
-            units); default 25
+            units; rounded to the nearest odd number of samples, at least 5);
+            default 30
         vel_onset : float or str
-            ``"mahot"``: velocity threshold to detect blink onset (negative
-            value); default -5.0
+            ``"mahot"``: velocity threshold that finds the start of the
+            closing around each blink; default ``"2sd"``
 
-            - If float: threshold in pupil-units per millisecond (e.g., -5.0)
-            - If str: percentile of velocity distribution (e.g., "5%" for bottom 5%)
+            - ``"<k>sd"``: k robust standard deviations of the velocity of
+              the recording (negative; see :meth:`blinks_detect`), which
+              works in any units
+            - a number: threshold in pupil units per millisecond (e.g., -5.0)
         vel_offset : float or str
-            ``"mahot"``: velocity threshold to detect blink offset (positive
-            value); default 5.0
-
-            - If float: threshold in pupil-units per millisecond (e.g., 5.0)
-            - If str: percentile of velocity distribution (e.g., "95%" for top 5%)
+            ``"mahot"``: velocity threshold that finds the end of the
+            reopening; default ``"2sd"`` (positive), or a number (units per
+            ms, e.g. 5.0)
         margin : Tuple[float,float] or Quantity
             ``"mahot"``: margin that is subtracted/added to onset and offset
             (in ms, or with units, e.g. ``(10, 30) * u.ms``); default
