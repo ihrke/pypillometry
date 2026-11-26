@@ -2593,6 +2593,14 @@ class TestMasksAndBlinksKept(unittest.TestCase):
         # blinks after the gap move by the 30 inserted samples
         self.assertEqual(list(g.get_blinks("left", "pupil", units="samples")["left_pupil"].intervals), [(490, 520), (600, 620)])
 
+    def test_fill_time_discontinuities_rounding(self):
+        # 60 Hz: a gap of 3 steps is 2.9999... steps in floating point
+        tx = np.arange(20) * 1000. / 60.
+        keep = np.r_[0:12, 14:20]
+        g = pp.EyeData(left_pupil=np.ones(18), time=tx[keep], sampling_rate=60)
+        self.assertEqual(len(g), 20)
+        np.testing.assert_allclose(g.tx, tx)
+
 
 class TestHistoryLog(unittest.TestCase):
     """The history is a text log of the calls made by the user (M2)."""

@@ -1,6 +1,6 @@
 """Tests for reading GazePoint recordings (Open Gaze API columns).
 
-The recordings are written by the tests: 64 Hz (exact time stamps), 20 samples, a blink at
+The recordings are written by the tests: 60 Hz, 20 samples, a blink at
 samples 5-8 (LPV = 0, LPUPILV = 1 and the last pupil size repeated, as in
 real recordings) and two dropped samples (12, 13).
 """
@@ -22,7 +22,7 @@ def _recording(n=20, drop=(12, 13)):
         blink = 5 <= i <= 8
         lpd = 20. + 0.1 * i
         rows.append(dict(
-            CNT=i, TIME=10. + i / 64.,
+            CNT=i, TIME=10. + i / 60.,
             LPOGX=0.5, LPOGY=0.25, LPOGV=0 if blink else 1,
             RPOGX=0.5, RPOGY=0.25, RPOGV=0 if blink else 1,
             LPD=20.4 if blink else lpd, LPV=0 if blink else 1,
@@ -51,7 +51,7 @@ class TestReader:
         assert res["samples"]["time"].iloc[0] == pytest.approx(10000.)
         # the label of the first sample is left over: not an event
         assert list(res["events"]["label"]) == ["VAR TRIAL 1", "VAR TRIAL 2"]
-        assert res["events"]["time"].iloc[0] == pytest.approx(10000. + 2000. / 64.)
+        assert res["events"]["time"].iloc[0] == pytest.approx(10000. + 2000. / 60.)
         assert res["info"]["duplicate_times"] == 0
 
     def test_initial_label(self, fname):
@@ -80,7 +80,7 @@ class TestFromGazepoint:
     def test_pupil_mm(self, fname):
         d = pp.EyeData.from_gazepoint(fname)
         assert d.name == "rec_1" and len(d) == 20  # the dropped samples are filled in
-        assert d.fs == pytest.approx(64.)
+        assert d.fs == pytest.approx(60.)
         left = d.data["left_pupil"]
         # the blink is masked although LPUPILV is 1 (LPV is 0)
         assert np.all(np.isnan(left[5:9])) and np.all(np.isnan(left[12:14]))
@@ -114,7 +114,7 @@ class TestFromGazepoint:
     def test_events(self, fname):
         d = pp.EyeData.from_gazepoint(fname, label_prefix="VAR ")
         assert list(d.events.labels) == ["TRIAL 1", "TRIAL 2"]
-        assert d.events.onsets[1] == pytest.approx(10000. + 10000. / 64.)
+        assert d.events.onsets[1] == pytest.approx(10000. + 10000. / 60.)
 
     def test_save_and_load(self, fname, tmp_path):
         d = pp.EyeData.from_gazepoint(fname)

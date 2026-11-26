@@ -2267,7 +2267,7 @@ class EyeData(state.VersionedState):
                 ntx.append( tx[bounds[i]:bounds[i+1]] )
                 if i<ngaps:
                     start,end=gaps_start_ix[i], gaps_end_ix[i]
-                    nfill=int((tx[end]-tx[start])/stepsize)-1
+                    nfill=int(round((tx[end]-tx[start])/stepsize))-1
                     ntx.append( tx[start]+stepsize*np.arange(1, nfill+1) )
             # new position of each original sample (ntx alternates kept
             # segments and filled gaps)
