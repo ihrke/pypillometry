@@ -69,6 +69,68 @@ class SimPlotNamespace(PlotNamespace):
         ax.legend(frameon=False, fontsize=8, loc="upper right")
         return ax
 
+    def plot_task_events(self, plot_range=None, units="sec", ax=None):
+        """
+        The events of the task of a simulation (see
+        :class:`~pypillometry.sim.Task`): one lane per event label,
+        stimuli as bars over their duration, responses as ticks, coloured
+        by condition.
+
+        Parameters
+        ----------
+        plot_range : tuple, optional
+            (start, end) of the part of the recording to plot (plain numbers
+            are in `units`); default: the first 30 s
+        units : str
+            unit of the time axis (default "sec")
+        ax : Axes, optional
+            axes to draw on (default: the current axes)
+
+        Returns
+        -------
+        Axes
+        """
+        d = self._d
+        ev = d.events
+        meta = ev.meta
+        if "kind" not in meta or "modality" not in meta:
+            raise ValueError("the data have no events of a task (Simulation.task())")
+        ax = get_ax(ax)
+        if plot_range is None:
+            plot_range = (0, parse_time("30 s", to=units))
+        lo, hi = (parse_time(v, to="ms", default=units) for v in plot_range)
+        on = np.asarray(ev.onsets, dtype=float)
+        sel = (on >= lo) & (on <= hi)
+        labels = list(dict.fromkeys(ev.labels))
+        modality = {lab: meta["modality"][np.flatnonzero(ev.labels == lab)[0]] for lab in labels}
+        conditions = [c for c in dict.fromkeys(meta["condition"])]
+        colors = {c: f"C{i}" for i, c in enumerate(conditions)}
+        dur = np.nan_to_num(np.asarray(meta["duration"], dtype=float))
+        for k, lab in enumerate(labels):
+            y = len(labels) - 1 - k
+            for c in conditions:
+                idx = np.flatnonzero(sel & (ev.labels == lab) & (meta["condition"] == c))
+                if not len(idx):
+                    continue
+                t0 = parse_time(on[idx], to=units)
+                if meta["kind"][idx[0]] == "stimulus":
+                    w = parse_time(np.maximum(dur[idx], 0), to=units)
+                    ax.barh(np.full(len(idx), y), w, left=t0, height=0.5,
+                            color=colors[c], alpha=0.75, align="center")
+                    ax.vlines(t0, y - 0.3, y + 0.3, color=colors[c], lw=1.2)
+                else:
+                    ax.vlines(t0, y - 0.3, y + 0.3, color=colors[c], lw=1.5)
+        ax.set_yticks(range(len(labels)), [f"{lab} ({modality[lab]})" for lab in labels[::-1]])
+        ax.set_ylim(-0.6, len(labels) - 0.4)
+        ax.set_xlim(parse_time(lo, to=units), parse_time(hi, to=units))
+        ax.set_xlabel(f"time ({units})")
+        if len(conditions) > 1 or conditions[0]:
+            from matplotlib.patches import Patch
+            ax.legend(handles=[Patch(color=colors[c], label=c or "-") for c in conditions],
+                      frameon=False, fontsize=8, loc="upper right", ncol=len(conditions))
+        ax.set_title(f"{d.name}: events of the task", fontsize=10)
+        return ax
+
     def plot_components(self, eye=None, plot_range=None, units="sec", axes=None,
                         figsize=(12, 7)):
         """
@@ -154,8 +216,12 @@ class SimEyeData(EyeData):
     - `simulation`: the :class:`~pypillometry.sim.Simulation` that made the
       data, with its seed (``d.simulation.run()`` makes the same data
       again; ``d.simulation.run(seed=2)`` new data from the same recipe)
-    - the plots ``d.plot.plot_truth()`` and ``d.plot.plot_components()``
-      (:class:`SimPlotNamespace`)
+    - the plots ``d.plot.plot_truth()``, ``d.plot.plot_components()`` and,
+      with a task, ``d.plot.plot_task_events()`` (:class:`SimPlotNamespace`)
+
+    With a task (:meth:`Simulation.task() <pypillometry.sim.Simulation.task>`),
+    its events are the events of the data (``d.events``, with their
+    metadata).
 
     Parameters
     ----------

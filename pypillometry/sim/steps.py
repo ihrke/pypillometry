@@ -5,13 +5,14 @@ Each step is a small dataclass with the parameters of one part of the
 simulated recording. A simulation runs its steps in a fixed order of
 stages, whatever the order in which they were added:
 
-1. ``"pupil"``: the latent pupil size in log-%, :math:`100 \\log(\\text{size}
+1. ``"events"``: the events of a task (:class:`~pypillometry.sim.Task`)
+2. ``"pupil"``: the latent pupil size in log-%, :math:`100 \\log(\\text{size}
    / \\text{median})` (:class:`TimescalePupil`)
-2. ``"gaze"``: the gaze position in pixels (:class:`Fixations`)
-3. ``"foreshortening"``: the apparent pupil size as seen by the camera
+3. ``"gaze"``: the gaze position in pixels (:class:`Fixations`)
+4. ``"foreshortening"``: the apparent pupil size as seen by the camera
    (:class:`Foreshortening`)
-4. ``"units"``: from log-% to the units of the tracker (:class:`Units`)
-5. ``"noise"``: measurement noise (:class:`WhiteNoise`)
+5. ``"units"``: from log-% to the units of the tracker (:class:`Units`)
+6. ``"noise"``: measurement noise (:class:`WhiteNoise`)
 
 Each step draws from its own random stream (derived from the seed of the
 simulation, its stage and its position in the stage), so that changing one
@@ -26,7 +27,11 @@ from ..units import parse_time
 __all__ = ["TimescalePupil", "Fixations", "Foreshortening", "Units", "WhiteNoise"]
 
 #: order in which the stages are run
-STAGES = ("pupil", "gaze", "foreshortening", "units", "noise")
+STAGES = ("events", "pupil", "gaze", "foreshortening", "units", "noise")
+#: key of the random stream of each stage (fixed, so that adding stages does
+#: not change the random numbers of the others)
+STAGE_KEYS = {"pupil": 0, "gaze": 1, "foreshortening": 2, "units": 3, "noise": 4,
+              "events": 5}
 
 
 def _eyes(eyes):
@@ -86,8 +91,9 @@ class SimStep:
     @staticmethod
     def from_dict(d):
         """the step from :meth:`to_dict`"""
+        from .task import Task
         cls = {c.__name__: c for c in (TimescalePupil, Fixations, Foreshortening, Units,
-                                       WhiteNoise)}.get(d["step"])
+                                       WhiteNoise, Task)}.get(d["step"])
         if cls is None:
             raise ValueError(f"unknown simulation step {d['step']!r}")
         return cls(**d["params"])

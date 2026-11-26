@@ -198,3 +198,142 @@ def test_plots():
     g.plot.plot_truth()
     with pytest.raises(ValueError, match="no latent pupil"):
         Simulation("1 s", fs=50).units().run().plot.plot_components()
+
+
+# -- tasks ----------------------------------------------------------------------
+from pypillometry.sim import Task, parse_dist
+from pypillometry.sim import tasks
+
+
+def test_distributions():
+    rng = np.random.default_rng(0)
+    assert parse_dist("250 ms").sample(rng) == 250 and parse_dist(1.5).sample(rng) == 1.5
+    u = parse_dist("uniform(2 s, 10 s)").sample(rng, 1000)
+    assert u.min() >= 2000 and u.max() <= 10000
+    ln = parse_dist("lognormal(300 ms, 80 ms)").sample(rng, 20000)
+    assert abs(ln.mean() - 300) < 5 and abs(ln.std() - 80) < 5 and (ln > 0).all()
+    assert abs(parse_dist("normal(-40 ms, 10 ms)").sample(rng, 5000).mean() + 40) < 1
+    assert str(parse_dist("uniform(2 s, 10 min)")) == "uniform(2 s, 10 min)"
+    for bad in ("gamma(1 s, 2 s)", "uniform(2 s)", "uniform(5 s, 1 s)", "lognormal(0 ms, 1 ms)"):
+        with pytest.raises(ValueError):
+            parse_dist(bad)
+
+
+def test_task_builder_checks():
+    with pytest.raises(ValueError, match="start a block"):
+        Task().stimulus("a")
+    with pytest.raises(ValueError, match="n \\(trials\\)"):
+        Task().block()
+    with pytest.raises(ValueError, match="soa or isi"):
+        Task().block(n=1, soa=1, isi=1)
+    t = Task().block(n=2, conditions=["a", "b"]).stimulus("s")
+    with pytest.raises(ValueError, match="no such event"):
+        t.response("r", after="x")
+    with pytest.raises(ValueError, match="already"):
+        t.stimulus("s")
+    with pytest.raises(ValueError, match="unknown conditions"):
+        t.response("r", after="s", p={"c": 1.0})
+    with pytest.raises(ValueError, match="column"):
+        t.response("r", meta={"trial": 1})
+    with pytest.raises(ValueError, match="no blocks with events"):
+        Task().rest("1 s").generate(np.random.default_rng(0))
+    # each method returns a new task
+    assert len(t.blocks[0]["events"]) == 1
+    assert len(t.response("r", after="s").blocks[0]["events"]) == 2
+
+
+def test_sart():
+    ev, end = tasks.sart(n=300).generate(np.random.default_rng(1))
+    digit = ev["label"] == "digit"
+    assert digit.sum() == 300 and (ev["label"] == "mask").sum() == 300
+    nogo = ev["condition"][digit] == "nogo"
+    np.testing.assert_array_equal(ev["digit"][digit] == 3, nogo)
+    np.testing.assert_allclose(np.diff(ev["onset"][digit]), 1150)
+    assert abs(end - 300 * 1150) < 1e-6
+    press = ev["label"] == "press"
+    by_trial = {t: c for t, c in zip(ev["trial"][digit], ev["condition"][digit])}
+    pressed = [by_trial[t] for t in ev["trial"][press]]
+    assert pressed.count("nogo") < 0.5 * nogo.sum() and pressed.count("go") > 0.9 * (~nogo).sum()
+    assert np.all(ev["rt"][press] > 0) and np.isnan(ev["rt"][digit]).all()
+    np.testing.assert_allclose(ev["duration"][digit], 250)
+
+
+def test_pvt_target_until_response():
+    ev, _ = tasks.pvt(duration="5 min").generate(np.random.default_rng(2))
+    target = np.flatnonzero(ev["label"] == "target")
+    press = np.flatnonzero(ev["label"] == "press")
+    for t in ev["trial"][press]:
+        i, j = target[ev["trial"][target] == t][0], press[ev["trial"][press] == t][0]
+        assert ev["duration"][i] == pytest.approx(ev["onset"][j] - ev["onset"][i])
+    # the next target comes 2-10 s after the end of the previous one
+    gaps = ev["onset"][target][1:] - (ev["onset"][target] + ev["duration"][target])[:-1]
+    assert gaps.min() >= 2000 and gaps.max() <= 10000
+
+
+def test_ftrsgt():
+    ev, end = tasks.ftrsgt(duration="6 min").generate(np.random.default_rng(3))
+    probe = ev["onset"][ev["label"] == "probe"]
+    assert 3 <= len(probe) <= 9 and end >= 360000
+    assert np.all(np.diff(probe) > 40000)
+    tap = ev["label"] == "tap"
+    assert set(ev["side"][tap]) == {"left", "right"}
+    assert set(ev["rating"][ev["label"] == "rating"]) <= {1, 2, 3, 4}
+    beep = ev["onset"][ev["label"] == "beep"]
+    assert np.median(np.diff(beep)) == pytest.approx(750)
+
+
+def test_nback():
+    ev, _ = tasks.nback(level=3, n=200).generate(np.random.default_rng(4))
+    letter = ev["label"] == "letter"
+    lt, cond = ev["letter"][letter], ev["condition"][letter]
+    match = np.r_[np.zeros(3, bool), lt[3:] == lt[:-3]]
+    np.testing.assert_array_equal(match, cond == "target")
+    press = ev["label"] == "press"
+    key, pc = ev["key"][press], ev["condition"][press]
+    assert np.mean(key[pc == "target"] == "match") > 0.8
+    assert np.mean(key[pc == "nontarget"] == "nomatch") > 0.85
+
+
+def test_repeat_and_rest():
+    t = Task("t").block(n=3, soa="1 s").stimulus("s").rest("10 s").repeat(n=2)
+    ev, end = t.generate(np.random.default_rng(0))
+    np.testing.assert_allclose(ev["onset"], [0, 1000, 2000, 13000, 14000, 15000])
+    assert list(ev["trial"]) == list(range(6)) and end == 26000
+
+
+def test_simulation_with_task():
+    sim = Simulation(fs=50, seed=1).task(tasks.sart(n=20), start="2 s").pupil().units(800)
+    d = sim.run()
+    assert len(d) == round((2000 + 20 * 1150) * 50 / 1000)
+    ev = d.events
+    assert ev.onsets[0] == pytest.approx(2000) and (ev.labels == "digit").sum() == 20
+    assert {"kind", "modality", "trial", "condition", "rt", "digit"} <= set(ev.meta)
+    np.testing.assert_array_equal(d.simulation.run().events.onsets, ev.onsets)
+    assert "Task('SART')" in repr(d.simulation)
+    # a fixed duration cuts the events; the task does not change the pupil
+    short = Simulation("10 s", fs=50, seed=1).pupil().units(800)
+    a, b = short.run(), short.task(tasks.sart(n=20)).run()
+    assert b.events.onsets.max() < 10000
+    np.testing.assert_array_equal(a["left_pupil"], b["left_pupil"])
+    with pytest.raises(ValueError, match="needs a duration"):
+        Simulation(fs=50).pupil().run()
+    with pytest.raises(ValueError, match="has a task already"):
+        sim.task(tasks.pvt())
+    with pytest.raises(TypeError):
+        sim.task("PVT")
+
+
+def test_task_displays():
+    t = tasks.ftrsgt()
+    assert "repeated for 20 min" in repr(t) and "rating" in repr(t)
+    h = t._repr_html_()
+    assert h.count("<svg") == 2 and "FT-RSGT" in h
+    fig = t.plot()
+    assert isinstance(fig, plt.Figure) and len(fig.axes) == 2
+    fig2, axs = plt.subplots(1, 2)
+    assert t.plot(axes=axs) is fig2
+    d = Simulation(fs=50, seed=1).task(tasks.sart(n=10)).units().run()
+    fig, ax = plt.subplots()
+    assert d.plot.plot_task_events(plot_range=(0, 10)) is ax and ax.has_data()
+    with pytest.raises(ValueError, match="no events of a task"):
+        Simulation("1 s", fs=50).units().run().plot.plot_task_events()

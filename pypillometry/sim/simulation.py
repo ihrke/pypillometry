@@ -8,8 +8,9 @@ import numpy as np
 from ..eyedata.eyedatadict import EyeDataDict
 from ..state import Stateful
 from ..units import parse_time
-from .steps import (STAGES, Fixations, Foreshortening, SimStep, TimescalePupil, Units,
-                    WhiteNoise)
+from .steps import (STAGE_KEYS, STAGES, Fixations, Foreshortening, SimStep, TimescalePupil,
+                    Units, WhiteNoise)
+from .task import Task
 
 __all__ = ["Simulation"]
 
@@ -24,6 +25,7 @@ class _Run:
         self.log_pupil = None    # with foreshortening (log-%); set before stage 3
         self.pupil = {}          # in the units of the tracker
         self.x, self.y = {}, {}
+        self.events = None       # columns of the events of the task
         self.truth = EyeDataDict()
         self._has_pupil = set()
 
@@ -56,8 +58,9 @@ class Simulation(Stateful):
 
     Parameters
     ----------
-    duration : float, str or Quantity
-        duration of the recording (plain numbers are ms), e.g. ``"2 min"``
+    duration : float, str or Quantity, optional
+        duration of the recording (plain numbers are ms), e.g. ``"2 min"``;
+        default: until the end of the task (see :meth:`task`)
     fs : float
         sampling rate in Hz (default 1000)
     eyes : str or list
@@ -91,9 +94,10 @@ class Simulation(Stateful):
     _STATE_FIELDS = ("duration", "fs", "eyes", "seed", ("setup", "ExperimentalSetup"),
                      ("steps", "simsteps"), "name")
 
-    def __init__(self, duration, fs=1000.0, eyes="left", seed=None, setup=None, name=None):
-        self.duration = float(parse_time(duration, to="ms"))
-        if self.duration <= 0:
+    def __init__(self, duration=None, fs=1000.0, eyes="left", seed=None, setup=None,
+                 name=None):
+        self.duration = None if duration is None else float(parse_time(duration, to="ms"))
+        if self.duration is not None and self.duration <= 0:
             raise ValueError("duration must be positive")
         self.fs = float(fs)
         if self.fs <= 0:
@@ -108,10 +112,10 @@ class Simulation(Stateful):
         self.steps = []
 
     def __repr__(self):
-        steps = "".join(f"\n  .{s!r}" for s in self._ordered())
+        steps = "".join("\n  ." + repr(s).replace("\n", "\n    ") for s in self._ordered())
         seed = "" if self.seed is None else f", seed={self.seed}"
-        return (f"Simulation({self.duration / 1000:g} s at {self.fs:g} Hz, "
-                f"eyes={self.eyes}{seed}){steps}")
+        dur = "duration of the task" if self.duration is None else f"{self.duration / 1000:g} s"
+        return f"Simulation({dur} at {self.fs:g} Hz, eyes={self.eyes}{seed}){steps}"
 
     # -- building ---------------------------------------------------------------
     def add(self, step):
@@ -150,6 +154,31 @@ class Simulation(Stateful):
         for step in steps or [TimescalePupil(**kwargs)]:
             out = out.add(step)
         return out
+
+    def task(self, task, start=None):
+        """
+        Add the events of a task (see :class:`~pypillometry.sim.Task` and
+        :mod:`pypillometry.sim.tasks`).
+
+        The events of the task become the events of the data (``d.events``,
+        with their metadata); events outside of the recording are left out.
+
+        Parameters
+        ----------
+        task : Task
+        start : float, str or distribution, optional
+            time of the start of the task in the recording (default: that of
+            the task, 0)
+
+        Returns
+        -------
+        Simulation
+        """
+        if not isinstance(task, Task):
+            raise TypeError(f"expected a Task, got {type(task).__name__}")
+        if any(s.stage == "events" for s in self.steps):
+            raise ValueError("the simulation has a task already")
+        return self.add(task if start is None else task._with(start=start))
 
     def gaze(self, step=None, **kwargs):
         """
@@ -237,23 +266,49 @@ class Simulation(Stateful):
             sim.seed = int(seed)
         if sim.seed is None:
             sim.seed = int(np.random.default_rng().integers(2**62))
-        n = int(round(sim.duration * sim.fs / 1000.0))
+        def rng_of(step, k):
+            ss = np.random.SeedSequence(sim.seed, spawn_key=(STAGE_KEYS[step.stage], k))
+            return np.random.default_rng(ss)
+
+        ordered = sim._ordered()
+        events, end = None, None
+        for step in ordered:
+            if step.stage == "events":
+                events, end = step.generate(rng_of(step, 0))
+        duration = sim.duration
+        if duration is None:
+            if end is None:
+                raise ValueError("the simulation needs a duration (or a task)")
+            duration = end
+        n = int(round(duration * sim.fs / 1000.0))
+        if n < 2:
+            raise ValueError(f"the recording is too short ({duration:g} ms)")
         run = _Run(sim, n)
+        run.events = events
         count = {}
-        for step in sim._ordered():
-            if run.log_pupil is None and STAGES.index(step.stage) >= 2:
+        for step in ordered:
+            if step.stage == "events":
+                continue
+            if run.log_pupil is None and STAGES.index(step.stage) >= STAGES.index("foreshortening"):
                 # the measured pupil starts from the latent one (after the
                 # pupil and gaze stages)
                 run.log_pupil = {e: v.copy() for e, v in run.log_size.items()}
             k = count.get(step.stage, 0)
             count[step.stage] = k + 1
-            ss = np.random.SeedSequence(sim.seed, spawn_key=(STAGES.index(step.stage), k))
-            step.apply(run, np.random.default_rng(ss))
+            step.apply(run, rng_of(step, k))
         channels = {}
         for e in sim.eyes:
             channels[f"{e}_pupil"] = run.pupil[e]
             if e in run.x:
                 channels[f"{e}_x"], channels[f"{e}_y"] = run.x[e], run.y[e]
+        kwargs = {}
+        if run.events is not None:
+            from ..events import Events
+            ev = run.events
+            keep = (ev["onset"] >= 0) & (ev["onset"] <= (n - 1) * 1000.0 / sim.fs)
+            kwargs["events"] = Events(ev["onset"][keep], ev["label"][keep], units="ms",
+                                      meta={k: v[keep] for k, v in ev.items()
+                                            if k not in ("onset", "label")})
         return SimEyeData(sampling_rate=sim.fs, **channels, truth=run.truth,
                           simulation=sim, experimental_setup=copy.deepcopy(sim.setup),
-                          name=sim.name)
+                          name=sim.name, **kwargs)

@@ -44,6 +44,7 @@ INTERNAL = {
     "pypillometry.timescale.plots": {"TimescalePlots", "TimescaleGroupPlots"},
     # base class of the simulation steps
     "pypillometry.sim.steps": {"SimStep"},
+    "pypillometry.sim.dist": {"Dist"},
     "pypillometry.units": {"normalize_unit"},
     "pypillometry.signal.preproc": {"helper_merge_blinks"},
     "pypillometry.templates": {"render", "sparkline"},
@@ -72,6 +73,7 @@ SHADOWED = {
 # top level (pp.signal.smooth_window, not pp.smooth_window). The longest
 # matching prefix wins (pp.signal.gaussmarkov.OU, not pp.signal.OU).
 SUBMODULE_API = {"pypillometry.sim": "pypillometry.sim",
+                 "pypillometry.sim.tasks": "pypillometry.sim.tasks",
                  "pypillometry.signal": "pypillometry.signal",
                  "pypillometry.signal.gaussmarkov": "pypillometry.signal.gaussmarkov"}
 
