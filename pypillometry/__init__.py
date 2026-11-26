@@ -28,6 +28,9 @@ read_eyelink, read_tobii_prolab, read_gazepoint, read_file, load_study_local, ge
     Reading and writing data.
 Events, Intervals, Epochs
     Event markers, time intervals and event-related segments.
+TimescaleModel, TimescaleGroup
+    State-space model of the slow and fast fluctuations of the pupil size
+    (experimental).
 signal
     Signal-processing functions that work on plain numpy arrays.
 u
@@ -89,6 +92,10 @@ from .example_data import (
 from . import signal
 
 # ---------------------------------------------------------------------------
+# Models of the pupil size (experimental)
+from .timescale import TimescaleModel, TimescaleGroup
+
+# ---------------------------------------------------------------------------
 # Viewer
 from .viewer import view, tweak, tweak_blink_interpolation
 
@@ -126,6 +133,8 @@ __all__ = [
     "load_study_local", "load_study_osf", "get_osf_project_files",
     "get_available_datasets", "get_example_data", "get_rlmw_002",
     "get_rlmw_002_short", "get_rlmw_010_edf", "get_nback_001",
+    # models
+    "TimescaleModel", "TimescaleGroup",
     # viewer
     "view", "tweak", "tweak_blink_interpolation",
     # units, settings and logging

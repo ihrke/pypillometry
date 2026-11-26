@@ -77,6 +77,13 @@ together, see the :doc:`/user_guide/index`.
       Experimental setup, calibration, foreshortening and regions of
       interest.
 
+   .. grid-item-card:: Timescale model (experimental)
+      :link: timescale
+      :link-type: doc
+
+      State-space model of the slow and fast fluctuations of the pupil
+      size.
+
    .. grid-item-card:: Units
       :link: units
       :link-type: doc
@@ -102,5 +109,6 @@ together, see the :doc:`/user_guide/index`.
    io
    signal
    geometry
+   timescale
    units
    misc
