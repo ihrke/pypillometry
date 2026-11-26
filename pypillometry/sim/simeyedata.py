@@ -181,6 +181,18 @@ class SimEyeData(EyeData):
         if len(self.truth) and self.truth.length != len(self):
             raise ValueError(f"the truth has {self.truth.length} samples, the data {len(self)}")
 
+    #: colours of the HTML display, which marks the data as simulated
+    _HTML_ACCENT = {"border": "#f0a04b", "background": "#fff7ec", "badge": "#f6c48a",
+                    "badge_text": "#6b3a00", "label": "SIMULATED"}
+
+    def _html_context(self) -> dict:
+        context = super()._html_context()
+        context["accent"] = self._HTML_ACCENT
+        context["simulation"] = repr(self.simulation) if self.simulation else None
+        context["truth"] = (f"{', '.join(self.truth.variables)} ({', '.join(self.truth.eyes)})"
+                            if len(self.truth) else None)
+        return context
+
     def __repr__(self):
         head, sep, history = super().__repr__().partition(" History:")
         sim = repr(self.simulation).replace("\n", "\n   ") if self.simulation else "-"

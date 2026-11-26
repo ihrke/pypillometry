@@ -171,6 +171,16 @@ def test_class_and_repr():
     assert " Truth: log_size" in r and r.index(" Truth:") < r.index(" History:")
 
 
+def test_html_marks_simulated_data():
+    d = foreshortening_sim().run()
+    h = d._repr_html_()
+    assert "SIMULATED" in h and "#f0a04b" in h
+    assert "Simulation and ground truth" in h and "Foreshortening()" in h
+    assert "cosalpha" in h
+    real = pp.EyeData(left_pupil=np.ones(10), sampling_rate=10)._repr_html_()
+    assert "SIMULATED" not in real and "1px solid #ddd" in real
+
+
 def test_plots():
     d = Simulation("10 s", fs=50, eyes=["left", "right"], seed=1).pupil(
         binocular=True).units(800).noise().run()
