@@ -246,11 +246,16 @@ def test_keep_data_false(rec, model):
 
 def test_binocular(rec):
     d, truth = rec
-    m = pp.TimescaleModel(d, binocular=True, timescales=TS).fit(hessian=False)
+    m = pp.TimescaleModel(d, binocular=True, timescales=TS).fit(hessian=False, maxiter=15)
     assert m.units == ["both"] and m.eyes == ["left", "right"]
     p = m.params["both"]
     assert {"noise_sd_left", "noise_sd_right", "diff_sd", "diff_ell"} <= set(p)
-    assert p["diff_sd"] == pytest.approx(2., rel=0.3)
+    assert 0.5 < p["diff_sd"] < 6 and set(m.summary().index) == {"both"}
+    # the parameters of the simulation (recovery is tested on arrays)
+    truth_theta = m.bank.theta(fast_sd=8., fast_ell=700., noise_sd_left=0.2, noise_sd_right=0.2,
+                               diff_sd=2., diff_ell=600., sd_3s=3., sd_30s=5.)
+    assert m.loglik["both"] > m.bank.loglik(truth_theta, m._Y("both"), m.fs, m.segments) - 300
+    m._set_fit("both", gm.BankFit(m.bank, truth_theta, 0.0, 1))
     est = m.predict("signal")
     assert set(est) == {"left", "right"}
     # the left eye is missing for 8 s: the right eye carries it

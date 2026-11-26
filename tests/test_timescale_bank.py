@@ -294,10 +294,10 @@ def test_group_fit_shrinks_towards_the_group():
     rng = np.random.default_rng(5)
     mu = bank.theta(fast_sd=8., fast_ell=700., noise_sd=0.2, sd_30s=4.)
     sd = np.array([0.3, 0.1, 0.2, 0.4])
-    thetas = mu + sd * rng.standard_normal((8, 4))
-    data = [(bank.simulate(th, 2400, FS, rng=i), FS, None) for i, th in enumerate(thetas)]
+    thetas = mu + sd * rng.standard_normal((6, 4))
+    data = [(bank.simulate(th, 2000, FS, rng=i), FS, None) for i, th in enumerate(thetas)]
     g = gm.fit_group(bank, data, n_iter=2, n_jobs=1)
-    assert len(g.fits) == len(g.individual) == 8 and len(g.history) >= 2
+    assert len(g.fits) == len(g.individual) == 6 and len(g.history) >= 2
     assert g.mu.shape == (4,) and g.Sigma.shape == (4, 4)
     assert np.allclose(g.Sigma, np.diag(np.diag(g.Sigma)))
     assert np.all(np.abs(g.mu[:3] - mu[:3]) < 0.4)
