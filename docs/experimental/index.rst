@@ -36,8 +36,15 @@ Experimental features
       Read and inspect the calibration and validation results of the eye
       tracker.
 
+   .. grid-item-card:: :fas:`wave-square` Slow and fast pupil fluctuations
+      :link: timescale_model
+      :link-type: doc
+
+      Model the pupil size as components at several time scales: the slow
+      baseline with uncertainty, and reconstruction of missing data.
+
 The related classes are listed in the API reference under
-:doc:`/api/geometry`.
+:doc:`/api/geometry` and :doc:`/api/timescale`.
 
 .. toctree::
    :hidden:
@@ -46,3 +53,4 @@ The related classes are listed in the API reference under
    foreshortening_correction_algorithm
    gaze_rois
    spatial_calibration
+   timescale_model

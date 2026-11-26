@@ -5,6 +5,14 @@
 - `EyeData.from_gazepoint()`, `read_gazepoint()`: read recordings of GazePoint eye trackers (Open Gaze API columns); blinks hidden as repeated values are masked
 - fix: `fill_time_discontinuities()` left out one sample in some gaps (rounding)
 - fix: `pp.signal.velocity_savgol(direction="backward"/"forward")` evaluated the derivative half a window ahead (backward) or behind (forward), so the one-sided velocities of `pupil.blinks_detect()` (velocity strategy) and of the `"mahot"` interpolation looked into the blink; the one-sided velocities of both are now the slope of a line fitted to the window (a quadratic overshoots at the end of its window, e.g. after the reopening). Detected blink onsets come slightly later, offsets slightly earlier (by up to half the window)
+- `pp.TimescaleModel` (experimental): state-space model of the pupil size with a fast component and slow components at fixed time scales; slow baseline with uncertainty, checks, AIC/BIC and cross-validation
+- `TimescaleModel.interpolate()`, `.predict()`, `.store()`: reconstruction of missing data of the whole recording and the slow part at the original samples
+- `pp.TimescaleModel(d, binocular=True)`: one model for both eyes
+- `pp.TimescaleGroup` (experimental): group-level fit of several recordings with shrinkage; `g.prior` for new recordings
+- `d.pupil.spectrum()`, `d.plot.plot_pupil_spectrum()`: power spectrum without interpolating the gaps
+- `pp.signal.spectrum()`, `pp.signal.block_mean()`, `pp.signal.coarsen()`
+- `pp.signal.semivariogram(segments=)`, `Variogram.at_log_lags()`
+- `pp.signal.gaussmarkov`: `TimescaleBank`, `fit_bank()`, `fit_group()`, `general_prior()`, `Constant` component, noise variance per sample, segments and diffuse states in the Kalman filter
 
 ### Changed behaviour
 
