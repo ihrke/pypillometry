@@ -757,17 +757,29 @@ class GaussianPrior:
         return f"GaussianPrior({self.label}{full}; mean ± sd)\n{rows}"
 
 
-#: Distribution of the parameters over recordings: mean and standard
-#: deviation of log fast sd (log-%), log fast length scale (ms), log noise sd
-#: and, at the time scales `_PRIOR_TAUS` (ms), of u = log(v + 0.25).
-#: Placeholder values, replaced by the fit to the datasets (see
-#: docs/development/timescale_priors.py).
+#: Distribution of the parameters over recordings (mean, standard deviation)
+#: of log fast sd (log-%), log fast length scale (ms), log noise sd and, at
+#: the time scales `_PRIOR_TAUS` (ms), of u = log(v + 0.25); with two
+#: channels also of the log sd and length scale of the difference component
+#: and of the log gain.
+#:
+#: Derived in November 2026 from 155 recordings of four experiments with
+#: EyeLink trackers (desk-mounted and portable; 500 and 1000 Hz; tasks of 20
+#: to 47 minutes): one eye per recording, task periods only, blinks masked
+#: with thresholds per recording and margins of 100/200 ms, 20-Hz block
+#: means in log-%. A group fit (:func:`fit_group`, diagonal covariance) per
+#: experiment gave the mean and the variance between recordings; the values
+#: here are the mean of the four group means and the root of the mean
+#: within-experiment variance plus the variance of the group means (each
+#: experiment has the same weight). The parameters of the difference
+#: component and the gain come from binocular fits of 10 recordings per
+#: experiment.
 _PRIOR_TAUS = (3000., 10000., 30000., 100000., 300000.)
-_PRIOR_HEAD = {"log_fast_sd": (np.log(8.0), 0.35), "log_fast_ell": (np.log(700.0), 0.25),
-               "log_noise_sd": (np.log(0.2), 0.6),
-               "log_diff_sd": (np.log(2.5), 0.5), "log_diff_ell": (np.log(700.0), 0.5),
-               "log_gain": (0.0, 0.2)}
-_PRIOR_U = ((2.5, 2.3, 1.5, 1.2, 2.5), (1.0, 1.0, 1.0, 1.0, 1.0))
+_PRIOR_HEAD = {"log_fast_sd": (2.09, 0.36), "log_fast_ell": (6.52, 0.30),
+               "log_noise_sd": (-1.68, 0.53),
+               "log_diff_sd": (1.09, 0.37), "log_diff_ell": (6.15, 0.36),
+               "log_gain": (0.0, 0.07)}
+_PRIOR_U = ((2.42, 3.24, 1.46, 1.61, 2.62), (1.91, 1.89, 1.82, 2.34, 2.66))
 #: standard deviations of the general priors relative to the distribution
 #: over recordings
 _PRIOR_STRENGTH = {"strong": 0.5, "medium": 1.0, "weak": 2.0}
@@ -779,10 +791,20 @@ def general_prior(bank=None, strength="medium"):
     \\mathrm{median})`), derived from recordings of several experiments.
 
     The prior describes how the parameters of the timescale-bank model
-    vary between recordings (participants, experiments, eye trackers). It
-    keeps the parameters that a single recording does not determine (the
-    variances of atoms that carry little variance, and the split of the
-    variance between neighbouring atoms) in a plausible range.
+    vary between recordings: 155 recordings of four experiments with
+    desk-mounted and portable EyeLink trackers (tasks of 20 to 47 minutes).
+    Its centre is a fast component with a standard deviation of 8 log-% and
+    a length scale of 0.7 s, noise of 0.2 log-%, and atoms with standard
+    deviations of 3.3, 5.0, 2.0, 2.2 and 3.7 log-% at 3, 10, 30, 100 and
+    300 s. The fast component and the noise vary little between recordings
+    (by a factor of 1.3 to 1.7), the variances of the atoms a lot
+    (standard deviations of :math:`u = \\log(v + v_0)` of 1.8 to 2.7).
+
+    The data of a recording determine the fast component, the noise and the
+    total slow variance, so that the prior matters for what they do not
+    determine: the variance of atoms that carry little of it, and the
+    split of the variance between neighbouring atoms. It keeps these in a
+    plausible range instead of at zero or at very large values.
 
     Parameters
     ----------
