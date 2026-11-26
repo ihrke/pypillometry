@@ -272,6 +272,30 @@ def test_binocular(rec):
     m.plot.decomposition(eye="right")
 
 
+def test_simulate(model):
+    m = model
+    steps = m.process()
+    assert len(steps) == 1 and steps[0].eyes == ("left",)
+    p = m.params["left"]
+    assert steps[0].params == {k: v for k, v in p.items() if k != "noise_sd"}
+    s = m.simulate("2 min", seed=1)
+    assert type(s) is pp.sim.SimEyeData and s.eyes == ["left"] and s.fs == m.fs
+    assert len(s) == 2400 and s.name == "rec_sim"
+    assert abs(np.median(s.truth["left", "size"]) / m.scale["left"] - 1) < 0.3
+    noise = 100 * np.log(s.data["left_pupil"] / s.truth["left", "pupil"])
+    assert abs(np.std(noise) / p["noise_sd"] - 1) < 0.15
+    np.testing.assert_array_equal(s.simulation.run()["left_pupil"], s["left_pupil"])
+    # at another rate, the noise is that of single samples
+    fast = m.simulate("10 s", fs=100, seed=1)
+    noise = 100 * np.log(fast.data["left_pupil"] / fast.truth["left", "pupil"])
+    assert abs(np.std(noise) / (p["noise_sd"] * np.sqrt(100 / m.fs)) - 1) < 0.15
+    # the default duration is that of the segments; refitting works
+    s = m.simulate(seed=2)
+    assert len(s) == sum(b - a for a, b in m.segments)
+    m2 = pp.TimescaleModel(s, timescales=TS).fit(hessian=False, maxiter=30)
+    assert abs(m2.params["left"]["fast_sd"] / p["fast_sd"] - 1) < 0.3
+
+
 def test_plots_follow_the_conventions(model):
     m = model
     for plot, kw in ((m.plot.variogram, {}), (m.plot.spectrum, dict(window="50 s")),

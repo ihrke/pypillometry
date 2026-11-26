@@ -476,6 +476,83 @@ class TimescaleModel:
             out[eye] = z
         return out
 
+    # -- simulation ------------------------------------------------------------
+    def process(self):
+        """
+        The fitted model as steps of a simulation (see :mod:`pypillometry.sim`).
+
+        Returns
+        -------
+        list of :class:`~pypillometry.sim.TimescalePupil`
+            one step per separately fitted unit (each eye, or both eyes for
+            a binocular model), with the estimated parameters (without the
+            noise, see :meth:`simulate`)
+
+        Examples
+        --------
+        >>> sim = pp.sim.Simulation("5 min", fs=20, eyes=m.eyes).pupil(*m.process())  # doctest: +SKIP
+        """
+        from ..sim import TimescalePupil
+        steps = []
+        for unit in self.units:
+            params = {k: v for k, v in self._fit(unit).params.items()
+                      if not k.startswith("noise_sd")}
+            steps.append(TimescalePupil(params=params, timescales=self.bank.timescales,
+                                        nu=self.bank.nu, binocular=self.binocular,
+                                        eyes=self._unit_eyes[unit]))
+        return steps
+
+    def simulate(self, duration=None, fs=None, seed=None, name=None):
+        """
+        Simulate a new recording from the fitted model.
+
+        The latent pupil size is drawn from the model with the estimated
+        parameters (:meth:`process`), scaled to the median pupil size of
+        each eye (:attr:`scale`), and white noise with the estimated
+        standard deviation is added.
+
+        Parameters
+        ----------
+        duration : float, str or Quantity, optional
+            duration (plain numbers are ms); default: the duration of the
+            segments of the model
+        fs : float, optional
+            sampling rate in Hz; default: the rate of the model. The noise
+            of the model is that of block means at the rate of the model; at
+            another rate, its standard deviation is scaled by
+            :math:`\\sqrt{f_s / f_{s,\\text{model}}}` (as for white noise
+            of the raw samples; the noise of real trackers is not white).
+        seed : int, optional
+            seed of the random numbers
+        name : str, optional
+            name of the data (default: the name of the model with ``_sim``)
+
+        Returns
+        -------
+        SimEyeData
+            the simulated data, with the true components in ``d.truth``
+            (see :class:`~pypillometry.sim.TimescalePupil`)
+
+        Examples
+        --------
+        >>> d = pp.TimescaleModel(data).fit().simulate("10 min", seed=1)  # doctest: +SKIP
+        >>> d.plot.plot_components()  # doctest: +SKIP
+        """
+        from ..sim import Simulation, WhiteNoise
+        if duration is None:
+            duration = sum(b - a for a, b in self.segments) * 1000.0 / self.fs
+        fs = self.fs if fs is None else float(fs)
+        sim = (Simulation(duration, fs=fs, eyes=self.eyes, seed=seed,
+                          name=f"{self.name}_sim" if name is None else name)
+               .pupil(*self.process())
+               .units({e: self.scale[e] for e in self.eyes}))
+        for unit in self.units:
+            params = self._fit(unit).params
+            for eye in self._unit_eyes[unit]:
+                sd = params["noise_sd" if not self.binocular else f"noise_sd_{eye}"]
+                sim = sim.add(WhiteNoise(sd * np.sqrt(fs / self.fs), eyes=eye))
+        return sim.run()
+
     # -- back to the original samples ------------------------------------------
     def _check_data(self, data):
         data = self._data if data is None else data
