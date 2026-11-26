@@ -6,6 +6,10 @@
 - fix: `fill_time_discontinuities()` left out one sample in some gaps (rounding)
 - fix: `pp.signal.velocity_savgol(direction="backward"/"forward")` evaluated the derivative half a window ahead (backward) or behind (forward), so the one-sided velocities of `pupil.blinks_detect()` (velocity strategy) and of the `"mahot"` interpolation looked into the blink; the one-sided velocities of both are now the slope of a line fitted to the window (a quadratic overshoots at the end of its window, e.g. after the reopening). Detected blink onsets come slightly later, offsets slightly earlier (by up to half the window)
 
+### Changed behaviour
+
+- `pupil.blinks_detect()`: the default velocity thresholds are relative to the noise of the velocity (`vel_onset="8sd"`, `vel_offset="8sd"`: 8 robust standard deviations), instead of +-5 pupil units per ms, so that they work in any units (mm, pixels, arbitrary units) and with noisy trackers; the detected blinks usually cover more of the slow transients. Numbers (units per ms) and percentiles (`"5%"`) work as before. In a simulation study across six datasets, this rule transferred best between recordings (vs. raw units, percentiles or thresholds relative to the pupil size).
+
 ## 2.2.4 (2026-11-24)
 
 - `d.pupil.blinks_optimize_parameters()`: autotune the parameters of `blinks_interpolate()` 
