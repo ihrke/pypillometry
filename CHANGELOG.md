@@ -8,7 +8,9 @@
 
 ### Changed behaviour
 
-- `pupil.blinks_detect()`: the default velocity thresholds are relative to the noise of the velocity (`vel_onset="8sd"`, `vel_offset="8sd"`: 8 robust standard deviations), instead of +-5 pupil units per ms, so that they work in any units (mm, pixels, arbitrary units) and with noisy trackers; the detected blinks usually cover more of the slow transients. Numbers (units per ms) work as before; the same `"<k>sd"` form works for the `"mahot"` interpolation. The percentile form (`"5%"`) was removed. In a simulation study across six datasets, this rule transferred best between recordings (vs. raw units, percentiles or thresholds relative to the pupil size).
+- `pupil.blinks_detect()`: the default velocity thresholds are relative to the noise of the velocity (`vel_onset="25sd"`, `vel_offset="25sd"`: 25 robust standard deviations), instead of +-5 pupil units per ms, so that they work in any units (mm, pixels, arbitrary units) and with noisy trackers; the window of the velocity is 45 ms (was 11 ms). The detected blinks usually cover more of the slow transients. In a simulation study with real blinks and tracker noise of six datasets, this transferred best between recordings (vs. raw units, percentiles or thresholds relative to the pupil size). Numbers (units per ms) work as before; the percentile form (`"5%"`) was removed.
+- `pupil.blinks_interpolate(method="mahot")`: default thresholds `"2sd"` and window 30 ms (were +-5 units per ms and 25 ms); on real blinks transplanted into clean data, the error of the interpolation drops by about a third. `blinks_optimize_parameters()` and `tweak_blink_interpolation()` start from these, converted to units per ms.
+- the windows of the velocity (detection and interpolation) are rounded to the nearest odd number of samples and have at least 5 samples (at low sampling rates, e.g. 60 Hz, the window was 1-3 samples); the minimal durations of `blinks_detect()` are rounded to the nearest sample, and a blink has at least 2 samples
 
 ## 2.2.4 (2026-11-24)
 

@@ -61,10 +61,13 @@ object (the ``"blink"`` layer, which masks them) and the object is
 returned (``d.pupil.blinks_detect()`` works in place). Check them with
 :meth:`~EyeData.get_blinks` (a dict with one :class:`Intervals`
 per channel, in ms); ``d.clear_layer("blink")`` removes them again.
-The velocity thresholds (``vel_onset``, ``vel_offset``) are by default 8
-robust standard deviations of the velocity of the recording (``"8sd"``),
-so they work in any units and adapt to the noise of the tracker; a number
-gives a threshold in pupil units per ms.
+The velocity is computed with a Savitzky-Golay window of 45 ms (at least
+5 samples), and the velocity thresholds (``vel_onset``, ``vel_offset``)
+are by default 25 robust standard deviations of that velocity
+(``"25sd"``), so they work in any units and adapt to the noise of the
+tracker; a number gives a threshold in pupil units per ms. The
+interpolation (``blinks_interpolate()``) finds the start and end of the
+transients around each blink with a window of 30 ms and ``"2sd"``.
 A drop only counts as the onset of a blink if the velocity stays beyond
 the threshold for a while (``vel_onset_min_duration``, 10 ms by default),
 so that brief changes, e.g. from eye movements, are not taken for blinks;
