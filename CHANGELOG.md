@@ -6,18 +6,27 @@
 - fix: `fill_time_discontinuities()` left out one sample in some gaps (rounding)
 - fix: `pp.signal.velocity_savgol(direction="backward"/"forward")` evaluated the derivative half a window ahead (backward) or behind (forward), so the one-sided velocities of `pupil.blinks_detect()` (velocity strategy) and of the `"mahot"` interpolation looked into the blink; the one-sided velocities of both are now the slope of a line fitted to the window (a quadratic overshoots at the end of its window, e.g. after the reopening). Detected blink onsets come slightly later, offsets slightly earlier (by up to half the window)
 - `pp.TimescaleModel` (experimental): state-space model of the pupil size with a fast component and slow components at fixed time scales; slow baseline with uncertainty, checks, AIC/BIC and cross-validation
+### Added
+Timescale model (experimental):
+- `pp.TimescaleModel`: state-space model of the pupil size with a fast component and slow components at fixed time scales; slow baseline with uncertainty, checks, AIC/BIC and cross-validation
 - `TimescaleModel.interpolate()`, `.predict()`, `.store()`: reconstruction of missing data of the whole recording and the slow part at the original samples
 - `pp.TimescaleModel(d, binocular=True)`: one model for both eyes
 - `TimescaleModel.fit(n_jobs=, progress=)`: likelihood evaluations of the gradient and the Hessian in parallel threads (about 2.5x faster for one eye, 4x for both); progress bar
-- `pp.TimescaleGroup` (experimental): group-level fit of several recordings with shrinkage; `g.prior` for new recordings
+- `TimescaleModel.simulate()`, `.process()`: new recordings from a fitted model
+- `pp.TimescaleGroup`: group-level fit of several recordings with shrinkage; `g.prior` for new recordings
+
+Simulated data (experimental):
+
+- `pp.sim`: simulated recordings with ground truth, built by chaining steps (`pp.sim.Simulation("5 min").pupil().gaze().foreshortening().units(800).noise(0.2).run()`); `SimEyeData` with `d.truth` (true time series, follow cropping and downsampling), `d.simulation` (the recipe and seed), the plots `plot_truth()` and `plot_components()`, and an HTML display that marks the data as simulated
+- `pp.sim.Task`: task designs built by chaining (`.block()`, `.stimulus()`, `.response()`, `.rest()`, `.repeat()`; times as distributions like `"uniform(2 s, 10 s)"`), whose events go into simulated recordings (`Simulation.task()`) with their metadata; ready-made tasks `pp.sim.tasks.pvt()`, `sart()`, `ftrsgt()`, `nback()`; `task.plot()`, a schematic in notebooks and `d.plot.plot_task_events()`
+- `pp.sim.Blinks` (occlusion model of the lid with a two-speed reopening, partial blinks, visibility threshold) and `pp.sim.TrackerLoss`; the true artifacts with their parameters in `d.truth_events`, the occluded fraction in `d.truth`; `Simulation(missing_value=0)`
+
+Signal processing:
+
 - `d.pupil.spectrum()`, `d.plot.plot_pupil_spectrum()`: power spectrum without interpolating the gaps
 - `pp.signal.spectrum()`, `pp.signal.block_mean()`, `pp.signal.coarsen()`
 - `pp.signal.semivariogram(segments=)`, `Variogram.at_log_lags()`
 - `pp.signal.gaussmarkov`: `TimescaleBank`, `fit_bank()`, `fit_group()`, `general_prior()`, `Constant` component, noise variance per sample, segments and diffuse states in the Kalman filter
-- `pp.sim` (experimental): simulated data with ground truth, built by chaining steps (`pp.sim.Simulation("5 min").pupil().gaze().foreshortening().units(800).noise(0.2).run()`); `SimEyeData` with `d.truth` (true time series, follow cropping and downsampling), `d.simulation` (the recipe and seed) and the plots `plot_truth()` and `plot_components()`
-- `TimescaleModel.simulate()`, `.process()`: new recordings from a fitted model
-- `pp.sim.Task`: task designs built by chaining (`.block()`, `.stimulus()`, `.response()`, `.rest()`, `.repeat()`; times as distributions like `"uniform(2 s, 10 s)"`), whose events go into simulated recordings (`Simulation.task()`) with their metadata; ready-made tasks `pp.sim.tasks.pvt()`, `sart()`, `ftrsgt()`, `nback()`; `task.plot()`, a schematic in notebooks and `d.plot.plot_task_events()`
-- `pp.sim.Blinks` (occlusion model of the lid with a two-speed reopening, partial blinks, visibility threshold) and `pp.sim.TrackerLoss`; the true artifacts with their parameters in `d.truth_events`, the occluded fraction in `d.truth`; `Simulation(missing_value=0)`
 
 ### Breaking changes
 
